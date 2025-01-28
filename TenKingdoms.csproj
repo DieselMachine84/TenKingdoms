@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Resource\**" />
+      <Compile Remove="Sprite\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Resource\**" />
+      <EmbeddedResource Remove="Sprite\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resource\**" />
+      <None Remove="Sprite\**" />
+    </ItemGroup>
+
+</Project>
