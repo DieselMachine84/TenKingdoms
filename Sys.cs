@@ -10,7 +10,7 @@ public class Sys
     public static Sys Instance { get; set; }
     public long FrameNumber { get; private set; }
     private int FrameOfDay { get; set; }
-    private int Speed { get; set; } = 8;
+    public int Speed { get; private set; } = 1;
     public bool GameEnded { get; private set; }
 
     private Graphics Graphics { get; } = new Graphics();
@@ -272,6 +272,17 @@ public class Sys
             CreateObjects();
             MapGenerator mapGenerator = new MapGenerator();
             mapGenerator.Generate();
+        }
+
+        if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_0 && keyboardEvent.keysym.sym <= SDL.SDL_Keycode.SDLK_9)
+        {
+            Speed = keyboardEvent.keysym.sym - SDL.SDL_Keycode.SDLK_0;
+        }
+        if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_KP_1 && keyboardEvent.keysym.sym <= SDL.SDL_Keycode.SDLK_KP_0)
+        {
+            Speed = keyboardEvent.keysym.sym - SDL.SDL_Keycode.SDLK_KP_1 + 1;
+            if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_KP_0)
+                Speed = 0;
         }
     }
 

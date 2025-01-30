@@ -82,7 +82,7 @@ public static class Renderer
 
     public static void DrawFrame(Graphics graphics)
     {
-        if (lastFrame == Sys.Instance.FrameNumber)
+        if (lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
             return;
 
         lastFrame = Sys.Instance.FrameNumber;
