@@ -44,7 +44,18 @@ public class TownLayout
     public byte[] groundBitmap;
     public int groundBitmapWidth;
     public int groundBitmapHeight;
-    public IntPtr texture;
+    private IntPtr texture;
+    
+    public IntPtr GetTexture(Graphics graphics)
+    {
+        if (texture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(groundBitmap, groundBitmapWidth, groundBitmapHeight);
+            texture = graphics.CreateTextureFromBmp(decompressedBitmap, groundBitmapWidth, groundBitmapHeight);
+        }
+
+        return texture;
+    }
 }
 
 public class TownSlotRec
@@ -189,14 +200,19 @@ public class TownBuild
     public int bitmapHeight;
     private Dictionary<int, IntPtr> textures = new Dictionary<int, nint>();
 
-    public void AddTexture(int nationColor, bool isSelected, IntPtr texture)
+    public IntPtr GetTexture(Graphics graphics, int nationColor, bool isSelected)
     {
-        textures.Add(ColorRemap.GetTexturesKey(nationColor, isSelected), texture);
-    }
-    
-    public IntPtr GetTexture(int nationColor, bool isSelected)
-    {
-        return textures[ColorRemap.GetTexturesKey(nationColor, isSelected)];
+        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        if (!textures.ContainsKey(textureKey))
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap,
+                bitmapWidth, bitmapHeight, ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
+            textures.Add(textureKey, texture);
+        }
+        
+        return textures[textureKey];
     }
 }
 
@@ -241,21 +257,39 @@ public class TownRes
     public List<byte[]> farmBitmaps = new List<byte[]>();
     public List<int> farmWidths = new List<int>();
     public List<int> farmHeights = new List<int>();
-    public Dictionary<int, IntPtr> farmTextures = new Dictionary<int, nint>();
+    private Dictionary<int, IntPtr> farmTextures = new Dictionary<int, nint>();
 
     public List<byte[]> flagBitmaps = new List<byte[]>();
     public List<int> flagWidths = new List<int>();
     public List<int> flagHeights = new List<int>();
     private List<Dictionary<int, IntPtr>> flagTextures = new List<Dictionary<int, nint>>();
 
-    public void AddFlagTexture(int flagIndex, int nationColor, bool isSelected, IntPtr texture)
+    public IntPtr GetFarmTexture(Graphics graphics, int farmIndex)
     {
-        flagTextures[flagIndex].Add(ColorRemap.GetTexturesKey(nationColor, isSelected), texture);
+        if (!farmTextures.ContainsKey(farmIndex))
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(farmBitmaps[farmIndex],
+                farmWidths[farmIndex], farmHeights[farmIndex]);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, farmWidths[farmIndex], farmHeights[farmIndex]);
+            farmTextures.Add(farmIndex, texture);
+        }
+        
+        return farmTextures[farmIndex];
     }
     
-    public IntPtr GetFlagTexture(int flagIndex, int nationColor, bool isSelected)
+    public IntPtr GetFlagTexture(Graphics graphics, int flagIndex, int nationColor, bool isSelected)
     {
-        return flagTextures[flagIndex][ColorRemap.GetTexturesKey(nationColor, isSelected)];
+        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        if (!flagTextures[flagIndex].ContainsKey(textureKey))
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(flagBitmaps[flagIndex],
+                flagWidths[flagIndex], flagHeights[flagIndex], ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, flagWidths[flagIndex], flagHeights[flagIndex]);
+            flagTextures[flagIndex].Add(textureKey, texture);
+        }
+        
+        return flagTextures[flagIndex][textureKey];
     }
 
     public GameSet GameSet { get; }

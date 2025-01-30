@@ -73,163 +73,21 @@ public class Sys
         GameSet.OpenSet(1);
         
         TerrainRes = new TerrainRes();
-        foreach (var terrainInfo in TerrainRes.terrain_info_array)
-        {
-            terrainInfo.texture = Graphics.CreateTextureFromBmp(terrainInfo.bitmap, terrainInfo.bitmapWidth, terrainInfo.bitmapHeight);
-        }
-
         HillRes = new HillRes();
-        foreach (var hillBlockInfo in HillRes.hill_block_info_array)
-        {
-            byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(hillBlockInfo.bitmap,
-                hillBlockInfo.bitmapWidth, hillBlockInfo.bitmapHeight);
-            hillBlockInfo.texture = Graphics.CreateTextureFromBmp(decompressedBitmap, hillBlockInfo.bitmapWidth, hillBlockInfo.bitmapHeight);
-        }
-
         PlantRes = new PlantRes(TerrainRes);
-        foreach (var plantBitmap in PlantRes.plant_bitmap_array)
-        {
-            byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(plantBitmap.bitmap,
-                plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
-            plantBitmap.texture = Graphics.CreateTextureFromBmp(decompressedBitmap, plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
-        }
-        
         RockRes = new RockRes();
         RawRes = new RawRes(GameSet);
+
         SpriteRes = new SpriteRes(GameSet);
         SpriteFrameRes = new SpriteFrameRes(GameSet);
         UnitRes = new UnitRes(GameSet);
-        foreach (SpriteInfo spriteInfo in SpriteRes.spriteInfos)
-        {
-            bool isUnit = false;
-            foreach (UnitInfo unitInfo in UnitRes.unit_info_array)
-            {
-                if (SpriteRes[unitInfo.sprite_id] == spriteInfo)
-                {
-                    isUnit = true;
-                    break;
-                }
-            }
-
-            byte[] spriteFrameBitmaps = spriteInfo.res_bitmap.ReadFull();
-            foreach (SpriteMove spriteMove in spriteInfo.move_array)
-            {
-                for (int i = 0; i < spriteMove.frame_count; i++)
-                {
-                    SpriteFrame spriteFrame = SpriteFrameRes[spriteMove.first_frame_recno + i];
-                    spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-                }
-            }
-
-            foreach (SpriteAttack spriteAttack in spriteInfo.attack_array)
-            {
-                for (int i = 0; i < spriteAttack.frame_count; i++)
-                {
-                    SpriteFrame spriteFrame = SpriteFrameRes[spriteAttack.first_frame_recno + i];
-                    spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-                }
-            }
-
-            foreach (SpriteStop spriteStop in spriteInfo.stop_array)
-            {
-                for (int i = 0; i < spriteStop.frame_count; i++)
-                {
-                    SpriteFrame spriteFrame = SpriteFrameRes[spriteStop.frame_recno + i];
-                    spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-                }
-            }
-
-            SpriteDie spriteDie = spriteInfo.die;
-            for (int i = 0; i < spriteDie.frame_count; i++)
-            {
-                SpriteFrame spriteFrame = SpriteFrameRes[spriteDie.first_frame_recno + i];
-                spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-            }
-
-            foreach (SpriteGuardStop spriteGuardStop in spriteInfo.guard_stop_array)
-            {
-                for (int i = 0; i < spriteGuardStop.frame_count; i++)
-                {
-                    SpriteFrame spriteFrame = SpriteFrameRes[spriteGuardStop.first_frame_recno + i];
-                    spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-                }
-            }
-
-            foreach (SpriteGuardMove spriteGuardMove in spriteInfo.guard_move_array)
-            {
-                for (int i = 0; i < spriteGuardMove.frame_count; i++)
-                {
-                    SpriteFrame spriteFrame = SpriteFrameRes[spriteGuardMove.first_frame_recno + i];
-                    spriteFrame.CreateTexture(Graphics, spriteFrameBitmaps, isUnit);
-                }
-            }
-        }
-
         MonsterRes = new MonsterRes(GameSet, UnitRes);
         GodRes = new GodRes(GameSet);
         RaceRes = new RaceRes(GameSet, UnitRes);
 
         FirmRes = new FirmRes(GameSet);
-        foreach (var firmBitmap in FirmRes.firm_bitmap_array)
-        {
-            for (int scheme = 0; scheme <= InternalConstants.MAX_COLOR_SCHEME; scheme++)
-            {
-                for (int j = 0; j <= 1; j++)
-                {
-                    bool isSelected = (j == 1);
-                    byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(firmBitmap.bitmap,
-                        firmBitmap.bitmapWidth, firmBitmap.bitmapHeight, ColorRemap.GetColorRemap(scheme, isSelected).ColorTable);
-                    IntPtr texture = Graphics.CreateTextureFromBmp(decompressedBitmap, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
-                    firmBitmap.AddTexture(scheme, isSelected, texture);
-                }
-            }
-        }
-
         FirmDieRes = new FirmDieRes(GameSet);
-
         TownRes = new TownRes(GameSet, RaceRes);
-        foreach (var townLayout in TownRes.town_layout_array)
-        {
-            townLayout.texture = Graphics.CreateTextureFromBmp(townLayout.groundBitmap, townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
-        }
-
-        foreach (var townBuild in TownRes.town_build_array)
-        {
-            for (int scheme = 0; scheme <= InternalConstants.MAX_COLOR_SCHEME; scheme++)
-            {
-                for (int j = 0; j <= 1; j++)
-                {
-                    bool isSelected = (j == 1);
-                    byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(townBuild.bitmap,
-                        townBuild.bitmapWidth, townBuild.bitmapHeight, ColorRemap.GetColorRemap(scheme, isSelected).ColorTable);
-                    IntPtr texture = Graphics.CreateTextureFromBmp(decompressedBitmap, townBuild.bitmapWidth, townBuild.bitmapHeight);
-                    townBuild.AddTexture(scheme, isSelected, texture);
-                }
-            }
-        }
-
-        for (int i = 0; i < TownRes.farmBitmaps.Count; i++)
-        {
-            byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(TownRes.farmBitmaps[i],
-                TownRes.farmWidths[i], TownRes.farmHeights[i]);
-            IntPtr texture = Graphics.CreateTextureFromBmp(decompressedBitmap, TownRes.farmWidths[i], TownRes.farmHeights[i]);
-            TownRes.farmTextures.Add(i, texture);
-        }
-
-        for (int i = 0; i < TownRes.flagBitmaps.Count; i++)
-        {
-            for (int scheme = 0; scheme <= InternalConstants.MAX_COLOR_SCHEME; scheme++)
-            {
-                for (int j = 0; j <= 1; j++)
-                {
-                    bool isSelected = (j == 1);
-                    byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(TownRes.flagBitmaps[i],
-                        TownRes.flagWidths[i], TownRes.flagHeights[i], ColorRemap.GetColorRemap(scheme, isSelected).ColorTable);
-                    IntPtr texture = Graphics.CreateTextureFromBmp(decompressedBitmap, TownRes.flagWidths[i], TownRes.flagHeights[i]);
-                    TownRes.AddFlagTexture(i, scheme, isSelected, texture);
-                }
-            }
-        }
 
         TechRes = new TechRes(GameSet);
         TalkRes = new TalkRes();

@@ -29,6 +29,7 @@ public static class Renderer
     private static PlantRes PlantRes => Sys.Instance.PlantRes;
     private static TownRes TownRes => Sys.Instance.TownRes;
     private static FirmRes FirmRes => Sys.Instance.FirmRes;
+    private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
 
     private static Info Info => Sys.Instance.Info;
     private static World World => Sys.Instance.World;
@@ -115,7 +116,7 @@ public static class Renderer
                     int drawX = ZoomMapX + (x - topLeftX) * ZoomTextureWidth;
                     int drawY = ZoomMapY + (y - topLeftY) * ZoomTextureHeight;
                     TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
-                    graphics.DrawBitmap(drawX, drawY, terrainInfo.texture, terrainInfo.bitmapWidth, terrainInfo.bitmapHeight);
+                    graphics.DrawBitmap(drawX, drawY, terrainInfo.GetTexture(graphics), terrainInfo.bitmapWidth, terrainInfo.bitmapHeight);
 
                     if (location.has_dirt())
                     {
@@ -194,7 +195,7 @@ public static class Renderer
         int hillX = drawX + hillBlockInfo.offset_x * 3 / 2;
         int hillY = drawY + hillBlockInfo.offset_y * 3 / 2;
 		
-        graphics.DrawBitmap(hillX, hillY, hillBlockInfo.texture, hillBlockInfo.bitmapWidth, hillBlockInfo.bitmapHeight);
+        graphics.DrawBitmap(hillX, hillY, hillBlockInfo.GetTexture(graphics), hillBlockInfo.bitmapWidth, hillBlockInfo.bitmapHeight);
     }
 
     private static void DrawPlants(Graphics graphics)
@@ -209,7 +210,7 @@ public static class Renderer
                     PlantBitmap plantBitmap = PlantRes.get_bitmap(location.plant_id());
                     int drawX = ZoomMapX + (xLoc - topLeftX) * ZoomTextureWidth + plantBitmap.offset_x * 3 / 2;
                     int drawY = ZoomMapY + (yLoc - topLeftY) * ZoomTextureHeight + plantBitmap.offset_y * 3 / 2;
-                    graphics.DrawBitmap(drawX, drawY, plantBitmap.texture, plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
+                    graphics.DrawBitmap(drawX, drawY, plantBitmap.GetTexture(graphics), plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
                 }
             }
         }
@@ -229,7 +230,7 @@ public static class Renderer
             int townY = ZoomMapY + (town.loc_y1 - topLeftY) * ZoomTextureHeight;
             int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * ZoomTextureWidth - townLayout.groundBitmapWidth * 3 / 2) / 2;
             int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * ZoomTextureHeight - townLayout.groundBitmapHeight * 3 / 2) / 2;
-            graphics.DrawBitmap(townLayoutX, townLayoutY, townLayout.texture, townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
+            graphics.DrawBitmap(townLayoutX, townLayoutY, townLayout.GetTexture(graphics), townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
         }
     }
 
@@ -256,7 +257,7 @@ public static class Renderer
                         TownBuild townBuild = TownRes.get_build(town.slot_object_id_array[i]);
                         int townBuildX = townX + townSlot.base_x * 3 / 2 - townBuild.bitmapWidth * 3 / 2 / 2;
                         int townBuildY = townY + townSlot.base_y * 3 / 2 - townBuild.bitmapHeight * 3 / 2;
-                        graphics.DrawBitmap(townBuildX, townBuildY, townBuild.GetTexture(town.nation_recno, false),
+                        graphics.DrawBitmap(townBuildX, townBuildY, townBuild.GetTexture(graphics, town.nation_recno, false),
                             townBuild.bitmapWidth, townBuild.bitmapHeight);
                         break;
                     
@@ -264,14 +265,14 @@ public static class Renderer
                         PlantBitmap plantBitmap = PlantRes.get_bitmap(town.slot_object_id_array[i]);
                         int townPlantX = townX + townSlot.base_x * 3 / 2 - plantBitmap.bitmapWidth * 3 / 2 / 2;
                         int townPlantY = townY + townSlot.base_y * 3 / 2 - plantBitmap.bitmapHeight * 3 / 2;
-                        graphics.DrawBitmap(townPlantX, townPlantY, plantBitmap.texture, plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
+                        graphics.DrawBitmap(townPlantX, townPlantY, plantBitmap.GetTexture(graphics), plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FARM:
                         int farmIndex = townSlot.build_code - 1;
                         int townFarmX = townX + townSlot.base_x * 3 / 2;
                         int townFarmY = townY + townSlot.base_y * 3 / 2;
-                        var farmTexture = TownRes.farmTextures[farmIndex];
+                        var farmTexture = TownRes.GetFarmTexture(graphics, farmIndex);
                         graphics.DrawBitmap(townFarmX, townFarmY, farmTexture, TownRes.farmWidths[farmIndex], TownRes.farmHeights[farmIndex]);
                         break;
                     
@@ -283,7 +284,7 @@ public static class Renderer
                         int flagIndex = (int)(((Sys.Instance.FrameNumber + town.town_recno) % 8) / 2);
                         int townFlagX = townX + townSlot.base_x * 3 / 2 + TownFlagShiftX * 3 / 2;
                         int townFlagY = townY + townSlot.base_y * 3 / 2 + TownFlagShiftY * 3 / 2;
-                        var flagTexture = TownRes.GetFlagTexture(flagIndex, ColorRemap.ColorSchemes[town.nation_recno], false);
+                        var flagTexture = TownRes.GetFlagTexture(graphics, flagIndex, town.nation_recno, false);
                         graphics.DrawBitmap(townFlagX, townFlagY, flagTexture, TownRes.flagWidths[flagIndex], TownRes.flagHeights[flagIndex]);
                         break;
                 }
@@ -314,7 +315,7 @@ public static class Renderer
                 FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
                 int firmBitmapX = firmX + firmBitmap.offset_x * 3 / 2;
                 int firmBitmapY = firmY + firmBitmap.offset_y * 3 / 2;
-                graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(0, false),
+                graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(graphics, 0, false),
                     firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
             }
 
@@ -377,7 +378,7 @@ public static class Renderer
 
         int firmBitmapX = firmX + firmBitmap.offset_x * 3 / 2;
         int firmBitmapY = firmY + firmBitmap.offset_y * 3 / 2;
-        graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(ColorRemap.ColorSchemes[firm.nation_recno], false),
+        graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(graphics, firm.nation_recno, false),
             firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
 
         if (firm.under_construction)
@@ -397,7 +398,7 @@ public static class Renderer
             FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapRecno);
             int firmBitmapX = firmX + firmBitmap.offset_x * 3 / 2;
             int firmBitmapY = firmY + firmBitmap.offset_y * 3 / 2;
-            graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(ColorRemap.ColorSchemes[firm.nation_recno], false),
+            graphics.DrawBitmap(firmBitmapX, firmBitmapY, firmBitmap.GetTexture(graphics, firm.nation_recno, false),
                 firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
         }
     }
@@ -416,14 +417,15 @@ public static class Renderer
             int unitX = ZoomMapX + unit.cur_x * 3 / 2 - topLeftX * ZoomTextureWidth + spriteFrame.offset_x;
             int unitY = ZoomMapY + unit.cur_y * 3 / 2 - topLeftY * ZoomTextureHeight + spriteFrame.offset_y;
 
+            SpriteInfo spriteInfo = SpriteRes[unit.sprite_id];
             if (needMirror)
             {
-                graphics.DrawBitmapFlip(unitX, unitY, spriteFrame.GetTexture(ColorRemap.ColorSchemes[unit.nation_recno], false),
+                graphics.DrawBitmapFlip(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, false),
                     spriteFrame.width, spriteFrame.height);
             }
             else
             {
-                graphics.DrawBitmap(unitX, unitY, spriteFrame.GetTexture(ColorRemap.ColorSchemes[unit.nation_recno], false),
+                graphics.DrawBitmap(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, false),
                     spriteFrame.width, spriteFrame.height);
             }
         }

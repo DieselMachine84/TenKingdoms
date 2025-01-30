@@ -54,7 +54,18 @@ public class PlantBitmap
     public byte[] bitmap;
     public int bitmapWidth;
     public int bitmapHeight;
-    public IntPtr texture;
+    private IntPtr texture;
+    
+    public IntPtr GetTexture(Graphics graphics)
+    {
+        if (texture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight);
+            texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
+        }
+
+        return texture;
+    }
 }
 
 public class PlantRec

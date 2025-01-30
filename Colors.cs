@@ -146,7 +146,7 @@ public class ColorRemap
         return colorRemap;
     }
     
-    public static int GetTexturesKey(int nationColor, bool isSelected)
+    public static int GetTextureKey(int nationColor, bool isSelected)
     {
         return nationColor + (isSelected ? GameConstants.MAX_NATION + 1 : 0);
     }

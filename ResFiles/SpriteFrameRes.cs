@@ -71,51 +71,25 @@ public class SpriteFrame
     public int width;
     public int height;
     public int bitmap_offset;
-    private bool textureCreated;
     private Dictionary<int, IntPtr> unitTextures = new Dictionary<int, nint>();
     private IntPtr nonUnitTexture;
 
-    public void AddTexture(int nationColor, bool isSelected, IntPtr texture)
+    public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationColor, bool isSelected)
     {
-        unitTextures.Add(ColorRemap.GetTexturesKey(nationColor, isSelected), texture);
-    }
-    
-    public IntPtr GetTexture(int nationColor, bool isSelected)
-    {
-        return unitTextures[ColorRemap.GetTexturesKey(nationColor, isSelected)];
-    }
-
-    public void CreateTexture(Graphics graphics, byte[] bitmaps, bool isUnit)
-    {
-        if (textureCreated)
-            return;
+        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        if (!unitTextures.ContainsKey(textureKey))
+        {
+            byte[] bitmaps = spriteInfo.res_bitmap.ReadFull();
+            int bitmapSize = BitConverter.ToInt16(bitmaps, bitmap_offset);
+            byte[] bitmap = bitmaps.Skip(bitmap_offset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, width, height,
+                ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, width, height);
+            unitTextures.Add(textureKey, texture);
+        }
         
-        int bitmapSize = BitConverter.ToInt16(bitmaps, bitmap_offset);
-        //int bitmapWidth = BitConverter.ToInt16(bitmaps, bitmap_offset + 4);
-        //int bitmapHeight = BitConverter.ToInt16(bitmaps, bitmap_offset + 6);
-        byte[] bitmap = bitmaps.Skip(bitmap_offset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
-
-        if (isUnit)
-        {
-            for (int scheme = 0; scheme <= InternalConstants.MAX_COLOR_SCHEME; scheme++)
-            {
-                for (int j = 0; j <= 1; j++)
-                {
-                    bool isSelected = (j == 1);
-                    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap,
-                        width, height, ColorRemap.GetColorRemap(scheme, isSelected).ColorTable);
-                    IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, width, height);
-                    AddTexture(scheme, isSelected, texture);
-                }
-            }
-        }
-        else
-        {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, width, height);
-            nonUnitTexture = graphics.CreateTextureFromBmp(decompressedBitmap, width, height);
-        }
-
-        textureCreated = true;
+        return unitTextures[textureKey];
     }
 }
 
