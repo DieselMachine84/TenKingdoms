@@ -187,6 +187,16 @@ public class Graphics
 
         return texture;
     }
+
+    public void SetClipRectangle(int x, int y, int width, int height)
+    {
+        SDL.SDL_Rect rect = new SDL.SDL_Rect();
+        rect.x = x;
+        rect.y = y;
+        rect.w = width;
+        rect.h = height;
+        SDL.SDL_RenderSetClipRect(renderer, ref rect);
+    }
     
     public void DrawMainMenu()
     {

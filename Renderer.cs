@@ -89,14 +89,12 @@ public static class Renderer
         graphics.DrawMainScreen();
         DrawMap(graphics);
         DrawMiniMap(graphics);
-        //graphics.DrawRect(0, 0, WindowWidth, ZoomMapY - 1, 0);
-        //graphics.DrawRect(ZoomMapX + ZoomMapWidth * ZoomTextureWidth, 0, 12, WindowHeight, 0);
-        //graphics.DrawRect(ZoomMapX + ZoomMapWidth * ZoomTextureWidth + 12 + MiniMapSize, 0, 12, WindowHeight, 0);
-        //graphics.DrawRect(MiniMapX, MiniMapY + MiniMapSize, MiniMapSize, WindowHeight - (MiniMapY + MiniMapSize), 0);
     }
 
     private static void DrawMap(Graphics graphics)
     {
+        graphics.SetClipRectangle(ZoomMapX, ZoomMapY, ZoomMapX + ZoomMapWidth * ZoomTextureWidth, ZoomMapY + ZoomMapHeight * ZoomTextureHeight);
+        
         for (int x = topLeftX; (x < topLeftX + ZoomMapWidth) && x < GameConstants.MapSize; x++)
         {
             for (int y = topLeftY; (y < topLeftY + ZoomMapHeight) && y < GameConstants.MapSize; y++)
@@ -425,7 +423,6 @@ public static class Renderer
 
     private static void DrawPointOnMiniMap(Graphics graphics, int xLoc, int yLoc, int color)
     {
-        //TODO border
         if (MiniMapSize == GameConstants.MapSize)
         {
             graphics.DrawPoint(MiniMapX + xLoc, MiniMapY + yLoc, color);
@@ -446,7 +443,6 @@ public static class Renderer
 
     private static void DrawRectOnMiniMap(Graphics graphics, int xLoc, int yLoc, int width, int height, int color)
     {
-        //TODO border
         if (MiniMapSize == GameConstants.MapSize)
         {
             graphics.DrawRect(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
@@ -467,7 +463,6 @@ public static class Renderer
 
     private static void DrawFrameOnMiniMap(Graphics graphics, int xLoc, int yLoc, int width, int height, int color)
     {
-        //TODO border
         if (MiniMapSize == GameConstants.MapSize)
         {
             graphics.DrawFrame(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
@@ -493,6 +488,7 @@ public static class Renderer
     {
         //TODO Redraw only modified pixels
         //TODO Better support scaling
+        graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
 
         for (int yLoc = 0; yLoc < GameConstants.MapSize; yLoc++)
         {
