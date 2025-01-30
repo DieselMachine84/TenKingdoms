@@ -224,6 +224,18 @@ public class Graphics
         dstRect.h = height;
         SDL.SDL_RenderFillRect(renderer, ref dstRect);
     }
+
+    public void DrawFrame(int x, int y, int width, int height, int paletteColor)
+    {
+        var color = colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
+        dstRect.x = x;
+        dstRect.y = y;
+        dstRect.w = width;
+        dstRect.h = height;
+        SDL.SDL_RenderDrawRect(renderer, ref dstRect);
+    }
     
     public void DrawBitmap(int x, int y, IntPtr texture, int width, int height)
     {
@@ -231,7 +243,7 @@ public class Graphics
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
-        dstRect.w = width * 3 / 2;
+        dstRect.w = width * 3 / 2; // TODO rewrite * 3 / 2
         dstRect.h = height * 3 / 2;
         SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
     }

@@ -272,7 +272,6 @@ public class Sys
             CreateObjects();
             MapGenerator mapGenerator = new MapGenerator();
             mapGenerator.Generate();
-            Renderer.needFullRedraw = true;
         }
     }
 
