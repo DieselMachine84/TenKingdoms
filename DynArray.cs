@@ -64,7 +64,10 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class
         List<int> keys = recNoIndexes.Keys.ToList();
         for (int i = 0; i < keys.Count; i++)
         {
-            yield return list[recNoIndexes[keys[i]]];
+            if (!IsDeleted(keys[i]))
+            {
+                yield return list[recNoIndexes[keys[i]]];
+            }
         }
     }
 
