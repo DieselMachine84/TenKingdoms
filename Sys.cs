@@ -228,6 +228,7 @@ public class Sys
                 }
                 else
                 {
+                    hasEvent = (SDL.SDL_PollEvent(out sdlEvent) == 1);
                     lastFrameTime = currentMilliseconds;
                     FrameNumber++;
                     Process();
