@@ -14,8 +14,8 @@ public class TownArray : DynArray<Town>
 	private Config Config => Sys.Instance.Config;
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
-	private World World => Sys.Instance.World;
 	private Power Power => Sys.Instance.Power;
+	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
@@ -114,24 +114,6 @@ public class TownArray : DynArray<Town>
 
 		if (dayFrameNumber == 0 && Info.TotalDays % 30 == 0)
 			think_new_independent_town();
-	}
-
-	public int independent_town_resistance()
-	{
-		switch (Config.independent_town_resistance)
-		{
-			case Config.OPTION_LOW:
-				return 40 + Misc.Random(20);
-
-			case Config.OPTION_MODERATE:
-				return 50 + Misc.Random(30);
-
-			case Config.OPTION_HIGH:
-				return 60 + Misc.Random(40);
-
-			default:
-				return 60 + Misc.Random(40);
-		}
 	}
 
 	public void think_new_independent_town()
@@ -246,6 +228,24 @@ public class TownArray : DynArray<Town>
 		newTown.auto_set_layout();
 	}
 
+	public int independent_town_resistance()
+	{
+		switch (Config.independent_town_resistance)
+		{
+			case Config.OPTION_LOW:
+				return 40 + Misc.Random(20);
+
+			case Config.OPTION_MODERATE:
+				return 50 + Misc.Random(30);
+
+			case Config.OPTION_HIGH:
+				return 60 + Misc.Random(40);
+
+			default:
+				return 60 + Misc.Random(40);
+		}
+	}
+	
 	public bool think_town_loc(int maxTries, out int xLoc, out int yLoc)
 	{
 		const int MIN_INTER_TOWN_DISTANCE = 16;
@@ -318,30 +318,6 @@ public class TownArray : DynArray<Town>
 		}
 
 		return false;
-	}
-
-	public int find_nearest_town(int xLoc, int yLoc, int nationRecno = 0)
-	{
-		int bestTownRecno = 0, minDistance = Int32.MaxValue;
-
-		foreach (Town town in this)
-		{
-			int curDistance = Misc.rects_distance(xLoc, yLoc, xLoc, yLoc,
-				town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
-
-			if (nationRecno != 0 && town.nation_recno != nationRecno)
-				continue;
-
-			//--- when the firm is outside the town, find the town nearest to the firm ---//
-
-			if (curDistance < minDistance)
-			{
-				minDistance = curDistance;
-				bestTownRecno = town.town_recno;
-			}
-		}
-
-		return bestTownRecno;
 	}
 
 	public bool settle(int unitRecno, int xLoc, int yLoc)

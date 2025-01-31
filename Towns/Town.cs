@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
@@ -11,120 +10,94 @@ public class Town
 	public const int MAX_MIGRATE_PER_DAY = 4; // don't migrate more than 4 units per day
 	public const int MIN_MIGRATE_ATTRACT_LEVEL = 30;
 	public const int REBEL_INTERVAL_MONTH = 3; // don't rebel twice in less than 3 months
-
 	// Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
 	public const int TOWN_TRAIN_BATCH_COUNT = 8;
 
+	
 	public int town_recno;
-	public int town_name_id;
-
 	public int nation_recno;
-	public int rebel_recno; // whether this town is controlled by a rebel
-	public int race_id;
-
 	public DateTime setup_date; // the setup date of this town
 
-	public bool ai_town;
-
-	// AI check firm and town locatin by links, disable checking by setting this parameter to 1
-	public bool ai_link_checked;
-
-	// each bit n is high representing this independent town will attack nation n.
-	public int independ_town_nation_relation;
-
-	public bool has_linked_own_camp; // whether the town has linked military camps of the same nation
-	public bool has_linked_enemy_camp; // whether the town has linked military camps of the same nation
-
-	public bool is_base_town; // whether this town is base town or not
-
+	
 	public int loc_x1, loc_y1, loc_x2, loc_y2;
-
-	public int loc_width()
-	{
-		return loc_x2 - loc_x1 + 1;
-	}
-
-	public int loc_height()
-	{
-		return loc_y2 - loc_y1 + 1;
-	}
-
-	public int center_x;
-	public int center_y;
+	public int center_x, center_y;
 	public int region_id;
-
+	public int town_name_id;
 	public int layout_id; // town layout id.
 	public int first_slot_id; // the first slot id. of the layout
-
 	public int[] slot_object_id_array = new int[TownLayout.MAX_TOWN_LAYOUT_SLOT]; // the race id. of each slot building
 
+	
 	public int population;
 	public int jobless_population;
 
-	// the MAX population the current town layout supports
-	public int[] max_race_pop_array = new int[GameConstants.MAX_RACE];
+	
+	public int race_id;
 	public int[] race_pop_array = new int[GameConstants.MAX_RACE]; // population of each race
 	// population growth, when it reaches 100, there will be one more person in the town
 	public int[] race_pop_growth_array = new int[GameConstants.MAX_RACE];
-
 	public int[] jobless_race_pop_array = new int[GameConstants.MAX_RACE];
+	// the MAX population the current town layout supports
+	public int[] max_race_pop_array = new int[GameConstants.MAX_RACE];
 
 	public double[] race_loyalty_array = new double[GameConstants.MAX_RACE];
 	public int[] race_target_loyalty_array = new int[GameConstants.MAX_RACE];
-	public int[] race_spy_count_array = new int[GameConstants.MAX_RACE]; // no. of spies in each race
-
 	public double[,] race_resistance_array = new double[GameConstants.MAX_RACE, GameConstants.MAX_NATION];
 	public int[,] race_target_resistance_array = new int[GameConstants.MAX_RACE, GameConstants.MAX_NATION];
 
-	public int town_defender_count; // no. of units currently defending this town
-	public DateTime last_being_attacked_date;
+	public int[] race_spy_count_array = new int[GameConstants.MAX_RACE]; // no. of spies in each race
 
-	// no. of received hit by attackers, when this > RECEIVED_HIT_PER_KILL, a town people will be killed
-	public double received_hit_count;
-
-	//public int[] train_queue_skill_array = new int[MAX_TRAIN_QUEUE]; // it stores the skill id.
-	//public int[] train_queue_race_array = new int[MAX_TRAIN_QUEUE]; // it stores the race id.
-	public List<int> train_queue_skill = new List<int>(); // it stores the skill id.
-	public List<int> train_queue_race =new List<int>(); // it stores the race id.
-	public int train_unit_recno; // race id. of the unit the town is currently training, 0-if currently not training any
-	public int train_unit_action_id; // id. of the action to be assigned to this unit when it is finished training.
-	public long startTrainFrameNumber;
-	public int defend_target_recno; // used in defend mode, store recno of latest target atttacking this town
-
-	//-------- other vars ----------//
 
 	public int accumulated_collect_tax_penalty;
 	public int accumulated_reward_penalty;
 	public int accumulated_recruit_penalty;
 	public int accumulated_enemy_grant_penalty;
-
-	public DateTime last_rebel_date;
-	public int independent_unit_join_nation_min_rating;
-
-	public int quality_of_life;
-
-	//------- auto policy -------------//
-
 	public int auto_collect_tax_loyalty; // auto collect tax if the loyalty reaches this level
 	public int auto_grant_loyalty; // auto grant if the loyalty drop below this level
 
-	//----------- AI vars ------------//
-
-	public int town_combat_level; // combat level of the people in this town
-
-	// whether this town has the supply of these products
-	public int[] has_product_supply = new int[GameConstants.MAX_PRODUCT];
-
-	public bool no_neighbor_space; // 1 if there is no space to build firms/towns next to this town
-
-	//------ inter-relationship -------//
-
+	
 	public List<int> linked_firm_array = new List<int>();
 	public List<int> linked_town_array = new List<int>();
-
 	public List<int> linked_firm_enable_array = new List<int>();
 	public List<int> linked_town_enable_array = new List<int>();
+	public bool has_linked_own_camp; // whether the town has linked military camps of the same nation
+	public bool has_linked_enemy_camp; // whether the town has linked military camps of the same nation
 
+	
+	// each bit n is high representing this independent town will attack nation n.
+	public int independ_town_nation_relation;
+	public int independent_unit_join_nation_min_rating;
+	public int rebel_recno; // whether this town is controlled by a rebel
+	public DateTime last_rebel_date;
+
+
+	public int town_defender_count; // no. of units currently defending this town
+	public int defend_target_recno; // used in defend mode, store recno of latest target attacking this town
+	// no. of received hit by attackers, when this > RECEIVED_HIT_PER_KILL, a town people will be killed
+	public double received_hit_count;
+	public DateTime last_being_attacked_date;
+
+
+	public List<int> train_queue_skill = new List<int>(); // it stores the skill id.
+	public List<int> train_queue_race =new List<int>(); // it stores the race id.
+	public int train_unit_recno; // race id. of the unit the town is currently training, 0-if currently not training any
+	public int train_unit_action_id; // id. of the action to be assigned to this unit when it is finished training.
+	public long startTrainFrameNumber;
+
+
+	public int quality_of_life;
+	public int[] has_product_supply = new int[GameConstants.MAX_PRODUCT];
+	public bool no_neighbor_space; // 1 if there is no space to build firms/towns next to this town
+
+
+	//----------- AI vars ------------//
+	public bool ai_town;
+	// AI check firm and town location by links, disable checking by setting this parameter to 1
+	public bool ai_link_checked;
+	public bool is_base_town; // whether this town is base town or not
+	public int town_combat_level; // combat level of the people in this town
+
+	
 	private PlantRes PlantRes => Sys.Instance.PlantRes;
 	private TownRes TownRes => Sys.Instance.TownRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
@@ -135,1047 +108,25 @@ public class Town
 	private TechRes TechRes => Sys.Instance.TechRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private SECtrl SECtrl => Sys.Instance.SECtrl;
+
 	private Config Config => Sys.Instance.Config;
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
+
+	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private NationArray NationArray => Sys.Instance.NationArray;
+	private FirmArray FirmArray => Sys.Instance.FirmArray;
+	private TownArray TownArray => Sys.Instance.TownArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 	private RebelArray RebelArray => Sys.Instance.RebelArray;
 	private SpyArray SpyArray => Sys.Instance.SpyArray;
-	private FirmArray FirmArray => Sys.Instance.FirmArray;
-	private TownArray TownArray => Sys.Instance.TownArray;
-	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private SiteArray SiteArray => Sys.Instance.SiteArray;
 	private NewsArray NewsArray => Sys.Instance.NewsArray;
 
+	
 	public Town()
 	{
-	}
-
-	public string town_name()
-	{
-		return TownRes.get_name(town_name_id);
-	}
-
-	public int recruitable_race_pop(int raceId, bool recruitSpy)
-	{
-		int recruitableCount = jobless_race_pop_array[raceId - 1];
-
-		if (train_unit_recno != 0 && UnitArray[train_unit_recno].race_id == raceId)
-			recruitableCount--;
-
-		if (!recruitSpy)
-		{
-			recruitableCount -= race_spy_count_array[raceId - 1];
-
-			if (recruitableCount == -1) // it may have been reduced twice if the unit being trained is a spy 
-				recruitableCount = 0;
-		}
-
-		return recruitableCount;
-	}
-
-	public int worker_population()
-	{
-		return population - jobless_population;
-	}
-
-	public int race_harmony(int raceId)
-	{
-		return population != 0 ? 100 * race_pop_array[raceId - 1] / population : 0;
-	}
-
-	// the race that has the majority of the population
-	public int majority_race()
-	{
-		int mostRaceCount = 0, mostRaceId = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] > mostRaceCount)
-			{
-				mostRaceCount = race_pop_array[i];
-				mostRaceId = i + 1;
-			}
-		}
-
-		return mostRaceId;
-	}
-
-	public int average_loyalty()
-	{
-		int totalLoyalty = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			totalLoyalty += Convert.ToInt32(race_loyalty_array[i]) * race_pop_array[i];
-
-		return totalLoyalty / population;
-	}
-
-	public int average_target_loyalty()
-	{
-		int totalLoyalty = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			totalLoyalty += Convert.ToInt32(race_target_loyalty_array[i]) * race_pop_array[i];
-
-		return totalLoyalty / population;
-	}
-
-	public int average_resistance(int nationRecno)
-	{
-		double totalResistance = 0.0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			int thisPop = race_pop_array[i];
-			if (thisPop > 0)
-				totalResistance += race_resistance_array[i, nationRecno - 1] * thisPop;
-		}
-
-		return Convert.ToInt32(totalResistance) / population;
-	}
-
-	public int average_target_resistance(int nationRecno)
-	{
-		int totalResistance = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			int thisPop = race_pop_array[i];
-
-			if (thisPop > 0)
-			{
-				int t = race_target_resistance_array[i, nationRecno - 1];
-
-				if (t >= 0) // -1 means no target
-					totalResistance += t * thisPop;
-				else
-					totalResistance += Convert.ToInt32(race_resistance_array[i, nationRecno - 1]) * thisPop;
-			}
-		}
-
-		return totalResistance / population;
-	}
-
-	public void update_quality_of_life()
-	{
-		//--- calculate the estimated total purchase from this town ----//
-
-		double townDemand = jobless_population * GameConstants.PEASANT_GOODS_MONTH_DEMAND
-		                    + worker_population() * GameConstants.WORKER_GOODS_MONTH_DEMAND;
-
-		double totalPurchase = 0.0;
-
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
-				continue;
-
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			if (firm.firm_id != Firm.FIRM_MARKET)
-				continue;
-
-			FirmMarket firmMarket = (FirmMarket)firm;
-
-			//-------------------------------------//
-
-			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
-			{
-				MarketGoods marketGoods = firmMarket.market_goods_array[j];
-				if (marketGoods.product_raw_id == 0 || marketGoods.month_demand == 0)
-					continue;
-
-				double monthSaleQty = marketGoods.sale_qty_30days();
-
-				if (monthSaleQty > marketGoods.month_demand)
-				{
-					totalPurchase += townDemand;
-				}
-				else if (marketGoods.month_demand > townDemand)
-				{
-					totalPurchase += monthSaleQty * townDemand / marketGoods.month_demand;
-				}
-				else
-					totalPurchase += monthSaleQty;
-			}
-		}
-
-		//------ return the quality of life ------//
-
-		quality_of_life = Convert.ToInt32(100 * totalPurchase / (townDemand * GameConstants.MAX_PRODUCT));
-	}
-
-	public int closest_own_camp()
-	{
-		int minDistance = Int32.MaxValue, closestFirmRecno = 0;
-
-		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != nation_recno)
-				continue;
-
-			int curDistance = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
-
-			if (curDistance < minDistance)
-			{
-				minDistance = curDistance;
-				closestFirmRecno = firm.firm_recno;
-			}
-		}
-
-		return closestFirmRecno;
-	}
-
-	private void set_world_matrix()
-	{
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
-		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
-		{
-			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
-			{
-				Location locPtr = World.get_loc(xLoc, yLoc);
-
-				if (locPtr.cargo_recno == 0) // skip the location where the settle unit is standing
-					locPtr.set_town(town_recno);
-			}
-		}
-
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
-		establish_contact_with_player();
-
-		//---- set this town's influence on the map ----//
-
-		if (nation_recno != 0)
-			World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
-
-		//------------ reveal new land ----------//
-
-		if (nation_recno == NationArray.player_recno ||
-		    (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
-		{
-			World.unveil(loc_x1, loc_y1, loc_x2, loc_y2);
-			World.visit(loc_x1, loc_y1, loc_x2, loc_y2, GameConstants.EXPLORE_RANGE - 1);
-		}
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
-	}
-
-	private void restore_world_matrix()
-	{
-		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
-		{
-			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
-			{
-				World.get_loc(xLoc, yLoc).remove_town();
-			}
-		}
-
-		//---- restore this town's influence on the map ----//
-
-		if (nation_recno != 0)
-			World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, town_recno, 0);
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;
-	}
-
-	private void establish_contact_with_player()
-	{
-		if (nation_recno == 0)
-			return;
-
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
-		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
-		{
-			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
-			{
-				Location location = World.get_loc(xLoc, yLoc);
-
-				if (location.explored() && NationArray.player_recno != 0)
-				{
-					NationRelation relation = NationArray.player.get_relation(nation_recno);
-
-					//if( !remote.is_enable() )
-					//{
-					relation.has_contact = true;
-					//}
-					//else
-					//{
-					//if( !relation->contact_msg_flag && !relation->has_contact )
-					//{
-					// packet structure : <player nation> <explored nation>
-					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-					//*shortPtr = nation_array.player_recno;
-					//shortPtr[1] = nation_recno;
-					//relation->contact_msg_flag = 1;
-					//}
-					//}
-				}
-			}
-		}
-	}
-
-	private void process_food()
-	{
-		//--------- Peasants produce food ---------//
-
-		NationArray[nation_recno]
-			.add_food(Convert.ToDouble(jobless_population * GameConstants.PEASANT_FOOD_YEAR_PRODUCTION) / 365.0);
-
-		//---------- People consume food ----------//
-
-		NationArray[nation_recno]
-			.consume_food(Convert.ToDouble(population * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
-	}
-
-	private void process_auto()
-	{
-		if (!has_linked_own_camp) // can only collect or grant when there is a linked camp of its own.
-			return;
-
-		Nation nation = NationArray[nation_recno];
-
-		//----- auto collect tax -----//
-
-		if (auto_collect_tax_loyalty > 0)
-		{
-			if (accumulated_collect_tax_penalty == 0 && average_loyalty() >= auto_collect_tax_loyalty)
-			{
-				collect_tax(InternalConstants.COMMAND_AI);
-			}
-		}
-
-		//---------- auto grant -----------//
-
-		if (auto_grant_loyalty > 0)
-		{
-			if (accumulated_reward_penalty == 0 && average_loyalty() < auto_grant_loyalty && nation.cash > 0)
-			{
-				reward(InternalConstants.COMMAND_AI);
-			}
-		}
-	}
-
-	private void process_train()
-	{
-		Unit unit = UnitArray[train_unit_recno];
-		int raceId = unit.race_id;
-
-		//---- if the unit being trained was killed -----//
-
-		bool cancelFlag = jobless_race_pop_array[raceId - 1] == 0;
-
-		//-----------------------------------------------------------------//
-		//
-		// If after start training the unit (non-spy unit), a unit has been
-		// mobilized, resulting that the spy count >= jobless_race,
-		// we must cancel the training, otherwise when training finishes,
-		// and dec_pop is called, spy count will > jobless count and cause error.
-		//
-		//-----------------------------------------------------------------//
-
-		if (race_spy_count_array[raceId - 1] == jobless_race_pop_array[raceId - 1])
-			cancelFlag = true;
-
-		if (cancelFlag)
-		{
-			UnitArray.disappear_in_town(train_unit_recno, town_recno);
-			train_unit_recno = 0;
-			return;
-		}
-
-		//------------- process training ---------------//
-
-		long totalTrainDays;
-
-		if (Config.fast_build && nation_recno == NationArray.player_recno)
-			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS / 2;
-		else
-			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS;
-
-		if ((Sys.Instance.FrameNumber - startTrainFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalTrainDays)
-		{
-			finish_train(unit);
-		}
-	}
-
-	private void finish_train(Unit unit)
-	{
-		SpriteInfo spriteInfo = unit.sprite_info;
-		int xLoc = loc_x1; // xLoc & yLoc are used for returning results
-		int yLoc = loc_y1;
-
-		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2,
-			    spriteInfo.loc_width, spriteInfo.loc_height))
-			return;
-
-		unit.init_sprite(xLoc, yLoc);
-
-		if (unit.is_own())
-			SERes.far_sound(xLoc, yLoc, 1, 'S', unit.sprite_id, "RDY");
-
-		unit.unit_mode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
-		train_unit_recno = 0;
-
-		int townRecno = town_recno; // save the recno as it can be deleted in dec_pop()
-
-		dec_pop(unit.race_id, false); // decrease the population now as the recruit() does do so
-
-		//---- if this trained unit is tied to an AI action ----//
-
-		if (train_unit_action_id != 0)
-		{
-			NationArray[nation_recno].process_action_id(train_unit_action_id);
-			train_unit_action_id = 0;
-		}
-
-		//----- refresh if this town is currently selected ------//
-
-		//TODO drawing
-		//if (townRecno == Global.TownArray.selected_recno)
-		//{
-		//if (town_menu_mode == TOWN_MENU_MAIN)
-		//{
-		//info.disp();
-		//}
-		//else
-		//{
-		//disable_refresh = 1;
-		//info.disp();
-		//disable_refresh = 0;
-		//}
-		//}
-	}
-
-	private void population_grow()
-	{
-		if (town_defender_count > 0)
-			return;
-
-		if (population >= GameConstants.MAX_TOWN_GROWTH_POPULATION || population >= GameConstants.MAX_TOWN_POPULATION)
-			return;
-
-		//-------- population growth by birth ---------//
-
-		bool autoSetFlag = false;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			//-- the population growth in an independent town is slower than in a nation town ---//
-
-			double loyaltyMultiplier = race_loyalty_array[i] * 4.0 / 50.0 - 3.0;
-			if (loyaltyMultiplier < 0.0)
-				loyaltyMultiplier = 0.0;
-			if (nation_recno != 0)
-				race_pop_growth_array[i] += (int)(Convert.ToDouble(race_pop_array[i]) * loyaltyMultiplier);
-			else
-				race_pop_growth_array[i] += race_pop_array[i];
-
-			while (race_pop_growth_array[i] > 100)
-			{
-				race_pop_growth_array[i] -= 100;
-
-				race_pop_array[i]++;
-				jobless_race_pop_array[i]++;
-
-				population++;
-				jobless_population++;
-
-				//-- if the race's population grows too high, change the town layout --//
-
-				if (race_pop_array[i] > max_race_pop_array[i])
-					autoSetFlag = true;
-
-				if (population >= GameConstants.MAX_TOWN_POPULATION)
-					break;
-			}
-
-			if (population >= GameConstants.MAX_TOWN_POPULATION)
-				break;
-		}
-
-		if (autoSetFlag)
-			auto_set_layout();
-	}
-
-	public void add_queue(int skillId, int raceId, int amount = 1)
-	{
-		if (amount < 0)
-			return;
-
-		int queueSpace = MAX_TRAIN_QUEUE - train_queue_skill.Count - (train_unit_recno > 0 ? 1 : 0);
-		int enqueueAmount = Math.Min(queueSpace, amount);
-
-		for (int i = 0; i < enqueueAmount; ++i)
-		{
-			train_queue_skill.Add(skillId);
-			train_queue_race.Add(raceId);
-		}
-
-		if (train_unit_recno == 0)
-			process_queue();
-	}
-
-	public void remove_queue(int skillId, int amount = 1)
-	{
-		if (amount <= 0)
-			return;
-
-		for (int i = train_queue_skill.Count - 1; i >= 0; i--)
-		{
-			if (train_queue_skill[i] == skillId)
-			{
-				train_queue_skill.RemoveAt(i);
-				train_queue_race.RemoveAt(i);
-				amount--;
-			}
-		}
-
-		// If there were less trained of skillId in the queue than were requested to be removed then
-		// also cancel currently trained unit
-		if (amount > 0 && train_unit_recno != 0)
-		{
-			Unit unit = UnitArray[train_unit_recno];
-			if (unit.skill.skill_id == skillId)
-				cancel_train_unit();
-		}
-	}
-
-	private void process_queue()
-	{
-		if (train_queue_skill.Count == 0)
-			return;
-
-		if (jobless_population == 0)
-			return;
-
-		int queueCount = train_queue_skill.Count;
-		int i = 0;
-		for (i = 0; i < queueCount; i++)
-		{
-			if (can_train(train_queue_race[i]))
-			{
-				int skillId = train_queue_skill[i];
-				int raceId = train_queue_race[i];
-				train_queue_skill.RemoveAt(i);
-				train_queue_race.RemoveAt(i);
-				i--;
-				recruit(skillId, raceId, InternalConstants.COMMAND_AUTO);
-				break;
-			}
-		}
-
-		//TODO drawing
-		//if (town_menu_mode == TOWN_MENU_MAIN)
-		//info.disp();
-	}
-
-	private void think_migrate()
-	{
-		if (jobless_population == 0)
-			return;
-
-		int raceId, migratedCount, townDistance;
-		int saveTownRecno = town_recno;
-		int saveTownNationRecno = nation_recno;
-
-		foreach (Town town in TownArray)
-		{
-			if (town.nation_recno == 0)
-				continue;
-
-			if (town.town_recno == town_recno)
-				continue;
-
-			if (town.population >= GameConstants.MAX_TOWN_POPULATION)
-				continue;
-
-			townDistance = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-				town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
-
-			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
-				continue;
-
-			//---- scan all jobless population, see if any of them want to migrate ----//
-
-			raceId = ConfigAdv.GetRandomRace();
-
-			for (int j = 0; j < GameConstants.MAX_RACE; j++)
-			{
-				if (++raceId > GameConstants.MAX_RACE)
-					raceId = 1;
-
-				// only if there are peasants who are jobless and are not spies
-				if (recruitable_race_pop(raceId, false) == 0)
-					continue;
-
-				//--- migrate a number of people of the same race at the same time ---//
-
-				migratedCount = 0;
-
-				while (think_migrate_one(town, raceId, townDistance))
-				{
-					migratedCount++;
-
-					// don't migrate more than one unit at a time for migrating to non-linked towns
-					if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
-						break;
-
-					// allow a random and low max number to migrate when this happens
-					if (migratedCount >= MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
-						break;
-				}
-
-				//------------- add news --------------//
-
-				if (migratedCount > 0)
-				{
-					if (saveTownNationRecno == NationArray.player_recno ||
-					    town.nation_recno == NationArray.player_recno)
-					{
-						NewsArray.migrate(saveTownRecno, town.town_recno, raceId, migratedCount);
-					}
-
-					return;
-				}
-			}
-		}
-	}
-
-	private bool think_migrate_one(Town targetTown, int raceId, int townDistance)
-	{
-		//-- only if there are peasants who are jobless and are not spies --//
-
-		if (recruitable_race_pop(raceId, false) == 0) //0-don't recruit spies
-			return false;
-
-		//---- if the target town's population has already reached its MAX ----//
-
-		if (targetTown.population >= GameConstants.MAX_TOWN_POPULATION)
-			return false;
-
-		//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
-
-		if (targetTown.race_pop_array[raceId - 1] < race_pop_array[raceId - 1] / 2)
-			return false;
-
-		//-- do not migrate if the target town might not be a place this peasant will stay --//
-
-		if (targetTown.race_loyalty_array[raceId - 1] < 40)
-			return false;
-
-		//--- calculate the attractiveness rating of the current town ---//
-
-		int curAttractLevel = race_harmony(raceId);
-
-		//------- loyalty/resistance affecting the attractivness ------//
-
-		if (nation_recno != 0)
-		{
-			// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-			curAttractLevel += Convert.ToInt32(NationArray[nation_recno].reputation +
-				race_loyalty_array[raceId - 1] - 40.0);
-		}
-		else
-		{
-			if (targetTown.nation_recno != 0)
-				curAttractLevel += Convert.ToInt32(race_resistance_array[raceId - 1, targetTown.nation_recno - 1]);
-		}
-
-		//--- calculate the attractiveness rating of the target town ---//
-
-		int targetAttractLevel = targetTown.race_harmony(raceId);
-
-		if (targetTown.nation_recno != 0)
-			targetAttractLevel += Convert.ToInt32(NationArray[targetTown.nation_recno].reputation);
-
-		if (targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL)
-			return false;
-
-		//--------- compare the attractiveness ratings ---------//
-
-		if (targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL / 2)
-		{
-			//---------- migrate now ----------//
-
-			int newLoyalty = Math.Max(targetAttractLevel / 2, 40);
-
-			migrate(raceId, targetTown.town_recno, newLoyalty);
-			return true;
-		}
-
-		return false;
-	}
-
-	private void migrate(int raceId, int destTownRecno, int newLoyalty)
-	{
-		Town destTown = TownArray[destTownRecno];
-
-		if (destTown.population >= GameConstants.MAX_TOWN_POPULATION)
-			return;
-
-		//------- decrease the population of this town ------//
-
-		dec_pop(raceId, false);
-
-		//--------- increase the population of the target town ------//
-
-		destTown.inc_pop(raceId, false, newLoyalty);
-	}
-
-	private bool unjob_town_people(int raceId, bool unjobSpy, bool unjobOverseer, bool killOverseer = false)
-	{
-		//---- if no jobless people, workers will then get killed -----//
-
-		int racePop = jobless_race_pop_array[raceId - 1];
-
-		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			//------- scan for workers -----------//
-
-			for (int j = firm.workers.Count - 1; j >= 0; j--)
-			{
-				Worker worker = firm.workers[j];
-				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
-					continue;
-
-				//--- if the worker lives in this town ----//
-
-				if (worker.race_id == raceId && worker.town_recno == town_recno)
-				{
-					if (firm.resign_worker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
-						return false;
-
-					return jobless_race_pop_array[raceId - 1] == racePop + 1;
-				}
-			}
-		}
-
-		//----- if no worker killed, try to kill overseers ------//
-
-		if (unjobOverseer)
-		{
-			for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-			{
-				Firm firm = FirmArray[linked_firm_array[i]];
-
-				//------- scan for overseer -----------//
-
-				if (firm.overseer_recno != 0)
-				{
-					//--- if the overseer lives in this town ----//
-
-					Unit overseerUnit = UnitArray[firm.overseer_recno];
-
-					if (overseerUnit.race_id == raceId && firm.overseer_town_recno == town_recno)
-					{
-						if (killOverseer)
-						{
-							firm.kill_overseer();
-						}
-						else
-						{
-							int overseerUnitRecno = firm.overseer_recno;
-							Unit unit = UnitArray[overseerUnitRecno];
-							firm.assign_overseer(0);
-							if (!UnitArray.IsDeleted(overseerUnitRecno) && unit.is_visible())
-								UnitArray.disappear_in_town(overseerUnitRecno, town_recno);
-						}
-
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
-	private int think_layout_id()
-	{
-		int needBuildCount = 0; // basic buildings needed
-		int extraBuildCount = 0; // extra buildings needed beside the basic one
-
-		//---- count the needed buildings of each race ----//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] == 0)
-				continue;
-
-			needBuildCount++; // essential buildings needed
-
-			// extra buildings, which are not necessary, but will look better if the layout plan fits with this number
-			const int popPerHouse = TownRes.POPULATION_PER_HOUSE;
-			if (race_pop_array[i] > popPerHouse)
-				extraBuildCount += (race_pop_array[i] - popPerHouse - 1) / popPerHouse + 1;
-		}
-
-		//---------- scan the town layout ---------//
-		int layoutId;
-		// scan from the most densed layout to the least densed layout
-		for (layoutId = TownRes.town_layout_array.Length; layoutId > 0; layoutId--)
-		{
-			TownLayout townLayout = TownRes.get_layout(layoutId);
-
-			//--- if this plan has less than the essential need ---//
-
-			int countDiff = townLayout.build_count - (needBuildCount + extraBuildCount);
-
-			if (countDiff == 0) // the match is perfect, return now
-				break;
-
-			// since we scan from the most densed town layout to the least densed one, if cannot find anyone matched now,
-			// there won't be any in the lower positions of the array
-			if (countDiff < 0)
-			{
-				layoutId = TownRes.town_layout_array.Length;
-				break;
-			}
-		}
-
-		//--- if there are more than one layout with the same number of building, pick one randomly ---//
-
-		int layoutBuildCount = TownRes.get_layout(layoutId).build_count;
-		int layoutId2;
-
-		for (layoutId2 = layoutId - 1; layoutId2 > 0; layoutId2--)
-		{
-			TownLayout townLayout = TownRes.get_layout(layoutId2);
-
-			if (layoutBuildCount != townLayout.build_count)
-				break;
-		}
-
-		layoutId2++; // the lowest layout id. that has the same no. of buildings
-
-		//------- return the result layout id -------//
-
-		return layoutId2 + Misc.Random(layoutId - layoutId2 + 1);
-	}
-
-	private void think_rebel()
-	{
-		if (nation_recno == 0)
-			return;
-
-		if (Info.game_date < last_rebel_date.AddDays(REBEL_INTERVAL_MONTH * 30.0))
-			return;
-
-		// don't rebel within ten days after being attacked by a hostile unit
-		if (town_defender_count > 0 || Info.game_date < last_being_attacked_date.AddDays(10.0))
-			return;
-
-		//--- rebel if 2/3 of the population becomes discontented ---//
-
-		int discontentedCount = 0, rebelLeaderRaceId = 0, largestRebelRace = 0, trainRaceId = 0;
-		int[] restrictRebelCount = new int[GameConstants.MAX_RACE];
-
-		if (train_unit_recno != 0)
-			trainRaceId = UnitArray[train_unit_recno].race_id;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			restrictRebelCount[i] = race_spy_count_array[i]; // spies do not rebel together with the rebellion
-
-			if (race_pop_array[i] > 0 && race_loyalty_array[i] <= GameConstants.REBEL_LOYALTY)
-			{
-				discontentedCount += race_pop_array[i];
-
-				// count firm spies that reside in this town
-				for (int j = 0; j < linked_firm_array.Count; j++)
-				{
-					Firm firm = FirmArray[linked_firm_array[j]];
-					foreach (Worker worker in firm.workers)
-					{
-						if (worker.spy_recno != 0 && worker.town_recno == town_recno)
-							restrictRebelCount[i]++;
-					}
-				}
-
-				if (trainRaceId == i + 1)
-					restrictRebelCount[i]++; // unit under training cannot rebel
-
-				if (race_pop_array[i] <= restrictRebelCount[i])
-					continue; // no one can lead from this group
-
-				if (race_pop_array[i] > largestRebelRace)
-				{
-					largestRebelRace = race_pop_array[i];
-					rebelLeaderRaceId = i + 1;
-				}
-			}
-		}
-
-		if (rebelLeaderRaceId == 0) // no discontention or no one can lead
-			return;
-
-		if (population == 1) // if population is 1 only, handle otherwise
-		{
-		}
-		else
-		{
-			if (discontentedCount < population * 2 / 3)
-				return;
-		}
-
-		//----- if there was just one unit in the town and he rebels ----//
-
-		bool oneRebelOnly = false;
-
-		if (population == 1)
-		{
-			NewsArray.town_rebel(town_recno, 1);
-			oneRebelOnly = true;
-		}
-
-		//----- create the rebel leader and the rebel group ------//
-
-		int rebelCount = 1;
-		int leaderUnitRecno = create_rebel_unit(rebelLeaderRaceId, true); // 1-the unit is the rebel leader
-
-		if (leaderUnitRecno == 0)
-			return;
-
-		int curGroupId = UnitArray.cur_group_id++;
-		Unit unit = UnitArray[leaderUnitRecno];
-		unit.unit_group_id = curGroupId;
-
-		if (oneRebelOnly) // if there was just one unit in the town and he rebels
-		{
-			RebelArray.AddRebel(leaderUnitRecno, nation_recno);
-			return;
-		}
-
-		// create a rebel group
-		Rebel rebel = RebelArray.AddRebel(leaderUnitRecno, nation_recno, Rebel.REBEL_ATTACK_TOWN, town_recno);
-
-		//------- create other rebel units in the rebel group -----//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] <= restrictRebelCount[i] || race_loyalty_array[i] > GameConstants.REBEL_LOYALTY)
-				continue;
-
-			if (population == 1) // if only one peasant left, break, so not all peasants will rebel 
-				break;
-
-			// 30% - 60% of the unit will rebel.
-			int raceRebelCount = (race_pop_array[i] - restrictRebelCount[i]) * (30 + Misc.Random(30)) / 100;
-
-			int j = 0;
-			for (; j < raceRebelCount; j++) // no. of rebel units of this race
-			{
-				int unitRecno = create_rebel_unit(i + 1, false);
-
-				if (unitRecno == 0) // 0-the unit is not the rebel leader
-					break;
-
-				Unit rebelUnit = UnitArray[unitRecno];
-				rebelUnit.unit_group_id = curGroupId;
-				rebelUnit.leader_unit_recno = leaderUnitRecno;
-
-				rebel.join(unitRecno);
-
-				rebelCount++;
-			}
-
-			//--- when disloyal units left, the average loyalty increases ---//
-
-			change_loyalty(i + 1, 50.0 * j / race_pop_array[i]);
-		}
-
-		//---------- add news -------------//
-
-		last_rebel_date = Info.game_date;
-
-		// add the news first as after callijng ai_spy_town_rebel, the town may disappear as all peasants are gone
-		NewsArray.town_rebel(town_recno, rebelCount);
-
-		//--- tell the AI spies in the town that a rebellion is happening ---//
-
-		SpyArray.ai_spy_town_rebel(town_recno);
-	}
-
-	private bool think_surrender()
-	{
-		if (nation_recno == 0) // if it's an independent town
-			return false;
-
-		//--- only surrender when there is no own camps, but has enemy camps linked to this town ---//
-
-		if (has_linked_own_camp || !has_linked_enemy_camp)
-			return false;
-
-		//--- surrender if 2/3 of the population think about surrender ---//
-
-		int discontentedCount = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] <= race_spy_count_array[i]) // spies do not rebel together with the rebellion
-				continue;
-
-			if (race_loyalty_array[i] <= GameConstants.SURRENDER_LOYALTY)
-				discontentedCount += race_pop_array[i];
-		}
-
-		if (discontentedCount < population * 2 / 3)
-			return false;
-
-		//-------- think about surrender to which nation ------//
-
-		int curRating, bestRating = average_loyalty(), bestNationRecno = 0;
-
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			//---- if this is an enemy camp ----//
-
-			if (firm.firm_id == Firm.FIRM_CAMP &&
-			    firm.nation_recno != nation_recno &&
-			    firm.nation_recno != 0 &&
-			    firm.overseer_recno != 0)
-			{
-				// see camp_influence() for details on how the rating is calculated
-				curRating = camp_influence(firm.overseer_recno);
-
-				if (curRating > bestRating)
-				{
-					bestRating = curRating;
-					bestNationRecno = firm.nation_recno;
-				}
-			}
-		}
-
-		//------------------------------------//
-
-		if (bestNationRecno != 0)
-		{
-			surrender(bestNationRecno);
-			return true;
-		}
-		else
-			return false;
 	}
 
 	public void Init(int nationRecno, int raceId, int xLoc, int yLoc)
@@ -1506,165 +457,1884 @@ public class Town
 			return;
 	}
 
-	public void process_ai()
+	public string town_name()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		return TownRes.get_name(town_name_id);
+	}
 
-		//---- think about cancelling the base town status ----//
+	public int loc_width()
+	{
+		return loc_x2 - loc_x1 + 1;
+	}
 
-		if (Info.TotalDays % 30 == town_recno % 30)
+	public int loc_height()
+	{
+		return loc_y2 - loc_y1 + 1;
+	}
+	
+	private void set_world_matrix()
+	{
+		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
+
+		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
 		{
-			update_base_town_status();
-		}
-
-		//------ think about granting villagers ---//
-
-		if (Info.TotalDays % 30 == town_recno % 30)
-		{
-			think_reward();
-		}
-
-		//----- if this town should migrate now -----//
-
-		if (should_ai_migrate())
-		{
-			if (Info.TotalDays % 30 == town_recno % 30)
+			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				think_ai_migrate();
-			}
+				Location locPtr = World.get_loc(xLoc, yLoc);
 
-			return; // don't do anything else if the town is about to migrate
-		}
-
-		//------ think about building camps first -------//
-
-		// if there is no space in the neighbor area for building a new firm.
-		if (Info.TotalDays % 30 == town_recno % 30 && !no_neighbor_space && population > 1)
-		{
-			if (think_build_camp())
-			{
-				return;
+				if (locPtr.cargo_recno == 0) // skip the location where the settle unit is standing
+					locPtr.set_town(town_recno);
 			}
 		}
 
-		//----- the following are base town only functions ----//
+		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
-		if (!is_base_town)
+		establish_contact_with_player();
+
+		//---- set this town's influence on the map ----//
+
+		if (nation_recno != 0)
+			World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
+
+		//------------ reveal new land ----------//
+
+		if (nation_recno == NationArray.player_recno ||
+		    (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
+		{
+			World.unveil(loc_x1, loc_y1, loc_x2, loc_y2);
+			World.visit(loc_x1, loc_y1, loc_x2, loc_y2, GameConstants.EXPLORE_RANGE - 1);
+		}
+
+		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
+
+		//TODO drawing
+		//if( is_in_zoom_win() )
+		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
+	}
+
+	private void restore_world_matrix()
+	{
+		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
+		{
+			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
+			{
+				World.get_loc(xLoc, yLoc).remove_town();
+			}
+		}
+
+		//---- restore this town's influence on the map ----//
+
+		if (nation_recno != 0)
+			World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, town_recno, 0);
+
+		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
+
+		//TODO drawing
+		//if( is_in_zoom_win() )
+		//sys.zoom_need_redraw = 1;
+	}
+
+	private void establish_contact_with_player()
+	{
+		if (nation_recno == 0)
 			return;
 
-		//------ think about collecting tax ---//
+		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
-		if (Info.TotalDays % 30 == (town_recno + 15) % 30)
+		for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
 		{
-			think_collect_tax();
-		}
-
-		//---- think about scouting in an unexplored map ----//
-
-		if (Info.TotalDays % 30 == (town_recno + 20) % 30)
-		{
-			think_scout();
-		}
-
-		//---- think about splitting the town ---//
-
-		if (Info.TotalDays % 30 == town_recno % 30)
-		{
-			think_move_between_town();
-			think_split_town();
-		}
-
-		//---- think about attacking firms/units nearby ---//
-
-		if (Info.TotalDays % 30 == town_recno % 30)
-		{
-			if (think_attack_nearby_enemy())
+			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				return;
-			}
+				Location location = World.get_loc(xLoc, yLoc);
 
-			if (think_attack_linked_enemy())
-			{
-				return;
-			}
-		}
-
-		//---- think about capturing linked enemy firms ----//
-
-		if (Info.TotalDays % 60 == town_recno % 60)
-		{
-			think_capture_linked_firm();
-		}
-
-		//---- think about capturing enemy towns ----//
-
-		if (Info.TotalDays % 120 == town_recno % 120)
-		{
-			think_capture_enemy_town();
-		}
-
-		//---- think about using spies on enemies ----//
-
-		if (Info.TotalDays % 60 == (town_recno + 10) % 60)
-		{
-			if (think_spying_town())
-			{
-				return;
-			}
-		}
-
-		//---- think about anti-spies activities ----//
-
-		if (Info.TotalDays % 60 == (town_recno + 20) % 60)
-		{
-			if (think_counter_spy())
-			{
-				return;
-			}
-		}
-
-		//--- think about setting up firms next to this town ---//
-
-		// if there is no space in the neighbor area for building a new firm.
-		if (Info.TotalDays % 30 == town_recno % 30 && !no_neighbor_space && population >= 5)
-		{
-			if (think_build_market())
-			{
-				return;
-			}
-
-			//--- the following functions will only be called when the nation has at least a mine ---//
-
-			// don't build other structures if there are untapped raw sites and our nation still doesn't have any
-			if (SiteArray.untapped_raw_count > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.true_profit_365days() < 0)
-			{
-				return;
-			}
-
-			//---- only build the following if we have enough food ----//
-
-			if (ownNation.ai_has_enough_food())
-			{
-				if (think_build_research())
+				if (location.explored() && NationArray.player_recno != 0)
 				{
-					return;
-				}
+					NationRelation relation = NationArray.player.get_relation(nation_recno);
 
-				if (think_build_war_factory())
-				{
-					return;
-				}
-
-				if (think_build_base())
-				{
-					return;
+					//if( !remote.is_enable() )
+					//{
+					relation.has_contact = true;
+					//}
+					//else
+					//{
+					//if( !relation->contact_msg_flag && !relation->has_contact )
+					//{
+					// packet structure : <player nation> <explored nation>
+					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
+					//*shortPtr = nation_array.player_recno;
+					//shortPtr[1] = nation_recno;
+					//relation->contact_msg_flag = 1;
+					//}
+					//}
 				}
 			}
-
-			//-------- think build inn ---------//
-
-			think_build_inn();
 		}
+	}
+
+
+	public void init_pop(int raceId, int addPop, int loyalty, bool hasJob = false, bool firstInit = false)
+	{
+		if (population >= GameConstants.MAX_TOWN_POPULATION)
+			return;
+
+		int addPopulation = Math.Min(addPop, GameConstants.MAX_TOWN_POPULATION - population);
+
+		//-------- update population ---------//
+
+		race_pop_array[raceId - 1] += addPopulation;
+		population += addPopulation;
+
+		if (!hasJob)
+		{
+			jobless_population += addPopulation;
+			jobless_race_pop_array[raceId - 1] += addPopulation;
+		}
+
+		//------- update loyalty --------//
+
+		if (firstInit) // first initialization at the beginning of the game
+		{
+			if (nation_recno != 0)
+			{
+				race_loyalty_array[raceId - 1] = loyalty;
+				race_target_loyalty_array[raceId - 1] = loyalty;
+			}
+			else
+			{
+				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
+				{
+					race_resistance_array[raceId - 1, j] = loyalty;
+					race_target_resistance_array[raceId - 1, j] = loyalty;
+				}
+			}
+		}
+		else
+		{
+			if (nation_recno != 0)
+			{
+				race_loyalty_array[raceId - 1] =
+					(race_loyalty_array[raceId - 1] * (race_pop_array[raceId - 1] - addPopulation)
+					 + loyalty * addPopulation) / race_pop_array[raceId - 1];
+
+				race_target_loyalty_array[raceId - 1] = Convert.ToInt32(race_loyalty_array[raceId - 1]);
+			}
+			else
+			{
+				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
+				{
+					race_resistance_array[raceId - 1, j] =
+						(race_resistance_array[raceId - 1, j] * (race_pop_array[raceId - 1] - addPopulation)
+						 + loyalty * addPopulation) / race_pop_array[raceId - 1];
+
+					race_target_resistance_array[raceId - 1, j] = Convert.ToInt32(race_resistance_array[raceId - 1, j]);
+				}
+			}
+		}
+
+		//---------- update town parameters ----------//
+
+		TownArray.distribute_demand();
+
+		if (nation_recno != 0)
+			update_loyalty();
+		else
+			update_resistance();
+	}
+
+	public void inc_pop(int raceId, bool unitHasJob, int unitLoyalty)
+	{
+		//---------- increase population ----------//
+
+		population++;
+		race_pop_array[raceId - 1]++;
+
+		if (!unitHasJob)
+		{
+			jobless_population++;
+			jobless_race_pop_array[raceId - 1]++;
+		}
+
+		//------- update loyalty --------//
+
+		if (nation_recno != 0) // if the unit has an unit
+		{
+			race_loyalty_array[raceId - 1] =
+				(race_loyalty_array[raceId - 1] * (race_pop_array[raceId - 1] - 1) + unitLoyalty)
+				/ race_pop_array[raceId - 1];
+		}
+
+		//-- if the race's population exceeds the capacity of the town layout --//
+
+		if (race_pop_array[raceId - 1] > max_race_pop_array[raceId - 1])
+		{
+			auto_set_layout();
+		}
+	}
+
+	public void dec_pop(int raceId, bool unitHasJob)
+	{
+		population--;
+		race_pop_array[raceId - 1]--;
+
+		if (!unitHasJob)
+		{
+			jobless_population--;
+			jobless_race_pop_array[raceId - 1]--;
+		}
+
+		//------- if all the population are gone --------//
+
+		if (population == 0) // it will be deleted in TownArray::process()
+		{
+			if (nation_recno == NationArray.player_recno)
+				NewsArray.town_abandoned(town_recno);
+
+			Deinit();
+			return;
+		}
+
+		//-- if the race's population drops to too low, change the town layout --//
+
+		if (race_pop_array[raceId - 1] <= max_race_pop_array[raceId - 1] - TownRes.POPULATION_PER_HOUSE)
+		{
+			auto_set_layout();
+		}
+	}
+
+	public void move_pop(Town destTown, int raceId, bool hasJob)
+	{
+		//--- if the only pop of this race in the source town are spies ---//
+
+		// only for peasant, for job unit, spy_place==Spy.SPY_FIRM and it isn't related to race_spy_count_array[]
+		if (!hasJob)
+		{
+
+			if (race_spy_count_array[raceId - 1] == jobless_race_pop_array[raceId - 1])
+			{
+				int spySeqId = Misc.Random(race_spy_count_array[raceId - 1]) + 1; // randomly pick one of the spies
+
+				int spyRecno = SpyArray.find_town_spy(town_recno, raceId, spySeqId);
+
+				SpyArray[spyRecno].spy_place_para = destTown.town_recno; // set the place_para of the spy
+
+				race_spy_count_array[raceId - 1]--;
+				destTown.race_spy_count_array[raceId - 1]++;
+			}
+		}
+
+		//------------------------------------------//
+
+		destTown.inc_pop(raceId, hasJob, Convert.ToInt32(race_loyalty_array[raceId - 1]));
+
+		// the unit doesn't have a job - this must be called finally as dec_pop() will have the whole town deleted if there is only one pop left
+		dec_pop(raceId, hasJob);
+	}
+
+	public int worker_population()
+	{
+		return population - jobless_population;
+	}
+
+	private void population_grow()
+	{
+		if (town_defender_count > 0)
+			return;
+
+		if (population >= GameConstants.MAX_TOWN_GROWTH_POPULATION || population >= GameConstants.MAX_TOWN_POPULATION)
+			return;
+
+		//-------- population growth by birth ---------//
+
+		bool autoSetFlag = false;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			//-- the population growth in an independent town is slower than in a nation town ---//
+
+			double loyaltyMultiplier = race_loyalty_array[i] * 4.0 / 50.0 - 3.0;
+			if (loyaltyMultiplier < 0.0)
+				loyaltyMultiplier = 0.0;
+			if (nation_recno != 0)
+				race_pop_growth_array[i] += (int)(Convert.ToDouble(race_pop_array[i]) * loyaltyMultiplier);
+			else
+				race_pop_growth_array[i] += race_pop_array[i];
+
+			while (race_pop_growth_array[i] > 100)
+			{
+				race_pop_growth_array[i] -= 100;
+
+				race_pop_array[i]++;
+				jobless_race_pop_array[i]++;
+
+				population++;
+				jobless_population++;
+
+				//-- if the race's population grows too high, change the town layout --//
+
+				if (race_pop_array[i] > max_race_pop_array[i])
+					autoSetFlag = true;
+
+				if (population >= GameConstants.MAX_TOWN_POPULATION)
+					break;
+			}
+
+			if (population >= GameConstants.MAX_TOWN_POPULATION)
+				break;
+		}
+
+		if (autoSetFlag)
+			auto_set_layout();
+	}
+	
+	public int race_harmony(int raceId)
+	{
+		return population != 0 ? 100 * race_pop_array[raceId - 1] / population : 0;
+	}
+
+	public int majority_race()
+	{
+		int mostRaceCount = 0, mostRaceId = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] > mostRaceCount)
+			{
+				mostRaceCount = race_pop_array[i];
+				mostRaceId = i + 1;
+			}
+		}
+
+		return mostRaceId;
+	}
+	
+	public void get_most_populated_race(out int mostRaceId1, out int mostRaceId2)
+	{
+		//--- find the two races with most population in the town ---//
+
+		mostRaceId1 = 0;
+		mostRaceId2 = 0;
+
+		if (population == 0)
+			return;
+
+		int mostRacePop1 = 0, mostRacePop2 = 0;
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			int racePop = race_pop_array[i];
+
+			if (racePop == 0)
+				continue;
+
+			if (racePop >= mostRacePop1)
+			{
+				mostRacePop2 = mostRacePop1;
+				mostRacePop1 = racePop;
+
+				mostRaceId2 = mostRaceId1;
+				mostRaceId1 = i + 1;
+			}
+			else if (racePop >= mostRaceId2)
+			{
+				mostRacePop2 = racePop;
+				mostRaceId2 = i + 1;
+			}
+		}
+	}
+	
+	public int pick_random_race(bool pickNonRecruitableAlso, bool pickSpyFlag)
+	{
+		int totalPop = 0;
+
+		if (pickNonRecruitableAlso)
+		{
+			totalPop = population;
+		}
+		else
+		{
+			totalPop = jobless_population;
+			if (train_unit_recno != 0)
+				totalPop -= 1;
+
+			if (!pickSpyFlag) // if don't pick spies
+			{
+				for (int i = 0; i < GameConstants.MAX_RACE; i++)
+					totalPop -= race_spy_count_array[i];
+
+				if (totalPop == -1) // it can be -1 if the unit being trained is a spy
+					totalPop = 0;
+			}
+		}
+
+		if (totalPop == 0)
+			return 0;
+
+		int randomPersonId = Misc.Random(totalPop) + 1;
+		int popSum = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (pickNonRecruitableAlso)
+				popSum += race_pop_array[i];
+			else
+				popSum += recruitable_race_pop(i + 1, pickSpyFlag);
+
+			if (randomPersonId <= popSum)
+				return i + 1;
+		}
+
+		return 0;
+	}
+
+	public int recruitable_race_pop(int raceId, bool recruitSpy)
+	{
+		int recruitableCount = jobless_race_pop_array[raceId - 1];
+
+		if (train_unit_recno != 0 && UnitArray[train_unit_recno].race_id == raceId)
+			recruitableCount--;
+
+		if (!recruitSpy)
+		{
+			recruitableCount -= race_spy_count_array[raceId - 1];
+
+			if (recruitableCount == -1) // it may have been reduced twice if the unit being trained is a spy 
+				recruitableCount = 0;
+		}
+
+		return recruitableCount;
+	}
+
+
+	public int average_loyalty()
+	{
+		int totalLoyalty = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+			totalLoyalty += Convert.ToInt32(race_loyalty_array[i]) * race_pop_array[i];
+
+		return totalLoyalty / population;
+	}
+
+	public int average_target_loyalty()
+	{
+		int totalLoyalty = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+			totalLoyalty += Convert.ToInt32(race_target_loyalty_array[i]) * race_pop_array[i];
+
+		return totalLoyalty / population;
+	}
+
+	public int average_resistance(int nationRecno)
+	{
+		double totalResistance = 0.0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			int thisPop = race_pop_array[i];
+			if (thisPop > 0)
+				totalResistance += race_resistance_array[i, nationRecno - 1] * thisPop;
+		}
+
+		return Convert.ToInt32(totalResistance) / population;
+	}
+
+	public int average_target_resistance(int nationRecno)
+	{
+		int totalResistance = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			int thisPop = race_pop_array[i];
+
+			if (thisPop > 0)
+			{
+				int t = race_target_resistance_array[i, nationRecno - 1];
+
+				if (t >= 0) // -1 means no target
+					totalResistance += t * thisPop;
+				else
+					totalResistance += Convert.ToInt32(race_resistance_array[i, nationRecno - 1]) * thisPop;
+			}
+		}
+
+		return totalResistance / population;
+	}
+
+	public void change_loyalty(int raceId, double loyaltyChange)
+	{
+		double newLoyalty = race_loyalty_array[raceId - 1] + loyaltyChange;
+
+		newLoyalty = Math.Min(100.0, newLoyalty);
+		newLoyalty = Math.Max(0.0, newLoyalty);
+
+		race_loyalty_array[raceId - 1] = newLoyalty;
+	}
+
+	public void change_resistance(int raceId, int nationRecno, double resistanceChange)
+	{
+		double newResistance = race_resistance_array[raceId - 1, nationRecno - 1] + resistanceChange;
+
+		newResistance = Math.Min(100.0, newResistance);
+		newResistance = Math.Max(0.0, newResistance);
+
+		race_resistance_array[raceId - 1, nationRecno - 1] = newResistance;
+	}
+
+	public void update_loyalty()
+	{
+		if (nation_recno == 0)
+			return;
+
+		//------------- update loyalty -------------//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+				continue;
+
+			double targetLoyalty = race_target_loyalty_array[i];
+
+			if (race_loyalty_array[i] < targetLoyalty)
+			{
+				//--- if this town is linked to enemy camps, but no own camps, no increase in loyalty, only decrease ---//
+
+				if (!has_linked_own_camp && has_linked_enemy_camp)
+					continue;
+
+				//-------------------------------------//
+
+				double loyaltyInc = (targetLoyalty - race_loyalty_array[i]) / 30;
+
+				change_loyalty(i + 1, Math.Max(loyaltyInc, 0.5));
+			}
+			else if (race_loyalty_array[i] > targetLoyalty)
+			{
+				double loyaltyDec = (race_loyalty_array[i] - targetLoyalty) / 30;
+
+				change_loyalty(i + 1, -Math.Max(loyaltyDec, 0.5));
+			}
+		}
+	}
+
+	public void update_target_loyalty()
+	{
+		if (nation_recno == 0) // return if independent towns
+			return;
+
+		//----- update loyalty of individual races -------//
+		//
+		// Loyalty is determined by:
+		//
+		// - residential harmony
+		// - whether the people are racially homogeneous to the king
+		// - the nation's reputation
+		// - command bases overseeing the town.
+		// - quality of life
+		// - employment rate
+		//
+		// Quality of life is determined by:
+		//
+		// - The provision of goods to the villagers. A more constant
+		//	  supply and a bigger variety of goods give to high quality of life.
+		//
+		//------------------------------------------------//
+
+		//------- set target loyalty of each race --------//
+
+		Nation nation = NationArray[nation_recno];
+		int targetLoyalty;
+		int nationRaceId = nation.race_id;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+				continue;
+
+			//------- calculate the target loyalty -------//
+
+			targetLoyalty = race_harmony(i + 1) / 3 + // 0 to 33
+			                (int)nation.reputation / 4; // -25 to +25
+
+			//---- employment help increase loyalty ----//
+
+			targetLoyalty += 30 - 30 * jobless_race_pop_array[i] / race_pop_array[i]; // +0 to +30
+
+			if (RaceRes.is_same_race(i + 1, nationRaceId))
+				targetLoyalty += 10;
+
+			if (targetLoyalty < 0) // targetLoyalty can be negative if there are hostile races conflicts
+				targetLoyalty = 0;
+
+			if (targetLoyalty > 100)
+				targetLoyalty = 100;
+
+			//----------------------------------------//
+
+			race_target_loyalty_array[i] = targetLoyalty;
+		}
+
+		//----- process command bases that have influence on this town -----//
+
+		int baseInfluence, thisInfluence, commanderRaceId;
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
+				continue;
+
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
+				continue;
+
+			//-------- get nation and commander info ------------//
+
+			Unit unit = UnitArray[firm.overseer_recno];
+			commanderRaceId = unit.race_id;
+
+			Nation baseNation = NationArray[firm.nation_recno];
+
+			//------ if this race is the overseer's race -------//
+
+			baseInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
+
+			if (unit.rank_id == Unit.RANK_KING) // 20 points bonus for king
+				baseInfluence += 20;
+
+			//------------ update all race -----------//
+
+			for (int j = 0; j < GameConstants.MAX_RACE; j++)
+			{
+				if (race_pop_array[j] == 0)
+					continue;
+
+				//---- if the overseer's race is the same as this race ---//
+
+				thisInfluence = baseInfluence;
+
+				if (unit.race_id == j + 1)
+					thisInfluence += 8;
+
+				//--- if the overseer's nation's race is the same as this race ---//
+
+				if (baseNation.race_id == j + 1)
+					thisInfluence += 8;
+
+				//------------------------------------------//
+
+				if (firm.nation_recno == nation_recno) // if the command base belongs to the same nation
+				{
+					targetLoyalty = race_target_loyalty_array[j] + thisInfluence;
+					race_target_loyalty_array[j] = Math.Min(100, targetLoyalty);
+				}
+				else if (unit.race_id == j + 1) // for enemy camps, only decrease same race peasants
+				{
+					targetLoyalty = race_target_loyalty_array[j] - thisInfluence;
+					race_target_loyalty_array[j] = Math.Max(0, targetLoyalty);
+				}
+			}
+		}
+
+		//------- apply quality of life -------//
+
+		int qolContribution = ConfigAdv.town_loyalty_qol
+			? (quality_of_life - 50) / 3
+			: // -17 to +17
+			0; // off
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+				continue;
+
+			targetLoyalty = race_target_loyalty_array[i];
+
+			// Quality of life only applies to the part above 30 loyalty
+			if (targetLoyalty > 30)
+			{
+				targetLoyalty = Math.Max(30, targetLoyalty + qolContribution);
+				race_target_loyalty_array[i] = Math.Min(100, targetLoyalty);
+			}
+		}
+
+		//------- update link status to linked enemy camps -------//
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			if (firm.firm_id != Firm.FIRM_CAMP)
+				continue;
+
+			//------------------------------------------//
+			// If this town is linked to a own camp,
+			// disable all links to enemy camps, otherwise
+			// enable all links to enemy camps.
+			//------------------------------------------//
+
+			if (firm.nation_recno != nation_recno)
+				toggle_firm_link(i + 1, !has_linked_own_camp, InternalConstants.COMMAND_AUTO);
+		}
+	}
+
+	public void update_resistance()
+	{
+		//------------- update resistance ----------------//
+
+		bool[] zeroResistance = new bool[GameConstants.MAX_NATION];
+		for (int i = 0; i < zeroResistance.Length; i++)
+			zeroResistance[i] = true;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+			{
+				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
+					race_resistance_array[i, j] = 0.0;
+
+				continue;
+			}
+
+			for (int j = 0; j < GameConstants.MAX_NATION; j++)
+			{
+				if (NationArray.IsDeleted(j + 1))
+					continue;
+
+				if (race_target_resistance_array[i, j] >= 0)
+				{
+					double targetResistance = race_target_resistance_array[i, j];
+
+					if (race_resistance_array[i, j] > targetResistance) // only decrease, no increase for resistance
+					{
+						double decValue = (race_resistance_array[i, j] - targetResistance) / 30.0;
+
+						race_resistance_array[i, j] -= Math.Max(1.0, decValue);
+
+						// avoid resistance oscillate between taregtLoyalty-1 and taregtLoyalty+1
+						if (race_resistance_array[i, j] < targetResistance)
+							race_resistance_array[i, j] = targetResistance;
+					}
+				}
+
+				// also values between consider 0 and 1 as zero as they are displayed as 0 in the interface
+				if (race_resistance_array[i, j] >= 1.0)
+					zeroResistance[j] = false;
+			}
+		}
+
+		//--- if the town is zero resistance towards any nation, convert to that nation ---//
+
+		for (int j = 0; j < GameConstants.MAX_NATION; j++)
+		{
+			if (NationArray.IsDeleted(j + 1))
+				continue;
+
+			if (zeroResistance[j])
+			{
+				surrender(j + 1);
+				break;
+			}
+		}
+	}
+
+	public void update_target_resistance()
+	{
+		if (population == 0 || linked_firm_array.Count == 0)
+			return;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			for (int j = 0; j < GameConstants.MAX_NATION; j++)
+			{
+				race_target_resistance_array[i, j] = -1; // -1 means influence is not present
+			}
+		}
+
+		//---- if this town is controlled by rebels, no decrease in resistance ----//
+
+		if (rebel_recno != 0)
+			return;
+
+		//----- count the command base that has influence on this town -----//
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
+				continue;
+
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
+				continue;
+
+			//-------- get nation and commander info ------------//
+
+			Unit unit = UnitArray[firm.overseer_recno];
+
+			int curValue = race_target_resistance_array[unit.race_id - 1, unit.nation_recno - 1];
+			int newValue = 100 - camp_influence(firm.overseer_recno);
+
+			// need to do this comparison as there may be more than one command bases of the same nation linked to this town, we use the one with the most influence.
+			if (curValue == -1 || newValue < curValue)
+				race_target_resistance_array[unit.race_id - 1, unit.nation_recno - 1] = newValue;
+		}
+	}
+
+	public void set_auto_collect_tax_loyalty(int loyaltyLevel)
+	{
+		auto_collect_tax_loyalty = loyaltyLevel;
+
+		if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
+		{
+			auto_grant_loyalty = auto_collect_tax_loyalty - 10;
+		}
+	}
+
+	public void set_auto_grant_loyalty(int loyaltyLevel)
+	{
+		auto_grant_loyalty = loyaltyLevel;
+
+		if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
+		{
+			auto_collect_tax_loyalty = auto_grant_loyalty + 10;
+
+			if (auto_collect_tax_loyalty > 100)
+				auto_collect_tax_loyalty = 0; // disable auto collect tax if it's over 100
+		}
+	}
+
+	private void process_auto()
+	{
+		if (!has_linked_own_camp) // can only collect or grant when there is a linked camp of its own.
+			return;
+
+		Nation nation = NationArray[nation_recno];
+
+		//----- auto collect tax -----//
+
+		if (auto_collect_tax_loyalty > 0)
+		{
+			if (accumulated_collect_tax_penalty == 0 && average_loyalty() >= auto_collect_tax_loyalty)
+			{
+				collect_tax(InternalConstants.COMMAND_AI);
+			}
+		}
+
+		//---------- auto grant -----------//
+
+		if (auto_grant_loyalty > 0)
+		{
+			if (accumulated_reward_penalty == 0 && average_loyalty() < auto_grant_loyalty && nation.cash > 0)
+			{
+				reward(InternalConstants.COMMAND_AI);
+			}
+		}
+	}
+
+	public void collect_yearly_tax()
+	{
+		NationArray[nation_recno].add_income(NationBase.INCOME_TAX, population * GameConstants.TAX_PER_PERSON);
+	}
+
+	public void collect_tax(int remoteAction)
+	{
+		if (!has_linked_own_camp)
+			return;
+
+		//------------------------------------------//
+
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <town recno> <race id>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_COLLECT_TAX, sizeof(short));
+		//shortPtr[0] = town_recno;
+		//return;
+		//}
+
+		//----- calculate the loyalty decrease amount ------//
+		//
+		// If you reward too frequently, the negative effect
+		// on loyalty will get larger.
+		//
+		//--------------------------------------------------//
+
+		int loyaltyDecrease = GameConstants.COLLECT_TAX_LOYALTY_DECREASE + accumulated_collect_tax_penalty / 5;
+
+		loyaltyDecrease = Math.Min(loyaltyDecrease, GameConstants.COLLECT_TAX_LOYALTY_DECREASE + 10);
+
+		accumulated_collect_tax_penalty += 10;
+
+		//------ decrease the loyalty of the town people ------//
+
+		// ##### patch begin Gilbert 5/8 ######//
+		//	for( int i=0 ; i<MAX_RACE ; i++ )
+		//		change_loyalty( i+1, (float) -loyaltyDecrease );
+		//----------- increase cash ------------//
+		//	NationArray[nation_recno].add_income(INCOME_TAX, (float)population * TAX_PER_PERSON );
+
+		// ------ cash increase depend on loyalty drop --------//
+		double taxCollected = 0.0;
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			double beforeLoyalty = race_loyalty_array[i];
+			change_loyalty(i + 1, -loyaltyDecrease);
+			taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * GameConstants.TAX_PER_PERSON /
+			                loyaltyDecrease;
+		}
+
+		//----------- increase cash ------------//
+
+		NationArray[nation_recno].add_income(NationBase.INCOME_TAX, taxCollected);
+
+		// ##### patch end Gilbert 5/8 ######//
+
+		//------------ think rebel -------------//
+
+		think_rebel();
+	}
+
+	public void reward(byte remoteAction)
+	{
+		if (!has_linked_own_camp)
+			return;
+
+		//------------------------------------------//
+
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <town recno> <race id>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_REWARD, sizeof(short));
+		//shortPtr[0] = town_recno;
+		//return;
+		//}
+
+		//----- calculate the loyalty increase amount ------//
+		//
+		// If you reward too frequently, the effect of the
+		// granting will be diminished.
+		//
+		//--------------------------------------------------//
+
+		int loyaltyIncrease = GameConstants.TOWN_REWARD_LOYALTY_INCREASE - accumulated_reward_penalty / 5;
+
+		loyaltyIncrease = Math.Max(3, loyaltyIncrease);
+
+		accumulated_reward_penalty += 10;
+
+		//------ increase the loyalty of the town people ------//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+			change_loyalty(i + 1, loyaltyIncrease);
+
+		//----------- decrease cash ------------//
+
+		NationArray[nation_recno].add_expense(NationBase.EXPENSE_GRANT_OWN_TOWN,
+			population * GameConstants.TOWN_REWARD_PER_PERSON);
+	}
+
+	public bool can_grant_to_non_own_town(int grantNationRecno)
+	{
+		if (nation_recno == grantNationRecno) // only for independent town
+			return false;
+
+		if (nation_recno == 0) // independent town
+		{
+			return has_linked_camp(grantNationRecno, true); // 1-only count camps with overseers
+		}
+		else // for nation town, when the enemy doesn't have camps linked to it and the granting nation has camps linked to it
+		{
+			return !has_linked_camp(nation_recno, false) && // 0-count camps regardless of the presence of overseers
+			       has_linked_camp(grantNationRecno, true); // 1-only count camps with overseers
+		}
+	}
+
+	public int grant_to_non_own_town(int grantNationRecno, int remoteAction)
+	{
+		if (!can_grant_to_non_own_town(grantNationRecno))
+			return 0;
+
+		Nation grantNation = NationArray[grantNationRecno];
+
+		if (grantNation.cash < 0)
+			return 0;
+
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_GRANT_INDEPENDENT, 2*sizeof(short) );
+		//shortPtr[0] = town_recno;
+		//shortPtr[1] = grantNationRecno;
+		//return 1;
+		//}
+
+		//---- calculate the resistance to be decreased -----//
+
+		int resistanceDec = GameConstants.IND_TOWN_GRANT_RESISTANCE_DECREASE - accumulated_enemy_grant_penalty / 5;
+
+		resistanceDec = Math.Max(3, resistanceDec);
+
+		accumulated_enemy_grant_penalty += 10;
+
+		//------ decrease the resistance of the independent villagers ------//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+				continue;
+
+			//----- if this is an independent town ------//
+
+			if (nation_recno == 0)
+			{
+				race_resistance_array[i, grantNationRecno - 1] -= resistanceDec;
+
+				if (race_resistance_array[i, grantNationRecno - 1] < 0)
+					race_resistance_array[i, grantNationRecno - 1] = 0.0;
+			}
+			else //----- if this is an nation town ------//
+			{
+				race_loyalty_array[i] -= resistanceDec;
+
+				if (race_loyalty_array[i] < 0)
+					race_loyalty_array[i] = 0.0;
+			}
+		}
+
+		//----------- decrease cash ------------//
+
+		grantNation.add_expense(NationBase.EXPENSE_GRANT_OTHER_TOWN,
+			population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
+
+		return 1;
+	}
+
+	
+	public void distribute_demand()
+	{
+		//------ scan for a firm to input raw materials --------//
+
+		MarketGoodsInfo[] marketGoodsInfoArray = new MarketGoodsInfo[GameConstants.MAX_PRODUCT];
+		for (int i = 0; i < marketGoodsInfoArray.Length; i++)
+			marketGoodsInfoArray[i] = new MarketGoodsInfo();
+
+		//------- count the no. of market place that are near to this town ----//
+
+		for (int linkedFirmId = 0; linkedFirmId < linked_firm_array.Count; linkedFirmId++)
+		{
+			Firm firm = FirmArray[linked_firm_array[linkedFirmId]];
+
+			if (firm.firm_id != Firm.FIRM_MARKET)
+				continue;
+
+			if (linked_firm_enable_array[linkedFirmId] != InternalConstants.LINK_EE)
+				continue;
+
+			firm = FirmArray[linked_firm_array[linkedFirmId]];
+
+			//---------- process market -------------//
+
+			for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
+			{
+				MarketGoods marketGoods = ((FirmMarket)firm).market_product_array[i];
+				MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+
+				double thisSupply = marketGoods.stock_qty;
+				marketGoodsInfo.markets.Add((FirmMarket)firm);
+				marketGoodsInfo.total_supply += thisSupply;
+
+				// vars for later use, so that towns will always try to buy goods from their own markets first.
+				if (firm.nation_recno == nation_recno)
+					marketGoodsInfo.total_own_supply += thisSupply;
+			}
+		}
+
+		//-- set the monthly demand of the town on each product --//
+
+		double townDemand = jobless_population * GameConstants.PEASANT_GOODS_MONTH_DEMAND
+		                    + worker_population() * GameConstants.WORKER_GOODS_MONTH_DEMAND;
+
+		//---------- sell goods now -----------//
+
+		for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
+		{
+			MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+
+			for (int j = 0; j < marketGoodsInfo.markets.Count; j++)
+			{
+				//----------------------------------//
+				//
+				// If the totalSupply < town demand:
+				// a market's demand = its_supply + (town_demand-totalSupply) / market_count
+				//
+				// If the totalSupply > town demand:
+				// a market's demand = town_demand * its_supply / totalSupply
+				//
+				//----------------------------------//
+
+				FirmMarket firmMarket = marketGoodsInfo.markets[j];
+
+				MarketGoods marketGoods = firmMarket.market_product_array[i];
+
+				if (marketGoods != null)
+				{
+					//---- if the demand is larger than the supply -----//
+
+					if (marketGoodsInfo.total_supply <= townDemand)
+					{
+						// evenly distribute the excessive demand on all markets
+						marketGoods.month_demand += marketGoods.stock_qty
+						                            + (townDemand - marketGoodsInfo.total_supply) /
+						                            marketGoodsInfo.markets.Count;
+					}
+					else //---- if the supply is larger than the demand -----//
+					{
+						//--- towns always try to buy goods from their own markets first ---//
+
+						double ownShareDemand = Math.Min(townDemand, marketGoodsInfo.total_own_supply);
+
+						if (firmMarket.nation_recno == nation_recno)
+						{
+							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
+							if (marketGoodsInfo.total_own_supply > 0.0)
+								marketGoods.month_demand += ownShareDemand * marketGoods.stock_qty /
+								                            marketGoodsInfo.total_own_supply;
+						}
+						else
+						{
+							// Note: total_supply > 0.0f, because else the first case above (demand larger than supply) will be triggered
+							marketGoods.month_demand += (townDemand - ownShareDemand) * marketGoods.stock_qty /
+							                            marketGoodsInfo.total_supply;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void update_product_supply()
+	{
+		for (int i = 0; i < has_product_supply.Length; i++)
+			has_product_supply[i] = 0;
+
+		//----- scan for linked market place -----//
+
+		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
+		{
+			Firm firm = FirmArray[linked_firm_array[i]];
+			if (firm.nation_recno != nation_recno || firm.firm_id != Firm.FIRM_MARKET)
+				continue;
+
+			FirmMarket firmMarket = (FirmMarket)firm;
+			
+			//---- check what type of products they are selling ----//
+
+			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
+			{
+				int productId = firmMarket.market_goods_array[j].product_raw_id;
+				if (productId > 1)
+					has_product_supply[productId - 1]++;
+			}
+		}
+	}
+
+	public void update_quality_of_life()
+	{
+		//--- calculate the estimated total purchase from this town ----//
+
+		double townDemand = jobless_population * GameConstants.PEASANT_GOODS_MONTH_DEMAND
+		                    + worker_population() * GameConstants.WORKER_GOODS_MONTH_DEMAND;
+
+		double totalPurchase = 0.0;
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
+				continue;
+
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			if (firm.firm_id != Firm.FIRM_MARKET)
+				continue;
+
+			FirmMarket firmMarket = (FirmMarket)firm;
+
+			//-------------------------------------//
+
+			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
+			{
+				MarketGoods marketGoods = firmMarket.market_goods_array[j];
+				if (marketGoods.product_raw_id == 0 || marketGoods.month_demand == 0)
+					continue;
+
+				double monthSaleQty = marketGoods.sale_qty_30days();
+
+				if (monthSaleQty > marketGoods.month_demand)
+				{
+					totalPurchase += townDemand;
+				}
+				else if (marketGoods.month_demand > townDemand)
+				{
+					totalPurchase += monthSaleQty * townDemand / marketGoods.month_demand;
+				}
+				else
+					totalPurchase += monthSaleQty;
+			}
+		}
+
+		//------ return the quality of life ------//
+
+		quality_of_life = Convert.ToInt32(100 * totalPurchase / (townDemand * GameConstants.MAX_PRODUCT));
+	}
+
+	private void process_food()
+	{
+		//--------- Peasants produce food ---------//
+
+		NationArray[nation_recno]
+			.add_food(Convert.ToDouble(jobless_population * GameConstants.PEASANT_FOOD_YEAR_PRODUCTION) / 365.0);
+
+		//---------- People consume food ----------//
+
+		NationArray[nation_recno]
+			.consume_food(Convert.ToDouble(population * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+	}
+
+
+	public bool can_train(int raceId)
+	{
+		int recruitableCount = jobless_race_pop_array[raceId - 1];
+
+		return has_linked_own_camp && recruitableCount > 0 &&
+		       NationArray[nation_recno].cash > GameConstants.TRAIN_SKILL_COST;
+	}
+
+	private void process_train()
+	{
+		Unit unit = UnitArray[train_unit_recno];
+		int raceId = unit.race_id;
+
+		//---- if the unit being trained was killed -----//
+
+		bool cancelFlag = jobless_race_pop_array[raceId - 1] == 0;
+
+		//-----------------------------------------------------------------//
+		//
+		// If after start training the unit (non-spy unit), a unit has been
+		// mobilized, resulting that the spy count >= jobless_race,
+		// we must cancel the training, otherwise when training finishes,
+		// and dec_pop is called, spy count will > jobless count and cause error.
+		//
+		//-----------------------------------------------------------------//
+
+		if (race_spy_count_array[raceId - 1] == jobless_race_pop_array[raceId - 1])
+			cancelFlag = true;
+
+		if (cancelFlag)
+		{
+			UnitArray.disappear_in_town(train_unit_recno, town_recno);
+			train_unit_recno = 0;
+			return;
+		}
+
+		//------------- process training ---------------//
+
+		long totalTrainDays;
+
+		if (Config.fast_build && nation_recno == NationArray.player_recno)
+			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS / 2;
+		else
+			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS;
+
+		if ((Sys.Instance.FrameNumber - startTrainFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalTrainDays)
+		{
+			finish_train(unit);
+		}
+	}
+
+	private void finish_train(Unit unit)
+	{
+		SpriteInfo spriteInfo = unit.sprite_info;
+		int xLoc = loc_x1; // xLoc & yLoc are used for returning results
+		int yLoc = loc_y1;
+
+		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2,
+			    spriteInfo.loc_width, spriteInfo.loc_height))
+			return;
+
+		unit.init_sprite(xLoc, yLoc);
+
+		if (unit.is_own())
+			SERes.far_sound(xLoc, yLoc, 1, 'S', unit.sprite_id, "RDY");
+
+		unit.unit_mode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
+		train_unit_recno = 0;
+
+		int townRecno = town_recno; // save the recno as it can be deleted in dec_pop()
+
+		dec_pop(unit.race_id, false); // decrease the population now as the recruit() does do so
+
+		//---- if this trained unit is tied to an AI action ----//
+
+		if (train_unit_action_id != 0)
+		{
+			NationArray[nation_recno].process_action_id(train_unit_action_id);
+			train_unit_action_id = 0;
+		}
+
+		//----- refresh if this town is currently selected ------//
+
+		//TODO drawing
+		//if (townRecno == Global.TownArray.selected_recno)
+		//{
+		//if (town_menu_mode == TOWN_MENU_MAIN)
+		//{
+		//info.disp();
+		//}
+		//else
+		//{
+		//disable_refresh = 1;
+		//info.disp();
+		//disable_refresh = 0;
+		//}
+		//}
+	}
+
+	public void cancel_train_unit()
+	{
+		if (train_unit_recno != 0)
+		{
+			//unit_array.disappear_in_town(train_unit_recno, town_recno);
+			//train_unit_recno = 0;
+
+			Unit unit = UnitArray[train_unit_recno];
+			// check whether the unit is already a spy before training
+			if (unit.spy_recno != 0 && unit.skill.skill_id != 0)
+			{
+				SpyArray[unit.spy_recno].set_place(Spy.SPY_TOWN, town_recno);
+				unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
+			}
+
+			UnitArray.disappear_in_town(train_unit_recno, town_recno);
+			train_unit_recno = 0;
+		}
+	}
+
+	public void add_queue(int skillId, int raceId, int amount = 1)
+	{
+		if (amount < 0)
+			return;
+
+		int queueSpace = MAX_TRAIN_QUEUE - train_queue_skill.Count - (train_unit_recno > 0 ? 1 : 0);
+		int enqueueAmount = Math.Min(queueSpace, amount);
+
+		for (int i = 0; i < enqueueAmount; ++i)
+		{
+			train_queue_skill.Add(skillId);
+			train_queue_race.Add(raceId);
+		}
+
+		if (train_unit_recno == 0)
+			process_queue();
+	}
+
+	public void remove_queue(int skillId, int amount = 1)
+	{
+		if (amount <= 0)
+			return;
+
+		for (int i = train_queue_skill.Count - 1; i >= 0; i--)
+		{
+			if (train_queue_skill[i] == skillId)
+			{
+				train_queue_skill.RemoveAt(i);
+				train_queue_race.RemoveAt(i);
+				amount--;
+			}
+		}
+
+		// If there were less trained of skillId in the queue than were requested to be removed then
+		// also cancel currently trained unit
+		if (amount > 0 && train_unit_recno != 0)
+		{
+			Unit unit = UnitArray[train_unit_recno];
+			if (unit.skill.skill_id == skillId)
+				cancel_train_unit();
+		}
+	}
+
+	private void process_queue()
+	{
+		if (train_queue_skill.Count == 0)
+			return;
+
+		if (jobless_population == 0)
+			return;
+
+		int queueCount = train_queue_skill.Count;
+		int i = 0;
+		for (i = 0; i < queueCount; i++)
+		{
+			if (can_train(train_queue_race[i]))
+			{
+				int skillId = train_queue_skill[i];
+				int raceId = train_queue_race[i];
+				train_queue_skill.RemoveAt(i);
+				train_queue_race.RemoveAt(i);
+				i--;
+				recruit(skillId, raceId, InternalConstants.COMMAND_AUTO);
+				break;
+			}
+		}
+
+		//TODO drawing
+		//if (town_menu_mode == TOWN_MENU_MAIN)
+		//info.disp();
+	}
+
+	
+	// if not called by Town::migrate, don't set migrateNow to TRUE
+	public bool can_migrate(int destTownRecno, bool migrateNow = false, int raceId = 0)
+	{
+		if (raceId == 0)
+		{
+			//TODO rewrite
+			//raceId = browse_selected_race_id();
+
+			if (raceId == 0)
+				return false;
+		}
+
+		Town destTown = TownArray[destTownRecno];
+
+		if (destTown.population >= GameConstants.MAX_TOWN_POPULATION)
+			return false;
+
+		//---- if there are still jobless units ----//
+
+		if (recruitable_race_pop(raceId, true) > 0) // 1-allow migrate spy 
+		{
+			if (migrateNow)
+				move_pop(destTown, raceId, false); // 0-doesn't have job 
+
+			return true;
+		}
+
+		//--- if there is no jobless units left -----//
+
+		if (race_pop_array[raceId - 1] > 0)
+		{
+			//---- scan for firms that are linked to this town ----//
+
+			for (int i = linked_firm_array.Count - 1; i >= 0; i--)
+			{
+				Firm firm = FirmArray[linked_firm_array[i]];
+
+				//---- only for firms whose workers live in towns ----//
+
+				if (!FirmRes[firm.firm_id].live_in_town)
+					continue;
+
+				//---- if the target town is within the effective range of this firm ----//
+
+				if (Misc.rects_distance(destTown.loc_x1, destTown.loc_y1, destTown.loc_x2, destTown.loc_y2,
+					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) >
+				    InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+				{
+					continue;
+				}
+
+				//------- scan for workers -----------//
+
+				foreach (Worker worker in firm.workers)
+				{
+					//--- if the worker lives in this town ----//
+
+					if (worker.race_id == raceId && worker.town_recno == town_recno)
+					{
+						if (migrateNow)
+						{
+							if (FirmRes[firm.firm_id].live_in_town)
+								worker.town_recno = destTownRecno;
+							else
+								worker.town_recno = 0;
+
+							move_pop(destTown, raceId, true); // 1-has job
+						}
+
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private void think_migrate()
+	{
+		if (jobless_population == 0)
+			return;
+
+		int raceId, migratedCount, townDistance;
+		int saveTownRecno = town_recno;
+		int saveTownNationRecno = nation_recno;
+
+		foreach (Town town in TownArray)
+		{
+			if (town.nation_recno == 0)
+				continue;
+
+			if (town.town_recno == town_recno)
+				continue;
+
+			if (town.population >= GameConstants.MAX_TOWN_POPULATION)
+				continue;
+
+			townDistance = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
+				town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
+
+			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
+				continue;
+
+			//---- scan all jobless population, see if any of them want to migrate ----//
+
+			raceId = ConfigAdv.GetRandomRace();
+
+			for (int j = 0; j < GameConstants.MAX_RACE; j++)
+			{
+				if (++raceId > GameConstants.MAX_RACE)
+					raceId = 1;
+
+				// only if there are peasants who are jobless and are not spies
+				if (recruitable_race_pop(raceId, false) == 0)
+					continue;
+
+				//--- migrate a number of people of the same race at the same time ---//
+
+				migratedCount = 0;
+
+				while (think_migrate_one(town, raceId, townDistance))
+				{
+					migratedCount++;
+
+					// don't migrate more than one unit at a time for migrating to non-linked towns
+					if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
+						break;
+
+					// allow a random and low max number to migrate when this happens
+					if (migratedCount >= MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
+						break;
+				}
+
+				//------------- add news --------------//
+
+				if (migratedCount > 0)
+				{
+					if (saveTownNationRecno == NationArray.player_recno ||
+					    town.nation_recno == NationArray.player_recno)
+					{
+						NewsArray.migrate(saveTownRecno, town.town_recno, raceId, migratedCount);
+					}
+
+					return;
+				}
+			}
+		}
+	}
+
+	private bool think_migrate_one(Town targetTown, int raceId, int townDistance)
+	{
+		//-- only if there are peasants who are jobless and are not spies --//
+
+		if (recruitable_race_pop(raceId, false) == 0) //0-don't recruit spies
+			return false;
+
+		//---- if the target town's population has already reached its MAX ----//
+
+		if (targetTown.population >= GameConstants.MAX_TOWN_POPULATION)
+			return false;
+
+		//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
+
+		if (targetTown.race_pop_array[raceId - 1] < race_pop_array[raceId - 1] / 2)
+			return false;
+
+		//-- do not migrate if the target town might not be a place this peasant will stay --//
+
+		if (targetTown.race_loyalty_array[raceId - 1] < 40)
+			return false;
+
+		//--- calculate the attractiveness rating of the current town ---//
+
+		int curAttractLevel = race_harmony(raceId);
+
+		//------- loyalty/resistance affecting the attractivness ------//
+
+		if (nation_recno != 0)
+		{
+			// loyalty > 40 is considered as positive force, < 40 is considered as negative force
+			curAttractLevel += Convert.ToInt32(NationArray[nation_recno].reputation +
+				race_loyalty_array[raceId - 1] - 40.0);
+		}
+		else
+		{
+			if (targetTown.nation_recno != 0)
+				curAttractLevel += Convert.ToInt32(race_resistance_array[raceId - 1, targetTown.nation_recno - 1]);
+		}
+
+		//--- calculate the attractiveness rating of the target town ---//
+
+		int targetAttractLevel = targetTown.race_harmony(raceId);
+
+		if (targetTown.nation_recno != 0)
+			targetAttractLevel += Convert.ToInt32(NationArray[targetTown.nation_recno].reputation);
+
+		if (targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL)
+			return false;
+
+		//--------- compare the attractiveness ratings ---------//
+
+		if (targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL / 2)
+		{
+			//---------- migrate now ----------//
+
+			int newLoyalty = Math.Max(targetAttractLevel / 2, 40);
+
+			migrate(raceId, targetTown.town_recno, newLoyalty);
+			return true;
+		}
+
+		return false;
+	}
+
+	private void migrate(int raceId, int destTownRecno, int newLoyalty)
+	{
+		Town destTown = TownArray[destTownRecno];
+
+		if (destTown.population >= GameConstants.MAX_TOWN_POPULATION)
+			return;
+
+		//------- decrease the population of this town ------//
+
+		dec_pop(raceId, false);
+
+		//--------- increase the population of the target town ------//
+
+		destTown.inc_pop(raceId, false, newLoyalty);
+	}
+
+	public bool migrate_to(int destTownRecno, int remoteAction, int raceId = 0, int count = 1)
+	{
+		if (count <= 0 || count > GameConstants.MAX_TOWN_POPULATION)
+		{
+			return false;
+		}
+
+		if (raceId == 0)
+		{
+			//TODO rewrite
+			//raceId = browse_selected_race_id();
+
+			if (raceId == 0)
+				return false;
+		}
+
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <town recno> <dest town recno> <race id> <count>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_MIGRATE, 4*sizeof(short));
+		//shortPtr[0] = town_recno;
+		//shortPtr[1] = destTownRecno;
+		//shortPtr[2] = raceId;
+		//shortPtr[3] = count;
+		//return 0;
+		//}
+
+		bool continueMigrate = true;
+		int migrated = 0;
+		while (continueMigrate && migrated < count)
+		{
+			continueMigrate = can_migrate(destTownRecno, true, raceId); // 1- migrate now, 1-allow migrate spy
+			if (continueMigrate)
+				++migrated;
+		}
+
+		return migrated > 0;
+	}
+
+
+	public void auto_set_layout()
+	{
+		layout_id = think_layout_id();
+
+		TownLayout townLayout = TownRes.get_layout(layout_id);
+		//TownSlot   firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno);
+		int[] raceNeedBuildCount = new int[GameConstants.MAX_RACE];
+
+		for (int i = 0; i < slot_object_id_array.Length; i++)
+			slot_object_id_array[i] = 0;
+		for (int i = 0; i < max_race_pop_array.Length; i++)
+			max_race_pop_array[i] = 0;
+		for (int i = 0; i < raceNeedBuildCount.Length; i++)
+			raceNeedBuildCount[i] = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] > 0)
+				raceNeedBuildCount[i] += (race_pop_array[i] - 1) / TownRes.POPULATION_PER_HOUSE + 1;
+		}
+
+		//--- assign the first house to each race, each present race will at least have one house ---//
+
+		int firstRaceId = ConfigAdv.GetRandomRace(); // random match
+		int raceId = firstRaceId;
+
+		for (int i = 0; i < townLayout.slot_count; i++)
+		{
+			//TODO check it
+			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
+			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE)
+			{
+				while (true) // next race
+				{
+					if (++raceId > GameConstants.MAX_RACE)
+						raceId = 1;
+
+					if (raceId == ((firstRaceId == GameConstants.MAX_RACE)
+						    ? 1
+						    : firstRaceId + 1)) // finished the first house for all races
+						goto label_distribute_house;
+
+					if (raceNeedBuildCount[raceId - 1] >
+					    0) // if this race need buildings, skip all races that do not need buildings
+						break;
+				}
+
+				slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, raceId);
+
+				raceNeedBuildCount[raceId - 1]--;
+				max_race_pop_array[raceId - 1] += TownRes.POPULATION_PER_HOUSE;
+			}
+		}
+
+		//------- distribute the remaining houses -------//
+
+		label_distribute_house:
+
+		int bestRaceId, maxNeedBuildCount;
+
+		for (int i = 0; i < townLayout.slot_count; i++)
+		{
+			//TODO check it
+			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
+			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE && slot_object_id_array[i] == 0)
+			{
+				bestRaceId = 0;
+				maxNeedBuildCount = 0;
+
+				for (raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
+				{
+					if (raceNeedBuildCount[raceId - 1] > maxNeedBuildCount)
+					{
+						bestRaceId = raceId;
+						maxNeedBuildCount = raceNeedBuildCount[raceId - 1];
+					}
+				}
+
+				if (bestRaceId == 0) // all races have assigned with their needed houses
+					break;
+
+				slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, bestRaceId);
+				raceNeedBuildCount[bestRaceId - 1]--;
+				max_race_pop_array[bestRaceId - 1] += TownRes.POPULATION_PER_HOUSE;
+			}
+		}
+
+		//------- set plants in the town layout -------//
+
+		for (int i = 0; i < townLayout.slot_count; i++)
+		{
+			//TODO check it
+			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
+			switch (firstTownSlot.build_type)
+			{
+				case TownSlot.TOWN_OBJECT_PLANT:
+					slot_object_id_array[i] =
+						PlantRes.scan(0, 'T',
+							0); // 'T'-town only, 1st 0-any zone area, 2nd 0-any terain type, 3rd-age level
+					break;
+
+				case TownSlot.TOWN_OBJECT_FARM:
+					slot_object_id_array[i] = firstTownSlot.build_code;
+					break;
+
+				case TownSlot.TOWN_OBJECT_HOUSE:
+					if (slot_object_id_array[i] == 0)
+						slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, ConfigAdv.GetRandomRace());
+					break;
+			}
+		}
+	}
+
+	private int think_layout_id()
+	{
+		int needBuildCount = 0; // basic buildings needed
+		int extraBuildCount = 0; // extra buildings needed beside the basic one
+
+		//---- count the needed buildings of each race ----//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] == 0)
+				continue;
+
+			needBuildCount++; // essential buildings needed
+
+			// extra buildings, which are not necessary, but will look better if the layout plan fits with this number
+			const int popPerHouse = TownRes.POPULATION_PER_HOUSE;
+			if (race_pop_array[i] > popPerHouse)
+				extraBuildCount += (race_pop_array[i] - popPerHouse - 1) / popPerHouse + 1;
+		}
+
+		//---------- scan the town layout ---------//
+		int layoutId;
+		// scan from the most densed layout to the least densed layout
+		for (layoutId = TownRes.town_layout_array.Length; layoutId > 0; layoutId--)
+		{
+			TownLayout townLayout = TownRes.get_layout(layoutId);
+
+			//--- if this plan has less than the essential need ---//
+
+			int countDiff = townLayout.build_count - (needBuildCount + extraBuildCount);
+
+			if (countDiff == 0) // the match is perfect, return now
+				break;
+
+			// since we scan from the most densed town layout to the least densed one, if cannot find anyone matched now,
+			// there won't be any in the lower positions of the array
+			if (countDiff < 0)
+			{
+				layoutId = TownRes.town_layout_array.Length;
+				break;
+			}
+		}
+
+		//--- if there are more than one layout with the same number of building, pick one randomly ---//
+
+		int layoutBuildCount = TownRes.get_layout(layoutId).build_count;
+		int layoutId2;
+
+		for (layoutId2 = layoutId - 1; layoutId2 > 0; layoutId2--)
+		{
+			TownLayout townLayout = TownRes.get_layout(layoutId2);
+
+			if (layoutBuildCount != townLayout.build_count)
+				break;
+		}
+
+		layoutId2++; // the lowest layout id. that has the same no. of buildings
+
+		//------- return the result layout id -------//
+
+		return layoutId2 + Misc.Random(layoutId - layoutId2 + 1);
 	}
 
 	public void assign_unit(int unitRecno)
@@ -1753,6 +2423,33 @@ public class Town
 
 		// the unit disappear from the map because it has moved into a town
 		UnitArray.disappear_in_town(unitRecno, town_recno);
+	}
+
+	public bool can_recruit(int raceId)
+	{
+		//----------------------------------------------------//
+		// Cannot recruit when you have none of your own camps
+		// linked to this town, but your enemies have camps
+		// linked to it.
+		//----------------------------------------------------//
+
+		if (!has_linked_own_camp && has_linked_enemy_camp)
+			return false;
+
+		if (recruitable_race_pop(raceId, true) == 0)
+			return false;
+
+		//---------------------------------//
+
+		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY;
+
+		//--- for the AI, only recruit if the loyalty still stay at 30 after recruiting the unit ---//
+
+		// 0-don't actually decrease it, just return the loyalty to be decreased.
+		if (ai_town && nation_recno != 0)
+			minRecruitLoyalty += 3 + recruit_dec_loyalty(raceId, false);
+
+		return race_loyalty_array[raceId - 1] >= minRecruitLoyalty;
 	}
 
 	public int recruit(int trainSkillId, int raceId, byte remoteAction)
@@ -1979,330 +2676,28 @@ public class Town
 		return Convert.ToInt32(loyaltyDec);
 	}
 
-	public void cancel_train_unit()
+	public int closest_own_camp()
 	{
-		if (train_unit_recno != 0)
+		int minDistance = Int32.MaxValue, closestFirmRecno = 0;
+
+		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
 		{
-			//unit_array.disappear_in_town(train_unit_recno, town_recno);
-			//train_unit_recno = 0;
+			Firm firm = FirmArray[linked_firm_array[i]];
 
-			Unit unit = UnitArray[train_unit_recno];
-			// check whether the unit is already a spy before training
-			if (unit.spy_recno != 0 && unit.skill.skill_id != 0)
+			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != nation_recno)
+				continue;
+
+			int curDistance = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
+				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
+
+			if (curDistance < minDistance)
 			{
-				SpyArray[unit.spy_recno].set_place(Spy.SPY_TOWN, town_recno);
-				unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
-			}
-
-			UnitArray.disappear_in_town(train_unit_recno, town_recno);
-			train_unit_recno = 0;
-		}
-	}
-
-	public bool form_new_nation()
-	{
-		if (NationArray.nation_count >= GameConstants.MAX_NATION)
-			return false;
-
-		//----- determine the race with most population -----//
-
-		int maxPop = 0, raceId = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] > maxPop)
-			{
-				maxPop = race_pop_array[i];
-				raceId = i + 1;
+				minDistance = curDistance;
+				closestFirmRecno = firm.firm_recno;
 			}
 		}
 
-
-		//---- create the king of the new nation ----//
-
-		int unitId = RaceRes[raceId].basic_unit_id;
-		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-
-		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return false;
-
-		//--------- create a new nation ---------//
-
-		int nationRecno = NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
-
-		//-------- create the king --------//
-
-		Unit kingUnit = UnitArray.AddUnit(unitId, nationRecno, Unit.RANK_KING, 100, xLoc, yLoc);
-
-		kingUnit.skill.skill_id = Skill.SKILL_LEADING;
-		kingUnit.skill.skill_level = 50 + Misc.Random(51);
-
-		kingUnit.set_combat_level(70 + Misc.Random(31));
-
-		NationArray[nationRecno].set_king(kingUnit.sprite_recno, 1); // 1-this is the first king of the nation
-
-		dec_pop(raceId, false); // 0-the unit doesn't have a job
-
-		//------ set the nation of the rebel town -----//
-
-		set_nation(nationRecno); // set the town at last because set_nation() will delete the Town object
-
-		//------ increase the loyalty of the town -----//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			race_loyalty_array[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
-
-		//--------- add news ----------//
-
-		NewsArray.new_nation(nationRecno);
-
-		//--- random extra beginning advantages -----//
-
-		int mobileCount;
-		Nation nation = NationArray[nationRecno];
-
-		switch (Misc.Random(10))
-		{
-			case 1: // knowledge of weapon in the beginning.
-				TechRes[Misc.Random(TechRes.tech_info_array.Length) + 1].set_nation_tech_level(nationRecno, 1);
-				break;
-
-			case 2: // random additional cash
-				nation.cash += Misc.Random(5000);
-				break;
-
-			case 3: // random additional food
-				nation.food += Misc.Random(5000);
-				break;
-
-			case 4: // random additional skilled units
-				mobileCount = Misc.Random(5) + 1;
-
-				// 0-don't recruit spies
-				for (int i = 0; i < mobileCount && recruitable_race_pop(raceId, false) > 0; i++)
-				{
-					int unitRecno = mobilize_town_people(raceId, true, false); // 1-dec pop, 0-don't mobilize spies
-
-					if (unitRecno != 0)
-					{
-						Unit unit = UnitArray[unitRecno];
-
-						//------- randomly set a skill -------//
-
-						int skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
-						int loopCount = 0; // no spying skill
-
-						// no spy skill as skill_id can't be set as SKILL_SPY, for spies, spy_recno must be set instead
-						while (skillId == Skill.SKILL_SPYING)
-						{
-							if (++skillId > Skill.MAX_TRAINABLE_SKILL)
-							{
-								skillId = 1;
-							}
-
-						}
-
-						unit.skill.skill_id = skillId;
-						unit.skill.skill_level = 50 + Misc.Random(50);
-						unit.set_combat_level(50 + Misc.Random(50));
-					}
-					else
-						break;
-				}
-
-				break;
-		}
-
-		NationArray.update_statistic();
-
-		return nationRecno != 0;
-	}
-
-	public bool can_recruit(int raceId)
-	{
-		//----------------------------------------------------//
-		// Cannot recruit when you have none of your own camps
-		// linked to this town, but your enemies have camps
-		// linked to it.
-		//----------------------------------------------------//
-
-		if (!has_linked_own_camp && has_linked_enemy_camp)
-			return false;
-
-		if (recruitable_race_pop(raceId, true) == 0)
-			return false;
-
-		//---------------------------------//
-
-		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY;
-
-		//--- for the AI, only recruit if the loyalty still stay at 30 after recruiting the unit ---//
-
-		// 0-don't actually decrease it, just return the loyalty to be decreased.
-		if (ai_town && nation_recno != 0)
-			minRecruitLoyalty += 3 + recruit_dec_loyalty(raceId, false);
-
-		return race_loyalty_array[raceId - 1] >= minRecruitLoyalty;
-	}
-
-	public bool can_train(int raceId)
-	{
-		int recruitableCount = jobless_race_pop_array[raceId - 1];
-
-		return has_linked_own_camp && recruitableCount > 0 &&
-		       NationArray[nation_recno].cash > GameConstants.TRAIN_SKILL_COST;
-	}
-
-	// if not called by Town::migrate, don't set migrateNow to TRUE
-	public bool can_migrate(int destTownRecno, bool migrateNow = false, int raceId = 0)
-	{
-		if (raceId == 0)
-		{
-			//TODO rewrite
-			//raceId = browse_selected_race_id();
-
-			if (raceId == 0)
-				return false;
-		}
-
-		Town destTown = TownArray[destTownRecno];
-
-		if (destTown.population >= GameConstants.MAX_TOWN_POPULATION)
-			return false;
-
-		//---- if there are still jobless units ----//
-
-		if (recruitable_race_pop(raceId, true) > 0) // 1-allow migrate spy 
-		{
-			if (migrateNow)
-				move_pop(destTown, raceId, false); // 0-doesn't have job 
-
-			return true;
-		}
-
-		//--- if there is no jobless units left -----//
-
-		if (race_pop_array[raceId - 1] > 0)
-		{
-			//---- scan for firms that are linked to this town ----//
-
-			for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-			{
-				Firm firm = FirmArray[linked_firm_array[i]];
-
-				//---- only for firms whose workers live in towns ----//
-
-				if (!FirmRes[firm.firm_id].live_in_town)
-					continue;
-
-				//---- if the target town is within the effective range of this firm ----//
-
-				if (Misc.rects_distance(destTown.loc_x1, destTown.loc_y1, destTown.loc_x2, destTown.loc_y2,
-					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) >
-				    InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-				{
-					continue;
-				}
-
-				//------- scan for workers -----------//
-
-				foreach (Worker worker in firm.workers)
-				{
-					//--- if the worker lives in this town ----//
-
-					if (worker.race_id == raceId && worker.town_recno == town_recno)
-					{
-						if (migrateNow)
-						{
-							if (FirmRes[firm.firm_id].live_in_town)
-								worker.town_recno = destTownRecno;
-							else
-								worker.town_recno = 0;
-
-							move_pop(destTown, raceId, true); // 1-has job
-						}
-
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
-	public void move_pop(Town destTown, int raceId, bool hasJob)
-	{
-		//--- if the only pop of this race in the source town are spies ---//
-
-		// only for peasant, for job unit, spy_place==Spy.SPY_FIRM and it isn't related to race_spy_count_array[]
-		if (!hasJob)
-		{
-
-			if (race_spy_count_array[raceId - 1] == jobless_race_pop_array[raceId - 1])
-			{
-				int spySeqId = Misc.Random(race_spy_count_array[raceId - 1]) + 1; // randomly pick one of the spies
-
-				int spyRecno = SpyArray.find_town_spy(town_recno, raceId, spySeqId);
-
-				SpyArray[spyRecno].spy_place_para = destTown.town_recno; // set the place_para of the spy
-
-				race_spy_count_array[raceId - 1]--;
-				destTown.race_spy_count_array[raceId - 1]++;
-			}
-		}
-
-		//------------------------------------------//
-
-		destTown.inc_pop(raceId, hasJob, Convert.ToInt32(race_loyalty_array[raceId - 1]));
-
-		// the unit doesn't have a job - this must be called finally as dec_pop() will have the whole town deleted if there is only one pop left
-		dec_pop(raceId, hasJob);
-	}
-
-	public int pick_random_race(bool pickNonRecruitableAlso, bool pickSpyFlag)
-	{
-		int totalPop = 0;
-
-		if (pickNonRecruitableAlso)
-		{
-			totalPop = population;
-		}
-		else
-		{
-			totalPop = jobless_population;
-			if (train_unit_recno != 0)
-				totalPop -= 1;
-
-			if (!pickSpyFlag) // if don't pick spies
-			{
-				for (int i = 0; i < GameConstants.MAX_RACE; i++)
-					totalPop -= race_spy_count_array[i];
-
-				if (totalPop == -1) // it can be -1 if the unit being trained is a spy
-					totalPop = 0;
-			}
-		}
-
-		if (totalPop == 0)
-			return 0;
-
-		int randomPersonId = Misc.Random(totalPop) + 1;
-		int popSum = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (pickNonRecruitableAlso)
-				popSum += race_pop_array[i];
-			else
-				popSum += recruitable_race_pop(i + 1, pickSpyFlag);
-
-			if (randomPersonId <= popSum)
-				return i + 1;
-		}
-
-		return 0;
+		return closestFirmRecno;
 	}
 
 	public int camp_influence(int unitRecno)
@@ -2321,7 +2716,35 @@ public class Town
 
 		return thisInfluence;
 	}
+	
+	public bool has_player_spy()
+	{
+		int i;
+		for (i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_spy_count_array[i] > 0)
+				break;
+		}
 
+		if (i == GameConstants.MAX_RACE) // no spies in this nation
+			return false;
+
+		//----- look for player spy in the spy_array -----//
+
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.spy_place == Spy.SPY_TOWN &&
+			    spy.spy_place_para == town_recno &&
+			    spy.true_nation_recno == NationArray.player_recno)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	
 	public void setup_link()
 	{
 		//-----------------------------------------------------------------------------//
@@ -2500,6 +2923,115 @@ public class Town
 		}
 	}
 
+	public bool can_toggle_firm_link(int firmRecno)
+	{
+		if (nation_recno == 0) // cannot toggle for independent town
+			return false;
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			if (linked_firm_array[i] != firmRecno)
+				continue;
+
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			switch (firm.firm_id)
+			{
+				//-- you can only toggle a link to a camp if the camp is yours --//
+
+				case Firm.FIRM_CAMP:
+					return firm.nation_recno == nation_recno;
+
+				//--- town to market link is governed by trade treaty and cannot be toggled ---//
+
+				case Firm.FIRM_MARKET:
+					return false; // !nation_array[nation_recno].get_relation(firm.nation_recno).trade_treaty;
+
+				default:
+					return FirmRes[firm.firm_id].is_linkable_to_town;
+			}
+		}
+
+		return false;
+	}
+
+	public void toggle_firm_link(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
+	{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <town recno> <link Id> <toggle Flag>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TOGGLE_LINK_FIRM, 3*sizeof(short));
+		//shortPtr[0] = town_recno;
+		//shortPtr[1] = linkId;
+		//shortPtr[2] = toggleFlag;
+		//return;
+		//}
+
+		Firm linkedFirm = FirmArray[linked_firm_array[linkId - 1]];
+		int linkedNationRecno = linkedFirm.nation_recno;
+
+		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
+		bool sameNation = linkedNationRecno == nation_recno || linkedNationRecno == 0 || nation_recno == 0;
+
+		if (toggleFlag)
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1) // 0 if setBoth == -1
+				linked_firm_enable_array[linkId - 1] = InternalConstants.LINK_EE;
+			else
+				linked_firm_enable_array[linkId - 1] |= InternalConstants.LINK_ED;
+		}
+		else
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1)
+				linked_firm_enable_array[linkId - 1] = InternalConstants.LINK_DD;
+			else
+				linked_firm_enable_array[linkId - 1] &= ~InternalConstants.LINK_ED;
+		}
+
+		//------ set the linked flag of the opposite firm -----//
+
+		Firm firm = FirmArray[linked_firm_array[linkId - 1]];
+
+		for (int i = firm.linked_town_array.Count - 1; i >= 0; i--)
+		{
+			if (firm.linked_town_array[i] == town_recno)
+			{
+				if (toggleFlag)
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						firm.linked_town_enable_array[i] = InternalConstants.LINK_EE;
+					else
+						firm.linked_town_enable_array[i] |= InternalConstants.LINK_DE;
+				}
+				else
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						firm.linked_town_enable_array[i] = InternalConstants.LINK_DD;
+					else
+						firm.linked_town_enable_array[i] &= ~InternalConstants.LINK_DE;
+				}
+
+				break;
+			}
+		}
+
+		//-------- update the town's influence --------//
+
+		if (nation_recno == 0)
+			update_target_resistance();
+
+		//--- redistribute demand if a link to market place has been toggled ---//
+
+		if (linkedFirm.firm_id == Firm.FIRM_MARKET)
+			TownArray.distribute_demand();
+	}
+
+	public void toggle_town_link(int linkId, int toggleFlag, char remoteAction, int setBoth = 0)
+	{
+		// Function is unused, and not updated to support town networks.
+		return;
+	}
+
 	public int linked_active_camp_count()
 	{
 		int linkedCount = 0;
@@ -2556,38 +3088,6 @@ public class Town
 		return townSoldiersCount;
 	}
 
-	public bool can_toggle_firm_link(int firmRecno)
-	{
-		if (nation_recno == 0) // cannot toggle for independent town
-			return false;
-
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			if (linked_firm_array[i] != firmRecno)
-				continue;
-
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			switch (firm.firm_id)
-			{
-				//-- you can only toggle a link to a camp if the camp is yours --//
-
-				case Firm.FIRM_CAMP:
-					return firm.nation_recno == nation_recno;
-
-				//--- town to market link is governed by trade treaty and cannot be toggled ---//
-
-				case Firm.FIRM_MARKET:
-					return false; // !nation_array[nation_recno].get_relation(firm.nation_recno).trade_treaty;
-
-				default:
-					return FirmRes[firm.firm_id].is_linkable_to_town;
-			}
-		}
-
-		return false;
-	}
-
 	public void update_camp_link()
 	{
 		//--- enable the link of the town's side to all linked camps ---//
@@ -2634,135 +3134,6 @@ public class Town
 		}
 	}
 
-	public void init_pop(int raceId, int addPop, int loyalty, bool hasJob = false, bool firstInit = false)
-	{
-		if (population >= GameConstants.MAX_TOWN_POPULATION)
-			return;
-
-		int addPopulation = Math.Min(addPop, GameConstants.MAX_TOWN_POPULATION - population);
-
-		//-------- update population ---------//
-
-		race_pop_array[raceId - 1] += addPopulation;
-		population += addPopulation;
-
-		if (!hasJob)
-		{
-			jobless_population += addPopulation;
-			jobless_race_pop_array[raceId - 1] += addPopulation;
-		}
-
-		//------- update loyalty --------//
-
-		if (firstInit) // first initialization at the beginning of the game
-		{
-			if (nation_recno != 0)
-			{
-				race_loyalty_array[raceId - 1] = loyalty;
-				race_target_loyalty_array[raceId - 1] = loyalty;
-			}
-			else
-			{
-				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
-				{
-					race_resistance_array[raceId - 1, j] = loyalty;
-					race_target_resistance_array[raceId - 1, j] = loyalty;
-				}
-			}
-		}
-		else
-		{
-			if (nation_recno != 0)
-			{
-				race_loyalty_array[raceId - 1] =
-					(race_loyalty_array[raceId - 1] * (race_pop_array[raceId - 1] - addPopulation)
-					 + loyalty * addPopulation) / race_pop_array[raceId - 1];
-
-				race_target_loyalty_array[raceId - 1] = Convert.ToInt32(race_loyalty_array[raceId - 1]);
-			}
-			else
-			{
-				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
-				{
-					race_resistance_array[raceId - 1, j] =
-						(race_resistance_array[raceId - 1, j] * (race_pop_array[raceId - 1] - addPopulation)
-						 + loyalty * addPopulation) / race_pop_array[raceId - 1];
-
-					race_target_resistance_array[raceId - 1, j] = Convert.ToInt32(race_resistance_array[raceId - 1, j]);
-				}
-			}
-		}
-
-		//---------- update town parameters ----------//
-
-		TownArray.distribute_demand();
-
-		if (nation_recno != 0)
-			update_loyalty();
-		else
-			update_resistance();
-	}
-
-	public void inc_pop(int raceId, bool unitHasJob, int unitLoyalty)
-	{
-		//---------- increase population ----------//
-
-		population++;
-		race_pop_array[raceId - 1]++;
-
-		if (!unitHasJob)
-		{
-			jobless_population++;
-			jobless_race_pop_array[raceId - 1]++;
-		}
-
-		//------- update loyalty --------//
-
-		if (nation_recno != 0) // if the unit has an unit
-		{
-			race_loyalty_array[raceId - 1] =
-				(race_loyalty_array[raceId - 1] * (race_pop_array[raceId - 1] - 1) + unitLoyalty)
-				/ race_pop_array[raceId - 1];
-		}
-
-		//-- if the race's population exceeds the capacity of the town layout --//
-
-		if (race_pop_array[raceId - 1] > max_race_pop_array[raceId - 1])
-		{
-			auto_set_layout();
-		}
-	}
-
-	public void dec_pop(int raceId, bool unitHasJob)
-	{
-		population--;
-		race_pop_array[raceId - 1]--;
-
-		if (!unitHasJob)
-		{
-			jobless_population--;
-			jobless_race_pop_array[raceId - 1]--;
-		}
-
-		//------- if all the population are gone --------//
-
-		if (population == 0) // it will be deleted in TownArray::process()
-		{
-			if (nation_recno == NationArray.player_recno)
-				NewsArray.town_abandoned(town_recno);
-
-			Deinit();
-			return;
-		}
-
-		//-- if the race's population drops to too low, change the town layout --//
-
-		if (race_pop_array[raceId - 1] <= max_race_pop_array[raceId - 1] - TownRes.POPULATION_PER_HOUSE)
-		{
-			auto_set_layout();
-		}
-	}
-
 	public bool has_linked_camp(int nationRecno, bool needOverseer)
 	{
 		for (int i = 0; i < linked_firm_array.Count; i++)
@@ -2778,120 +3149,8 @@ public class Town
 
 		return false;
 	}
-
-	public void auto_set_layout()
-	{
-		layout_id = think_layout_id();
-
-		TownLayout townLayout = TownRes.get_layout(layout_id);
-		//TownSlot   firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno);
-		int[] raceNeedBuildCount = new int[GameConstants.MAX_RACE];
-
-		for (int i = 0; i < slot_object_id_array.Length; i++)
-			slot_object_id_array[i] = 0;
-		for (int i = 0; i < max_race_pop_array.Length; i++)
-			max_race_pop_array[i] = 0;
-		for (int i = 0; i < raceNeedBuildCount.Length; i++)
-			raceNeedBuildCount[i] = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] > 0)
-				raceNeedBuildCount[i] += (race_pop_array[i] - 1) / TownRes.POPULATION_PER_HOUSE + 1;
-		}
-
-		//--- assign the first house to each race, each present race will at least have one house ---//
-
-		int firstRaceId = ConfigAdv.GetRandomRace(); // random match
-		int raceId = firstRaceId;
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE)
-			{
-				while (true) // next race
-				{
-					if (++raceId > GameConstants.MAX_RACE)
-						raceId = 1;
-
-					if (raceId == ((firstRaceId == GameConstants.MAX_RACE)
-						    ? 1
-						    : firstRaceId + 1)) // finished the first house for all races
-						goto label_distribute_house;
-
-					if (raceNeedBuildCount[raceId - 1] >
-					    0) // if this race need buildings, skip all races that do not need buildings
-						break;
-				}
-
-				slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, raceId);
-
-				raceNeedBuildCount[raceId - 1]--;
-				max_race_pop_array[raceId - 1] += TownRes.POPULATION_PER_HOUSE;
-			}
-		}
-
-		//------- distribute the remaining houses -------//
-
-		label_distribute_house:
-
-		int bestRaceId, maxNeedBuildCount;
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE && slot_object_id_array[i] == 0)
-			{
-				bestRaceId = 0;
-				maxNeedBuildCount = 0;
-
-				for (raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
-				{
-					if (raceNeedBuildCount[raceId - 1] > maxNeedBuildCount)
-					{
-						bestRaceId = raceId;
-						maxNeedBuildCount = raceNeedBuildCount[raceId - 1];
-					}
-				}
-
-				if (bestRaceId == 0) // all races have assigned with their needed houses
-					break;
-
-				slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, bestRaceId);
-				raceNeedBuildCount[bestRaceId - 1]--;
-				max_race_pop_array[bestRaceId - 1] += TownRes.POPULATION_PER_HOUSE;
-			}
-		}
-
-		//------- set plants in the town layout -------//
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			switch (firstTownSlot.build_type)
-			{
-				case TownSlot.TOWN_OBJECT_PLANT:
-					slot_object_id_array[i] =
-						PlantRes.scan(0, 'T',
-							0); // 'T'-town only, 1st 0-any zone area, 2nd 0-any terain type, 3rd-age level
-					break;
-
-				case TownSlot.TOWN_OBJECT_FARM:
-					slot_object_id_array[i] = firstTownSlot.build_code;
-					break;
-
-				case TownSlot.TOWN_OBJECT_HOUSE:
-					if (slot_object_id_array[i] == 0)
-						slot_object_id_array[i] = TownRes.scan_build(townLayout.first_slot_recno + i, ConfigAdv.GetRandomRace());
-					break;
-			}
-		}
-	}
-
+	
+	
 	public void set_nation(int newNationRecno)
 	{
 		if (nation_recno == newNationRecno)
@@ -3030,36 +3289,6 @@ public class Town
 			Info.disp();
 	}
 
-	public void surrender(int toNationRecno)
-	{
-		//--- if this is a rebel town and the mobile rebel count is > 0, don't surrender (this function can be called by update_resistance() when resistance drops to zero ---//
-
-		if (rebel_recno != 0)
-		{
-			Rebel rebel = RebelArray[rebel_recno];
-
-			if (rebel.mobile_rebel_count > 0)
-				return;
-		}
-
-		//----------------------------------------//
-
-		if (nation_recno == NationArray.player_recno ||
-		    toNationRecno == NationArray.player_recno)
-		{
-			NewsArray.town_surrendered(town_recno, toNationRecno);
-			// ##### begin Gilbert 9/10 ######//
-			// sound effect
-			if (toNationRecno == NationArray.player_recno)
-			{
-				SECtrl.immediate_sound("GET_TOWN");
-			}
-			// ##### end Gilbert 9/10 ######//
-		}
-
-		set_nation(toNationRecno);
-	}
-
 	public void set_hostile_nation(int nationRecno)
 	{
 		if (nationRecno == 0)
@@ -3083,147 +3312,6 @@ public class Town
 			return false;
 
 		return (independ_town_nation_relation & (0x1 << nationRecno)) != 0;
-	}
-
-	public int create_rebel_unit(int raceId, bool isLeader)
-	{
-		/*	//--- do not mobilize spies as rebels ----//
-	
-			//---------------------------------------//
-			//
-			// If there are spies in this town, first mobilize
-			// the spies whose actions are "Sow Dissent".
-			//
-			//---------------------------------------//
-	
-			int idleSpyCount=0;
-	
-			if( race_spy_count_array[raceId-1] > 0 )
-			{
-				Spy* spy;
-	
-				for( int i=SpyArray.size() ; i>0 ; i-- )
-				{
-					if( SpyArray.is_deleted(i) )
-						continue;
-	
-					spy = SpyArray[i];
-	
-					if( spy.spy_place==Spy.SPY_TOWN && spy.spy_place_para==town_recno && spy.race_id==raceId )
-					{
-						if( spy.action_mode == SPY_SOW_DISSENT )
-						{
-							int unitRecno = spy.mobilize_town_spy();
-	
-							if( isLeader )
-								unit_array[unitRecno].set_rank(Unit.RANK_GENERAL);
-	
-							return unitRecno;
-						}
-	
-						idleSpyCount++;
-					}
-				}
-			}
-			//---- if the remaining population are all sleep spy, no new rebels ----//
-	
-			if( race_pop_array[raceId-1] == idleSpyCount )
-				return 0;
-	
-		*/
-
-		//---- if no jobless people, make workers and overseers jobless ----//
-
-		// 0-don't recruit spies as the above code should have handle spies already
-		if (recruitable_race_pop(raceId, false) == 0)
-		{
-			if (!unjob_town_people(raceId, false, false)) // 0-don't unjob spies, 0-don't unjob overseer
-				return 0;
-
-			if (recruitable_race_pop(raceId, false) == 0) // if the unjob unit is a spy too, then don't rebel
-				return 0;
-		}
-
-		//----look for an empty location for the unit to stand ----//
-		//--- scan for the 5 rows right below the building ---//
-
-		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
-
-		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return 0;
-
-		//---------- add the unit now -----------//
-
-		int rankId;
-
-		if (isLeader)
-			rankId = Unit.RANK_GENERAL;
-		else
-			rankId = Unit.RANK_SOLDIER;
-
-		Unit unit = UnitArray.AddUnit(unitId, 0, rankId, 0, xLoc, yLoc);
-
-		dec_pop(raceId, false); // decrease the town's population
-
-		//------- set the unit's parameters --------//
-
-		if (isLeader)
-		{
-			// the higher the population is, the higher the combat level will be
-			int combatLevel = 10 + population * 2 + Misc.Random(10);
-			// the higher the population is, the higher the combat level will be
-			int leadershipLevel = 10 + population + Misc.Random(10);
-
-			unit.set_combat_level(Math.Min(combatLevel, 100));
-
-			unit.skill.skill_id = Skill.SKILL_LEADING;
-			unit.skill.skill_level = Math.Min(leadershipLevel, 100);
-		}
-		else
-		{
-			unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL); // combat: 10
-		}
-
-		return unit.sprite_recno;
-	}
-
-	public int mobilize_town_people(int raceId, bool decPop, bool mobilizeSpy)
-	{
-		//---- if no jobless people, make workers and overseers jobless ----//
-
-		if (recruitable_race_pop(raceId, mobilizeSpy) == 0)
-		{
-			if (!unjob_town_people(raceId, mobilizeSpy, false)) // 0-don't unjob overseer
-				return 0;
-		}
-
-		//----look for an empty locatino for the unit to stand ----//
-		//--- scan for the 5 rows right below the building ---//
-
-		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
-
-		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return 0;
-
-		//---------- add the unit now -----------//
-
-		Unit unit = UnitArray.AddUnit(unitId, nation_recno, Unit.RANK_SOLDIER,
-			Convert.ToInt32(race_loyalty_array[raceId - 1]), xLoc, yLoc);
-
-		//------- set the unit's parameters --------//
-
-		unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL);
-
-		//-------- decrease the town's population ------//
-
-		if (decPop)
-			dec_pop(raceId, false);
-
-		return unit.sprite_recno;
 	}
 
 	public bool mobilize_defender(int attackerNationRecno)
@@ -3360,245 +3448,49 @@ public class Town
 		return unitRecno != 0;
 	}
 
-	public bool migrate_to(int destTownRecno, int remoteAction, int raceId = 0, int count = 1)
+	public void clear_defense_mode()
 	{
-		if (count <= 0 || count > GameConstants.MAX_TOWN_POPULATION)
+		//------------------------------------------------------------------//
+		// change defense unit's to non-defense mode
+		//------------------------------------------------------------------//
+		foreach (Unit unit in UnitArray)
 		{
-			return false;
+			if (unit.in_defend_town_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO
+			                               && unit.action_misc_para == town_recno)
+				unit.clear_town_defend_mode(); // note: maybe, unit.nation_recno != nation_recno
 		}
-
-		if (raceId == 0)
-		{
-			//TODO rewrite
-			//raceId = browse_selected_race_id();
-
-			if (raceId == 0)
-				return false;
-		}
-
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <town recno> <dest town recno> <race id> <count>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_MIGRATE, 4*sizeof(short));
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = destTownRecno;
-		//shortPtr[2] = raceId;
-		//shortPtr[3] = count;
-		//return 0;
-		//}
-
-		bool continueMigrate = true;
-		int migrated = 0;
-		while (continueMigrate && migrated < count)
-		{
-			continueMigrate = can_migrate(destTownRecno, true, raceId); // 1- migrate now, 1-allow migrate spy
-			if (continueMigrate)
-				++migrated;
-		}
-
-		return migrated > 0;
 	}
 
-	public void collect_yearly_tax()
+	public void reduce_defender_count()
 	{
-		NationArray[nation_recno].add_income(NationBase.INCOME_TAX, population * GameConstants.TAX_PER_PERSON);
+		if (--town_defender_count == 0)
+			independ_town_nation_relation = 0;
+
+		//------- if this town is controlled by rebels --------//
+
+		if (rebel_recno != 0)
+			RebelArray[rebel_recno].mobile_rebel_count--; // decrease the no. of mobile rebel units
 	}
 
-	public void collect_tax(int remoteAction)
+	public void auto_defense(int targetRecno)
 	{
-		if (!has_linked_own_camp)
-			return;
+		int townRecno = town_recno;
 
-		//------------------------------------------//
-
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <town recno> <race id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_COLLECT_TAX, sizeof(short));
-		//shortPtr[0] = town_recno;
-		//return;
-		//}
-
-		//----- calculate the loyalty decrease amount ------//
-		//
-		// If you reward too frequently, the negative effect
-		// on loyalty will get larger.
-		//
-		//--------------------------------------------------//
-
-		int loyaltyDecrease = GameConstants.COLLECT_TAX_LOYALTY_DECREASE + accumulated_collect_tax_penalty / 5;
-
-		loyaltyDecrease = Math.Min(loyaltyDecrease, GameConstants.COLLECT_TAX_LOYALTY_DECREASE + 10);
-
-		accumulated_collect_tax_penalty += 10;
-
-		//------ decrease the loyalty of the town people ------//
-
-		// ##### patch begin Gilbert 5/8 ######//
-		//	for( int i=0 ; i<MAX_RACE ; i++ )
-		//		change_loyalty( i+1, (float) -loyaltyDecrease );
-		//----------- increase cash ------------//
-		//	NationArray[nation_recno].add_income(INCOME_TAX, (float)population * TAX_PER_PERSON );
-
-		// ------ cash increase depend on loyalty drop --------//
-		double taxCollected = 0.0;
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
 		{
-			double beforeLoyalty = race_loyalty_array[i];
-			change_loyalty(i + 1, -loyaltyDecrease);
-			taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * GameConstants.TAX_PER_PERSON /
-			                loyaltyDecrease;
-		}
+			Firm firm = FirmArray[linked_firm_array[i]];
 
-		//----------- increase cash ------------//
-
-		NationArray[nation_recno].add_income(NationBase.INCOME_TAX, taxCollected);
-
-		// ##### patch end Gilbert 5/8 ######//
-
-		//------------ think rebel -------------//
-
-		think_rebel();
-	}
-
-	public void reward(byte remoteAction)
-	{
-		if (!has_linked_own_camp)
-			return;
-
-		//------------------------------------------//
-
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <town recno> <race id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_REWARD, sizeof(short));
-		//shortPtr[0] = town_recno;
-		//return;
-		//}
-
-		//----- calculate the loyalty increase amount ------//
-		//
-		// If you reward too frequently, the effect of the
-		// granting will be diminished.
-		//
-		//--------------------------------------------------//
-
-		int loyaltyIncrease = GameConstants.TOWN_REWARD_LOYALTY_INCREASE - accumulated_reward_penalty / 5;
-
-		loyaltyIncrease = Math.Max(3, loyaltyIncrease);
-
-		accumulated_reward_penalty += 10;
-
-		//------ increase the loyalty of the town people ------//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			change_loyalty(i + 1, loyaltyIncrease);
-
-		//----------- decrease cash ------------//
-
-		NationArray[nation_recno].add_expense(NationBase.EXPENSE_GRANT_OWN_TOWN,
-			population * GameConstants.TOWN_REWARD_PER_PERSON);
-	}
-
-	public void distribute_demand()
-	{
-		//------ scan for a firm to input raw materials --------//
-
-		MarketGoodsInfo[] marketGoodsInfoArray = new MarketGoodsInfo[GameConstants.MAX_PRODUCT];
-		for (int i = 0; i < marketGoodsInfoArray.Length; i++)
-			marketGoodsInfoArray[i] = new MarketGoodsInfo();
-
-		//------- count the no. of market place that are near to this town ----//
-
-		for (int linkedFirmId = 0; linkedFirmId < linked_firm_array.Count; linkedFirmId++)
-		{
-			Firm firm = FirmArray[linked_firm_array[linkedFirmId]];
-
-			if (firm.firm_id != Firm.FIRM_MARKET)
+			if (firm.nation_recno != nation_recno || firm.firm_id != Firm.FIRM_CAMP)
 				continue;
 
-			if (linked_firm_enable_array[linkedFirmId] != InternalConstants.LINK_EE)
-				continue;
+			//-------------------------------------------------------//
+			// the firm is a military camp of our nation
+			//-------------------------------------------------------//
+			FirmCamp camp = (FirmCamp)firm;
+			camp.defense(targetRecno);
 
-			firm = FirmArray[linked_firm_array[linkedFirmId]];
-
-			//---------- process market -------------//
-
-			for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
-			{
-				MarketGoods marketGoods = ((FirmMarket)firm).market_product_array[i];
-				MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
-
-				double thisSupply = marketGoods.stock_qty;
-				marketGoodsInfo.markets.Add((FirmMarket)firm);
-				marketGoodsInfo.total_supply += thisSupply;
-
-				// vars for later use, so that towns will always try to buy goods from their own markets first.
-				if (firm.nation_recno == nation_recno)
-					marketGoodsInfo.total_own_supply += thisSupply;
-			}
-		}
-
-		//-- set the monthly demand of the town on each product --//
-
-		double townDemand = jobless_population * GameConstants.PEASANT_GOODS_MONTH_DEMAND
-		                    + worker_population() * GameConstants.WORKER_GOODS_MONTH_DEMAND;
-
-		//---------- sell goods now -----------//
-
-		for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
-		{
-			MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
-
-			for (int j = 0; j < marketGoodsInfo.markets.Count; j++)
-			{
-				//----------------------------------//
-				//
-				// If the totalSupply < town demand:
-				// a market's demand = its_supply + (town_demand-totalSupply) / market_count
-				//
-				// If the totalSupply > town demand:
-				// a market's demand = town_demand * its_supply / totalSupply
-				//
-				//----------------------------------//
-
-				FirmMarket firmMarket = marketGoodsInfo.markets[j];
-
-				MarketGoods marketGoods = firmMarket.market_product_array[i];
-
-				if (marketGoods != null)
-				{
-					//---- if the demand is larger than the supply -----//
-
-					if (marketGoodsInfo.total_supply <= townDemand)
-					{
-						// evenly distribute the excessive demand on all markets
-						marketGoods.month_demand += marketGoods.stock_qty
-						                            + (townDemand - marketGoodsInfo.total_supply) /
-						                            marketGoodsInfo.markets.Count;
-					}
-					else //---- if the supply is larger than the demand -----//
-					{
-						//--- towns always try to buy goods from their own markets first ---//
-
-						double ownShareDemand = Math.Min(townDemand, marketGoodsInfo.total_own_supply);
-
-						if (firmMarket.nation_recno == nation_recno)
-						{
-							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
-							if (marketGoodsInfo.total_own_supply > 0.0)
-								marketGoods.month_demand += ownShareDemand * marketGoods.stock_qty /
-								                            marketGoodsInfo.total_own_supply;
-						}
-						else
-						{
-							// Note: total_supply > 0.0f, because else the first case above (demand larger than supply) will be triggered
-							marketGoods.month_demand += (townDemand - ownShareDemand) * marketGoods.stock_qty /
-							                            marketGoodsInfo.total_supply;
-						}
-					}
-				}
-			}
+			if (TownArray.IsDeleted(townRecno))
+				break; // the last unit in the town has be mobilized
 		}
 	}
 
@@ -3754,28 +3646,41 @@ public class Town
 		}
 	}
 
-	public void clear_defense_mode()
+	public int mobilize_town_people(int raceId, bool decPop, bool mobilizeSpy)
 	{
-		//------------------------------------------------------------------//
-		// change defense unit's to non-defense mode
-		//------------------------------------------------------------------//
-		foreach (Unit unit in UnitArray)
+		//---- if no jobless people, make workers and overseers jobless ----//
+
+		if (recruitable_race_pop(raceId, mobilizeSpy) == 0)
 		{
-			if (unit.in_defend_town_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO
-			                               && unit.action_misc_para == town_recno)
-				unit.clear_town_defend_mode(); // note: maybe, unit.nation_recno != nation_recno
+			if (!unjob_town_people(raceId, mobilizeSpy, false)) // 0-don't unjob overseer
+				return 0;
 		}
-	}
 
-	public void reduce_defender_count()
-	{
-		if (--town_defender_count == 0)
-			independ_town_nation_relation = 0;
+		//----look for an empty locatino for the unit to stand ----//
+		//--- scan for the 5 rows right below the building ---//
 
-		//------- if this town is controlled by rebels --------//
+		int unitId = RaceRes[raceId].basic_unit_id;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
 
-		if (rebel_recno != 0)
-			RebelArray[rebel_recno].mobile_rebel_count--; // decrease the no. of mobile rebel units
+		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return 0;
+
+		//---------- add the unit now -----------//
+
+		Unit unit = UnitArray.AddUnit(unitId, nation_recno, Unit.RANK_SOLDIER,
+			Convert.ToInt32(race_loyalty_array[raceId - 1]), xLoc, yLoc);
+
+		//------- set the unit's parameters --------//
+
+		unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL);
+
+		//-------- decrease the town's population ------//
+
+		if (decPop)
+			dec_pop(raceId, false);
+
+		return unit.sprite_recno;
 	}
 
 	public void kill_town_people(int raceId, int attackerNationRecno = 0)
@@ -3824,640 +3729,699 @@ public class Town
 		dec_pop(raceId, false); // 0-doesn't have a job
 	}
 
-	public bool can_grant_to_non_own_town(int grantNationRecno)
+	private bool unjob_town_people(int raceId, bool unjobSpy, bool unjobOverseer, bool killOverseer = false)
 	{
-		if (nation_recno == grantNationRecno) // only for independent town
-			return false;
+		//---- if no jobless people, workers will then get killed -----//
 
-		if (nation_recno == 0) // independent town
+		int racePop = jobless_race_pop_array[raceId - 1];
+
+		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
 		{
-			return has_linked_camp(grantNationRecno, true); // 1-only count camps with overseers
-		}
-		else // for nation town, when the enemy doesn't have camps linked to it and the granting nation has camps linked to it
-		{
-			return !has_linked_camp(nation_recno, false) && // 0-count camps regardless of the presence of overseers
-			       has_linked_camp(grantNationRecno, true); // 1-only count camps with overseers
-		}
-	}
-
-	public int grant_to_non_own_town(int grantNationRecno, int remoteAction)
-	{
-		if (!can_grant_to_non_own_town(grantNationRecno))
-			return 0;
-
-		Nation grantNation = NationArray[grantNationRecno];
-
-		if (grantNation.cash < 0)
-			return 0;
-
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_GRANT_INDEPENDENT, 2*sizeof(short) );
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = grantNationRecno;
-		//return 1;
-		//}
-
-		//---- calculate the resistance to be decreased -----//
-
-		int resistanceDec = GameConstants.IND_TOWN_GRANT_RESISTANCE_DECREASE - accumulated_enemy_grant_penalty / 5;
-
-		resistanceDec = Math.Max(3, resistanceDec);
-
-		accumulated_enemy_grant_penalty += 10;
-
-		//------ decrease the resistance of the independent villagers ------//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] == 0)
-				continue;
-
-			//----- if this is an independent town ------//
-
-			if (nation_recno == 0)
-			{
-				race_resistance_array[i, grantNationRecno - 1] -= resistanceDec;
-
-				if (race_resistance_array[i, grantNationRecno - 1] < 0)
-					race_resistance_array[i, grantNationRecno - 1] = 0.0;
-			}
-			else //----- if this is an nation town ------//
-			{
-				race_loyalty_array[i] -= resistanceDec;
-
-				if (race_loyalty_array[i] < 0)
-					race_loyalty_array[i] = 0.0;
-			}
-		}
-
-		//----------- decrease cash ------------//
-
-		grantNation.add_expense(NationBase.EXPENSE_GRANT_OTHER_TOWN,
-			population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
-
-		return 1;
-	}
-
-	public void get_most_populated_race(out int mostRaceId1, out int mostRaceId2)
-	{
-		//--- find the two races with most population in the town ---//
-
-		mostRaceId1 = 0;
-		mostRaceId2 = 0;
-
-		if (population == 0)
-			return;
-
-		int mostRacePop1 = 0, mostRacePop2 = 0;
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			int racePop = race_pop_array[i];
-
-			if (racePop == 0)
-				continue;
-
-			if (racePop >= mostRacePop1)
-			{
-				mostRacePop2 = mostRacePop1;
-				mostRacePop1 = racePop;
-
-				mostRaceId2 = mostRaceId1;
-				mostRaceId1 = i + 1;
-			}
-			else if (racePop >= mostRaceId2)
-			{
-				mostRacePop2 = racePop;
-				mostRaceId2 = i + 1;
-			}
-		}
-	}
-
-	public void update_target_loyalty()
-	{
-		if (nation_recno == 0) // return if independent towns
-			return;
-
-		//----- update loyalty of individual races -------//
-		//
-		// Loyalty is determined by:
-		//
-		// - residential harmony
-		// - whether the people are racially homogeneous to the king
-		// - the nation's reputation
-		// - command bases overseeing the town.
-		// - quality of life
-		// - employment rate
-		//
-		// Quality of life is determined by:
-		//
-		// - The provision of goods to the villagers. A more constant
-		//	  supply and a bigger variety of goods give to high quality of life.
-		//
-		//------------------------------------------------//
-
-		//------- set target loyalty of each race --------//
-
-		Nation nation = NationArray[nation_recno];
-		int targetLoyalty;
-		int nationRaceId = nation.race_id;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] == 0)
-				continue;
-
-			//------- calculate the target loyalty -------//
-
-			targetLoyalty = race_harmony(i + 1) / 3 + // 0 to 33
-			                (int)nation.reputation / 4; // -25 to +25
-
-			//---- employment help increase loyalty ----//
-
-			targetLoyalty += 30 - 30 * jobless_race_pop_array[i] / race_pop_array[i]; // +0 to +30
-
-			if (RaceRes.is_same_race(i + 1, nationRaceId))
-				targetLoyalty += 10;
-
-			if (targetLoyalty < 0) // targetLoyalty can be negative if there are hostile races conflicts
-				targetLoyalty = 0;
-
-			if (targetLoyalty > 100)
-				targetLoyalty = 100;
-
-			//----------------------------------------//
-
-			race_target_loyalty_array[i] = targetLoyalty;
-		}
-
-		//----- process command bases that have influence on this town -----//
-
-		int baseInfluence, thisInfluence, commanderRaceId;
-
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
-				continue;
-
 			Firm firm = FirmArray[linked_firm_array[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
-				continue;
+			//------- scan for workers -----------//
 
-			//-------- get nation and commander info ------------//
-
-			Unit unit = UnitArray[firm.overseer_recno];
-			commanderRaceId = unit.race_id;
-
-			Nation baseNation = NationArray[firm.nation_recno];
-
-			//------ if this race is the overseer's race -------//
-
-			baseInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
-
-			if (unit.rank_id == Unit.RANK_KING) // 20 points bonus for king
-				baseInfluence += 20;
-
-			//------------ update all race -----------//
-
-			for (int j = 0; j < GameConstants.MAX_RACE; j++)
+			for (int j = firm.workers.Count - 1; j >= 0; j--)
 			{
-				if (race_pop_array[j] == 0)
+				Worker worker = firm.workers[j];
+				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
 					continue;
 
-				//---- if the overseer's race is the same as this race ---//
+				//--- if the worker lives in this town ----//
 
-				thisInfluence = baseInfluence;
-
-				if (unit.race_id == j + 1)
-					thisInfluence += 8;
-
-				//--- if the overseer's nation's race is the same as this race ---//
-
-				if (baseNation.race_id == j + 1)
-					thisInfluence += 8;
-
-				//------------------------------------------//
-
-				if (firm.nation_recno == nation_recno) // if the command base belongs to the same nation
+				if (worker.race_id == raceId && worker.town_recno == town_recno)
 				{
-					targetLoyalty = race_target_loyalty_array[j] + thisInfluence;
-					race_target_loyalty_array[j] = Math.Min(100, targetLoyalty);
-				}
-				else if (unit.race_id == j + 1) // for enemy camps, only decrease same race peasants
-				{
-					targetLoyalty = race_target_loyalty_array[j] - thisInfluence;
-					race_target_loyalty_array[j] = Math.Max(0, targetLoyalty);
+					if (firm.resign_worker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
+						return false;
+
+					return jobless_race_pop_array[raceId - 1] == racePop + 1;
 				}
 			}
 		}
 
-		//------- apply quality of life -------//
+		//----- if no worker killed, try to kill overseers ------//
 
-		int qolContribution = ConfigAdv.town_loyalty_qol
-			? (quality_of_life - 50) / 3
-			: // -17 to +17
-			0; // off
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		if (unjobOverseer)
 		{
-			if (race_pop_array[i] == 0)
-				continue;
-
-			targetLoyalty = race_target_loyalty_array[i];
-
-			// Quality of life only applies to the part above 30 loyalty
-			if (targetLoyalty > 30)
+			for (int i = linked_firm_array.Count - 1; i >= 0; i--)
 			{
-				targetLoyalty = Math.Max(30, targetLoyalty + qolContribution);
-				race_target_loyalty_array[i] = Math.Min(100, targetLoyalty);
-			}
-		}
+				Firm firm = FirmArray[linked_firm_array[i]];
 
-		//------- update link status to linked enemy camps -------//
+				//------- scan for overseer -----------//
 
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			if (firm.firm_id != Firm.FIRM_CAMP)
-				continue;
-
-			//------------------------------------------//
-			// If this town is linked to a own camp,
-			// disable all links to enemy camps, otherwise
-			// enable all links to enemy camps.
-			//------------------------------------------//
-
-			if (firm.nation_recno != nation_recno)
-				toggle_firm_link(i + 1, !has_linked_own_camp, InternalConstants.COMMAND_AUTO);
-		}
-	}
-
-	public void update_target_resistance()
-	{
-		if (population == 0 || linked_firm_array.Count == 0)
-			return;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			for (int j = 0; j < GameConstants.MAX_NATION; j++)
-			{
-				race_target_resistance_array[i, j] = -1; // -1 means influence is not present
-			}
-		}
-
-		//---- if this town is controlled by rebels, no decrease in resistance ----//
-
-		if (rebel_recno != 0)
-			return;
-
-		//----- count the command base that has influence on this town -----//
-
-		for (int i = 0; i < linked_firm_array.Count; i++)
-		{
-			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
-				continue;
-
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
-				continue;
-
-			//-------- get nation and commander info ------------//
-
-			Unit unit = UnitArray[firm.overseer_recno];
-
-			int curValue = race_target_resistance_array[unit.race_id - 1, unit.nation_recno - 1];
-			int newValue = 100 - camp_influence(firm.overseer_recno);
-
-			// need to do this comparison as there may be more than one command bases of the same nation linked to this town, we use the one with the most influence.
-			if (curValue == -1 || newValue < curValue)
-				race_target_resistance_array[unit.race_id - 1, unit.nation_recno - 1] = newValue;
-		}
-	}
-
-	public void update_loyalty()
-	{
-		if (nation_recno == 0)
-			return;
-
-		//------------- update loyalty -------------//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] == 0)
-				continue;
-
-			double targetLoyalty = race_target_loyalty_array[i];
-
-			if (race_loyalty_array[i] < targetLoyalty)
-			{
-				//--- if this town is linked to enemy camps, but no own camps, no increase in loyalty, only decrease ---//
-
-				if (!has_linked_own_camp && has_linked_enemy_camp)
-					continue;
-
-				//-------------------------------------//
-
-				double loyaltyInc = (targetLoyalty - race_loyalty_array[i]) / 30;
-
-				change_loyalty(i + 1, Math.Max(loyaltyInc, 0.5));
-			}
-			else if (race_loyalty_array[i] > targetLoyalty)
-			{
-				double loyaltyDec = (race_loyalty_array[i] - targetLoyalty) / 30;
-
-				change_loyalty(i + 1, -Math.Max(loyaltyDec, 0.5));
-			}
-		}
-	}
-
-	public void update_resistance()
-	{
-		//------------- update resistance ----------------//
-
-		bool[] zeroResistance = new bool[GameConstants.MAX_NATION];
-		for (int i = 0; i < zeroResistance.Length; i++)
-			zeroResistance[i] = true;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_pop_array[i] == 0)
-			{
-				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
-					race_resistance_array[i, j] = 0.0;
-
-				continue;
-			}
-
-			for (int j = 0; j < GameConstants.MAX_NATION; j++)
-			{
-				if (NationArray.IsDeleted(j + 1))
-					continue;
-
-				if (race_target_resistance_array[i, j] >= 0)
+				if (firm.overseer_recno != 0)
 				{
-					double targetResistance = race_target_resistance_array[i, j];
+					//--- if the overseer lives in this town ----//
 
-					if (race_resistance_array[i, j] > targetResistance) // only decrease, no increase for resistance
+					Unit overseerUnit = UnitArray[firm.overseer_recno];
+
+					if (overseerUnit.race_id == raceId && firm.overseer_town_recno == town_recno)
 					{
-						double decValue = (race_resistance_array[i, j] - targetResistance) / 30.0;
+						if (killOverseer)
+						{
+							firm.kill_overseer();
+						}
+						else
+						{
+							int overseerUnitRecno = firm.overseer_recno;
+							Unit unit = UnitArray[overseerUnitRecno];
+							firm.assign_overseer(0);
+							if (!UnitArray.IsDeleted(overseerUnitRecno) && unit.is_visible())
+								UnitArray.disappear_in_town(overseerUnitRecno, town_recno);
+						}
 
-						race_resistance_array[i, j] -= Math.Max(1.0, decValue);
-
-						// avoid resistance oscillate between taregtLoyalty-1 and taregtLoyalty+1
-						if (race_resistance_array[i, j] < targetResistance)
-							race_resistance_array[i, j] = targetResistance;
+						return true;
 					}
 				}
-
-				// also values between consider 0 and 1 as zero as they are displayed as 0 in the interface
-				if (race_resistance_array[i, j] >= 1.0)
-					zeroResistance[j] = false;
-			}
-		}
-
-		//--- if the town is zero resistance towards any nation, convert to that nation ---//
-
-		for (int j = 0; j < GameConstants.MAX_NATION; j++)
-		{
-			if (NationArray.IsDeleted(j + 1))
-				continue;
-
-			if (zeroResistance[j])
-			{
-				surrender(j + 1);
-				break;
-			}
-		}
-	}
-
-	public void update_product_supply()
-	{
-		for (int i = 0; i < has_product_supply.Length; i++)
-			has_product_supply[i] = 0;
-
-		//----- scan for linked market place -----//
-
-		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-			if (firm.nation_recno != nation_recno || firm.firm_id != Firm.FIRM_MARKET)
-				continue;
-
-			FirmMarket firmMarket = (FirmMarket)firm;
-			
-			//---- check what type of products they are selling ----//
-
-			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
-			{
-				int productId = firmMarket.market_goods_array[j].product_raw_id;
-				if (productId > 1)
-					has_product_supply[productId - 1]++;
-			}
-		}
-	}
-
-	public void change_loyalty(int raceId, double loyaltyChange)
-	{
-		double newLoyalty = race_loyalty_array[raceId - 1] + loyaltyChange;
-
-		newLoyalty = Math.Min(100.0, newLoyalty);
-		newLoyalty = Math.Max(0.0, newLoyalty);
-
-		race_loyalty_array[raceId - 1] = newLoyalty;
-	}
-
-	public void change_resistance(int raceId, int nationRecno, double resistanceChange)
-	{
-		double newResistance = race_resistance_array[raceId - 1, nationRecno - 1] + resistanceChange;
-
-		newResistance = Math.Min(100.0, newResistance);
-		newResistance = Math.Max(0.0, newResistance);
-
-		race_resistance_array[raceId - 1, nationRecno - 1] = newResistance;
-	}
-
-	public void toggle_firm_link(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <town recno> <link Id> <toggle Flag>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TOGGLE_LINK_FIRM, 3*sizeof(short));
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = linkId;
-		//shortPtr[2] = toggleFlag;
-		//return;
-		//}
-
-		Firm linkedFirm = FirmArray[linked_firm_array[linkId - 1]];
-		int linkedNationRecno = linkedFirm.nation_recno;
-
-		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
-		bool sameNation = linkedNationRecno == nation_recno || linkedNationRecno == 0 || nation_recno == 0;
-
-		if (toggleFlag)
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1) // 0 if setBoth == -1
-				linked_firm_enable_array[linkId - 1] = InternalConstants.LINK_EE;
-			else
-				linked_firm_enable_array[linkId - 1] |= InternalConstants.LINK_ED;
-		}
-		else
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
-				linked_firm_enable_array[linkId - 1] = InternalConstants.LINK_DD;
-			else
-				linked_firm_enable_array[linkId - 1] &= ~InternalConstants.LINK_ED;
-		}
-
-		//------ set the linked flag of the opposite firm -----//
-
-		Firm firm = FirmArray[linked_firm_array[linkId - 1]];
-
-		for (int i = firm.linked_town_array.Count - 1; i >= 0; i--)
-		{
-			if (firm.linked_town_array[i] == town_recno)
-			{
-				if (toggleFlag)
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.linked_town_enable_array[i] = InternalConstants.LINK_EE;
-					else
-						firm.linked_town_enable_array[i] |= InternalConstants.LINK_DE;
-				}
-				else
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.linked_town_enable_array[i] = InternalConstants.LINK_DD;
-					else
-						firm.linked_town_enable_array[i] &= ~InternalConstants.LINK_DE;
-				}
-
-				break;
-			}
-		}
-
-		//-------- update the town's influence --------//
-
-		if (nation_recno == 0)
-			update_target_resistance();
-
-		//--- redistribute demand if a link to market place has been toggled ---//
-
-		if (linkedFirm.firm_id == Firm.FIRM_MARKET)
-			TownArray.distribute_demand();
-	}
-
-	public void toggle_town_link(int linkId, int toggleFlag, char remoteAction, int setBoth = 0)
-	{
-		// Function is unused, and not updated to support town networks.
-		return;
-	}
-
-	public void auto_defense(int targetRecno)
-	{
-		int townRecno = town_recno;
-
-		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
-		{
-			Firm firm = FirmArray[linked_firm_array[i]];
-
-			if (firm.nation_recno != nation_recno || firm.firm_id != Firm.FIRM_CAMP)
-				continue;
-
-			//-------------------------------------------------------//
-			// the firm is a military camp of our nation
-			//-------------------------------------------------------//
-			FirmCamp camp = (FirmCamp)firm;
-			camp.defense(targetRecno);
-
-			if (TownArray.IsDeleted(townRecno))
-				break; // the last unit in the town has be mobilized
-		}
-	}
-
-	public bool has_player_spy()
-	{
-		int i;
-		for (i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (race_spy_count_array[i] > 0)
-				break;
-		}
-
-		if (i == GameConstants.MAX_RACE) // no spies in this nation
-			return false;
-
-		//----- look for player spy in the spy_array -----//
-
-		foreach (Spy spy in SpyArray)
-		{
-			if (spy.spy_place == Spy.SPY_TOWN &&
-			    spy.spy_place_para == town_recno &&
-			    spy.true_nation_recno == NationArray.player_recno)
-			{
-				return true;
 			}
 		}
 
 		return false;
 	}
 
-	public void verify_slot_object_id_array()
+	public bool form_new_nation()
 	{
-		TownLayout townLayout = TownRes.get_layout(layout_id);
-		//TownSlot   townSlot   = TownRes.get_slot(townLayout.first_slot_recno);
+		if (NationArray.nation_count >= GameConstants.MAX_NATION)
+			return false;
 
-		for (int i = 0; i < townLayout.slot_count; i++)
+		//----- determine the race with most population -----//
+
+		int maxPop = 0, raceId = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
-			//TODO check it
-			TownSlot townSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-
-			//----- build_type==0 if plants -----//
-
-			switch (townSlot.build_type)
+			if (race_pop_array[i] > maxPop)
 			{
-				//----- build_type>0 if town buildings -----//
-
-				case TownSlot.TOWN_OBJECT_HOUSE:
-					TownRes.get_build(slot_object_id_array[i]);
-					break;
-
-				case TownSlot.TOWN_OBJECT_PLANT:
-					PlantRes.get_bitmap(slot_object_id_array[i]);
-					break;
-
-				case TownSlot.TOWN_OBJECT_FARM:
-					break;
+				maxPop = race_pop_array[i];
+				raceId = i + 1;
 			}
 		}
+
+
+		//---- create the king of the new nation ----//
+
+		int unitId = RaceRes[raceId].basic_unit_id;
+		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+
+		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return false;
+
+		//--------- create a new nation ---------//
+
+		int nationRecno = NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
+
+		//-------- create the king --------//
+
+		Unit kingUnit = UnitArray.AddUnit(unitId, nationRecno, Unit.RANK_KING, 100, xLoc, yLoc);
+
+		kingUnit.skill.skill_id = Skill.SKILL_LEADING;
+		kingUnit.skill.skill_level = 50 + Misc.Random(51);
+
+		kingUnit.set_combat_level(70 + Misc.Random(31));
+
+		NationArray[nationRecno].set_king(kingUnit.sprite_recno, 1); // 1-this is the first king of the nation
+
+		dec_pop(raceId, false); // 0-the unit doesn't have a job
+
+		//------ set the nation of the rebel town -----//
+
+		set_nation(nationRecno); // set the town at last because set_nation() will delete the Town object
+
+		//------ increase the loyalty of the town -----//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+			race_loyalty_array[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
+
+		//--------- add news ----------//
+
+		NewsArray.new_nation(nationRecno);
+
+		//--- random extra beginning advantages -----//
+
+		int mobileCount;
+		Nation nation = NationArray[nationRecno];
+
+		switch (Misc.Random(10))
+		{
+			case 1: // knowledge of weapon in the beginning.
+				TechRes[Misc.Random(TechRes.tech_info_array.Length) + 1].set_nation_tech_level(nationRecno, 1);
+				break;
+
+			case 2: // random additional cash
+				nation.cash += Misc.Random(5000);
+				break;
+
+			case 3: // random additional food
+				nation.food += Misc.Random(5000);
+				break;
+
+			case 4: // random additional skilled units
+				mobileCount = Misc.Random(5) + 1;
+
+				// 0-don't recruit spies
+				for (int i = 0; i < mobileCount && recruitable_race_pop(raceId, false) > 0; i++)
+				{
+					int unitRecno = mobilize_town_people(raceId, true, false); // 1-dec pop, 0-don't mobilize spies
+
+					if (unitRecno != 0)
+					{
+						Unit unit = UnitArray[unitRecno];
+
+						//------- randomly set a skill -------//
+
+						int skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
+						int loopCount = 0; // no spying skill
+
+						// no spy skill as skill_id can't be set as SKILL_SPY, for spies, spy_recno must be set instead
+						while (skillId == Skill.SKILL_SPYING)
+						{
+							if (++skillId > Skill.MAX_TRAINABLE_SKILL)
+							{
+								skillId = 1;
+							}
+
+						}
+
+						unit.skill.skill_id = skillId;
+						unit.skill.skill_level = 50 + Misc.Random(50);
+						unit.set_combat_level(50 + Misc.Random(50));
+					}
+					else
+						break;
+				}
+
+				break;
+		}
+
+		NationArray.update_statistic();
+
+		return nationRecno != 0;
 	}
 
-	public void set_auto_collect_tax_loyalty(int loyaltyLevel)
+	private bool think_surrender()
 	{
-		auto_collect_tax_loyalty = loyaltyLevel;
+		if (nation_recno == 0) // if it's an independent town
+			return false;
 
-		if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
+		//--- only surrender when there is no own camps, but has enemy camps linked to this town ---//
+
+		if (has_linked_own_camp || !has_linked_enemy_camp)
+			return false;
+
+		//--- surrender if 2/3 of the population think about surrender ---//
+
+		int discontentedCount = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
-			auto_grant_loyalty = auto_collect_tax_loyalty - 10;
+			if (race_pop_array[i] <= race_spy_count_array[i]) // spies do not rebel together with the rebellion
+				continue;
+
+			if (race_loyalty_array[i] <= GameConstants.SURRENDER_LOYALTY)
+				discontentedCount += race_pop_array[i];
+		}
+
+		if (discontentedCount < population * 2 / 3)
+			return false;
+
+		//-------- think about surrender to which nation ------//
+
+		int curRating, bestRating = average_loyalty(), bestNationRecno = 0;
+
+		for (int i = 0; i < linked_firm_array.Count; i++)
+		{
+			Firm firm = FirmArray[linked_firm_array[i]];
+
+			//---- if this is an enemy camp ----//
+
+			if (firm.firm_id == Firm.FIRM_CAMP &&
+			    firm.nation_recno != nation_recno &&
+			    firm.nation_recno != 0 &&
+			    firm.overseer_recno != 0)
+			{
+				// see camp_influence() for details on how the rating is calculated
+				curRating = camp_influence(firm.overseer_recno);
+
+				if (curRating > bestRating)
+				{
+					bestRating = curRating;
+					bestNationRecno = firm.nation_recno;
+				}
+			}
+		}
+
+		//------------------------------------//
+
+		if (bestNationRecno != 0)
+		{
+			surrender(bestNationRecno);
+			return true;
+		}
+		else
+			return false;
+	}
+
+	public void surrender(int toNationRecno)
+	{
+		//--- if this is a rebel town and the mobile rebel count is > 0, don't surrender (this function can be called by update_resistance() when resistance drops to zero ---//
+
+		if (rebel_recno != 0)
+		{
+			Rebel rebel = RebelArray[rebel_recno];
+
+			if (rebel.mobile_rebel_count > 0)
+				return;
+		}
+
+		//----------------------------------------//
+
+		if (nation_recno == NationArray.player_recno ||
+		    toNationRecno == NationArray.player_recno)
+		{
+			NewsArray.town_surrendered(town_recno, toNationRecno);
+			// ##### begin Gilbert 9/10 ######//
+			// sound effect
+			if (toNationRecno == NationArray.player_recno)
+			{
+				SECtrl.immediate_sound("GET_TOWN");
+			}
+			// ##### end Gilbert 9/10 ######//
+		}
+
+		set_nation(toNationRecno);
+	}
+
+	private void think_rebel()
+	{
+		if (nation_recno == 0)
+			return;
+
+		if (Info.game_date < last_rebel_date.AddDays(REBEL_INTERVAL_MONTH * 30.0))
+			return;
+
+		// don't rebel within ten days after being attacked by a hostile unit
+		if (town_defender_count > 0 || Info.game_date < last_being_attacked_date.AddDays(10.0))
+			return;
+
+		//--- rebel if 2/3 of the population becomes discontented ---//
+
+		int discontentedCount = 0, rebelLeaderRaceId = 0, largestRebelRace = 0, trainRaceId = 0;
+		int[] restrictRebelCount = new int[GameConstants.MAX_RACE];
+
+		if (train_unit_recno != 0)
+			trainRaceId = UnitArray[train_unit_recno].race_id;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			restrictRebelCount[i] = race_spy_count_array[i]; // spies do not rebel together with the rebellion
+
+			if (race_pop_array[i] > 0 && race_loyalty_array[i] <= GameConstants.REBEL_LOYALTY)
+			{
+				discontentedCount += race_pop_array[i];
+
+				// count firm spies that reside in this town
+				for (int j = 0; j < linked_firm_array.Count; j++)
+				{
+					Firm firm = FirmArray[linked_firm_array[j]];
+					foreach (Worker worker in firm.workers)
+					{
+						if (worker.spy_recno != 0 && worker.town_recno == town_recno)
+							restrictRebelCount[i]++;
+					}
+				}
+
+				if (trainRaceId == i + 1)
+					restrictRebelCount[i]++; // unit under training cannot rebel
+
+				if (race_pop_array[i] <= restrictRebelCount[i])
+					continue; // no one can lead from this group
+
+				if (race_pop_array[i] > largestRebelRace)
+				{
+					largestRebelRace = race_pop_array[i];
+					rebelLeaderRaceId = i + 1;
+				}
+			}
+		}
+
+		if (rebelLeaderRaceId == 0) // no discontention or no one can lead
+			return;
+
+		if (population == 1) // if population is 1 only, handle otherwise
+		{
+		}
+		else
+		{
+			if (discontentedCount < population * 2 / 3)
+				return;
+		}
+
+		//----- if there was just one unit in the town and he rebels ----//
+
+		bool oneRebelOnly = false;
+
+		if (population == 1)
+		{
+			NewsArray.town_rebel(town_recno, 1);
+			oneRebelOnly = true;
+		}
+
+		//----- create the rebel leader and the rebel group ------//
+
+		int rebelCount = 1;
+		int leaderUnitRecno = create_rebel_unit(rebelLeaderRaceId, true); // 1-the unit is the rebel leader
+
+		if (leaderUnitRecno == 0)
+			return;
+
+		int curGroupId = UnitArray.cur_group_id++;
+		Unit unit = UnitArray[leaderUnitRecno];
+		unit.unit_group_id = curGroupId;
+
+		if (oneRebelOnly) // if there was just one unit in the town and he rebels
+		{
+			RebelArray.AddRebel(leaderUnitRecno, nation_recno);
+			return;
+		}
+
+		// create a rebel group
+		Rebel rebel = RebelArray.AddRebel(leaderUnitRecno, nation_recno, Rebel.REBEL_ATTACK_TOWN, town_recno);
+
+		//------- create other rebel units in the rebel group -----//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (race_pop_array[i] <= restrictRebelCount[i] || race_loyalty_array[i] > GameConstants.REBEL_LOYALTY)
+				continue;
+
+			if (population == 1) // if only one peasant left, break, so not all peasants will rebel 
+				break;
+
+			// 30% - 60% of the unit will rebel.
+			int raceRebelCount = (race_pop_array[i] - restrictRebelCount[i]) * (30 + Misc.Random(30)) / 100;
+
+			int j = 0;
+			for (; j < raceRebelCount; j++) // no. of rebel units of this race
+			{
+				int unitRecno = create_rebel_unit(i + 1, false);
+
+				if (unitRecno == 0) // 0-the unit is not the rebel leader
+					break;
+
+				Unit rebelUnit = UnitArray[unitRecno];
+				rebelUnit.unit_group_id = curGroupId;
+				rebelUnit.leader_unit_recno = leaderUnitRecno;
+
+				rebel.join(unitRecno);
+
+				rebelCount++;
+			}
+
+			//--- when disloyal units left, the average loyalty increases ---//
+
+			change_loyalty(i + 1, 50.0 * j / race_pop_array[i]);
+		}
+
+		//---------- add news -------------//
+
+		last_rebel_date = Info.game_date;
+
+		// add the news first as after callijng ai_spy_town_rebel, the town may disappear as all peasants are gone
+		NewsArray.town_rebel(town_recno, rebelCount);
+
+		//--- tell the AI spies in the town that a rebellion is happening ---//
+
+		SpyArray.ai_spy_town_rebel(town_recno);
+	}
+	
+	public int create_rebel_unit(int raceId, bool isLeader)
+	{
+		/*	//--- do not mobilize spies as rebels ----//
+	
+			//---------------------------------------//
+			//
+			// If there are spies in this town, first mobilize
+			// the spies whose actions are "Sow Dissent".
+			//
+			//---------------------------------------//
+	
+			int idleSpyCount=0;
+	
+			if( race_spy_count_array[raceId-1] > 0 )
+			{
+				Spy* spy;
+	
+				for( int i=SpyArray.size() ; i>0 ; i-- )
+				{
+					if( SpyArray.is_deleted(i) )
+						continue;
+	
+					spy = SpyArray[i];
+	
+					if( spy.spy_place==Spy.SPY_TOWN && spy.spy_place_para==town_recno && spy.race_id==raceId )
+					{
+						if( spy.action_mode == SPY_SOW_DISSENT )
+						{
+							int unitRecno = spy.mobilize_town_spy();
+	
+							if( isLeader )
+								unit_array[unitRecno].set_rank(Unit.RANK_GENERAL);
+	
+							return unitRecno;
+						}
+	
+						idleSpyCount++;
+					}
+				}
+			}
+			//---- if the remaining population are all sleep spy, no new rebels ----//
+	
+			if( race_pop_array[raceId-1] == idleSpyCount )
+				return 0;
+	
+		*/
+
+		//---- if no jobless people, make workers and overseers jobless ----//
+
+		// 0-don't recruit spies as the above code should have handle spies already
+		if (recruitable_race_pop(raceId, false) == 0)
+		{
+			if (!unjob_town_people(raceId, false, false)) // 0-don't unjob spies, 0-don't unjob overseer
+				return 0;
+
+			if (recruitable_race_pop(raceId, false) == 0) // if the unjob unit is a spy too, then don't rebel
+				return 0;
+		}
+
+		//----look for an empty location for the unit to stand ----//
+		//--- scan for the 5 rows right below the building ---//
+
+		int unitId = RaceRes[raceId].basic_unit_id;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
+
+		if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return 0;
+
+		//---------- add the unit now -----------//
+
+		int rankId;
+
+		if (isLeader)
+			rankId = Unit.RANK_GENERAL;
+		else
+			rankId = Unit.RANK_SOLDIER;
+
+		Unit unit = UnitArray.AddUnit(unitId, 0, rankId, 0, xLoc, yLoc);
+
+		dec_pop(raceId, false); // decrease the town's population
+
+		//------- set the unit's parameters --------//
+
+		if (isLeader)
+		{
+			// the higher the population is, the higher the combat level will be
+			int combatLevel = 10 + population * 2 + Misc.Random(10);
+			// the higher the population is, the higher the combat level will be
+			int leadershipLevel = 10 + population + Misc.Random(10);
+
+			unit.set_combat_level(Math.Min(combatLevel, 100));
+
+			unit.skill.skill_id = Skill.SKILL_LEADING;
+			unit.skill.skill_level = Math.Min(leadershipLevel, 100);
+		}
+		else
+		{
+			unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL); // combat: 10
+		}
+
+		return unit.sprite_recno;
+	}
+
+	
+	#region AIFunctions
+
+	public void process_ai()
+	{
+		Nation ownNation = NationArray[nation_recno];
+
+		//---- think about cancelling the base town status ----//
+
+		if (Info.TotalDays % 30 == town_recno % 30)
+		{
+			update_base_town_status();
+		}
+
+		//------ think about granting villagers ---//
+
+		if (Info.TotalDays % 30 == town_recno % 30)
+		{
+			think_reward();
+		}
+
+		//----- if this town should migrate now -----//
+
+		if (should_ai_migrate())
+		{
+			if (Info.TotalDays % 30 == town_recno % 30)
+			{
+				think_ai_migrate();
+			}
+
+			return; // don't do anything else if the town is about to migrate
+		}
+
+		//------ think about building camps first -------//
+
+		// if there is no space in the neighbor area for building a new firm.
+		if (Info.TotalDays % 30 == town_recno % 30 && !no_neighbor_space && population > 1)
+		{
+			if (think_build_camp())
+			{
+				return;
+			}
+		}
+
+		//----- the following are base town only functions ----//
+
+		if (!is_base_town)
+			return;
+
+		//------ think about collecting tax ---//
+
+		if (Info.TotalDays % 30 == (town_recno + 15) % 30)
+		{
+			think_collect_tax();
+		}
+
+		//---- think about scouting in an unexplored map ----//
+
+		if (Info.TotalDays % 30 == (town_recno + 20) % 30)
+		{
+			think_scout();
+		}
+
+		//---- think about splitting the town ---//
+
+		if (Info.TotalDays % 30 == town_recno % 30)
+		{
+			think_move_between_town();
+			think_split_town();
+		}
+
+		//---- think about attacking firms/units nearby ---//
+
+		if (Info.TotalDays % 30 == town_recno % 30)
+		{
+			if (think_attack_nearby_enemy())
+			{
+				return;
+			}
+
+			if (think_attack_linked_enemy())
+			{
+				return;
+			}
+		}
+
+		//---- think about capturing linked enemy firms ----//
+
+		if (Info.TotalDays % 60 == town_recno % 60)
+		{
+			think_capture_linked_firm();
+		}
+
+		//---- think about capturing enemy towns ----//
+
+		if (Info.TotalDays % 120 == town_recno % 120)
+		{
+			think_capture_enemy_town();
+		}
+
+		//---- think about using spies on enemies ----//
+
+		if (Info.TotalDays % 60 == (town_recno + 10) % 60)
+		{
+			if (think_spying_town())
+			{
+				return;
+			}
+		}
+
+		//---- think about anti-spies activities ----//
+
+		if (Info.TotalDays % 60 == (town_recno + 20) % 60)
+		{
+			if (think_counter_spy())
+			{
+				return;
+			}
+		}
+
+		//--- think about setting up firms next to this town ---//
+
+		// if there is no space in the neighbor area for building a new firm.
+		if (Info.TotalDays % 30 == town_recno % 30 && !no_neighbor_space && population >= 5)
+		{
+			if (think_build_market())
+			{
+				return;
+			}
+
+			//--- the following functions will only be called when the nation has at least a mine ---//
+
+			// don't build other structures if there are untapped raw sites and our nation still doesn't have any
+			if (SiteArray.untapped_raw_count > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.true_profit_365days() < 0)
+			{
+				return;
+			}
+
+			//---- only build the following if we have enough food ----//
+
+			if (ownNation.ai_has_enough_food())
+			{
+				if (think_build_research())
+				{
+					return;
+				}
+
+				if (think_build_war_factory())
+				{
+					return;
+				}
+
+				if (think_build_base())
+				{
+					return;
+				}
+			}
+
+			//-------- think build inn ---------//
+
+			think_build_inn();
 		}
 	}
-
-	public void set_auto_grant_loyalty(int loyaltyLevel)
-	{
-		auto_grant_loyalty = loyaltyLevel;
-
-		if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
-		{
-			auto_collect_tax_loyalty = auto_grant_loyalty + 10;
-
-			if (auto_collect_tax_loyalty > 100)
-				auto_collect_tax_loyalty = 0; // disable auto collect tax if it's over 100
-		}
-	}
-
-	//-------- ai functions ---------//
 
 	public void think_collect_tax()
 	{
@@ -4892,6 +4856,23 @@ public class Town
 		return false;
 	}
 
+	public bool ai_build_neighbor_firm(int firmId, int firmRaceId = 0)
+	{
+		int buildXLoc, buildYLoc;
+		Nation nation = NationArray[nation_recno];
+
+		if (!nation.find_best_firm_loc(firmId, loc_x1, loc_y1, out buildXLoc, out buildYLoc))
+		{
+			no_neighbor_space = true;
+			return false;
+		}
+
+		nation.add_action(buildXLoc, buildYLoc, loc_x1, loc_y1,
+			Nation.ACTION_AI_BUILD_FIRM, firmId, 1, 0, firmRaceId);
+
+		return true;
+	}
+
 	public bool think_ai_migrate()
 	{
 		// don't move if this town has just been set up for less than 90 days. It may be a town set up by think_split_town()
@@ -5006,43 +4987,6 @@ public class Town
 		}
 
 		return bestTownRecno;
-	}
-
-	public void think_defense()
-	{
-		int enemyUnitRecno = detect_enemy(3); // only when 3 units are detected, we consider them as enemy
-
-		if (enemyUnitRecno == 0)
-			return;
-
-		Unit enemyUnit = UnitArray[enemyUnitRecno];
-
-		int enemyXLoc = enemyUnit.cur_x_loc();
-		int enemyYLoc = enemyUnit.cur_y_loc();
-
-		//----- get our unit that is closet to it to attack it -------//
-
-		int minDis = Int32.MaxValue;
-		Unit closestUnit = null;
-
-		foreach (Unit unit in UnitArray)
-		{
-			if (unit.nation_recno == nation_recno)
-			{
-				int curDis = Math.Max(Math.Abs(unit.cur_x_loc() - enemyXLoc), Math.Abs(unit.cur_y_loc() - enemyYLoc));
-
-				if (curDis < minDis)
-				{
-					minDis = curDis;
-					closestUnit = unit;
-				}
-			}
-		}
-
-		//-------- attack the enemy now ----------//
-
-		if (closestUnit != null)
-			closestUnit.attack_unit(enemyUnit.sprite_recno, 0, 0, true);
 	}
 
 	public bool think_split_town()
@@ -5439,24 +5383,6 @@ public class Town
 		return true;
 	}
 
-	public void update_base_town_status()
-	{
-		bool newBaseTownStatus = new_base_town_status();
-
-		if (newBaseTownStatus == is_base_town)
-			return;
-
-		Nation ownNation = NationArray[nation_recno];
-
-		if (is_base_town)
-			ownNation.ai_base_town_count--;
-
-		if (newBaseTownStatus)
-			ownNation.ai_base_town_count++;
-
-		is_base_town = newBaseTownStatus;
-	}
-
 	public bool new_base_town_status()
 	{
 		Nation ownNation = NationArray[nation_recno];
@@ -5541,51 +5467,22 @@ public class Town
 		return false;
 	}
 
-	public bool think_counter_spy()
+	public void update_base_town_status()
 	{
-		if (population >= GameConstants.MAX_TOWN_POPULATION)
-			return false;
+		bool newBaseTownStatus = new_base_town_status();
+
+		if (newBaseTownStatus == is_base_town)
+			return;
 
 		Nation ownNation = NationArray[nation_recno];
 
-		if (!ownNation.ai_should_create_new_spy(1)) //1 means take into account only conter-spies
-			return false;
+		if (is_base_town)
+			ownNation.ai_base_town_count--;
 
-		//------- check if we need additional spies ------//
+		if (newBaseTownStatus)
+			ownNation.ai_base_town_count++;
 
-		int spyCount;
-		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, town_recno, nation_recno, out spyCount);
-		int neededSpyLevel = needed_anti_spy_level();
-
-		if (neededSpyLevel > curSpyLevel + 30)
-		{
-			int majorityRace = majority_race();
-			if (can_recruit(majorityRace))
-			{
-				int unitRecno = recruit(Skill.SKILL_SPYING, majorityRace, InternalConstants.COMMAND_AI);
-
-				if (unitRecno == 0)
-					return false;
-
-				ActionNode actionNode = ownNation.add_action(loc_x1, loc_y1, -1, -1,
-					Nation.ACTION_AI_ASSIGN_SPY, nation_recno, 1, unitRecno);
-
-				if (actionNode == null)
-					return false;
-
-				train_unit_action_id = actionNode.action_id;
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public int needed_anti_spy_level()
-	{
-		return (linked_firm_array.Count * 10 + 100 * population / GameConstants.MAX_TOWN_POPULATION)
-			* (100 + NationArray[nation_recno].pref_counter_spy) / 100;
+		is_base_town = newBaseTownStatus;
 	}
 
 	public bool think_spying_town()
@@ -5643,6 +5540,53 @@ public class Town
 		return false;
 	}
 
+	public bool think_counter_spy()
+	{
+		if (population >= GameConstants.MAX_TOWN_POPULATION)
+			return false;
+
+		Nation ownNation = NationArray[nation_recno];
+
+		if (!ownNation.ai_should_create_new_spy(1)) //1 means take into account only conter-spies
+			return false;
+
+		//------- check if we need additional spies ------//
+
+		int spyCount;
+		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, town_recno, nation_recno, out spyCount);
+		int neededSpyLevel = needed_anti_spy_level();
+
+		if (neededSpyLevel > curSpyLevel + 30)
+		{
+			int majorityRace = majority_race();
+			if (can_recruit(majorityRace))
+			{
+				int unitRecno = recruit(Skill.SKILL_SPYING, majorityRace, InternalConstants.COMMAND_AI);
+
+				if (unitRecno == 0)
+					return false;
+
+				ActionNode actionNode = ownNation.add_action(loc_x1, loc_y1, -1, -1,
+					Nation.ACTION_AI_ASSIGN_SPY, nation_recno, 1, unitRecno);
+
+				if (actionNode == null)
+					return false;
+
+				train_unit_action_id = actionNode.action_id;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public int needed_anti_spy_level()
+	{
+		return (linked_firm_array.Count * 10 + 100 * population / GameConstants.MAX_TOWN_POPULATION)
+			* (100 + NationArray[nation_recno].pref_counter_spy) / 100;
+	}
+
 	public bool should_ai_migrate()
 	{
 		//--- if this town is the base town of the nation's territory, don't migrate ---//
@@ -5656,42 +5600,6 @@ public class Town
 			return false;
 
 		return true;
-	}
-
-	public int detect_enemy(int alertNum)
-	{
-		//------ check if any enemies have entered in the city -----//
-
-		int xLoc1 = Math.Max(0, loc_x1 - InternalConstants.WALL_SPACE_LOC);
-		int yLoc1 = Math.Max(0, loc_y1 - InternalConstants.WALL_SPACE_LOC);
-		int xLoc2 = Math.Min(GameConstants.MapSize - 1, loc_x2 + InternalConstants.WALL_SPACE_LOC);
-		int yLoc2 = Math.Min(GameConstants.MapSize - 1, loc_y2 + InternalConstants.WALL_SPACE_LOC);
-		int unitRecno;
-		int enemyCount = 0;
-
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
-		{
-			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
-			{
-				Location loc = World.get_loc(xLoc, yLoc);
-				if (loc.has_unit(UnitConstants.UNIT_LAND))
-				{
-					unitRecno = loc.unit_recno(UnitConstants.UNIT_LAND);
-
-					//------- if any enemy detected -------//
-
-					Unit unit = UnitArray[unitRecno];
-
-					if (unit.nation_recno != nation_recno && unit.nation_recno > 0)
-					{
-						if (++enemyCount >= alertNum)
-							return unitRecno;
-					}
-				}
-			}
-		}
-
-		return 0;
 	}
 
 	public int protection_needed() // an index from 0 to 100 indicating the military protection needed for this town
@@ -5893,23 +5801,6 @@ public class Town
 		return linked_camp_soldiers_count() <= population * (4.0 + 4.0 * prefRecruiting / 200.0) / 20.0;
 	}
 
-	public bool ai_build_neighbor_firm(int firmId, int firmRaceId = 0)
-	{
-		int buildXLoc, buildYLoc;
-		Nation nation = NationArray[nation_recno];
-
-		if (!nation.find_best_firm_loc(firmId, loc_x1, loc_y1, out buildXLoc, out buildYLoc))
-		{
-			no_neighbor_space = true;
-			return false;
-		}
-
-		nation.add_action(buildXLoc, buildYLoc, loc_x1, loc_y1,
-			Nation.ACTION_AI_BUILD_FIRM, firmId, 1, 0, firmRaceId);
-
-		return true;
-	}
-
 	public bool ai_settle_new(int raceId)
 	{
 		//-------- locate space for the new town --------//
@@ -5947,7 +5838,10 @@ public class Town
 		return true;
 	}
 
-	//-------- independent town ai functions ---------//
+	#endregion
+
+	
+	#region IndependentTownAIFunctions
 
 	public void think_independent_town()
 	{
@@ -6182,4 +6076,6 @@ public class Town
 
 		return true;
 	}
+	
+	#endregion
 }
