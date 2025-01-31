@@ -441,6 +441,29 @@ public static class Renderer
         }
     }
 
+    private static void DrawLineOnMiniMap(Graphics graphics, int x1Loc, int y1Loc, int x2Loc, int y2Loc, int color)
+    {
+        if (MiniMapSize == GameConstants.MapSize)
+        {
+            graphics.DrawLine(MiniMapX + x1Loc, MiniMapY + y1Loc, MiniMapX + x2Loc, MiniMapY + y2Loc, color);
+        }
+        else
+        {
+            if (MiniMapSize > GameConstants.MapSize)
+            {
+                const int Scale = MiniMapSize / GameConstants.MapSize;
+                if (x1Loc == x2Loc)
+                    graphics.DrawRect(MiniMapX + x1Loc * Scale, MiniMapY + y1Loc * Scale, Scale, (y2Loc - y1Loc + 1) * Scale, color);
+                if (y1Loc == y2Loc)
+                    graphics.DrawRect(MiniMapX + x1Loc * Scale, MiniMapY + y1Loc * Scale, (x2Loc - x1Loc + 1) * Scale, Scale, color);
+            }
+            else
+            {
+                //TODO not supported yet
+            }
+        }
+    }
+    
     private static void DrawRectOnMiniMap(Graphics graphics, int xLoc, int yLoc, int width, int height, int color)
     {
         if (MiniMapSize == GameConstants.MapSize)
@@ -523,30 +546,11 @@ public static class Renderer
         byte shadowColor = Colors.VGA_GRAY;
         foreach (Town town in TownArray)
         {
-            if (town.loc_y2 + 1 < GameConstants.MapSize)
-            {
-                for (int xLoc = town.loc_x1 + 1; xLoc <= town.loc_x2; xLoc++)
-                {
-                    DrawPointOnMiniMap(graphics, xLoc, town.loc_y2 + 1, shadowColor);
-                }
-            }
-
-            if (town.loc_x2 + 1 < GameConstants.MapSize)
-            {
-                for (int yLoc = town.loc_y1 + 1; yLoc <= town.loc_y2; yLoc++)
-                {
-                    DrawPointOnMiniMap(graphics, town.loc_x2 + 1, yLoc, shadowColor);
-                }
-            }
-
-            if (town.loc_x2 + 1 < GameConstants.MapSize && town.loc_y2 + 1 < GameConstants.MapSize)
-            {
-                DrawPointOnMiniMap(graphics, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
-            }
+            DrawLineOnMiniMap(graphics, town.loc_x1 + 1, town.loc_y2 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
+            DrawLineOnMiniMap(graphics, town.loc_x2 + 1, town.loc_y1 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
         }
 
         //Draw shadows first
-        //TODO draw shadows using lines
         foreach (Firm firm in FirmArray)
         {
             int x1Loc = firm.loc_x1;
@@ -561,26 +565,8 @@ public static class Renderer
                 y2Loc--;
             }
 
-            if (y2Loc + 1 < GameConstants.MapSize)
-            {
-                for (int xLoc = x1Loc + 1; xLoc <= x2Loc; xLoc++)
-                {
-                    DrawPointOnMiniMap(graphics, xLoc, y2Loc + 1, shadowColor);
-                }
-            }
-
-            if (x2Loc + 1 < GameConstants.MapSize)
-            {
-                for (int yLoc = y1Loc + 1; yLoc <= y2Loc; yLoc++)
-                {
-                    DrawPointOnMiniMap(graphics, x2Loc + 1, yLoc, shadowColor);
-                }
-            }
-            
-            if (x2Loc + 1 < GameConstants.MapSize && y2Loc + 1 < GameConstants.MapSize)
-            {
-                DrawPointOnMiniMap(graphics, x2Loc + 1, y2Loc + 1, shadowColor);
-            }
+            DrawLineOnMiniMap(graphics, x1Loc + 1, y2Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+            DrawLineOnMiniMap(graphics, x2Loc + 1, y1Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
         }
 
         foreach (Town town in TownArray)
@@ -597,8 +583,7 @@ public static class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            byte nationColor = (firm.last_attacked_date == default) ||
-                               (Info.game_date - firm.last_attacked_date).Days > 2
+            byte nationColor = (firm.last_attacked_date == default) || (Info.game_date - firm.last_attacked_date).Days > 2
                 ? nationColorArray[firm.nation_recno]
                 : excitedColorArray[ColorRemap.ColorSchemes[firm.nation_recno], Sys.Instance.FrameNumber % excitedColorCount];
 
@@ -651,14 +636,17 @@ public static class Renderer
         
         DrawFrameOnMiniMap(graphics, topLeftX - 1, topLeftY - 1, ZoomMapWidth + 2, ZoomMapHeight + 2,
             Colors.VGA_YELLOW + screenSquareFrameCount);
-        
-        screenSquareFrameCount += screenSquareFrameStep;
 
-        if (screenSquareFrameCount == 0) // color with smaller number is brighter
-            screenSquareFrameStep = 1;
+        if (Sys.Instance.Speed != 0)
+        {
+            screenSquareFrameCount += screenSquareFrameStep;
 
-        if (screenSquareFrameCount == 6) // bi-directional color shift
-            screenSquareFrameStep = -1;
+            if (screenSquareFrameCount == 0) // color with smaller number is brighter
+                screenSquareFrameStep = 1;
+
+            if (screenSquareFrameCount == 6) // bi-directional color shift
+                screenSquareFrameStep = -1;
+        }
     }
 
     private static bool IsExplored(int x1Loc, int x2Loc, int y1Loc, int y2Loc)

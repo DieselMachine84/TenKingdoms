@@ -223,6 +223,13 @@ public class Graphics
         SDL.SDL_RenderDrawPoint(renderer, x ,y);
     }
 
+    public void DrawLine(int x1, int y1, int x2, int y2, int paletteColor)
+    {
+        var color = colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        SDL.SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+    }
+
     public void DrawRect(int x, int y, int width, int height, int paletteColor)
     {
         var color = colors[paletteColor];
