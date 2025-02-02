@@ -3822,7 +3822,7 @@ public class Nation : NationBase
 				if (firm.nation_recno == targetRecno && firm.firm_id == Firm.FIRM_CAMP)
 				{
 					bool found = false;
-					for (int k = 0; i < camps.Count; k++)
+					for (int k = 0; k < camps.Count; k++)
 					{
 						if (camps[k] == firmRecno)
 						{
