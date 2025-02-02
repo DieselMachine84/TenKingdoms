@@ -89,7 +89,7 @@ public class UnitExpCart : Unit
 						}
 						else if (location.is_plant())
 						{
-							location.remove_plant();
+							location.remove_plant(x, y);
 							World.plant_count--;
 						}
 						else

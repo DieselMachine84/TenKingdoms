@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace TenKingdoms;
 
 public static class Renderer
@@ -18,10 +20,16 @@ public static class Renderer
     
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
+
+    private const int MaxChangedLocs = 16384;
     
     private static int topLeftX;
     private static int topLeftY;
     private static long lastFrame;
+    public static bool NeedFullRedraw { get; set; }
+    private static int[] changedXLocs = new int[MaxChangedLocs];
+    private static int[] changedYLocs = new int[MaxChangedLocs];
+    private static int changedLocIndex;
     private static int screenSquareFrameCount = 0;
     private static int screenSquareFrameStep = 1;
 
@@ -509,34 +517,30 @@ public static class Renderer
     
     private static void DrawMiniMap(Graphics graphics)
     {
-        //TODO Redraw only modified pixels
         //TODO Better support scaling
         graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
 
-        for (int yLoc = 0; yLoc < GameConstants.MapSize; yLoc++)
+        if (NeedFullRedraw || changedLocIndex == MaxChangedLocs)
         {
-            for (int xLoc = 0; xLoc < GameConstants.MapSize; xLoc++)
+            for (int yLoc = 0; yLoc < GameConstants.MapSize; yLoc++)
             {
-                Location location = World.get_loc(xLoc, yLoc);
-                int color = Colors.UNEXPLORED_COLOR;
-                if (location.explored())
+                for (int xLoc = 0; xLoc < GameConstants.MapSize; xLoc++)
                 {
-                    if (location.sailable())
-                        color = Colors.WATER_COLOR;
-
-                    else if (location.has_hill())
-                        color = Colors.V_BROWN;
-
-                    else if (location.is_plant())
-                        color = Colors.V_DARK_GREEN;
-
-                    else
-                        color = Colors.VGA_GRAY + 10;
+                    DrawGroundOnMiniMap(graphics, xLoc, yLoc);
                 }
+            }
 
-                DrawPointOnMiniMap(graphics, xLoc, yLoc, color);
+            NeedFullRedraw = false;
+        }
+        else
+        {
+            for (int i = 0; i < changedLocIndex; i++)
+            {
+                DrawGroundOnMiniMap(graphics, changedXLocs[i], changedYLocs[i]);
             }
         }
+
+        changedLocIndex = 0;
 
         byte[] nationColorArray = NationArray.nation_color_array;
         byte[,] excitedColorArray = ColorRemap.excitedColorArray;
@@ -546,8 +550,11 @@ public static class Renderer
         byte shadowColor = Colors.VGA_GRAY;
         foreach (Town town in TownArray)
         {
-            DrawLineOnMiniMap(graphics, town.loc_x1 + 1, town.loc_y2 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
-            DrawLineOnMiniMap(graphics, town.loc_x2 + 1, town.loc_y1 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
+            if (IsExplored(town.loc_x1, town.loc_x2, town.loc_y1, town.loc_y2))
+            {
+                DrawLineOnMiniMap(graphics, town.loc_x1 + 1, town.loc_y2 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
+                DrawLineOnMiniMap(graphics, town.loc_x2 + 1, town.loc_y1 + 1, town.loc_x2 + 1, town.loc_y2 + 1, shadowColor);
+            }
         }
 
         //Draw shadows first
@@ -558,15 +565,18 @@ public static class Renderer
             int y1Loc = firm.loc_y1;
             int y2Loc = firm.loc_y2;
             
-            //Monster lairs has the same size as villages but should look different on mini-map
-            if (firm.nation_recno == 0 && x2Loc - x1Loc + 1 == InternalConstants.TOWN_WIDTH && y2Loc - y1Loc + 1 == InternalConstants.TOWN_HEIGHT)
+            if (IsExplored(x1Loc, x2Loc, y1Loc, y2Loc))
             {
-                x2Loc--;
-                y2Loc--;
-            }
+                //Monster lairs has the same size as villages but should look different on mini-map
+                if (firm.firm_id == Firm.FIRM_MONSTER)
+                {
+                    x2Loc--;
+                    y2Loc--;
+                }
 
-            DrawLineOnMiniMap(graphics, x1Loc + 1, y2Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
-            DrawLineOnMiniMap(graphics, x2Loc + 1, y1Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+                DrawLineOnMiniMap(graphics, x1Loc + 1, y2Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+                DrawLineOnMiniMap(graphics, x2Loc + 1, y1Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+            }
         }
 
         foreach (Town town in TownArray)
@@ -592,19 +602,18 @@ public static class Renderer
             int y1Loc = firm.loc_y1;
             int y2Loc = firm.loc_y2;
             
-            //Monster lairs has the same size as villages but should look different on mini-map
-            if (firm.nation_recno == 0 && x2Loc - x1Loc + 1 == InternalConstants.TOWN_WIDTH && y2Loc - y1Loc + 1 == InternalConstants.TOWN_HEIGHT)
-            {
-                x2Loc--;
-                y2Loc--;
-            }
-
             if (IsExplored(x1Loc, x2Loc, y1Loc, y2Loc))
             {
+                //Monster lairs has the same size as villages but should look different on mini-map
+                if (firm.firm_id == Firm.FIRM_MONSTER)
+                {
+                    x2Loc--;
+                    y2Loc--;
+                }
                 DrawRectOnMiniMap(graphics, x1Loc, y1Loc, x2Loc - x1Loc + 1, y2Loc - y1Loc + 1, nationColor);
             }
         }
-
+        
         foreach (Site site in SiteArray)
         {
             if (IsExplored(site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc))
@@ -626,7 +635,16 @@ public static class Renderer
             int yLoc = unit.cur_y_loc();
             if (IsExplored(xLoc, xLoc, yLoc, yLoc))
             {
-                DrawRectOnMiniMap(graphics, xLoc, yLoc, 2, 2, nationColor);
+                int size = (unit.mobile_type == UnitConstants.UNIT_LAND ? 2 : 3);
+                DrawRectOnMiniMap(graphics, xLoc, yLoc, size, size, nationColor);
+
+                for (int x = xLoc; x < xLoc + size; x++)
+                {
+                    for (int y = yLoc; y < yLoc + size; y++)
+                    {
+                        AddChangedLoc(x, y);
+                    }
+                }
             }
         }
         
@@ -636,6 +654,18 @@ public static class Renderer
         
         DrawFrameOnMiniMap(graphics, topLeftX - 1, topLeftY - 1, ZoomMapWidth + 2, ZoomMapHeight + 2,
             Colors.VGA_YELLOW + screenSquareFrameCount);
+
+        for (int x = topLeftX - 1; x < topLeftX - 1 + ZoomMapWidth + 2; x++)
+        {
+            AddChangedLoc(x, topLeftY - 1);
+            AddChangedLoc(x, topLeftY + ZoomMapHeight);
+        }
+
+        for (int y = topLeftY - 1; y < topLeftY - 1 + ZoomMapHeight + 2; y++)
+        {
+            AddChangedLoc(topLeftX - 1, y);
+            AddChangedLoc(topLeftX + ZoomMapWidth, y);
+        }
 
         if (Sys.Instance.Speed != 0)
         {
@@ -647,6 +677,28 @@ public static class Renderer
             if (screenSquareFrameCount == 6) // bi-directional color shift
                 screenSquareFrameStep = -1;
         }
+    }
+
+    private static void DrawGroundOnMiniMap(Graphics graphics, int xLoc, int yLoc)
+    {
+        Location location = World.get_loc(xLoc, yLoc);
+        int color = Colors.UNEXPLORED_COLOR;
+        if (location.explored())
+        {
+            if (location.sailable())
+                color = Colors.WATER_COLOR;
+
+            else if (location.has_hill())
+                color = Colors.V_BROWN;
+
+            else if (location.is_plant())
+                color = Colors.V_DARK_GREEN;
+
+            else
+                color = Colors.VGA_GRAY + 10;
+        }
+
+        DrawPointOnMiniMap(graphics, xLoc, yLoc, color);
     }
 
     private static bool IsExplored(int x1Loc, int x2Loc, int y1Loc, int y2Loc)
@@ -667,5 +719,18 @@ public static class Renderer
         }
 
         return false;
+    }
+
+    public static void AddChangedLoc(int xLoc, int yLoc)
+    {
+        if (changedLocIndex == MaxChangedLocs)
+            return;
+        
+        if (xLoc < 0 || xLoc >= GameConstants.MapSize || yLoc < 0 || yLoc >= GameConstants.MapSize)
+            return;
+        
+        changedXLocs[changedLocIndex] = xLoc;
+        changedYLocs[changedLocIndex] = yLoc;
+        changedLocIndex++;
     }
 }

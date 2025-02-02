@@ -273,6 +273,7 @@ public class Sys
             CreateObjects();
             MapGenerator mapGenerator = new MapGenerator();
             mapGenerator.Generate();
+            Renderer.NeedFullRedraw = true;
         }
 
         if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_0 && keyboardEvent.keysym.sym <= SDL.SDL_Keycode.SDLK_9)
@@ -312,6 +313,7 @@ public class Sys
         CreateObjects();
         MapGenerator mapGenerator = new MapGenerator();
         mapGenerator.Generate();
+        Renderer.NeedFullRedraw = true;
 
         /*try
         {

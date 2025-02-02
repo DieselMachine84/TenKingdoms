@@ -136,7 +136,7 @@ public class Tornado : Sprite
         Location location = World.get_loc(damageXLoc, damageYLoc);
         if (location.is_plant())
         {
-            location.remove_plant();
+            location.remove_plant(damageXLoc, damageYLoc);
             World.plant_count--;
         }
     }

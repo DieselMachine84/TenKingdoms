@@ -299,24 +299,6 @@ public class World
 		}
 	}
 
-	public bool is_explored(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
-	{
-		if (Config.explore_whole_map)
-			return true;
-
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
-		{
-			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
-			{
-				Location location = get_loc(xLoc, yLoc);
-				if (!location.explored())
-					return false;
-			}
-		}
-
-		return true;
-	}
-
 	// always call unveil before visit //
 	public void visit(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int range, int extend = 0)
 	{
@@ -1085,6 +1067,7 @@ public class World
 
 	public void process_visibility()
 	{
+		//TODO performance
 		if (Config.fog_of_war)
 		{
 			for (int y = 0; y < GameConstants.MapSize; ++y)
@@ -1358,7 +1341,7 @@ public class World
 					if (Misc.Random(totalSpace) + 2 * totalSpace / 3 <= neighbour)
 					{
 						location = get_loc(x, y);
-						get_loc(x, y).remove_plant();
+						get_loc(x, y).remove_plant(x, y);
 						if (location.fire_src() > 50)
 							location.set_fire_src(50);
 						plant_count--;
@@ -1526,7 +1509,7 @@ public class World
 		         (newl.plant_id() - PlantRes[PlantRes.plant_recno(newl.plant_id())].first_bitmap) > plantSize)
 		{
 			// same kind of plant, but smaller, override by a smaller one
-			newl.remove_plant();
+			newl.remove_plant(x, y);
 			newl.set_plant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
 			newl.set_fire_src(100);
 			//### begin alex 24/6 ###//
@@ -1674,16 +1657,16 @@ public class World
 					else if (location.has_unit(UnitConstants.UNIT_LAND))
 					{
 						targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
-						targetUnit.hit_points -= (int)(2.0 * flameDamage);
-						if (targetUnit.hit_points <= 0)
-							targetUnit.hit_points = 0;
+						targetUnit.hit_points -= 2.0 * flameDamage;
+						if (targetUnit.hit_points <= 0.0)
+							targetUnit.hit_points = 0.0;
 					}
 					else if (location.has_unit(UnitConstants.UNIT_SEA))
 					{
 						targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_SEA)];
-						targetUnit.hit_points -= (int)(2.0 * flameDamage);
-						if (targetUnit.hit_points <= 0)
-							targetUnit.hit_points = 0;
+						targetUnit.hit_points -= 2.0 * flameDamage;
+						if (targetUnit.hit_points <= 0.0)
+							targetUnit.hit_points = 0.0;
 					}
 					else if (location.is_firm() && FirmRes[FirmArray[location.firm_recno()].firm_id].buildable)
 					{
@@ -1736,7 +1719,7 @@ public class World
 						// if a plant on it then remove the plant, if flammability <= 0
 						if (location.is_plant() && flammability <= 0)
 						{
-							location.remove_plant();
+							location.remove_plant(x, y);
 							plant_count--;
 						}
 					}
@@ -1769,7 +1752,7 @@ public class World
 						// if a plant on it then remove the plant, if flammability <= 0
 						if (location.is_plant() && flammability <= 0)
 						{
-							location.remove_plant();
+							location.remove_plant(x, y);
 							plant_count--;
 						}
 					}
@@ -1893,7 +1876,7 @@ public class World
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				Location location = get_loc(0, y);
+				Location location = get_loc(x, y);
 				if (location.is_wall())
 				{
 					location.attack_wall(Weather.quake_rate(x, y) / 2);
@@ -1904,7 +1887,6 @@ public class World
 		int firmDamage = 0;
 		int firmDie = 0;
 
-		List<Firm> firmsToDelete = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{
 			if (!FirmRes[firm.firm_id].buildable)
@@ -1921,13 +1903,8 @@ public class World
 				if (firm.own_firm())
 					firmDie++;
 				SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DIE");
-				firmsToDelete.Add(firm);
+				FirmArray.DeleteFirm(firm);
 			}
-		}
-
-		foreach (Firm firm in firmsToDelete)
-		{
-			FirmArray.DeleteFirm(firm);
 		}
 
 		int townDamage = 0;
@@ -1968,13 +1945,13 @@ public class World
 			if (damage < 5.0)
 				damage = 5.0;
 
-			unit.hit_points -= (int)damage;
+			unit.hit_points -= damage;
 			if (unit.is_own())
 				unitDamage++;
 
-			if (unit.hit_points <= 0)
+			if (unit.hit_points <= 0.0)
 			{
-				unit.hit_points = 0;
+				unit.hit_points = 0.0;
 				if (unit.is_own())
 					unitDie++;
 			}
@@ -2030,10 +2007,10 @@ public class World
 				// ---- add news -------//
 				if (unit.is_own())
 					NewsArray.lightning_damage(unit.cur_x_loc(), unit.cur_y_loc(),
-						News.NEWS_LOC_UNIT, unit.sprite_recno, unit.hit_points <= 0 ? 1 : 0);
+						News.NEWS_LOC_UNIT, unit.sprite_recno, unit.hit_points <= 0.0 ? 1 : 0);
 
-				if (unit.hit_points <= 0)
-					unit.hit_points = 0;
+				if (unit.hit_points <= 0.0)
+					unit.hit_points = 0.0;
 			}
 		}
 
