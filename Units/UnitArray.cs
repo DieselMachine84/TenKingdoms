@@ -381,7 +381,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Town targetTown = TownArray[targetRecno];
-					    if (targetTown.nation_recno == oldNationRecno)
+					    if (targetTown.NationId == oldNationRecno)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 
@@ -451,7 +451,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Town targetTown = TownArray[targetRecno];
-					    if (targetTown.nation_recno == nationRecno1 || targetTown.nation_recno == nationRecno2)
+					    if (targetTown.NationId == nationRecno1 || targetTown.NationId == nationRecno2)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 
@@ -670,9 +670,9 @@ public class UnitArray : SpriteArray
 		    {
 			    Town town = TownArray[location.town_recno()];
 
-			    targetXLoc = town.loc_x1;
-			    targetYLoc = town.loc_y1;
-			    targetNationRecno = town.nation_recno;
+			    targetXLoc = town.X1Loc;
+			    targetYLoc = town.Y1Loc;
+			    targetNationRecno = town.NationId;
 		    }
 
 		    else
@@ -1564,8 +1564,8 @@ public class UnitArray : SpriteArray
 	    {
 		    Town town = TownArray[location.town_recno()];
 
-		    destX = town.loc_x1;
-		    destY = town.loc_y1;
+		    destX = town.X1Loc;
+		    destY = town.Y1Loc;
 	    }
 
 	    //-------------------------------------------//
@@ -3317,7 +3317,7 @@ public class UnitArray : SpriteArray
 		{
 			//-------------------- attack town -------------------//
 			Town town = TownArray[loc.town_recno()];
-			attack_town(targetXLoc, targetYLoc, town.town_recno, selectedUnits);
+			attack_town(targetXLoc, targetYLoc, town.TownId, selectedUnits);
 		}
 		else if (loc.is_wall())
 		{

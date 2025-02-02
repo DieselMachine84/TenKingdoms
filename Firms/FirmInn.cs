@@ -221,13 +221,13 @@ public class FirmInn : Firm
 
 				Town town = TownArray[location.town_recno()];
 
-				if (town.nation_recno != nation_recno)
+				if (town.NationId != nation_recno)
 					continue;
 
 				int dist = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-					town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
+					town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
 				if (dist <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-					town.auto_defense(targetRecno);
+					town.AutoDefense(targetRecno);
 			}
 		}
 	}
@@ -359,9 +359,9 @@ public class FirmInn : Firm
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 			{
-				if (Misc.rects_distance(town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2,
+				if (Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
 					    loc_x1, loc_y1, loc_x2, loc_y2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
 					return false;

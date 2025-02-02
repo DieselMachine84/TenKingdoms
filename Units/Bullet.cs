@@ -277,7 +277,7 @@ public class Bullet : Sprite
 		else if (location.is_town())
 		{
 			Town town = TownArray[location.town_recno()];
-			if (!NationArray.should_attack(nation_recno, town.nation_recno))
+			if (!NationArray.should_attack(nation_recno, town.NationId))
 				return;
 		}
 		else

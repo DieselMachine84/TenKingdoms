@@ -731,12 +731,12 @@ public class FirmMonster : Firm
 			else if (location.is_town())
 			{
 				Town town = TownArray[location.town_recno()];
-				if (town.nation_recno != 0)
+				if (town.NationId != 0)
 				{
-					targetNation = town.nation_recno;
+					targetNation = town.NationId;
 					attackFlag = 1;
-					xLoc = town.loc_x1;
-					yLoc = town.loc_y1;
+					xLoc = town.X1Loc;
+					yLoc = town.Y1Loc;
 					break;
 				}
 			}

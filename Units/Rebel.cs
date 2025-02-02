@@ -196,7 +196,7 @@ public class Rebel
         {
             //----- the town has already been captured -----//
 
-            if (TownArray.IsDeleted(action_para) || TownArray[action_para].nation_recno == 0)
+            if (TownArray.IsDeleted(action_para) || TownArray[action_para].NationId == 0)
             {
                 //--- stop all units that are still attacking the town ---//
 
@@ -236,9 +236,9 @@ public class Rebel
 
         else if (Misc.Random(10) == 0)
         {
-            if (TownArray[town_recno].population >= 20 && NationArray.can_form_new_ai_nation())
+            if (TownArray[town_recno].Population >= 20 && NationArray.can_form_new_ai_nation())
             {
-                TownArray[town_recno].form_new_nation();
+                TownArray[town_recno].FormNewNation();
             }
         }
     }
@@ -291,17 +291,17 @@ public class Rebel
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
-            if (town.rebel_recno == 0)
+            if (town.RebelId == 0)
                 continue;
 
-            if (World.get_region_id(town.loc_x1, town.loc_y1) != curRegionId)
+            if (World.get_region_id(town.X1Loc, town.Y1Loc) != curRegionId)
                 continue;
 
-            if (leaderUnit.race_id == town.majority_race())
+            if (leaderUnit.race_id == town.MajorityRace())
             {
                 action_mode = REBEL_SETTLE_TO;
-                action_para = town.loc_x1;
-                action_para2 = town.loc_y1;
+                action_para = town.X1Loc;
+                action_para2 = town.Y1Loc;
                 return true;
             }
         }
@@ -327,19 +327,19 @@ public class Rebel
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
-            if (!is_hostile_nation(town.nation_recno))
+            if (!is_hostile_nation(town.NationId))
                 continue;
 
-            if (World.get_region_id(town.loc_x1, town.loc_y1) != curRegionId)
+            if (World.get_region_id(town.X1Loc, town.Y1Loc) != curRegionId)
                 continue;
 
             int townDistance = Misc.rects_distance(leaderXLoc, leaderYLoc, leaderXLoc, leaderYLoc,
-                town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
+                town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
 
             if (townDistance < closestTownDistance)
             {
                 closestTownDistance = townDistance;
-                bestTownRecno = town.town_recno;
+                bestTownRecno = town.TownId;
             }
         }
 
@@ -417,7 +417,7 @@ public class Rebel
         {
             case REBEL_ATTACK_TOWN:
                 Town town = TownArray[action_para];
-                UnitArray.attack(town.loc_x1, town.loc_y1, false, rebelRecnoArray,
+                UnitArray.attack(town.X1Loc, town.Y1Loc, false, rebelRecnoArray,
                     InternalConstants.COMMAND_AI, 0);
                 break;
 
@@ -450,7 +450,7 @@ public class Rebel
 
     public void turn_indepedent()
     {
-        TownArray[town_recno].rebel_recno = 0;
+        TownArray[town_recno].RebelId = 0;
 
         RebelArray.DeleteRebel(this);
     }

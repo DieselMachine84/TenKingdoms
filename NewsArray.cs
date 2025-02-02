@@ -183,17 +183,17 @@ public class NewsArray
 
 		//----------- add news --------------//
 
-		News news = add_news(News.NEWS_TOWN_REBEL, News.NEWS_NORMAL, town.nation_recno);
+		News news = add_news(News.NEWS_TOWN_REBEL, News.NEWS_NORMAL, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.town_name_id;
+		news.short_para1 = town.TownNameId;
 		news.short_para2 = rebelCount;
 
 		//-------- set location ----------//
 
-		news.set_loc(town.center_x, town.center_y, News.NEWS_LOC_TOWN, townRecno);
+		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, townRecno);
 	}
 
 	public void migrate(int srcTownRecno, int desTownRecno, int raceId, int migratedCount, int firmRecno = 0)
@@ -204,13 +204,13 @@ public class NewsArray
 		//----------- add news --------------//
 
 		News news = add_news(News.NEWS_MIGRATE, News.NEWS_NORMAL,
-			srcTown.nation_recno, desTown.nation_recno);
+			srcTown.NationId, desTown.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = srcTown.town_name_id;
-		news.short_para2 = desTown.town_name_id;
+		news.short_para1 = srcTown.TownNameId;
+		news.short_para2 = desTown.TownNameId;
 		news.short_para3 = raceId;
 		news.short_para4 = migratedCount;
 
@@ -221,7 +221,7 @@ public class NewsArray
 
 		//-------- set location ----------//
 
-		news.set_loc(desTown.center_x, desTown.center_y, News.NEWS_LOC_TOWN, desTownRecno);
+		news.set_loc(desTown.CenterXLoc, desTown.CenterYLoc, News.NEWS_LOC_TOWN, desTownRecno);
 	}
 
 	public void new_nation(int nationRecno)
@@ -235,9 +235,9 @@ public class NewsArray
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno == nationRecno)
+			if (town.NationId == nationRecno)
 			{
-				news.set_loc(town.center_x, town.center_y, News.NEWS_LOC_TOWN, town.town_recno);
+				news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, town.TownId);
 				break;
 			}
 		}
@@ -368,14 +368,14 @@ public class NewsArray
 	{
 		Town town = TownArray[townRecno];
 
-		News news = add_news(News.NEWS_TOWN_ABANDONED, News.NEWS_NORMAL, town.nation_recno);
+		News news = add_news(News.NEWS_TOWN_ABANDONED, News.NEWS_NORMAL, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.town_name_id;
+		news.short_para1 = town.TownNameId;
 
-		news.set_loc(town.center_x, town.center_y, News.NEWS_LOC_ANY);
+		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_ANY);
 	}
 
 	public void town_surrendered(int townRecno, int toNationRecno)
@@ -383,14 +383,14 @@ public class NewsArray
 		Town town = TownArray[townRecno];
 
 		News news = add_news(News.NEWS_TOWN_SURRENDERED, News.NEWS_NORMAL,
-			toNationRecno, town.nation_recno);
+			toNationRecno, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.town_name_id;
+		news.short_para1 = town.TownNameId;
 
-		news.set_loc(town.center_x, town.center_y, News.NEWS_LOC_TOWN, townRecno);
+		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, townRecno);
 	}
 
 	public void monster_king_killed(int monsterId, int xLoc, int yLoc)
@@ -476,9 +476,9 @@ public class NewsArray
 			Town town = TownArray[spy.spy_place_para];
 
 			news.short_para1 = 0;
-			news.short_para2 = town.town_name_id;
+			news.short_para2 = town.TownNameId;
 
-			news.set_loc(town.center_x, town.center_y, News.NEWS_LOC_TOWN, town.town_recno);
+			news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, town.TownId);
 		}
 		else if (spy.spy_place == Spy.SPY_MOBILE)
 		{
@@ -619,7 +619,7 @@ public class NewsArray
 				news.short_para3 = FirmArray[recno].closest_town_name_id;
 				break;
 			case News.NEWS_LOC_TOWN:
-				news.short_para3 = TownArray[recno].town_name_id;
+				news.short_para3 = TownArray[recno].TownNameId;
 				break;
 		}
 

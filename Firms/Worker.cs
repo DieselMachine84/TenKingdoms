@@ -43,7 +43,7 @@ public class Worker
     public int loyalty()
     {
         if (town_recno != 0) // if the worker lives in a town
-            return Convert.ToInt32(TownArray[town_recno].race_loyalty_array[race_id - 1]);
+            return Convert.ToInt32(TownArray[town_recno].RacesLoyalty[race_id - 1]);
         else
             return worker_loyalty;
     }
@@ -52,7 +52,7 @@ public class Worker
     {
         if (town_recno != 0) // if the worker lives in a town
         {
-            return Convert.ToInt32(TownArray[town_recno].race_loyalty_array[race_id - 1]);
+            return Convert.ToInt32(TownArray[town_recno].RacesLoyalty[race_id - 1]);
         }
         else
         {
@@ -105,7 +105,7 @@ public class Worker
             return SpyArray[spy_recno].true_nation_recno == nationRecno;
 
         if (town_recno != 0)
-            return TownArray[town_recno].nation_recno == nationRecno;
+            return TownArray[town_recno].NationId == nationRecno;
         else
             return FirmArray[firmRecno].nation_recno == nationRecno;
     }

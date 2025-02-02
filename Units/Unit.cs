@@ -116,7 +116,7 @@ public class Unit : Sprite
 					{
 						Town town = TownArray[firm.linked_town_array[i]];
 
-						commanderPower += town.population / town.linked_active_camp_count();
+						commanderPower += town.Population / town.LinkedActiveCampCount();
 					}
 				}
 
@@ -852,8 +852,8 @@ public class Unit : Sprite
 			{
 				Town town = TownArray[unit_mode_para];
 
-				if (nation_recno == town.nation_recno)
-					town.reduce_defender_count();
+				if (nation_recno == town.NationId)
+					town.ReduceDefenderCount();
 			}
 
 			set_mode(0); // reset mode
@@ -1573,32 +1573,32 @@ public class Unit : Sprite
 		// can't use ai_town_array[] because this function will be called by Unit::betray() when a unit defected to the player's kingdom
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != nation_recno)
+			if (town.NationId != nation_recno)
 				continue;
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
 			hasTownInRegion = true;
 
-			if (town.population >= GameConstants.MAX_TOWN_POPULATION || !town.is_base_town)
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION || !town.IsBaseTown)
 				continue;
 
 			//--- only assign to towns of the same race ---//
 
 			if (ownNation.pref_town_harmony > 50)
 			{
-				if (town.majority_race() != race_id)
+				if (town.MajorityRace() != race_id)
 					continue;
 			}
 
 			//-------- calculate the rating ---------//
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.center_x, town.center_y);
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
 
-			curRating += 300 * town.race_pop_array[race_id - 1] / town.population; // racial homogenous bonus
+			curRating += 300 * town.RacesPopulation[race_id - 1] / town.Population; // racial homogenous bonus
 
-			curRating += GameConstants.MAX_TOWN_POPULATION - town.population;
+			curRating += GameConstants.MAX_TOWN_POPULATION - town.Population;
 
 			//-------------------------------------//
 
@@ -1614,7 +1614,7 @@ public class Unit : Sprite
 			//DieselMachine TODO do not settle skilled soldiers
 			if (max_hit_points < 50)
 			{
-				assign(bestTown.loc_x1, bestTown.loc_y1);
+				assign(bestTown.X1Loc, bestTown.Y1Loc);
 				return true;
 			}
 		}
@@ -1724,13 +1724,13 @@ public class Unit : Sprite
 		{
 			Town town = TownArray[ownNation.ai_town_array[i]];
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
-			if (!town.is_base_town || town.no_neighbor_space)
+			if (!town.IsBaseTown || town.NoNeighborSpace)
 				continue;
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.center_x, town.center_y);
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
 
 			if (curRating > bestRating)
 			{
@@ -1740,7 +1740,7 @@ public class Unit : Sprite
 		}
 
 		if (bestTown != null)
-			return bestTown.ai_build_neighbor_firm(Firm.FIRM_CAMP);
+			return bestTown.AIBuildNeighborFirm(Firm.FIRM_CAMP);
 
 		return false;
 	}
@@ -1866,7 +1866,7 @@ public class Unit : Sprite
 				{
 					Town town = TownArray[rebel.town_recno];
 
-					assign(town.loc_x1, town.loc_y1);
+					assign(town.X1Loc, town.Y1Loc);
 				}
 
 				return; // don't do anything if the town has been destroyed, Rebel.next_day() will take care of it. 
@@ -1882,14 +1882,14 @@ public class Unit : Sprite
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != 0 || town.population >= GameConstants.MAX_TOWN_POPULATION ||
-			    town.region_id != regionId)
+			if (town.NationId != 0 || town.Population >= GameConstants.MAX_TOWN_POPULATION ||
+			    town.RegionId != regionId)
 			{
 				continue;
 			}
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.center_x, town.center_y);
-			curRating += 100 * town.race_pop_array[race_id - 1] / town.population;
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
+			curRating += 100 * town.RacesPopulation[race_id - 1] / town.Population;
 
 			if (curRating > bestRating)
 			{
@@ -1905,7 +1905,7 @@ public class Unit : Sprite
 			if (unit_mode == UnitConstants.UNIT_MODE_REBEL)
 				RebelArray.drop_rebel_identity(sprite_recno);
 
-			assign(bestTown.loc_x1, bestTown.loc_y1);
+			assign(bestTown.X1Loc, bestTown.Y1Loc);
 		}
 		else
 		{
@@ -2166,22 +2166,22 @@ public class Unit : Sprite
 		// can't use ai_town_array[] because this function will be called by Unit::betray() when a unit defected to the player's kingdom
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != nation_recno)
+			if (town.NationId != nation_recno)
 				continue;
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
 			//-------------------------------------//
 
-			int curDistance = Misc.points_distance(curXLoc, curYLoc, town.center_x, town.center_y);
+			int curDistance = Misc.points_distance(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
 
 			if (curDistance < 10) // no need to move if the unit is already close enough to the town.
 				return;
 
 			int curRating = 100 - 100 * curDistance / GameConstants.MapSize;
 
-			curRating += town.population;
+			curRating += town.Population;
 
 			//-------------------------------------//
 
@@ -2193,7 +2193,7 @@ public class Unit : Sprite
 		}
 
 		if (bestTown != null)
-			move_to_town_surround(bestTown.loc_x1, bestTown.loc_y1, sprite_info.loc_width, sprite_info.loc_height);
+			move_to_town_surround(bestTown.X1Loc, bestTown.Y1Loc, sprite_info.loc_width, sprite_info.loc_height);
 	}
 
 	public bool ai_escape_fire()
@@ -2565,7 +2565,7 @@ public class Unit : Sprite
 		if (original_action_mode == UnitConstants.ACTION_ASSIGN_TO_TOWN && location.is_town())
 		{
 			if (location.town_recno() == original_action_para &&
-			    TownArray[original_action_para].nation_recno == nation_recno)
+			    TownArray[original_action_para].NationId == nation_recno)
 			{
 				UnitArray.assign(original_action_x_loc, original_action_y_loc, false,
 					InternalConstants.COMMAND_AUTO, selectedArray);
@@ -2655,7 +2655,7 @@ public class Unit : Sprite
 			int townRecno = location.town_recno();
 
 			if (townRecno == original_action_para)
-				targetNationRecno = TownArray[townRecno].nation_recno;
+				targetNationRecno = TownArray[townRecno].NationId;
 		}
 
 		//----- the original target is no longer valid ----//
@@ -4078,7 +4078,7 @@ public class Unit : Sprite
 		}
 		else if (loc.is_town())
 		{
-			targetNationRecno = TownArray[loc.town_recno()].nation_recno;
+			targetNationRecno = TownArray[loc.town_recno()].NationId;
 		}
 
 		if (nation_recno != 0 && targetNationRecno != 0)
@@ -4628,7 +4628,7 @@ public class Unit : Sprite
 		// cannot attack this nation
 		//------------------------------------------------------------//
 		Town town = TownArray[loc.town_recno()];
-		if (!nation_can_attack(town.nation_recno))
+		if (!nation_can_attack(town.NationId))
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			return;
@@ -4667,7 +4667,7 @@ public class Unit : Sprite
 		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
 		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == town.town_recno && action_x_loc2 == townXLoc && action_y_loc2 == townYLoc)
+		    action_para2 == town.TownId && action_x_loc2 == townXLoc && action_y_loc2 == townYLoc)
 		{
 			//----------- old order ------------//
 
@@ -4685,7 +4685,7 @@ public class Unit : Sprite
 			    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				action_mode2 = UnitConstants.ACTION_ATTACK_TOWN;
 
-			action_para2 = town.town_recno;
+			action_para2 = town.TownId;
 			action_x_loc2 = townXLoc;
 			action_y_loc2 = townYLoc;
 		}
@@ -4764,7 +4764,7 @@ public class Unit : Sprite
 			// attack now
 			//---------------------------------------------------------------//
 			set_cur(next_x, next_y);
-			set_attack_dir(next_x_loc(), next_y_loc(), town.center_x, town.center_y);
+			set_attack_dir(next_x_loc(), next_y_loc(), town.CenterXLoc, town.CenterYLoc);
 			if (is_dir_correct())
 			{
 				if (attackInfo.attack_range == 1)
@@ -4777,7 +4777,7 @@ public class Unit : Sprite
 		}
 
 		action_mode = UnitConstants.ACTION_ATTACK_TOWN;
-		action_para = town.town_recno;
+		action_para = town.TownId;
 		action_x_loc = townXLoc;
 		action_y_loc = townYLoc;
 	}
@@ -5304,14 +5304,14 @@ public class Unit : Sprite
 		//----------- attack town ----------//
 
 		Town targetTown = TownArray[loc.town_recno()];
-		int targetTownRecno = targetTown.town_recno;
-		int targetTownNameId = targetTown.town_name_id;
-		int targetTownXLoc = targetTown.center_x;
-		int targetTownYLoc = targetTown.center_y;
+		int targetTownRecno = targetTown.TownId;
+		int targetTownNameId = targetTown.TownNameId;
+		int targetTownXLoc = targetTown.CenterXLoc;
+		int targetTownYLoc = targetTown.CenterYLoc;
 
 		// ---------- add indicator on the map ----------//
-		if (NationArray.player_recno != 0 && targetTown.nation_recno == NationArray.player_recno)
-			WarPointArray.AddPoint(targetTown.center_x, targetTown.center_y);
+		if (NationArray.player_recno != 0 && targetTown.NationId == NationArray.player_recno)
+			WarPointArray.AddPoint(targetTown.CenterXLoc, targetTown.CenterYLoc);
 
 		//------------------------------------------------------------------------------//
 		// change relation to hostile
@@ -5320,27 +5320,27 @@ public class Unit : Sprite
 		//------------------------------------------------------------------------------//
 		// the target and the attacker's nations are different
 		// (it's possible that when a unit who has just changed nation has its bullet hitting its own nation)
-		if (attackUnit != null && attackUnit.cur_action != SPRITE_DIE && targetTown.nation_recno != attackNationRecno)
+		if (attackUnit != null && attackUnit.cur_action != SPRITE_DIE && targetTown.NationId != attackNationRecno)
 		{
-			int townNationRecno = targetTown.nation_recno;
+			int townNationRecno = targetTown.NationId;
 
 			//------- change to hostile relation -------//
 
-			if (attackNationRecno != 0 && targetTown.nation_recno != 0)
+			if (attackNationRecno != 0 && targetTown.NationId != 0)
 			{
 				NationArray[attackNationRecno].set_at_war_today();
-				NationArray[targetTown.nation_recno].set_at_war_today(attackUnit.sprite_recno);
+				NationArray[targetTown.NationId].set_at_war_today(attackUnit.sprite_recno);
 			}
 
-			if (targetTown.nation_recno != 0)
+			if (targetTown.NationId != 0)
 			{
-				NationArray[targetTown.nation_recno].being_attacked(attackNationRecno);
+				NationArray[targetTown.NationId].being_attacked(attackNationRecno);
 			}
 
 			// don't add the town abandon news that might be called by Town::dec_pop() as the town is actually destroyed not abandoned
 			NewsArray.disable();
 
-			targetTown.being_attacked(attackUnit.sprite_recno, attackDamage);
+			targetTown.BeingAttacked(attackUnit.sprite_recno, attackDamage);
 
 			NewsArray.enable();
 
@@ -5354,13 +5354,13 @@ public class Unit : Sprite
 
 			//---------- gain experience --------//
 
-			if (attackNationRecno != targetTown.nation_recno)
+			if (attackNationRecno != targetTown.NationId)
 				attackUnit.gain_experience(); // gain experience to increase combat level
 
 			//------------ auto defense -----------------//
 
 			if (!FirmArray.IsDeleted(targetTownRecno))
-				targetTown.auto_defense(attackUnit.sprite_recno);
+				targetTown.AutoDefense(attackUnit.sprite_recno);
 		}
 	}
 
@@ -5495,7 +5495,7 @@ public class Unit : Sprite
 
 				Town town = TownArray[unit_mode_para];
 
-				if (!town.is_hostile_nation(nationRecno))
+				if (!town.IsHostileNation(nationRecno))
 					return false; // false if the independent unit don't want to attack us
 
 				break;
@@ -6143,7 +6143,7 @@ public class Unit : Sprite
 		if (!World.can_build_town(settleXLoc, settleYLoc, sprite_recno))
 		{
 			Location loc = World.get_loc(settleXLoc, settleYLoc);
-			if (loc.is_town() && TownArray[loc.town_recno()].nation_recno == nation_recno)
+			if (loc.is_town() && TownArray[loc.town_recno()].NationId == nation_recno)
 				assign(settleXLoc, settleYLoc);
 			else
 				move_to(settleXLoc, settleYLoc);
@@ -6352,14 +6352,14 @@ public class Unit : Sprite
 			}
 
 			Town targetTown = TownArray[recno];
-			if (TownArray[recno].nation_recno != nation_recno)
+			if (TownArray[recno].NationId != nation_recno)
 			{
 				move_to_town_surround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
 				return;
 			}
 
-			width = targetTown.loc_width();
-			height = targetTown.loc_height();
+			width = targetTown.LocWidth();
+			height = targetTown.LocHeight();
 			buildingType = UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO;
 		}
 		/*else if(loc.has_unit(UnitRes.UNIT_LAND)) // there is vehicle
@@ -6655,7 +6655,7 @@ public class Unit : Sprite
 		else if (unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
 		{
 			if (!TownArray.IsDeleted(unit_mode_para))
-				TownArray[unit_mode_para].reduce_defender_count();
+				TownArray[unit_mode_para].ReduceDefenderCount();
 
 			set_mode(0); // reset unit mode
 		}
@@ -6686,11 +6686,11 @@ public class Unit : Sprite
 
 		//------- decrease the population of the unit's home town ------//
 
-		TownArray[curTownRecno].dec_pop(race_id, true);
+		TownArray[curTownRecno].DecPopulation(race_id, true);
 
 		//--------- increase the population of the target town ------//
 
-		TownArray[destTownRecno].inc_pop(race_id, true, loyalty);
+		TownArray[destTownRecno].IncPopulation(race_id, true, loyalty);
 	}
 
 	public bool caravan_in_firm()
@@ -8392,7 +8392,7 @@ public class Unit : Sprite
 	{
 		Town town = TownArray[targetRecno];
 		Nation nation = nation_recno != 0 ? NationArray[nation_recno] : null;
-		int targetNationRecno = town.nation_recno;
+		int targetNationRecno = town.NationId;
 
 		//-------------------------------------------------------------------------------//
 		// checking nation relationship
@@ -8416,13 +8416,13 @@ public class Unit : Sprite
 				if (nationRelation.status != NationBase.NATION_HOSTILE || !nationRelation.should_attack)
 					return 0;
 			}
-			else if (!town.is_hostile_nation(nation_recno))
+			else if (!town.IsHostileNation(nation_recno))
 				return 0; // false if the indepentent unit don't want to attack us
 		}
 		else if (!independent_nation_can_attack(targetNationRecno)) // independent town
 			return 0;
 
-		if (space_for_attack(town.loc_x1, town.loc_y1, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+		if (space_for_attack(town.X1Loc, town.Y1Loc, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 			return 1;
 		else
 			return 0;
@@ -8773,7 +8773,7 @@ public class Unit : Sprite
 				case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
 					targetTown = TownArray[loc.town_recno()];
 					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN,
-						targetTown.town_recno, curProcessUnitNum);
+						targetTown.TownId, curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_SETTLE: // (settle, first unit) no town on the location
@@ -10068,10 +10068,10 @@ public class Unit : Sprite
 				Town town = TownArray[action_para];
 				{
 					if (mobile_type == UnitConstants.UNIT_LAND)
-						set_move_to_surround(town.loc_x1, town.loc_y1,
+						set_move_to_surround(town.X1Loc, town.Y1Loc,
 							InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 					else
-						attack_town(town.loc_x1, town.loc_y1);
+						attack_town(town.X1Loc, town.Y1Loc);
 				}
 			}
 			else // no surrounding place found, stop now
@@ -11669,7 +11669,7 @@ public class Unit : Sprite
 				{
 					Town town = TownArray[action_para2];
 
-					if (!nation_can_attack(town.nation_recno)) // cannot attack this nation
+					if (!nation_can_attack(town.NationId)) // cannot attack this nation
 						clearToDetect++;
 				}
 
@@ -11965,7 +11965,7 @@ public class Unit : Sprite
 	{
 		Town town = TownArray[townRecno];
 
-		assign(town.loc_x1, town.loc_y1);
+		assign(town.X1Loc, town.Y1Loc);
 		action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN;
 	}
 
@@ -11994,12 +11994,12 @@ public class Unit : Sprite
 			else
 			{
 				Town town = TownArray[action_misc_para];
-				if (UnitArray.IsDeleted(town.defend_target_recno))
+				if (UnitArray.IsDeleted(town.DefendTargetId))
 					back++;
 				else
 				{
-					Unit target = UnitArray[town.defend_target_recno];
-					if (target.action_mode != UnitConstants.ACTION_ATTACK_TOWN || target.action_para != town.town_recno)
+					Unit target = UnitArray[town.DefendTargetId];
+					if (target.action_mode != UnitConstants.ACTION_ATTACK_TOWN || target.action_para != town.TownId)
 						back++;
 				}
 			}
@@ -12063,7 +12063,7 @@ public class Unit : Sprite
 			else
 			{
 				Town town = TownArray[action_misc_para];
-				if (town.nation_recno != nation_recno)
+				if (town.NationId != nation_recno)
 					clearDefenseMode++;
 				else
 				{
@@ -12106,10 +12106,10 @@ public class Unit : Sprite
 		int curYLoc = next_y_loc();
 
 		Town town = TownArray[unit_mode_para];
-		if ((curXLoc < town.center_x - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curXLoc > town.center_x + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curYLoc < town.center_y - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curYLoc > town.center_y + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE))
+		if ((curXLoc < town.CenterXLoc - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curXLoc > town.CenterXLoc + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curYLoc < town.CenterYLoc - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curYLoc > town.CenterYLoc + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE))
 		{
 			defend_town_back_town(unit_mode_para);
 			return false;
@@ -13074,7 +13074,7 @@ public class Unit : Sprite
 		{
 			targetTown = TownArray[action_para];
 
-			if (!nation_can_attack(targetTown.nation_recno)) // cannot attack this nation
+			if (!nation_can_attack(targetTown.NationId)) // cannot attack this nation
 				clearOrder++;
 		}
 
@@ -13189,8 +13189,8 @@ public class Unit : Sprite
 					return;
 			}
 
-			int targetXLoc = targetTown.loc_x1;
-			int targetYLoc = targetTown.loc_y1;
+			int targetXLoc = targetTown.X1Loc;
+			int targetYLoc = targetTown.Y1Loc;
 
 			int attackDistance = cal_distance(targetXLoc, targetYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT);
 
@@ -13233,7 +13233,7 @@ public class Unit : Sprite
 					//---------- attack now ---------//
 					set_cur(next_x, next_y);
 					terminate_move();
-					set_dir(next_x_loc(), next_y_loc(), targetTown.center_x, targetTown.center_y);
+					set_dir(next_x_loc(), next_y_loc(), targetTown.CenterXLoc, targetTown.CenterYLoc);
 
 					if (is_dir_correct())
 						set_attack();
@@ -13438,7 +13438,7 @@ public class Unit : Sprite
 						stop2();
 						return;
 					}
-					else if (TownArray[action_para].nation_recno != nation_recno)
+					else if (TownArray[action_para].NationId != nation_recno)
 					{
 						stop2();
 						return;
@@ -13575,7 +13575,7 @@ public class Unit : Sprite
 					}
 
 					//-------------- assign the unit to the town -----------------//
-					TownArray[actionPara].assign_unit(spriteRecno);
+					TownArray[actionPara].AssignUnit(spriteRecno);
 				}
 
 				//####### begin trevor 18/8 #########// the following code was called wrongly and causing bug
@@ -13664,14 +13664,14 @@ public class Unit : Sprite
 
 					reset_action_para2();
 					//------------ settle the unit now -------------//
-					TownArray.settle(sprite_recno, action_x_loc, action_y_loc);
+					TownArray.Settle(sprite_recno, action_x_loc, action_y_loc);
 
 					if (UnitArray.IsDeleted(unitRecno))
 						return;
 
 					reset_action_para();
 				}
-				else if (TownArray[loc.town_recno()].nation_recno == nation_recno)
+				else if (TownArray[loc.town_recno()].NationId == nation_recno)
 				{
 					//---------- a town zone already exists ---------//
 					assign(action_x_loc, action_y_loc);
@@ -13822,7 +13822,7 @@ public class Unit : Sprite
 				else
 				{
 					Town town = TownArray[rebel.action_para];
-					attack_town(town.loc_x1, town.loc_y1);
+					attack_town(town.X1Loc, town.Y1Loc);
 				}
 
 				break;
@@ -13832,7 +13832,7 @@ public class Unit : Sprite
 				{
 					Location loc = World.get_loc(rebel.action_para, rebel.action_para2);
 
-					if (loc.is_town() && TownArray[loc.town_recno()].rebel_recno == rebel.rebel_recno)
+					if (loc.is_town() && TownArray[loc.town_recno()].RebelId == rebel.rebel_recno)
 					{
 						rebel.action_mode = Rebel.REBEL_SETTLE_TO;
 					}

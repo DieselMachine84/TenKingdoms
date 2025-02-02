@@ -122,7 +122,7 @@ public class Tornado : Sprite
         {
             Town town = TownArray[location.town_recno()];
             if (life_time % 30 == 0)
-                town.kill_town_people(0);
+                town.KillTownPeople(0);
         }
     }
 

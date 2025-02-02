@@ -43,7 +43,7 @@ public class TownArray : DynArray<Town>
 	public void DeleteTown(Town town)
 	{
 		town.Deinit();
-		Delete(town.town_recno);
+		Delete(town.TownId);
 
 		NationArray.update_statistic();
 	}
@@ -54,7 +54,7 @@ public class TownArray : DynArray<Town>
 			return true;
 
 		Town town = this[recNo];
-		return town.population == 0;
+		return town.Population == 0;
 	}
 
 	public void Process()
@@ -64,39 +64,39 @@ public class TownArray : DynArray<Town>
 		foreach (Town town in this)
 		{
 			// only process each town once per day
-			if (town.town_recno % InternalConstants.FRAMES_PER_DAY == dayFrameNumber)
+			if (town.TownId % InternalConstants.FRAMES_PER_DAY == dayFrameNumber)
 			{
-				if (town.nation_recno == 0)
+				if (town.NationId == 0)
 				{
-					town.think_independent_town();
+					town.ThinkIndependentTown();
 				}
 				else
 				{
-					if (town.ai_town)
+					if (town.AITown)
 					{
-						town.process_ai();
+						town.ProcessAI();
 					}
 				}
 
-				if (IsDeleted(town.town_recno))
+				if (IsDeleted(town.TownId))
 					continue;
 
-				town.next_day();
+				town.NextDay();
 			}
 		}
 
 		//------ distribute demand -------//
 
 		if (dayFrameNumber == 0 && Info.TotalDays % 15 == 0) // distribute demand every 15 days
-			distribute_demand();
+			DistributeDemand();
 
 		//------ create new independent town -----//
 
 		if (dayFrameNumber == 0 && Info.TotalDays % 30 == 0)
-			think_new_independent_town();
+			ThinkNewIndependentTown();
 	}
 
-	public void think_new_independent_town()
+	private void ThinkNewIndependentTown()
 	{
 		if (!Config.new_independent_town_emerge)
 			return;
@@ -110,9 +110,9 @@ public class TownArray : DynArray<Town>
 
 		foreach (Town town in this)
 		{
-			allTotalPop += town.population;
+			allTotalPop += town.Population;
 
-			if (town.nation_recno == 0)
+			if (town.NationId == 0)
 				independentTownCount++;
 		}
 
@@ -158,7 +158,7 @@ public class TownArray : DynArray<Town>
 
 		int xLoc, yLoc;
 
-		if (!think_town_loc(GameConstants.MapSize * GameConstants.MapSize / 4, out xLoc, out yLoc))
+		if (!ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize / 4, out xLoc, out yLoc))
 			return;
 
 		//--------------- create town ---------------//
@@ -170,16 +170,16 @@ public class TownArray : DynArray<Town>
 		while (true)
 		{
 			int addPop = race_wander_pop_array[raceId - 1];
-			addPop = Math.Min(maxTownPop - newTown.population, addPop);
+			addPop = Math.Min(maxTownPop - newTown.Population, addPop);
 
-			int townResistance = independent_town_resistance();
+			int townResistance = IndependentTownResistance();
 
 			// 0-the add pop do not have jobs, 1-first init
-			newTown.init_pop(raceId, addPop, townResistance, false, true);
+			newTown.InitPopulation(raceId, addPop, townResistance, false, true);
 
 			race_wander_pop_array[raceId - 1] -= addPop;
 
-			if (newTown.population >= maxTownPop)
+			if (newTown.Population >= maxTownPop)
 				break;
 
 			//---- next race to be added to the independent town ----//
@@ -205,10 +205,10 @@ public class TownArray : DynArray<Town>
 
 		//---------- set town layout -----------//
 
-		newTown.auto_set_layout();
+		newTown.AutoSetLayout();
 	}
 
-	public int independent_town_resistance()
+	public int IndependentTownResistance()
 	{
 		switch (Config.independent_town_resistance)
 		{
@@ -226,7 +226,7 @@ public class TownArray : DynArray<Town>
 		}
 	}
 	
-	public bool think_town_loc(int maxTries, out int xLoc, out int yLoc)
+	public bool ThinkTownLoc(int maxTries, out int xLoc, out int yLoc)
 	{
 		const int MIN_INTER_TOWN_DISTANCE = 16;
 		const int BUILD_TOWN_LOC_WIDTH = 16;
@@ -267,7 +267,7 @@ public class TownArray : DynArray<Town>
 			foreach (Town town in this)
 			{
 				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-					    town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2) < MIN_INTER_TOWN_DISTANCE)
+					    town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc) < MIN_INTER_TOWN_DISTANCE)
 				{
 					canBuildFlag = false;
 					break;
@@ -300,7 +300,7 @@ public class TownArray : DynArray<Town>
 		return false;
 	}
 
-	public bool settle(int unitRecno, int xLoc, int yLoc)
+	public bool Settle(int unitRecno, int xLoc, int yLoc)
 	{
 		if (!World.can_build_town(xLoc, yLoc, unitRecno))
 			return false;
@@ -325,19 +325,19 @@ public class TownArray : DynArray<Town>
 		int uYLoc = unit.next_y_loc();
 		Location location = World.get_loc(uXLoc, uYLoc);
 
-		town.assign_unit(unitRecno);
+		town.AssignUnit(unitRecno);
 
-		if (uXLoc >= town.loc_x1 && uXLoc <= town.loc_x2 && uYLoc >= town.loc_y1 && uYLoc <= town.loc_y2)
-			location.set_town(town.town_recno);
+		if (uXLoc >= town.X1Loc && uXLoc <= town.X2Loc && uYLoc >= town.Y1Loc && uYLoc <= town.Y2Loc)
+			location.set_town(town.TownId);
 
-		town.update_target_loyalty();
+		town.UpdateTargetLoyalty();
 
 		//--------- hide the unit from the map ----------//
 
 		return true;
 	}
 
-	public void distribute_demand()
+	public void DistributeDemand()
 	{
 		//--- reset market place demand ----//
 
@@ -357,24 +357,24 @@ public class TownArray : DynArray<Town>
 
 		foreach (Town town in this)
 		{
-			town.distribute_demand();
+			town.DistributeDemand();
 		}
 	}
 
-	public void stop_attack_nation(int nationRecno)
+	public void StopAttackNation(int nationRecno)
 	{
 		foreach (Town town in this)
 		{
-			town.reset_hostile_nation(nationRecno);
+			town.ResetHostileNation(nationRecno);
 		}
 	}
 
-	public void disp_next(int seekDir, bool sameNation)
+	public void DisplayNext(int seekDir, bool sameNation)
 	{
 		if (selected_recno == 0)
 			return;
 
-		int nationRecno = this[selected_recno].nation_recno;
+		int nationRecno = this[selected_recno].NationId;
 		var enumerator = (seekDir >= 0) ? EnumerateAll(selected_recno, true) : EnumerateAll(selected_recno, false);
 
 		foreach (int recNo in enumerator)
@@ -383,20 +383,20 @@ public class TownArray : DynArray<Town>
 
 			//-------- if are of the same nation --------//
 
-			if (sameNation && town.nation_recno != nationRecno)
+			if (sameNation && town.NationId != nationRecno)
 				continue;
 
 			//--- check if the location of this town has been explored ---//
 
-			if (!World.get_loc(town.center_x, town.center_y).explored())
+			if (!World.get_loc(town.CenterXLoc, town.CenterYLoc).explored())
 				continue;
 
 			//---------------------------------//
 
 			Power.reset_selection();
-			selected_recno = town.town_recno;
+			selected_recno = town.TownId;
 
-			World.go_loc(town.center_x, town.center_y);
+			World.go_loc(town.CenterXLoc, town.CenterYLoc);
 			return;
 		}
 	}

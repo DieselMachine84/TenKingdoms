@@ -153,7 +153,7 @@ public class Spy
 			if (spy_place == SPY_TOWN)
 			{
 				Town town = TownArray[spy_place_para];
-				World.visit(town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+				World.visit(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc, GameConstants.EXPLORE_RANGE - 1);
 			}
 			else if (spy_place == SPY_FIRM)
 			{
@@ -201,7 +201,7 @@ public class Spy
 			{
 				//---- if the spy is in a firm or town of its own nation ---//
 
-				if ((spy_place == SPY_TOWN && TownArray[spy_place_para].nation_recno == true_nation_recno) ||
+				if ((spy_place == SPY_TOWN && TownArray[spy_place_para].NationId == true_nation_recno) ||
 				    (spy_place == SPY_FIRM && FirmArray[spy_place_para].nation_recno == true_nation_recno))
 				{
 					return "Counter-Spy";
@@ -229,29 +229,29 @@ public class Spy
 		if (action_mode == SPY_SOW_DISSENT)
 		{
 			// only when there are non-spy people
-			if (town.race_pop_array[race_id - 1] > town.race_spy_count_array[race_id - 1])
+			if (town.RacesPopulation[race_id - 1] > town.RacesSpyCount[race_id - 1])
 			{
 				// the more people there, the longer it takes to decrease the loyalty
-				double decValue = spy_skill / 10.0 / town.race_pop_array[race_id - 1];
+				double decValue = spy_skill / 10.0 / town.RacesPopulation[race_id - 1];
 
 				//----- if this is an independent town -----//
 
-				if (town.nation_recno == 0)
+				if (town.NationId == 0)
 				{
-					town.race_resistance_array[race_id - 1, true_nation_recno - 1] -= decValue;
+					town.RacesResistance[race_id - 1, true_nation_recno - 1] -= decValue;
 
-					if (town.race_resistance_array[race_id - 1, true_nation_recno - 1] < 0.0)
-						town.race_resistance_array[race_id - 1, true_nation_recno - 1] = 0.0;
+					if (town.RacesResistance[race_id - 1, true_nation_recno - 1] < 0.0)
+						town.RacesResistance[race_id - 1, true_nation_recno - 1] = 0.0;
 				}
 
 				//--- if this is an enemy town, decrease the town people's loyalty ---//
 
 				else
 				{
-					town.race_loyalty_array[race_id - 1] -= decValue * 4.0;
+					town.RacesLoyalty[race_id - 1] -= decValue * 4.0;
 
-					if (town.race_loyalty_array[race_id - 1] < 0.0)
-						town.race_loyalty_array[race_id - 1] = 0.0;
+					if (town.RacesLoyalty[race_id - 1] < 0.0)
+						town.RacesLoyalty[race_id - 1] = 0.0;
 				}
 			}
 		}
@@ -298,11 +298,11 @@ public class Spy
 					Town town = TownArray[worker.town_recno];
 					int raceId = worker.race_id;
 
-					if (town.race_pop_array[raceId - 1] >
-					    town.race_spy_count_array[raceId - 1]) // only when there are non-spy people
+					if (town.RacesPopulation[raceId - 1] >
+					    town.RacesSpyCount[raceId - 1]) // only when there are non-spy people
 					{
 						// the more people there, the longer it takes to decrease the loyalty
-						town.change_loyalty(raceId, -4.0 * spy_skill / 10.0 / town.race_pop_array[raceId - 1]);
+						town.ChangeLoyalty(raceId, -4.0 * spy_skill / 10.0 / town.RacesPopulation[raceId - 1]);
 					}
 				}
 				else //---- if the worker does not live in a town ----//
@@ -709,7 +709,7 @@ public class Spy
 
 		Town town = TownArray[spy_place_para];
 
-		int unitRecno = town.mobilize_town_people(race_id, decPop, true); //1-mobilize spies
+		int unitRecno = town.MobilizeTownPeople(race_id, decPop, true); //1-mobilize spies
 
 		if (unitRecno == 0)
 			return 0;
@@ -899,7 +899,7 @@ public class Spy
 		{
 			if (!TownArray.IsDeleted(spy_place_para))
 			{
-				TownArray[spy_place_para].race_spy_count_array[race_id - 1]--;
+				TownArray[spy_place_para].RacesSpyCount[race_id - 1]--;
 			}
 		}
 
@@ -926,7 +926,7 @@ public class Spy
 		}
 		else if (spy_place == SPY_TOWN)
 		{
-			TownArray[spy_place_para].race_spy_count_array[race_id - 1]++;
+			TownArray[spy_place_para].RacesSpyCount[race_id - 1]++;
 
 			//-----------------------------------------------------------//
 			// We need to update it here as this spy may have resigned from
@@ -935,10 +935,10 @@ public class Spy
 			// different.
 			//-----------------------------------------------------------//
 
-			cloaked_nation_recno = TownArray[spy_place_para].nation_recno;
+			cloaked_nation_recno = TownArray[spy_place_para].NationId;
 
 			// if it's our own town, don't change notify_cloaked_nation_flag
-			if (TownArray[spy_place_para].nation_recno != true_nation_recno)
+			if (TownArray[spy_place_para].NationId != true_nation_recno)
 				notify_cloaked_nation_flag = 1;
 		}
 	}
@@ -946,7 +946,7 @@ public class Spy
 	public int spy_place_nation_recno()
 	{
 		if (spy_place == SPY_TOWN)
-			return TownArray[spy_place_para].nation_recno;
+			return TownArray[spy_place_para].NationId;
 
 		else if (spy_place == SPY_FIRM)
 			return FirmArray[spy_place_para].nation_recno;
@@ -975,8 +975,8 @@ public class Spy
 			case SPY_TOWN:
 				if (!TownArray.IsDeleted(spy_place_para))
 				{
-					xLoc = TownArray[spy_place_para].center_x;
-					yLoc = TownArray[spy_place_para].center_y;
+					xLoc = TownArray[spy_place_para].CenterXLoc;
+					yLoc = TownArray[spy_place_para].CenterYLoc;
 					return true;
 				}
 
@@ -1209,9 +1209,9 @@ public class Spy
 		{
 			Town town = TownArray[spy_place_para];
 
-			hostNationRecno = town.nation_recno;
+			hostNationRecno = town.NationId;
 
-			town.dec_pop(race_id, false);
+			town.DecPopulation(race_id, false);
 		}
 
 		//------- if the spy is in a firm -------//
@@ -1298,21 +1298,21 @@ public class Spy
 
 		Town town = TownArray[spy_place_para];
 
-		if (town.nation_recno == true_nation_recno) // anti-spy
+		if (town.NationId == true_nation_recno) // anti-spy
 			return;
 
 		//------ if it's an independent town ------//
 
-		if (town.nation_recno == 0)
+		if (town.NationId == 0)
 		{
 			if (trueNation.reputation > 0)
 				set_action_mode(SPY_SOW_DISSENT);
 
 			//--- if the resistance has already drop low enough, the spy no longer needs to be in the town ---//
 
-			if (town.race_loyalty_array[race_id - 1] < GameConstants.MIN_INDEPENDENT_DEFEND_LOYALTY)
+			if (town.RacesLoyalty[race_id - 1] < GameConstants.MIN_INDEPENDENT_DEFEND_LOYALTY)
 			{
-				if (town.population < GameConstants.MAX_TOWN_POPULATION - 5 && Misc.Random(6) == 0)
+				if (town.Population < GameConstants.MAX_TOWN_POPULATION - 5 && Misc.Random(6) == 0)
 				{
 					mobilize_town_spy();
 				}
@@ -1330,7 +1330,7 @@ public class Spy
 			//--------------------------------------------------//
 
 			// pref_loyalty_concern actually does apply to here, we just use a preference var so that the decision making process will vary between nations
-			if (town.average_loyalty() < 50 - trueNation.pref_loyalty_concern / 10)
+			if (town.AverageLoyalty() < 50 - trueNation.pref_loyalty_concern / 10)
 			{
 				set_action_mode(SPY_SOW_DISSENT);
 			}
@@ -1342,7 +1342,7 @@ public class Spy
 					set_action_mode(SPY_IDLE);
 			}
 
-			if (town.population < GameConstants.MAX_TOWN_POPULATION - 5 && Misc.Random(6) == 0)
+			if (town.Population < GameConstants.MAX_TOWN_POPULATION - 5 && Misc.Random(6) == 0)
 			{
 				mobilize_town_spy();
 			}
@@ -1455,10 +1455,10 @@ public class Spy
 		{
 			Town town = TownArray[firm.linked_town_array[i]];
 
-			if (town.nation_recno == firm.nation_recno)
-				firmImportance += town.population * 2;
+			if (town.NationId == firm.nation_recno)
+				firmImportance += town.Population * 2;
 			else
-				firmImportance += town.population;
+				firmImportance += town.Population;
 		}
 
 		//------- think about which one to bribe -------//

@@ -563,7 +563,7 @@ public class NationBase
             int townCount = 0;
             foreach (Town town in TownArray)
             {
-                if (town.region_id == regionId && town.nation_recno == nation_recno)
+                if (town.RegionId == regionId && town.NationId == nation_recno)
                     townCount++;
             }
 
@@ -806,8 +806,8 @@ public class NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.nation_recno == nation_recno)
-                town.set_nation(0);
+            if (town.NationId == nation_recno)
+                town.ChangeNation(0);
         }
 
         //------------- deinit our spies -------------//
@@ -1014,17 +1014,17 @@ public class NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.nation_recno != nation_recno)
+            if (town.NationId != nation_recno)
                 continue;
 
             for (int raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
             {
-                if (town.race_pop_array[raceId - 1] == 0)
+                if (town.RacesPopulation[raceId - 1] == 0)
                     continue;
 
                 //------ update loyalty now ------//
 
-                town.change_loyalty(raceId, loyaltyChange +
+                town.ChangeLoyalty(raceId, loyaltyChange +
                                             succeed_king_loyalty_change(raceId, newKing.race_id, race_id));
             }
         }
@@ -1083,7 +1083,7 @@ public class NationBase
     public void hand_over_to(int handoverNationRecno)
     {
         RebelArray.stop_attack_nation(nation_recno);
-        TownArray.stop_attack_nation(nation_recno);
+        TownArray.StopAttackNation(nation_recno);
         UnitArray.stop_all_war(nation_recno);
         MonsterRes.stop_attack_nation(nation_recno);
 
@@ -1136,9 +1136,9 @@ public class NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.nation_recno == nation_recno)
+            if (town.NationId == nation_recno)
             {
-                town.set_nation(handoverNationRecno);
+                town.ChangeNation(handoverNationRecno);
             }
         }
 
@@ -1579,24 +1579,24 @@ public class NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.nation_recno != nation_recno)
+            if (town.NationId != nation_recno)
                 continue;
 
             //--------------------------------------//
 
             if (raceId != 0) // decrease loyalty of a specific race
             {
-                if (town.race_pop_array[raceId - 1] > 0)
-                    town.change_loyalty(raceId, loyaltyChange);
+                if (town.RacesPopulation[raceId - 1] > 0)
+                    town.ChangeLoyalty(raceId, loyaltyChange);
             }
             else // decrease loyalty of all races
             {
                 for (int j = 0; j < GameConstants.MAX_RACE; j++)
                 {
-                    if (town.race_pop_array[j] == 0)
+                    if (town.RacesPopulation[j] == 0)
                         continue;
 
-                    town.change_loyalty(j + 1, loyaltyChange);
+                    town.ChangeLoyalty(j + 1, loyaltyChange);
                 }
             }
         }

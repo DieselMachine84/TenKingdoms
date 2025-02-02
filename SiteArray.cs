@@ -194,10 +194,10 @@ public class SiteArray : DynArray<Site>
 
 			Town town = TownArray[townRecno];
 
-			locX1 = town.center_x - MAX_TOWN_SITE_DISTANCE;
-			locX2 = town.center_x + MAX_TOWN_SITE_DISTANCE;
-			locY1 = town.center_y - MAX_TOWN_SITE_DISTANCE;
-			locY2 = town.center_y + MAX_TOWN_SITE_DISTANCE;
+			locX1 = town.CenterXLoc - MAX_TOWN_SITE_DISTANCE;
+			locX2 = town.CenterXLoc + MAX_TOWN_SITE_DISTANCE;
+			locY1 = town.CenterYLoc - MAX_TOWN_SITE_DISTANCE;
+			locY2 = town.CenterYLoc + MAX_TOWN_SITE_DISTANCE;
 
 			if (locX1 < 0)
 				locX1 = 0;
@@ -210,7 +210,7 @@ public class SiteArray : DynArray<Site>
 				locY2 = GameConstants.MapSize - 1;
 
 			maxTries = (locX2 - locX1 + 1) * (locY2 - locY1 + 1);
-			regionId = town.region_id;
+			regionId = town.RegionId;
 		}
 		else
 		{

@@ -85,8 +85,8 @@ public class BulletArray : SpriteArray
 		else if (location.is_town())
 		{
 			Town targetTown = TownArray[location.town_recno()];
-			width = targetTown.loc_width();
-			height = targetTown.loc_height();
+			width = targetTown.LocWidth();
+			height = targetTown.LocHeight();
 		}
 		else if (location.is_wall())
 			width = height = 1;

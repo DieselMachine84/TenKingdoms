@@ -204,8 +204,8 @@ public class SpyArray : DynArray<Spy>
         {
             Town town = TownArray[spyPlacePara];
 
-            nationRecno = town.nation_recno;
-            totalPop = town.population;
+            nationRecno = town.NationId;
+            totalPop = town.Population;
         }
         else if (spyPlace == Spy.SPY_FIRM)
         {

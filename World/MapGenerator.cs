@@ -1430,7 +1430,7 @@ public class MapGenerator
 
 	private Town CreateTown(int nationRecno, int raceId, out int xLoc, out int yLoc)
 	{
-		if (!TownArray.think_town_loc(GameConstants.MapSize * GameConstants.MapSize, out xLoc, out yLoc))
+		if (!TownArray.ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize, out xLoc, out yLoc))
 			return null;
 
 		Town town = TownArray.AddTown(nationRecno, raceId, xLoc, yLoc);
@@ -1446,7 +1446,7 @@ public class MapGenerator
 			else
 				initPop = 40;
 
-			town.init_pop(raceId, initPop, 100, false, true);
+			town.InitPopulation(raceId, initPop, 100, false, true);
 		}
 		else
 		{
@@ -1459,7 +1459,7 @@ public class MapGenerator
 				if (totalPop >= GameConstants.MAX_TOWN_POPULATION)
 					break;
 
-				int townResistance = TownArray.independent_town_resistance();
+				int townResistance = TownArray.IndependentTownResistance();
 
 				int curPop;
 				if (i == 0)
@@ -1468,7 +1468,7 @@ public class MapGenerator
 					if (curPop >= GameConstants.MAX_TOWN_POPULATION)
 						curPop = GameConstants.MAX_TOWN_POPULATION;
 
-					town.init_pop(raceId, curPop, townResistance, false, true);
+					town.InitPopulation(raceId, curPop, townResistance, false, true);
 					totalPop += curPop;
 				}
 				else
@@ -1477,7 +1477,7 @@ public class MapGenerator
 					if (curPop >= GameConstants.MAX_TOWN_POPULATION - totalPop)
 						curPop = GameConstants.MAX_TOWN_POPULATION - totalPop;
 
-					town.init_pop(ConfigAdv.GetRandomRace(), curPop, townResistance, false, true);
+					town.InitPopulation(ConfigAdv.GetRandomRace(), curPop, townResistance, false, true);
 					totalPop += curPop;
 				}
 			}
@@ -1485,7 +1485,7 @@ public class MapGenerator
 
 		//---------- set town layout -----------//
 
-		town.auto_set_layout();
+		town.AutoSetLayout();
 
 		return town;
 	}
@@ -1496,8 +1496,8 @@ public class MapGenerator
 
 		//------ locate space for the unit ------//
 
-		int xLoc = town.loc_x1;
-		int yLoc = town.loc_y1;
+		int xLoc = town.X1Loc;
+		int yLoc = town.Y1Loc;
 
 		if (!World.locate_space(ref xLoc, ref yLoc,
 			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
@@ -1510,7 +1510,7 @@ public class MapGenerator
 
 		int unitLoyalty = 80 + Misc.Random(20);
 
-		Unit unit = UnitArray.AddUnit(unitId, town.nation_recno, rankId, unitLoyalty, xLoc, yLoc);
+		Unit unit = UnitArray.AddUnit(unitId, town.NationId, rankId, unitLoyalty, xLoc, yLoc);
 
 		if (unit == null)
 			return null;
@@ -1594,7 +1594,7 @@ public class MapGenerator
 
 			//------- create military camp -------//
 
-			int firmRecno = FirmArray.BuildFirm(town.loc_x1 + 6, town.loc_y1,
+			int firmRecno = FirmArray.BuildFirm(town.X1Loc + 6, town.Y1Loc,
 				nation.nation_recno, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
 
 			if (firmRecno == 0)
@@ -1627,7 +1627,7 @@ public class MapGenerator
 			if (Config.random_start_up)
 			{
 				// the less population the villager has the more mobile units will be created
-				int createCount = (50 - town.population) / 3;
+				int createCount = (50 - town.Population) / 3;
 
 				for (int i = 0; i < createCount; i++)
 				{
@@ -1650,7 +1650,7 @@ public class MapGenerator
 			//------ create mines near towns in the beginning -----//
 
 			if (Config.start_up_has_mine_nearby && !nation.is_ai())
-				SiteArray.create_raw_site(town.town_recno);
+				SiteArray.create_raw_site(town.TownId);
 
 			//------ set ai base town -----//
 			if (nation.is_ai())

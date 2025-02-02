@@ -173,18 +173,18 @@ public class RegionStat
 
 		foreach (Town town in TownArray)
 		{
-			if (town.region_id != region_id)
+			if (town.RegionId != region_id)
 				continue;
 
-			if (town.nation_recno != 0)
+			if (town.NationId != 0)
 			{
-				town_nation_count_array[town.nation_recno - 1]++;
+				town_nation_count_array[town.NationId - 1]++;
 
-				if (town.is_base_town)
-					base_town_nation_count_array[town.nation_recno - 1]++;
+				if (town.IsBaseTown)
+					base_town_nation_count_array[town.NationId - 1]++;
 
-				nation_population_array[town.nation_recno - 1] += town.population;
-				nation_jobless_population_array[town.nation_recno - 1] += town.jobless_population;
+				nation_population_array[town.NationId - 1] += town.Population;
+				nation_jobless_population_array[town.NationId - 1] += town.JoblessPopulation;
 			}
 			else
 			{

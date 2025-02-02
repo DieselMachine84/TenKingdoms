@@ -205,33 +205,33 @@ public class UnitGod : Unit
 		{
 			Town town = TownArray[location.town_recno()];
 
-			if (god_id == GodRes.GOD_JAPANESE && town.nation_recno != nation_recno)
+			if (god_id == GodRes.GOD_JAPANESE && town.NationId != nation_recno)
 			{
 				int divider = InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT;
 
 				for (int i = 0; i < GameConstants.MAX_RACE; i++)
 				{
-					if (town.race_pop_array[i] == 0)
+					if (town.RacesPopulation[i] == 0)
 						continue;
 
 					double changePoints = 7.0 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
-					if (town.nation_recno != 0)
-						town.change_loyalty(i + 1, -changePoints / divider);
+					if (town.NationId != 0)
+						town.ChangeLoyalty(i + 1, -changePoints / divider);
 					else
-						town.change_resistance(i + 1, nation_recno, -changePoints / divider);
+						town.ChangeResistance(i + 1, nation_recno, -changePoints / divider);
 				}
 			}
-			else if (god_id == GodRes.GOD_EGYPTIAN && town.nation_recno == nation_recno)
+			else if (god_id == GodRes.GOD_EGYPTIAN && town.NationId == nation_recno)
 			{
 				int raceId;
 
 				for (int headCount = 5;
-				     headCount > 0 && town.population < GameConstants.MAX_TOWN_GROWTH_POPULATION
-				                   && (raceId = town.pick_random_race(true, true)) != 0;
+				     headCount > 0 && town.Population < GameConstants.MAX_TOWN_GROWTH_POPULATION
+				                   && (raceId = town.PickRandomRace(true, true)) != 0;
 				     --headCount)
 				{
-					town.inc_pop(raceId, false, (int)town.race_loyalty_array[raceId - 1]);
+					town.IncPopulation(raceId, false, (int)town.RacesLoyalty[raceId - 1]);
 				}
 			}
 		}
@@ -707,19 +707,19 @@ public class UnitGod : Unit
 			{
 				//------ only cast on hostile and tense nations ------//
 
-				if (town.nation_recno != 0 &&
-				    ownNation.get_relation(town.nation_recno).status > NationBase.NATION_TENSE)
+				if (town.NationId != 0 &&
+				    ownNation.get_relation(town.NationId).status > NationBase.NATION_TENSE)
 					continue;
 
 				//------ calculate the rating of the firm -------//
 
-				int curRating = town.population + (100 - town.average_loyalty());
+				int curRating = town.Population + (100 - town.AverageLoyalty());
 
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					targetXLoc = town.center_x;
-					targetYLoc = town.center_y;
+					targetXLoc = town.CenterXLoc;
+					targetYLoc = town.CenterYLoc;
 				}
 			}
 		}
@@ -742,28 +742,28 @@ public class UnitGod : Unit
 		{
 			//------ only cast on own nations ------//
 
-			if (town.nation_recno != nation_recno)
+			if (town.NationId != nation_recno)
 				continue;
 
 			//------ calculate the rating of the firm -------//
 
-			if (town.population > MaxTownPop - 5)
+			if (town.Population > MaxTownPop - 5)
 				continue;
 
 			// maximize the total loyalty gain.
-			int curRating = 5 * town.average_loyalty();
+			int curRating = 5 * town.AverageLoyalty();
 
 			// calc rating on the number of people
-			if (town.population >= MaxTownPop / 2)
-				curRating -= (town.population - MaxTownPop / 2) * 300 / MaxTownPop;
+			if (town.Population >= MaxTownPop / 2)
+				curRating -= (town.Population - MaxTownPop / 2) * 300 / MaxTownPop;
 			else
-				curRating -= (MaxTownPop / 2 - town.population) * 300 / MaxTownPop;
+				curRating -= (MaxTownPop / 2 - town.Population) * 300 / MaxTownPop;
 
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				targetXLoc = town.center_x;
-				targetYLoc = town.center_y;
+				targetXLoc = town.CenterXLoc;
+				targetYLoc = town.CenterYLoc;
 			}
 		}
 

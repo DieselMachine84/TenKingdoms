@@ -92,10 +92,10 @@ public class RebelArray : DynArray<Rebel>
 
         Town town = TownArray[townRecno];
 
-        if (rebel.town_recno == 0 && town.rebel_recno == 0)
+        if (rebel.town_recno == 0 && town.RebelId == 0)
         {
             rebel.town_recno = townRecno;
-            town.rebel_recno = rebelRecno;
+            town.RebelId = rebelRecno;
         }
     }
 

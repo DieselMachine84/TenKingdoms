@@ -48,7 +48,7 @@ public class FirmMarket : Firm
 	{
 		//------ redistribute town demand --------//
 
-		TownArray.distribute_demand();
+		TownArray.DistributeDemand();
 
 		//-------- set restock_type for AI only --------//
 
@@ -307,7 +307,7 @@ public class FirmMarket : Firm
 			{
 				Town town = TownArray[linked_town_array[i]];
 
-				if (town.nation_recno == nation_recno && town.is_base_town)
+				if (town.NationId == nation_recno && town.IsBaseTown)
 					return true;
 			}
 			else
@@ -593,11 +593,11 @@ public class FirmMarket : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.nation_recno == 0)
+			if (town.NationId == 0)
 				continue;
 
-			bool tradeTreaty = ownNation.get_relation(town.nation_recno).trade_treaty ||
-			                   town.nation_recno == nation_recno;
+			bool tradeTreaty = ownNation.get_relation(town.NationId).trade_treaty ||
+			                   town.NationId == nation_recno;
 
 			if (linked_town_enable_array[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
 				toggle_town_link(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, 1); // 1-toggle both side
@@ -742,10 +742,10 @@ public class FirmMarket : Firm
 
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.region_id != region_id)
+			if (town.RegionId != region_id)
 				continue;
 
-			if (!town.is_base_town) // don't import if it isn't a base town
+			if (!town.IsBaseTown) // don't import if it isn't a base town
 				continue;
 
 			//------------------------------------------------//
@@ -757,12 +757,12 @@ public class FirmMarket : Firm
 			//
 			//------------------------------------------------//
 
-			town.update_product_supply();
+			town.UpdateProductSupply();
 
 			for (int j = 0; j < GameConstants.MAX_PRODUCT; j++)
 			{
-				if (town.has_product_supply[j] == 0)
-					needProductSupplyPop[j] += town.population;
+				if (town.HasProductSupply[j] == 0)
+					needProductSupplyPop[j] += town.Population;
 			}
 		}
 
@@ -897,7 +897,7 @@ public class FirmMarket : Firm
 					{
 						Town town = TownArray[firm.linked_town_array[j]];
 
-						if (town.nation_recno == firm.nation_recno)
+						if (town.NationId == firm.nation_recno)
 							break;
 					}
 
@@ -1100,49 +1100,49 @@ public class FirmMarket : Firm
 		foreach (Town town in TownArray)
 		{
 			// 10 to 20 as the minimum population for considering trade
-			if (town.population < 20 - (10 * nation.pref_trading_tendency / 100))
+			if (town.Population < 20 - (10 * nation.pref_trading_tendency / 100))
 				continue;
 
 			// if the town already has the supply of product, return now
-			if (town.has_product_supply[exportProductId - 1] != 0)
+			if (town.HasProductSupply[exportProductId - 1] != 0)
 				continue;
 
-			if (town.region_id != region_id)
+			if (town.RegionId != region_id)
 				continue;
 
-			if (town.no_neighbor_space) // if there is no space in the neighbor area for building a new firm.
+			if (town.NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
 				continue;
 
 			// don't consider if it is too far away
 			if (Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-				    town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2) > GameConstants.MapSize / 4)
+				    town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc) > GameConstants.MapSize / 4)
 				continue;
 
 			//-----------------------------------------//
 
-			if (town.nation_recno != 0)
+			if (town.NationId != 0)
 			{
 				// only build markets to friendly nation's town
 
-				if (nation.get_relation_status(town.nation_recno) < NationBase.NATION_FRIENDLY)
+				if (nation.get_relation_status(town.NationId) < NationBase.NATION_FRIENDLY)
 					continue;
 
 				//--- if it's a nation town, only export if we have trade treaty with it ---//
 
-				if (!nation.get_relation(town.nation_recno).trade_treaty)
+				if (!nation.get_relation(town.NationId).trade_treaty)
 					continue;
 			}
 			else
 			{
 				//--- if it's an independent town, only export if the resistance is low ---//
 
-				if (town.average_resistance(nation_recno) > GameConstants.INDEPENDENT_LINK_RESISTANCE)
+				if (town.AverageResistance(nation_recno) > GameConstants.INDEPENDENT_LINK_RESISTANCE)
 					continue;
 			}
 
 			//----- think about building a new market to the town for exporting our goods -----//
 
-			if (think_build_export_market(town.town_recno))
+			if (think_build_export_market(town.TownId))
 				return true;
 		}
 
@@ -1156,9 +1156,9 @@ public class FirmMarket : Firm
 
 		//---- see if we already have a market linked to this town ----//
 
-		for (int i = 0; i < town.linked_firm_array.Count; i++)
+		for (int i = 0; i < town.LinkedFirms.Count; i++)
 		{
-			Firm firm = FirmArray[town.linked_firm_array[i]];
+			Firm firm = FirmArray[town.LinkedFirms[i]];
 
 			if (firm.firm_id != FIRM_MARKET || firm.firm_recno == firm_recno)
 				continue;
@@ -1173,14 +1173,14 @@ public class FirmMarket : Firm
 
 		int buildXLoc, buildYLoc;
 
-		if (!nation.find_best_firm_loc(FIRM_MARKET, town.loc_x1, town.loc_y1,
+		if (!nation.find_best_firm_loc(FIRM_MARKET, town.X1Loc, town.Y1Loc,
 			    out buildXLoc, out buildYLoc))
 		{
-			town.no_neighbor_space = true;
+			town.NoNeighborSpace = true;
 			return false;
 		}
 
-		nation.add_action(buildXLoc, buildYLoc, town.loc_x1, town.loc_y1, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
+		nation.add_action(buildXLoc, buildYLoc, town.X1Loc, town.Y1Loc, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
 		return true;
 	}
 
@@ -1196,7 +1196,7 @@ public class FirmMarket : Firm
 
 			if (linked_town_enable_array[i] != InternalConstants.LINK_EE)
 			{
-				int townNationRecno = TownArray[linked_town_array[i]].nation_recno;
+				int townNationRecno = TownArray[linked_town_array[i]].NationId;
 
 				if (townNationRecno != 0)
 					nation.get_relation(townNationRecno).ai_demand_trade_treaty++;

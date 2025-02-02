@@ -601,21 +601,21 @@ public class Nation : NationBase
 
 		Town town = TownArray[location.town_recno()]; // point to the old town
 
-		int raceId = town.pick_random_race(false, true); // 0-don't pick has job unit, 1-pick spies
+		int raceId = town.PickRandomRace(false, true); // 0-don't pick has job unit, 1-pick spies
 
 		if (raceId == 0)
 			return -1;
 
 		//---- if cannot recruit because the loyalty is too low ---//
 
-		if (!town.can_recruit(raceId))
+		if (!town.CanRecruit(raceId))
 			return 0;
 
 		//------------------------------------------------------//
 		// recruit
 		//------------------------------------------------------//
 
-		int unitRecno = town.recruit(-1, raceId, InternalConstants.COMMAND_AI);
+		int unitRecno = town.Recruit(-1, raceId, InternalConstants.COMMAND_AI);
 
 		if (unitRecno == 0)
 			return 0;
@@ -656,31 +656,31 @@ public class Nation : NationBase
 
 		Town town = TownArray[location.town_recno()]; // point to the old town
 
-		int raceId = town.pick_random_race(false, true); // 0-don't pick has job unit, 1-pick spies
+		int raceId = town.PickRandomRace(false, true); // 0-don't pick has job unit, 1-pick spies
 
 		if (raceId == 0)
 			return -1;
 
 		//---- if cannot recruit because the loyalty is too low, try reward ---//
 
-		if (!town.can_recruit(raceId))
+		if (!town.CanRecruit(raceId))
 		{
-			if (!town.has_linked_own_camp) // need overseer to reward
+			if (!town.HasLinkedOwnCamp) // need overseer to reward
 				return 0;
 
 			//DieselMachine TODO use can_recruit instead
-			int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + town.recruit_dec_loyalty(raceId, false);
+			int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false);
 
 			//--- if cannot recruit because of low loyalty, reward the town people now ---//
 
-			if (town.race_loyalty_array[raceId - 1] < minRecruitLoyalty)
+			if (town.RacesLoyalty[raceId - 1] < minRecruitLoyalty)
 			{
-				if (cash > 0 && town.accumulated_reward_penalty == 0)
+				if (cash > 0 && town.AccumulatedRewardPenalty == 0)
 				{
-					town.reward(InternalConstants.COMMAND_AI);
+					town.Reward(InternalConstants.COMMAND_AI);
 				}
 
-				if (!town.can_recruit(raceId)) // if still cannot be recruited, return 0 now
+				if (!town.CanRecruit(raceId)) // if still cannot be recruited, return 0 now
 					return 0;
 			}
 			else
@@ -694,7 +694,7 @@ public class Nation : NationBase
 		// recruit
 		//------------------------------------------------------//
 
-		int unitRecno = town.recruit(-1, raceId, InternalConstants.COMMAND_AI);
+		int unitRecno = town.Recruit(-1, raceId, InternalConstants.COMMAND_AI);
 
 		if (unitRecno == 0)
 			return 0;
@@ -747,13 +747,13 @@ public class Nation : NationBase
 
 		doublebreak:
 		spy.notify_cloaked_nation_flag = 0;
-		if (nearbyTown != null && nearbyTown.nation_recno == 0 && spy.cloaked_nation_recno == 0)
+		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.cloaked_nation_recno == 0)
 		{
 			Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
 			if (location.is_town())
 			{
 				Town targetTown = TownArray[location.town_recno()];
-				if (targetTown.nation_recno != 0 && targetTown.nation_recno != spyUnit.true_nation_recno())
+				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.true_nation_recno())
 				{
 					spy.notify_cloaked_nation_flag = 1;
 				}
@@ -812,7 +812,7 @@ public class Nation : NationBase
 	{
 		//--- if this is a base town, decrease the base town counter ---//
 
-		if (TownArray[townRecno].is_base_town)
+		if (TownArray[townRecno].IsBaseTown)
 		{
 			ai_base_town_count--;
 		}
@@ -985,7 +985,7 @@ public class Nation : NationBase
 
 			for (int j = 0; j < ai_region_array.Count; j++)
 			{
-				if (ai_region_array[j].region_id == town.region_id)
+				if (ai_region_array[j].region_id == town.RegionId)
 				{
 					aiRegion = ai_region_array[j];
 					break;
@@ -995,7 +995,7 @@ public class Nation : NationBase
 			if (aiRegion == null) // not included yet
 			{
 				aiRegion = new AIRegion();
-				aiRegion.region_id = town.region_id;
+				aiRegion.region_id = town.RegionId;
 				ai_region_array.Add(aiRegion);
 			}
 
@@ -1003,7 +1003,7 @@ public class Nation : NationBase
 
 			aiRegion.town_count++;
 
-			if (town.is_base_town)
+			if (town.IsBaseTown)
 				aiRegion.base_town_count++;
 		}
 	}
@@ -1079,7 +1079,7 @@ public class Nation : NationBase
 			{
 				Town town = TownArray[ai_town_array[i]];
 
-				int rawDistance = Misc.points_distance(xLoc, yLoc, town.center_x, town.center_y);
+				int rawDistance = Misc.points_distance(xLoc, yLoc, town.CenterXLoc, town.CenterYLoc);
 
 				if ((Info.game_date - Info.game_start_date).Days >
 				    rawDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
@@ -1302,22 +1302,22 @@ public class Nation : NationBase
 			for (int j = 0; j < ai_town_array.Count; j++)
 			{
 				Town town = TownArray[ai_town_array[j]];
-				Location location = World.get_loc(town.loc_x1, town.loc_y1);
+				Location location = World.get_loc(town.X1Loc, town.Y1Loc);
 
 				//-********* codes to move to other territory ***********-//
 				if (siteLoc.region_id != location.region_id)
 					continue; // not on the same territory
 
 				int dist = Misc.rects_distance(site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc,
-					town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2);
+					town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
 
 				//-------------------------------------------------------------------------//
 				// check whether a mine is already connected to this town, if so, use it
 				//-------------------------------------------------------------------------//
 				bool connected = false;
-				for (int k = town.linked_firm_array.Count - 1; k >= 0; k--)
+				for (int k = town.LinkedFirms.Count - 1; k >= 0; k--)
 				{
-					Firm firm = FirmArray[town.linked_firm_array[k]];
+					Firm firm = FirmArray[town.LinkedFirms[k]];
 
 					if (firm.nation_recno == nation_recno && firm.firm_id == Firm.FIRM_MINE)
 					{
@@ -1634,8 +1634,8 @@ public class Nation : NationBase
 
 			Town town = TownArray[originTownRecno];
 
-			centerX = town.center_x;
-			centerY = town.center_y;
+			centerX = town.CenterXLoc;
+			centerY = town.CenterYLoc;
 
 			refX1 = centerX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 			refY1 = centerY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
@@ -1772,32 +1772,32 @@ public class Nation : NationBase
 				{
 					Town town = TownArray[location.town_recno()];
 
-					refBX1 = town.center_x - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBY1 = town.center_y - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBX2 = town.center_x + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBY2 = town.center_y + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBX1 = town.CenterXLoc - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBY1 = town.CenterYLoc - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBX2 = town.CenterXLoc + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBY2 = town.CenterYLoc + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 
-					weightAdd = town.population * 2;
+					weightAdd = town.Population * 2;
 
 					//----- if the town is not our own -----//
 
-					if (town.nation_recno != nation_recno)
+					if (town.NationId != nation_recno)
 					{
-						if (town.nation_recno == 0) // it's an independent town
-							weightAdd = weightAdd * (100 - town.average_resistance(nation_recno)) / 100;
+						if (town.NationId == 0) // it's an independent town
+							weightAdd = weightAdd * (100 - town.AverageResistance(nation_recno)) / 100;
 						else // more friendly nations get higher weights
 						{
-							int relationStatus = get_relation_status(town.nation_recno);
+							int relationStatus = get_relation_status(town.NationId);
 
 							if (relationStatus >= NATION_NEUTRAL)
 								weightAdd = weightAdd * (relationStatus - NATION_NEUTRAL + 1) / 4;
 						}
 					}
 
-					refCX1 = town.loc_x1 - 1; // add negative weights on space around this firm
-					refCY1 = town.loc_y1 - 1; // so to prevent firms from building right next to the firm
-					refCX2 = town.loc_x2 + 1; // and leave some space for walking path.
-					refCY2 = town.loc_y2 + 1;
+					refCX1 = town.X1Loc - 1; // add negative weights on space around this firm
+					refCY1 = town.Y1Loc - 1; // so to prevent firms from building right next to the firm
+					refCX2 = town.X2Loc + 1; // and leave some space for walking path.
+					refCY2 = town.Y2Loc + 1;
 
 					weightReduce = 100;
 				}
@@ -2477,7 +2477,7 @@ public class Nation : NationBase
 
 		Town town = TownArray[townRecno];
 
-		if (town.nation_recno != nation_recno)
+		if (town.NationId != nation_recno)
 			return false; // town changed nation
 
 		return true;
@@ -2750,25 +2750,25 @@ public class Nation : NationBase
 			Town town = TownArray[ai_town_array[i]];
 
 			// no jobless population or currently a unit is being trained
-			if (town.jobless_population == 0 || town.train_unit_recno != 0 || !town.has_linked_own_camp)
+			if (town.JoblessPopulation == 0 || town.TrainUnitId != 0 || !town.HasLinkedOwnCamp)
 				continue;
 
-			if (town.region_id != destRegionId)
+			if (town.RegionId != destRegionId)
 				continue;
 
-			if (raceId != 0 && town.jobless_race_pop_array[raceId - 1] <= 0)
+			if (raceId != 0 && town.RacesJoblessPopulation[raceId - 1] <= 0)
 				continue;
 
 			//--------------------------------------//
 
-			int curDist = Misc.points_distance(town.center_x, town.center_y, destX, destY);
+			int curDist = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, destX, destY);
 
 			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
 
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				trainTownRecno = town.town_recno;
+				trainTownRecno = town.TownId;
 			}
 		}
 
@@ -2780,19 +2780,19 @@ public class Nation : NationBase
 		Town trainTown = TownArray[trainTownRecno];
 
 		if (raceId == 0)
-			raceId = trainTown.pick_random_race(false, true); // 0-pick jobless units, 1-pick spy units
+			raceId = trainTown.PickRandomRace(false, true); // 0-pick jobless units, 1-pick spy units
 
 		if (raceId == 0)
 			return 0;
 
-		int unitRecno = trainTown.recruit(skillId, raceId, InternalConstants.COMMAND_AI);
+		int unitRecno = trainTown.Recruit(skillId, raceId, InternalConstants.COMMAND_AI);
 
 		if (unitRecno == 0)
 			// can happen when training a spy and the selected recruit is an enemy spy
 			return 0;
 
 		// set train_unit_action_id so the unit can immediately execute the action when he has finished training.
-		trainTown.train_unit_action_id = actionId;
+		trainTown.TrainUnitActionId = actionId;
 		return unitRecno;
 	}
 
@@ -2832,41 +2832,41 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (town.jobless_population == 0) // no jobless population or currently a unit is being recruited
+			if (town.JoblessPopulation == 0) // no jobless population or currently a unit is being recruited
 				continue;
 
-			if (!town.should_ai_migrate()) // if the town is going to migrate, disregard the minimum population consideration
+			if (!town.ShouldAIMigrate()) // if the town is going to migrate, disregard the minimum population consideration
 			{
-				if (town.population < MIN_AI_TOWN_POP) // don't recruit workers if the population is low
+				if (town.Population < MIN_AI_TOWN_POP) // don't recruit workers if the population is low
 					continue;
 			}
 
 			// cannot recruit from this town if there are enemy camps but no own camps
-			if (!town.has_linked_own_camp && town.has_linked_enemy_camp)
+			if (!town.HasLinkedOwnCamp && town.HasLinkedEnemyCamp)
 				continue;
 
-			if (town.region_id != destFirm.region_id)
+			if (town.RegionId != destFirm.region_id)
 				continue;
 
-			if (!town.can_recruit_people())
+			if (!town.CanRecruitPeople())
 				continue;
 
 			//--- get the distance beteween town & the destination firm ---//
 
-			int curDist = Misc.points_distance(town.center_x, town.center_y, destFirm.center_x, destFirm.center_y);
+			int curDist = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, destFirm.center_x, destFirm.center_y);
 
 			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
 
 			//--- recruit units from non-base town first ------//
 
-			if (!town.is_base_town)
+			if (!town.IsBaseTown)
 				curRating += 100;
 
 			//---- if the town has the race that the firm needs most ----//
 
-			if (town.can_recruit(raceId))
+			if (town.CanRecruit(raceId))
 			{
-				curRating += 50 + (int)town.race_loyalty_array[raceId - 1];
+				curRating += 50 + (int)town.RacesLoyalty[raceId - 1];
 			}
 			else
 			{
@@ -2878,7 +2878,7 @@ public class Nation : NationBase
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				bestTownRecno = town.town_recno;
+				bestTownRecno = town.TownId;
 			}
 		}
 
@@ -2889,9 +2889,9 @@ public class Nation : NationBase
 
 		Town bestTown = TownArray[bestTownRecno];
 
-		if (bestTown.recruitable_race_pop(raceId, true) == 0)
+		if (bestTown.RecruitableRacePopulation(raceId, true) == 0)
 		{
-			raceId = bestTown.pick_random_race(false, true); // 0-pick jobless only, 1-pick spy units
+			raceId = bestTown.PickRandomRace(false, true); // 0-pick jobless only, 1-pick spy units
 
 			if (raceId == 0)
 				return 0;
@@ -2899,20 +2899,20 @@ public class Nation : NationBase
 
 		//--- if the chosen race is not recruitable, pick any recruitable race ---//
 
-		if (!bestTown.can_recruit(raceId))
+		if (!bestTown.CanRecruit(raceId))
 		{
 			//---- if the loyalty is too low to recruit, grant the town people first ---//
 
-			if (cash > 0 && bestTown.accumulated_reward_penalty < 10)
-				bestTown.reward(InternalConstants.COMMAND_AI);
+			if (cash > 0 && bestTown.AccumulatedRewardPenalty < 10)
+				bestTown.Reward(InternalConstants.COMMAND_AI);
 
 			//---- if the loyalty is still too low, return now ----//
 
-			if (!bestTown.can_recruit(raceId))
+			if (!bestTown.CanRecruit(raceId))
 				return 0;
 		}
 
-		return bestTown.recruit(-1, raceId, InternalConstants.COMMAND_AI);
+		return bestTown.Recruit(-1, raceId, InternalConstants.COMMAND_AI);
 	}
 
 	public int recruit_on_job_worker(Firm destFirm, int preferedRaceId = 0)
@@ -2961,7 +2961,7 @@ public class Nation : NationBase
 				{
 					//---- can't recruit this unit if he lives in a foreign town ----//
 
-					if (worker.town_recno != 0 && TownArray[worker.town_recno].nation_recno != nation_recno)
+					if (worker.town_recno != 0 && TownArray[worker.town_recno].NationId != nation_recno)
 						continue;
 
 					//--------------------------//
@@ -2991,7 +2991,7 @@ public class Nation : NationBase
 
 			//---- can't recruit this unit if he lives in a foreign town ----//
 
-			if (worker.town_recno != 0 && TownArray[worker.town_recno].nation_recno != nation_recno)
+			if (worker.town_recno != 0 && TownArray[worker.town_recno].NationId != nation_recno)
 				continue;
 
 			//--------------------------------//
@@ -3145,13 +3145,13 @@ public class Nation : NationBase
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != nation_recno)
+			if (town.NationId != nation_recno)
 				continue;
 
 			// if this town has people with the same race as the original king
-			if (town.recruitable_race_pop(race_id, false) > 0)
+			if (town.RecruitableRacePopulation(race_id, false) > 0)
 			{
-				int unitRecno = town.mobilize_town_people(race_id, true, false); // 1-dec pop, 0-don't mobilize spies
+				int unitRecno = town.MobilizeTownPeople(race_id, true, false); // 1-dec pop, 0-don't mobilize spies
 
 				if (unitRecno != 0)
 				{
@@ -3215,13 +3215,13 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (!town.is_base_town) // only expand on base towns
+			if (!town.IsBaseTown) // only expand on base towns
 				continue;
 
-			if (town.no_neighbor_space) // if there is no space in the neighbor area for building a new firm.
+			if (town.NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
 				continue;
 
-			int curRating = town.population; //**BUGHERE, to be modified.
+			int curRating = town.Population; //**BUGHERE, to be modified.
 
 			if (curRating > bestRating)
 			{
@@ -3237,14 +3237,14 @@ public class Nation : NationBase
 
 		int buildXLoc, buildYLoc;
 
-		if (!find_best_firm_loc(Firm.FIRM_CAMP, bestTown.loc_x1, bestTown.loc_y1,
+		if (!find_best_firm_loc(Firm.FIRM_CAMP, bestTown.X1Loc, bestTown.Y1Loc,
 			    out buildXLoc, out buildYLoc))
 		{
-			bestTown.no_neighbor_space = true;
+			bestTown.NoNeighborSpace = true;
 			return;
 		}
 
-		add_action(buildXLoc, buildYLoc, bestTown.loc_x1, bestTown.loc_y1,
+		add_action(buildXLoc, buildYLoc, bestTown.X1Loc, bestTown.Y1Loc,
 			ACTION_AI_BUILD_FIRM, Firm.FIRM_CAMP);
 	}
 
@@ -3406,10 +3406,10 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (town.region_id != targetRegionId)
+			if (town.RegionId != targetRegionId)
 				continue;
 
-			town.add_protection_camps(protectionCamps, useAllCamp);
+			town.AddProtectionCamps(protectionCamps, useAllCamp);
 		}
 
 		for (int i = 0; i < ai_camp_array.Count; i++)
@@ -3753,7 +3753,7 @@ public class Nation : NationBase
 				{
 					int townRecno = location.town_recno();
 					Town town = TownArray[townRecno];
-					if (town.nation_recno == targetRecno)
+					if (town.NationId == targetRecno)
 					{
 						bool found = false;
 						for (int i = 0; i < towns.Count; i++)
@@ -3815,9 +3815,9 @@ public class Nation : NationBase
 		for (int i = 0; i < towns.Count; i++)
 		{
 			Town town = TownArray[towns[i]];
-			for (int j = 0; j < town.linked_firm_array.Count; j++)
+			for (int j = 0; j < town.LinkedFirms.Count; j++)
 			{
-				int firmRecno = town.linked_firm_array[j];
+				int firmRecno = town.LinkedFirms[j];
 				Firm firm = FirmArray[firmRecno];
 				if (firm.nation_recno == targetRecno && firm.firm_id == Firm.FIRM_CAMP)
 				{
@@ -4016,10 +4016,10 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (town.region_id != targetRegionId)
+			if (town.RegionId != targetRegionId)
 				continue;
 
-			town.add_protection_camps(protectionCamps, true);
+			town.AddProtectionCamps(protectionCamps, true);
 		}
 
 		List<int> defendingCamps = new List<int>();
@@ -4211,7 +4211,7 @@ public class Nation : NationBase
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.firm_id != Firm.FIRM_MONSTER || firm.region_id != largestTown.region_id)
+			if (firm.firm_id != Firm.FIRM_MONSTER || firm.region_id != largestTown.RegionId)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
@@ -4221,7 +4221,7 @@ public class Nation : NationBase
 
 			int mobileCombatLevel = ai_evaluate_target_combat_level(firm.center_x, firm.center_y, firm.nation_recno);
 
-			int curRating = 3 * Misc.points_distance(largestTown.center_x, largestTown.center_y,
+			int curRating = 3 * Misc.points_distance(largestTown.CenterXLoc, largestTown.CenterYLoc,
 				firm.center_x, firm.center_y);
 
 			int combatLevel = mobileCombatLevel + ((FirmMonster)firm).total_combat_level();
@@ -4523,15 +4523,15 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
-			int majorityRace = town.majority_race();
+			int majorityRace = town.MajorityRace();
 
 			for (int j = 0; j < GameConstants.MAX_RACE; j++)
 			{
 				if (j + 1 != majorityRace)
-					racePopArray[j] += town.jobless_race_pop_array[j];
+					racePopArray[j] += town.RacesJoblessPopulation[j];
 			}
 		}
 
@@ -4550,13 +4550,13 @@ public class Nation : NationBase
 			{
 				Town town = TownArray[ai_town_array[i]];
 
-				if (town.region_id != regionId)
+				if (town.RegionId != regionId)
 					continue;
 
-				if (!town.is_base_town)
+				if (!town.IsBaseTown)
 					continue;
 
-				if (town.majority_race() == raceId && town.population < GameConstants.MAX_TOWN_POPULATION)
+				if (town.MajorityRace() == raceId && town.Population < GameConstants.MAX_TOWN_POPULATION)
 				{
 					destTown = town;
 					break;
@@ -4572,18 +4572,18 @@ public class Nation : NationBase
 			{
 				Town town = TownArray[ai_town_array[i]];
 
-				if (town.region_id != regionId)
+				if (town.RegionId != regionId)
 					continue;
 
 				//---- move minority units from towns -----//
 
-				int joblessCount = town.jobless_race_pop_array[raceId - 1];
+				int joblessCount = town.RacesJoblessPopulation[raceId - 1];
 
-				if (joblessCount > 0 && town.majority_race() != raceId)
+				if (joblessCount > 0 && town.MajorityRace() != raceId)
 				{
 					int migrateCount = Math.Min(8, joblessCount); // migrate a maximum of 8 units at a time
 
-					add_action(destTown.loc_x1, destTown.loc_y1, town.loc_x1, town.loc_y1,
+					add_action(destTown.X1Loc, destTown.Y1Loc, town.X1Loc, town.Y1Loc,
 						ACTION_AI_SETTLE_TO_OTHER_TOWN, 0, migrateCount);
 				}
 			}
@@ -4615,36 +4615,36 @@ public class Nation : NationBase
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != 0) // only capture independent towns
+			if (town.NationId != 0) // only capture independent towns
 				continue;
 
-			if (town.no_neighbor_space) // if there is no space in the neighbor area for building a new firm.
+			if (town.NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
 				continue;
 
 			// towns controlled by rebels will not drop in resistance even if a command base is present
-			if (town.rebel_recno != 0)
+			if (town.RebelId != 0)
 				continue;
 
 			// do not capture too many villages
 			if (numberOfTownsWeAlreadyCapturing >= 3 &&
-			    town.race_pop_array[town.majority_race() - 1] != town.population)
+			    town.RacesPopulation[town.MajorityRace() - 1] != town.Population)
 				continue;
 
-			if (town.race_pop_array[town.majority_race() - 1] < 15) // do not capture villages with low population
+			if (town.RacesPopulation[town.MajorityRace() - 1] < 15) // do not capture villages with low population
 				continue;
 
 			//------ only if we have a presence/a base town in this region -----//
 
 			//DieselMachine TODO consider capture villages on islands
-			if (!has_base_town_in_region(town.region_id))
+			if (!has_base_town_in_region(town.RegionId))
 				continue;
 
 			//---- check if there are already camps linked to this town ----//
 
 			int i;
-			for (i = town.linked_firm_array.Count - 1; i >= 0; i--)
+			for (i = town.LinkedFirms.Count - 1; i >= 0; i--)
 			{
-				Firm firm = FirmArray[town.linked_firm_array[i]];
+				Firm firm = FirmArray[town.LinkedFirms[i]];
 
 				if (firm.firm_id != Firm.FIRM_CAMP)
 					continue;
@@ -4662,7 +4662,7 @@ public class Nation : NationBase
 				{
 					Unit unit = UnitArray[firm.overseer_recno];
 
-					if (unit.skill.skill_level >= 70 && unit.race_id == town.majority_race())
+					if (unit.skill.skill_level >= 70 && unit.race_id == town.MajorityRace())
 					{
 						break;
 					}
@@ -4675,12 +4675,12 @@ public class Nation : NationBase
 			//------ no linked camps interfering with potential capture ------//
 
 			int captureUnitRecno;
-			int targetResistance = capture_expected_resistance(town.town_recno, out captureUnitRecno);
+			int targetResistance = capture_expected_resistance(town.TownId, out captureUnitRecno);
 
 			if (targetResistance < 50 - pref_peacefulness / 5) // 30 to 50 depending on
 			{
 				CaptureTown captureTown = new CaptureTown();
-				captureTown.town_recno = town.town_recno;
+				captureTown.town_recno = town.TownId;
 				captureTown.min_resistance = targetResistance;
 				captureTown.capture_unit_recno = captureUnitRecno;
 				captureTownQueue.Add(captureTown);
@@ -4712,8 +4712,8 @@ public class Nation : NationBase
 				{
 					Town ownTown = TownArray[ai_town_array[j]];
 
-					int townDistance = Misc.points_distance(targetTown.center_x, targetTown.center_y,
-						ownTown.center_x, ownTown.center_y);
+					int townDistance = Misc.points_distance(targetTown.CenterXLoc, targetTown.CenterYLoc,
+						ownTown.CenterXLoc, ownTown.CenterYLoc);
 
 					if ((Info.game_date - Info.game_start_date).Days >
 					    townDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
@@ -4749,14 +4749,14 @@ public class Nation : NationBase
 
 		int averageResistance;
 
-		if (town.nation_recno != 0)
-			averageResistance = town.average_loyalty();
+		if (town.NationId != 0)
+			averageResistance = town.AverageLoyalty();
 		else
-			averageResistance = town.average_resistance(nation_recno);
+			averageResistance = town.AverageResistance(nation_recno);
 
 		//---- see if there are general available for capturing this town ---//
 
-		int majorityRace = town.majority_race();
+		int majorityRace = town.MajorityRace();
 		int targetResistance = 100;
 		int bestCapturer = find_best_capturer(townRecno, majorityRace, ref targetResistance);
 		if (bestCapturer == 0)
@@ -4767,9 +4767,9 @@ public class Nation : NationBase
 		if (bestCapturer != 0)
 		{
 			captureUnitRecno = bestCapturer;
-			return (targetResistance * town.race_pop_array[majorityRace - 1]
-			        + averageResistance * (town.population - town.race_pop_array[majorityRace - 1]))
-			       / town.population;
+			return (targetResistance * town.RacesPopulation[majorityRace - 1]
+			        + averageResistance * (town.Population - town.RacesPopulation[majorityRace - 1]))
+			       / town.Population;
 		}
 		else
 		{
@@ -4787,9 +4787,9 @@ public class Nation : NationBase
 
 		//--- if it's an independent town, the race of the commander must match with the race of the town ---//
 
-		if (town.nation_recno == 0)
+		if (town.NationId == 0)
 		{
-			majorityRace = town.majority_race();
+			majorityRace = town.MajorityRace();
 		}
 
 		//---- see if we have generals in the most populated race, if so build a camp next to the town ----//
@@ -4805,10 +4805,10 @@ public class Nation : NationBase
 
 		int buildXLoc, buildYLoc;
 
-		if (!find_best_firm_loc(Firm.FIRM_CAMP, captureTown.loc_x1, captureTown.loc_y1,
+		if (!find_best_firm_loc(Firm.FIRM_CAMP, captureTown.X1Loc, captureTown.Y1Loc,
 			    out buildXLoc, out buildYLoc))
 		{
-			captureTown.no_neighbor_space = true;
+			captureTown.NoNeighborSpace = true;
 			return false;
 		}
 
@@ -4830,7 +4830,7 @@ public class Nation : NationBase
 			if (should_use_cash_to_capture())
 			{
 				Unit skilledUnit = find_skilled_unit(Skill.SKILL_LEADING, raceId,
-					captureTown.center_x, captureTown.center_y, out _);
+					captureTown.CenterXLoc, captureTown.CenterYLoc, out _);
 
 				if (skilledUnit != null)
 					unitRecno = skilledUnit.sprite_recno;
@@ -4847,7 +4847,7 @@ public class Nation : NationBase
 
 		//---------- add the action to the queue now ----------//
 
-		ActionNode actionNode = add_action(buildXLoc, buildYLoc, captureTown.loc_x1, captureTown.loc_y1,
+		ActionNode actionNode = add_action(buildXLoc, buildYLoc, captureTown.X1Loc, captureTown.Y1Loc,
 			ACTION_AI_BUILD_FIRM, Firm.FIRM_CAMP, 1, unitRecno);
 
 		if (actionNode != null)
@@ -4880,7 +4880,7 @@ public class Nation : NationBase
 
 			//---- don't use the king to build camps next to capture enemy towns, only next to independent towns ----//
 
-			if (unit.rank_id == Unit.RANK_KING && targetTown.nation_recno != 0)
+			if (unit.rank_id == Unit.RANK_KING && targetTown.NationId != 0)
 				continue;
 
 			//----- if this unit is in a camp -------//
@@ -4901,8 +4901,8 @@ public class Nation : NationBase
 
 					//--- if the unit is trying to capture an independent town and he is still influencing the town to decrease resistance ---//
 
-					if (town.nation_recno == 0 &&
-					    town.average_target_resistance(nation_recno) < town.average_resistance(nation_recno))
+					if (town.NationId == 0 &&
+					    town.AverageTargetResistance(nation_recno) < town.AverageResistance(nation_recno))
 					{
 						break; // then don't use this unit
 					}
@@ -4914,7 +4914,7 @@ public class Nation : NationBase
 
 			//--- if this unit is idle and the region ids are matched ---//
 
-			if (unit.action_mode != UnitConstants.ACTION_STOP || unit.region_id() != targetTown.region_id)
+			if (unit.action_mode != UnitConstants.ACTION_STOP || unit.region_id() != targetTown.RegionId)
 			{
 				continue;
 			}
@@ -4922,7 +4922,7 @@ public class Nation : NationBase
 			//------- get the unit's influence index --------//
 
 			// influence of this unit if he is assigned as a commander of a military camp
-			int targetResistance = 100 - targetTown.camp_influence(unit.sprite_recno);
+			int targetResistance = 100 - targetTown.CampInfluence(unit.sprite_recno);
 
 			//-- see if this unit's rating is higher than the current best --//
 
@@ -4937,7 +4937,7 @@ public class Nation : NationBase
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[ai_camp_array[i]];
 
-			if (firmCamp.region_id != targetTown.region_id)
+			if (firmCamp.region_id != targetTown.RegionId)
 				continue;
 
 
@@ -4978,7 +4978,7 @@ public class Nation : NationBase
 
 		int bestRating = 70, bestInnRecno = 0, bestInnUnitId = 0;
 		Town town = TownArray[townRecno];
-		int destRegionId = World.get_region_id(town.loc_x1, town.loc_y1);
+		int destRegionId = World.get_region_id(town.X1Loc, town.Y1Loc);
 
 		targetResistance = 100;
 
@@ -5065,18 +5065,18 @@ public class Nation : NationBase
 			{
 				Town town = TownArray[firm.linked_town_array[i]];
 
-				if (town.nation_recno != nation_recno)
+				if (town.NationId != nation_recno)
 					continue;
 
 				//--- first try to train a unit who is racially homogenous to the commander ---//
 
-				int newUnitRecno = town.recruit(Skill.SKILL_LEADING, firm.majority_race(),
+				int newUnitRecno = town.Recruit(Skill.SKILL_LEADING, firm.majority_race(),
 					InternalConstants.COMMAND_AI);
 
 				//--- if unsucessful, then try to train a unit whose race is the same as the majority of the town ---//
 
 				if (newUnitRecno == 0)
-					newUnitRecno = town.recruit(Skill.SKILL_LEADING, town.majority_race(),
+					newUnitRecno = town.Recruit(Skill.SKILL_LEADING, town.MajorityRace(),
 						InternalConstants.COMMAND_AI);
 
 				if (newUnitRecno != 0)
@@ -5129,7 +5129,7 @@ public class Nation : NationBase
 
 		if (rc == 1) // 1 means a troop has been sent to attack the town
 		{
-			ai_capture_enemy_town_recno = targetTown.town_recno; // this nation is currently trying to capture this town
+			ai_capture_enemy_town_recno = targetTown.TownId; // this nation is currently trying to capture this town
 			ai_capture_enemy_town_plan_date = Info.game_date;
 			ai_capture_enemy_town_start_attack_date = default;
 			ai_capture_enemy_town_use_all_camp = useAllCamp;
@@ -5139,7 +5139,7 @@ public class Nation : NationBase
 
 		if (rc == -1) // -1 means no defense on the target town, no attacking is needed.
 		{
-			return start_capture(targetTown.town_recno, 0);
+			return start_capture(targetTown.TownId, 0);
 		}
 
 		return false;
@@ -5151,7 +5151,7 @@ public class Nation : NationBase
 			return;
 
 		if (TownArray.IsDeleted(ai_capture_enemy_town_recno) ||
-		    TownArray[ai_capture_enemy_town_recno].nation_recno == nation_recno) // this town has been captured already
+		    TownArray[ai_capture_enemy_town_recno].NationId == nation_recno) // this town has been captured already
 		{
 			ai_capture_enemy_town_recno = 0;
 			return;
@@ -5163,7 +5163,7 @@ public class Nation : NationBase
 
 		//---- if we haven't started attacking the town yet -----//
 
-		int isBattle = is_battle(targetTown.center_x, targetTown.center_y);
+		int isBattle = is_battle(targetTown.CenterXLoc, targetTown.CenterYLoc);
 		if (ai_capture_enemy_town_start_attack_date == default)
 		{
 			if (isBattle == 2) // we are at war with the nation now
@@ -5191,10 +5191,10 @@ public class Nation : NationBase
 			//-------- check if we need any reinforcement --------//
 
 			int targetCombatLevel =
-				ai_evaluate_target_combat_level(targetTown.center_x, targetTown.center_y, targetTown.nation_recno);
+				ai_evaluate_target_combat_level(targetTown.CenterXLoc, targetTown.CenterYLoc, targetTown.NationId);
 			if (targetCombatLevel > 0 && isBattle == 2) // we are still in war with the enemy
 			{
-				ai_attack_target(targetTown.center_x, targetTown.center_y, targetCombatLevel, true);
+				ai_attack_target(targetTown.CenterXLoc, targetTown.CenterYLoc, targetCombatLevel, true);
 				return;
 			}
 		}
@@ -5226,7 +5226,7 @@ public class Nation : NationBase
 
 			if (rc == -1) // -1 means no defense on the target town, no attacking is needed.
 			{
-				start_capture(targetTown.town_recno, 0); // call AI functions in OAI_CAPT.CPP to capture the town
+				start_capture(targetTown.TownId, 0); // call AI functions in OAI_CAPT.CPP to capture the town
 			}
 
 			// 0 means we don't have enough troop to attack the enemy
@@ -5235,7 +5235,7 @@ public class Nation : NationBase
 
 	public int attack_enemy_town_defense(Town targetTown, bool useAllCamp = false)
 	{
-		if (targetTown.nation_recno == 0)
+		if (targetTown.NationId == 0)
 			return -1;
 
 		//--- if there are any command bases linked to the town, attack them first ---//
@@ -5243,11 +5243,11 @@ public class Nation : NationBase
 		int maxCampCombatLevel = -1;
 		Firm bestTargetFirm = null;
 
-		for (int i = targetTown.linked_firm_array.Count - 1; i >= 0; i--)
+		for (int i = targetTown.LinkedFirms.Count - 1; i >= 0; i--)
 		{
-			Firm firm = FirmArray[targetTown.linked_firm_array[i]];
+			Firm firm = FirmArray[targetTown.LinkedFirms[i]];
 
-			if (firm.nation_recno == targetTown.nation_recno && firm.firm_id == Firm.FIRM_CAMP)
+			if (firm.nation_recno == targetTown.NationId && firm.firm_id == Firm.FIRM_CAMP)
 			{
 				int campCombatLevel = ((FirmCamp)firm).total_combat_level();
 
@@ -5262,7 +5262,7 @@ public class Nation : NationBase
 		//----- get the defense combat level around the town ----//
 
 		int targetCombatLevel =
-			ai_evaluate_target_combat_level(targetTown.center_x, targetTown.center_y, targetTown.nation_recno);
+			ai_evaluate_target_combat_level(targetTown.CenterXLoc, targetTown.CenterYLoc, targetTown.NationId);
 
 		//----------------------------------------//
 
@@ -5283,7 +5283,7 @@ public class Nation : NationBase
 			//--- if there are any mobile defense force around the town ----//
 
 			if (targetCombatLevel > 0)
-				return ai_attack_target(targetTown.center_x, targetTown.center_y, targetCombatLevel, true) ? 1 : 0;
+				return ai_attack_target(targetTown.CenterXLoc, targetTown.CenterYLoc, targetCombatLevel, true) ? 1 : 0;
 		}
 
 		return -1;
@@ -5296,20 +5296,20 @@ public class Nation : NationBase
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno == 0 || town.nation_recno == nation_recno)
+			if (town.NationId == 0 || town.NationId == nation_recno)
 				continue;
 
-			if (town.region_id != capturerTown.region_id)
+			if (town.RegionId != capturerTown.RegionId)
 				continue;
 
 			//----- if we have already built a camp next to this town -----//
 
-			if (town.has_linked_camp(nation_recno, false)) //0-count both camps with or without overseers
+			if (town.HasLinkedCamp(nation_recno, false)) //0-count both camps with or without overseers
 				continue;
 
 			//--------- only attack enemies -----------//
 
-			NationRelation nationRelation = get_relation(town.nation_recno);
+			NationRelation nationRelation = get_relation(town.NationId);
 
 			bool rc = false;
 
@@ -5321,7 +5321,7 @@ public class Nation : NationBase
 				rc = true;
 
 			else if (nationRelation.status <= NATION_NEUTRAL &&
-			         town.nation_recno == NationArray.max_overall_nation_recno && // if this is our biggest enemy
+			         town.NationId == NationArray.max_overall_nation_recno && // if this is our biggest enemy
 			         nationRelation.ai_relation_level < 30)
 			{
 				rc = true;
@@ -5332,7 +5332,7 @@ public class Nation : NationBase
 
 			//----- if this town does not have any linked camps, capture this town immediately -----//
 
-			if (!town.has_linked_camp(town.nation_recno, false)) //0-count both camps with or without overseers
+			if (!town.HasLinkedCamp(town.NationId, false)) //0-count both camps with or without overseers
 				return town;
 
 			//--- if the enemy is very powerful overall, don't attack it yet ---//
@@ -5345,15 +5345,15 @@ public class Nation : NationBase
 
 			//------ only attack if we have enough money to support the war ----//
 
-			if (!ai_should_spend_war(NationArray[town.nation_recno].military_rank_rating()))
+			if (!ai_should_spend_war(NationArray[town.NationId].military_rank_rating()))
 				continue;
 
 			//---- do not attack this town because a battle is already going on ----//
 
-			if (is_battle(town.center_x, town.center_y) > 0)
+			if (is_battle(town.CenterXLoc, town.CenterYLoc) > 0)
 				continue;
 
-			int townCombatLevel = ai_evaluate_target_combat_level(town.center_x, town.center_y, town.nation_recno);
+			int townCombatLevel = ai_evaluate_target_combat_level(town.CenterXLoc, town.CenterYLoc, town.NationId);
 
 			//------- calculate the rating --------------//
 
@@ -5363,9 +5363,9 @@ public class Nation : NationBase
 
 			curRating -= townCombatLevel / 10;
 
-			curRating -= town.average_loyalty();
+			curRating -= town.AverageLoyalty();
 
-			curRating += town.population; // put a preference on capturing villages with large population
+			curRating += town.Population; // put a preference on capturing villages with large population
 
 			//----- the power of between the nation also affect the rating ----//
 
@@ -5373,7 +5373,7 @@ public class Nation : NationBase
 
 			//-- AI Aggressive is set above Low, than the AI will try to capture the player's town first ---//
 
-			if (!town.ai_town)
+			if (!town.AITown)
 			{
 				switch (Config.ai_aggressiveness)
 				{
@@ -5393,11 +5393,11 @@ public class Nation : NationBase
 
 			//--- if there are mines linked to this town, increase its rating ---//
 
-			for (int i = town.linked_firm_array.Count - 1; i >= 0; i--)
+			for (int i = town.LinkedFirms.Count - 1; i >= 0; i--)
 			{
-				Firm firm = FirmArray[town.linked_firm_array[i]];
+				Firm firm = FirmArray[town.LinkedFirms[i]];
 
-				if (firm.nation_recno != town.nation_recno)
+				if (firm.nation_recno != town.NationId)
 					continue;
 
 				if (firm.firm_id == Firm.FIRM_MINE)
@@ -5412,10 +5412,10 @@ public class Nation : NationBase
 
 			//--- more linked towns increase the attractiveness rating ---//
 
-			curRating += town.linked_firm_array.Count * 5;
+			curRating += town.LinkedFirms.Count * 5;
 
-			curRating = curRating * World.distance_rating(capturerTown.center_x, capturerTown.center_y,
-				town.center_x, town.center_y) / 100;
+			curRating = curRating * World.distance_rating(capturerTown.CenterXLoc, capturerTown.CenterYLoc,
+				town.CenterXLoc, town.CenterYLoc) / 100;
 
 			//-------- compare with the current best rating ---------//
 
@@ -5733,11 +5733,11 @@ public class Nation : NationBase
 		{
 			Town town = TownArray[ai_town_array[i]];
 
-			if (town.region_id == destRegionId)
+			if (town.RegionId == destRegionId)
 			{
 				//--- if there is one, must move the people to it ---//
 
-				return ai_settle_to_region(town.center_x, town.center_y, SEA_ACTION_NONE);
+				return ai_settle_to_region(town.CenterXLoc, town.CenterYLoc, SEA_ACTION_NONE);
 			}
 		}
 
@@ -5910,38 +5910,38 @@ public class Nation : NationBase
 			Town town = TownArray[ai_town_array[i]];
 
 			// if there is no command base linked to this town, we cannot recruit any peasants from it
-			if (!town.has_linked_own_camp)
+			if (!town.HasLinkedOwnCamp)
 				continue;
 
 			// don't get peasant from this town if the jobless population is less than 20
-			if (town.jobless_population < SETTLE_REGION_UNIT_COUNT)
+			if (town.JoblessPopulation < SETTLE_REGION_UNIT_COUNT)
 				continue;
 
 			//--- only send units from this region if we have a harbor in that region ---//
 
 			// region_stat_id of a region may be zero
 			if (
-				RegionArray.GetRegionInfo(town.region_id).region_stat_id == 0 ||
-				RegionArray.get_region_stat(town.region_id).harbor_nation_count_array[nation_recno - 1] == 0)
+				RegionArray.GetRegionInfo(town.RegionId).region_stat_id == 0 ||
+				RegionArray.get_region_stat(town.RegionId).harbor_nation_count_array[nation_recno - 1] == 0)
 			{
 				continue;
 			}
 
-			int curRating = World.distance_rating(destXLoc, destYLoc, town.center_x, town.center_y);
+			int curRating = World.distance_rating(destXLoc, destYLoc, town.CenterXLoc, town.CenterYLoc);
 
-			curRating += town.jobless_population;
+			curRating += town.JoblessPopulation;
 
-			curRating += town.average_loyalty(); // select a town with high loyalty
+			curRating += town.AverageLoyalty(); // select a town with high loyalty
 
 			if (curRating <= bestRating)
 				continue;
 
 			//------- see if we have ships ready currently -----//
 
-			int seaRegionId = RegionArray.get_sea_path_region_id(town.region_id, destRegionId);
+			int seaRegionId = RegionArray.get_sea_path_region_id(town.RegionId, destRegionId);
 
 			// 0-don't have to find the best, return immediately whenever a suitable one is found
-			if (ai_find_transport_ship(seaRegionId, town.center_x, town.center_y, false) == 0)
+			if (ai_find_transport_ship(seaRegionId, town.CenterXLoc, town.CenterYLoc, false) == 0)
 				continue;
 
 			bestRating = curRating;
@@ -5954,15 +5954,15 @@ public class Nation : NationBase
 		//------- try to recruit 9 units from one of our towns --------//
 
 		List<int> recruitedUnits = new List<int>(SETTLE_REGION_UNIT_COUNT);
-		int raceId = bestTown.majority_race();
+		int raceId = bestTown.MajorityRace();
 
 		while (recruitedUnits.Count < SETTLE_REGION_UNIT_COUNT)
 		{
-			if (bestTown.recruitable_race_pop(raceId, true) > 0)
+			if (bestTown.RecruitableRacePopulation(raceId, true) > 0)
 			{
-				if (!bestTown.can_recruit(raceId))
+				if (!bestTown.CanRecruit(raceId))
 					break;
-				int unitRecno = bestTown.recruit(-1, raceId, InternalConstants.COMMAND_AI);
+				int unitRecno = bestTown.Recruit(-1, raceId, InternalConstants.COMMAND_AI);
 
 				if (unitRecno == 0) // no space for new unit 
 					break;
@@ -5971,7 +5971,7 @@ public class Nation : NationBase
 			}
 			else
 			{
-				raceId = bestTown.pick_random_race(false, true);
+				raceId = bestTown.PickRandomRace(false, true);
 
 				if (raceId == 0)
 					break;
@@ -6096,7 +6096,7 @@ public class Nation : NationBase
 
 			Town town = TownArray[ai_town_array[townSeq]];
 
-			if (town.is_base_town && landRegionId == town.region_id)
+			if (town.IsBaseTown && landRegionId == town.RegionId)
 			{
 				targetTown = town;
 				break;
@@ -6106,8 +6106,8 @@ public class Nation : NationBase
 		if (targetTown == null) // not found
 			return false;
 
-		int homeXLoc = targetTown.center_x;
-		int homeYLoc = targetTown.center_y;
+		int homeXLoc = targetTown.CenterXLoc;
+		int homeYLoc = targetTown.CenterYLoc;
 
 		//---- scan out from the town and find the nearest suitable location to build the harbor ----//
 
@@ -6290,10 +6290,10 @@ public class Nation : NationBase
 		switch (actionNode.action_para)
 		{
 			case SEA_ACTION_SETTLE:
-				if (location.is_town() && TownArray[location.town_recno()].nation_recno == nation_recno)
+				if (location.is_town() && TownArray[location.town_recno()].NationId == nation_recno)
 				{
 					Town town = TownArray[location.town_recno()];
-					UnitArray.assign(town.loc_x1, town.loc_y1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.assign(town.X1Loc, town.Y1Loc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
 				{
@@ -6589,11 +6589,11 @@ public class Nation : NationBase
 		int bestRating = Int32.MaxValue, bestFirmRecno = 0;
 		int loc_x = 0;
 		int loc_y = 0;
-		if (nearbyTown != null && cloakedNationRecno == nearbyTown.nation_recno)
+		if (nearbyTown != null && cloakedNationRecno == nearbyTown.NationId)
 		{
-			for (int i = nearbyTown.linked_firm_array.Count - 1; i >= 0; i--)
+			for (int i = nearbyTown.LinkedFirms.Count - 1; i >= 0; i--)
 			{
-				Firm firm = FirmArray[nearbyTown.linked_firm_array[i]];
+				Firm firm = FirmArray[nearbyTown.LinkedFirms[i]];
 
 				if (firm.nation_recno == nation_recno) // don't assign to own firm
 					continue;
@@ -6670,23 +6670,23 @@ public class Nation : NationBase
 	{
 		foreach (Town town in TownArray.EnumerateRandom())
 		{
-			if (town.nation_recno == nation_recno) // don't assign to own firm
+			if (town.NationId == nation_recno) // don't assign to own firm
 				continue;
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
 			// -5 so that even if we assign too many spies to a town at the same time, there will still room for them
-			if (town.population > GameConstants.MAX_TOWN_POPULATION - 5)
+			if (town.Population > GameConstants.MAX_TOWN_POPULATION - 5)
 				continue;
 
-			if (town.majority_race() != raceId)
+			if (town.MajorityRace() != raceId)
 				continue;
 
-			if (reputation < 0 && town.nation_recno != 0)
+			if (reputation < 0 && town.NationId != 0)
 				continue;
 
-			return town.town_recno;
+			return town.TownId;
 		}
 
 		return 0;
@@ -6696,24 +6696,24 @@ public class Nation : NationBase
 	{
 		foreach (Town town in TownArray.EnumerateRandom())
 		{
-			if (town.nation_recno != nation_recno) // only assign to own firm
+			if (town.NationId != nation_recno) // only assign to own firm
 				continue;
 
-			if (town.region_id != regionId)
+			if (town.RegionId != regionId)
 				continue;
 
-			if (town.population > GameConstants.MAX_TOWN_POPULATION - 5)
+			if (town.Population > GameConstants.MAX_TOWN_POPULATION - 5)
 				continue;
 
-			if (town.majority_race() != raceId)
+			if (town.MajorityRace() != raceId)
 				continue;
 
-			int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, town.town_recno,
+			int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, town.TownId,
 				nation_recno, out _);
-			int neededSpyLevel = town.needed_anti_spy_level();
+			int neededSpyLevel = town.NeededAntiSpyLevel();
 
 			if (neededSpyLevel > curSpyLevel + 30)
-				return town.town_recno;
+				return town.TownId;
 		}
 
 		return 0;
@@ -6747,9 +6747,9 @@ public class Nation : NationBase
 			if (townRecno != 0)
 			{
 				Town town = TownArray[townRecno];
-				loc_x1 = town.loc_x1;
-				loc_y1 = town.loc_y1;
-				cloakedNationRecno = town.nation_recno;
+				loc_x1 = town.X1Loc;
+				loc_y1 = town.Y1Loc;
+				cloakedNationRecno = town.NationId;
 
 				return true;
 			}
@@ -6759,9 +6759,9 @@ public class Nation : NationBase
 		if (townRecno != 0)
 		{
 			Town town = TownArray[townRecno];
-			loc_x1 = town.loc_x1;
-			loc_y1 = town.loc_y1;
-			cloakedNationRecno = town.nation_recno;
+			loc_x1 = town.X1Loc;
+			loc_y1 = town.Y1Loc;
+			cloakedNationRecno = town.NationId;
 
 			return true;
 		}
@@ -6961,7 +6961,7 @@ public class Nation : NationBase
 
 		//--------------------------------------------------//
 
-		int baseRegionId = TownArray[largest_town_recno].region_id;
+		int baseRegionId = TownArray[largest_town_recno].RegionId;
 
 		// no region stat (region is too small), don't care
 		if (RegionArray.GetRegionInfo(baseRegionId).region_stat_id == 0)
@@ -7349,22 +7349,22 @@ public class Nation : NationBase
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != enemyNationRecno)
+			if (town.NationId != enemyNationRecno)
 				continue;
 
 			//--- only attack if we have any base town in the enemy town's region ---//
 
-			if (base_town_count_in_region(town.region_id) == 0)
+			if (base_town_count_in_region(town.RegionId) == 0)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
 
-			if (is_battle(town.center_x, town.center_y) > 0)
+			if (is_battle(town.CenterXLoc, town.CenterYLoc) > 0)
 				continue;
 
-			int enemyCombatLevel = ai_evaluate_target_combat_level(town.center_x, town.center_y, town.nation_recno);
+			int enemyCombatLevel = ai_evaluate_target_combat_level(town.CenterXLoc, town.CenterYLoc, town.NationId);
 
-			return ai_attack_target(town.loc_x1, town.loc_y1, enemyCombatLevel);
+			return ai_attack_target(town.X1Loc, town.Y1Loc, enemyCombatLevel);
 		}
 
 		return false;
@@ -7447,7 +7447,7 @@ public class Nation : NationBase
 			for (int j = 0; j < firm.linked_town_array.Count; j++)
 			{
 				Town linkedTown = TownArray[firm.linked_town_array[j]];
-				if (linkedTown.nation_recno == firm.nation_recno)
+				if (linkedTown.NationId == firm.nation_recno)
 				{
 					linkedToTown = true;
 					break;
@@ -8900,7 +8900,7 @@ public class Nation : NationBase
 		//---- if we are planning to capture the enemy's town ---//
 
 		if (ai_capture_enemy_town_recno != 0 && !TownArray.IsDeleted(ai_capture_enemy_town_recno) &&
-		    TownArray[ai_capture_enemy_town_recno].nation_recno == withNationRecno)
+		    TownArray[ai_capture_enemy_town_recno].NationId == withNationRecno)
 		{
 			return -1;
 		}
@@ -9377,7 +9377,7 @@ public class Nation : NationBase
 			return FirmArray[location.firm_recno()].nation_recno;
 
 		if (location.is_town())
-			return TownArray[location.town_recno()].nation_recno;
+			return TownArray[location.town_recno()].NationId;
 
 		if (location.has_unit(UnitConstants.UNIT_LAND))
 			return UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)].nation_recno;

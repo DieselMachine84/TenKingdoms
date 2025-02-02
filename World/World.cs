@@ -94,7 +94,7 @@ public class World
 
 		if (TownArray.selected_recno != 0)
 		{
-			TownArray.disp_next(seekDir, sameNation);
+			TownArray.DisplayNext(seekDir, sameNation);
 		}
 
 		//--- if the selected one is a natural resource site ----//
@@ -270,15 +270,15 @@ public class World
 					{
 						Town town = TownArray[location.town_recno()];
 
-						if (town.nation_recno > 0 && NationArray.player_recno != 0)
+						if (town.NationId > 0 && NationArray.player_recno != 0)
 						{
-							NationRelation relation = NationArray.player.get_relation(town.nation_recno);
+							NationRelation relation = NationArray.player.get_relation(town.NationId);
 
 							if (!relation.has_contact)
 							{
 								//if( !remote.is_enable() )
 								//{
-								NationArray.player.establish_contact(town.nation_recno);
+								NationArray.player.establish_contact(town.NationId);
 								//}
 								//else
 								//{
@@ -884,12 +884,12 @@ public class World
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno == 0)
+			if (town.NationId == 0)
 				continue;
 
 			//------- set the influence range of this town -----//
 
-			set_power(town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2, town.nation_recno);
+			set_power(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc, town.NationId);
 		}
 
 		//--------- set firm's influence -----------//
@@ -949,18 +949,19 @@ public class World
 
 	public void restore_power(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int townRecno, int firmRecno)
 	{
+		//TODO rewrite bad code
 		int nationRecno = 0;
 
 		if (townRecno != 0)
 		{
-			nationRecno = TownArray[townRecno].nation_recno;
-			TownArray[townRecno].nation_recno = 0;
+			nationRecno = TownArray[townRecno].NationId;
+			//TownArray[townRecno].nation_recno = 0;
 		}
 
 		if (firmRecno != 0)
 		{
 			nationRecno = FirmArray[firmRecno].nation_recno;
-			FirmArray[firmRecno].nation_recno = 0;
+			//FirmArray[firmRecno].nation_recno = 0;
 		}
 
 		//------- reset power_nation_recno first ------//
@@ -996,11 +997,11 @@ public class World
 
 		//------- restore the nation recno of the calling town/firm -------//
 
-		if (townRecno != 0)
-			TownArray[townRecno].nation_recno = nationRecno;
+		//if (townRecno != 0)
+			//TownArray[townRecno].nation_recno = nationRecno;
 
-		if (firmRecno != 0)
-			FirmArray[firmRecno].nation_recno = nationRecno;
+		//if (firmRecno != 0)
+			//FirmArray[firmRecno].nation_recno = nationRecno;
 	}
 
 	public void set_surr_power_off(int xLoc, int yLoc)
@@ -1910,19 +1911,19 @@ public class World
 		int townDamage = 0;
 		foreach (Town town in TownArray)
 		{
-			int townRecno = town.town_recno;
-			bool ownTown = (town.nation_recno == NationArray.player_recno);
-			int beforePopulation = town.population;
-			int causalty = Weather.quake_rate(town.center_x, town.center_y) / 10;
+			int townRecno = town.TownId;
+			bool ownTown = (town.NationId == NationArray.player_recno);
+			int beforePopulation = town.Population;
+			int causalty = Weather.quake_rate(town.CenterXLoc, town.CenterYLoc) / 10;
 			for (; causalty > 0 && !TownArray.IsDeleted(townRecno); --causalty)
 			{
-				town.kill_town_people(0);
+				town.KillTownPeople(0);
 			}
 
 			if (TownArray.IsDeleted(townRecno))
 				causalty = beforePopulation;
 			else
-				causalty = beforePopulation - town.population;
+				causalty = beforePopulation - town.Population;
 
 			if (ownTown)
 				townDamage += causalty;
@@ -2051,20 +2052,20 @@ public class World
 
 		foreach (Town town in TownArray)
 		{
-			if (town.loc_x1 <= cx + radius && town.loc_x2 >= cx - radius && town.loc_y1 <= cy + radius &&
-			    town.loc_y2 >= cy - radius)
+			if (town.X1Loc <= cx + radius && town.X2Loc >= cx - radius && town.Y1Loc <= cy + radius &&
+			    town.Y2Loc >= cy - radius)
 			{
 				// ---- add news -------//
-				if (town.nation_recno == NationArray.player_recno)
-					NewsArray.lightning_damage(town.center_x, town.center_y,
-						News.NEWS_LOC_TOWN, town.town_recno, 0);
+				if (town.NationId == NationArray.player_recno)
+					NewsArray.lightning_damage(town.CenterXLoc, town.CenterYLoc,
+						News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//
-				Location location = get_loc(town.center_x, town.center_y);
+				Location location = get_loc(town.CenterXLoc, town.CenterYLoc);
 				if (location.can_set_fire() && location.fire_str() < 5)
 					location.set_fire_str(5);
 
-				town.kill_town_people(0);
+				town.KillTownPeople(0);
 			}
 		}
 	}

@@ -397,12 +397,12 @@ public abstract class Firm
 		int closestTownNameId = 0;
 		foreach (Town town in TownArray)
 		{
-			townDistance = Misc.points_distance(town.center_x, town.center_y, center_x, center_y);
+			townDistance = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, center_x, center_y);
 
 			if (townDistance < minTownDistance)
 			{
 				minTownDistance = townDistance;
-				closestTownNameId = town.town_name_id;
+				closestTownNameId = town.TownNameId;
 			}
 		}
 
@@ -496,7 +496,7 @@ public abstract class Firm
 
 			foreach (Worker worker in workers)
 			{
-				if (TownArray[worker.town_recno].nation_recno != nation_recno)
+				if (TownArray[worker.town_recno].NationId != nation_recno)
 					payWorkerCount++;
 			}
 
@@ -843,7 +843,7 @@ public abstract class Firm
 		//-----------------------------------------//
 
 		if (overseer_town_recno != 0)
-			TownArray[overseer_town_recno].dec_pop(UnitArray[overseer_recno].race_id, true);
+			TownArray[overseer_town_recno].DecPopulation(UnitArray[overseer_recno].race_id, true);
 
 		UnitArray.DeleteUnit(overseer);
 
@@ -866,7 +866,7 @@ public abstract class Firm
 			RaceRes[worker.race_id].free_name_id(worker.name_id);
 
 		if (worker.town_recno != 0) // town_recno is 0 if the workers in the firm do not live in towns
-			TownArray[worker.town_recno].dec_pop(worker.race_id, true); // 1-has job
+			TownArray[worker.town_recno].DecPopulation(worker.race_id, true); // 1-has job
 
 		//-------- if this worker is a spy ---------//
 
@@ -947,7 +947,7 @@ public abstract class Firm
 		{
 			//---- see if there is any population of this race to move to the firm ----//
 
-			int recruitableCount = town.recruitable_race_pop(raceId, true); // 1-allow recruiting spies
+			int recruitableCount = town.RecruitableRacePopulation(raceId, true); // 1-allow recruiting spies
 
 			if (recruitableCount > 0)
 			{
@@ -955,24 +955,24 @@ public abstract class Firm
 
 				if (forcePull) // right-click to force pulling a worker from the village
 				{
-					if (town.race_loyalty_array[raceId - 1] <
-					    GameConstants.MIN_RECRUIT_LOYALTY + town.recruit_dec_loyalty(raceId, false))
+					if (town.RacesLoyalty[raceId - 1] <
+					    GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
 						return false;
 
-					town.recruit_dec_loyalty(raceId);
+					town.RecruitDecLoyalty(raceId);
 				}
 				else //--- see if the unit will voluntarily move to the firm ---//
 				{
 					//--- the higher the loyalty is, the higher the chance of working for the firm ---//
 
-					if (town.nation_recno != 0)
+					if (town.NationId != 0)
 					{
-						if (Misc.Random((100 - Convert.ToInt32(town.race_loyalty_array[raceId - 1])) / 10) > 0)
+						if (Misc.Random((100 - Convert.ToInt32(town.RacesLoyalty[raceId - 1])) / 10) > 0)
 							return false;
 					}
 					else
 					{
-						if (Misc.Random(Convert.ToInt32(town.race_resistance_array[raceId - 1, nation_recno - 1]) / 10) > 0)
+						if (Misc.Random(Convert.ToInt32(town.RacesResistance[raceId - 1, nation_recno - 1]) / 10) > 0)
 							return false;
 					}
 				}
@@ -981,12 +981,12 @@ public abstract class Firm
 
 				if (FirmRes[firm_id].live_in_town)
 				{
-					town.jobless_race_pop_array[raceId - 1]--; // decrease the town's population
-					town.jobless_population--;
+					town.RacesJoblessPopulation[raceId - 1]--; // decrease the town's population
+					town.JoblessPopulation--;
 				}
 				else
 				{
-					town.dec_pop(raceId, false);
+					town.DecPopulation(raceId, false);
 				}
 
 				//------- add the worker to the firm -----//
@@ -997,7 +997,7 @@ public abstract class Firm
 				worker.race_id = raceId;
 				worker.rank_id = Unit.RANK_SOLDIER;
 				worker.unit_id = RaceRes[raceId].basic_unit_id;
-				worker.worker_loyalty = Convert.ToInt32(town.race_loyalty_array[raceId - 1]);
+				worker.worker_loyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
 
 				if (FirmRes[firm_id].live_in_town)
 					worker.town_recno = townRecno;
@@ -1023,7 +1023,7 @@ public abstract class Firm
 
 				//------ if the recruited worker is a spy -----//
 
-				int spyCount = town.race_spy_count_array[raceId - 1];
+				int spyCount = town.RacesSpyCount[raceId - 1];
 
 				if (spyCount >= Misc.Random(recruitableCount) + 1)
 				{
@@ -1133,7 +1133,7 @@ public abstract class Firm
 			{
 				Town town = TownArray[linked_town_array[i]];
 
-				if (town.nation_recno == nation_recno)
+				if (town.NationId == nation_recno)
 				{
 					shouldSetPower = true;
 					break;
@@ -1419,7 +1419,7 @@ public abstract class Firm
 		{
 			//------ check if the town is close enough to this firm -------//
 
-			if (Misc.rects_distance(town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2,
+			if (Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
 				    loc_x1, loc_y1, loc_x2, loc_y2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 			{
 				continue;
@@ -1427,7 +1427,7 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.center_x, town.center_y).is_plateau()
+			if (World.get_loc(town.CenterXLoc, town.CenterYLoc).is_plateau()
 			    != World.get_loc(center_x, center_y).is_plateau())
 			{
 				continue;
@@ -1438,7 +1438,7 @@ public abstract class Firm
 			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
 			// if the two firms are of different nations, default link status is both side disabled
 			int defaultLinkStatus;
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 				defaultLinkStatus = InternalConstants.LINK_EE;
 			else
 				defaultLinkStatus = InternalConstants.LINK_DD;
@@ -1453,13 +1453,13 @@ public abstract class Firm
 
 			if (firm_id == FIRM_CAMP)
 			{
-				if (town.nation_recno == 0 || !town.has_linked_own_camp)
+				if (town.NationId == 0 || !town.HasLinkedOwnCamp)
 					defaultLinkStatus = InternalConstants.LINK_EE;
 			}
 
 			//-------- add the link now -------//
 
-			linked_town_array.Add(town.town_recno);
+			linked_town_array.Add(town.TownId);
 			linked_town_enable_array.Add(defaultLinkStatus);
 
 			// now from the town's side
@@ -1469,11 +1469,11 @@ public abstract class Firm
 			else if (defaultLinkStatus == InternalConstants.LINK_DE)
 				defaultLinkStatus = InternalConstants.LINK_ED;
 
-			town.linked_firm_array.Add(firm_recno);
-			town.linked_firm_enable_array.Add(defaultLinkStatus);
+			town.LinkedFirms.Add(firm_recno);
+			town.LinkedFirmsEnable.Add(defaultLinkStatus);
 
-			if (town.ai_town)
-				town.ai_link_checked = false;
+			if (town.AITown)
+				town.AILinkChecked = false;
 		}
 	}
 
@@ -1495,10 +1495,10 @@ public abstract class Firm
 		for (int i = 0; i < linked_town_array.Count; i++)
 		{
 			Town town = TownArray[linked_town_array[i]];
-			town.release_firm_link(firm_recno);
+			town.ReleaseFirmLink(firm_recno);
 
-			if (town.ai_town)
-				town.ai_link_checked = false;
+			if (town.AITown)
+				town.AILinkChecked = false;
 		}
 	}
 
@@ -1574,19 +1574,19 @@ public abstract class Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.population >= GameConstants.MAX_TOWN_POPULATION)
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
-			if (town.nation_recno != nation_recno)
+			if (town.NationId != nation_recno)
 				continue;
 
-			int townDistance = Misc.rects_distance(town.loc_x1, town.loc_y1, town.loc_x2, town.loc_y2,
+			int townDistance = Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
 				loc_x1, loc_y1, loc_x2, loc_y2);
 
 			if (townDistance < minDistance)
 			{
 				minDistance = townDistance;
-				nearestTownRecno = town.town_recno;
+				nearestTownRecno = town.TownId;
 			}
 		}
 
@@ -1827,7 +1827,7 @@ public abstract class Firm
 			}
 			else if (worker.town_recno != 0)
 			{
-				if (TownArray[worker.town_recno].nation_recno == captureNationRecno)
+				if (TownArray[worker.town_recno].NationId == captureNationRecno)
 					captureUnitCount++;
 				else
 					otherUnitCount++;
@@ -1872,7 +1872,7 @@ public abstract class Firm
 		{
 			if (!worker.is_nation(firm_recno, nation_recno))
 				return;
-			if (town.population >= GameConstants.MAX_TOWN_POPULATION)
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				return;
 		}
 
@@ -1896,13 +1896,13 @@ public abstract class Firm
 		//--- otherwise, set the worker's home town to the new one ---//
 
 		else if (worker.is_nation(firm_recno, nation_recno) &&
-		         town.nation_recno ==
+		         town.NationId ==
 		         nation_recno) // only allow when the worker lives in a town belonging to the same nation and moving domestically
 		{
 			int workerLoyalty = worker.loyalty();
 
-			TownArray[worker.town_recno].dec_pop(worker.race_id, true);
-			town.inc_pop(worker.race_id, true, workerLoyalty);
+			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
+			town.IncPopulation(worker.race_id, true, workerLoyalty);
 
 			worker.town_recno = townRecno;
 		}
@@ -2110,8 +2110,8 @@ public abstract class Firm
 			// find whether military camp is linked to this town. If
 			// so, defense for this firm
 			//-------------------------------------------------------//
-			if (town.nation_recno == nation_recno)
-				town.auto_defense(targetRecno);
+			if (town.NationId == nation_recno)
+				town.AutoDefense(targetRecno);
 
 			//-------------------------------------------------------//
 			// some linked town may be deleted after calling auto_defense().
@@ -2694,7 +2694,7 @@ public abstract class Firm
 		//---- cancel the overseer's presence in the town -----//
 
 		if (FirmRes[firm_id].live_in_town)
-			TownArray[overseer_town_recno].dec_pop(overseer.race_id, true);
+			TownArray[overseer_town_recno].DecPopulation(overseer.race_id, true);
 
 		//----- get this overseer out of the firm -----//
 
@@ -2774,7 +2774,7 @@ public abstract class Firm
 			}
 
 			if (disappearFlag && townRecno != 0)
-				TownArray[townRecno].dec_pop(raceId, false);
+				TownArray[townRecno].DecPopulation(raceId, false);
 		}
 	}
 
@@ -2790,8 +2790,8 @@ public abstract class Firm
 		{
 			Town town = TownArray[worker.town_recno];
 
-			town.jobless_race_pop_array[worker.race_id - 1]++; // move into jobless population
-			town.jobless_population++;
+			town.RacesJoblessPopulation[worker.race_id - 1]++; // move into jobless population
+			town.JoblessPopulation++;
 
 			//------ put the spy in the town -------//
 
@@ -2933,7 +2933,7 @@ public abstract class Firm
 		//return;
 		//}
 
-		int linkedNationRecno = TownArray[linked_town_array[linkId - 1]].nation_recno;
+		int linkedNationRecno = TownArray[linked_town_array[linkId - 1]].NationId;
 
 		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
 		// town cannot decide whether it wants to link to Command Base or not, it is the Command Base which influences the town.
@@ -2958,23 +2958,23 @@ public abstract class Firm
 
 		Town town = TownArray[linked_town_array[linkId - 1]];
 
-		for (int i = 0; i < town.linked_firm_array.Count; i++)
+		for (int i = 0; i < town.LinkedFirms.Count; i++)
 		{
-			if (town.linked_firm_array[i] == firm_recno)
+			if (town.LinkedFirms[i] == firm_recno)
 			{
 				if (toggleFlag)
 				{
 					if ((sameNation && setBoth == 0) || setBoth == 1)
-						town.linked_firm_enable_array[i] = InternalConstants.LINK_EE;
+						town.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
 					else
-						town.linked_firm_enable_array[i] |= InternalConstants.LINK_DE;
+						town.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
 				}
 				else
 				{
 					if ((sameNation && setBoth == 0) || setBoth == 1)
-						town.linked_firm_enable_array[i] = InternalConstants.LINK_DD;
+						town.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
 					else
-						town.linked_firm_enable_array[i] &= ~InternalConstants.LINK_DE;
+						town.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
 				}
 
 				break;
@@ -2983,13 +2983,13 @@ public abstract class Firm
 
 		//-------- update the town's influence --------//
 
-		if (town.nation_recno == 0)
-			town.update_target_resistance();
+		if (town.NationId == 0)
+			town.UpdateTargetResistance();
 
 		//--- redistribute demand if a link to market place has been toggled ---//
 
 		if (firm_id == FIRM_MARKET)
-			TownArray.distribute_demand();
+			TownArray.DistributeDemand();
 	}
 
 	//---------- AI functions ----------//
@@ -3048,11 +3048,11 @@ public abstract class Firm
 
 			//-- only recruit workers from towns of other nations if we don't have labor ourselves
 
-			if (town.nation_recno != nation_recno && nation.total_jobless_population > MAX_WORKER)
+			if (town.NationId != nation_recno && nation.total_jobless_population > MAX_WORKER)
 				continue;
 
 			// don't order units to move into it as they will be recruited from the town automatically
-			if (town.jobless_population > 0)
+			if (town.JoblessPopulation > 0)
 				return false;
 		}
 
@@ -3220,7 +3220,7 @@ public abstract class Firm
 			//--- enable link to hire people from the town ---//
 
 			// either it's an independent town or it's friendly or allied to our nation
-			rc = town.nation_recno == 0 || ownNation.get_relation_status(town.nation_recno) >= NationBase.NATION_FRIENDLY;
+			rc = town.NationId == 0 || ownNation.get_relation_status(town.NationId) >= NationBase.NATION_FRIENDLY;
 
 			toggle_town_link(i + 1, rc, InternalConstants.COMMAND_AI);
 		}
@@ -3415,17 +3415,17 @@ public abstract class Firm
 
 			//--- don't hire foreign workers if we don't have cash to pay them ---//
 
-			if (nation.cash < 0 && nation_recno != town.nation_recno)
+			if (nation.cash < 0 && nation_recno != town.NationId)
 				continue;
 
 			//-------- if the town has any unit ready for jobs -------//
 
-			if (town.jobless_population == 0)
+			if (town.JoblessPopulation == 0)
 				continue;
 
 			//---- if nation of the town is not hositle to this firm's nation ---//
 
-			if (pull_town_people(town.town_recno, InternalConstants.COMMAND_AUTO))
+			if (pull_town_people(town.TownId, InternalConstants.COMMAND_AUTO))
 				return;
 		}
 	}
@@ -3463,7 +3463,7 @@ public abstract class Firm
 
 		if (townRecno != 0)
 		{
-			TownArray[townRecno].inc_pop(raceId, true, unitLoyalty);
+			TownArray[townRecno].IncPopulation(raceId, true, unitLoyalty);
 			return townRecno;
 		}
 
@@ -3480,11 +3480,11 @@ public abstract class Firm
 			{
 				Town town = TownArray.AddTown(nation_recno, raceId, xLoc, yLoc);
 
-				town.init_pop(raceId, 1, unitLoyalty, true);
+				town.InitPopulation(raceId, 1, unitLoyalty, true);
 
-				town.auto_set_layout();
+				town.AutoSetLayout();
 
-				return town.town_recno;
+				return town.TownId;
 			}
 		}
 
@@ -3502,7 +3502,7 @@ public abstract class Firm
 		{
 			//--- if the town the worker lives and the firm are of the same nation ---//
 
-			if (!liveInTown || TownArray[workers[i].town_recno].nation_recno == nation_recno)
+			if (!liveInTown || TownArray[workers[i].town_recno].NationId == nation_recno)
 			{
 				if (firm_id == FIRM_CAMP)
 				{
@@ -3641,7 +3641,7 @@ public abstract class Firm
 			for (int i = workers.Count - 1; i >= 0; i--)
 			{
 				Worker worker = workers[i];
-				townNationRecno = TownArray[worker.town_recno].nation_recno;
+				townNationRecno = TownArray[worker.town_recno].NationId;
 
 				if (townNationRecno != nation_recno)
 				{
@@ -3733,16 +3733,16 @@ public abstract class Firm
 
 		foreach (Town town in TownArray.EnumerateRandom())
 		{
-			if (town.population >= GameConstants.MAX_TOWN_POPULATION)
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
 			//------ check if this town is linked to the current firm -----//
 
 			int j;
-			for (j = town.linked_firm_array.Count - 1; j >= 0; j--)
+			for (j = town.LinkedFirms.Count - 1; j >= 0; j--)
 			{
-				if (town.linked_firm_array[j] == firm_recno &&
-				    town.linked_firm_enable_array[j] != 0)
+				if (town.LinkedFirms[j] == firm_recno &&
+				    town.LinkedFirmsEnable[j] != 0)
 				{
 					break;
 				}
@@ -3766,8 +3766,8 @@ public abstract class Firm
 
 			int targetBaseAttractLevel = 0;
 
-			if (town.nation_recno != 0)
-				targetBaseAttractLevel += (int)NationArray[town.nation_recno].reputation;
+			if (town.NationId != 0)
+				targetBaseAttractLevel += (int)NationArray[town.NationId].reputation;
 
 			//---- scan all workers, see if any of them want to worker_migrate ----//
 
@@ -3780,7 +3780,7 @@ public abstract class Firm
 
 				Worker worker = workers[workerId - 1];
 
-				if (worker.town_recno == town.town_recno)
+				if (worker.town_recno == town.TownId)
 					continue;
 
 				int raceId = worker.race_id;
@@ -3788,30 +3788,30 @@ public abstract class Firm
 
 				//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
 
-				if (town.race_pop_array[raceId - 1] < workerTown.race_pop_array[raceId - 1] / 2)
+				if (town.RacesPopulation[raceId - 1] < workerTown.RacesPopulation[raceId - 1] / 2)
 					continue;
 
 				//-- do not migrate if the target town might not be a place this worker will stay --//
 
 				if (ConfigAdv.firm_migrate_stricter_rules &&
-				    town.race_loyalty_array[raceId - 1] < 40) // < 40 is considered as negative force
+				    town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
 					continue;
 
 				//------ calc the current and target attractiveness level ------//
 
 				int curBaseAttractLevel;
-				if (workerTown.nation_recno != 0)
-					curBaseAttractLevel = (int)NationArray[workerTown.nation_recno].reputation;
+				if (workerTown.NationId != 0)
+					curBaseAttractLevel = (int)NationArray[workerTown.NationId].reputation;
 				else
 					curBaseAttractLevel = 0;
 
-				int targetAttractLevel = targetBaseAttractLevel + town.race_harmony(raceId);
+				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
 
 				if (targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL)
 					continue;
 
 				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-				int curAttractLevel = curBaseAttractLevel + workerTown.race_harmony(raceId) + (worker.loyalty() - 40);
+				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.loyalty() - 40);
 
 				if (ConfigAdv.firm_migrate_stricter_rules
 					    ? targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL / 2
@@ -3819,7 +3819,7 @@ public abstract class Firm
 				{
 					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);
 
-					worker_migrate(workerId, town.town_recno, newLoyalty);
+					worker_migrate(workerId, town.TownId, newLoyalty);
 					return;
 				}
 			}
@@ -3836,10 +3836,10 @@ public abstract class Firm
 
 		//------------- add news --------------//
 
-		if (srcTown.nation_recno == NationArray.player_recno || destTown.nation_recno == NationArray.player_recno)
+		if (srcTown.NationId == NationArray.player_recno || destTown.NationId == NationArray.player_recno)
 		{
-			if (srcTown.nation_recno != destTown.nation_recno) // don't add news for migrating between own towns 
-				NewsArray.migrate(srcTown.town_recno, destTownRecno, raceId, 1, firm_recno);
+			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
+				NewsArray.migrate(srcTown.TownId, destTownRecno, raceId, 1, firm_recno);
 		}
 
 		//--------- migrate now ----------//
@@ -3848,11 +3848,11 @@ public abstract class Firm
 
 		//--------- decrease the population of the home town ------//
 
-		srcTown.dec_pop(raceId, true);
+		srcTown.DecPopulation(raceId, true);
 
 		//--------- increase the population of the target town ------//
 
-		destTown.inc_pop(raceId, true, newLoyalty);
+		destTown.IncPopulation(raceId, true, newLoyalty);
 	}
 
 	protected void process_independent_town_worker()
@@ -3864,13 +3864,13 @@ public abstract class Firm
 		{
 			Town town = TownArray[worker.town_recno];
 
-			if (town.nation_recno == 0) // if it's an independent town
+			if (town.NationId == 0) // if it's an independent town
 			{
-				town.race_resistance_array[worker.race_id - 1, nation_recno - 1] -=
+				town.RacesResistance[worker.race_id - 1, nation_recno - 1] -=
 					GameConstants.RESISTANCE_DECREASE_PER_WORKER;
 
-				if (town.race_resistance_array[worker.race_id - 1, nation_recno - 1] < 0.0)
-					town.race_resistance_array[worker.race_id - 1, nation_recno - 1] = 0.0;
+				if (town.RacesResistance[worker.race_id - 1, nation_recno - 1] < 0.0)
+					town.RacesResistance[worker.race_id - 1, nation_recno - 1] = 0.0;
 			}
 		}
 	}
@@ -3889,14 +3889,14 @@ public abstract class Firm
 
 		//------------ add the unit now ----------------//
 
-		int unitNationRecno = townRecno != 0 ? TownArray[townRecno].nation_recno : nation_recno;
+		int unitNationRecno = townRecno != 0 ? TownArray[townRecno].NationId : nation_recno;
 
 		Unit unit = UnitArray.AddUnit(unitId, unitNationRecno, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
 
 		//----- update the population of the town ------//
 
 		if (townRecno != 0)
-			TownArray[townRecno].dec_pop(unit.race_id, unitHasJob);
+			TownArray[townRecno].DecPopulation(unit.race_id, unitHasJob);
 
 		return unit.sprite_recno;
 	}

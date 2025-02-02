@@ -150,20 +150,20 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.nation_recno == 0)
+			if (town.NationId == 0)
 				combatNeeded += 1000;
 
 			//------- this is its own town -------//
 
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 			{
-				if (town.should_ai_migrate()) // no need for this if this town is going to migrate
+				if (town.ShouldAIMigrate()) // no need for this if this town is going to migrate
 					continue;
 
-				combatNeeded += town.population * 10; // 30 people need 300 combat levels
+				combatNeeded += town.Population * 10; // 30 people need 300 combat levels
 
-				if (town.is_base_town)
-					combatNeeded += town.population * 10; // double the combat level need for base town
+				if (town.IsBaseTown)
+					combatNeeded += town.Population * 10; // double the combat level need for base town
 			}
 		}
 
@@ -182,7 +182,7 @@ public class FirmCamp : Firm
 		for (int i = 0; i < linked_town_array.Count; i++)
 		{
 			Town town = TownArray[linked_town_array[i]];
-			if (town.nation_recno == 0)
+			if (town.NationId == 0)
 			{
 				return true;
 			}
@@ -824,7 +824,7 @@ public class FirmCamp : Firm
 
 			//---- don't try to capture other nation's towns unless the AI is at war or tense with the nation ----//
 
-			if (town.nation_recno != 0 && ownNation.get_relation_status(town.nation_recno) <= NationBase.NATION_TENSE)
+			if (town.NationId != 0 && ownNation.get_relation_status(town.NationId) <= NationBase.NATION_TENSE)
 			{
 				continue;
 			}
@@ -1055,10 +1055,10 @@ public class FirmCamp : Firm
 
 			if (linked_town_enable_array[i] == InternalConstants.LINK_EE)
 			{
-				if (town.nation_recno != 0)
-					town.update_target_loyalty();
+				if (town.NationId != 0)
+					town.UpdateTargetLoyalty();
 				else
-					town.update_target_resistance();
+					town.UpdateTargetResistance();
 			}
 		}
 	}
@@ -1103,13 +1103,13 @@ public class FirmCamp : Firm
 		for (int i = 0; i < linked_town_array.Count; i++)
 		{
 			Town town = TownArray[linked_town_array[i]];
-			if (town.nation_recno == 0 || town.nation_recno == nation_recno)
+			if (town.NationId == 0 || town.NationId == nation_recno)
 			{
 				shouldClose = false;
 				break;
 			}
 
-			NationRelation nationRelation = ownNation.get_relation(town.nation_recno);
+			NationRelation nationRelation = ownNation.get_relation(town.NationId);
 			if (nationRelation.status < NationBase.NATION_NEUTRAL)
 			{
 				shouldClose = false;
@@ -1259,10 +1259,10 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.nation_recno != nation_recno || town.jobless_population == 0)
+			if (town.NationId != nation_recno || town.JoblessPopulation == 0)
 				continue;
 
-			if (!town.can_recruit_people())
+			if (!town.CanRecruitPeople())
 				continue;
 
 			//-- recruit majority race first, but will also consider other races --//
@@ -1276,23 +1276,23 @@ public class FirmCamp : Firm
 
 				//--- if the loyalty is too low, reward before recruiting ---//
 
-				if (town.jobless_race_pop_array[raceId - 1] > 0 && town.race_loyalty_array[raceId - 1] < 40)
+				if (town.RacesJoblessPopulation[raceId - 1] > 0 && town.RacesLoyalty[raceId - 1] < 40)
 				{
-					if (town.accumulated_reward_penalty > 30) // if the reward penalty is too high, don't reward
+					if (town.AccumulatedRewardPenalty > 30) // if the reward penalty is too high, don't reward
 						break;
 
 					if (NationArray[nation_recno].cash < 1000) // must have cash to reward
 						break;
 
-					town.reward(InternalConstants.COMMAND_AI);
+					town.Reward(InternalConstants.COMMAND_AI);
 				}
 
 				//---- recruit the soldiers we needed ----//
 
-				while (town.can_recruit(raceId))
+				while (town.CanRecruit(raceId))
 				{
 					// last 1-force pulling people from the town to the firm
-					pull_town_people(town.town_recno, InternalConstants.COMMAND_AI, raceId, true);
+					pull_town_people(town.TownId, InternalConstants.COMMAND_AI, raceId, true);
 
 					if (--recruitCount == 0)
 						return 1;
@@ -1310,7 +1310,7 @@ public class FirmCamp : Firm
 
 			Town linkedTown = TownArray[linked_town_array[i]];
 
-			if (linkedTown.nation_recno == nation_recno)
+			if (linkedTown.NationId == nation_recno)
 			{
 				linkedToOurTown = true;
 				break;
@@ -1350,7 +1350,7 @@ public class FirmCamp : Firm
 
 			Town town = TownArray[ai_capture_town_recno];
 
-			if (attackerUnit.action_x_loc == town.loc_x1 && attackerUnit.action_y_loc == town.loc_y1)
+			if (attackerUnit.action_x_loc == town.X1Loc && attackerUnit.action_y_loc == town.Y1Loc)
 				shouldAttackUnit = true;
 		}
 
@@ -1462,13 +1462,13 @@ public class FirmCamp : Firm
 
 			//--- only change links to foreign towns, links to own towns are always on ---//
 
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 				continue;
 
 			//---- only enable links to non-friendly towns ----//
 
-			bool enableFlag = town.nation_recno == 0 ||
-			                  ownNation.get_relation(town.nation_recno).status == NationBase.NATION_HOSTILE;
+			bool enableFlag = town.NationId == 0 ||
+			                  ownNation.get_relation(town.NationId).status == NationBase.NATION_HOSTILE;
 
 			toggle_town_link(i + 1, enableFlag, InternalConstants.COMMAND_AI);
 		}
@@ -1489,7 +1489,7 @@ public class FirmCamp : Firm
 		Town targetTown = TownArray[targetTownRecno];
 		Nation ownNation = NationArray[nation_recno];
 
-		if (targetTown.nation_recno != 0)
+		if (targetTown.NationId != 0)
 		{
 			//--- if there are any defenses (camps and mobile units) on the target town, destroy them all first -----//
 
@@ -1506,30 +1506,30 @@ public class FirmCamp : Firm
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
-			if (targetTown.race_pop_array[i] < 5) // if the pop count is lower than 5, ingore it
+			if (targetTown.RacesPopulation[i] < 5) // if the pop count is lower than 5, ingore it
 				continue;
 
-			if (targetTown.nation_recno != 0)
+			if (targetTown.NationId != 0)
 			{
-				thisResistance = targetTown.race_loyalty_array[i];
+				thisResistance = targetTown.RacesLoyalty[i];
 				resistanceDiff = thisResistance - GameConstants.MIN_NATION_DEFEND_LOYALTY;
 			}
 			else
 			{
-				thisResistance = targetTown.race_resistance_array[i, nation_recno - 1];
+				thisResistance = targetTown.RacesResistance[i, nation_recno - 1];
 				resistanceDiff = thisResistance - GameConstants.MIN_INDEPENDENT_DEFEND_LOYALTY;
 			}
 
 			if (resistanceDiff >= 0)
 			{
 				// resistance decrease per new defender
-				double resistanceDecPerDefender = thisResistance / targetTown.race_pop_array[i];
+				double resistanceDecPerDefender = thisResistance / targetTown.RacesPopulation[i];
 
 				// no. of defenders will go out if you attack this town
 				int defenderCount = Convert.ToInt32(resistanceDiff / resistanceDecPerDefender) + 1;
 
 				// *2 is defenseCombatLevel is actually the sum of hit points, not combat level
-				defenseCombatLevel += targetTown.town_combat_level * 2 * defenderCount;
+				defenseCombatLevel += targetTown.TownCombatLevel * 2 * defenderCount;
 			}
 		}
 
@@ -1539,7 +1539,7 @@ public class FirmCamp : Firm
 		if (defenseCombatLevel > 0)	// && ownNation.pref_spy >= 50 && misc.random(3)==0 )
 		{
 			// if the camp is trying to capture an independent town, the leadership and race id. of the overseer matters.
-			if (targetTown.nation_recno == 0)
+			if (targetTown.NationId == 0)
 			{
 				// a better general is being assigned to this firm, wait for it
 				if (think_assign_better_overseer(targetTown))
@@ -1568,9 +1568,9 @@ public class FirmCamp : Firm
 		}
 
 		bool hasLinkedEnemyCamps = false;
-		for (int j = 0; j < targetTown.linked_firm_array.Count; j++)
+		for (int j = 0; j < targetTown.LinkedFirms.Count; j++)
 		{
-			Firm linkedFirm = FirmArray[targetTown.linked_firm_array[j]];
+			Firm linkedFirm = FirmArray[targetTown.LinkedFirms[j]];
 			if (linkedFirm.nation_recno != nation_recno && linkedFirm.firm_id == FIRM_CAMP)
 			{
 				hasLinkedEnemyCamps = true;
@@ -1579,8 +1579,8 @@ public class FirmCamp : Firm
 		}
 
 		//If no other kingdom tries to capture this village, we will wait
-		int averageResistance = targetTown.average_resistance(nation_recno);
-		int averageTargetResistance = targetTown.average_target_resistance(nation_recno);
+		int averageResistance = targetTown.AverageResistance(nation_recno);
+		int averageTargetResistance = targetTown.AverageTargetResistance(nation_recno);
 		if (!hasLinkedEnemyCamps && (averageResistance > 25 || averageResistance > averageTargetResistance))
 			return;
 
@@ -1588,7 +1588,7 @@ public class FirmCamp : Firm
 
 		bool rc;
 
-		if (targetTown.nation_recno != 0)
+		if (targetTown.NationId != 0)
 			rc = ai_capture_enemy_town(targetTown, defenseCombatLevel);
 		else
 			rc = ai_capture_independent_town(targetTown, defenseCombatLevel);
@@ -1603,7 +1603,7 @@ public class FirmCamp : Firm
 
 			//--- as the current commander has been out to attack the town by ai_attack_target(), we need to assign him back to the camp for influencing the town and eventually capture it ---//
 
-			if (overseer_recno == 0 && targetTown.nation_recno != 0 && patrol_unit_array.Count > 0)
+			if (overseer_recno == 0 && targetTown.NationId != 0 && patrol_unit_array.Count > 0)
 				UnitArray[patrol_unit_array[0]].assign(loc_x1, loc_y1);
 		}
 	}
@@ -1622,7 +1622,7 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[ai_capture_town_recno];
 
-			if (town.nation_recno == nation_recno) // the town has been captured
+			if (town.NationId == nation_recno) // the town has been captured
 				returnCamp = true;
 		}
 
@@ -1672,14 +1672,14 @@ public class FirmCamp : Firm
 
 		int mostRaceId1, mostRaceId2;
 
-		targetTown.get_most_populated_race(out mostRaceId1, out mostRaceId2);
+		targetTown.GetMostPopulatedRace(out mostRaceId1, out mostRaceId2);
 
 		//-- if the resistance of the majority race has already dropped to its lowest possible --//
-		if (mostRaceId1 != 0 && think_assign_better_overseer2(targetTown.town_recno, mostRaceId1))
+		if (mostRaceId1 != 0 && think_assign_better_overseer2(targetTown.TownId, mostRaceId1))
 			return true;
 
 		//-- if the resistance of the 2nd majority race has already dropped to its lowest possible --//
-		if (mostRaceId2 != 0 && think_assign_better_overseer2(targetTown.town_recno, mostRaceId2))
+		if (mostRaceId2 != 0 && think_assign_better_overseer2(targetTown.TownId, mostRaceId2))
 			return true;
 
 		return false;
@@ -1695,7 +1695,7 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[overseer_recno];
 			if (unit.race_id == raceId)
-				currentTargetResistance = 100 - town.camp_influence(overseer_recno);
+				currentTargetResistance = 100 - town.CampInfluence(overseer_recno);
 		}
 
 		int targetResistance = 100;
@@ -1741,7 +1741,7 @@ public class FirmCamp : Firm
 
 		Town town = TownArray[ai_capture_town_recno];
 
-		if (town.town_defender_count > 0)
+		if (town.DefendersCount > 0)
 		{
 			for (int i = patrol_unit_array.Count; i > 0; i--)
 			{
@@ -1754,17 +1754,17 @@ public class FirmCamp : Firm
 
 		//--- if the town is still not captured but all mobile town defenders are destroyed, attack the town again ---//
 
-		if (town.town_defender_count == 0)
+		if (town.DefendersCount == 0)
 		{
 			//----- have one of the units attack the town ----//
 
-			if (town.nation_recno != 0)
-				NationArray[nation_recno].set_relation_should_attack(town.nation_recno, true,
+			if (town.NationId != 0)
+				NationArray[nation_recno].set_relation_should_attack(town.NationId, true,
 					InternalConstants.COMMAND_AI);
 
 			List<int> selectedUnits = new List<int>(1);
 			selectedUnits.Add(patrol_unit_array[Misc.Random(patrol_unit_array.Count)]);
-			UnitArray.attack(town.loc_x1, town.loc_y1, false, selectedUnits,
+			UnitArray.attack(town.X1Loc, town.Y1Loc, false, selectedUnits,
 				InternalConstants.COMMAND_AI, 0);
 		}
 	}
@@ -1785,15 +1785,15 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 				continue;
 
 			//------- if it's an independent town -------//
 
-			if (town.nation_recno == 0) // only capture independent town
+			if (town.NationId == 0) // only capture independent town
 			{
-				curResistance = town.average_resistance(nation_recno);
-				curTargetResistance = town.average_target_resistance(nation_recno);
+				curResistance = town.AverageResistance(nation_recno);
+				curTargetResistance = town.AverageTargetResistance(nation_recno);
 
 				resistanceDec = curResistance - curTargetResistance;
 
@@ -1803,19 +1803,19 @@ public class FirmCamp : Firm
 				// if it's less than 5, don't count it, as that it will be easy to attack
 				if (resistanceDec > 0 &&
 				    curResistance > 25 - 25 * ownNation.pref_peacefulness / 100 &&
-				    town.race_pop_array[overseerRaceId - 1] >= 5)
+				    town.RacesPopulation[overseerRaceId - 1] >= 5)
 				{
 					continue; // let it decrease until it can no longer decrease
 				}
 			}
 			else //-------- if it's a nation town ---------//
 			{
-				NationRelation nationRelation = ownNation.get_relation(town.nation_recno);
+				NationRelation nationRelation = ownNation.get_relation(town.NationId);
 
 				if (nationRelation.status != NationBase.NATION_HOSTILE)
 					continue;
 
-				curResistance = town.average_loyalty();
+				curResistance = town.AverageLoyalty();
 			}
 
 			//--------------------------------------//
@@ -1823,7 +1823,7 @@ public class FirmCamp : Firm
 			if (curResistance < minResistance)
 			{
 				minResistance = curResistance;
-				bestTownRecno = town.town_recno;
+				bestTownRecno = town.TownId;
 			}
 		}
 
@@ -1834,7 +1834,7 @@ public class FirmCamp : Firm
 	{
 		//---- attack the target town if the force is strong enough ----//
 
-		if (NationArray[nation_recno].ai_attack_target(targetTown.loc_x1, targetTown.loc_y1,
+		if (NationArray[nation_recno].ai_attack_target(targetTown.X1Loc, targetTown.Y1Loc,
 			    defenseCombatLevel, false, 0, firm_recno))
 			return true;
 
@@ -1846,7 +1846,7 @@ public class FirmCamp : Firm
 		bool useAllCamp = false;
 
 		Nation ownNation = NationArray[nation_recno];
-		Nation targetNation = NationArray[targetTown.nation_recno];
+		Nation targetNation = NationArray[targetTown.NationId];
 
 		int ourMilitary = ownNation.military_rank_rating();
 		int enemyMilitary = targetNation.military_rank_rating();
@@ -1867,7 +1867,7 @@ public class FirmCamp : Firm
 			}
 		}
 
-		return NationArray[nation_recno].ai_attack_target(targetTown.loc_x1, targetTown.loc_y1,
+		return NationArray[nation_recno].ai_attack_target(targetTown.X1Loc, targetTown.Y1Loc,
 			defenseCombatLevel, false, 0, firm_recno, useAllCamp);
 	}
 
@@ -1880,14 +1880,14 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.nation_recno == nation_recno)
+			if (town.NationId == nation_recno)
 				continue;
 
-			if (town.accumulated_enemy_grant_penalty > 0)
+			if (town.AccumulatedEnemyGrantPenalty > 0)
 				continue;
 
-			if (town.can_grant_to_non_own_town(nation_recno))
-				town.grant_to_non_own_town(nation_recno, InternalConstants.COMMAND_AI);
+			if (town.CanGrantToNonOwnTown(nation_recno))
+				town.GrantToNonOwnTown(nation_recno, InternalConstants.COMMAND_AI);
 		}
 
 		return true;
@@ -2042,16 +2042,16 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.closest_own_camp() == firm_recno)
-				return town.majority_race();
+			if (town.ClosestOwnCamp() == firm_recno)
+				return town.MajorityRace();
 		}
 
 		//----- check if this camp is trying to capture an independent town ---//
 
 		int targetTownRecno = think_capture_target_town();
 
-		if (targetTownRecno != 0 && TownArray[targetTownRecno].nation_recno == 0)
-			return TownArray[targetTownRecno].majority_race();
+		if (targetTownRecno != 0 && TownArray[targetTownRecno].NationId == 0)
+			return TownArray[targetTownRecno].MajorityRace();
 
 		//----- Otherwise return the majority race of this camp -----//
 

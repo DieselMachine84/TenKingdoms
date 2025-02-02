@@ -212,17 +212,17 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Town town in TownArray)
 		{
-			if (town.nation_recno != 0)
+			if (town.NationId != 0)
 			{
-				Nation nation = this[town.nation_recno];
+				Nation nation = this[town.NationId];
 
-				nation.total_population += town.population;
-				nation.total_jobless_population += town.jobless_population;
+				nation.total_population += town.Population;
+				nation.total_jobless_population += town.JoblessPopulation;
 
-				if (town.population > nation.largest_town_pop)
+				if (town.Population > nation.largest_town_pop)
 				{
-					nation.largest_town_pop = town.population;
-					nation.largest_town_recno = town.town_recno;
+					nation.largest_town_pop = town.Population;
+					nation.largest_town_recno = town.TownId;
 				}
 			}
 			else
@@ -233,7 +233,7 @@ public class NationArray : DynArray<Nation>
 
 				for (int j = 0; j < GameConstants.MAX_RACE; j++)
 				{
-					if (town.race_pop_array[j] >= 6) // only count it if the pop of the race >= 6
+					if (town.RacesPopulation[j] >= 6) // only count it if the pop of the race >= 6
 						independent_town_count_race_array[j]++;
 				}
 			}
@@ -476,6 +476,7 @@ public class NationArray : DynArray<Nation>
 				if (nation.nation_type == NationBase.NATION_AI)
 				{
 					nation.process_ai();
+					//nation.ProcessAI();
 				}
 			}
 		}
