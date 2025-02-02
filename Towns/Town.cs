@@ -14,7 +14,7 @@ public class Town
 	public const int TOWN_TRAIN_BATCH_COUNT = 8;
 
 	
-	public int town_recno;
+	public int town_recno { get; private set; }
 	public int nation_recno;
 	public DateTime setup_date; // the setup date of this town
 
@@ -129,12 +129,11 @@ public class Town
 	{
 	}
 
-	public void Init(int nationRecno, int raceId, int xLoc, int yLoc)
+	public void Init(int townRecno, int nationRecno, int raceId, int xLoc, int yLoc)
 	{
+		town_recno = townRecno;
 		nation_recno = nationRecno;
 		race_id = raceId;
-
-		//err_when(raceId < 1 || raceId > GameConstants.MAX_RACE);
 
 		//---- set the town section's absolute positions on the map ----//
 
@@ -148,7 +147,6 @@ public class Town
 
 		region_id = World.get_region_id(center_x, center_y);
 
-		// nation_recno==0 for independent towns
 		ai_town = nation_recno == 0 || NationArray[nation_recno].nation_type == NationBase.NATION_AI;
 		ai_link_checked = true; // check the linked towns and firms connected only if ai_link_checked==0
 
@@ -228,13 +226,6 @@ public class Town
 
 	public void Deinit()
 	{
-		if (town_recno == 0)
-			return;
-
-		//--------- remove from town network ---------//
-
-		//town_network_array.town_destroyed(town_recno);
-
 		clear_defense_mode();
 
 		//------- if it's an AI town --------//
@@ -265,12 +256,6 @@ public class Town
 			TownArray.selected_recno = 0;
 			Info.disp();
 		}
-
-		//------- reset parameters ---------//
-
-		//TODO check
-		//town_recno = 0;
-		//town_network_recno = 0;
 	}
 
 	public void next_day()
@@ -689,7 +674,7 @@ public class Town
 			if (nation_recno == NationArray.player_recno)
 				NewsArray.town_abandoned(town_recno);
 
-			Deinit();
+			TownArray.DeleteTown(this);
 			return;
 		}
 
@@ -3156,10 +3141,6 @@ public class Town
 		if (nation_recno == newNationRecno)
 			return;
 
-		//--------- update town network (pre-step) ---------//
-		//town_network_array.town_pre_changing_nation(town_recno);
-
-
 		clear_defense_mode();
 
 		//------------- stop all actions to attack this town ------------//
@@ -3183,14 +3164,10 @@ public class Town
 		World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, town_recno, 0); // restore power of the old nation
 		World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, newNationRecno); // set power of the new nation
 
-		//--- update the cloaked_nation_recno of all spies in the firm ---//
-
-		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, town_recno, nation_recno,
-			newNationRecno); // check the cloaked nation recno of all spies in the firm
+		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, town_recno, nation_recno, newNationRecno);
 
 		//--------- set nation_recno --------//
 
-		int oldNationRecno = nation_recno;
 		nation_recno = newNationRecno;
 
 		if (nation_recno != 0) // reset rebel_recno if the town is then ruled by a nation
@@ -3226,7 +3203,9 @@ public class Town
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			if (nation_recno == 0) // independent town set up by rebel
+			{
 				race_loyalty_array[i] = 80; // this affect the no. of defender if you attack the independent town
+			}
 			else
 			{
 				if (nationRaceId == i + 1)
@@ -3279,10 +3258,7 @@ public class Town
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
 		SpyArray.set_action_mode(Spy.SPY_TOWN, town_recno, Spy.SPY_IDLE);
-
-		//--------- update town network (post-step) ---------//
-		//town_network_array.town_post_changing_nation(town_recno, newNationRecno);
-
+		
 		//-------- refresh display ----------//
 
 		if (TownArray.selected_recno == town_recno)
@@ -3984,7 +3960,8 @@ public class Town
 
 	public void surrender(int toNationRecno)
 	{
-		//--- if this is a rebel town and the mobile rebel count is > 0, don't surrender (this function can be called by update_resistance() when resistance drops to zero ---//
+		// if this is a rebel town and the mobile rebel count is > 0, don't surrender
+		// this function can be called by update_resistance() when resistance drops to zero
 
 		if (rebel_recno != 0)
 		{
@@ -3996,17 +3973,14 @@ public class Town
 
 		//----------------------------------------//
 
-		if (nation_recno == NationArray.player_recno ||
-		    toNationRecno == NationArray.player_recno)
+		if (nation_recno == NationArray.player_recno || toNationRecno == NationArray.player_recno)
 		{
 			NewsArray.town_surrendered(town_recno, toNationRecno);
-			// ##### begin Gilbert 9/10 ######//
-			// sound effect
 			if (toNationRecno == NationArray.player_recno)
 			{
+				// sound effect
 				SECtrl.immediate_sound("GET_TOWN");
 			}
-			// ##### end Gilbert 9/10 ######//
 		}
 
 		set_nation(toNationRecno);

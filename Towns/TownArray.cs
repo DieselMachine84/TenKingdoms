@@ -32,9 +32,8 @@ public class TownArray : DynArray<Town>
 	public Town AddTown(int nationRecno, int raceId, int xLoc, int yLoc)
 	{
 		Town town = CreateNew();
-		town.town_recno = nextRecNo;
+		town.Init(nextRecNo, nationRecno, raceId, xLoc, yLoc);
 		nextRecNo++;
-		town.Init(nationRecno, raceId, xLoc, yLoc);
 
 		NationArray.update_statistic(); // update largest_town_recno
 
@@ -43,9 +42,8 @@ public class TownArray : DynArray<Town>
 
 	public void DeleteTown(Town town)
 	{
-		int townRecno = town.town_recno;
 		town.Deinit();
-		Delete(townRecno);
+		Delete(town.town_recno);
 
 		NationArray.update_statistic();
 	}
@@ -63,22 +61,9 @@ public class TownArray : DynArray<Town>
 	{
 		var dayFrameNumber = Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY;
 
-		//----- call Town::next_day --------//
-		List<Town> townsToDelete = new List<Town>();
-
 		foreach (Town town in this)
 		{
-			//------- if all the population are gone --------//
-
-			if (town.population == 0)
-			{
-				townsToDelete.Add(town);
-				continue;
-			}
-
-			//-------------------------------//
-
-			// only process each firm once per day
+			// only process each town once per day
 			if (town.town_recno % InternalConstants.FRAMES_PER_DAY == dayFrameNumber)
 			{
 				if (town.nation_recno == 0)
@@ -98,11 +83,6 @@ public class TownArray : DynArray<Town>
 
 				town.next_day();
 			}
-		}
-
-		foreach (Town town in townsToDelete)
-		{
-			DeleteTown(town);
 		}
 
 		//------ distribute demand -------//
