@@ -31,35 +31,35 @@ public class FirmHarbor : Firm
 	{
 	}
 
-	public override void init(int xLoc, int yLoc, int nationRecno, int firmId, string buildCode = "", int builderRecno = 0)
+	public override void init(int firmRecno, int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
 	{
 		// ignore raceId and find north, south, west or east harbor
 
 		if (World.get_loc(xLoc + 1, yLoc + 2).can_build_harbor(1))
 		{
 			// check north harbour
-			base.init(xLoc, yLoc, nationRecno, firmId, "N", builderRecno);
+			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
 			land_region_id = World.get_loc(xLoc + 1, yLoc + 2).region_id;
 			sea_region_id = World.get_loc(xLoc + 1, yLoc).region_id;
 		}
 		else if (World.get_loc(xLoc + 1, yLoc).can_build_harbor(1))
 		{
 			// check south harbour
-			base.init(xLoc, yLoc, nationRecno, firmId, "S", builderRecno);
+			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
 			land_region_id = World.get_loc(xLoc + 1, yLoc).region_id;
 			sea_region_id = World.get_loc(xLoc + 1, yLoc + 2).region_id;
 		}
 		else if (World.get_loc(xLoc + 2, yLoc + 1).can_build_harbor(1))
 		{
 			// check west harbour
-			base.init(xLoc, yLoc, nationRecno, firmId, "W", builderRecno);
+			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
 			land_region_id = World.get_loc(xLoc + 2, yLoc + 1).region_id;
 			sea_region_id = World.get_loc(xLoc, yLoc + 1).region_id;
 		}
 		else if (World.get_loc(xLoc, yLoc + 1).can_build_harbor(1))
 		{
 			// check east harbour
-			base.init(xLoc, yLoc, nationRecno, firmId, "E", builderRecno);
+			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
 			land_region_id = World.get_loc(xLoc, yLoc + 1).region_id;
 			sea_region_id = World.get_loc(xLoc + 2, yLoc + 1).region_id;
 		}

@@ -74,10 +74,8 @@ public class FirmArray : DynArray<Firm>
 		//---------- create and build the firm -------------//
 
 		Firm firm = CreateNew(firmId);
-		firm.firm_recno = nextRecNo;
+		firm.init(nextRecNo, nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
 		nextRecNo++;
-
-		firm.init(xLoc, yLoc, nationRecno, firmId, buildCode, builderRecno);
 
 		//------ pay the land cost to the nation that owns the land ------//
 
@@ -91,9 +89,8 @@ public class FirmArray : DynArray<Firm>
 
 	public void DeleteFirm(Firm firm)
 	{
-		int firmRecno = firm.firm_recno;
 		firm.deinit(); // we must call deinit() first
-		Delete(firmRecno);
+		Delete(firm.firm_recno);
 	}
 
 	public void DeleteFirm(int recno)

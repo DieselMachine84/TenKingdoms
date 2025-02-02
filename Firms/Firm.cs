@@ -28,7 +28,7 @@ public abstract class Firm
 
 	public int firm_id; // Firm ID, meanings are defined in OFIRMID.H
 	public int firm_build_id;
-	public int firm_recno; // record no. of this firm in the firm_array
+	public int firm_recno { get; private set; } // record no. of this firm in the firm_array
 	public bool firm_ai; // whether Computer AI control this firm or not
 
 	// some ai actions are processed once only in the processing day. To prevent multiple checking in the processing day
@@ -139,8 +139,7 @@ public abstract class Firm
 	{
 	}
 
-	public virtual void init(int xLoc, int yLoc, int nationRecno, int firmId,
-		string buildCode = "", int builderRecno = 0)
+	public virtual void init(int firmRecno, int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
 	{
 		FirmInfo firmInfo = FirmRes[firmId];
 
@@ -153,6 +152,7 @@ public abstract class Firm
 
 		//----------- set vars -------------//
 
+		firm_recno = firmRecno;
 		nation_recno = nationRecno;
 		setup_date = Info.game_date;
 
@@ -258,9 +258,6 @@ public abstract class Firm
 
 	public virtual void deinit()
 	{
-		if (firm_recno == 0) // already deleted
-			return;
-
 		deinit_derived();
 
 		remove_firm = true; // set static parameter
@@ -328,8 +325,6 @@ public abstract class Firm
 
 		//-------------------------------------------------//
 
-		//TODO check
-		//firm_recno = 0;
 		remove_firm = false; // reset static parameter
 	}
 
@@ -1325,7 +1320,7 @@ public abstract class Firm
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
 		SpyArray.set_action_mode(Spy.SPY_FIRM, firm_recno, Spy.SPY_IDLE);
-
+		
 		//-- refresh display if this firm is currently selected --//
 
 		if (FirmArray.selected_recno == firm_recno)
