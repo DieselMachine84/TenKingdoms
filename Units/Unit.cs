@@ -3556,7 +3556,7 @@ public class Unit : Sprite
 	//--------------- die actions --------------//
 	public bool is_unit_dead()
 	{
-		return (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE);
+		return (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE);
 	}
 
 	//------------ movement action -----------------//
@@ -5012,13 +5012,18 @@ public class Unit : Sprite
 		const double ONE_OVER_ATTACK_SLOW_DOWN = 1.0 / (double)InternalConstants.ATTACK_SLOW_DOWN;
 		const double COMPARE_POINT = DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN + ONE_OVER_ATTACK_SLOW_DOWN;
 
+		if (attackDamage >= COMPARE_POINT)
+			targetUnit.hit_points -= attackDamage - DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN;
+		else
+			targetUnit.hit_points -= Math.Min(attackDamage, ONE_OVER_ATTACK_SLOW_DOWN);  // in case attackDamage = 0, no hit_point is reduced
+		
 		Nation parentNation = parentNationRecno != 0 ? NationArray[parentNationRecno] : null;
 		Nation targetNation = targetNationRecno != 0 ? NationArray[targetNationRecno] : null;
 		int targetUnitClass = UnitRes[targetUnit.unit_id].unit_class;
 
-		if (targetUnit.hit_points <= 0)
+		if (targetUnit.hit_points <= 0.0)
 		{
-			targetUnit.hit_points = 0;
+			targetUnit.hit_points = 0.0;
 
 			//---- if the unit killed is a human unit -----//
 
@@ -5262,7 +5267,7 @@ public class Unit : Sprite
 
 		targetFirm.hit_points -= attackDamage / 3.0; // /3 so that it takes longer to destroy a firm
 
-		if (targetFirm.hit_points <= 0)
+		if (targetFirm.hit_points <= 0.0)
 		{
 			targetFirm.hit_points = 0.0;
 
@@ -5676,7 +5681,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		if (UnitArray.IsDeleted(shipRecno))
@@ -5772,7 +5777,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// change to move_to if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 		{
 			move_to(destX, destY, 1);
 			finalDestX = finalDestY = -1;
@@ -5875,7 +5880,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		//----------------------------------------------------------------//
@@ -5998,7 +6003,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		//----------------------------------------------------------------//
@@ -6125,7 +6130,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		//---------- no settle for non-human -----------//
@@ -6203,7 +6208,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		//----------- BUGHERE : cannot assign when on a ship -----------//
@@ -6449,7 +6454,7 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 			return;
 
 		//if(!remoteAction && remote.is_enable() )
@@ -7223,10 +7228,10 @@ public class Unit : Sprite
 
 	public void change_hit_points(double changePoints)
 	{
-		hit_points += (int)changePoints;
+		hit_points += changePoints;
 
-		if (hit_points < 0)
-			hit_points = 0;
+		if (hit_points < 0.0)
+			hit_points = 0.0;
 
 		if (hit_points > max_hit_points)
 			hit_points = max_hit_points;
@@ -8468,7 +8473,7 @@ public class Unit : Sprite
 		int numOfPath = 1, int reuseMode = SeekPathReuse.GENERAL_GROUP_MOVEMENT, int pathReuseStatus = 0)
 	{
 		if (destXLoc < 0 || destXLoc >= GameConstants.MapSize || destYLoc < 0 || destYLoc >= GameConstants.MapSize ||
-		    hit_points <= 0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE ||
+		    hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE ||
 		    searchMode <= 0 || searchMode > SeekPath.MAX_SEARCH_MODE_TYPE)
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
@@ -14070,16 +14075,13 @@ public class Unit : Sprite
 				// Even when caravans are not paid, they still stay in your service.
 				if (UnitRes[unit_id].unit_class != UnitConstants.UNIT_CLASS_CARAVAN)
 				{
-					if (hit_points > 0)
+					if (hit_points > 0.0)
 					{
 						hit_points--;
 
-						if (hit_points < 0)
-							hit_points = 0;
-
 						//--- when the hit points drop to zero and the unit is destroyed ---//
 
-						if (hit_points == 0)
+						if (hit_points <= 0.0)
 						{
 							if (nation_recno == NationArray.player_recno)
 							{
@@ -14091,6 +14093,8 @@ public class Unit : Sprite
 								else if (unitClass == UnitConstants.UNIT_CLASS_SHIP)
 									NewsArray.weapon_ship_worn_out(unit_id, 0);
 							}
+
+							hit_points = 0.0;
 						}
 					}
 				}
@@ -14100,7 +14104,7 @@ public class Unit : Sprite
 
 	protected void process_recover()
 	{
-		if (hit_points == 0 || hit_points == max_hit_points) // this unit is dead already
+		if (hit_points == 0.0 || hit_points == max_hit_points) // this unit is dead already
 			return;
 
 		//---- overseers in firms and ships in harbors recover faster ----//
