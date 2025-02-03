@@ -4,17 +4,19 @@ namespace TenKingdoms;
 
 public static class Renderer
 {
-    public const int WindowWidth = ZoomMapX + ZoomMapWidth * ZoomTextureWidth + 12 + MiniMapSize + 12;
-    public const int WindowHeight = ZoomMapY + ZoomMapHeight * ZoomTextureHeight;
+    public const int WindowWidth = ZoomMapX + ZoomMapWidth + 12 + MiniMapSize + 12;
+    public const int WindowHeight = ZoomMapY + ZoomMapHeight;
 
     private const int ZoomMapX = 0;
     private const int ZoomMapY = 56;
-    private const int ZoomMapWidth = 30; //width in cells
-    private const int ZoomMapHeight = 19; //width in cells
+    private const int ZoomMapLocWidth = 30; //width in cells
+    private const int ZoomMapLocHeight = 19; //width in cells
     public const int ZoomTextureWidth = 48;
     public const int ZoomTextureHeight = 48;
+    private const int ZoomMapWidth = ZoomMapLocWidth * ZoomTextureWidth;
+    private const int ZoomMapHeight = ZoomMapLocHeight * ZoomTextureHeight;
 
-    private const int MiniMapX = ZoomMapX + ZoomMapWidth * ZoomTextureWidth + 12;
+    private const int MiniMapX = ZoomMapX + ZoomMapLocWidth * ZoomTextureWidth + 12;
     private const int MiniMapY = ZoomMapY;
     private const int MiniMapSize = 400;
     
@@ -32,6 +34,8 @@ public static class Renderer
     private static int changedLocIndex;
     private static int screenSquareFrameCount = 0;
     private static int screenSquareFrameStep = 1;
+
+    private static int selectedUnitId = 0;
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
@@ -56,6 +60,14 @@ public static class Renderer
     {
         if (eventType == InputConstants.LeftMousePressed)
         {
+            if (x >= ZoomMapX && x < ZoomMapX + ZoomMapWidth && y >= ZoomMapY && y < ZoomMapY + ZoomMapHeight)
+            {
+                int xLoc = topLeftX + (x - ZoomMapX) / ZoomTextureWidth;
+                int yLoc = topLeftY + (y - ZoomMapY) / ZoomTextureHeight;
+                Location location = World.get_loc(xLoc, yLoc);
+                selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
+            }
+            
             if (x >= MiniMapX && x < MiniMapX + MiniMapSize && y >= MiniMapY && y < MiniMapY + MiniMapSize)
             {
                 int xLoc = x - MiniMapX;
@@ -73,17 +85,17 @@ public static class Renderer
                     yLoc *= Scale;
                 }
                 
-                topLeftX = xLoc - ZoomMapWidth / 2;
+                topLeftX = xLoc - ZoomMapLocWidth / 2;
                 if (topLeftX < 0)
                     topLeftX = 0;
-                if (topLeftX > GameConstants.MapSize - ZoomMapWidth)
-                    topLeftX = GameConstants.MapSize - ZoomMapWidth;
+                if (topLeftX > GameConstants.MapSize - ZoomMapLocWidth)
+                    topLeftX = GameConstants.MapSize - ZoomMapLocWidth;
 
-                topLeftY = yLoc - ZoomMapHeight / 2;
+                topLeftY = yLoc - ZoomMapLocHeight / 2;
                 if (topLeftY < 0)
                     topLeftY = 0;
-                if (topLeftY > GameConstants.MapSize - ZoomMapHeight)
-                    topLeftY = GameConstants.MapSize - ZoomMapHeight;
+                if (topLeftY > GameConstants.MapSize - ZoomMapLocHeight)
+                    topLeftY = GameConstants.MapSize - ZoomMapLocHeight;
             }
         }
     }
@@ -96,16 +108,16 @@ public static class Renderer
         lastFrame = Sys.Instance.FrameNumber;
         DrawMap(graphics);
         DrawMiniMap(graphics);
-        graphics.DrawMainScreen();
+        //graphics.DrawMainScreen();
     }
 
     private static void DrawMap(Graphics graphics)
     {
-        graphics.SetClipRectangle(ZoomMapX, ZoomMapY, ZoomMapX + ZoomMapWidth * ZoomTextureWidth, ZoomMapY + ZoomMapHeight * ZoomTextureHeight);
+        graphics.SetClipRectangle(ZoomMapX, ZoomMapY, ZoomMapX + ZoomMapLocWidth * ZoomTextureWidth, ZoomMapY + ZoomMapLocHeight * ZoomTextureHeight);
         
-        for (int x = topLeftX; (x < topLeftX + ZoomMapWidth) && x < GameConstants.MapSize; x++)
+        for (int x = topLeftX; (x < topLeftX + ZoomMapLocWidth) && x < GameConstants.MapSize; x++)
         {
-            for (int y = topLeftY; (y < topLeftY + ZoomMapHeight) && y < GameConstants.MapSize; y++)
+            for (int y = topLeftY; (y < topLeftY + ZoomMapLocHeight) && y < GameConstants.MapSize; y++)
             {
                 Location location = World.get_loc(x, y);
                 if (location.explored())
@@ -198,9 +210,9 @@ public static class Renderer
 
     private static void DrawPlants(Graphics graphics)
     {
-        for (int xLoc = topLeftX; (xLoc < topLeftX + ZoomMapWidth) && xLoc < GameConstants.MapSize; xLoc++)
+        for (int xLoc = topLeftX; (xLoc < topLeftX + ZoomMapLocWidth) && xLoc < GameConstants.MapSize; xLoc++)
         {
-            for (int yLoc = topLeftY; (yLoc < topLeftY + ZoomMapHeight) && yLoc < GameConstants.MapSize; yLoc++)
+            for (int yLoc = topLeftY; (yLoc < topLeftY + ZoomMapLocHeight) && yLoc < GameConstants.MapSize; yLoc++)
             {
                 Location location = World.get_loc(xLoc, yLoc);
                 if (location.explored() && location.is_plant())
@@ -218,9 +230,9 @@ public static class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapWidth)
+            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapHeight)
+            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapLocHeight)
                 continue;
             
             TownLayout townLayout = TownRes.get_layout(town.LayoutId);
@@ -236,9 +248,9 @@ public static class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapWidth)
+            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapHeight)
+            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapLocHeight)
                 continue;
             
             int townX = ZoomMapX + (town.X1Loc - topLeftX) * ZoomTextureWidth;
@@ -297,9 +309,9 @@ public static class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.loc_x2 < topLeftX || firm.loc_x1 > topLeftX + ZoomMapWidth)
+            if (firm.loc_x2 < topLeftX || firm.loc_x1 > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (firm.loc_y2 < topLeftY || firm.loc_y1 > topLeftY + ZoomMapHeight)
+            if (firm.loc_y2 < topLeftY || firm.loc_y1 > topLeftY + ZoomMapLocHeight)
                 continue;
 
             int firmX = ZoomMapX + (firm.loc_x1 - topLeftX) * ZoomTextureWidth;
@@ -406,9 +418,9 @@ public static class Renderer
         foreach (Unit unit in UnitArray)
         {
             //TODO check conditions for big units
-            if (unit.cur_x_loc() < topLeftX || unit.cur_x_loc() > topLeftX + ZoomMapWidth)
+            if (unit.cur_x_loc() < topLeftX || unit.cur_x_loc() > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (unit.cur_y_loc() < topLeftY || unit.cur_y_loc() > topLeftY + ZoomMapHeight)
+            if (unit.cur_y_loc() < topLeftY || unit.cur_y_loc() > topLeftY + ZoomMapLocHeight)
                 continue;
 
             SpriteFrame spriteFrame = unit.cur_sprite_frame(out bool needMirror);
@@ -416,14 +428,15 @@ public static class Renderer
             int unitY = ZoomMapY + unit.cur_y * 3 / 2 - topLeftY * ZoomTextureHeight + spriteFrame.offset_y;
 
             SpriteInfo spriteInfo = SpriteRes[unit.sprite_id];
+            bool isSelected = (unit.sprite_recno == selectedUnitId);
             if (needMirror)
             {
-                graphics.DrawBitmapFlip(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, false),
+                graphics.DrawBitmapFlip(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, isSelected),
                     spriteFrame.width, spriteFrame.height);
             }
             else
             {
-                graphics.DrawBitmap(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, false),
+                graphics.DrawBitmap(unitX, unitY, spriteFrame.GetUnitTexture(graphics, spriteInfo, unit.nation_recno, isSelected),
                     spriteFrame.width, spriteFrame.height);
             }
         }
@@ -652,19 +665,19 @@ public static class Renderer
 
         //Draw war points
         
-        DrawFrameOnMiniMap(graphics, topLeftX - 1, topLeftY - 1, ZoomMapWidth + 2, ZoomMapHeight + 2,
+        DrawFrameOnMiniMap(graphics, topLeftX - 1, topLeftY - 1, ZoomMapLocWidth + 2, ZoomMapLocHeight + 2,
             Colors.VGA_YELLOW + screenSquareFrameCount);
 
-        for (int x = topLeftX - 1; x < topLeftX - 1 + ZoomMapWidth + 2; x++)
+        for (int x = topLeftX - 1; x < topLeftX - 1 + ZoomMapLocWidth + 2; x++)
         {
             AddChangedLoc(x, topLeftY - 1);
-            AddChangedLoc(x, topLeftY + ZoomMapHeight);
+            AddChangedLoc(x, topLeftY + ZoomMapLocHeight);
         }
 
-        for (int y = topLeftY - 1; y < topLeftY - 1 + ZoomMapHeight + 2; y++)
+        for (int y = topLeftY - 1; y < topLeftY - 1 + ZoomMapLocHeight + 2; y++)
         {
             AddChangedLoc(topLeftX - 1, y);
-            AddChangedLoc(topLeftX + ZoomMapWidth, y);
+            AddChangedLoc(topLeftX + ZoomMapLocWidth, y);
         }
 
         if (Sys.Instance.Speed != 0)
