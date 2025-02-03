@@ -35,6 +35,7 @@ public static class GameConstants
     public const int MIN_INDEPENDENT_DEFEND_LOYALTY = 30;
     public const int SURRENDER_LOYALTY = 29;
     public const int REBEL_LOYALTY = 29;
+    public const int REBEL_INTERVAL_MONTH = 3; // don't rebel twice in less than 3 months
     public const int INDEPENDENT_LINK_RESISTANCE = 50;
     public const int TAX_PER_PERSON = 5;
     public const int COLLECT_TAX_LOYALTY_DECREASE = 10;
@@ -43,9 +44,15 @@ public static class GameConstants
     public const int IND_TOWN_GRANT_PER_PERSON = 30;
     public const int IND_TOWN_GRANT_RESISTANCE_DECREASE = 10;
     public const double RESISTANCE_DECREASE_PER_WORKER = 0.2;
+    // if the defender defeat the attackers and return the town with victory, the resistance will further increase
+    public const int RESISTANCE_INCREASE_DEFENDER = 2;
     public const int CITIZEN_COMBAT_LEVEL = 10;
     public const int CITIZEN_SKILL_LEVEL = 10;
     public const int CITIZEN_HIT_POINTS = 20;
+    public const int RECEIVED_HIT_PER_KILL = 200 / InternalConstants.ATTACK_SLOW_DOWN;
+    public const int MAX_MIGRATE_PER_DAY = 4; // don't migrate more than 4 units per day
+    public const int MIN_MIGRATE_ATTRACT_LEVEL = 30;
+    public const int TOWN_SCAN_ENEMY_RANGE = 6;
 
     //Firm
     public const int DEFAULT_MINE_MAX_STOCK_QTY = 500;
@@ -122,6 +129,9 @@ public static class InternalConstants
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;
+    public const int TOWN_MAX_TRAIN_QUEUE = 10;
+    // Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
+    public const int TOWN_TRAIN_BATCH_COUNT = 8;
     
     public const int EFFECTIVE_TOWN_TOWN_DISTANCE = 8;
     public const int EFFECTIVE_FIRM_TOWN_DISTANCE = 8;

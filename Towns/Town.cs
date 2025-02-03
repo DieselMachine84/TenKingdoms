@@ -5,15 +5,6 @@ namespace TenKingdoms;
 
 public class Town
 {
-	public const int RECEIVED_HIT_PER_KILL = 200 / InternalConstants.ATTACK_SLOW_DOWN;
-	public const int MAX_TRAIN_QUEUE = 10;
-	public const int MAX_MIGRATE_PER_DAY = 4; // don't migrate more than 4 units per day
-	public const int MIN_MIGRATE_ATTRACT_LEVEL = 30;
-	public const int REBEL_INTERVAL_MONTH = 3; // don't rebel twice in less than 3 months
-	// Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
-	public const int TOWN_TRAIN_BATCH_COUNT = 8;
-
-	
 	public int TownId { get; private set; }
 	public int NationId { get; private set; }
 	private DateTime _setupDate; // the setup date of this town
@@ -1799,7 +1790,7 @@ public class Town
 		if (amount < 0)
 			return;
 
-		int queueSpace = MAX_TRAIN_QUEUE - _trainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
+		int queueSpace = InternalConstants.TOWN_MAX_TRAIN_QUEUE - _trainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
 		int enqueueAmount = Math.Min(queueSpace, amount);
 
 		for (int i = 0; i < enqueueAmount; ++i)
@@ -1997,7 +1988,7 @@ public class Town
 						break;
 
 					// allow a random and low max number to migrate when this happens
-					if (migratedCount >= MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
+					if (migratedCount >= GameConstants.MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
 						break;
 				}
 
@@ -2064,12 +2055,12 @@ public class Town
 		if (targetTown.NationId != 0)
 			targetAttractLevel += Convert.ToInt32(NationArray[targetTown.NationId].reputation);
 
-		if (targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL)
+		if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
 			return false;
 
 		//--------- compare the attractiveness ratings ---------//
 
-		if (targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL / 2)
+		if (targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2)
 		{
 			//---------- migrate now ----------//
 
@@ -2347,9 +2338,6 @@ public class Town
 
 		if (unit.unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
 		{
-			// if the defender defeat the attackers and return the town with victory, the resistance will further increase
-			const int RESISTANCE_INCREASE = 2;
-
 			//---------------------------------------------//
 			//
 			// If this unit is a defender of the town, add back the
@@ -2372,9 +2360,7 @@ public class Town
 				{
 					for (int i = 0; i < GameConstants.MAX_NATION; i++) // set the resistance
 					{
-						double newResistance = RacesResistance[unit.race_id - 1, i] + loyaltyInc +
-						                       RESISTANCE_INCREASE;
-
+						double newResistance = RacesResistance[unit.race_id - 1, i] + loyaltyInc + GameConstants.RESISTANCE_INCREASE_DEFENDER;
 						RacesResistance[unit.race_id - 1, i] = Math.Min(newResistance, 100);
 					}
 				}
@@ -3510,7 +3496,7 @@ public class Town
 
 		_receivedHitCount += attackDamage;
 
-		if (_receivedHitCount >= RECEIVED_HIT_PER_KILL)
+		if (_receivedHitCount >= GameConstants.RECEIVED_HIT_PER_KILL)
 		{
 			_receivedHitCount = 0.0;
 
@@ -3983,7 +3969,7 @@ public class Town
 		if (NationId == 0)
 			return;
 
-		if (Info.game_date < _lastRebelDate.AddDays(REBEL_INTERVAL_MONTH * 30.0))
+		if (Info.game_date < _lastRebelDate.AddDays(GameConstants.REBEL_INTERVAL_MONTH * 30))
 			return;
 
 		// don't rebel within ten days after being attacked by a hostile unit
@@ -5067,13 +5053,10 @@ public class Town
 
 	private bool ThinkAttackNearbyEnemy()
 	{
-		const int SCAN_X_RANGE = 6;
-		const int SCAN_Y_RANGE = 6;
-
-		int xLoc1 = X1Loc - SCAN_X_RANGE;
-		int yLoc1 = Y1Loc - SCAN_Y_RANGE;
-		int xLoc2 = X2Loc + SCAN_X_RANGE;
-		int yLoc2 = Y2Loc + SCAN_Y_RANGE;
+		int xLoc1 = X1Loc - GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int yLoc1 = Y1Loc - GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int xLoc2 = X2Loc + GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int yLoc2 = Y2Loc + GameConstants.TOWN_SCAN_ENEMY_RANGE;
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
