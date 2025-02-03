@@ -29,8 +29,8 @@ public class Town
 
 	public int[] RacesPopulation { get; } = new int[GameConstants.MAX_RACE]; // population of each race
 	// population growth, when it reaches 100, there will be one more person in the town
-	public int[] RacesPopulationGrowth { get; } = new int[GameConstants.MAX_RACE];
 	public int[] RacesJoblessPopulation { get; } = new int[GameConstants.MAX_RACE];
+	private int[] RacesPopulationGrowth { get; } = new int[GameConstants.MAX_RACE];
 	// the MAX population the current town layout supports
 	private int[] RacesMaxPopulation { get; } = new int[GameConstants.MAX_RACE];
 
@@ -58,7 +58,7 @@ public class Town
 	public bool HasLinkedEnemyCamp { get; private set; }
 
 	
-	// each bit n is high representing this independent town will attack nation n.
+	// each bit n is representing this independent town will attack nation n.
 	private int _independentTownNationRelation;
 	private int _independentUnitJoinNationMinRating;
 	public int RebelId { get; set; } // whether this town is controlled by a rebel
@@ -81,7 +81,7 @@ public class Town
 
 	private int _qualityOfLife;
 	public int[] HasProductSupply { get; } = new int[GameConstants.MAX_PRODUCT];
-	public bool NoNeighborSpace { get; set; } // 1 if there is no space to build firms/towns next to this town
+	public bool NoNeighborSpace { get; set; } // true if there is no space to build firms/towns next to this town
 
 
 	//----------- AI vars ------------//
@@ -123,15 +123,15 @@ public class Town
 	{
 	}
 
-	public void Init(int townRecno, int nationRecno, int raceId, int xLoc, int yLoc)
+	public void Init(int townId, int nationId, int raceId, int LocX, int LocY)
 	{
-		TownId = townRecno;
-		NationId = nationRecno;
+		TownId = townId;
+		NationId = nationId;
 
 		//---- set the town section's absolute positions on the map ----//
 
-		LocX1 = xLoc;
-		LocY1 = yLoc;
+		LocX1 = LocX;
+		LocY1 = LocY;
 		LocX2 = LocX1 + InternalConstants.TOWN_WIDTH - 1;
 		LocY2 = LocY1 + InternalConstants.TOWN_HEIGHT - 1;
 
@@ -140,7 +140,7 @@ public class Town
 
 		RegionId = World.get_region_id(LocCenterX, LocCenterY);
 
-		AITown = NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI;
+		AITown = (NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI);
 		AILinkChecked = true; // check the linked towns and firms connected only if ai_link_checked==0
 
 		// the minimum rating a nation must have in order for an independent unit to join it
@@ -150,7 +150,7 @@ public class Town
 
 		//-------- init resistance ------------//
 
-		if (nationRecno == 0)
+		if (NationId == 0)
 		{
 			for (int i = 0; i < GameConstants.MAX_RACE; i++)
 			{
@@ -178,9 +178,6 @@ public class Town
 					if (Misc.Random(5) == 0)
 						TownCombatLevel += Misc.Random(30);
 					break;
-
-				//default:
-				//err_here();
 			}
 		}
 
@@ -210,11 +207,6 @@ public class Town
 			SetAutoCollectTaxLoyalty(nation.auto_collect_tax_loyalty);
 			SetAutoGrantLoyalty(nation.auto_grant_loyalty);
 		}
-
-		//--------- setup town network ---------//
-
-		//town_network_pulsed = false;
-		//town_network_recno = town_network_array.town_created(town_recno, nation_recno, linked_town_array, linked_town_count);
 	}
 
 	public void Deinit()
@@ -226,7 +218,7 @@ public class Town
 		if (AITown && NationId != 0)
 			NationArray[NationId].del_town_info(TownId);
 
-		//------ if this town is the nation's larget town, reset it ----//
+		//------ if this town is the nation's largest town, reset it ----//
 
 		if (NationId != 0 && NationArray[NationId].largest_town_recno == TownId)
 			NationArray[NationId].largest_town_recno = 0;
@@ -253,24 +245,14 @@ public class Town
 
 	public void NextDay()
 	{
-		int townRecno = TownId;
-
-		//------ update quality_of_life --------//
-
 		UpdateQualityOfLife();
-
-		//---------- update population ----------//
 
 		if (Info.TotalDays % 30 == TownId % 30)
 		{
 			PopulationGrow();
 		}
 
-		//------- update link status to camps ------//
-
 		UpdateCampLink();
-
-		//------ update target loyalty/resistance -------//
 
 		if (Info.TotalDays % 15 == TownId % 15)
 		{
@@ -280,11 +262,9 @@ public class Town
 			}
 			else
 			{
-				UpdateTargetResistance(); // update resistance for independent towns
+				UpdateTargetResistance();
 			}
 		}
-
-		//------ update loyalty/resistance -------//
 
 		if (Info.TotalDays % 5 == TownId % 5)
 		{
@@ -296,51 +276,29 @@ public class Town
 			{
 				UpdateResistance();
 			}
-
-			if (TownArray.IsDeleted(townRecno))
-				return;
 		}
-
-		//------ think town people migration -------//
 
 		if (ConfigAdv.town_migration && Info.TotalDays % 15 == TownId % 15)
 		{
 			ThinkMigrate();
 
-			if (TownArray.IsDeleted(townRecno))
+			if (TownArray.IsDeleted(TownId))
 				return;
 		}
-
-		//-------- think about rebel -----//
 
 		if (NationId != 0 && Info.TotalDays % 15 == TownId % 15)
 		{
 			ThinkRebel();
 
-			if (TownArray.IsDeleted(townRecno))
+			if (TownArray.IsDeleted(TownId))
 				return;
 		}
-
-		//-------- think about surrender -----//
 
 		if (NationId != 0 && (Info.TotalDays % 15 == TownId % 15 || AverageLoyalty() == 0))
 		{
-			ThinkSurrender(); // for nation town only, independent town surrender is handled in update_resistance()
-
-			if (TownArray.IsDeleted(townRecno))
-				return;
+			ThinkSurrender(); // for nation town only, independent town surrender is handled in UpdateResistance()
 		}
 
-		//------- process training -------//
-
-		//### begin alex 6/9 ###//
-		/*if( nation_recno && train_unit_recno )
-		{
-			process_train();
-	
-			if( town_array.is_deleted(townRecno) )	// when the last peasant in the town is trained, the town disappear
-				return;
-		}*/
 		if (NationId != 0)
 		{
 			if (TrainUnitId != 0)
@@ -352,64 +310,52 @@ public class Town
 				ProcessQueue();
 			}
 
-			// when the last peasant in the town is trained, the town disappear
-			if (TownArray.IsDeleted(townRecno))
+			// when the last peasant in the town is trained, the town disappears
+			if (TownArray.IsDeleted(TownId))
 				return;
 		}
-		//#### end alex 6/9 ####//
-
-		//-------- process food ---------//
 
 		if (NationId != 0)
 		{
 			ProcessFood();
-
-			if (TownArray.IsDeleted(townRecno))
-				return;
 		}
-
-		//------ auto collect tax and auto grant -------//
 
 		if (NationId != 0)
 		{
 			ProcessAuto();
 
-			if (TownArray.IsDeleted(townRecno))
+			// town may rebel when collecting taxes
+			if (TownArray.IsDeleted(TownId))
 				return;
 		}
 
-		//------ collect yearly tax -------//
-
-		/*if( nation_recno && info.game_month==1 && info.game_day==1 )
+		/*if (NationId != 0 && Info.GameMonth == 1 && Info.GameDay == 1)
 		{
-			collect_yearly_tax();
+			CollectYearlyTax();
 		}*/
-
-		//------ catching spies -------//
 
 		if (Info.TotalDays % 30 == TownId % 30)
 			SpyArray.catch_spy(Spy.SPY_TOWN, TownId);
 
-		if (TownArray.IsDeleted(townRecno))
+		if (TownArray.IsDeleted(TownId))
 			return;
 
 		//-------- update visibility ---------//
 
-		if (NationId == NationArray.player_recno ||
-		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
 			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
 
-		//--- recheck no_neighbor_space after a period, there may be new space available now ---//
+		//--- recheck NoNeighborSpace after a period, there may be new space available now ---//
 
 		if (NoNeighborSpace && Info.TotalDays % 10 == TownId % 10)
 		{
-			//--- for independent town, since we can't call find_best_firm_loc(), we just set no_neighbor_space to 0 every 6 months, if it still has no space, then no_neighbor_space will be set 1 again. ---//
+			// for independent town, since we can't call FindBestFirmLoc(), we just set NoNeighborSpace to false every 10 days,
+			// if it still has no space, then no_neighbor_space will be set 1 again
 
-			// whether it's FIRM_INN or not really doesn't matter, just any firm type will do
-			if (NationId == 0 || NationArray[NationId].find_best_firm_loc(Firm.FIRM_INN,
-				    LocX1, LocY1, out _, out _))
+			// check for FIRM_RESEARCH because it has the smallest size
+			if (NationId == 0 || NationArray[NationId].find_best_firm_loc(Firm.FIRM_RESEARCH, LocX1, LocY1, out _, out _))
 				NoNeighborSpace = false;
 		}
 
@@ -426,13 +372,6 @@ public class Town
 
 		if (AccumulatedEnemyGrantPenalty > 0)
 			AccumulatedEnemyGrantPenalty--;
-
-		//------------------------------------------------------------//
-		// check for population for each town
-		//------------------------------------------------------------//
-
-		if (TownArray.IsDeleted(townRecno))
-			return;
 	}
 
 	public string TownName()
@@ -452,20 +391,18 @@ public class Town
 	
 	private void SetWorldMatrix()
 	{
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
 		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
 		{
 			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
-				Location locPtr = World.get_loc(xLoc, yLoc);
+				Location location = World.get_loc(xLoc, yLoc);
 
-				if (locPtr.cargo_recno == 0) // skip the location where the settle unit is standing
-					locPtr.set_town(TownId);
+				if (location.cargo_recno == 0) // skip the location where the settle unit is standing
+					location.set_town(TownId);
 			}
 		}
 
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
+		//--- if a nation sets up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
 		EstablishContactWithPlayer();
 
@@ -476,18 +413,11 @@ public class Town
 
 		//------------ reveal new land ----------//
 
-		if (NationId == NationArray.player_recno ||
-		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
 			World.unveil(LocX1, LocY1, LocX2, LocY2);
 			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
 	}
 
 	private void RestoreWorldMatrix()
@@ -504,12 +434,6 @@ public class Town
 
 		if (NationId != 0)
 			World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0);
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;
 	}
 
 	private void EstablishContactWithPlayer()
@@ -517,7 +441,7 @@ public class Town
 		if (NationId == 0)
 			return;
 
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
+		//--- if a nation sets up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
 		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
 		{
