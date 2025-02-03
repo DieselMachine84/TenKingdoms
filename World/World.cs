@@ -889,7 +889,7 @@ public class World
 
 			//------- set the influence range of this town -----//
 
-			set_power(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc, town.NationId);
+			set_power(town.LocX1, town.LocY1, town.LocX2, town.LocY2, town.NationId);
 		}
 
 		//--------- set firm's influence -----------//
@@ -1914,7 +1914,7 @@ public class World
 			int townRecno = town.TownId;
 			bool ownTown = (town.NationId == NationArray.player_recno);
 			int beforePopulation = town.Population;
-			int causalty = Weather.quake_rate(town.CenterXLoc, town.CenterYLoc) / 10;
+			int causalty = Weather.quake_rate(town.LocCenterX, town.LocCenterY) / 10;
 			for (; causalty > 0 && !TownArray.IsDeleted(townRecno); --causalty)
 			{
 				town.KillTownPeople(0);
@@ -2052,16 +2052,16 @@ public class World
 
 		foreach (Town town in TownArray)
 		{
-			if (town.X1Loc <= cx + radius && town.X2Loc >= cx - radius && town.Y1Loc <= cy + radius &&
-			    town.Y2Loc >= cy - radius)
+			if (town.LocX1 <= cx + radius && town.LocX2 >= cx - radius && town.LocY1 <= cy + radius &&
+			    town.LocY2 >= cy - radius)
 			{
 				// ---- add news -------//
 				if (town.NationId == NationArray.player_recno)
-					NewsArray.lightning_damage(town.CenterXLoc, town.CenterYLoc,
+					NewsArray.lightning_damage(town.LocCenterX, town.LocCenterY,
 						News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//
-				Location location = get_loc(town.CenterXLoc, town.CenterYLoc);
+				Location location = get_loc(town.LocCenterX, town.LocCenterY);
 				if (location.can_set_fire() && location.fire_str() < 5)
 					location.set_fire_str(5);
 

@@ -193,7 +193,7 @@ public class NewsArray
 
 		//-------- set location ----------//
 
-		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, townRecno);
+		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, townRecno);
 	}
 
 	public void migrate(int srcTownRecno, int desTownRecno, int raceId, int migratedCount, int firmRecno = 0)
@@ -221,7 +221,7 @@ public class NewsArray
 
 		//-------- set location ----------//
 
-		news.set_loc(desTown.CenterXLoc, desTown.CenterYLoc, News.NEWS_LOC_TOWN, desTownRecno);
+		news.set_loc(desTown.LocCenterX, desTown.LocCenterY, News.NEWS_LOC_TOWN, desTownRecno);
 	}
 
 	public void new_nation(int nationRecno)
@@ -237,7 +237,7 @@ public class NewsArray
 		{
 			if (town.NationId == nationRecno)
 			{
-				news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, town.TownId);
+				news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 				break;
 			}
 		}
@@ -375,7 +375,7 @@ public class NewsArray
 
 		news.short_para1 = town.TownNameId;
 
-		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_ANY);
+		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_ANY);
 	}
 
 	public void town_surrendered(int townRecno, int toNationRecno)
@@ -390,7 +390,7 @@ public class NewsArray
 
 		news.short_para1 = town.TownNameId;
 
-		news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, townRecno);
+		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, townRecno);
 	}
 
 	public void monster_king_killed(int monsterId, int xLoc, int yLoc)
@@ -478,7 +478,7 @@ public class NewsArray
 			news.short_para1 = 0;
 			news.short_para2 = town.TownNameId;
 
-			news.set_loc(town.CenterXLoc, town.CenterYLoc, News.NEWS_LOC_TOWN, town.TownId);
+			news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 		}
 		else if (spy.spy_place == Spy.SPY_MOBILE)
 		{

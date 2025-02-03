@@ -75,7 +75,7 @@ public class MonsterInfo
         foreach (Town town in TownArray)
         {
             if (Misc.rects_distance(xLoc, yLoc, xLoc + firmInfo.loc_width, yLoc + firmInfo.loc_height,
-                    town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc) <
+                    town.LocX1, town.LocY1, town.LocX2, town.LocY2) <
                 GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;

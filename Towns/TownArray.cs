@@ -267,7 +267,7 @@ public class TownArray : DynArray<Town>
 			foreach (Town town in this)
 			{
 				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-					    town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc) < MIN_INTER_TOWN_DISTANCE)
+					    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < MIN_INTER_TOWN_DISTANCE)
 				{
 					canBuildFlag = false;
 					break;
@@ -327,7 +327,7 @@ public class TownArray : DynArray<Town>
 
 		town.AssignUnit(unitRecno);
 
-		if (uXLoc >= town.X1Loc && uXLoc <= town.X2Loc && uYLoc >= town.Y1Loc && uYLoc <= town.Y2Loc)
+		if (uXLoc >= town.LocX1 && uXLoc <= town.LocX2 && uYLoc >= town.LocY1 && uYLoc <= town.LocY2)
 			location.set_town(town.TownId);
 
 		town.UpdateTargetLoyalty();
@@ -388,7 +388,7 @@ public class TownArray : DynArray<Town>
 
 			//--- check if the location of this town has been explored ---//
 
-			if (!World.get_loc(town.CenterXLoc, town.CenterYLoc).explored())
+			if (!World.get_loc(town.LocCenterX, town.LocCenterY).explored())
 				continue;
 
 			//---------------------------------//
@@ -396,7 +396,7 @@ public class TownArray : DynArray<Town>
 			Power.reset_selection();
 			selected_recno = town.TownId;
 
-			World.go_loc(town.CenterXLoc, town.CenterYLoc);
+			World.go_loc(town.LocCenterX, town.LocCenterY);
 			return;
 		}
 	}

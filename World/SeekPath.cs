@@ -237,8 +237,8 @@ public class SeekPath
 				{
 					Location buildPtr = Sys.Instance.World.get_loc(dx, dy);
 					Town targetTown = Sys.Instance.TownArray[buildPtr.town_recno()];
-					building_x2 = targetTown.X2Loc;
-					building_y2 = targetTown.Y2Loc;
+					building_x2 = targetTown.LocX2;
+					building_y2 = targetTown.LocY2;
 				}
 				else // searching to settle. Detail explained in function set_move_to_surround()
 				{

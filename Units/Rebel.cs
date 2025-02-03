@@ -294,14 +294,14 @@ public class Rebel
             if (town.RebelId == 0)
                 continue;
 
-            if (World.get_region_id(town.X1Loc, town.Y1Loc) != curRegionId)
+            if (World.get_region_id(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
             if (leaderUnit.race_id == town.MajorityRace())
             {
                 action_mode = REBEL_SETTLE_TO;
-                action_para = town.X1Loc;
-                action_para2 = town.Y1Loc;
+                action_para = town.LocX1;
+                action_para2 = town.LocY1;
                 return true;
             }
         }
@@ -330,11 +330,11 @@ public class Rebel
             if (!is_hostile_nation(town.NationId))
                 continue;
 
-            if (World.get_region_id(town.X1Loc, town.Y1Loc) != curRegionId)
+            if (World.get_region_id(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
             int townDistance = Misc.rects_distance(leaderXLoc, leaderYLoc, leaderXLoc, leaderYLoc,
-                town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
+                town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
             if (townDistance < closestTownDistance)
             {
@@ -417,7 +417,7 @@ public class Rebel
         {
             case REBEL_ATTACK_TOWN:
                 Town town = TownArray[action_para];
-                UnitArray.attack(town.X1Loc, town.Y1Loc, false, rebelRecnoArray,
+                UnitArray.attack(town.LocX1, town.LocY1, false, rebelRecnoArray,
                     InternalConstants.COMMAND_AI, 0);
                 break;
 

@@ -153,7 +153,7 @@ public class Spy
 			if (spy_place == SPY_TOWN)
 			{
 				Town town = TownArray[spy_place_para];
-				World.visit(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc, GameConstants.EXPLORE_RANGE - 1);
+				World.visit(town.LocX1, town.LocY1, town.LocX2, town.LocY2, GameConstants.EXPLORE_RANGE - 1);
 			}
 			else if (spy_place == SPY_FIRM)
 			{
@@ -975,8 +975,8 @@ public class Spy
 			case SPY_TOWN:
 				if (!TownArray.IsDeleted(spy_place_para))
 				{
-					xLoc = TownArray[spy_place_para].CenterXLoc;
-					yLoc = TownArray[spy_place_para].CenterYLoc;
+					xLoc = TownArray[spy_place_para].LocCenterX;
+					yLoc = TownArray[spy_place_para].LocCenterY;
 					return true;
 				}
 

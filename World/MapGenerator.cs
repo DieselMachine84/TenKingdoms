@@ -1496,8 +1496,8 @@ public class MapGenerator
 
 		//------ locate space for the unit ------//
 
-		int xLoc = town.X1Loc;
-		int yLoc = town.Y1Loc;
+		int xLoc = town.LocX1;
+		int yLoc = town.LocY1;
 
 		if (!World.locate_space(ref xLoc, ref yLoc,
 			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
@@ -1594,7 +1594,7 @@ public class MapGenerator
 
 			//------- create military camp -------//
 
-			int firmRecno = FirmArray.BuildFirm(town.X1Loc + 6, town.Y1Loc,
+			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 6, town.LocY1,
 				nation.nation_recno, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
 
 			if (firmRecno == 0)

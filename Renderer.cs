@@ -230,14 +230,14 @@ public static class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapLocWidth)
+            if (town.LocX2 < topLeftX || town.LocX1 > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapLocHeight)
+            if (town.LocY2 < topLeftY || town.LocY1 > topLeftY + ZoomMapLocHeight)
                 continue;
             
             TownLayout townLayout = TownRes.get_layout(town.LayoutId);
-            int townX = ZoomMapX + (town.X1Loc - topLeftX) * ZoomTextureWidth;
-            int townY = ZoomMapY + (town.Y1Loc - topLeftY) * ZoomTextureHeight;
+            int townX = ZoomMapX + (town.LocX1 - topLeftX) * ZoomTextureWidth;
+            int townY = ZoomMapY + (town.LocY1 - topLeftY) * ZoomTextureHeight;
             int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * ZoomTextureWidth - townLayout.groundBitmapWidth * 3 / 2) / 2;
             int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * ZoomTextureHeight - townLayout.groundBitmapHeight * 3 / 2) / 2;
             graphics.DrawBitmap(townLayoutX, townLayoutY, townLayout.GetTexture(graphics), townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
@@ -248,13 +248,13 @@ public static class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.X2Loc < topLeftX || town.X1Loc > topLeftX + ZoomMapLocWidth)
+            if (town.LocX2 < topLeftX || town.LocX1 > topLeftX + ZoomMapLocWidth)
                 continue;
-            if (town.Y2Loc < topLeftY || town.Y1Loc > topLeftY + ZoomMapLocHeight)
+            if (town.LocY2 < topLeftY || town.LocY1 > topLeftY + ZoomMapLocHeight)
                 continue;
             
-            int townX = ZoomMapX + (town.X1Loc - topLeftX) * ZoomTextureWidth;
-            int townY = ZoomMapY + (town.Y1Loc - topLeftY) * ZoomTextureHeight;
+            int townX = ZoomMapX + (town.LocX1 - topLeftX) * ZoomTextureWidth;
+            int townY = ZoomMapY + (town.LocY1 - topLeftY) * ZoomTextureHeight;
 
             TownLayout townLayout = TownRes.get_layout(town.LayoutId);
             for (int i = 0; i < townLayout.slot_count; i++)
@@ -563,10 +563,10 @@ public static class Renderer
         byte shadowColor = Colors.VGA_GRAY;
         foreach (Town town in TownArray)
         {
-            if (IsExplored(town.X1Loc, town.X2Loc, town.Y1Loc, town.Y2Loc))
+            if (IsExplored(town.LocX1, town.LocX2, town.LocY1, town.LocY2))
             {
-                DrawLineOnMiniMap(graphics, town.X1Loc + 1, town.Y2Loc + 1, town.X2Loc + 1, town.Y2Loc + 1, shadowColor);
-                DrawLineOnMiniMap(graphics, town.X2Loc + 1, town.Y1Loc + 1, town.X2Loc + 1, town.Y2Loc + 1, shadowColor);
+                DrawLineOnMiniMap(graphics, town.LocX1 + 1, town.LocY2 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
+                DrawLineOnMiniMap(graphics, town.LocX2 + 1, town.LocY1 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
             }
         }
 
@@ -598,9 +598,9 @@ public static class Renderer
                 ? nationColorArray[town.NationId]
                 : excitedColorArray[ColorRemap.ColorSchemes[town.NationId], Sys.Instance.FrameNumber % excitedColorCount];
 
-            if (IsExplored(town.X1Loc, town.X2Loc, town.Y1Loc, town.Y2Loc))
+            if (IsExplored(town.LocX1, town.LocX2, town.LocY1, town.LocY2))
             {
-                DrawRectOnMiniMap(graphics, town.X1Loc, town.Y1Loc, town.X2Loc - town.X1Loc + 1, town.Y2Loc - town.Y1Loc + 1, nationColor);
+                DrawRectOnMiniMap(graphics, town.LocX1, town.LocY1, town.LocX2 - town.LocX1 + 1, town.LocY2 - town.LocY1 + 1, nationColor);
             }
         }
 

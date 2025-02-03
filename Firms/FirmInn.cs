@@ -225,7 +225,7 @@ public class FirmInn : Firm
 					continue;
 
 				int dist = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-					town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
+					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 				if (dist <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 					town.AutoDefense(targetRecno);
 			}
@@ -361,7 +361,7 @@ public class FirmInn : Firm
 		{
 			if (town.NationId == nation_recno)
 			{
-				if (Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
+				if (Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
 					    loc_x1, loc_y1, loc_x2, loc_y2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
 					return false;

@@ -194,10 +194,10 @@ public class SiteArray : DynArray<Site>
 
 			Town town = TownArray[townRecno];
 
-			locX1 = town.CenterXLoc - MAX_TOWN_SITE_DISTANCE;
-			locX2 = town.CenterXLoc + MAX_TOWN_SITE_DISTANCE;
-			locY1 = town.CenterYLoc - MAX_TOWN_SITE_DISTANCE;
-			locY2 = town.CenterYLoc + MAX_TOWN_SITE_DISTANCE;
+			locX1 = town.LocCenterX - MAX_TOWN_SITE_DISTANCE;
+			locX2 = town.LocCenterX + MAX_TOWN_SITE_DISTANCE;
+			locY1 = town.LocCenterY - MAX_TOWN_SITE_DISTANCE;
+			locY2 = town.LocCenterY + MAX_TOWN_SITE_DISTANCE;
 
 			if (locX1 < 0)
 				locX1 = 0;

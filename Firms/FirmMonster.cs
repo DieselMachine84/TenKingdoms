@@ -735,8 +735,8 @@ public class FirmMonster : Firm
 				{
 					targetNation = town.NationId;
 					attackFlag = 1;
-					xLoc = town.X1Loc;
-					yLoc = town.Y1Loc;
+					xLoc = town.LocX1;
+					yLoc = town.LocY1;
 					break;
 				}
 			}

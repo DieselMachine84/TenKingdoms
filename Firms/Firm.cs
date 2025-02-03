@@ -397,7 +397,7 @@ public abstract class Firm
 		int closestTownNameId = 0;
 		foreach (Town town in TownArray)
 		{
-			townDistance = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, center_x, center_y);
+			townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, center_x, center_y);
 
 			if (townDistance < minTownDistance)
 			{
@@ -1419,7 +1419,7 @@ public abstract class Firm
 		{
 			//------ check if the town is close enough to this firm -------//
 
-			if (Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
+			if (Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
 				    loc_x1, loc_y1, loc_x2, loc_y2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 			{
 				continue;
@@ -1427,7 +1427,7 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.CenterXLoc, town.CenterYLoc).is_plateau()
+			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau()
 			    != World.get_loc(center_x, center_y).is_plateau())
 			{
 				continue;
@@ -1580,7 +1580,7 @@ public abstract class Firm
 			if (town.NationId != nation_recno)
 				continue;
 
-			int townDistance = Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
+			int townDistance = Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
 				loc_x1, loc_y1, loc_x2, loc_y2);
 
 			if (townDistance < minDistance)

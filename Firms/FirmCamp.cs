@@ -1350,7 +1350,7 @@ public class FirmCamp : Firm
 
 			Town town = TownArray[ai_capture_town_recno];
 
-			if (attackerUnit.action_x_loc == town.X1Loc && attackerUnit.action_y_loc == town.Y1Loc)
+			if (attackerUnit.action_x_loc == town.LocX1 && attackerUnit.action_y_loc == town.LocY1)
 				shouldAttackUnit = true;
 		}
 
@@ -1764,7 +1764,7 @@ public class FirmCamp : Firm
 
 			List<int> selectedUnits = new List<int>(1);
 			selectedUnits.Add(patrol_unit_array[Misc.Random(patrol_unit_array.Count)]);
-			UnitArray.attack(town.X1Loc, town.Y1Loc, false, selectedUnits,
+			UnitArray.attack(town.LocX1, town.LocY1, false, selectedUnits,
 				InternalConstants.COMMAND_AI, 0);
 		}
 	}
@@ -1834,7 +1834,7 @@ public class FirmCamp : Firm
 	{
 		//---- attack the target town if the force is strong enough ----//
 
-		if (NationArray[nation_recno].ai_attack_target(targetTown.X1Loc, targetTown.Y1Loc,
+		if (NationArray[nation_recno].ai_attack_target(targetTown.LocX1, targetTown.LocY1,
 			    defenseCombatLevel, false, 0, firm_recno))
 			return true;
 
@@ -1867,7 +1867,7 @@ public class FirmCamp : Firm
 			}
 		}
 
-		return NationArray[nation_recno].ai_attack_target(targetTown.X1Loc, targetTown.Y1Loc,
+		return NationArray[nation_recno].ai_attack_target(targetTown.LocX1, targetTown.LocY1,
 			defenseCombatLevel, false, 0, firm_recno, useAllCamp);
 	}
 

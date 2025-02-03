@@ -10,12 +10,12 @@ public class Town
 	private DateTime _setupDate; // the setup date of this town
 
 	
-	public int X1Loc { get; private set; }
-	public int Y1Loc { get; private set; }
-	public int X2Loc { get; private set; }
-	public int Y2Loc { get; private set; }
-	public int CenterXLoc { get; private set; }
-	public int CenterYLoc { get; private set; }
+	public int LocX1 { get; private set; }
+	public int LocY1 { get; private set; }
+	public int LocX2 { get; private set; }
+	public int LocY2 { get; private set; }
+	public int LocCenterX { get; private set; }
+	public int LocCenterY { get; private set; }
 	public int RegionId { get; private set; }
 	public int TownNameId { get; private set; }
 	public int LayoutId { get; private set; }
@@ -130,15 +130,15 @@ public class Town
 
 		//---- set the town section's absolute positions on the map ----//
 
-		X1Loc = xLoc;
-		Y1Loc = yLoc;
-		X2Loc = X1Loc + InternalConstants.TOWN_WIDTH - 1;
-		Y2Loc = Y1Loc + InternalConstants.TOWN_HEIGHT - 1;
+		LocX1 = xLoc;
+		LocY1 = yLoc;
+		LocX2 = LocX1 + InternalConstants.TOWN_WIDTH - 1;
+		LocY2 = LocY1 + InternalConstants.TOWN_HEIGHT - 1;
 
-		CenterXLoc = (X1Loc + X2Loc) / 2;
-		CenterYLoc = (Y1Loc + Y2Loc) / 2;
+		LocCenterX = (LocX1 + LocX2) / 2;
+		LocCenterY = (LocY1 + LocY2) / 2;
 
-		RegionId = World.get_region_id(CenterXLoc, CenterYLoc);
+		RegionId = World.get_region_id(LocCenterX, LocCenterY);
 
 		AITown = NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI;
 		AILinkChecked = true; // check the linked towns and firms connected only if ai_link_checked==0
@@ -398,7 +398,7 @@ public class Town
 		if (NationId == NationArray.player_recno ||
 		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
-			World.visit(X1Loc, Y1Loc, X2Loc, Y2Loc, GameConstants.EXPLORE_RANGE - 1);
+			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
 
 		//--- recheck no_neighbor_space after a period, there may be new space available now ---//
@@ -409,7 +409,7 @@ public class Town
 
 			// whether it's FIRM_INN or not really doesn't matter, just any firm type will do
 			if (NationId == 0 || NationArray[NationId].find_best_firm_loc(Firm.FIRM_INN,
-				    X1Loc, Y1Loc, out _, out _))
+				    LocX1, LocY1, out _, out _))
 				NoNeighborSpace = false;
 		}
 
@@ -442,21 +442,21 @@ public class Town
 
 	public int LocWidth()
 	{
-		return X2Loc - X1Loc + 1;
+		return LocX2 - LocX1 + 1;
 	}
 
 	public int LocHeight()
 	{
-		return Y2Loc - Y1Loc + 1;
+		return LocY2 - LocY1 + 1;
 	}
 	
 	private void SetWorldMatrix()
 	{
 		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
-		for (int yLoc = Y1Loc; yLoc <= Y2Loc; yLoc++)
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
 		{
-			for (int xLoc = X1Loc; xLoc <= X2Loc; xLoc++)
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
 				Location locPtr = World.get_loc(xLoc, yLoc);
 
@@ -472,15 +472,15 @@ public class Town
 		//---- set this town's influence on the map ----//
 
 		if (NationId != 0)
-			World.set_power(X1Loc, Y1Loc, X2Loc, Y2Loc, NationId);
+			World.set_power(LocX1, LocY1, LocX2, LocY2, NationId);
 
 		//------------ reveal new land ----------//
 
 		if (NationId == NationArray.player_recno ||
 		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
-			World.unveil(X1Loc, Y1Loc, X2Loc, Y2Loc);
-			World.visit(X1Loc, Y1Loc, X2Loc, Y2Loc, GameConstants.EXPLORE_RANGE - 1);
+			World.unveil(LocX1, LocY1, LocX2, LocY2);
+			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
 
 		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
@@ -492,9 +492,9 @@ public class Town
 
 	private void RestoreWorldMatrix()
 	{
-		for (int yLoc = Y1Loc; yLoc <= Y2Loc; yLoc++)
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
 		{
-			for (int xLoc = X1Loc; xLoc <= X2Loc; xLoc++)
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
 				World.get_loc(xLoc, yLoc).remove_town();
 			}
@@ -503,7 +503,7 @@ public class Town
 		//---- restore this town's influence on the map ----//
 
 		if (NationId != 0)
-			World.restore_power(X1Loc, Y1Loc, X2Loc, Y2Loc, TownId, 0);
+			World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0);
 
 		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
 
@@ -519,9 +519,9 @@ public class Town
 
 		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
-		for (int yLoc = Y1Loc; yLoc <= Y2Loc; yLoc++)
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
 		{
-			for (int xLoc = X1Loc; xLoc <= X2Loc; xLoc++)
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
 				Location location = World.get_loc(xLoc, yLoc);
 
@@ -1720,10 +1720,10 @@ public class Town
 	private void FinishTrain(Unit unit)
 	{
 		SpriteInfo spriteInfo = unit.sprite_info;
-		int xLoc = X1Loc; // xLoc & yLoc are used for returning results
-		int yLoc = Y1Loc;
+		int xLoc = LocX1; // xLoc & yLoc are used for returning results
+		int yLoc = LocY1;
 
-		if (!World.locate_space(ref xLoc, ref yLoc, X2Loc, Y2Loc,
+		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.loc_width, spriteInfo.loc_height))
 			return;
 
@@ -1902,7 +1902,7 @@ public class Town
 
 				//---- if the target town is within the effective range of this firm ----//
 
-				if (Misc.rects_distance(destTown.X1Loc, destTown.Y1Loc, destTown.X2Loc, destTown.Y2Loc,
+				if (Misc.rects_distance(destTown.LocX1, destTown.LocY1, destTown.LocX2, destTown.LocY2,
 					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) >
 				    InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
@@ -1956,8 +1956,8 @@ public class Town
 			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
-			townDistance = Misc.rects_distance(X1Loc, Y1Loc, X2Loc, Y2Loc,
-				town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
+			townDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+				town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
 				continue;
@@ -2650,7 +2650,7 @@ public class Town
 			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
 				continue;
 
-			int curDistance = Misc.rects_distance(X1Loc, Y1Loc, X2Loc, Y2Loc,
+			int curDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
 				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
 
 			if (curDistance < minDistance)
@@ -2730,7 +2730,7 @@ public class Town
 			//---------- check if the firm is close enough to this firm -------//
 
 			if (Misc.rects_distance(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
-				    X1Loc, Y1Loc, X2Loc, Y2Loc) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+				    LocX1, LocY1, LocX2, LocY2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 			{
 				continue;
 			}
@@ -2738,7 +2738,7 @@ public class Town
 			//------ check if both are on the same terrain type ------//
 
 			if (World.get_loc(firm.center_x, firm.center_y).is_plateau()
-			    != World.get_loc(CenterXLoc, CenterYLoc).is_plateau())
+			    != World.get_loc(LocCenterX, LocCenterY).is_plateau())
 			{
 				continue;
 			}
@@ -2785,16 +2785,16 @@ public class Town
 
 			//------ check if the town is close enough to this town -------//
 
-			if (Misc.rects_distance(town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc,
-				    X1Loc, Y1Loc, X2Loc, Y2Loc) > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
+			if (Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+				    LocX1, LocY1, LocX2, LocY2) > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
 			{
 				continue;
 			}
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.CenterXLoc, town.CenterYLoc).is_plateau()
-			    != World.get_loc(CenterXLoc, CenterYLoc).is_plateau())
+			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau()
+			    != World.get_loc(LocCenterX, LocCenterY).is_plateau())
 			{
 				continue;
 			}
@@ -3139,8 +3139,8 @@ public class Town
 
 		//----- set power region of the new nation ------//
 
-		World.restore_power(X1Loc, Y1Loc, X2Loc, Y2Loc, TownId, 0); // restore power of the old nation
-		World.set_power(X1Loc, Y1Loc, X2Loc, Y2Loc, newNationRecno); // set power of the new nation
+		World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0); // restore power of the old nation
+		World.set_power(LocX1, LocY1, LocX2, LocY2, newNationRecno); // set power of the new nation
 
 		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, TownId, NationId, newNationRecno);
 
@@ -3477,7 +3477,7 @@ public class Town
 
 		if (Misc.rects_distance(attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
 			    attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
-			    X1Loc, Y1Loc, X2Loc, Y2Loc) <= UnitConstants.EFFECTIVE_DEFEND_TOWN_DISTANCE)
+			    LocX1, LocY1, LocX2, LocY2) <= UnitConstants.EFFECTIVE_DEFEND_TOWN_DISTANCE)
 		{
 			while (true)
 			{
@@ -3615,9 +3615,9 @@ public class Town
 
 		int unitId = RaceRes[raceId].basic_unit_id;
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = X1Loc, yLoc = Y1Loc; // xLoc & yLoc are used for returning results
+		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
-		if (!World.locate_space(ref xLoc, ref yLoc, X2Loc, Y2Loc, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return 0;
 
 		//---------- add the unit now -----------//
@@ -3676,7 +3676,7 @@ public class Town
 
 		// -------- sound effect ---------//
 
-		SERes.sound(CenterXLoc, CenterYLoc, 1, 'R', raceId, "DIE");
+		SERes.sound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
 
 		//-------- decrease population now --------//
 
@@ -3775,10 +3775,10 @@ public class Town
 		//---- create the king of the new nation ----//
 
 		int unitId = RaceRes[raceId].basic_unit_id;
-		int xLoc = X1Loc, yLoc = Y1Loc; // xLoc & yLoc are used for returning results
+		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 
-		if (!World.locate_space(ref xLoc, ref yLoc, X2Loc, Y2Loc, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return false;
 
 		//--------- create a new nation ---------//
@@ -4171,9 +4171,9 @@ public class Town
 
 		int unitId = RaceRes[raceId].basic_unit_id;
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = X1Loc, yLoc = Y1Loc; // xLoc & yLoc are used for returning results
+		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
-		if (!World.locate_space(ref xLoc, ref yLoc, X2Loc, Y2Loc, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return 0;
 
 		//---------- add the unit now -----------//
@@ -4504,7 +4504,7 @@ public class Town
 		// of the this firm.
 		//----------------------------------------------------//
 
-		if (ownNation.is_build_action_exist(Firm.FIRM_MARKET, CenterXLoc, CenterYLoc))
+		if (ownNation.is_build_action_exist(Firm.FIRM_MARKET, LocCenterX, LocCenterY))
 			return false;
 
 		//-- only build one market place next to this mine, check if there is any existing one --//
@@ -4528,14 +4528,14 @@ public class Town
 
 		int buildXLoc, buildYLoc;
 
-		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, X1Loc, Y1Loc,
+		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, LocX1, LocY1,
 			    out buildXLoc, out buildYLoc))
 		{
 			NoNeighborSpace = true;
 			return false;
 		}
 
-		ownNation.add_action(buildXLoc, buildYLoc, X1Loc, Y1Loc,
+		ownNation.add_action(buildXLoc, buildYLoc, LocX1, LocY1,
 			Nation.ACTION_AI_BUILD_FIRM, Firm.FIRM_MARKET);
 
 		return true;
@@ -4813,13 +4813,13 @@ public class Town
 		int buildXLoc, buildYLoc;
 		Nation nation = NationArray[NationId];
 
-		if (!nation.find_best_firm_loc(firmId, X1Loc, Y1Loc, out buildXLoc, out buildYLoc))
+		if (!nation.find_best_firm_loc(firmId, LocX1, LocY1, out buildXLoc, out buildYLoc))
 		{
 			NoNeighborSpace = true;
 			return false;
 		}
 
-		nation.add_action(buildXLoc, buildYLoc, X1Loc, Y1Loc,
+		nation.add_action(buildXLoc, buildYLoc, LocX1, LocY1,
 			Nation.ACTION_AI_BUILD_FIRM, firmId, 1, 0, firmRaceId);
 
 		return true;
@@ -4868,7 +4868,7 @@ public class Town
 		Town destTown = TownArray[bestTownRecno];
 
 		// last 1-check duplication on the destination town only
-		if (nation.get_action(destTown.X1Loc, destTown.Y1Loc, X1Loc, Y1Loc,
+		if (nation.get_action(destTown.LocX1, destTown.LocY1, LocX1, LocY1,
 			    Nation.ACTION_AI_SETTLE_TO_OTHER_TOWN, 0, 0, 1) != null)
 		{
 			return false;
@@ -4883,8 +4883,8 @@ public class Town
 		if (migrateCount <= 0)
 			return false;
 
-		nation.add_action(destTown.X1Loc, destTown.Y1Loc,
-			X1Loc, Y1Loc, Nation.ACTION_AI_SETTLE_TO_OTHER_TOWN, 0, migrateCount);
+		nation.add_action(destTown.LocX1, destTown.LocY1,
+			LocX1, LocY1, Nation.ACTION_AI_SETTLE_TO_OTHER_TOWN, 0, migrateCount);
 
 		return true;
 	}
@@ -4920,7 +4920,7 @@ public class Town
 			// *1000 so that this will have a much bigger weight than the distance rating
 			int curRating = 1000 * town.RacesPopulation[majorityRace - 1] / town.Population;
 
-			curRating += World.distance_rating(CenterXLoc, CenterYLoc, town.CenterXLoc, town.CenterYLoc);
+			curRating += World.distance_rating(LocCenterX, LocCenterY, town.LocCenterX, town.LocCenterY);
 
 			if (curRating > bestRating)
 			{
@@ -5053,10 +5053,10 @@ public class Town
 
 	private bool ThinkAttackNearbyEnemy()
 	{
-		int xLoc1 = X1Loc - GameConstants.TOWN_SCAN_ENEMY_RANGE;
-		int yLoc1 = Y1Loc - GameConstants.TOWN_SCAN_ENEMY_RANGE;
-		int xLoc2 = X2Loc + GameConstants.TOWN_SCAN_ENEMY_RANGE;
-		int yLoc2 = Y2Loc + GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int xLoc1 = LocX1 - GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int yLoc1 = LocY1 - GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int xLoc2 = LocX2 + GameConstants.TOWN_SCAN_ENEMY_RANGE;
+		int yLoc2 = LocY2 + GameConstants.TOWN_SCAN_ENEMY_RANGE;
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
@@ -5295,39 +5295,39 @@ public class Town
 		{
 			case 0:
 				destX = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
-				if (CenterXLoc - destX > 100)
-					destX = CenterXLoc - (CenterXLoc - destX) % 100;
-				if (destX - CenterXLoc > 100)
-					destX = CenterXLoc + (destX - CenterXLoc) % 100;
-				destY = Math.Max(CenterYLoc - 100, 10);
+				if (LocCenterX - destX > 100)
+					destX = LocCenterX - (LocCenterX - destX) % 100;
+				if (destX - LocCenterX > 100)
+					destX = LocCenterX + (destX - LocCenterX) % 100;
+				destY = Math.Max(LocCenterY - 100, 10);
 				break;
 			case 1:
-				destX = Math.Min(CenterXLoc + 100, GameConstants.MapSize - 1 - 10);
+				destX = Math.Min(LocCenterX + 100, GameConstants.MapSize - 1 - 10);
 				destY = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
-				if (CenterYLoc - destY > 100)
-					destY = CenterYLoc - (CenterYLoc - destY) % 100;
-				if (destY - CenterYLoc > 100)
-					destY = CenterYLoc + (destY - CenterYLoc) % 100;
+				if (LocCenterY - destY > 100)
+					destY = LocCenterY - (LocCenterY - destY) % 100;
+				if (destY - LocCenterY > 100)
+					destY = LocCenterY + (destY - LocCenterY) % 100;
 				break;
 			case 2:
 				destX = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
-				if (CenterXLoc - destX > 100)
-					destX = CenterXLoc - (CenterXLoc - destX) % 100;
-				if (destX - CenterXLoc > 100)
-					destX = CenterXLoc + (destX - CenterXLoc) % 100;
-				destY = Math.Min(CenterYLoc + 100, GameConstants.MapSize - 1 - 10);
+				if (LocCenterX - destX > 100)
+					destX = LocCenterX - (LocCenterX - destX) % 100;
+				if (destX - LocCenterX > 100)
+					destX = LocCenterX + (destX - LocCenterX) % 100;
+				destY = Math.Min(LocCenterY + 100, GameConstants.MapSize - 1 - 10);
 				break;
 			case 3:
-				destX = Math.Max(CenterXLoc - 100, 10);
+				destX = Math.Max(LocCenterX - 100, 10);
 				destY = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
-				if (CenterYLoc - destY > 100)
-					destY = CenterYLoc - (CenterYLoc - destY) % 100;
-				if (destY - CenterYLoc > 100)
-					destY = CenterYLoc + (destY - CenterYLoc) % 100;
+				if (LocCenterY - destY > 100)
+					destY = LocCenterY - (LocCenterY - destY) % 100;
+				if (destY - LocCenterY > 100)
+					destY = LocCenterY + (destY - LocCenterY) % 100;
 				break;
 		}
 
-		ownNation.add_action(destX, destY, X1Loc, Y1Loc, Nation.ACTION_AI_SCOUT, 0);
+		ownNation.add_action(destX, destY, LocX1, LocY1, Nation.ACTION_AI_SCOUT, 0);
 
 		return true;
 	}
@@ -5515,7 +5515,7 @@ public class Town
 				if (unitRecno == 0)
 					return false;
 
-				ActionNode actionNode = ownNation.add_action(X1Loc, Y1Loc, -1, -1,
+				ActionNode actionNode = ownNation.add_action(LocX1, LocY1, -1, -1,
 					Nation.ACTION_AI_ASSIGN_SPY, NationId, 1, unitRecno);
 
 				if (actionNode == null)
@@ -5754,10 +5754,10 @@ public class Town
 	{
 		//-------- locate space for the new town --------//
 
-		int xLoc = X1Loc, yLoc = Y1Loc; // xLoc & yLoc are used for returning results
+		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
 		// InternalConstants.TOWN_WIDTH + 2 for space around the town
-		if (!World.locate_space(ref xLoc, ref yLoc, X2Loc, Y2Loc,
+		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2,
 			    InternalConstants.TOWN_WIDTH + 2, InternalConstants.TOWN_HEIGHT + 2,
 			    UnitConstants.UNIT_LAND, RegionId, true))
 		{
@@ -5766,7 +5766,7 @@ public class Town
 
 		//------- it must be within the effective town-to-town distance ---//
 
-		if (Misc.rects_distance(X1Loc, Y1Loc, X2Loc, Y2Loc, xLoc, yLoc,
+		if (Misc.rects_distance(LocX1, LocY1, LocX2, LocY2, xLoc, yLoc,
 			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1) >
 		    InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
 		{

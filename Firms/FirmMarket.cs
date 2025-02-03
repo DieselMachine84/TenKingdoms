@@ -1115,7 +1115,7 @@ public class FirmMarket : Firm
 
 			// don't consider if it is too far away
 			if (Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
-				    town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc) > GameConstants.MapSize / 4)
+				    town.LocX1, town.LocY1, town.LocX2, town.LocY2) > GameConstants.MapSize / 4)
 				continue;
 
 			//-----------------------------------------//
@@ -1173,14 +1173,14 @@ public class FirmMarket : Firm
 
 		int buildXLoc, buildYLoc;
 
-		if (!nation.find_best_firm_loc(FIRM_MARKET, town.X1Loc, town.Y1Loc,
+		if (!nation.find_best_firm_loc(FIRM_MARKET, town.LocX1, town.LocY1,
 			    out buildXLoc, out buildYLoc))
 		{
 			town.NoNeighborSpace = true;
 			return false;
 		}
 
-		nation.add_action(buildXLoc, buildYLoc, town.X1Loc, town.Y1Loc, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
+		nation.add_action(buildXLoc, buildYLoc, town.LocX1, town.LocY1, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
 		return true;
 	}
 

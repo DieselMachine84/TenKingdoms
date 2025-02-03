@@ -670,8 +670,8 @@ public class UnitArray : SpriteArray
 		    {
 			    Town town = TownArray[location.town_recno()];
 
-			    targetXLoc = town.X1Loc;
-			    targetYLoc = town.Y1Loc;
+			    targetXLoc = town.LocX1;
+			    targetYLoc = town.LocY1;
 			    targetNationRecno = town.NationId;
 		    }
 
@@ -1564,8 +1564,8 @@ public class UnitArray : SpriteArray
 	    {
 		    Town town = TownArray[location.town_recno()];
 
-		    destX = town.X1Loc;
-		    destY = town.Y1Loc;
+		    destX = town.LocX1;
+		    destY = town.LocY1;
 	    }
 
 	    //-------------------------------------------//

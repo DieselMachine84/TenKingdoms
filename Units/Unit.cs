@@ -1594,7 +1594,7 @@ public class Unit : Sprite
 
 			//-------- calculate the rating ---------//
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 
 			curRating += 300 * town.RacesPopulation[race_id - 1] / town.Population; // racial homogenous bonus
 
@@ -1614,7 +1614,7 @@ public class Unit : Sprite
 			//DieselMachine TODO do not settle skilled soldiers
 			if (max_hit_points < 50)
 			{
-				assign(bestTown.X1Loc, bestTown.Y1Loc);
+				assign(bestTown.LocX1, bestTown.LocY1);
 				return true;
 			}
 		}
@@ -1730,7 +1730,7 @@ public class Unit : Sprite
 			if (!town.IsBaseTown || town.NoNeighborSpace)
 				continue;
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 
 			if (curRating > bestRating)
 			{
@@ -1866,7 +1866,7 @@ public class Unit : Sprite
 				{
 					Town town = TownArray[rebel.town_recno];
 
-					assign(town.X1Loc, town.Y1Loc);
+					assign(town.LocX1, town.LocY1);
 				}
 
 				return; // don't do anything if the town has been destroyed, Rebel.next_day() will take care of it. 
@@ -1888,7 +1888,7 @@ public class Unit : Sprite
 				continue;
 			}
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
+			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 			curRating += 100 * town.RacesPopulation[race_id - 1] / town.Population;
 
 			if (curRating > bestRating)
@@ -1905,7 +1905,7 @@ public class Unit : Sprite
 			if (unit_mode == UnitConstants.UNIT_MODE_REBEL)
 				RebelArray.drop_rebel_identity(sprite_recno);
 
-			assign(bestTown.X1Loc, bestTown.Y1Loc);
+			assign(bestTown.LocX1, bestTown.LocY1);
 		}
 		else
 		{
@@ -2174,7 +2174,7 @@ public class Unit : Sprite
 
 			//-------------------------------------//
 
-			int curDistance = Misc.points_distance(curXLoc, curYLoc, town.CenterXLoc, town.CenterYLoc);
+			int curDistance = Misc.points_distance(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 
 			if (curDistance < 10) // no need to move if the unit is already close enough to the town.
 				return;
@@ -2193,7 +2193,7 @@ public class Unit : Sprite
 		}
 
 		if (bestTown != null)
-			move_to_town_surround(bestTown.X1Loc, bestTown.Y1Loc, sprite_info.loc_width, sprite_info.loc_height);
+			move_to_town_surround(bestTown.LocX1, bestTown.LocY1, sprite_info.loc_width, sprite_info.loc_height);
 	}
 
 	public bool ai_escape_fire()
@@ -4764,7 +4764,7 @@ public class Unit : Sprite
 			// attack now
 			//---------------------------------------------------------------//
 			set_cur(next_x, next_y);
-			set_attack_dir(next_x_loc(), next_y_loc(), town.CenterXLoc, town.CenterYLoc);
+			set_attack_dir(next_x_loc(), next_y_loc(), town.LocCenterX, town.LocCenterY);
 			if (is_dir_correct())
 			{
 				if (attackInfo.attack_range == 1)
@@ -5306,12 +5306,12 @@ public class Unit : Sprite
 		Town targetTown = TownArray[loc.town_recno()];
 		int targetTownRecno = targetTown.TownId;
 		int targetTownNameId = targetTown.TownNameId;
-		int targetTownXLoc = targetTown.CenterXLoc;
-		int targetTownYLoc = targetTown.CenterYLoc;
+		int targetTownXLoc = targetTown.LocCenterX;
+		int targetTownYLoc = targetTown.LocCenterY;
 
 		// ---------- add indicator on the map ----------//
 		if (NationArray.player_recno != 0 && targetTown.NationId == NationArray.player_recno)
-			WarPointArray.AddPoint(targetTown.CenterXLoc, targetTown.CenterYLoc);
+			WarPointArray.AddPoint(targetTown.LocCenterX, targetTown.LocCenterY);
 
 		//------------------------------------------------------------------------------//
 		// change relation to hostile
@@ -8422,7 +8422,7 @@ public class Unit : Sprite
 		else if (!independent_nation_can_attack(targetNationRecno)) // independent town
 			return 0;
 
-		if (space_for_attack(town.X1Loc, town.Y1Loc, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+		if (space_for_attack(town.LocX1, town.LocY1, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 			return 1;
 		else
 			return 0;
@@ -10068,10 +10068,10 @@ public class Unit : Sprite
 				Town town = TownArray[action_para];
 				{
 					if (mobile_type == UnitConstants.UNIT_LAND)
-						set_move_to_surround(town.X1Loc, town.Y1Loc,
+						set_move_to_surround(town.LocX1, town.LocY1,
 							InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 					else
-						attack_town(town.X1Loc, town.Y1Loc);
+						attack_town(town.LocX1, town.LocY1);
 				}
 			}
 			else // no surrounding place found, stop now
@@ -11965,7 +11965,7 @@ public class Unit : Sprite
 	{
 		Town town = TownArray[townRecno];
 
-		assign(town.X1Loc, town.Y1Loc);
+		assign(town.LocX1, town.LocY1);
 		action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN;
 	}
 
@@ -12106,10 +12106,10 @@ public class Unit : Sprite
 		int curYLoc = next_y_loc();
 
 		Town town = TownArray[unit_mode_para];
-		if ((curXLoc < town.CenterXLoc - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curXLoc > town.CenterXLoc + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curYLoc < town.CenterYLoc - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
-		    (curYLoc > town.CenterYLoc + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE))
+		if ((curXLoc < town.LocCenterX - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curXLoc > town.LocCenterX + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curYLoc < town.LocCenterY - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
+		    (curYLoc > town.LocCenterY + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE))
 		{
 			defend_town_back_town(unit_mode_para);
 			return false;
@@ -13189,8 +13189,8 @@ public class Unit : Sprite
 					return;
 			}
 
-			int targetXLoc = targetTown.X1Loc;
-			int targetYLoc = targetTown.Y1Loc;
+			int targetXLoc = targetTown.LocX1;
+			int targetYLoc = targetTown.LocY1;
 
 			int attackDistance = cal_distance(targetXLoc, targetYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT);
 
@@ -13233,7 +13233,7 @@ public class Unit : Sprite
 					//---------- attack now ---------//
 					set_cur(next_x, next_y);
 					terminate_move();
-					set_dir(next_x_loc(), next_y_loc(), targetTown.CenterXLoc, targetTown.CenterYLoc);
+					set_dir(next_x_loc(), next_y_loc(), targetTown.LocCenterX, targetTown.LocCenterY);
 
 					if (is_dir_correct())
 						set_attack();
@@ -13822,7 +13822,7 @@ public class Unit : Sprite
 				else
 				{
 					Town town = TownArray[rebel.action_para];
-					attack_town(town.X1Loc, town.Y1Loc);
+					attack_town(town.LocX1, town.LocY1);
 				}
 
 				break;

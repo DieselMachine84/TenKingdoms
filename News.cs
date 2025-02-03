@@ -211,7 +211,7 @@ public class News
 			{
 				Town town = TownArray[loc_type_para];
 
-				rc = town.CenterXLoc == loc_x && town.CenterYLoc == loc_y;
+				rc = town.LocCenterX == loc_x && town.LocCenterY == loc_y;
 			}
 		}
 		else if (loc_type == NEWS_LOC_FIRM)

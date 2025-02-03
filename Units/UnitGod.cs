@@ -718,8 +718,8 @@ public class UnitGod : Unit
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					targetXLoc = town.CenterXLoc;
-					targetYLoc = town.CenterYLoc;
+					targetXLoc = town.LocCenterX;
+					targetYLoc = town.LocCenterY;
 				}
 			}
 		}
@@ -762,8 +762,8 @@ public class UnitGod : Unit
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				targetXLoc = town.CenterXLoc;
-				targetYLoc = town.CenterYLoc;
+				targetXLoc = town.LocCenterX;
+				targetYLoc = town.LocCenterY;
 			}
 		}
 

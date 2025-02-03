@@ -1079,7 +1079,7 @@ public class Nation : NationBase
 			{
 				Town town = TownArray[ai_town_array[i]];
 
-				int rawDistance = Misc.points_distance(xLoc, yLoc, town.CenterXLoc, town.CenterYLoc);
+				int rawDistance = Misc.points_distance(xLoc, yLoc, town.LocCenterX, town.LocCenterY);
 
 				if ((Info.game_date - Info.game_start_date).Days >
 				    rawDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
@@ -1302,14 +1302,14 @@ public class Nation : NationBase
 			for (int j = 0; j < ai_town_array.Count; j++)
 			{
 				Town town = TownArray[ai_town_array[j]];
-				Location location = World.get_loc(town.X1Loc, town.Y1Loc);
+				Location location = World.get_loc(town.LocX1, town.LocY1);
 
 				//-********* codes to move to other territory ***********-//
 				if (siteLoc.region_id != location.region_id)
 					continue; // not on the same territory
 
 				int dist = Misc.rects_distance(site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc,
-					town.X1Loc, town.Y1Loc, town.X2Loc, town.Y2Loc);
+					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 				//-------------------------------------------------------------------------//
 				// check whether a mine is already connected to this town, if so, use it
@@ -1634,8 +1634,8 @@ public class Nation : NationBase
 
 			Town town = TownArray[originTownRecno];
 
-			centerX = town.CenterXLoc;
-			centerY = town.CenterYLoc;
+			centerX = town.LocCenterX;
+			centerY = town.LocCenterY;
 
 			refX1 = centerX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 			refY1 = centerY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
@@ -1772,10 +1772,10 @@ public class Nation : NationBase
 				{
 					Town town = TownArray[location.town_recno()];
 
-					refBX1 = town.CenterXLoc - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBY1 = town.CenterYLoc - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBX2 = town.CenterXLoc + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-					refBY2 = town.CenterYLoc + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBX1 = town.LocCenterX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBY1 = town.LocCenterY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBX2 = town.LocCenterX + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+					refBY2 = town.LocCenterY + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 
 					weightAdd = town.Population * 2;
 
@@ -1794,10 +1794,10 @@ public class Nation : NationBase
 						}
 					}
 
-					refCX1 = town.X1Loc - 1; // add negative weights on space around this firm
-					refCY1 = town.Y1Loc - 1; // so to prevent firms from building right next to the firm
-					refCX2 = town.X2Loc + 1; // and leave some space for walking path.
-					refCY2 = town.Y2Loc + 1;
+					refCX1 = town.LocX1 - 1; // add negative weights on space around this firm
+					refCY1 = town.LocY1 - 1; // so to prevent firms from building right next to the firm
+					refCX2 = town.LocX2 + 1; // and leave some space for walking path.
+					refCY2 = town.LocY2 + 1;
 
 					weightReduce = 100;
 				}
@@ -2761,7 +2761,7 @@ public class Nation : NationBase
 
 			//--------------------------------------//
 
-			int curDist = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, destX, destY);
+			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destX, destY);
 
 			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
 
@@ -2853,7 +2853,7 @@ public class Nation : NationBase
 
 			//--- get the distance beteween town & the destination firm ---//
 
-			int curDist = Misc.points_distance(town.CenterXLoc, town.CenterYLoc, destFirm.center_x, destFirm.center_y);
+			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destFirm.center_x, destFirm.center_y);
 
 			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
 
@@ -3237,14 +3237,14 @@ public class Nation : NationBase
 
 		int buildXLoc, buildYLoc;
 
-		if (!find_best_firm_loc(Firm.FIRM_CAMP, bestTown.X1Loc, bestTown.Y1Loc,
+		if (!find_best_firm_loc(Firm.FIRM_CAMP, bestTown.LocX1, bestTown.LocY1,
 			    out buildXLoc, out buildYLoc))
 		{
 			bestTown.NoNeighborSpace = true;
 			return;
 		}
 
-		add_action(buildXLoc, buildYLoc, bestTown.X1Loc, bestTown.Y1Loc,
+		add_action(buildXLoc, buildYLoc, bestTown.LocX1, bestTown.LocY1,
 			ACTION_AI_BUILD_FIRM, Firm.FIRM_CAMP);
 	}
 
@@ -4221,7 +4221,7 @@ public class Nation : NationBase
 
 			int mobileCombatLevel = ai_evaluate_target_combat_level(firm.center_x, firm.center_y, firm.nation_recno);
 
-			int curRating = 3 * Misc.points_distance(largestTown.CenterXLoc, largestTown.CenterYLoc,
+			int curRating = 3 * Misc.points_distance(largestTown.LocCenterX, largestTown.LocCenterY,
 				firm.center_x, firm.center_y);
 
 			int combatLevel = mobileCombatLevel + ((FirmMonster)firm).total_combat_level();
@@ -4583,7 +4583,7 @@ public class Nation : NationBase
 				{
 					int migrateCount = Math.Min(8, joblessCount); // migrate a maximum of 8 units at a time
 
-					add_action(destTown.X1Loc, destTown.Y1Loc, town.X1Loc, town.Y1Loc,
+					add_action(destTown.LocX1, destTown.LocY1, town.LocX1, town.LocY1,
 						ACTION_AI_SETTLE_TO_OTHER_TOWN, 0, migrateCount);
 				}
 			}
@@ -4712,8 +4712,8 @@ public class Nation : NationBase
 				{
 					Town ownTown = TownArray[ai_town_array[j]];
 
-					int townDistance = Misc.points_distance(targetTown.CenterXLoc, targetTown.CenterYLoc,
-						ownTown.CenterXLoc, ownTown.CenterYLoc);
+					int townDistance = Misc.points_distance(targetTown.LocCenterX, targetTown.LocCenterY,
+						ownTown.LocCenterX, ownTown.LocCenterY);
 
 					if ((Info.game_date - Info.game_start_date).Days >
 					    townDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
@@ -4805,7 +4805,7 @@ public class Nation : NationBase
 
 		int buildXLoc, buildYLoc;
 
-		if (!find_best_firm_loc(Firm.FIRM_CAMP, captureTown.X1Loc, captureTown.Y1Loc,
+		if (!find_best_firm_loc(Firm.FIRM_CAMP, captureTown.LocX1, captureTown.LocY1,
 			    out buildXLoc, out buildYLoc))
 		{
 			captureTown.NoNeighborSpace = true;
@@ -4830,7 +4830,7 @@ public class Nation : NationBase
 			if (should_use_cash_to_capture())
 			{
 				Unit skilledUnit = find_skilled_unit(Skill.SKILL_LEADING, raceId,
-					captureTown.CenterXLoc, captureTown.CenterYLoc, out _);
+					captureTown.LocCenterX, captureTown.LocCenterY, out _);
 
 				if (skilledUnit != null)
 					unitRecno = skilledUnit.sprite_recno;
@@ -4847,7 +4847,7 @@ public class Nation : NationBase
 
 		//---------- add the action to the queue now ----------//
 
-		ActionNode actionNode = add_action(buildXLoc, buildYLoc, captureTown.X1Loc, captureTown.Y1Loc,
+		ActionNode actionNode = add_action(buildXLoc, buildYLoc, captureTown.LocX1, captureTown.LocY1,
 			ACTION_AI_BUILD_FIRM, Firm.FIRM_CAMP, 1, unitRecno);
 
 		if (actionNode != null)
@@ -4978,7 +4978,7 @@ public class Nation : NationBase
 
 		int bestRating = 70, bestInnRecno = 0, bestInnUnitId = 0;
 		Town town = TownArray[townRecno];
-		int destRegionId = World.get_region_id(town.X1Loc, town.Y1Loc);
+		int destRegionId = World.get_region_id(town.LocX1, town.LocY1);
 
 		targetResistance = 100;
 
@@ -5163,7 +5163,7 @@ public class Nation : NationBase
 
 		//---- if we haven't started attacking the town yet -----//
 
-		int isBattle = is_battle(targetTown.CenterXLoc, targetTown.CenterYLoc);
+		int isBattle = is_battle(targetTown.LocCenterX, targetTown.LocCenterY);
 		if (ai_capture_enemy_town_start_attack_date == default)
 		{
 			if (isBattle == 2) // we are at war with the nation now
@@ -5191,10 +5191,10 @@ public class Nation : NationBase
 			//-------- check if we need any reinforcement --------//
 
 			int targetCombatLevel =
-				ai_evaluate_target_combat_level(targetTown.CenterXLoc, targetTown.CenterYLoc, targetTown.NationId);
+				ai_evaluate_target_combat_level(targetTown.LocCenterX, targetTown.LocCenterY, targetTown.NationId);
 			if (targetCombatLevel > 0 && isBattle == 2) // we are still in war with the enemy
 			{
-				ai_attack_target(targetTown.CenterXLoc, targetTown.CenterYLoc, targetCombatLevel, true);
+				ai_attack_target(targetTown.LocCenterX, targetTown.LocCenterY, targetCombatLevel, true);
 				return;
 			}
 		}
@@ -5262,7 +5262,7 @@ public class Nation : NationBase
 		//----- get the defense combat level around the town ----//
 
 		int targetCombatLevel =
-			ai_evaluate_target_combat_level(targetTown.CenterXLoc, targetTown.CenterYLoc, targetTown.NationId);
+			ai_evaluate_target_combat_level(targetTown.LocCenterX, targetTown.LocCenterY, targetTown.NationId);
 
 		//----------------------------------------//
 
@@ -5283,7 +5283,7 @@ public class Nation : NationBase
 			//--- if there are any mobile defense force around the town ----//
 
 			if (targetCombatLevel > 0)
-				return ai_attack_target(targetTown.CenterXLoc, targetTown.CenterYLoc, targetCombatLevel, true) ? 1 : 0;
+				return ai_attack_target(targetTown.LocCenterX, targetTown.LocCenterY, targetCombatLevel, true) ? 1 : 0;
 		}
 
 		return -1;
@@ -5350,10 +5350,10 @@ public class Nation : NationBase
 
 			//---- do not attack this town because a battle is already going on ----//
 
-			if (is_battle(town.CenterXLoc, town.CenterYLoc) > 0)
+			if (is_battle(town.LocCenterX, town.LocCenterY) > 0)
 				continue;
 
-			int townCombatLevel = ai_evaluate_target_combat_level(town.CenterXLoc, town.CenterYLoc, town.NationId);
+			int townCombatLevel = ai_evaluate_target_combat_level(town.LocCenterX, town.LocCenterY, town.NationId);
 
 			//------- calculate the rating --------------//
 
@@ -5414,8 +5414,8 @@ public class Nation : NationBase
 
 			curRating += town.LinkedFirms.Count * 5;
 
-			curRating = curRating * World.distance_rating(capturerTown.CenterXLoc, capturerTown.CenterYLoc,
-				town.CenterXLoc, town.CenterYLoc) / 100;
+			curRating = curRating * World.distance_rating(capturerTown.LocCenterX, capturerTown.LocCenterY,
+				town.LocCenterX, town.LocCenterY) / 100;
 
 			//-------- compare with the current best rating ---------//
 
@@ -5737,7 +5737,7 @@ public class Nation : NationBase
 			{
 				//--- if there is one, must move the people to it ---//
 
-				return ai_settle_to_region(town.CenterXLoc, town.CenterYLoc, SEA_ACTION_NONE);
+				return ai_settle_to_region(town.LocCenterX, town.LocCenterY, SEA_ACTION_NONE);
 			}
 		}
 
@@ -5927,7 +5927,7 @@ public class Nation : NationBase
 				continue;
 			}
 
-			int curRating = World.distance_rating(destXLoc, destYLoc, town.CenterXLoc, town.CenterYLoc);
+			int curRating = World.distance_rating(destXLoc, destYLoc, town.LocCenterX, town.LocCenterY);
 
 			curRating += town.JoblessPopulation;
 
@@ -5941,7 +5941,7 @@ public class Nation : NationBase
 			int seaRegionId = RegionArray.get_sea_path_region_id(town.RegionId, destRegionId);
 
 			// 0-don't have to find the best, return immediately whenever a suitable one is found
-			if (ai_find_transport_ship(seaRegionId, town.CenterXLoc, town.CenterYLoc, false) == 0)
+			if (ai_find_transport_ship(seaRegionId, town.LocCenterX, town.LocCenterY, false) == 0)
 				continue;
 
 			bestRating = curRating;
@@ -6106,8 +6106,8 @@ public class Nation : NationBase
 		if (targetTown == null) // not found
 			return false;
 
-		int homeXLoc = targetTown.CenterXLoc;
-		int homeYLoc = targetTown.CenterYLoc;
+		int homeXLoc = targetTown.LocCenterX;
+		int homeYLoc = targetTown.LocCenterY;
 
 		//---- scan out from the town and find the nearest suitable location to build the harbor ----//
 
@@ -6293,7 +6293,7 @@ public class Nation : NationBase
 				if (location.is_town() && TownArray[location.town_recno()].NationId == nation_recno)
 				{
 					Town town = TownArray[location.town_recno()];
-					UnitArray.assign(town.X1Loc, town.Y1Loc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
 				{
@@ -6747,8 +6747,8 @@ public class Nation : NationBase
 			if (townRecno != 0)
 			{
 				Town town = TownArray[townRecno];
-				loc_x1 = town.X1Loc;
-				loc_y1 = town.Y1Loc;
+				loc_x1 = town.LocX1;
+				loc_y1 = town.LocY1;
 				cloakedNationRecno = town.NationId;
 
 				return true;
@@ -6759,8 +6759,8 @@ public class Nation : NationBase
 		if (townRecno != 0)
 		{
 			Town town = TownArray[townRecno];
-			loc_x1 = town.X1Loc;
-			loc_y1 = town.Y1Loc;
+			loc_x1 = town.LocX1;
+			loc_y1 = town.LocY1;
 			cloakedNationRecno = town.NationId;
 
 			return true;
@@ -7359,12 +7359,12 @@ public class Nation : NationBase
 
 			//----- take into account of the mobile units around this town -----//
 
-			if (is_battle(town.CenterXLoc, town.CenterYLoc) > 0)
+			if (is_battle(town.LocCenterX, town.LocCenterY) > 0)
 				continue;
 
-			int enemyCombatLevel = ai_evaluate_target_combat_level(town.CenterXLoc, town.CenterYLoc, town.NationId);
+			int enemyCombatLevel = ai_evaluate_target_combat_level(town.LocCenterX, town.LocCenterY, town.NationId);
 
-			return ai_attack_target(town.X1Loc, town.Y1Loc, enemyCombatLevel);
+			return ai_attack_target(town.LocX1, town.LocY1, enemyCombatLevel);
 		}
 
 		return false;
