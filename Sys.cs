@@ -208,6 +208,12 @@ public class Sys
 
             FrameOfDay = 0;
         }
+
+        if (FrameNumber % (InternalConstants.FRAMES_PER_DAY * 30) == 0)
+        {
+            // recreate mini-map texture every month to display growing and dying plants
+            Renderer.NeedFullRedraw = true;
+        }
     }
     
     private void MainLoop()
@@ -215,6 +221,7 @@ public class Sys
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         while (true)
         {
+            //TODO process all events
             bool hasEvent = false;
             bool nextFrameReady = false;
             SDL.SDL_Event sdlEvent = default;

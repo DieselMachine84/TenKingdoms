@@ -1342,7 +1342,7 @@ public class World
 					if (Misc.Random(totalSpace) + 2 * totalSpace / 3 <= neighbour)
 					{
 						location = get_loc(x, y);
-						get_loc(x, y).remove_plant(x, y);
+						get_loc(x, y).remove_plant();
 						if (location.fire_src() > 50)
 							location.set_fire_src(50);
 						plant_count--;
@@ -1510,7 +1510,7 @@ public class World
 		         (newl.plant_id() - PlantRes[PlantRes.plant_recno(newl.plant_id())].first_bitmap) > plantSize)
 		{
 			// same kind of plant, but smaller, override by a smaller one
-			newl.remove_plant(x, y);
+			newl.remove_plant();
 			newl.set_plant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
 			newl.set_fire_src(100);
 			//### begin alex 24/6 ###//
@@ -1720,7 +1720,7 @@ public class World
 						// if a plant on it then remove the plant, if flammability <= 0
 						if (location.is_plant() && flammability <= 0)
 						{
-							location.remove_plant(x, y);
+							location.remove_plant();
 							plant_count--;
 						}
 					}
@@ -1753,7 +1753,7 @@ public class World
 						// if a plant on it then remove the plant, if flammability <= 0
 						if (location.is_plant() && flammability <= 0)
 						{
-							location.remove_plant(x, y);
+							location.remove_plant();
 							plant_count--;
 						}
 					}

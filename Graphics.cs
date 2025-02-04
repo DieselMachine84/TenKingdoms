@@ -19,6 +19,7 @@ public class Graphics
     private IntPtr surface = IntPtr.Zero;
     private IntPtr mainMenuTexture = IntPtr.Zero;
     private IntPtr mainScreenTexture = IntPtr.Zero;
+    private IntPtr miniMapTexture = IntPtr.Zero;
     private List<IntPtr> textures = new List<IntPtr>();
     private bool initialized;
 
@@ -50,6 +51,7 @@ public class Graphics
 
     private void LoadTextures()
     {
+        //TODO Do not use jpg
         mainMenuTexture = SDL_image.IMG_LoadTexture(renderer, $"{Sys.GameDataFolder}/Images/M_MAIN.jpg");
         textures.Add(mainMenuTexture);
         mainScreenTexture = SDL_image.IMG_LoadTexture(renderer, $"{Sys.GameDataFolder}/Images/MAINSCR.jpg");
@@ -130,6 +132,9 @@ public class Graphics
                 SDL.SDL_DestroyTexture(item);
             }
         }
+
+        if (miniMapTexture != IntPtr.Zero)
+            SDL.SDL_DestroyTexture(miniMapTexture);
         
         if (renderer != IntPtr.Zero)
             SDL.SDL_DestroyRenderer(renderer);
@@ -170,7 +175,7 @@ public class Graphics
         }
     }*/
 
-    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height)
+    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, bool addToList = true)
     {
         IntPtr sdlPalette = SDL.SDL_AllocPalette(256);
         SDL.SDL_SetPaletteColors(sdlPalette, colors, 0, 256);
@@ -182,7 +187,8 @@ public class Graphics
         SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
         IntPtr texture = SDL.SDL_CreateTextureFromSurface(renderer, imageSurface);
         SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
-        textures.Add(texture);
+        if (addToList)
+            textures.Add(texture);
         pinnedBmpImage.Free();
 
         return texture;
@@ -210,10 +216,20 @@ public class Graphics
 
     public void DrawMainScreen()
     {
-        SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        //TODO should we call SDL_RenderClear?
-        //SDL.SDL_RenderClear(renderer);
-        //SDL.SDL_RenderCopy(renderer, mainScreenTexture, IntPtr.Zero, IntPtr.Zero);
+        SDL.SDL_RenderCopy(renderer, mainScreenTexture, IntPtr.Zero, IntPtr.Zero);
+    }
+
+    public void CreateMiniMapTexture(byte[] image, int width, int height)
+    {
+        if (miniMapTexture != IntPtr.Zero)
+            SDL.SDL_DestroyTexture(miniMapTexture);
+        
+        miniMapTexture = CreateTextureFromBmp(image, width, height, false);
+    }
+
+    public void DrawMiniMapGround(int x, int y, int width, int height)
+    {
+        DrawBitmap(x, y, miniMapTexture, width, height, false);
     }
 
     public void DrawPoint(int x, int y, int paletteColor)
@@ -254,14 +270,20 @@ public class Graphics
         SDL.SDL_RenderDrawRect(renderer, ref dstRect);
     }
     
-    public void DrawBitmap(int x, int y, IntPtr texture, int width, int height)
+    public void DrawBitmap(int x, int y, IntPtr texture, int width, int height, bool scale = true)
     {
-        SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
+        if (scale)
+        {
+            SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
+            width = width * 3 / 2; // TODO rewrite * 3 / 2
+            height = height * 3 / 2;
+        }
+        
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
-        dstRect.w = width * 3 / 2; // TODO rewrite * 3 / 2
-        dstRect.h = height * 3 / 2;
+        dstRect.w = width;
+        dstRect.h = height;
         SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
     }
 

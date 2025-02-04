@@ -229,8 +229,6 @@ public class Location
 		loc_flag &= ~LOCATE_SITE_MASK;
 
 		extra_para = 0;
-
-		Renderer.NeedFullRedraw = true;
 	}
 
 	// ------------ wall timeout ----------//
@@ -336,7 +334,6 @@ public class Location
 		loc_flag &= ~LOCATE_BLOCK_MASK;
 		cargo_recno = 0;
 		walkable_reset();
-		Renderer.NeedFullRedraw = true;
 	}
 
 	// ---------- town ------------//
@@ -369,7 +366,6 @@ public class Location
 		loc_flag &= ~LOCATE_BLOCK_MASK;
 		cargo_recno = 0;
 		walkable_reset();
-		Renderer.NeedFullRedraw = true;
 	}
 
 	// ---------- hill -------------//
@@ -582,7 +578,6 @@ public class Location
 		extra_para = 0;
 		cargo_recno = 0;
 		walkable_reset();
-		Renderer.NeedFullRedraw = true;
 
 		if (setTimeOut < 0)
 			set_wall_timeout(DEFAULT_WALL_TIMEOUT);
@@ -634,13 +629,12 @@ public class Location
 		extra_para++;
 	}
 
-	public void remove_plant(int xLoc, int yLoc)
+	public void remove_plant()
 	{
 		loc_flag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
 		extra_para = 0;
 		cargo_recno = 0;
 		walkable_reset();
-		Renderer.AddChangedLoc(xLoc, yLoc);
 	}
 
 	// ---------- rock ------------//
@@ -672,7 +666,6 @@ public class Location
 		loc_flag &= ~LOCATE_BLOCK_MASK;
 		cargo_recno = 0;
 		walkable_reset();
-		Renderer.NeedFullRedraw = true;
 	}
 
 	// call region_type only when generating region number
