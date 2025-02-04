@@ -215,6 +215,19 @@ public class Sys
             Renderer.NeedFullRedraw = true;
         }
     }
+
+    private void ProcessEvent(SDL.SDL_Event sdlEvent)
+    {
+        if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
+        {
+            ProcessKeyboardEvent(sdlEvent.key);
+        }
+
+        if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN || sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
+        {
+            ProcessMouseButtonEvent(sdlEvent.button);
+        }
+    }
     
     private void MainLoop()
     {
@@ -232,38 +245,44 @@ public class Sys
                 if (currentMilliseconds < nextFrameTime)
                 {
                     hasEvent = (SDL.SDL_WaitEventTimeout(out sdlEvent, (int)(nextFrameTime - currentMilliseconds)) == 1);
+                    if (hasEvent)
+                    {
+                        if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                            return;
+
+                        ProcessEvent(sdlEvent);
+                    }
                 }
                 else
                 {
-                    hasEvent = (SDL.SDL_PollEvent(out sdlEvent) == 1);
+                    while (SDL.SDL_PollEvent(out sdlEvent) == 1)
+                    {
+                        hasEvent = true;
+                        if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                            return;
+
+                        ProcessEvent(sdlEvent);
+                    }
+                    
                     lastFrameTime = currentMilliseconds;
                     FrameNumber++;
-                    Process();
                     nextFrameReady = true;
                 }
             }
             else
             {
                 hasEvent = (SDL.SDL_WaitEvent(out sdlEvent) == 1);
-            }
-
-            if (hasEvent)
-            {
-                if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                if (hasEvent)
                 {
-                    break;
-                }
-
-                if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
-                {
-                    ProcessKeyboardEvent(sdlEvent.key);
-                }
-
-                if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN || sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
-                {
-                    ProcessMouseButtonEvent(sdlEvent.button);
+                    if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                        return;
+                
+                    ProcessEvent(sdlEvent);
                 }
             }
+
+            if (nextFrameReady)
+                Process();
 
             if (hasEvent || nextFrameReady)
             {
