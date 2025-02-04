@@ -10,8 +10,6 @@ public class EffectArray : SpriteArray
     public Effect AddEffect(int spriteId, int startX, int startY, int initAction, int initDir, int dispLayer, int effectLife)
     {
         Effect effect = (Effect)AddSprite(spriteId);
-        effect.sprite_recno = nextRecNo;
-        nextRecNo++;
         effect.init(spriteId, startX, startY, initAction, initDir, dispLayer, effectLife);
         return effect;
     }

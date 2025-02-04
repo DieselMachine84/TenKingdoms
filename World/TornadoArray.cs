@@ -13,8 +13,6 @@ public class TornadoArray : SpriteArray
     public Tornado AddTornado(int xLoc, int yLoc, int lifeTime)
     {
         Tornado tornado = (Tornado)CreateNew();
-        tornado.sprite_recno = nextRecNo;
-        nextRecNo++;
         tornado.init(xLoc, yLoc, lifeTime);
         return tornado;
     }
