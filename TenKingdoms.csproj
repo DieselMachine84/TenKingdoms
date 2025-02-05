@@ -11,16 +11,19 @@
     <ItemGroup>
       <Compile Remove="Resource\**" />
       <Compile Remove="Sprite\**" />
+      <Compile Remove="Images\**" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Remove="Resource\**" />
       <EmbeddedResource Remove="Sprite\**" />
+      <EmbeddedResource Remove="Images\**" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="Resource\**" />
       <None Remove="Sprite\**" />
+      <None Remove="Images\**" />
     </ItemGroup>
 
 </Project>
