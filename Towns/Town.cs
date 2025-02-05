@@ -123,15 +123,15 @@ public class Town
 	{
 	}
 
-	public void Init(int townId, int nationId, int raceId, int LocX, int LocY)
+	public void Init(int townId, int nationId, int raceId, int locX, int locY)
 	{
 		TownId = townId;
 		NationId = nationId;
 
 		//---- set the town section's absolute positions on the map ----//
 
-		LocX1 = LocX;
-		LocY1 = LocY;
+		LocX1 = locX;
+		LocY1 = locY;
 		LocX2 = LocX1 + InternalConstants.TOWN_WIDTH - 1;
 		LocY2 = LocY1 + InternalConstants.TOWN_HEIGHT - 1;
 
@@ -474,7 +474,7 @@ public class Town
 	}
 
 
-	public void InitPopulation(int raceId, int addPop, int loyalty, bool hasJob = false, bool firstInit = false)
+	public void InitPopulation(int raceId, int addPop, int loyalty, bool hasJob, bool firstInit)
 	{
 		if (Population >= GameConstants.MAX_TOWN_POPULATION)
 			return;
@@ -494,7 +494,7 @@ public class Town
 
 		//------- update loyalty --------//
 
-		if (firstInit) // first initialization at the beginning of the game
+		if (firstInit)
 		{
 			if (NationId != 0)
 			{
@@ -514,21 +514,19 @@ public class Town
 		{
 			if (NationId != 0)
 			{
-				RacesLoyalty[raceId - 1] =
-					(RacesLoyalty[raceId - 1] * (RacesPopulation[raceId - 1] - addPopulation)
-					 + loyalty * addPopulation) / RacesPopulation[raceId - 1];
+				RacesLoyalty[raceId - 1] = (RacesLoyalty[raceId - 1] * (RacesPopulation[raceId - 1] - addPopulation)
+				                            + loyalty * addPopulation) / RacesPopulation[raceId - 1];
 
-				RacesTargetLoyalty[raceId - 1] = Convert.ToInt32(RacesLoyalty[raceId - 1]);
+				RacesTargetLoyalty[raceId - 1] = (int)RacesLoyalty[raceId - 1];
 			}
 			else
 			{
 				for (int j = 0; j < GameConstants.MAX_NATION; j++) // reset resistance for non-existing races
 				{
-					RacesResistance[raceId - 1, j] =
-						(RacesResistance[raceId - 1, j] * (RacesPopulation[raceId - 1] - addPopulation)
-						 + loyalty * addPopulation) / RacesPopulation[raceId - 1];
+					RacesResistance[raceId - 1, j] = (RacesResistance[raceId - 1, j] * (RacesPopulation[raceId - 1] - addPopulation)
+					                                  + loyalty * addPopulation) / RacesPopulation[raceId - 1];
 
-					RacesTargetResistance[raceId - 1, j] = Convert.ToInt32(RacesResistance[raceId - 1, j]);
+					RacesTargetResistance[raceId - 1, j] = (int)RacesResistance[raceId - 1, j];
 				}
 			}
 		}
@@ -558,11 +556,9 @@ public class Town
 
 		//------- update loyalty --------//
 
-		if (NationId != 0) // if the unit has an unit
+		if (NationId != 0)
 		{
-			RacesLoyalty[raceId - 1] =
-				(RacesLoyalty[raceId - 1] * (RacesPopulation[raceId - 1] - 1) + unitLoyalty)
-				/ RacesPopulation[raceId - 1];
+			RacesLoyalty[raceId - 1] = (RacesLoyalty[raceId - 1] * (RacesPopulation[raceId - 1] - 1) + unitLoyalty) / RacesPopulation[raceId - 1];
 		}
 
 		//-- if the race's population exceeds the capacity of the town layout --//
@@ -586,7 +582,7 @@ public class Town
 
 		//------- if all the population are gone --------//
 
-		if (Population == 0) // it will be deleted in TownArray::process()
+		if (Population == 0)
 		{
 			if (NationId == NationArray.player_recno)
 				NewsArray.town_abandoned(TownId);
@@ -607,7 +603,7 @@ public class Town
 	{
 		//--- if the only pop of this race in the source town are spies ---//
 
-		// only for peasant, for job unit, spy_place==Spy.SPY_FIRM and it isn't related to race_spy_count_array[]
+		// only for peasant, for job unit, spy_place==Spy.SPY_FIRM and it isn't related to RacesSpyCount[]
 		if (!hasJob)
 		{
 
@@ -615,9 +611,9 @@ public class Town
 			{
 				int spySeqId = Misc.Random(RacesSpyCount[raceId - 1]) + 1; // randomly pick one of the spies
 
-				int spyRecno = SpyArray.find_town_spy(TownId, raceId, spySeqId);
+				int spyId = SpyArray.find_town_spy(TownId, raceId, spySeqId);
 
-				SpyArray[spyRecno].spy_place_para = destTown.TownId; // set the place_para of the spy
+				SpyArray[spyId].spy_place_para = destTown.TownId; // set the place_para of the spy
 
 				RacesSpyCount[raceId - 1]--;
 				destTown.RacesSpyCount[raceId - 1]++;
@@ -626,7 +622,7 @@ public class Town
 
 		//------------------------------------------//
 
-		destTown.IncPopulation(raceId, hasJob, Convert.ToInt32(RacesLoyalty[raceId - 1]));
+		destTown.IncPopulation(raceId, hasJob, (int)RacesLoyalty[raceId - 1]);
 
 		// the unit doesn't have a job - this must be called finally as dec_pop() will have the whole town deleted if there is only one pop left
 		DecPopulation(raceId, hasJob);
@@ -651,8 +647,9 @@ public class Town
 			double loyaltyMultiplier = RacesLoyalty[i] * 4.0 / 50.0 - 3.0;
 			if (loyaltyMultiplier < 0.0)
 				loyaltyMultiplier = 0.0;
+
 			if (NationId != 0)
-				RacesPopulationGrowth[i] += (int)(Convert.ToDouble(RacesPopulation[i]) * loyaltyMultiplier);
+				RacesPopulationGrowth[i] += (int)((double)RacesPopulation[i] * loyaltyMultiplier);
 			else
 				RacesPopulationGrowth[i] += RacesPopulation[i];
 
@@ -711,9 +708,6 @@ public class Town
 		mostRaceId1 = 0;
 		mostRaceId2 = 0;
 
-		if (Population == 0)
-			return;
-
 		int mostRacePop1 = 0, mostRacePop2 = 0;
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
@@ -730,7 +724,7 @@ public class Town
 				mostRaceId2 = mostRaceId1;
 				mostRaceId1 = i + 1;
 			}
-			else if (racePop >= mostRaceId2)
+			else if (racePop >= mostRacePop2)
 			{
 				mostRacePop2 = racePop;
 				mostRaceId2 = i + 1;
@@ -750,7 +744,7 @@ public class Town
 		{
 			totalPop = JoblessPopulation;
 			if (TrainUnitId != 0)
-				totalPop -= 1;
+				totalPop--;
 
 			if (!pickSpyFlag) // if don't pick spies
 			{
@@ -803,40 +797,52 @@ public class Town
 
 	public int AverageLoyalty()
 	{
+		if (Population == 0)
+			return 0;
+		
 		int totalLoyalty = 0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			totalLoyalty += Convert.ToInt32(RacesLoyalty[i]) * RacesPopulation[i];
+			totalLoyalty += (int)RacesLoyalty[i] * RacesPopulation[i];
 
 		return totalLoyalty / Population;
 	}
 
 	public int AverageTargetLoyalty()
 	{
+		if (Population == 0)
+			return 0;
+
 		int totalLoyalty = 0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			totalLoyalty += Convert.ToInt32(RacesTargetLoyalty[i]) * RacesPopulation[i];
+			totalLoyalty += RacesTargetLoyalty[i] * RacesPopulation[i];
 
 		return totalLoyalty / Population;
 	}
 
-	public int AverageResistance(int nationRecno)
+	public int AverageResistance(int nationId)
 	{
+		if (Population == 0)
+			return 0;
+
 		double totalResistance = 0.0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			int thisPop = RacesPopulation[i];
 			if (thisPop > 0)
-				totalResistance += RacesResistance[i, nationRecno - 1] * thisPop;
+				totalResistance += RacesResistance[i, nationId - 1] * thisPop;
 		}
 
-		return Convert.ToInt32(totalResistance) / Population;
+		return (int)totalResistance / Population;
 	}
 
-	public int AverageTargetResistance(int nationRecno)
+	public int AverageTargetResistance(int nationId)
 	{
+		if (Population == 0)
+			return 0;
+
 		int totalResistance = 0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
@@ -845,12 +851,13 @@ public class Town
 
 			if (thisPop > 0)
 			{
-				int t = RacesTargetResistance[i, nationRecno - 1];
+				//TODO check this
+				int t = RacesTargetResistance[i, nationId - 1];
 
 				if (t >= 0) // -1 means no target
 					totalResistance += t * thisPop;
 				else
-					totalResistance += Convert.ToInt32(RacesResistance[i, nationRecno - 1]) * thisPop;
+					totalResistance += (int)RacesResistance[i, nationId - 1] * thisPop;
 			}
 		}
 
@@ -867,14 +874,14 @@ public class Town
 		RacesLoyalty[raceId - 1] = newLoyalty;
 	}
 
-	public void ChangeResistance(int raceId, int nationRecno, double resistanceChange)
+	public void ChangeResistance(int raceId, int nationId, double resistanceChange)
 	{
-		double newResistance = RacesResistance[raceId - 1, nationRecno - 1] + resistanceChange;
+		double newResistance = RacesResistance[raceId - 1, nationId - 1] + resistanceChange;
 
 		newResistance = Math.Min(100.0, newResistance);
 		newResistance = Math.Max(0.0, newResistance);
 
-		RacesResistance[raceId - 1, nationRecno - 1] = newResistance;
+		RacesResistance[raceId - 1, nationId - 1] = newResistance;
 	}
 
 	private void UpdateLoyalty()
@@ -900,13 +907,13 @@ public class Town
 
 				//-------------------------------------//
 
-				double loyaltyInc = (targetLoyalty - RacesLoyalty[i]) / 30;
+				double loyaltyInc = (targetLoyalty - RacesLoyalty[i]) / 30.0;
 
 				ChangeLoyalty(i + 1, Math.Max(loyaltyInc, 0.5));
 			}
 			else if (RacesLoyalty[i] > targetLoyalty)
 			{
-				double loyaltyDec = (RacesLoyalty[i] - targetLoyalty) / 30;
+				double loyaltyDec = (RacesLoyalty[i] - targetLoyalty) / 30.0;
 
 				ChangeLoyalty(i + 1, -Math.Max(loyaltyDec, 0.5));
 			}
@@ -915,7 +922,7 @@ public class Town
 
 	public void UpdateTargetLoyalty()
 	{
-		if (NationId == 0) // return if independent towns
+		if (NationId == 0)
 			return;
 
 		//----- update loyalty of individual races -------//
@@ -939,7 +946,6 @@ public class Town
 		//------- set target loyalty of each race --------//
 
 		Nation nation = NationArray[NationId];
-		int targetLoyalty;
 		int nationRaceId = nation.race_id;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
@@ -949,8 +955,8 @@ public class Town
 
 			//------- calculate the target loyalty -------//
 
-			targetLoyalty = RaceHarmony(i + 1) / 3 + // 0 to 33
-			                (int)nation.reputation / 4; // -25 to +25
+			// 0 to 33 + -25 to +25
+			int targetLoyalty = RaceHarmony(i + 1) / 3 + (int)(nation.reputation / 4.0);
 
 			//---- employment help increase loyalty ----//
 
@@ -972,8 +978,6 @@ public class Town
 
 		//----- process command bases that have influence on this town -----//
 
-		int baseInfluence, thisInfluence, commanderRaceId;
-
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			if (LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
@@ -986,16 +990,15 @@ public class Town
 
 			//-------- get nation and commander info ------------//
 
-			Unit unit = UnitArray[firm.overseer_recno];
-			commanderRaceId = unit.race_id;
+			Unit overseer = UnitArray[firm.overseer_recno];
 
 			Nation baseNation = NationArray[firm.nation_recno];
 
 			//------ if this race is the overseer's race -------//
 
-			baseInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
+			int baseInfluence = overseer.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
 
-			if (unit.rank_id == Unit.RANK_KING) // 20 points bonus for king
+			if (overseer.rank_id == Unit.RANK_KING) // 20 points bonus for king
 				baseInfluence += 20;
 
 			//------------ update all race -----------//
@@ -1007,9 +1010,9 @@ public class Town
 
 				//---- if the overseer's race is the same as this race ---//
 
-				thisInfluence = baseInfluence;
+				int thisInfluence = baseInfluence;
 
-				if (unit.race_id == j + 1)
+				if (overseer.race_id == j + 1)
 					thisInfluence += 8;
 
 				//--- if the overseer's nation's race is the same as this race ---//
@@ -1021,12 +1024,12 @@ public class Town
 
 				if (firm.nation_recno == NationId) // if the command base belongs to the same nation
 				{
-					targetLoyalty = RacesTargetLoyalty[j] + thisInfluence;
+					int targetLoyalty = RacesTargetLoyalty[j] + thisInfluence;
 					RacesTargetLoyalty[j] = Math.Min(100, targetLoyalty);
 				}
-				else if (unit.race_id == j + 1) // for enemy camps, only decrease same race peasants
+				else if (overseer.race_id == j + 1) // for enemy camps, only decrease same race peasants
 				{
-					targetLoyalty = RacesTargetLoyalty[j] - thisInfluence;
+					int targetLoyalty = RacesTargetLoyalty[j] - thisInfluence;
 					RacesTargetLoyalty[j] = Math.Max(0, targetLoyalty);
 				}
 			}
@@ -1034,16 +1037,14 @@ public class Town
 
 		//------- apply quality of life -------//
 
-		int qolContribution = ConfigAdv.town_loyalty_qol
-			? (_qualityOfLife - 50) / 3
-			: // -17 to +17
-			0; // off
+		// -17 to +17 or 0
+		int qolContribution = ConfigAdv.town_loyalty_qol ? (_qualityOfLife - 50) / 3 : 0;
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			if (RacesPopulation[i] == 0)
 				continue;
 
-			targetLoyalty = RacesTargetLoyalty[i];
+			int targetLoyalty = RacesTargetLoyalty[i];
 
 			// Quality of life only applies to the part above 30 loyalty
 			if (targetLoyalty > 30)
@@ -1106,13 +1107,13 @@ public class Town
 
 						RacesResistance[i, j] -= Math.Max(1.0, decValue);
 
-						// avoid resistance oscillate between taregtLoyalty-1 and taregtLoyalty+1
+						// avoid resistance oscillate between targetResistance-1 and targetResistance+1
 						if (RacesResistance[i, j] < targetResistance)
 							RacesResistance[i, j] = targetResistance;
 					}
 				}
 
-				// also values between consider 0 and 1 as zero as they are displayed as 0 in the interface
+				// also values between 0 and 1 consider as zero as they are displayed as 0 in the interface
 				if (RacesResistance[i, j] >= 1.0)
 					zeroResistance[j] = false;
 			}
@@ -1165,14 +1166,14 @@ public class Town
 
 			//-------- get nation and commander info ------------//
 
-			Unit unit = UnitArray[firm.overseer_recno];
+			Unit overseer = UnitArray[firm.overseer_recno];
 
-			int curValue = RacesTargetResistance[unit.race_id - 1, unit.nation_recno - 1];
+			int curValue = RacesTargetResistance[overseer.race_id - 1, overseer.nation_recno - 1];
 			int newValue = 100 - CampInfluence(firm.overseer_recno);
 
 			// need to do this comparison as there may be more than one command bases of the same nation linked to this town, we use the one with the most influence.
 			if (curValue == -1 || newValue < curValue)
-				RacesTargetResistance[unit.race_id - 1, unit.nation_recno - 1] = newValue;
+				RacesTargetResistance[overseer.race_id - 1, overseer.nation_recno - 1] = newValue;
 		}
 	}
 
@@ -1220,7 +1221,7 @@ public class Town
 
 		if (_autoGrantLoyalty > 0)
 		{
-			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < _autoGrantLoyalty && nation.cash > 0)
+			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < _autoGrantLoyalty && nation.cash > 0.0)
 			{
 				Reward(InternalConstants.COMMAND_AI);
 			}
@@ -1262,34 +1263,20 @@ public class Town
 
 		//------ decrease the loyalty of the town people ------//
 
-		// ##### patch begin Gilbert 5/8 ######//
-		//	for( int i=0 ; i<MAX_RACE ; i++ )
-		//		change_loyalty( i+1, (float) -loyaltyDecrease );
-		//----------- increase cash ------------//
-		//	NationArray[nation_recno].add_income(INCOME_TAX, (float)population * TAX_PER_PERSON );
-
-		// ------ cash increase depend on loyalty drop --------//
 		double taxCollected = 0.0;
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			double beforeLoyalty = RacesLoyalty[i];
 			ChangeLoyalty(i + 1, -loyaltyDecrease);
-			taxCollected += (beforeLoyalty - RacesLoyalty[i]) * RacesPopulation[i] * GameConstants.TAX_PER_PERSON /
-			                loyaltyDecrease;
+			taxCollected += (beforeLoyalty - RacesLoyalty[i]) * RacesPopulation[i] * GameConstants.TAX_PER_PERSON / loyaltyDecrease;
 		}
 
-		//----------- increase cash ------------//
-
 		NationArray[NationId].add_income(NationBase.INCOME_TAX, taxCollected);
-
-		// ##### patch end Gilbert 5/8 ######//
-
-		//------------ think rebel -------------//
 
 		ThinkRebel();
 	}
 
-	public void Reward(byte remoteAction)
+	public void Reward(int remoteAction)
 	{
 		if (!HasLinkedOwnCamp)
 			return;
@@ -1322,36 +1309,32 @@ public class Town
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 			ChangeLoyalty(i + 1, loyaltyIncrease);
 
-		//----------- decrease cash ------------//
-
-		NationArray[NationId].add_expense(NationBase.EXPENSE_GRANT_OWN_TOWN,
-			Population * GameConstants.TOWN_REWARD_PER_PERSON);
+		NationArray[NationId].add_expense(NationBase.EXPENSE_GRANT_OWN_TOWN, Population * GameConstants.TOWN_REWARD_PER_PERSON);
 	}
 
-	public bool CanGrantToNonOwnTown(int grantNationRecno)
+	public bool CanGrantToNonOwnTown(int grantNationId)
 	{
-		if (NationId == grantNationRecno) // only for independent town
+		if (NationId == grantNationId)
 			return false;
 
-		if (NationId == 0) // independent town
+		if (NationId == 0)
 		{
-			return HasLinkedCamp(grantNationRecno, true); // 1-only count camps with overseers
+			return HasLinkedCamp(grantNationId, true);
 		}
 		else // for nation town, when the enemy doesn't have camps linked to it and the granting nation has camps linked to it
 		{
-			return !HasLinkedCamp(NationId, false) && // 0-count camps regardless of the presence of overseers
-			       HasLinkedCamp(grantNationRecno, true); // 1-only count camps with overseers
+			return !HasLinkedCamp(NationId, false) && HasLinkedCamp(grantNationId, true);
 		}
 	}
 
-	public int GrantToNonOwnTown(int grantNationRecno, int remoteAction)
+	public int GrantToNonOwnTown(int grantNationId, int remoteAction)
 	{
-		if (!CanGrantToNonOwnTown(grantNationRecno))
+		if (!CanGrantToNonOwnTown(grantNationId))
 			return 0;
 
-		Nation grantNation = NationArray[grantNationRecno];
+		Nation grantNation = NationArray[grantNationId];
 
-		if (grantNation.cash < 0)
+		if (grantNation.cash < 0.0)
 			return 0;
 
 		//if( !remoteAction && remote.is_enable() )
@@ -1377,28 +1360,25 @@ public class Town
 			if (RacesPopulation[i] == 0)
 				continue;
 
-			//----- if this is an independent town ------//
-
 			if (NationId == 0)
 			{
-				RacesResistance[i, grantNationRecno - 1] -= resistanceDec;
+				RacesResistance[i, grantNationId - 1] -= resistanceDec;
 
-				if (RacesResistance[i, grantNationRecno - 1] < 0)
-					RacesResistance[i, grantNationRecno - 1] = 0.0;
+				if (RacesResistance[i, grantNationId - 1] < 0.0)
+					RacesResistance[i, grantNationId - 1] = 0.0;
 			}
-			else //----- if this is an nation town ------//
+			else
 			{
 				RacesLoyalty[i] -= resistanceDec;
 
-				if (RacesLoyalty[i] < 0)
+				if (RacesLoyalty[i] < 0.0)
 					RacesLoyalty[i] = 0.0;
 			}
 		}
 
 		//----------- decrease cash ------------//
 
-		grantNation.add_expense(NationBase.EXPENSE_GRANT_OTHER_TOWN,
-			Population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
+		grantNation.add_expense(NationBase.EXPENSE_GRANT_OTHER_TOWN, Population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
 
 		return 1;
 	}
@@ -2842,7 +2822,7 @@ public class Town
 		return false;
 	}
 
-	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
+	private void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
 	{
 		//if( !remoteAction && remote.is_enable() )
 		//{
@@ -2913,7 +2893,7 @@ public class Town
 			TownArray.DistributeDemand();
 	}
 
-	public void ToggleTownLink(int linkId, int toggleFlag, char remoteAction, int setBoth = 0)
+	private void ToggleTownLink(int linkId, int toggleFlag, char remoteAction, int setBoth = 0)
 	{
 		// Function is unused, and not updated to support town networks.
 		return;
