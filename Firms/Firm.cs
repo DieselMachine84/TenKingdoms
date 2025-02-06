@@ -3480,7 +3480,7 @@ public abstract class Firm
 			{
 				Town town = TownArray.AddTown(nation_recno, raceId, xLoc, yLoc);
 
-				town.InitPopulation(raceId, 1, unitLoyalty, true);
+				town.InitPopulation(raceId, 1, unitLoyalty, true, false);
 
 				town.AutoSetLayout();
 
