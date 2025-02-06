@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using SDL2;
 
@@ -17,7 +18,6 @@ public class Graphics
     private IntPtr window = IntPtr.Zero;
     private IntPtr renderer = IntPtr.Zero;
     private IntPtr surface = IntPtr.Zero;
-    private IntPtr mainMenuTexture = IntPtr.Zero;
     private IntPtr mainScreenTexture = IntPtr.Zero;
     private IntPtr miniMapTexture = IntPtr.Zero;
     private List<IntPtr> textures = new List<IntPtr>();
@@ -51,11 +51,12 @@ public class Graphics
 
     private void LoadTextures()
     {
-        //TODO Do not use jpg
-        mainMenuTexture = SDL_image.IMG_LoadTexture(renderer, $"{Sys.GameDataFolder}/Images/M_MAIN.jpg");
-        textures.Add(mainMenuTexture);
-        mainScreenTexture = SDL_image.IMG_LoadTexture(renderer, $"{Sys.GameDataFolder}/Images/MAINSCR.jpg");
-        textures.Add(mainScreenTexture);
+        ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_IF.RES");
+        byte[] bitmapData = images.Read("MAINSCR");
+        int bitmapWidth = BitConverter.ToInt16(bitmapData, 0);
+        int bitmapHeight = BitConverter.ToInt16(bitmapData, 2);
+        byte[] mainScreenBitmap = bitmapData.Skip(4).ToArray();
+        mainScreenTexture = CreateTextureFromBmp(mainScreenBitmap, bitmapWidth, bitmapHeight);
     }
     
     public bool Init()
@@ -204,18 +205,9 @@ public class Graphics
         SDL.SDL_RenderSetClipRect(renderer, ref rect);
     }
     
-    public void DrawMainMenu()
-    {
-        SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        //TODO should we call SDL_RenderClear?
-        //SDL.SDL_RenderClear(renderer);
-        SDL.SDL_RenderCopy(renderer, mainMenuTexture, IntPtr.Zero, IntPtr.Zero);
-
-        //SDL_mixer.Mix_LoadWAV("/home/diesel/Projects/SevenKingdoms/WAR.WAV");
-    }
-
     public void DrawMainScreen()
     {
+        SDL.SDL_SetTextureScaleMode(mainScreenTexture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
         SDL.SDL_RenderCopy(renderer, mainScreenTexture, IntPtr.Zero, IntPtr.Zero);
     }
 
