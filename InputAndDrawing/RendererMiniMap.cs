@@ -2,19 +2,19 @@ using System;
 
 namespace TenKingdoms;
 
-public static partial class Renderer
+public partial class Renderer
 {
-    private static void DrawPointOnMiniMap(Graphics graphics, int xLoc, int yLoc, int color)
+    private void DrawPointOnMiniMap(int xLoc, int yLoc, int color)
     {
         if (MiniMapSize == GameConstants.MapSize)
         {
-            graphics.DrawPoint(MiniMapX + xLoc, MiniMapY + yLoc, color);
+            Graphics.DrawPoint(MiniMapX + xLoc, MiniMapY + yLoc, color);
         }
         else
         {
             if (MiniMapSize > GameConstants.MapSize)
             {
-                graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale, MiniMapScale, MiniMapScale, color);
+                Graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale, MiniMapScale, MiniMapScale, color);
             }
             else
             {
@@ -23,11 +23,11 @@ public static partial class Renderer
         }
     }
 
-    private static void DrawLineOnMiniMap(Graphics graphics, int x1Loc, int y1Loc, int x2Loc, int y2Loc, int color)
+    private void DrawLineOnMiniMap(int x1Loc, int y1Loc, int x2Loc, int y2Loc, int color)
     {
         if (MiniMapSize == GameConstants.MapSize)
         {
-            graphics.DrawLine(MiniMapX + x1Loc, MiniMapY + y1Loc, MiniMapX + x2Loc, MiniMapY + y2Loc, color);
+            Graphics.DrawLine(MiniMapX + x1Loc, MiniMapY + y1Loc, MiniMapX + x2Loc, MiniMapY + y2Loc, color);
         }
         else
         {
@@ -35,9 +35,9 @@ public static partial class Renderer
             {
                 if (x1Loc == x2Loc)
                 {
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale + 1,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale + 1,
                         MiniMapX + x2Loc * MiniMapScale, MiniMapY + y2Loc * MiniMapScale + 1, color);
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
                         MiniMapX + x2Loc * MiniMapScale + 1, MiniMapY + y2Loc * MiniMapScale + 1, color);
                     
                     //TODO support MiniMapScale == 4
@@ -45,9 +45,9 @@ public static partial class Renderer
 
                 if (y1Loc == y2Loc)
                 {
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale,
                         MiniMapX + x2Loc * MiniMapScale, MiniMapY + y2Loc * MiniMapScale, color);
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
                         MiniMapX + x2Loc * MiniMapScale, MiniMapY + y2Loc * MiniMapScale + 1, color);
                     
                     //TODO support MiniMapScale == 4
@@ -57,13 +57,13 @@ public static partial class Renderer
                 {
                     //TODO support 3x3 line
 
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale,
                         MiniMapX + x2Loc * MiniMapScale, MiniMapY + y2Loc * MiniMapScale, color);
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale,
                         MiniMapX + x2Loc * MiniMapScale + 1, MiniMapY + y2Loc * MiniMapScale, color);
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale + 1,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale, MiniMapY + y1Loc * MiniMapScale + 1,
                         MiniMapX + x2Loc * MiniMapScale, MiniMapY + y2Loc * MiniMapScale + 1, color);
-                    graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
+                    Graphics.DrawLine(MiniMapX + x1Loc * MiniMapScale + 1, MiniMapY + y1Loc * MiniMapScale + 1,
                         MiniMapX + x2Loc * MiniMapScale + 1, MiniMapY + y2Loc * MiniMapScale + 1, color);
                     
                     //TODO support MiniMapScale == 4
@@ -76,17 +76,17 @@ public static partial class Renderer
         }
     }
     
-    private static void DrawRectOnMiniMap(Graphics graphics, int xLoc, int yLoc, int width, int height, int color)
+    private void DrawRectOnMiniMap(int xLoc, int yLoc, int width, int height, int color)
     {
         if (MiniMapSize == GameConstants.MapSize)
         {
-            graphics.DrawRect(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
+            Graphics.DrawRect(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
         }
         else
         {
             if (MiniMapSize > GameConstants.MapSize)
             {
-                graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
+                Graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
                     width * MiniMapScale, height * MiniMapScale, color);
             }
             else
@@ -96,23 +96,23 @@ public static partial class Renderer
         }
     }
 
-    private static void DrawFrameOnMiniMap(Graphics graphics, int xLoc, int yLoc, int width, int height, int color)
+    private void DrawFrameOnMiniMap(int xLoc, int yLoc, int width, int height, int color)
     {
         if (MiniMapSize == GameConstants.MapSize)
         {
-            graphics.DrawFrame(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
+            Graphics.DrawFrame(MiniMapX + xLoc, MiniMapY + yLoc, width, height, color);
         }
         else
         {
             if (MiniMapSize > GameConstants.MapSize)
             {
-                graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
+                Graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
                     width * MiniMapScale, MiniMapScale, color);
-                graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + (yLoc + height - 1) * MiniMapScale,
+                Graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + (yLoc + height - 1) * MiniMapScale,
                     width * MiniMapScale, MiniMapScale, color);
-                graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
+                Graphics.DrawRect(MiniMapX + xLoc * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
                     MiniMapScale, height * MiniMapScale, color);
-                graphics.DrawRect(MiniMapX + (xLoc + width - 1) * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
+                Graphics.DrawRect(MiniMapX + (xLoc + width - 1) * MiniMapScale, MiniMapY + yLoc * MiniMapScale,
                     MiniMapScale, height * MiniMapScale, color);
             }
             else
@@ -122,10 +122,10 @@ public static partial class Renderer
         }
     }
     
-    private static void DrawMiniMap(Graphics graphics)
+    private void DrawMiniMap()
     {
         //TODO Better support scaling
-        graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
+        Graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
 
         if (NeedFullRedraw)
         {
@@ -168,11 +168,11 @@ public static partial class Renderer
                 }
             }
 
-            graphics.CreateMiniMapTexture(miniMapImage, MiniMapSize, MiniMapSize);
+            Graphics.CreateMiniMapTexture(miniMapImage, MiniMapSize, MiniMapSize);
             NeedFullRedraw = false;
         }
 
-        graphics.DrawMiniMapGround(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
+        Graphics.DrawMiniMapGround(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
 
         byte[] nationColorArray = NationArray.nation_color_array;
         byte[,] excitedColorArray = ColorRemap.excitedColorArray;
@@ -184,8 +184,8 @@ public static partial class Renderer
         {
             if (IsExplored(town.LocX1, town.LocX2, town.LocY1, town.LocY2))
             {
-                DrawLineOnMiniMap(graphics, town.LocX1 + 1, town.LocY2 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
-                DrawLineOnMiniMap(graphics, town.LocX2 + 1, town.LocY1 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
+                DrawLineOnMiniMap(town.LocX1 + 1, town.LocY2 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
+                DrawLineOnMiniMap(town.LocX2 + 1, town.LocY1 + 1, town.LocX2 + 1, town.LocY2 + 1, shadowColor);
             }
         }
 
@@ -206,8 +206,8 @@ public static partial class Renderer
                     y2Loc--;
                 }
 
-                DrawLineOnMiniMap(graphics, x1Loc + 1, y2Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
-                DrawLineOnMiniMap(graphics, x2Loc + 1, y1Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+                DrawLineOnMiniMap(x1Loc + 1, y2Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
+                DrawLineOnMiniMap(x2Loc + 1, y1Loc + 1, x2Loc + 1, y2Loc + 1, shadowColor);
             }
         }
 
@@ -219,7 +219,7 @@ public static partial class Renderer
 
             if (IsExplored(town.LocX1, town.LocX2, town.LocY1, town.LocY2))
             {
-                DrawRectOnMiniMap(graphics, town.LocX1, town.LocY1, town.LocX2 - town.LocX1 + 1, town.LocY2 - town.LocY1 + 1, nationColor);
+                DrawRectOnMiniMap(town.LocX1, town.LocY1, town.LocX2 - town.LocX1 + 1, town.LocY2 - town.LocY1 + 1, nationColor);
             }
         }
 
@@ -242,7 +242,7 @@ public static partial class Renderer
                     x2Loc--;
                     y2Loc--;
                 }
-                DrawRectOnMiniMap(graphics, x1Loc, y1Loc, x2Loc - x1Loc + 1, y2Loc - y1Loc + 1, nationColor);
+                DrawRectOnMiniMap(x1Loc, y1Loc, x2Loc - x1Loc + 1, y2Loc - y1Loc + 1, nationColor);
             }
         }
         
@@ -250,7 +250,7 @@ public static partial class Renderer
         {
             if (IsExplored(site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc))
             {
-                DrawRectOnMiniMap(graphics, site.map_x_loc - 1, site.map_y_loc - 1, 3, 3, Colors.SITE_COLOR);
+                DrawRectOnMiniMap(site.map_x_loc - 1, site.map_y_loc - 1, 3, 3, Colors.SITE_COLOR);
             }
         }
         
@@ -276,7 +276,7 @@ public static partial class Renderer
                     if (yLoc > 0)
                         yLoc--;
                 }
-                DrawRectOnMiniMap(graphics, xLoc, yLoc, size, size, nationColor);
+                DrawRectOnMiniMap(xLoc, yLoc, size, size, nationColor);
             }
         }
         
@@ -284,7 +284,7 @@ public static partial class Renderer
 
         //Draw war points
         
-        DrawFrameOnMiniMap(graphics, topLeftX - 1, topLeftY - 1, ZoomMapLocWidth + 2, ZoomMapLocHeight + 2,
+        DrawFrameOnMiniMap(topLeftX - 1, topLeftY - 1, ZoomMapLocWidth + 2, ZoomMapLocHeight + 2,
             Colors.VGA_YELLOW + screenSquareFrameCount);
 
         if (Sys.Instance.Speed != 0)

@@ -13,7 +13,8 @@ public class Sys
     public int Speed { get; private set; } = 1;
     public bool GameEnded { get; private set; }
 
-    private Graphics Graphics { get; } = new Graphics();
+    private Graphics Graphics { get; set; }
+    private Renderer Renderer { get; set; }
 
     public GameSet GameSet { get; private set; }
     public TerrainRes TerrainRes { get; private set; }
@@ -159,6 +160,7 @@ public class Sys
     {
         try
         {
+            Graphics = new Graphics();
             if (!Graphics.Init())
             {
                 DeinitGraphics();
@@ -286,7 +288,7 @@ public class Sys
 
             if (hasEvent || nextFrameReady)
             {
-                Renderer.DrawFrame(Graphics);
+                Renderer.DrawFrame();
                 Graphics.Render();
             }
         }
@@ -336,6 +338,7 @@ public class Sys
         ColorRemap.InitRemapTable();
         InitGraphics();
         LoadResources();
+        Renderer = new Renderer(Graphics);
         CreateObjects();
         MapGenerator mapGenerator = new MapGenerator();
         mapGenerator.Generate();

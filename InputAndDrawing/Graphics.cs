@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using SDL2;
 
@@ -18,7 +17,6 @@ public class Graphics
     private IntPtr window = IntPtr.Zero;
     private IntPtr renderer = IntPtr.Zero;
     private IntPtr surface = IntPtr.Zero;
-    private IntPtr mainScreenTexture = IntPtr.Zero;
     private IntPtr miniMapTexture = IntPtr.Zero;
     private List<IntPtr> textures = new List<IntPtr>();
     private bool initialized;
@@ -49,16 +47,6 @@ public class Graphics
         }
     }
 
-    private void LoadTextures()
-    {
-        ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_IF.RES");
-        byte[] bitmapData = images.Read("MAINSCR");
-        int bitmapWidth = BitConverter.ToInt16(bitmapData, 0);
-        int bitmapHeight = BitConverter.ToInt16(bitmapData, 2);
-        byte[] mainScreenBitmap = bitmapData.Skip(4).ToArray();
-        mainScreenTexture = CreateTextureFromBmp(mainScreenBitmap, bitmapWidth, bitmapHeight);
-    }
-    
     public bool Init()
     {
         int errorCode = SDL.SDL_InitSubSystem(SDLSubSystems);
@@ -113,7 +101,6 @@ public class Graphics
 
         SDL_image.IMG_Init(SDL_image.IMG_InitFlags.IMG_INIT_JPG | SDL_image.IMG_InitFlags.IMG_INIT_PNG);
         LoadPalette();
-        LoadTextures();
 
         initialized = true;
         return true;
@@ -176,6 +163,22 @@ public class Graphics
         }
     }*/
 
+    public byte[] CutBitmapRect(byte[] bitmap, int bitmapWidth, int bitmapHeight, int x, int y, int width, int height)
+    {
+        byte[] result = new byte[width * height];
+        int index = 0;
+        for (int h = y; h < y + height; h++)
+        {
+            for (int w = x; w < x + width; w++)
+            {
+                result[index] = bitmap[h * bitmapWidth + w];
+                index++;
+            }
+        }
+
+        return result;
+    }
+
     public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, bool addToList = true)
     {
         IntPtr sdlPalette = SDL.SDL_AllocPalette(256);
@@ -204,13 +207,12 @@ public class Graphics
         rect.h = height;
         SDL.SDL_RenderSetClipRect(renderer, ref rect);
     }
-    
-    public void DrawMainScreen()
-    {
-        SDL.SDL_SetTextureScaleMode(mainScreenTexture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
-        SDL.SDL_RenderCopy(renderer, mainScreenTexture, IntPtr.Zero, IntPtr.Zero);
-    }
 
+    public void ResetClipRectangle()
+    {
+        SDL.SDL_RenderSetClipRect(renderer, IntPtr.Zero);
+    }
+    
     public void CreateMiniMapTexture(byte[] image, int width, int height)
     {
         if (miniMapTexture != IntPtr.Zero)
@@ -221,7 +223,7 @@ public class Graphics
 
     public void DrawMiniMapGround(int x, int y, int width, int height)
     {
-        DrawBitmap(x, y, miniMapTexture, width, height, false);
+        DrawBitmap(miniMapTexture, x, y, width, height);
     }
 
     public void DrawPoint(int x, int y, int paletteColor)
@@ -262,15 +264,8 @@ public class Graphics
         SDL.SDL_RenderDrawRect(renderer, ref dstRect);
     }
     
-    public void DrawBitmap(int x, int y, IntPtr texture, int width, int height, bool scale = true)
+    public void DrawBitmap(IntPtr texture, int x, int y, int width, int height)
     {
-        if (scale)
-        {
-            SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
-            width = width * 3 / 2; // TODO rewrite * 3 / 2
-            height = height * 3 / 2;
-        }
-        
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
@@ -279,7 +274,18 @@ public class Graphics
         SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
     }
 
-    public void DrawBitmapFlip(int x, int y, IntPtr texture, int width, int height)
+    public void DrawBitmapScale(IntPtr texture, int x, int y, int width, int height)
+    {
+        SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
+        SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
+        dstRect.x = x;
+        dstRect.y = y;
+        dstRect.w = width * 3 / 2;
+        dstRect.h = height * 3 / 2;
+        SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
+    }
+
+    public void DrawBitmapScaleAndFlip(IntPtr texture, int x, int y, int width, int height)
     {
         SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
@@ -290,7 +296,7 @@ public class Graphics
         SDL.SDL_RenderCopyEx(renderer, texture, IntPtr.Zero, ref dstRect, 0.0, IntPtr.Zero, SDL.SDL_RendererFlip.SDL_FLIP_HORIZONTAL);
     }
     
-    public void DrawBitmapByPoints(int x, int y, byte[] bitmap, int width, int height)
+    /*public void DrawBitmapByPoints(int x, int y, byte[] bitmap, int width, int height)
     {
         for (int j = y; j < y + height; j++)
         {
@@ -301,7 +307,7 @@ public class Graphics
                 SDL.SDL_RenderDrawPoint(renderer, i, j);
             }
         }
-    }
+    }*/
 
     public byte[] DecompressTransparentBitmap(byte[] bitmap, int width, int height, byte[] colorTable = null)
     {

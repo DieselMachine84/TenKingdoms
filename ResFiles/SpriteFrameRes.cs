@@ -74,9 +74,9 @@ public class SpriteFrame
     private Dictionary<int, IntPtr> unitTextures = new Dictionary<int, nint>();
     private IntPtr nonUnitTexture;
 
-    public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationColor, bool isSelected)
+    public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
     {
-        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int colorScheme = ColorRemap.ColorSchemes[nationId];
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
         if (!unitTextures.ContainsKey(textureKey))
         {
