@@ -167,7 +167,8 @@ public partial class Renderer
                         PlantBitmap plantBitmap = PlantRes.get_bitmap(town.SlotObjectIds[i]);
                         int townPlantX = townX + townSlot.base_x * 3 / 2 - plantBitmap.bitmapWidth * 3 / 2 / 2;
                         int townPlantY = townY + townSlot.base_y * 3 / 2 - plantBitmap.bitmapHeight * 3 / 2;
-                        Graphics.DrawBitmapScale(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY, plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
+                        Graphics.DrawBitmapScale(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY,
+                            plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FARM:
@@ -175,19 +176,21 @@ public partial class Renderer
                         int townFarmX = townX + townSlot.base_x * 3 / 2;
                         int townFarmY = townY + townSlot.base_y * 3 / 2;
                         var farmTexture = TownRes.GetFarmTexture(Graphics, farmIndex);
-                        Graphics.DrawBitmapScale(farmTexture, townFarmX, townFarmY, TownRes.farmWidths[farmIndex], TownRes.farmHeights[farmIndex]);
+                        Graphics.DrawBitmapScale(farmTexture, townFarmX, townFarmY,
+                            TownRes.farmWidths[farmIndex], TownRes.farmHeights[farmIndex]);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FLAG:
-                        if (town.NationId == 0)
+                        if (town.NationId == 0 && town.RebelId == 0)
                             break;
                         
                         //TODO fix one flag slot with base_x == 57
                         int flagIndex = (int)(((Sys.Instance.FrameNumber + town.TownId) % 8) / 2);
                         int townFlagX = townX + townSlot.base_x * 3 / 2 + TownFlagShiftX * 3 / 2;
                         int townFlagY = townY + townSlot.base_y * 3 / 2 + TownFlagShiftY * 3 / 2;
-                        var flagTexture = TownRes.GetFlagTexture(Graphics, flagIndex, town.NationId, isSelected);
-                        Graphics.DrawBitmapScale(flagTexture, townFlagX, townFlagY, TownRes.flagWidths[flagIndex], TownRes.flagHeights[flagIndex]);
+                        var flagTexture = TownRes.GetFlagTexture(Graphics, flagIndex, town.NationId);
+                        Graphics.DrawBitmapScale(flagTexture, townFlagX, townFlagY,
+                            TownRes.flagWidths[flagIndex], TownRes.flagHeights[flagIndex]);
                         break;
                 }
             }

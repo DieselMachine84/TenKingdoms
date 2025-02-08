@@ -80,7 +80,7 @@ public class Town
 
 
 	private int _qualityOfLife;
-	public int[] HasProductSupply { get; } = new int[GameConstants.MAX_PRODUCT];
+	public bool[] HasProductSupply { get; } = new bool[GameConstants.MAX_PRODUCT];
 	public bool NoNeighborSpace { get; set; } // true if there is no space to build firms/towns next to this town
 
 
@@ -996,6 +996,7 @@ public class Town
 
 			//------ if this race is the overseer's race -------//
 
+			//TODO targetLoyalty should depend on overseer's nation reputation
 			int baseInfluence = overseer.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
 
 			if (overseer.rank_id == Unit.RANK_KING) // 20 points bonus for king
@@ -1024,6 +1025,7 @@ public class Town
 
 				if (firm.nation_recno == NationId) // if the command base belongs to the same nation
 				{
+					//TODO thisInfluence should be lesser with each other camp 
 					int targetLoyalty = RacesTargetLoyalty[j] + thisInfluence;
 					RacesTargetLoyalty[j] = Math.Min(100, targetLoyalty);
 				}
@@ -1266,6 +1268,7 @@ public class Town
 		double taxCollected = 0.0;
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
+			//TODO check
 			double beforeLoyalty = RacesLoyalty[i];
 			ChangeLoyalty(i + 1, -loyaltyDecrease);
 			taxCollected += (beforeLoyalty - RacesLoyalty[i]) * RacesPopulation[i] * GameConstants.TAX_PER_PERSON / loyaltyDecrease;
@@ -1404,22 +1407,22 @@ public class Town
 			if (LinkedFirmsEnable[linkedFirmId] != InternalConstants.LINK_EE)
 				continue;
 
-			firm = FirmArray[LinkedFirms[linkedFirmId]];
+			FirmMarket market = (FirmMarket)firm;
 
 			//---------- process market -------------//
 
 			for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
 			{
-				MarketGoods marketGoods = ((FirmMarket)firm).market_product_array[i];
+				MarketGoods marketGoods = market.market_product_array[i];
 				MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
 
 				double thisSupply = marketGoods.stock_qty;
-				marketGoodsInfo.markets.Add((FirmMarket)firm);
-				marketGoodsInfo.total_supply += thisSupply;
+				marketGoodsInfo.Markets.Add(market);
+				marketGoodsInfo.TotalSupply += thisSupply;
 
 				// vars for later use, so that towns will always try to buy goods from their own markets first.
 				if (firm.nation_recno == NationId)
-					marketGoodsInfo.total_own_supply += thisSupply;
+					marketGoodsInfo.TotalOwnSupply += thisSupply;
 			}
 		}
 
@@ -1433,7 +1436,7 @@ public class Town
 		{
 			MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
 
-			for (int j = 0; j < marketGoodsInfo.markets.Count; j++)
+			foreach (FirmMarket market in marketGoodsInfo.Markets)
 			{
 				//----------------------------------//
 				//
@@ -1445,39 +1448,34 @@ public class Town
 				//
 				//----------------------------------//
 
-				FirmMarket firmMarket = marketGoodsInfo.markets[j];
-
-				MarketGoods marketGoods = firmMarket.market_product_array[i];
+				MarketGoods marketGoods = market.market_product_array[i];
 
 				if (marketGoods != null)
 				{
 					//---- if the demand is larger than the supply -----//
 
-					if (marketGoodsInfo.total_supply <= townDemand)
+					if (marketGoodsInfo.TotalSupply <= townDemand)
 					{
 						// evenly distribute the excessive demand on all markets
 						marketGoods.month_demand += marketGoods.stock_qty
-						                            + (townDemand - marketGoodsInfo.total_supply) /
-						                            marketGoodsInfo.markets.Count;
+						                            + (townDemand - marketGoodsInfo.TotalSupply) / marketGoodsInfo.Markets.Count;
 					}
 					else //---- if the supply is larger than the demand -----//
 					{
 						//--- towns always try to buy goods from their own markets first ---//
 
-						double ownShareDemand = Math.Min(townDemand, marketGoodsInfo.total_own_supply);
+						double ownShareDemand = Math.Min(townDemand, marketGoodsInfo.TotalOwnSupply);
 
-						if (firmMarket.nation_recno == NationId)
+						if (market.nation_recno == NationId)
 						{
 							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
-							if (marketGoodsInfo.total_own_supply > 0.0)
-								marketGoods.month_demand += ownShareDemand * marketGoods.stock_qty /
-								                            marketGoodsInfo.total_own_supply;
+							if (marketGoodsInfo.TotalOwnSupply > 0.0)
+								marketGoods.month_demand += ownShareDemand * marketGoods.stock_qty / marketGoodsInfo.TotalOwnSupply;
 						}
 						else
 						{
-							// Note: total_supply > 0.0f, because else the first case above (demand larger than supply) will be triggered
-							marketGoods.month_demand += (townDemand - ownShareDemand) * marketGoods.stock_qty /
-							                            marketGoodsInfo.total_supply;
+							// Note: total_supply > 0.0, because else the first case above (demand larger than supply) will be triggered
+							marketGoods.month_demand += (townDemand - ownShareDemand) * marketGoods.stock_qty / marketGoodsInfo.TotalSupply;
 						}
 					}
 				}
@@ -1488,13 +1486,14 @@ public class Town
 	public void UpdateProductSupply()
 	{
 		for (int i = 0; i < HasProductSupply.Length; i++)
-			HasProductSupply[i] = 0;
+			HasProductSupply[i] = false;
 
 		//----- scan for linked market place -----//
 
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
+
 			if (firm.nation_recno != NationId || firm.firm_id != Firm.FIRM_MARKET)
 				continue;
 
@@ -1506,7 +1505,7 @@ public class Town
 			{
 				int productId = firmMarket.market_goods_array[j].product_raw_id;
 				if (productId > 1)
-					HasProductSupply[productId - 1]++;
+					HasProductSupply[productId - 1] = true;
 			}
 		}
 	}
@@ -1550,13 +1549,15 @@ public class Town
 					totalPurchase += monthSaleQty * townDemand / marketGoods.month_demand;
 				}
 				else
+				{
 					totalPurchase += monthSaleQty;
+				}
 			}
 		}
 
 		//------ return the quality of life ------//
 
-		_qualityOfLife = Convert.ToInt32(100 * totalPurchase / (townDemand * GameConstants.MAX_PRODUCT));
+		_qualityOfLife = (int)(100.0 * totalPurchase / (townDemand * GameConstants.MAX_PRODUCT));
 	}
 
 	private void ProcessFood()
@@ -1624,22 +1625,19 @@ public class Town
 	private void FinishTrain(Unit unit)
 	{
 		SpriteInfo spriteInfo = unit.sprite_info;
-		int xLoc = LocX1; // xLoc & yLoc are used for returning results
-		int yLoc = LocY1;
+		int locX = LocX1; // xLoc & yLoc are used for returning results
+		int locY = LocY1;
 
-		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return;
 
-		unit.init_sprite(xLoc, yLoc);
+		unit.init_sprite(locX, locY);
 
 		if (unit.is_own())
-			SERes.far_sound(xLoc, yLoc, 1, 'S', unit.sprite_id, "RDY");
+			SERes.far_sound(locX, locY, 1, 'S', unit.sprite_id, "RDY");
 
 		unit.unit_mode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
 		TrainUnitId = 0;
-
-		int townRecno = TownId; // save the recno as it can be deleted in dec_pop()
 
 		DecPopulation(unit.race_id, false); // decrease the population now as the recruit() does do so
 
@@ -1650,36 +1648,17 @@ public class Town
 			NationArray[NationId].process_action_id(TrainUnitActionId);
 			TrainUnitActionId = 0;
 		}
-
-		//----- refresh if this town is currently selected ------//
-
-		//TODO drawing
-		//if (townRecno == Global.TownArray.selected_recno)
-		//{
-		//if (town_menu_mode == TOWN_MENU_MAIN)
-		//{
-		//info.disp();
-		//}
-		//else
-		//{
-		//disable_refresh = 1;
-		//info.disp();
-		//disable_refresh = 0;
-		//}
-		//}
 	}
 
-	public void CancelTrainUnit()
+	private void CancelTrain()
 	{
 		if (TrainUnitId != 0)
 		{
-			//unit_array.disappear_in_town(train_unit_recno, town_recno);
-			//train_unit_recno = 0;
-
 			Unit unit = UnitArray[TrainUnitId];
 			// check whether the unit is already a spy before training
 			if (unit.spy_recno != 0 && unit.skill.skill_id != 0)
 			{
+				//TODO check
 				SpyArray[unit.spy_recno].set_place(Spy.SPY_TOWN, TownId);
 				unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
 			}
@@ -1691,13 +1670,13 @@ public class Town
 
 	public void AddQueue(int skillId, int raceId, int amount = 1)
 	{
-		if (amount < 0)
+		if (amount <= 0)
 			return;
 
 		int queueSpace = InternalConstants.TOWN_MAX_TRAIN_QUEUE - _trainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
 		int enqueueAmount = Math.Min(queueSpace, amount);
 
-		for (int i = 0; i < enqueueAmount; ++i)
+		for (int i = 0; i < enqueueAmount; i++)
 		{
 			_trainSkillQueue.Add(skillId);
 			_trainRaceQueue.Add(raceId);
@@ -1728,7 +1707,7 @@ public class Town
 		{
 			Unit unit = UnitArray[TrainUnitId];
 			if (unit.skill.skill_id == skillId)
-				CancelTrainUnit();
+				CancelTrain();
 		}
 	}
 
@@ -1741,8 +1720,7 @@ public class Town
 			return;
 
 		int queueCount = _trainSkillQueue.Count;
-		int i = 0;
-		for (i = 0; i < queueCount; i++)
+		for (int i = 0; i < queueCount; i++)
 		{
 			if (CanTrain(_trainRaceQueue[i]))
 			{
@@ -1755,10 +1733,6 @@ public class Town
 				break;
 			}
 		}
-
-		//TODO drawing
-		//if (town_menu_mode == TOWN_MENU_MAIN)
-		//info.disp();
 	}
 
 	

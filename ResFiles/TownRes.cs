@@ -277,14 +277,14 @@ public class TownRes
         return farmTextures[farmIndex];
     }
     
-    public IntPtr GetFlagTexture(Graphics graphics, int flagIndex, int nationColor, bool isSelected)
+    public IntPtr GetFlagTexture(Graphics graphics, int flagIndex, int nationColor)
     {
         int colorScheme = ColorRemap.ColorSchemes[nationColor];
-        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
         if (!flagTextures[flagIndex].ContainsKey(textureKey))
         {
             byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(flagBitmaps[flagIndex],
-                flagWidths[flagIndex], flagHeights[flagIndex], ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+                flagWidths[flagIndex], flagHeights[flagIndex], ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
             IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, flagWidths[flagIndex], flagHeights[flagIndex]);
             flagTextures[flagIndex].Add(textureKey, texture);
         }

@@ -761,7 +761,7 @@ public class FirmMarket : Firm
 
 			for (int j = 0; j < GameConstants.MAX_PRODUCT; j++)
 			{
-				if (town.HasProductSupply[j] == 0)
+				if (!town.HasProductSupply[j])
 					needProductSupplyPop[j] += town.Population;
 			}
 		}
@@ -1104,7 +1104,7 @@ public class FirmMarket : Firm
 				continue;
 
 			// if the town already has the supply of product, return now
-			if (town.HasProductSupply[exportProductId - 1] != 0)
+			if (town.HasProductSupply[exportProductId - 1])
 				continue;
 
 			if (town.RegionId != region_id)
