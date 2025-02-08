@@ -505,6 +505,9 @@ public class SeekPath
 							continue;
 
 						int nearIndex = nearY * GameConstants.MapSize + nearX;
+						if (node_matrix[nearIndex] == -1)
+							continue;
+
 						if (node_matrix[nearIndex] == 0 && !can_move_to(nearX, nearY))
 						{
 							node_matrix[nearIndex] = -1;
@@ -517,26 +520,11 @@ public class SeekPath
 						else
 							newValue = node_matrix[currentIndex] + 3;
 
-						if (node_matrix[nearIndex] == 0)
+						if (node_matrix[nearIndex] == 0 || node_matrix[nearIndex] > newValue)
 						{
 							node_matrix[nearIndex] = newValue;
-							if (!newChangedNodesX.Contains(nearX) || !newChangedNodesY.Contains(nearY))
-							{
-								newChangedNodesX.Add(nearX);
-								newChangedNodesY.Add(nearY);
-							}
-						}
-						else
-						{
-							if (node_matrix[nearIndex] > newValue)
-							{
-								node_matrix[nearIndex] = newValue;
-								if (!newChangedNodesX.Contains(nearX) || !newChangedNodesY.Contains(nearY))
-								{
-									newChangedNodesX.Add(nearX);
-									newChangedNodesY.Add(nearY);
-								}
-							}
+							newChangedNodesX.Add(nearX);
+							newChangedNodesY.Add(nearY);
 						}
 					}
 
