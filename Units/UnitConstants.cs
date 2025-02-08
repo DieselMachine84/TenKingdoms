@@ -113,7 +113,6 @@ public static class UnitConstants
     public const int ACTION_MISC_DEFENSE_CAMP_RECNO = 2;
     public const int ACTION_MISC_DEFEND_TOWN_RECNO = 3;
     public const int ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO = 4;
-    public const int ACTION_MISC_PRE_SEARCH_NODE_USED_UP = 5;
 
     public const int MONSTER_ACTION_STOP = 0;
     public const int MONSTER_ACTION_ATTACK = 1;
@@ -136,7 +135,6 @@ public static class UnitConstants
     public const int AUTO_DEFENSE_STAY_OUTSIDE_COUNT = 4; //4 days
     public const int AUTO_DEFENSE_DETECT_COUNT = 3 + InternalConstants.FRAMES_PER_DAY * AUTO_DEFENSE_STAY_OUTSIDE_COUNT;
     public const int EFFECTIVE_AUTO_DEFENSE_DISTANCE = 9;
-    public const int AUTO_DEFENSE_SEARCH_TRIES = 100;
 
     public const int UNIT_DEFEND_TOWN_DISTANCE = 8;
     public const int UNIT_DEFEND_TOWN_STAY_OUTSIDE_COUNT = 4; // 4 days

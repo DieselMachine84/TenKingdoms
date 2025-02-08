@@ -96,8 +96,6 @@ public class Unit : Sprite
 	private static int help_mode;
 	private static int help_attack_target_recno;
 
-	private int unit_search_tries;        // the number of tries used in the current searching
-	private bool unit_search_tries_flag;   // indicate num of tries is set, reset after searching
 	public int commander_power()
 	{
 		//---- if the commander is in a military camp -----//
@@ -191,8 +189,8 @@ public class Unit : Sprite
 
 	//------- path seeking vars --------//
 
-	ResultNode[] result_node_array;
-	int result_node_count;
+	public ResultNode[] result_node_array;
+	public int result_node_count;
 	public int result_node_recno;
 	public int result_path_dist;
 
@@ -230,7 +228,6 @@ public class Unit : Sprite
 
 	public int aggressive_mode;
 
-	public int seek_path_fail_count;
 	public int ignore_power_nation;
 
 	//------ TeamInfo structure for general and king only ------//
@@ -350,7 +347,6 @@ public class Unit : Sprite
 	protected Info Info => Sys.Instance.Info;
 	protected Power Power => Sys.Instance.Power;
 	private SeekPath SeekPath => Sys.Instance.SeekPath;
-	private SeekPathReuse SeekPathReuse => Sys.Instance.SeekPathReuse;
 	protected TerrainRes TerrainRes => Sys.Instance.TerrainRes;
 	protected FirmRes FirmRes => Sys.Instance.FirmRes;
 	protected RaceRes RaceRes => Sys.Instance.RaceRes;
@@ -464,7 +460,6 @@ public class Unit : Sprite
 
 		home_camp_firm_recno = 0;
 
-		seek_path_fail_count = 0;
 		ignore_power_nation = 0;
 		aggressive_mode = 1; // the default mode is 1
 
@@ -2344,47 +2339,6 @@ public class Unit : Sprite
 		return false;
 	}
 
-	public bool ai_handle_seek_path_fail()
-	{
-		if (seek_path_fail_count < 50) // wait unit it has failed many times
-			return false;
-
-		//----- try to move to a new location -----//
-
-		if (seek_path_fail_count == 50)
-		{
-			stop2(); // stop the unit and think for new action
-			return false;
-		}
-
-		//--- if the seek path has failed too many times, resign the unit ---//
-
-		bool resignFlag = false;
-
-		if (seek_path_fail_count >= 95)
-			resignFlag = true;
-		/*if( rank_id == RANK_SOLDIER && !leader_unit_recno )
-		{
-			if( seek_path_fail_count>=7 )
-				resignFlag = 1;
-		}
-		else if( rank_id == RANK_GENERAL )
-		{
-			if( seek_path_fail_count >= 7+skill.skill_level/10 )
-				resignFlag = 1;
-		}*/
-
-		if (resignFlag && is_visible())
-		{
-			//resign(InternalConstants.COMMAND_AI);
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	//------- functions for unit AI mode ---------//
 
 	public bool think_aggressive_action()
@@ -3560,22 +3514,8 @@ public class Unit : Sprite
 	}
 
 	//------------ movement action -----------------//
-	public virtual void move_to(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0,
-		int numOfPath = 1, int reuseMode = SeekPathReuse.GENERAL_GROUP_MOVEMENT, int pathReuseStatus = 0)
+	public void move_to(int destX, int destY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
-		if (SeekPath.total_node_avail == 0)
-		{
-			//-------- insufficient nodes for searching, return now ----------//
-			stop(UnitConstants.KEEP_PRESERVE_ACTION);
-			action_mode = action_mode2 = UnitConstants.ACTION_MOVE;
-			action_para = action_para2 = 0;
-			action_x_loc = action_x_loc2 = destX;
-			action_y_loc = action_y_loc2 = destY;
-			return; // for later searching
-		}
-
-		//int useClosestNode = (seek_path.total_node_avail>=MIN_BACKGROUND_NODE_USED_UP);
-
 		//---------- reset way point array since new action is assigned --------//
 		if (wayPoints.Count > 0)
 		{
@@ -3597,24 +3537,8 @@ public class Unit : Sprite
 		if (loc.region_id != destLoc.region_id && mobile_type != UnitConstants.UNIT_AIR) // different territory
 			different_territory_destination(ref destXLoc, ref destYLoc);
 
-		//----------------------------------------------------------------//
-		// for path_reuse initialization
-		//----------------------------------------------------------------//
-		//TODO commented
-		/*if (numOfPath != 1 && pathReuseStatus == SeekPathReuse.REUSE_PATH_INITIAL) // for path-reuse only
-		{
-			search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath, reuseMode, pathReuseStatus);
-			return;
-		}*/
-
-		//----------------------------------------------------------------//
-		// return if the unit is dead
-		//----------------------------------------------------------------//
 		if (is_unit_dead())
-		{
-			abort_searching(searchMode == SeekPath.SEARCH_MODE_REUSE && numOfPath > 1);
 			return;
-		}
 
 		//-----------------------------------------------------------------------------------//
 		// The codes here is used to check for equal action in movement.
@@ -3639,8 +3563,6 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					abort_searching(searchMode == SeekPath.SEARCH_MODE_REUSE && numOfPath > 1);
-
 					if (result_node_array == null) // cannot move
 					{
 						if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
@@ -3669,12 +3591,11 @@ public class Unit : Sprite
 		} //else, new order or searching is required
 
 		move_action_call_flag = true; // set flag to avoid calling move_to_my_loc()
-		SeekPathReuse.set_status(SeekPath.PATH_WAIT);
 
 		action_mode2 = UnitConstants.ACTION_MOVE;
 		action_para2 = 0;
 
-		int enoughNode = search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath, reuseMode, pathReuseStatus);
+		search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
 		move_action_call_flag = false;
 
 		//----------------------------------------------------------------//
@@ -3682,22 +3603,11 @@ public class Unit : Sprite
 		//----------------------------------------------------------------//
 		action_mode = UnitConstants.ACTION_MOVE;
 		action_para = 0;
-
-		if (enoughNode == 0 ||
-		    (searchMode == SeekPath.SEARCH_MODE_REUSE && SeekPathReuse.get_reuse_path_status() == SeekPathReuse.REUSE_PATH_INCOMPLETE_SEARCH))
-		{
-			action_x_loc = action_x_loc2 = destXLoc;
-			action_y_loc = action_y_loc2 = destYLoc;
-		}
-		else // enough node for search
-		{
-			action_x_loc = action_x_loc2 = move_to_x_loc;
-			action_y_loc = action_y_loc2 = move_to_y_loc;
-		}
+		action_x_loc = action_x_loc2 = move_to_x_loc;
+		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_unit_surround(int destXLoc, int destYLoc, int width, int height,
-		int miscNo = 0, int readyDist = 0)
+	public void move_to_unit_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -3757,8 +3667,7 @@ public class Unit : Sprite
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_firm_surround(int destXLoc, int destYLoc, int width, int height,
-		int miscNo = 0, int readyDist = 0)
+	public void move_to_firm_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -3830,8 +3739,7 @@ public class Unit : Sprite
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_town_surround(int destXLoc, int destYLoc, int width, int height,
-		int miscNo = 0, int readyDist = 0)
+	public void move_to_town_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -3889,8 +3797,7 @@ public class Unit : Sprite
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_wall_surround(int destXLoc, int destYLoc, int width, int height,
-		int miscNo = 0, int readyDist = 0)
+	public void move_to_wall_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -3964,14 +3871,12 @@ public class Unit : Sprite
 		{
 			// cancel the selection
 			SeekPath.set_sub_mode();
-			SeekPathReuse.set_sub_mode();
 			return;
 		}
 
 		if (nation_recno == 0 || ignore_power_nation != 0)
 		{
 			SeekPath.set_sub_mode(); // always using normal mode for independent unit
-			SeekPathReuse.set_sub_mode();
 			return;
 		}
 
@@ -3985,12 +3890,8 @@ public class Unit : Sprite
 		Location destLoc = World.get_loc(dx, dy);
 		Nation nation = NationArray[nationRecno];
 
-		bool subModeOn = true;
-		if ((startLoc.power_nation_recno != 0 && !nation.get_relation_passable(startLoc.power_nation_recno)) ||
-		    (destLoc.power_nation_recno != 0 && !nation.get_relation_passable(destLoc.power_nation_recno)))
-		{
-			subModeOn = false;
-		}
+		bool subModeOn = (startLoc.power_nation_recno == 0 || nation.get_relation_passable(startLoc.power_nation_recno)) &&
+		                 (destLoc.power_nation_recno == 0 || nation.get_relation_passable(destLoc.power_nation_recno));
 
 		if (subModeOn) // true only when both start and end locations are passable for this nation
 		{
@@ -4000,17 +3901,6 @@ public class Unit : Sprite
 		else
 		{
 			SeekPath.set_sub_mode(); //----- normal sub mode, normal searching
-		}
-
-		//----------- set sub_mode of path-reuse if more than one unit are selected -----------//
-		if (subModeOn && searchMode == SeekPath.SEARCH_MODE_REUSE)
-		{
-			SeekPathReuse.set_nation_passable(nation.relation_passable_array);
-			SeekPathReuse.set_sub_mode(SeekPath.SEARCH_SUB_MODE_PASSABLE);
-		}
-		else
-		{
-			SeekPathReuse.set_sub_mode();
 		}
 	}
 
@@ -4044,7 +3934,7 @@ public class Unit : Sprite
 				sameTerr = i;
 		}
 
-		if (sameTerr != 0)
+		if (sameTerr != 0 && count != 0)
 		{
 			destX = curXLoc + (sameTerr * xStep) / count;
 			destY = curYLoc + (sameTerr * yStep) / count;
@@ -4475,10 +4365,6 @@ public class Unit : Sprite
 		stop();
 		cur_attack = 0;
 
-		bool defenseMode = in_auto_defense_mode();
-		if (defenseMode)
-			set_search_tries(UnitConstants.AUTO_DEFENSE_SEARCH_TRIES);
-
 		int attackDistance = cal_distance(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height);
 		choose_best_attack_mode(attackDistance);
 
@@ -4587,9 +4473,6 @@ public class Unit : Sprite
 		action_para = firm.firm_recno;
 		action_x_loc = firmXLoc;
 		action_y_loc = firmYLoc;
-
-		if (defenseMode)
-			reset_search_tries();
 	}
 
 	public void attack_town(int townXLoc, int townYLoc, int xOffset = 0, int yOffset = 0, int resetBlockedEdge = 1)
@@ -6528,9 +6411,7 @@ public class Unit : Sprite
 		}
 
 		//-------------- add new node -----------------//
-		ResultNode newNode = new ResultNode();
-		newNode.node_x = x;
-		newNode.node_y = y;
+		ResultNode newNode = new ResultNode(x, y);
 		wayPoints.Add(newNode);
 
 		if (wayPoints.Count == 1)
@@ -7648,17 +7529,12 @@ public class Unit : Sprite
 		if (!is_dir_correct())
 			return true; // cheating for turning the direction
 
-		//------------------- declare parameters ----------------------//
 		Location loc;
-		int canMove = 1;
-
-		int returnFlag = 0;
 		int curXLoc = move_to_x_loc;
 		int curYLoc = move_to_y_loc;
-		int dummyX, dummyY;
 
-		int hasSearch = 0;
-		bool validSearch = SeekPath.is_valid_searching();
+		bool hasSearch = false;
+		bool returnFlag = false;
 
 		SeekPath.set_status(SeekPath.PATH_WAIT);
 		switch (action_mode2)
@@ -7675,14 +7551,12 @@ public class Unit : Sprite
 					Unit unit = UnitArray[action_para2];
 					SpriteInfo spriteInfo = unit.sprite_info;
 
-					if (space_for_attack(action_x_loc2, action_y_loc2, unit.mobile_type, spriteInfo.loc_width,
-						    spriteInfo.loc_height))
+					if (space_for_attack(action_x_loc2, action_y_loc2, unit.mobile_type, spriteInfo.loc_width, spriteInfo.loc_height))
 					{
 						//------ there should be place for this unit to attack the target, attempts to attack it ------//
 						attack_unit(action_para2, 0, 0, false); // last 0 for not reset blocked_edge
-						hasSearch++;
-						returnFlag = 1;
-						break;
+						hasSearch = true;
+						returnFlag = true;
 					}
 				}
 
@@ -7697,13 +7571,12 @@ public class Unit : Sprite
 					Firm firm = FirmArray[action_para2];
 					FirmInfo firmInfo = FirmRes[firm.firm_id];
 
-					if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND, firmInfo.loc_width,
-						    firmInfo.loc_height))
+					if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
 					{
 						//-------- attack target since space is found for this unit to move to ---------//
-						attack_firm(action_x_loc2, action_y_loc2, 0, 0, 0); // last 0 for not reset blocked_edge
-						hasSearch++;
-						returnFlag = 1;
+						attack_firm(action_x_loc2, action_y_loc2, 0, 0, 0);
+						hasSearch = true;
+						returnFlag = true;
 					}
 				}
 
@@ -7713,13 +7586,16 @@ public class Unit : Sprite
 				loc = World.get_loc(action_x_loc2, action_y_loc2);
 				if (action_para2 == 0 || !loc.is_town())
 					stop2(); // stop since target is deleted
-				else if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH,
-					         InternalConstants.TOWN_HEIGHT))
+				else
 				{
-					//---------- attack target --------//
-					attack_town(action_x_loc2, action_y_loc2, 0, 0, 0); // last 0 for not reset blocked_edge
-					hasSearch++;
-					returnFlag = 1;
+					if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND,
+						    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+					{
+						//---------- attack target --------//
+						attack_town(action_x_loc2, action_y_loc2, 0, 0, 0);
+						hasSearch = true;
+						returnFlag = true;
+					}
 				}
 
 				break;
@@ -7728,12 +7604,15 @@ public class Unit : Sprite
 				loc = World.get_loc(action_x_loc2, action_y_loc2);
 				if (!loc.is_wall())
 					stop2(); // stop since target doesn't exist
-				else if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND, 1, 1))
+				else
 				{
-					//----------- attack target -----------//
-					attack_wall(action_x_loc2, action_y_loc2, 0, 0, 0); // last 0 for not reset blocked_edge
-					hasSearch++;
-					returnFlag = 1;
+					if (space_for_attack(action_x_loc2, action_y_loc2, UnitConstants.UNIT_LAND, 1, 1))
+					{
+						//----------- attack target -----------//
+						attack_wall(action_x_loc2, action_y_loc2, 0, 0, 0);
+						hasSearch = true;
+						returnFlag = true;
+					}
 				}
 
 				break;
@@ -7743,56 +7622,50 @@ public class Unit : Sprite
 			case UnitConstants.ACTION_ASSIGN_TO_VEHICLE:
 				//---------- resume assign actions -------------//
 				assign(action_x_loc2, action_y_loc2);
-				hasSearch++;
+				hasSearch = true;
 				waiting_term = 0;
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_ASSIGN_TO_SHIP:
 				//------------ try to assign to marine ------------//
 				assign_to_ship(action_x_loc2, action_y_loc2, action_para2);
-				hasSearch++;
+				hasSearch = true;
 				waiting_term = 0;
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_BUILD_FIRM:
 				//-------------- build again ----------------//
 				build_firm(action_x_loc2, action_y_loc2, action_para2, InternalConstants.COMMAND_AUTO);
-				hasSearch++;
+				hasSearch = true;
 				waiting_term = 0;
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_SETTLE:
 				//------------- try again to settle -----------//
 				settle(action_x_loc2, action_y_loc2);
-				hasSearch++;
+				hasSearch = true;
 				waiting_term = 0;
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_BURN:
 				//---------------- resume burn action -----------------//
 				burn(action_x_loc2, action_y_loc2, InternalConstants.COMMAND_AUTO);
-				hasSearch++;
+				hasSearch = true;
 				waiting_term = 0;
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MOVE:
-				//if(!avail_node_enough_for_search())
-				//{
-				// returnFlag = 1;
-				// break;
-				//}
-
 				if (move_to_x_loc != action_x_loc2 || move_to_y_loc != action_y_loc2)
 				{
 					//------- move since the unit has not reached its destination --------//
 					move_to(action_x_loc2, action_y_loc2, 1);
-					hasSearch++;
-					returnFlag = 1;
+					hasSearch = true;
+					returnFlag = true;
 					break;
 				}
 
@@ -7802,54 +7675,54 @@ public class Unit : Sprite
 			case UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET:
 				//---------- resume action -----------//
 				process_auto_defense_attack_target();
-				hasSearch++;
-
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET:
 				process_auto_defense_detect_target();
-				returnFlag = 1;
+				//TODO hasSearch = true;?
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP:
 				process_auto_defense_back_camp();
-				hasSearch++;
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET:
 				process_defend_town_attack_target();
-				hasSearch++;
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET:
 				process_defend_town_detect_target();
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN:
 				process_defend_town_back_town();
-				hasSearch++;
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET:
 				process_monster_defend_attack_target();
-				hasSearch++;
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET:
 				process_monster_defend_detect_target();
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM:
 				process_monster_defend_back_firm();
-				hasSearch++;
-				returnFlag = 1;
+				hasSearch = true;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_SHIP_TO_BEACH:
@@ -7857,71 +7730,54 @@ public class Unit : Sprite
 				if (!ship.in_beach || ship.extra_move_in_beach == UnitMarine.EXTRA_MOVE_FINISH)
 				{
 					//----------- the ship has not reached inlet, so move again --------------//
-					ship_to_beach(action_x_loc2, action_y_loc2, out dummyX, out dummyY);
-					hasSearch++;
+					ship_to_beach(action_x_loc2, action_y_loc2, out _, out _);
+					hasSearch = true;
 				}
 
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_GO_CAST_POWER:
 				go_cast_power(action_x_loc2, action_y_loc2, ((UnitGod)this).cast_power_type, InternalConstants.COMMAND_AUTO);
-				returnFlag = 1;
+				returnFlag = true;
 				break;
 		}
 
-		if (validSearch && hasSearch != 0 && SeekPath.path_status == SeekPath.PATH_NODE_USED_UP &&
-		    next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc)
+		if (hasSearch && SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE && next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc)
 		{
+			//TODO check
+			
 			//-------------------------------------------------------------------------//
-			// abort actions since the unit trys to move and move no more.
+			// abort actions since the unit tries to move and move no more.
 			//-------------------------------------------------------------------------//
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			return true;
 		}
 
-		int abort = 0;
-		if (returnFlag != 0)
+		bool abort = false;
+		if (returnFlag)
 		{
-			if (curXLoc == move_to_x_loc && curYLoc == move_to_y_loc && SeekPath.path_status == SeekPath.PATH_NODE_USED_UP)
+			if (curXLoc == move_to_x_loc && curYLoc == move_to_y_loc && SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
 			{
-				//---------------------------------------------------------------------------------//
-				// insufficient nodes for searching
-				//---------------------------------------------------------------------------------//
-				if (action_mode2 == UnitConstants.ACTION_ASSIGN_TO_SHIP ||
-				    action_mode2 == UnitConstants.ACTION_SHIP_TO_BEACH ||
+				//TODO check
+
+				if (action_mode2 == UnitConstants.ACTION_ASSIGN_TO_SHIP || action_mode2 == UnitConstants.ACTION_SHIP_TO_BEACH ||
 				    in_any_defense_mode())
 					return true;
 
 				//------- number of nodes is not enough to find the destination -------//
 				if (action_misc != UnitConstants.ACTION_MISC_STOP)
 				{
-					if (action_misc == UnitConstants.ACTION_MISC_PRE_SEARCH_NODE_USED_UP)
-					{
-						if (action_misc_para < 20)
-						{
-							action_misc_para++;
-							return false;
-						}
-						else
-						{
-							action_misc_para++;
-						}
-					}
-
-					abort++; // assume destination unreachable, abort action
-				}
-				else
-				{
-					action_misc = UnitConstants.ACTION_MISC_PRE_SEARCH_NODE_USED_UP;
-					action_misc_para = 0;
+					abort = true; // assume destination unreachable, abort action
 				}
 			}
 			else // action resumed, return true
+			{
 				return true;
+			}
 		}
 
-		if (returnFlag == 0 || abort == 1)
+		if (!returnFlag || abort)
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
 		}
@@ -8469,27 +8325,16 @@ public class Unit : Sprite
 	}
 
 	//------------ movement action -----------------//
-	private int search(int destXLoc, int destYLoc, int preserveAction = 0, int searchMode = 1, int miscNo = 0,
-		int numOfPath = 1, int reuseMode = SeekPathReuse.GENERAL_GROUP_MOVEMENT, int pathReuseStatus = 0)
+	private int search(int destXLoc, int destYLoc, int preserveAction = 0, int searchMode = 1, int miscNo = 0, int numOfPath = 1)
 	{
 		if (destXLoc < 0 || destXLoc >= GameConstants.MapSize || destYLoc < 0 || destYLoc >= GameConstants.MapSize ||
 		    hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE ||
 		    searchMode <= 0 || searchMode > SeekPath.MAX_SEARCH_MODE_TYPE)
 		{
+			//TODO check, this code should be never executed
 			stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
 			return 1;
 		}
-
-		//----------------------------------------------------------------//
-		// for path_reuse initialization
-		//----------------------------------------------------------------//
-		//TODO commented
-		/*if (numOfPath != 1 && pathReuseStatus == SeekPathReuse.REUSE_PATH_INITIAL) // for path-reuse only
-		{
-			SeekPathReuse.seek(next_x_loc(), next_y_loc(), move_to_x_loc, move_to_y_loc, sprite_info.loc_width,
-				unit_group_id, mobile_type, searchMode, miscNo, numOfPath, reuseMode, pathReuseStatus);
-			return 1;
-		}*/
 
 		int result = 0;
 		if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
@@ -8498,59 +8343,39 @@ public class Unit : Sprite
 			switch (ship.extra_move_in_beach)
 			{
 				case UnitMarine.NO_EXTRA_MOVE:
-					result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath,
-						reuseMode, pathReuseStatus);
+					result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
 					break;
 
 				case UnitMarine.EXTRA_MOVING_IN:
-					if (pathReuseStatus == SeekPathReuse.REUSE_PATH_SEARCH || pathReuseStatus == SeekPathReuse.REUSE_PATH_FIRST_SEEK)
-						SeekPathReuse.set_next_cur_path_num();
-					return 0;
-
 				case UnitMarine.EXTRA_MOVING_OUT:
-					if (pathReuseStatus == SeekPathReuse.REUSE_PATH_SEARCH || pathReuseStatus == SeekPathReuse.REUSE_PATH_FIRST_SEEK)
-						SeekPathReuse.set_next_cur_path_num();
 					return 0;
 
 				case UnitMarine.EXTRA_MOVE_FINISH:
-					if (pathReuseStatus == SeekPathReuse.REUSE_PATH_SEARCH || pathReuseStatus == SeekPathReuse.REUSE_PATH_FIRST_SEEK)
-						SeekPathReuse.set_next_cur_path_num();
-
 					ship_leave_beach(next_x_loc(), next_y_loc());
 					break;
 			}
 		}
 		else
 		{
-			result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath,
-				reuseMode, pathReuseStatus);
+			result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
 		}
 
 		if (wayPoints.Count > 0 && result_node_array == null) // can move no more
 			ResetWayPoints();
 
-		if (result == 0)
-			return 0; // not enough node or extra_move_in_beach!=UnitMarine.NO_EXTRA_MOVE
-		else
-			return 1;
+		// 0 means extra_move_in_beach != UnitMarine.NO_EXTRA_MOVE
+		return result != 0 ? 1 : 0;
 	}
 
-	private int searching(int destXLoc, int destYLoc, int preserveAction, int searchMode, int miscNo, int numOfPath,
-		int reuseMode, int pathReuseStatus)
+	private static double avgTimes;
+	private static System.Collections.Generic.List<double> times = new System.Collections.Generic.List<double>();
+	
+	private int searching(int destXLoc, int destYLoc, int preserveAction, int searchMode, int miscNo, int numOfPath)
 	{
 		stop(preserveAction); // stop the unit as soon as possible
 
 		int startXLocLoc = next_x_loc(); // next location the sprite is moving towards
 		int startYLocLoc = next_y_loc();
-		int totalAvailableNode = SeekPath.total_node_avail;
-
-		if (avail_node_enough_for_search(startXLocLoc, startYLocLoc, destXLoc, destYLoc) == 0)
-		{
-			abort_searching(searchMode == 4 && numOfPath > 1);
-			return 0; // not enough node for searching
-		}
-
-		//stop(preserveAction); // stop the unit as soon as possible
 
 		//---------------------------------------------------------------------------//
 		// adjust the destination for unit size
@@ -8578,14 +8403,12 @@ public class Unit : Sprite
 			else
 				set_idle();
 
-			abort_searching(searchMode == SeekPath.SEARCH_MODE_REUSE && numOfPath > 1);
 			return 1;
 		}
 
 		//------------------------ find the shortest path --------------------------//
 		//
-		// Note: seek() will never return PATH_SEEKING as the maxTries==max_node in
-		//       calling seek()
+		// Note: seek() will never return PATH_SEEKING as the maxTries==max_node in calling seek()
 		//
 		// decide the searching to use according to the unit size
 		// assume the unit size is always 1x1, 2x2, 3x3 and so on
@@ -8596,56 +8419,23 @@ public class Unit : Sprite
 
 		SeekPath.set_nation_recno(nation_recno);
 
-		int seekResult;
-		/*switch(sprite_info.loc_width)
-		{
-			case 1:*/
-		//TODO commented
-		//if (searchMode != SeekPath.SEARCH_MODE_REUSE || numOfPath == 1) // no need to call path_reuse
-		//{
-			if (mobile_type == UnitConstants.UNIT_LAND)
-				select_search_sub_mode(startXLocLoc, startYLocLoc, destXLoc, destYLoc, nation_recno, searchMode);
-			seekResult = SeekPath.seek(startXLocLoc, startYLocLoc, destXLoc, destYLoc, unit_group_id,
-				mobile_type, searchMode, miscNo, numOfPath, unit_search_tries);
+		if (mobile_type == UnitConstants.UNIT_LAND)
+			select_search_sub_mode(startXLocLoc, startYLocLoc, destXLoc, destYLoc, nation_recno, searchMode);
+		int seekResult = SeekPath.seek(startXLocLoc, startYLocLoc, destXLoc, destYLoc, unit_group_id,
+			mobile_type, searchMode, miscNo, numOfPath);
 
-			result_node_array = SeekPath.get_result(ref result_node_count, ref result_path_dist);
-			SeekPath.set_sub_mode(); // reset sub_mode searching
-		//}
-		/*else // use path_reuse
-		{
-			seekResult = SeekPathReuse.seek(startXLocLoc, startYLocLoc, destXLoc, destYLoc, 1, unit_group_id,
-				mobile_type, searchMode, miscNo, numOfPath, reuseMode, pathReuseStatus);
-			result_node_array = SeekPathReuse.get_result(ref result_node_count, ref result_path_dist);
-		}*/
-		/*				break;
-	
-			default: err_here();
-						break;
-		}*/
+		result_node_array = SeekPath.get_result(out result_node_count, out result_path_dist);
+		SeekPath.set_sub_mode(); // reset sub_mode searching
 
 		if (seekResult == SeekPath.PATH_IMPOSSIBLE)
-		{
 			reset_path();
-		}
 
 		//-----------------------------------------------------------------------//
-		// update ignore_power_nation,seek_path_fail_count
+		// update ignore_power_nation
 		//-----------------------------------------------------------------------//
 
 		if (ai_unit)
 		{
-			//----- set seek_path_fail_count ------//
-
-			// if all the nodes have been used up and the number of nodes original available is >= VALID_BACKGROUND_SEARCH_NODE
-			if (seekResult == SeekPath.PATH_IMPOSSIBLE ||
-			    (seekResult == SeekPath.PATH_NODE_USED_UP && totalAvailableNode >= SeekPath.VALID_BACKGROUND_SEARCH_NODE))
-			{
-				if (seek_path_fail_count < 100) // prevent numeric overflow
-					seek_path_fail_count++;
-			}
-			else
-				seek_path_fail_count = 0;
-
 			//------- set ignore_power_nation -------//
 
 			if (seekResult == SeekPath.PATH_IMPOSSIBLE)
@@ -8684,9 +8474,7 @@ public class Unit : Sprite
 			if (cur_action != SPRITE_MOVE)
 			{
 				ResultNode nextNode = result_node_array[1];
-				//set_dir(next_x_loc(), next_y_loc(), nextNode.node_x, nextNode.node_y);
 				set_dir(startXLocLoc, startYLocLoc, nextNode.node_x, nextNode.node_y);
-
 				next_move();
 			}
 		}
@@ -9187,27 +8975,6 @@ public class Unit : Sprite
 		return found;
 	}
 
-	private void abort_searching(bool reuseSetNext)
-	{
-		if (reuseSetNext) // to avoid error in path-reuse
-			SeekPathReuse.set_next_cur_path_num();
-
-		if (unit_search_tries_flag)
-			reset_search_tries();
-	}
-
-	private void set_search_tries(int tries) // set parameters to limit the nodes used in searching
-	{
-		unit_search_tries = tries;
-		unit_search_tries_flag = true;
-	}
-
-	private void reset_search_tries() // reset parameters for using default nodes in searching
-	{
-		unit_search_tries = 0; // 0 for reset
-		unit_search_tries_flag = false;
-	}
-
 	//---------------- handle blocked action ------------------//
 	private void move_to_my_loc(Unit unit)
 	{
@@ -9323,12 +9090,8 @@ public class Unit : Sprite
 
 		//---------- note: the cur_dir is already the correct direction ---------------//
 		result_node_array = new ResultNode[2];
-		result_node_array[0] = new ResultNode();
-		result_node_array[0].node_x = curX;
-		result_node_array[0].node_y = curY;
-		result_node_array[1] = new ResultNode();
-		result_node_array[1].node_x = unitCurX;
-		result_node_array[1].node_y = unitCurY;
+		result_node_array[0] = new ResultNode(curX, curY);
+		result_node_array[1] = new ResultNode(unitCurX, unitCurY);
 		result_node_count = 2;
 		result_node_recno = 2;
 		if (shouldWait != 0)
@@ -11447,9 +11210,6 @@ public class Unit : Sprite
 		if (ai_action_id != 0 && nation_recno != 0)
 			NationArray[nation_recno].action_failure(ai_action_id, sprite_recno);
 
-		if (in_auto_defense_mode())
-			set_search_tries(UnitConstants.AUTO_DEFENSE_SEARCH_TRIES);
-
 		if (!attackUnit.is_visible())
 			return;
 
@@ -12573,27 +12333,6 @@ public class Unit : Sprite
 		}
 
 		return false;
-	}
-
-	private int avail_node_enough_for_search(int x1, int y1, int x2, int y2)
-	{
-		int dispX = Math.Abs(x1 - x2);
-		int dispY = Math.Abs(y1 - y2);
-
-		int majDist = dispX > dispY ? dispX : dispY;
-		int minDist = Math.Abs(dispX - dispY);
-
-		int nodeRequire = Math.Min(SeekPath.VALID_BACKGROUND_SEARCH_NODE, majDist << 5); // *32
-		int totalNode = SeekPath.total_node_avail;
-		if (totalNode < nodeRequire)
-		{
-			if (totalNode >= SeekPath.MIN_BACKGROUND_NODE_USED_UP)
-				SeekPath.total_node_avail = SeekPath.MIN_BACKGROUND_NODE_USED_UP - 1;
-
-			return 0;
-		}
-
-		return 1;
 	}
 
 	private void invalidate_attack_target()

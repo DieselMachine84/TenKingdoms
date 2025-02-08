@@ -28,7 +28,6 @@ public class UnitArray : SpriteArray
     private Power Power => Sys.Instance.Power;
     private World World => Sys.Instance.World;
     private SeekPath SeekPath => Sys.Instance.SeekPath;
-    private SeekPathReuse SeekPathReuse => Sys.Instance.SeekPathReuse;
     private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private FirmRes FirmRes => Sys.Instance.FirmRes;
     private UnitRes UnitRes => Sys.Instance.UnitRes;
@@ -599,7 +598,6 @@ public class UnitArray : SpriteArray
 				    {
 					    move_to_now_with_filter(destXLoc, destYLoc, selectedUnitArray);
 					    SeekPath.set_sub_mode(); // reset sub_mode searching
-					    SeekPathReuse.set_sub_mode(); //------ reset sub mode of path reuse searching
 				    }
 				    else
 				    {
@@ -910,7 +908,8 @@ public class UnitArray : SpriteArray
 			    unit = this[curArray[unitPos]];
 			    curArray[unitPos] = curArray[--unprocessed]; // move the units in the back to the front
 
-			    SeekPath.set_status(SeekPath.PATH_WAIT);
+			    //TODO remove
+			    //SeekPath.set_status(SeekPath.PATH_WAIT);
 			    unit.attack_unit(targetXLoc, targetYLoc, xOffset, yOffset, true);
 
 			    //------------------------------------------------------------//
@@ -921,7 +920,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_NODE_USED_UP)
+			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1117,13 +1116,14 @@ public class UnitArray : SpriteArray
 			    unit = this[curArray[unitPos]];
 			    curArray[unitPos] = curArray[--unprocessed]; // move the units in the back to the front
 
-			    SeekPath.set_status(SeekPath.PATH_WAIT);
+			    //TODO remove
+			    //SeekPath.set_status(SeekPath.PATH_WAIT);
 			    unit.attack_firm(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_NODE_USED_UP)
+			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1318,13 +1318,14 @@ public class UnitArray : SpriteArray
 			    unit = this[curArray[unitPos]];
 			    curArray[unitPos] = curArray[--unprocessed]; // move the units in the back to the front
 
-			    SeekPath.set_status(SeekPath.PATH_WAIT);
+			    //TODO remove
+			    //SeekPath.set_status(SeekPath.PATH_WAIT);
 			    unit.attack_town(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_NODE_USED_UP)
+			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1513,13 +1514,14 @@ public class UnitArray : SpriteArray
 			    unit = this[curArray[unitPos]];
 			    curArray[unitPos] = curArray[--unprocessed]; // move the units in the back to the front
 
-			    SeekPath.set_status(SeekPath.PATH_WAIT);
+			    //TODO remove
+			    //SeekPath.set_status(SeekPath.PATH_WAIT);
 			    unit.attack_wall(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_NODE_USED_UP)
+			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -2508,21 +2510,18 @@ public class UnitArray : SpriteArray
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_INITIAL);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
 									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_REUSE);
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_FIRST_SEEK);
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
 									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_REUSE);
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_SEARCH);
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
 						else
@@ -2554,21 +2553,18 @@ public class UnitArray : SpriteArray
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_INITIAL);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
 									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_REUSE);
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_FIRST_SEEK);
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
 									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_REUSE);
-								unit.move_to(i, y, 1, 4, 0, sizeOneSelectedCount,
-									SeekPathReuse.GENERAL_GROUP_MOVEMENT, SeekPathReuse.REUSE_PATH_SEARCH);
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
 						else

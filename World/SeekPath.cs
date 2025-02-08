@@ -1,26 +1,30 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+public class ResultNode
+{
+	public int node_x;
+	public int node_y;
+
+	public ResultNode(int nodeX, int nodeY)
+	{
+		node_x = nodeX;
+		node_y = nodeY;
+	}
+}
+
 public class SeekPath
 {
-	public const int MAX_BACKGROUND_NODE = 2400;
-	public const int MAX_CHILD_NODE = 8;
-	public const int VALID_BACKGROUND_SEARCH_NODE = 1600;
-	public const int MIN_BACKGROUND_NODE_USED_UP = 400;
-	public const int MAX_STACK_NUM = MAX_BACKGROUND_NODE;
-
 	public const int PATH_WAIT = 0;
-	public const int PATH_SEEKING = 1;
-	public const int PATH_FOUND = 2;
-	public const int PATH_NODE_USED_UP = 3;
-	public const int PATH_IMPOSSIBLE = 4;
-	public const int PATH_REUSE_FOUND = 5;
+	public const int PATH_FOUND = 1;
+	public const int PATH_IMPOSSIBLE = 2;
 
 	public const int SEARCH_MODE_IN_A_GROUP = 1;
 	public const int SEARCH_MODE_A_UNIT_IN_GROUP = 2;
 	public const int SEARCH_MODE_TO_ATTACK = 3;
-	public const int SEARCH_MODE_REUSE = 4;
+	//public const int SEARCH_MODE_REUSE = 4;
 	public const int SEARCH_MODE_BLOCKING = 5;
 	public const int SEARCH_MODE_TO_VEHICLE = 6;
 	public const int SEARCH_MODE_TO_FIRM = 7;
@@ -39,29 +43,11 @@ public class SeekPath
 	public const int SEARCH_SUB_MODE_PASSABLE = 1;
 
 	public int path_status;
-	public int real_sour_x, real_sour_y; // the actual coordinate of the starting point
-	public int real_dest_x, real_dest_y; // the actual coordinate of the destination point
-	public int dest_x, dest_y; // the coordinate of the destination represented in 2x2 node form
-	public bool is_dest_blocked;
-	public int current_search_node_used; // count the number of nodes used in the current searching
-
-	public int border_x1, border_y1, border_x2, border_y2;
-
-	public NodePriorityQueue open_node_list = new NodePriorityQueue();
-	public NodePriorityQueue closed_node_list = new NodePriorityQueue();
 
 	public int[] node_matrix;
-	public Node[] node_array;
-
 	public int max_node;
 	public int node_count;
 
-	public Node result_node_ptr;
-
-	public int total_node_avail;
-
-	public int cur_stack_pos = 0;
-	public Node[] stack_array = new Node[MAX_STACK_NUM];
 	public int group_id;
 	public int search_mode;
 	public int mobile_type;
@@ -70,25 +56,15 @@ public class SeekPath
 
 	// used in search_mode = SEARCH_MODE_TO_ATTACK or SEARCH_MODE_TO_VEHICLE, get from miscNo
 	public int target_recno;
-
 	public int region_id; // used in search_mode = SEARCH_MODE_TO_LAND_FOR_SHIP
 	public int building_id; // used in search_mode = SEARCH_MODE_TO_FIRM or SEARCH_MODE_TO_TOWN, get from miscNo
 	public int building_x1, building_y1, building_x2, building_y2;
 	public FirmInfo search_firm_info;
 
-	public int max_node_num;
-	public int[] reuse_node_matrix_ptr;
-	public Node reuse_result_node_ptr;
 	public int final_dest_x; //	in search_mode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
 	public int final_dest_y; // i.e. the value used finally may not be the real dest_? given.
 
 	//------- aliasing class member vars for fast access ------//
-
-	public SeekPath cur_seek_path;
-	public int cur_dest_x, cur_dest_y;
-	public int[] cur_node_matrix;
-	public Node[] cur_node_array;
-	public int cur_border_x1, cur_border_y1, cur_border_x2, cur_border_y2;
 
 	public bool[] nation_passable = new bool[GameConstants.MAX_NATION + 1];
 	public int search_sub_mode;
@@ -102,32 +78,12 @@ public class SeekPath
 	private int upper_left_x; // x coord. of upper left corner of the 2x2 node
 	private int upper_left_y; // y coord. of upper left corner of the 2x2 node
 
-	private ResultNode[] reversedPath = new ResultNode[GameConstants.MapSize * GameConstants.MapSize];
+	private static UnitArray UnitArray => Sys.Instance.UnitArray;
 
 	public SeekPath()
 	{
-		for (int i = 0; i < reversedPath.Length; i++)
-		{
-			reversedPath[i] = new ResultNode();
-		}
-	}
-
-	public void init(int maxNode)
-	{
-		max_node = maxNode;
-		node_array = new Node[max_node];
 		node_matrix = new int[GameConstants.MapSize * GameConstants.MapSize];
-
 		path_status = PATH_WAIT;
-		open_node_list.reset_priority_queue();
-		closed_node_list.reset_priority_queue();
-
-		reset_total_node_avail();
-	}
-
-	public void set_node_matrix(int[] reuseNodeMatrix)
-	{
-		reuse_node_matrix_ptr = reuseNodeMatrix;
 	}
 
 	public void set_status(int newStatus)
@@ -163,23 +119,6 @@ public class SeekPath
 		search_sub_mode = subMode;
 	}
 
-	public bool is_valid_searching()
-	{
-		return total_node_avail > VALID_BACKGROUND_SEARCH_NODE;
-	}
-
-	public void reset()
-	{
-		path_status = PATH_WAIT;
-		open_node_list.reset_priority_queue();
-		closed_node_list.reset_priority_queue();
-	}
-
-	public void reset_total_node_avail()
-	{
-		total_node_avail = MAX_BACKGROUND_NODE;
-	}
-
 	private void bound_check_x(ref int paraX)
 	{
 		if (paraX < 0)
@@ -196,13 +135,215 @@ public class SeekPath
 			paraY = GameConstants.MapSize - 1;
 	}
 
-	public int seek(int sx, int sy, int dx, int dy, int groupId, int mobileType,
-		int searchMode = SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1, int maxTries = 0,
-		int borderX1 = 0, int borderY1 = 0, int borderX2 = GameConstants.MapSize - 1,
-		int borderY2 = GameConstants.MapSize - 1)
+	private bool can_move_to(int xLoc, int yLoc)
+	{
+		Location loc = Sys.Instance.World.get_loc(xLoc, yLoc);
+		Unit unit;
+		int recno;
+		int powerNationRecno = loc.power_nation_recno;
+		int unitCurAction;
+
+		//------ check terrain id. -------//
+		switch (mobile_type)
+		{
+			case UnitConstants.UNIT_LAND:
+				if (search_sub_mode == SEARCH_SUB_MODE_PASSABLE && (powerNationRecno != 0) && !nation_passable[powerNationRecno])
+					return false;
+
+				//------ be careful for the checking for search_mode>=SEARCH_MODE_TO_FIRM
+				if (search_mode < SEARCH_MODE_TO_FIRM)
+				{
+					//------------------------------------------------------------------------//
+					if (!loc.walkable())
+						return false;
+
+					recno = loc.cargo_recno;
+					if (recno == 0)
+						return true;
+
+					switch (search_mode)
+					{
+						case SEARCH_MODE_IN_A_GROUP: // group move
+						//case SEARCH_MODE_REUSE: // path-reuse
+							break;
+
+						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
+							unit = UnitArray[recno];
+							return unit.cur_action == Sprite.SPRITE_MOVE && unit.unit_id != UnitConstants.UNIT_CARAVAN;
+
+						case SEARCH_MODE_TO_ATTACK: // to attack target
+						case SEARCH_MODE_TO_VEHICLE: // move to a vehicle
+							if (recno == target_recno)
+								return true;
+							break;
+
+						case SEARCH_MODE_BLOCKING: // 2x2 unit blocking
+							unit = UnitArray[recno];
+							return unit.unit_group_id == group_id &&
+							       (unit.cur_action == Sprite.SPRITE_MOVE || unit.cur_action == Sprite.SPRITE_READY_TO_MOVE);
+					}
+				}
+				else
+				{
+					//--------------------------------------------------------------------------------//
+					// for the following search_mode, location may be treated as walkable although it is not.
+					//--------------------------------------------------------------------------------//
+					switch (search_mode)
+					{
+						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
+						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
+							if (!loc.walkable())
+								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							break;
+
+						case SEARCH_MODE_TO_WALL_FOR_GROUP: // move to wall for a group, (location may be not walkable)
+							if (!loc.walkable())
+								return (xLoc == final_dest_x && yLoc == final_dest_y);
+							break;
+
+						case SEARCH_MODE_TO_WALL_FOR_UNIT: // move to wall for a unit only, (location may be not walkable)
+							return (loc.walkable() && loc.cargo_recno == 0) || (xLoc == final_dest_x && yLoc == final_dest_y);
+
+						case SEARCH_MODE_ATTACK_UNIT_BY_RANGE: // same as that used in SEARCH_MODE_TO_FIRM
+						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
+						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
+						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
+							if (!loc.walkable())
+								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							break;
+					}
+
+					recno = (mobile_type != UnitConstants.UNIT_AIR) ? loc.cargo_recno : loc.air_cargo_recno;
+					if (recno == 0)
+						return true;
+				}
+
+				//------- checking for unit's group_id, cur_action, nation_recno and position --------//
+				unit = UnitArray[recno];
+				unitCurAction = unit.cur_action;
+				return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
+				       (unitCurAction == Sprite.SPRITE_MOVE &&
+				        unit.cur_x - unit.next_x <= InternalConstants.CellWidth / 2 &&
+				        unit.cur_y - unit.next_y <= InternalConstants.CellHeight / 2) ||
+				       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+
+			case UnitConstants.UNIT_SEA:
+				if (search_mode < SEARCH_MODE_TO_FIRM) //--------- be careful for the search_mode >= SEARCH_MODE_TO_FIRM
+				{
+					if (!loc.sailable())
+						return false;
+
+					recno = loc.cargo_recno;
+					if (recno == 0)
+						return true;
+
+					switch (search_mode)
+					{
+						case SEARCH_MODE_IN_A_GROUP: // group move
+						//case SEARCH_MODE_REUSE: // path-reuse
+							break;
+
+						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
+							return UnitArray[recno].cur_action == Sprite.SPRITE_MOVE;
+
+						case SEARCH_MODE_TO_ATTACK:
+							if (recno == target_recno)
+								return true;
+							break;
+					}
+				}
+				else
+				{
+					//--------------------------------------------------------------------------------//
+					// for the following search_mode, location may be treated as sailable although it is not.
+					//--------------------------------------------------------------------------------//
+					switch (search_mode)
+					{
+						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
+						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
+							if (!loc.sailable())
+								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							break;
+
+						//case SEARCH_MODE_TO_WALL_FOR_GROUP:	// move to wall for a group, (location may be not walkable)
+						//case SEARCH_MODE_TO_WALL_FOR_UNIT:	// move to wall for a unit only, (location may be not walkable)
+
+						case SEARCH_MODE_ATTACK_UNIT_BY_RANGE: // same as that used in SEARCH_MODE_TO_FIRM
+						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
+						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
+						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
+							if (!loc.sailable())
+								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							break;
+
+						case SEARCH_MODE_TO_LAND_FOR_SHIP:
+							if (loc.sailable())
+							{
+								recno = loc.cargo_recno;
+								if (recno == 0)
+									return true;
+
+								unit = UnitArray[recno];
+								unitCurAction = unit.cur_action;
+								return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK &&
+								        unit.action_mode2 != UnitConstants.ACTION_SHIP_TO_BEACH) ||
+								       (unit.unit_group_id != group_id && unitCurAction == Sprite.SPRITE_MOVE);
+							}
+							else if (loc.walkable() && loc.region_id == region_id)
+								return true;
+							else
+								return false;
+					}
+
+					recno = loc.cargo_recno;
+					if (recno == 0)
+						return true;
+				}
+
+				//------- checking for unit's group_id, cur_action, nation_recno and position --------//
+				unit = UnitArray[recno];
+				unitCurAction = unit.cur_action;
+				return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
+				       unitCurAction == Sprite.SPRITE_MOVE ||
+				       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+
+			case UnitConstants.UNIT_AIR:
+				recno = loc.air_cargo_recno;
+				if (recno == 0)
+					return true;
+				switch (search_mode)
+				{
+					case SEARCH_MODE_IN_A_GROUP:
+					//case SEARCH_MODE_REUSE:
+					case SEARCH_MODE_TO_ATTACK:
+					case SEARCH_MODE_TO_FIRM:
+					case SEARCH_MODE_TO_TOWN:
+					case SEARCH_MODE_TO_WALL_FOR_GROUP:
+					case SEARCH_MODE_TO_WALL_FOR_UNIT:
+					case SEARCH_MODE_ATTACK_UNIT_BY_RANGE:
+					case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
+					case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
+					case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
+						unit = UnitArray[recno];
+						unitCurAction = unit.cur_action;
+						return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
+						       unitCurAction == Sprite.SPRITE_MOVE ||
+						       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+
+					case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
+						return UnitArray[recno].cur_action == Sprite.SPRITE_MOVE;
+				}
+
+				break;
+		}
+
+		return false;
+	}
+
+	public int seek(int sx, int sy, int dx, int dy, int groupId, int mobileType, int searchMode = SEARCH_MODE_IN_A_GROUP,
+		int miscNo = 0, int numOfPath = 1)
 	{
 		//-------- initialize vars --------------//
-		path_status = PATH_SEEKING;
 		search_mode = searchMode;
 		group_id = groupId;
 		mobile_type = mobileType;
@@ -331,101 +472,84 @@ public class SeekPath
 		if (sx == final_dest_x && sy == final_dest_y)
 			return PATH_FOUND;
 
-		for (int i = 0; i < node_matrix.Length; i++)
-		{
-			node_matrix[i] = 0;
-		}
-
+		Array.Clear(node_matrix);
 		node_matrix[sy * GameConstants.MapSize + sx] = 1;
+		List<int> oldChangedNodesX = new List<int>(GameConstants.MapSize);
+		List<int> oldChangedNodesY = new List<int>(GameConstants.MapSize);
+		List<int> newChangedNodesX = new List<int>(GameConstants.MapSize);
+		List<int> newChangedNodesY = new List<int>(GameConstants.MapSize);
+		oldChangedNodesX.Add(sx);
+		oldChangedNodesY.Add(sy);
 
-		int startX = sx;
-		int startY = sy;
-		//int distance = abs(final_dest_x - startX) + abs(final_dest_y - startY);
-		int regionSize = 0;
-		bool hasProgress = true;
-		while (hasProgress)
+		while (oldChangedNodesX.Count > 0)
 		{
-			//begin:
-			regionSize++;
-			hasProgress = false;
-			for (int x = Math.Max(startX - regionSize, 0); x <= Math.Min(startX + regionSize, GameConstants.MapSize - 1); x++)
+			newChangedNodesX.Clear();
+			newChangedNodesY.Clear();
+			for (int changedNodesIndex = 0; changedNodesIndex < oldChangedNodesX.Count; changedNodesIndex++)
 			{
-				for (int y = Math.Max(startY - regionSize, 0); y <= Math.Min(startY + regionSize, GameConstants.MapSize - 1); y++)
+				int x = oldChangedNodesX[changedNodesIndex];
+				int y = oldChangedNodesY[changedNodesIndex];
+				int currentIndex = y * GameConstants.MapSize + x;
+
+				for (int i = -1; i <= 1; i++)
 				{
-					int currentIndex = y * GameConstants.MapSize + x;
-					if (node_matrix[currentIndex] == 0 && !Node.can_move_to(x, y))
-						node_matrix[currentIndex] = -1;
-
-					if (node_matrix[currentIndex] >= 0)
+					for (int j = -1; j <= 1; j++)
 					{
-						for (int i = -1; i <= 1; i++)
+						int nearX = x + i;
+						int nearY = y + j;
+						if (nearX == x && nearY == y)
+							continue;
+						if (nearX < 0 || nearX >= GameConstants.MapSize)
+							continue;
+						if (nearY < 0 || nearY >= GameConstants.MapSize)
+							continue;
+
+						int nearIndex = nearY * GameConstants.MapSize + nearX;
+						if (node_matrix[nearIndex] == 0 && !can_move_to(nearX, nearY))
+							node_matrix[nearIndex] = -1;
+
+						int newValue = 0;
+						if (nearX == x || nearY == y)
+							newValue = node_matrix[currentIndex] + 2;
+						else
+							newValue = node_matrix[currentIndex] + 3;
+
+						if (node_matrix[nearIndex] == 0)
 						{
-							for (int j = -1; j <= 1; j++)
-							{
-								int nearX = x + i;
-								int nearY = y + j;
-								if (nearX == x && nearY == y)
-									continue;
-								if (nearX < 0 || nearX >= GameConstants.MapSize)
-									continue;
-								if (nearY < 0 || nearY >= GameConstants.MapSize)
-									continue;
-
-								int nearIndex = nearY * GameConstants.MapSize + nearX;
-								if (node_matrix[nearIndex] > 0)
-								{
-									int newValue = 0;
-									if (nearX == x || nearY == y)
-										newValue = node_matrix[nearIndex] + 2;
-									else
-										newValue = node_matrix[nearIndex] + 3;
-
-									if (node_matrix[currentIndex] == 0)
-									{
-										node_matrix[currentIndex] = newValue;
-										hasProgress = true;
-									}
-									else
-									{
-										if (node_matrix[currentIndex] > newValue)
-										{
-											node_matrix[currentIndex] = newValue;
-											hasProgress = true;
-										}
-									}
-								}
-							}
+							node_matrix[nearIndex] = newValue;
+							newChangedNodesX.Add(nearX);
+							newChangedNodesY.Add(nearY);
 						}
-
-						if (x == final_dest_x && y == final_dest_y && node_matrix[currentIndex] > 0)
+						else
 						{
-							path_status = PATH_FOUND;
-							return path_status;
+							if (node_matrix[nearIndex] > newValue)
+							{
+								node_matrix[nearIndex] = newValue;
+								newChangedNodesX.Add(nearX);
+								newChangedNodesY.Add(nearY);
+							}
 						}
 					}
 
-					/*if (node_matrix[currentIndex] > 0)
+					if (x == final_dest_x && y == final_dest_y && node_matrix[currentIndex] > 0)
 					{
-						int newDistance = abs(final_dest_x - x) + abs(final_dest_y - y);
-						if (newDistance < distance)
-						{
-							startX = x;
-							startY = y;
-							distance = newDistance;
-							regionSize = 0;
-							hasProgress = true;
-							goto begin;
-						}
-					}*/
+						path_status = PATH_FOUND;
+						return path_status;
+					}
 				}
 			}
+
+			oldChangedNodesX.Clear();
+			oldChangedNodesX.AddRange(newChangedNodesX);
+			oldChangedNodesY.Clear();
+			oldChangedNodesY.AddRange(newChangedNodesY);
 		}
 
-		path_status = PATH_NODE_USED_UP;
+		path_status = PATH_IMPOSSIBLE;
 		return path_status;
 	}
 
-	public ResultNode[] get_result(ref int resultNodeCount, ref int pathDist)
+	public ResultNode[] get_result(out int resultNodeCount, out int pathDist)
 	{
 		resultNodeCount = 0;
 		pathDist = 0;
@@ -440,12 +564,14 @@ public class SeekPath
 				resultY = final_dest_y;
 				break;
 
-			case PATH_NODE_USED_UP:
+			case PATH_IMPOSSIBLE:
 				int regionSize = 0;
 				while (true)
 				{
 					regionSize++;
 					int minDistance = GameConstants.MapSize * GameConstants.MapSize;
+					//TODO move bounds
+					//TODO scan only borders
 					for (int x = Math.Max(final_dest_x - regionSize, 0); x < Math.Min(final_dest_x + regionSize, GameConstants.MapSize - 1); x++)
 					{
 						for (int y = Math.Max(final_dest_y - regionSize, 0); y < Math.Min(final_dest_y + regionSize, GameConstants.MapSize - 1); y++)
@@ -464,7 +590,7 @@ public class SeekPath
 						}
 					}
 
-					if (resultIndex >= 0 || regionSize > Math.Min(GameConstants.MapSize, GameConstants.MapSize))
+					if (resultIndex >= 0 || regionSize > GameConstants.MapSize)
 						break;
 				}
 
@@ -477,15 +603,10 @@ public class SeekPath
 		int pathX = resultX;
 		int pathY = resultY;
 		int pathValue = node_matrix[resultIndex];
-		int pathIndex = 0;
-		for (int i = 0; i < reversedPath.Length; i++)
-		{
-			reversedPath[i].node_x = 0;
-			reversedPath[i].node_y = 0;
-		}
 
-		reversedPath[pathIndex].node_x = pathX;
-		reversedPath[pathIndex].node_y = pathY;
+		List<ResultNode> reversedPath = new List<ResultNode>(pathValue);
+		reversedPath.Add(new ResultNode(pathX, pathY));
+
 		pathDist = pathValue / 2;
 		while (true)
 		{
@@ -514,87 +635,19 @@ public class SeekPath
 				}
 			}
 
-			pathIndex++;
-			reversedPath[pathIndex].node_x = pathX;
-			reversedPath[pathIndex].node_y = pathY;
+			reversedPath.Add(new ResultNode(pathX, pathY));
 
 			if (pathValue == 1)
 				break;
 		}
 
-		ResultNode[] resultPath = new ResultNode[pathIndex + 1];
-		for (int i = 0; i <= pathIndex; i++)
+		ResultNode[] resultPath = new ResultNode[reversedPath.Count];
+		for (int i = 0; i < reversedPath.Count; i++)
 		{
-			resultPath[i] = new ResultNode();
-			resultPath[i].node_x = reversedPath[pathIndex - i].node_x;
-			resultPath[i].node_y = reversedPath[pathIndex - i].node_y;
+			resultPath[i] = new ResultNode(reversedPath[reversedPath.Count - i - 1].node_x, reversedPath[reversedPath.Count - i - 1].node_y);
 		}
 
-		resultNodeCount = pathIndex + 1;
+		resultNodeCount = resultPath.Length;
 		return resultPath;
-	}
-
-	private void add_result_node(int x, int y, ResultNode curPtr, ResultNode prePtr, ref int count)
-	{
-		//TODO rewrite
-		count++;
-	}
-
-	private void get_real_result_node(ref int count, int enterDirection, int exitDirection, int nodeType,
-		int xCoord, int yCoord)
-	{
-		//TODO rewrite
-	}
-
-	private static Node return_best_node()
-	{
-		//TODO rewrite
-		return null;
-	}
-
-	public Node return_closest_node()
-	{
-		//TODO rewrite
-		return null;
-	}
-
-	public ResultNode[] smooth_the_path(ResultNode[] nodeArray, ref int nodeCount) // smoothing the path
-	{
-		//TODO rewrite
-		return null;
-	}
-
-	//------------ for scale 2 -------------//
-	public int seek2(int sx, int sy, int dx, int dy, int miscNo, int numOfPath, int maxTries)
-	{
-		//TODO rewrite
-		return 0;
-	}
-
-	public int continue_seek2(int maxTries, bool firstSeek = false)
-	{
-		//TODO rewrite
-		return 0;
-	}
-
-	public ResultNode[] get_result2(ref int resultNodeCount, ref int pathDist)
-	{
-		//TODO rewrite
-		return null;
-	}
-
-	private int result_node_distance(ResultNode node1, ResultNode node2)
-	{
-		int xDist = Math.Abs(node1.node_x - node2.node_x);
-		int yDist = Math.Abs(node1.node_y - node2.node_y);
-
-		if (xDist != 0)
-		{
-			return xDist;
-		}
-		else // xDist = 0;
-		{
-			return yDist;
-		}
 	}
 }

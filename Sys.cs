@@ -45,7 +45,6 @@ public class Sys
     public Weather[] WeatherForecast { get; } = new Weather[GameConstants.MAX_WEATHER_FORECAST];
     public MagicWeather MagicWeather { get; private set; }
     public SeekPath SeekPath { get; private set; }
-    public SeekPathReuse SeekPathReuse { get; private set; }
     
     public RegionArray RegionArray { get; private set; }
     public SiteArray SiteArray { get; private set; }
@@ -101,9 +100,6 @@ public class Sys
         Info = new Info();
         Power = new Power();
         SeekPath = new SeekPath();
-        SeekPath.init(SeekPath.MAX_BACKGROUND_NODE);
-        SeekPathReuse = new SeekPathReuse();
-        SeekPathReuse.init(SeekPath.MAX_BACKGROUND_NODE);
 
         RegionArray = new RegionArray();
         SiteArray = new SiteArray();
@@ -181,7 +177,6 @@ public class Sys
     private void Process()
     {
         UnitArray.Process();
-        SeekPath.reset_total_node_avail();	// reset node for seek_path
         FirmArray.Process();
         TownArray.Process();
         NationArray.Process();
