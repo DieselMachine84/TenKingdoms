@@ -475,8 +475,7 @@ public class NationArray : DynArray<Nation>
 
 				if (nation.nation_type == NationBase.NATION_AI)
 				{
-					nation.process_ai();
-					//nation.ProcessAI();
+					nation.ProcessAI();
 				}
 			}
 		}

@@ -93,7 +93,6 @@ public class Nation : NationBase
 	public int lead_attack_camp_recno; // the firm recno of the lead attacking firm
 
 	private World World => Sys.Instance.World;
-	private SiteArray SiteArray => Sys.Instance.SiteArray;
 
 	//--------------------------------------------------------------//
 	// functions to init. parameters and process ai actions
@@ -147,7 +146,7 @@ public class Nation : NationBase
 		pref_scout = Misc.Random(101);
 	}
 
-	public void process_ai()
+	public void ProcessAI()
 	{
 		if (Config.disable_ai_flag)
 			return;

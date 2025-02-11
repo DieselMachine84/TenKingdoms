@@ -167,10 +167,12 @@ public class NationBase
     protected MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     protected GodRes GodRes => Sys.Instance.GodRes;
     protected TechRes TechRes => Sys.Instance.TechRes;
+
     protected Config Config => Sys.Instance.Config;
     protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
     protected Info Info => Sys.Instance.Info;
     protected TalkRes TalkRes => Sys.Instance.TalkRes;
+
     protected NationArray NationArray => Sys.Instance.NationArray;
     protected FirmArray FirmArray => Sys.Instance.FirmArray;
     protected TownArray TownArray => Sys.Instance.TownArray;
@@ -178,6 +180,7 @@ public class NationBase
     protected RebelArray RebelArray => Sys.Instance.RebelArray;
     protected SpyArray SpyArray => Sys.Instance.SpyArray;
     protected RegionArray RegionArray => Sys.Instance.RegionArray;
+    protected SiteArray SiteArray => Sys.Instance.SiteArray;
     protected NewsArray NewsArray => Sys.Instance.NewsArray;
 
     public string nation_name()

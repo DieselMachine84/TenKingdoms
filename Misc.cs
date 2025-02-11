@@ -113,14 +113,37 @@ public class Misc
         return Math.Max(x, y);
     }
 
+    public static int PointsDistance(int obj1LocX1, int obj1LocY1, int obj1LocX2, int obj1LocY2,
+        int obj2LocX1, int obj2LocY1, int obj2LocX2, int obj2LocY2)
+    {
+        int result = Int32.MaxValue;
+        for (int i = obj1LocX1; i <= obj1LocX2; i++)
+        {
+            for (int j = obj1LocY1; j <= obj1LocY2; j++)
+            {
+                for (int k = obj2LocX1; k <= obj2LocX2; k++)
+                {
+                    for (int l = obj2LocY1; l <= obj2LocY2; l++)
+                    {
+                        int distance = points_distance(i, j, k, l);
+                        if (distance < result)
+                            result = distance;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     // Given two rectangles 'A' and 'B' in a pair of x and y coordinates, find the
     // distance between the two rectangles, returning the maximum of the horizontal
     // and vertical directions.
     //
     // <int> ax1, ay1, ax2, ay2 = edge coordinates of rectangle A
     // <int> bx1, by1, bx2, by2 = edge coordinates of rectangle B
-    // <int> edgeA = if not true measure to center of rectange A
-    // <int> edgeB = if not true measure to center of rectange B
+    // <int> edgeA = if not true measure to center of rectangle A
+    // <int> edgeB = if not true measure to center of rectangle B
     //
     // If measuring to an edge, then the provided coordinates are used. Otherwise,
     // when a rectangle size is evenly divisible, the center four coordinates are
