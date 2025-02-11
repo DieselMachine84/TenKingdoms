@@ -72,8 +72,8 @@ public class Town
 	public DateTime LastBeingAttackedDate { get; private set; }
 
 
-	private List<int> _trainSkillQueue = new List<int>(); // it stores the skill id.
-	private List<int> _trainRaceQueue = new List<int>(); // it stores the race id.
+	private readonly List<int> _trainSkillQueue = new List<int>(); // it stores the skill id.
+	private readonly List<int> _trainRaceQueue = new List<int>(); // it stores the race id.
 	public int TrainUnitId { get; private set; } // race id. of the unit the town is currently training, 0-if currently not training any
 	public int TrainUnitActionId { get; set; } // id. of the action to be assigned to this unit when it is finished training.
 	private long _startTrainFrameNumber;
@@ -280,6 +280,7 @@ public class Town
 
 		if (ConfigAdv.town_migration && Info.TotalDays % 15 == TownId % 15)
 		{
+			// TODO migration is too often
 			ThinkMigrate();
 
 			if (TownArray.IsDeleted(TownId))
@@ -1719,8 +1720,7 @@ public class Town
 		if (JoblessPopulation == 0)
 			return;
 
-		int queueCount = _trainSkillQueue.Count;
-		for (int i = 0; i < queueCount; i++)
+		for (int i = 0; i < _trainSkillQueue.Count; i++)
 		{
 			if (CanTrain(_trainRaceQueue[i]))
 			{
@@ -1736,40 +1736,35 @@ public class Town
 	}
 
 	
-	// if not called by Town::migrate, don't set migrateNow to TRUE
-	private bool CanMigrate(int destTownRecno, bool migrateNow = false, int raceId = 0)
+	private bool CanMigrate(int destTownId, bool migrateNow = false, int raceId = 0)
 	{
 		if (raceId == 0)
 		{
-			//TODO rewrite
-			//raceId = browse_selected_race_id();
-
-			if (raceId == 0)
-				return false;
+			//TODO get race from user interface
 		}
 
-		Town destTown = TownArray[destTownRecno];
+		Town destTown = TownArray[destTownId];
 
 		if (destTown.Population >= GameConstants.MAX_TOWN_POPULATION)
 			return false;
 
 		//---- if there are still jobless units ----//
 
-		if (RecruitableRacePopulation(raceId, true) > 0) // 1-allow migrate spy 
+		if (RecruitableRacePopulation(raceId, true) > 0) 
 		{
 			if (migrateNow)
-				MovePopulation(destTown, raceId, false); // 0-doesn't have job 
+				MovePopulation(destTown, raceId, false); 
 
 			return true;
 		}
 
-		//--- if there is no jobless units left -----//
+		//--- if there are no jobless units left -----//
 
 		if (RacesPopulation[raceId - 1] > 0)
 		{
 			//---- scan for firms that are linked to this town ----//
 
-			for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+			for (int i = 0; i < LinkedFirms.Count; i++)
 			{
 				Firm firm = FirmArray[LinkedFirms[i]];
 
@@ -1781,8 +1776,7 @@ public class Town
 				//---- if the target town is within the effective range of this firm ----//
 
 				if (Misc.rects_distance(destTown.LocX1, destTown.LocY1, destTown.LocX2, destTown.LocY2,
-					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) >
-				    InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
 					continue;
 				}
@@ -1797,12 +1791,8 @@ public class Town
 					{
 						if (migrateNow)
 						{
-							if (FirmRes[firm.firm_id].live_in_town)
-								worker.town_recno = destTownRecno;
-							else
-								worker.town_recno = 0;
-
-							MovePopulation(destTown, raceId, true); // 1-has job
+							worker.town_recno = destTownId;
+							MovePopulation(destTown, raceId, true);
 						}
 
 						return true;
@@ -1816,12 +1806,10 @@ public class Town
 
 	private void ThinkMigrate()
 	{
+		// TODO check auto migration between two our villages of the same race
+		
 		if (JoblessPopulation == 0)
 			return;
-
-		int raceId, migratedCount, townDistance;
-		int saveTownRecno = TownId;
-		int saveTownNationRecno = NationId;
 
 		foreach (Town town in TownArray)
 		{
@@ -1834,7 +1822,7 @@ public class Town
 			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
-			townDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+			int townDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
 				town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
@@ -1842,7 +1830,7 @@ public class Town
 
 			//---- scan all jobless population, see if any of them want to migrate ----//
 
-			raceId = ConfigAdv.GetRandomRace();
+			int raceId = ConfigAdv.GetRandomRace();
 
 			for (int j = 0; j < GameConstants.MAX_RACE; j++)
 			{
@@ -1850,20 +1838,17 @@ public class Town
 					raceId = 1;
 
 				// only if there are peasants who are jobless and are not spies
+				// TODO why not migrate spies? If spies do not migrate they can be revealed
 				if (RecruitableRacePopulation(raceId, false) == 0)
 					continue;
 
 				//--- migrate a number of people of the same race at the same time ---//
 
-				migratedCount = 0;
+				int migratedCount = 0;
 
-				while (ThinkMigrateOne(town, raceId, townDistance))
+				while (ThinkMigrateOne(town, raceId))
 				{
 					migratedCount++;
-
-					// don't migrate more than one unit at a time for migrating to non-linked towns
-					if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
-						break;
 
 					// allow a random and low max number to migrate when this happens
 					if (migratedCount >= GameConstants.MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
@@ -1874,10 +1859,9 @@ public class Town
 
 				if (migratedCount > 0)
 				{
-					if (saveTownNationRecno == NationArray.player_recno ||
-					    town.NationId == NationArray.player_recno)
+					if (NationId == NationArray.player_recno || town.NationId == NationArray.player_recno)
 					{
-						NewsArray.migrate(saveTownRecno, town.TownId, raceId, migratedCount);
+						NewsArray.migrate(TownId, town.TownId, raceId, migratedCount);
 					}
 
 					return;
@@ -1886,11 +1870,11 @@ public class Town
 		}
 	}
 
-	private bool ThinkMigrateOne(Town targetTown, int raceId, int townDistance)
+	private bool ThinkMigrateOne(Town targetTown, int raceId)
 	{
 		//-- only if there are peasants who are jobless and are not spies --//
-
-		if (RecruitableRacePopulation(raceId, false) == 0) //0-don't recruit spies
+		// TODO why not migrate spies? If spies do not migrate they can be revealed
+		if (RecruitableRacePopulation(raceId, false) == 0)
 			return false;
 
 		//---- if the target town's population has already reached its MAX ----//
@@ -1904,6 +1888,7 @@ public class Town
 			return false;
 
 		//-- do not migrate if the target town might not be a place this peasant will stay --//
+		// TODO maybe change 40 to 50
 
 		if (targetTown.RacesLoyalty[raceId - 1] < 40)
 			return false;
@@ -1912,18 +1897,18 @@ public class Town
 
 		int curAttractLevel = RaceHarmony(raceId);
 
-		//------- loyalty/resistance affecting the attractivness ------//
+		//------- loyalty/resistance affecting the attractiveness ------//
 
 		if (NationId != 0)
 		{
 			// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-			curAttractLevel += Convert.ToInt32(NationArray[NationId].reputation +
-				RacesLoyalty[raceId - 1] - 40.0);
+			curAttractLevel += (int)(NationArray[NationId].reputation + RacesLoyalty[raceId - 1] - 40.0);
 		}
 		else
 		{
+			//TODO targetTown.NationId is always nonzero?
 			if (targetTown.NationId != 0)
-				curAttractLevel += Convert.ToInt32(RacesResistance[raceId - 1, targetTown.NationId - 1]);
+				curAttractLevel += (int)RacesResistance[raceId - 1, targetTown.NationId - 1];
 		}
 
 		//--- calculate the attractiveness rating of the target town ---//
@@ -1931,7 +1916,7 @@ public class Town
 		int targetAttractLevel = targetTown.RaceHarmony(raceId);
 
 		if (targetTown.NationId != 0)
-			targetAttractLevel += Convert.ToInt32(NationArray[targetTown.NationId].reputation);
+			targetAttractLevel += (int)NationArray[targetTown.NationId].reputation;
 
 		if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
 			return false;
@@ -1951,19 +1936,14 @@ public class Town
 		return false;
 	}
 
-	private void Migrate(int raceId, int destTownRecno, int newLoyalty)
+	private void Migrate(int raceId, int destTownId, int newLoyalty)
 	{
-		Town destTown = TownArray[destTownRecno];
+		Town destTown = TownArray[destTownId];
 
 		if (destTown.Population >= GameConstants.MAX_TOWN_POPULATION)
 			return;
 
-		//------- decrease the population of this town ------//
-
 		DecPopulation(raceId, false);
-
-		//--------- increase the population of the target town ------//
-
 		destTown.IncPopulation(raceId, false, newLoyalty);
 	}
 
@@ -1976,11 +1956,7 @@ public class Town
 
 		if (raceId == 0)
 		{
-			//TODO rewrite
-			//raceId = browse_selected_race_id();
-
-			if (raceId == 0)
-				return false;
+			//TODO get race from user interface
 		}
 
 		//if( !remoteAction && remote.is_enable() )
@@ -1998,7 +1974,7 @@ public class Town
 		int migrated = 0;
 		while (continueMigrate && migrated < count)
 		{
-			continueMigrate = CanMigrate(destTownRecno, true, raceId); // 1- migrate now, 1-allow migrate spy
+			continueMigrate = CanMigrate(destTownRecno, true, raceId);	
 			if (continueMigrate)
 				++migrated;
 		}
