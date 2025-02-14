@@ -4921,7 +4921,7 @@ public class Nation : NationBase
 			//------- get the unit's influence index --------//
 
 			// influence of this unit if he is assigned as a commander of a military camp
-			int targetResistance = 100 - targetTown.CampInfluence(unit.sprite_recno);
+			int targetResistance = 100 - unit.CampInfluence();
 
 			//-- see if this unit's rating is higher than the current best --//
 

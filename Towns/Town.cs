@@ -1310,7 +1310,7 @@ public class Town
 			Unit overseer = UnitArray[firm.overseer_recno];
 
 			int curValue = RacesTargetResistance[overseer.race_id - 1, overseer.nation_recno - 1];
-			int newValue = 100 - CampInfluence(firm.overseer_recno);
+			int newValue = 100 - overseer.CampInfluence();
 
 			// need to do this comparison as there may be more than one command bases of the same nation linked to this town, we use the one with the most influence.
 			if (curValue == -1 || newValue < curValue)
@@ -2582,15 +2582,10 @@ public class Town
 
 	private void SetupLink()
 	{
-		//-----------------------------------------------------------------------------//
-		// check the connected firms location and structure if ai_link_checked is true
-		//-----------------------------------------------------------------------------//
 		if (AITown)
 			AILinkChecked = false;
 
 		//----- build town-to-firm link relationship -------//
-
-		int firmRecno, defaultLinkStatus;
 
 		foreach (Firm firm in FirmArray)
 		{
@@ -2609,23 +2604,16 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(firm.center_x, firm.center_y).is_plateau()
-			    != World.get_loc(LocCenterX, LocCenterY).is_plateau())
+			if (World.get_loc(firm.center_x, firm.center_y).is_plateau() != World.get_loc(LocCenterX, LocCenterY).is_plateau())
 			{
 				continue;
 			}
 
 			//------- determine the default link status ------//
 
-			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
-			// if the two firms are of different nations, default link status is both side disabled
-			if (firm.nation_recno == NationId)
-				defaultLinkStatus = InternalConstants.LINK_EE;
-			else
-				defaultLinkStatus = InternalConstants.LINK_DD;
+			var defaultLinkStatus = firm.nation_recno == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
 
 			//----- a town cannot disable a camp's link to it ----//
-
 			if (firm.firm_id == Firm.FIRM_CAMP) // for capturing the town
 				defaultLinkStatus = InternalConstants.LINK_EE;
 
@@ -2635,11 +2623,13 @@ public class Town
 			LinkedFirmsEnable.Add(defaultLinkStatus);
 
 			// now link from the firm's side
-			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
+			
+			// these condition are always false
+			/*if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
 				defaultLinkStatus = InternalConstants.LINK_DE;
 
 			else if (defaultLinkStatus == InternalConstants.LINK_DE)
-				defaultLinkStatus = InternalConstants.LINK_ED;
+				defaultLinkStatus = InternalConstants.LINK_ED;*/
 
 			firm.linked_town_array.Add(TownId);
 			firm.linked_town_enable_array.Add(defaultLinkStatus);
@@ -2665,15 +2655,14 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau()
-			    != World.get_loc(LocCenterX, LocCenterY).is_plateau())
+			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau() != World.get_loc(LocCenterX, LocCenterY).is_plateau())
 			{
 				continue;
 			}
 
 			//------- determine the default link status ------//
 
-			defaultLinkStatus = InternalConstants.LINK_EE;
+			int defaultLinkStatus = InternalConstants.LINK_EE;
 
 			//-------- add the link now -------//
 
@@ -2681,11 +2670,13 @@ public class Town
 			LinkedTownsEnable.Add(defaultLinkStatus);
 
 			// now link from the other town's side
-			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
+			
+			// these condition are always false
+			/*if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
 				defaultLinkStatus = InternalConstants.LINK_DE;
 
 			else if (defaultLinkStatus == InternalConstants.LINK_DE)
-				defaultLinkStatus = InternalConstants.LINK_ED;
+				defaultLinkStatus = InternalConstants.LINK_ED;*/
 
 			town.LinkedTowns.Add(TownId);
 			town.LinkedTownsEnable.Add(defaultLinkStatus);
@@ -2720,17 +2711,14 @@ public class Town
 		}
 	}
 
-	public void ReleaseFirmLink(int releaseFirmRecno)
+	public void ReleaseFirmLink(int releaseFirmId)
 	{
-		//-----------------------------------------------------------------------------//
-		// check the connected firms location and structure if ai_link_checked is true
-		//-----------------------------------------------------------------------------//
 		if (AITown)
 			AILinkChecked = false;
 
 		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
 		{
-			if (LinkedFirms[i] == releaseFirmRecno)
+			if (LinkedFirms[i] == releaseFirmId)
 			{
 				LinkedFirms.RemoveAt(i);
 				LinkedFirmsEnable.RemoveAt(i);
@@ -2739,17 +2727,14 @@ public class Town
 		}
 	}
 
-	public void ReleaseTownLink(int releaseTownRecno)
+	private void ReleaseTownLink(int releaseTownId)
 	{
-		//-----------------------------------------------------------------------------//
-		// check the connected firms location and structure if ai_link_checked is true
-		//-----------------------------------------------------------------------------//
 		if (AITown)
 			AILinkChecked = false;
 
 		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
 		{
-			if (LinkedTowns[i] == releaseTownRecno)
+			if (LinkedTowns[i] == releaseTownId)
 			{
 				LinkedTowns.RemoveAt(i);
 				LinkedTownsEnable.RemoveAt(i);
@@ -2758,14 +2743,14 @@ public class Town
 		}
 	}
 
-	public bool CanToggleFirmLink(int firmRecno)
+	public bool CanToggleFirmLink(int firmId)
 	{
 		if (NationId == 0) // cannot toggle for independent town
 			return false;
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
-			if (LinkedFirms[i] != firmRecno)
+			if (LinkedFirms[i] != firmId)
 				continue;
 
 			Firm firm = FirmArray[LinkedFirms[i]];
@@ -2780,7 +2765,7 @@ public class Town
 				//--- town to market link is governed by trade treaty and cannot be toggled ---//
 
 				case Firm.FIRM_MARKET:
-					return false; // !nation_array[nation_recno].get_relation(firm.nation_recno).trade_treaty;
+					return false;
 
 				default:
 					return FirmRes[firm.firm_id].is_linkable_to_town;
@@ -2790,7 +2775,7 @@ public class Town
 		return false;
 	}
 
-	private void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
+	private void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
 		//if( !remoteAction && remote.is_enable() )
 		//{
@@ -2803,21 +2788,21 @@ public class Town
 		//}
 
 		Firm linkedFirm = FirmArray[LinkedFirms[linkId - 1]];
-		int linkedNationRecno = linkedFirm.nation_recno;
+		int linkedNationId = linkedFirm.nation_recno;
 
-		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
-		bool sameNation = linkedNationRecno == NationId || linkedNationRecno == 0 || NationId == 0;
+		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
+		bool sameNation = (linkedNationId == NationId || linkedNationId == 0 || NationId == 0);
 
 		if (toggleFlag)
 		{
-			if ((sameNation && setBoth == 0) || setBoth == 1) // 0 if setBoth == -1
+			if ((sameNation && !setBoth) || setBoth) // 0 if setBoth == -1
 				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
 			else
 				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;
 		}
 		else
 		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
+			if ((sameNation && !setBoth) || setBoth)
 				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_DD;
 			else
 				LinkedFirmsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
@@ -2825,25 +2810,23 @@ public class Town
 
 		//------ set the linked flag of the opposite firm -----//
 
-		Firm firm = FirmArray[LinkedFirms[linkId - 1]];
-
-		for (int i = firm.linked_town_array.Count - 1; i >= 0; i--)
+		for (int i = linkedFirm.linked_town_array.Count - 1; i >= 0; i--)
 		{
-			if (firm.linked_town_array[i] == TownId)
+			if (linkedFirm.linked_town_array[i] == TownId)
 			{
 				if (toggleFlag)
 				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.linked_town_enable_array[i] = InternalConstants.LINK_EE;
+					if ((sameNation && !setBoth) || setBoth)
+						linkedFirm.linked_town_enable_array[i] = InternalConstants.LINK_EE;
 					else
-						firm.linked_town_enable_array[i] |= InternalConstants.LINK_DE;
+						linkedFirm.linked_town_enable_array[i] |= InternalConstants.LINK_DE;
 				}
 				else
 				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.linked_town_enable_array[i] = InternalConstants.LINK_DD;
+					if ((sameNation && !setBoth) || setBoth)
+						linkedFirm.linked_town_enable_array[i] = InternalConstants.LINK_DD;
 					else
-						firm.linked_town_enable_array[i] &= ~InternalConstants.LINK_DE;
+						linkedFirm.linked_town_enable_array[i] &= ~InternalConstants.LINK_DE;
 				}
 
 				break;
@@ -2861,7 +2844,7 @@ public class Town
 			TownArray.DistributeDemand();
 	}
 
-	private void ToggleTownLink(int linkId, int toggleFlag, char remoteAction, int setBoth = 0)
+	private void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
 		// Function is unused, and not updated to support town networks.
 		return;
@@ -2899,24 +2882,21 @@ public class Town
 
 			FirmCamp firmCamp = (FirmCamp)firm;
 
-			double linkedTownsCount = 0.0;
+			int linkedTownsCount = 0;
 			for (int townIndex = 0; townIndex < firmCamp.linked_town_array.Count; townIndex++)
 			{
-				if (TownArray.IsDeleted(firmCamp.linked_town_array[townIndex]))
-					continue;
-
 				Town firmTown = TownArray[firmCamp.linked_town_array[townIndex]];
 
 				if (firmTown.NationId != NationId)
 					continue;
 
-				linkedTownsCount += 1.0;
+				linkedTownsCount++;
 			}
 
-			if (linkedTownsCount > 0.0)
+			if (linkedTownsCount > 0)
 			{
-				townSoldiersCount += (firmCamp.workers.Count + firmCamp.patrol_unit_array.Count +
-				                      firmCamp.coming_unit_array.Count) / linkedTownsCount;
+				townSoldiersCount += (double)(firmCamp.workers.Count + firmCamp.patrol_unit_array.Count + firmCamp.coming_unit_array.Count)
+				                     / (double)linkedTownsCount;
 			}
 		}
 
@@ -2936,13 +2916,10 @@ public class Town
 
 			//--- don't set it if the town and camp both belong to a human player, the player will set it himself ---//
 
-			if (firm.nation_recno == NationId &&
-			    NationId != 0 && !NationArray[NationId].is_ai())
+			if (firm.nation_recno == NationId && NationId != 0 && !NationArray[NationId].is_ai())
 			{
 				continue;
 			}
-
-			//--------------------------------------------//
 
 			ToggleFirmLink(i + 1, true, InternalConstants.COMMAND_AUTO);
 		}
@@ -2969,13 +2946,13 @@ public class Town
 		}
 	}
 
-	public bool HasLinkedCamp(int nationRecno, bool needOverseer)
+	public bool HasLinkedCamp(int nationId, bool needOverseer)
 	{
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id == Firm.FIRM_CAMP && firm.nation_recno == nationRecno)
+			if (firm.firm_id == Firm.FIRM_CAMP && firm.nation_recno == nationId)
 			{
 				if (!needOverseer || firm.overseer_recno != 0)
 					return true;
@@ -2985,9 +2962,10 @@ public class Town
 		return false;
 	}
 	
-	public int ClosestOwnCamp()
+	public Firm ClosestOwnCamp()
 	{
-		int minDistance = Int32.MaxValue, closestFirmRecno = 0;
+		int minDistance = Int32.MaxValue;
+		Firm closestCamp = null;
 
 		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
 		{
@@ -3002,49 +2980,34 @@ public class Town
 			if (curDistance < minDistance)
 			{
 				minDistance = curDistance;
-				closestFirmRecno = firm.firm_recno;
+				closestCamp = firm;
 			}
 		}
 
-		return closestFirmRecno;
+		return closestCamp;
 	}
 
-	public int CampInfluence(int unitRecno)
-	{
-		Unit unit = UnitArray[unitRecno];
-		Nation nation = NationArray[unit.nation_recno]; // nation of the unit
-
-		int thisInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
-
-		if (RaceRes.is_same_race(nation.race_id, unit.race_id))
-			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
-
-		thisInfluence += Convert.ToInt32(nation.reputation / 2);
-
-		thisInfluence = Math.Min(100, thisInfluence);
-
-		return thisInfluence;
-	}
-	
 	public bool HasPlayerSpy()
 	{
-		int i;
-		for (i = 0; i < GameConstants.MAX_RACE; i++)
+		bool hasAnySpy = false;
+		
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			if (RacesSpyCount[i] > 0)
+			{
+				hasAnySpy = true;
 				break;
+			}
 		}
 
-		if (i == GameConstants.MAX_RACE) // no spies in this nation
+		if (!hasAnySpy) // no spies in this town
 			return false;
 
-		//----- look for player spy in the spy_array -----//
+		//----- look for player spy in the SpyArray -----//
 
 		foreach (Spy spy in SpyArray)
 		{
-			if (spy.spy_place == Spy.SPY_TOWN &&
-			    spy.spy_place_para == TownId &&
-			    spy.true_nation_recno == NationArray.player_recno)
+			if (spy.spy_place == Spy.SPY_TOWN && spy.spy_place_para == TownId && spy.true_nation_recno == NationArray.player_recno)
 			{
 				return true;
 			}
@@ -3698,7 +3661,8 @@ public class Town
 			    firm.overseer_recno != 0)
 			{
 				// see camp_influence() for details on how the rating is calculated
-				curRating = CampInfluence(firm.overseer_recno);
+				Unit overseer = UnitArray[firm.overseer_recno];
+				curRating = overseer.CampInfluence();
 
 				if (curRating > bestRating)
 				{

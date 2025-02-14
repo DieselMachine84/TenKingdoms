@@ -13883,4 +13883,20 @@ public class Unit : Sprite
 		if (hit_points > max_hit_points)
 			hit_points = max_hit_points;
 	}
+
+	public int CampInfluence()
+	{
+		Nation nation = NationArray[nation_recno]; // nation of the unit
+
+		int thisInfluence = skill.get_skill(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
+
+		if (RaceRes.is_same_race(nation.race_id, race_id))
+			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
+
+		thisInfluence += (int)(nation.reputation / 2.0);
+
+		thisInfluence = Math.Min(100, thisInfluence);
+
+		return thisInfluence;
+	}
 }

@@ -1695,7 +1695,7 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[overseer_recno];
 			if (unit.race_id == raceId)
-				currentTargetResistance = 100 - town.CampInfluence(overseer_recno);
+				currentTargetResistance = 100 - unit.CampInfluence();
 		}
 
 		int targetResistance = 100;
@@ -2042,7 +2042,7 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[linked_town_array[i]];
 
-			if (town.ClosestOwnCamp() == firm_recno)
+			if (town.ClosestOwnCamp() == this)
 				return town.MajorityRace();
 		}
 
