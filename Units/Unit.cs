@@ -13314,7 +13314,7 @@ public class Unit : Sprite
 					}
 
 					//-------------- assign the unit to the town -----------------//
-					TownArray[actionPara].AssignUnit(spriteRecno);
+					TownArray[actionPara].AssignUnit(this);
 				}
 
 				//####### begin trevor 18/8 #########// the following code was called wrongly and causing bug

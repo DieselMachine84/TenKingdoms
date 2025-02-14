@@ -955,10 +955,8 @@ public class NationBase
         }
     }
 
-    public void succeed_king(int kingUnitRecno)
+    public void succeed_king(Unit newKing)
     {
-        Unit newKing = UnitArray[kingUnitRecno];
-
         int newKingLeadership = 0;
 
         if (newKing.skill.skill_id == Skill.SKILL_LEADING)
@@ -980,7 +978,7 @@ public class NationBase
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.sprite_recno == king_unit_recno || unit.sprite_recno == kingUnitRecno)
+            if (unit.sprite_recno == king_unit_recno || unit.sprite_recno == newKing.sprite_recno)
                 continue;
 
             if (unit.nation_recno != nation_recno)
@@ -1034,11 +1032,11 @@ public class NationBase
 
         //------- add news --------//
 
-        NewsArray.new_king(nation_recno, kingUnitRecno);
+        NewsArray.new_king(nation_recno, newKing.sprite_recno);
 
         //-------- set the new king now ------//
 
-        set_king(kingUnitRecno, 0); // 0-not the first king, it is a succession
+        set_king(newKing.sprite_recno, 0); // 0-not the first king, it is a succession
 
         //------ if the new king is a spy -------//
 

@@ -684,44 +684,23 @@ public class Spy
 		}
 	}
 
-	public int mobilize_spy()
-	{
-		switch (spy_place)
-		{
-			case SPY_TOWN:
-				return mobilize_town_spy();
-
-			case SPY_FIRM:
-				return mobilize_firm_spy();
-
-			case SPY_MOBILE:
-				return spy_place_para;
-
-			default:
-				return 0;
-		}
-	}
-
-	public int mobilize_town_spy(bool decPop = true)
+	public Unit mobilize_town_spy(bool decPop = true)
 	{
 		if (spy_place != SPY_TOWN)
-			return 0;
+			return null;
 
 		Town town = TownArray[spy_place_para];
+		Unit unit = town.MobilizeTownPeople(race_id, decPop, true); //1-mobilize spies
 
-		int unitRecno = town.MobilizeTownPeople(race_id, decPop, true); //1-mobilize spies
-
-		if (unitRecno == 0)
-			return 0;
-
-		Unit unit = UnitArray[unitRecno]; // set the spy vars of the mobilized unit
+		if (unit == null)
+			return null;
 
 		unit.spy_recno = spy_recno;
 		unit.set_name(name_id); // set the name id. of this unit
 
-		set_place(SPY_MOBILE, unitRecno);
+		set_place(SPY_MOBILE, unit.sprite_recno);
 
-		return unitRecno;
+		return unit;
 	}
 
 	public int mobilize_firm_spy()

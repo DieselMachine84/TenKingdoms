@@ -593,7 +593,7 @@ public class NationNew : NationBase
         return false;
     }
 
-    public void ai_start_spy_new_mission(int unitRecno, int loc_x1, int loc_y1, int cloakedNationRecno)
+    public void ai_start_spy_new_mission(Unit spyUnit, int loc_x1, int loc_y1, int cloakedNationRecno)
     {
     }
 

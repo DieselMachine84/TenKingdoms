@@ -64,7 +64,7 @@ public class Town
 	public int RebelId { get; set; } // whether this town is controlled by a rebel
 	private DateTime _lastRebelDate;
 
-
+	
 	public int DefendersCount { get; private set; } // no. of units currently defending this town
 	public int DefendTargetId { get; private set; } // used in defend mode, store id of latest target attacking this town
 	// no. of received hit by attackers, when this > RECEIVED_HIT_PER_KILL, a town people will be killed
@@ -183,7 +183,7 @@ public class Town
 
 		//-------------------------------------//
 
-		TownNameId = TownRes.get_new_name_id(raceId);
+		TownNameId = TownRes.GetNewNameId(raceId);
 
 		SetWorldMatrix();
 
@@ -232,7 +232,7 @@ public class Town
 		//-- if there is a unit being trained when the town vanishes --//
 
 		if (TrainUnitId != 0)
-			UnitArray.disappear_in_town(TrainUnitId, TownId);
+			UnitArray.DisappearInTown(UnitArray[TrainUnitId], this);
 
 		//------- if the current town is the selected -----//
 
@@ -377,7 +377,7 @@ public class Town
 
 	public string TownName()
 	{
-		return TownRes.get_name(TownNameId);
+		return TownRes.GetName(TownNameId);
 	}
 
 	public int LocWidth()
@@ -474,6 +474,162 @@ public class Town
 		}
 	}
 
+	public void AutoSetLayout()
+	{
+		LayoutId = ThinkLayoutId();
+
+		TownLayout townLayout = TownRes.GetLayout(LayoutId);
+
+		for (int i = 0; i < SlotObjectIds.Length; i++)
+			SlotObjectIds[i] = 0;
+		for (int i = 0; i < RacesMaxPopulation.Length; i++)
+			RacesMaxPopulation[i] = 0;
+
+		int[] raceNeedBuildCount = new int[GameConstants.MAX_RACE];
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (RacesPopulation[i] > 0)
+				raceNeedBuildCount[i] = (RacesPopulation[i] - 1) / TownRes.POPULATION_PER_HOUSE + 1;
+		}
+
+		//--- assign the first house to each race, each present race will at least have one house ---//
+
+		for (int i = 0; i < townLayout.SlotCount; i++)
+		{
+			TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
+			if (townSlot.BuildType == TownSlot.TOWN_OBJECT_HOUSE)
+			{
+				int raceId = ConfigAdv.GetRandomRace();
+				for (int j = 1; j <= GameConstants.MAX_RACE; j++)
+				{
+					raceId++;
+					if (raceId > GameConstants.MAX_RACE)
+						raceId = 1;
+					
+					// if this race needs buildings, give them a building
+					if (raceNeedBuildCount[raceId - 1] > 0)
+						break;
+				}
+
+				SlotObjectIds[i] = TownRes.ScanBuild(townLayout.FirstSlotId + i, raceId);
+				raceNeedBuildCount[raceId - 1]--;
+				RacesMaxPopulation[raceId - 1] += TownRes.POPULATION_PER_HOUSE;
+			}
+		}
+
+		//------- distribute the remaining houses -------//
+
+		for (int i = 0; i < townLayout.SlotCount; i++)
+		{
+			TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
+			if (townSlot.BuildType == TownSlot.TOWN_OBJECT_HOUSE && SlotObjectIds[i] == 0)
+			{
+				int bestRaceId = 0;
+				int maxNeedBuildCount = 0;
+
+				for (int raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
+				{
+					if (raceNeedBuildCount[raceId - 1] > maxNeedBuildCount)
+					{
+						bestRaceId = raceId;
+						maxNeedBuildCount = raceNeedBuildCount[raceId - 1];
+					}
+				}
+
+				if (bestRaceId == 0) // all races have assigned with their needed houses
+					break;
+
+				SlotObjectIds[i] = TownRes.ScanBuild(townLayout.FirstSlotId + i, bestRaceId);
+				raceNeedBuildCount[bestRaceId - 1]--;
+				RacesMaxPopulation[bestRaceId - 1] += TownRes.POPULATION_PER_HOUSE;
+			}
+		}
+
+		//------- set plants in the town layout -------//
+
+		for (int i = 0; i < townLayout.SlotCount; i++)
+		{
+			TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
+			switch (townSlot.BuildType)
+			{
+				case TownSlot.TOWN_OBJECT_PLANT:
+					// 'T' - town only, 1st 0 - any zone area, 3rd 0 - age level
+					SlotObjectIds[i] = PlantRes.scan(0, 'T', 0);
+					break;
+
+				case TownSlot.TOWN_OBJECT_FARM:
+					SlotObjectIds[i] = townSlot.BuildCode;
+					break;
+
+				case TownSlot.TOWN_OBJECT_HOUSE:
+					if (SlotObjectIds[i] == 0)
+						SlotObjectIds[i] = TownRes.ScanBuild(townLayout.FirstSlotId + i, ConfigAdv.GetRandomRace());
+					break;
+			}
+		}
+	}
+
+	private int ThinkLayoutId()
+	{
+		int needBuildCount = 0; // basic buildings needed
+		int extraBuildCount = 0; // extra buildings needed beside the basic one
+
+		//---- count the needed buildings of each race ----//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (RacesPopulation[i] == 0)
+				continue;
+
+			needBuildCount++; // essential buildings needed
+
+			// extra buildings, which are not necessary, but will look better if the layout plan fits with this number
+			if (RacesPopulation[i] > TownRes.POPULATION_PER_HOUSE)
+				extraBuildCount += (RacesPopulation[i] - TownRes.POPULATION_PER_HOUSE - 1) / TownRes.POPULATION_PER_HOUSE + 1;
+		}
+
+		//---------- scan the town layout ---------//
+		int layoutId1;
+		// scan from the most densed layout to the least densed layout
+		for (layoutId1 = TownRes.TownLayouts.Length; layoutId1 > 0; layoutId1--)
+		{
+			TownLayout townLayout = TownRes.GetLayout(layoutId1);
+
+			//--- if this plan has less than the essential need ---//
+
+			int countDiff = townLayout.BuildCount - (needBuildCount + extraBuildCount);
+
+			if (countDiff == 0) // the match is perfect, return now
+				break;
+
+			// since we scan from the most densed town layout to the least densed one, if cannot find anyone matched now,
+			// there won't be any in the lower positions of the array
+			if (countDiff < 0)
+			{
+				layoutId1 = TownRes.TownLayouts.Length;
+				break;
+			}
+		}
+
+		//--- if there are more than one layout with the same number of building, pick one randomly ---//
+
+		int layoutBuildCount = TownRes.GetLayout(layoutId1).BuildCount;
+		int layoutId2;
+
+		for (layoutId2 = layoutId1 - 1; layoutId2 > 0; layoutId2--)
+		{
+			TownLayout townLayout = TownRes.GetLayout(layoutId2);
+
+			if (layoutBuildCount != townLayout.BuildCount)
+				break;
+		}
+
+		layoutId2++; // the lowest layout id. that has the same no. of buildings
+
+		//------- return the result layout id -------//
+
+		return layoutId2 + Misc.Random(layoutId1 - layoutId2 + 1);
+	}
 
 	public void InitPopulation(int raceId, int addPop, int loyalty, bool hasJob, bool firstInit)
 	{
@@ -775,24 +931,6 @@ public class Town
 		}
 
 		return 0;
-	}
-
-	public int RecruitableRacePopulation(int raceId, bool recruitSpy)
-	{
-		int recruitableCount = RacesJoblessPopulation[raceId - 1];
-
-		if (TrainUnitId != 0 && UnitArray[TrainUnitId].race_id == raceId)
-			recruitableCount--;
-
-		if (!recruitSpy)
-		{
-			recruitableCount -= RacesSpyCount[raceId - 1];
-
-			if (recruitableCount == -1) // it may have been reduced twice if the unit being trained is a spy 
-				recruitableCount = 0;
-		}
-
-		return recruitableCount;
 	}
 
 
@@ -1603,7 +1741,7 @@ public class Town
 
 		if (cancelFlag)
 		{
-			UnitArray.disappear_in_town(TrainUnitId, TownId);
+			UnitArray.DisappearInTown(unit, this);
 			TrainUnitId = 0;
 			return;
 		}
@@ -1664,7 +1802,7 @@ public class Town
 				unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
 			}
 
-			UnitArray.disappear_in_town(TrainUnitId, TownId);
+			UnitArray.DisappearInTown(unit, this);
 			TrainUnitId = 0;
 		}
 	}
@@ -1982,194 +2120,15 @@ public class Town
 		return migrated > 0;
 	}
 
-
-	public void AutoSetLayout()
+	
+	public void AssignUnit(Unit unit)
 	{
-		LayoutId = ThinkLayoutId();
-
-		TownLayout townLayout = TownRes.get_layout(LayoutId);
-		//TownSlot   firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno);
-		int[] raceNeedBuildCount = new int[GameConstants.MAX_RACE];
-
-		for (int i = 0; i < SlotObjectIds.Length; i++)
-			SlotObjectIds[i] = 0;
-		for (int i = 0; i < RacesMaxPopulation.Length; i++)
-			RacesMaxPopulation[i] = 0;
-		for (int i = 0; i < raceNeedBuildCount.Length; i++)
-			raceNeedBuildCount[i] = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (RacesPopulation[i] > 0)
-				raceNeedBuildCount[i] += (RacesPopulation[i] - 1) / TownRes.POPULATION_PER_HOUSE + 1;
-		}
-
-		//--- assign the first house to each race, each present race will at least have one house ---//
-
-		int firstRaceId = ConfigAdv.GetRandomRace(); // random match
-		int raceId = firstRaceId;
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE)
-			{
-				while (true) // next race
-				{
-					if (++raceId > GameConstants.MAX_RACE)
-						raceId = 1;
-
-					if (raceId == ((firstRaceId == GameConstants.MAX_RACE)
-						    ? 1
-						    : firstRaceId + 1)) // finished the first house for all races
-						goto label_distribute_house;
-
-					if (raceNeedBuildCount[raceId - 1] >
-					    0) // if this race need buildings, skip all races that do not need buildings
-						break;
-				}
-
-				SlotObjectIds[i] = TownRes.scan_build(townLayout.first_slot_recno + i, raceId);
-
-				raceNeedBuildCount[raceId - 1]--;
-				RacesMaxPopulation[raceId - 1] += TownRes.POPULATION_PER_HOUSE;
-			}
-		}
-
-		//------- distribute the remaining houses -------//
-
-		label_distribute_house:
-
-		int bestRaceId, maxNeedBuildCount;
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			if (firstTownSlot.build_type == TownSlot.TOWN_OBJECT_HOUSE && SlotObjectIds[i] == 0)
-			{
-				bestRaceId = 0;
-				maxNeedBuildCount = 0;
-
-				for (raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
-				{
-					if (raceNeedBuildCount[raceId - 1] > maxNeedBuildCount)
-					{
-						bestRaceId = raceId;
-						maxNeedBuildCount = raceNeedBuildCount[raceId - 1];
-					}
-				}
-
-				if (bestRaceId == 0) // all races have assigned with their needed houses
-					break;
-
-				SlotObjectIds[i] = TownRes.scan_build(townLayout.first_slot_recno + i, bestRaceId);
-				raceNeedBuildCount[bestRaceId - 1]--;
-				RacesMaxPopulation[bestRaceId - 1] += TownRes.POPULATION_PER_HOUSE;
-			}
-		}
-
-		//------- set plants in the town layout -------//
-
-		for (int i = 0; i < townLayout.slot_count; i++)
-		{
-			//TODO check it
-			TownSlot firstTownSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
-			switch (firstTownSlot.build_type)
-			{
-				case TownSlot.TOWN_OBJECT_PLANT:
-					SlotObjectIds[i] =
-						PlantRes.scan(0, 'T',
-							0); // 'T'-town only, 1st 0-any zone area, 2nd 0-any terain type, 3rd-age level
-					break;
-
-				case TownSlot.TOWN_OBJECT_FARM:
-					SlotObjectIds[i] = firstTownSlot.build_code;
-					break;
-
-				case TownSlot.TOWN_OBJECT_HOUSE:
-					if (SlotObjectIds[i] == 0)
-						SlotObjectIds[i] = TownRes.scan_build(townLayout.first_slot_recno + i, ConfigAdv.GetRandomRace());
-					break;
-			}
-		}
-	}
-
-	private int ThinkLayoutId()
-	{
-		int needBuildCount = 0; // basic buildings needed
-		int extraBuildCount = 0; // extra buildings needed beside the basic one
-
-		//---- count the needed buildings of each race ----//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (RacesPopulation[i] == 0)
-				continue;
-
-			needBuildCount++; // essential buildings needed
-
-			// extra buildings, which are not necessary, but will look better if the layout plan fits with this number
-			const int popPerHouse = TownRes.POPULATION_PER_HOUSE;
-			if (RacesPopulation[i] > popPerHouse)
-				extraBuildCount += (RacesPopulation[i] - popPerHouse - 1) / popPerHouse + 1;
-		}
-
-		//---------- scan the town layout ---------//
-		int layoutId;
-		// scan from the most densed layout to the least densed layout
-		for (layoutId = TownRes.town_layout_array.Length; layoutId > 0; layoutId--)
-		{
-			TownLayout townLayout = TownRes.get_layout(layoutId);
-
-			//--- if this plan has less than the essential need ---//
-
-			int countDiff = townLayout.build_count - (needBuildCount + extraBuildCount);
-
-			if (countDiff == 0) // the match is perfect, return now
-				break;
-
-			// since we scan from the most densed town layout to the least densed one, if cannot find anyone matched now,
-			// there won't be any in the lower positions of the array
-			if (countDiff < 0)
-			{
-				layoutId = TownRes.town_layout_array.Length;
-				break;
-			}
-		}
-
-		//--- if there are more than one layout with the same number of building, pick one randomly ---//
-
-		int layoutBuildCount = TownRes.get_layout(layoutId).build_count;
-		int layoutId2;
-
-		for (layoutId2 = layoutId - 1; layoutId2 > 0; layoutId2--)
-		{
-			TownLayout townLayout = TownRes.get_layout(layoutId2);
-
-			if (layoutBuildCount != townLayout.build_count)
-				break;
-		}
-
-		layoutId2++; // the lowest layout id. that has the same no. of buildings
-
-		//------- return the result layout id -------//
-
-		return layoutId2 + Misc.Random(layoutId - layoutId2 + 1);
-	}
-
-	public void AssignUnit(int unitRecno)
-	{
-		Unit unit = UnitArray[unitRecno];
-
 		if (Population >= GameConstants.MAX_TOWN_POPULATION || unit.rank_id == Unit.RANK_KING)
 		{
 			unit.stop2();
 			//----------------------------------------------------------------------//
-			// codes for handle_blocked_move 
-			// set unit_group_id to a different value s.t. the members in this group
-			// will not blocked by this unit.
+			// codes for handle_blocked_move set unit_group_id to a different value 
+			// s.t. the members in this group will not be blocked by this unit.
 			//----------------------------------------------------------------------//
 			unit.unit_group_id = UnitArray.cur_group_id++;
 			return;
@@ -2179,8 +2138,6 @@ public class Town
 
 		if (unit.rank_id == Unit.RANK_GENERAL)
 			unit.set_rank(Unit.RANK_SOLDIER);
-
-		//-------- increase population -------//
 
 		IncPopulation(unit.race_id, false, unit.loyalty);
 
@@ -2194,19 +2151,19 @@ public class Town
 		{
 			//---------------------------------------------//
 			//
-			// If this unit is a defender of the town, add back the
-			// loyalty which was deducted from the defender left the
-			// town.
+			// If this unit is a defender of the town, add back the loyalty
+			// which was deducted from the defender left the town.
 			//
 			//---------------------------------------------//
 
 			if (unit.nation_recno == NationId && unit.unit_mode_para == TownId)
 			{
-				//-- if the unit is a town defender, skill.skill_level is temporary used for storing the loyalty that will be added back to the town if the defender returns to the town
+				// if the unit is a town defender, skill.skill_level is temporarily used for storing the loyalty
+				// that will be added back to the town if the defender returns to the town
 
 				int loyaltyInc = unit.skill.skill_level;
 
-				if (NationId != 0) // set the loyalty later for nation_recno > 0
+				if (NationId != 0) // set the loyalty later for NationId != 0
 				{
 					ChangeLoyalty(unit.race_id, loyaltyInc);
 				}
@@ -2239,15 +2196,32 @@ public class Town
 		//--------- delete the unit --------//
 
 		// the unit disappear from the map because it has moved into a town
-		UnitArray.disappear_in_town(unitRecno, TownId);
+		UnitArray.DisappearInTown(unit, this);
 	}
 
+	public int RecruitableRacePopulation(int raceId, bool recruitSpy)
+	{
+		int recruitableCount = RacesJoblessPopulation[raceId - 1];
+
+		if (TrainUnitId != 0 && UnitArray[TrainUnitId].race_id == raceId)
+			recruitableCount--;
+
+		if (!recruitSpy)
+		{
+			recruitableCount -= RacesSpyCount[raceId - 1];
+
+			if (recruitableCount == -1) // it may have been reduced twice if the unit being trained is a spy 
+				recruitableCount = 0;
+		}
+
+		return recruitableCount;
+	}
+	
 	public bool CanRecruit(int raceId)
 	{
 		//----------------------------------------------------//
 		// Cannot recruit when you have none of your own camps
-		// linked to this town, but your enemies have camps
-		// linked to it.
+		// linked to this town, but your enemies have camps linked to it.
 		//----------------------------------------------------//
 
 		if (!HasLinkedOwnCamp && HasLinkedEnemyCamp)
@@ -2256,13 +2230,10 @@ public class Town
 		if (RecruitableRacePopulation(raceId, true) == 0)
 			return false;
 
-		//---------------------------------//
-
 		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY;
 
 		//--- for the AI, only recruit if the loyalty still stay at 30 after recruiting the unit ---//
 
-		// 0-don't actually decrease it, just return the loyalty to be decreased.
 		if (AITown && NationId != 0)
 			minRecruitLoyalty += 3 + RecruitDecLoyalty(raceId, false);
 
@@ -2280,11 +2251,7 @@ public class Town
 
 		if (raceId == 0)
 		{
-			//TODO rewrite
-			//if (browse_race.recno() > race_filter())
-				//return 0;
-
-			//raceId = race_filter(browse_race.recno());
+			//TODO get race from user interface
 		}
 
 		//if( !remoteAction && remote.is_enable() )
@@ -2304,18 +2271,11 @@ public class Town
 		if (recruitableCount == 0)
 			return 0;
 
-		//err_when( recruitableCount < 0 );		// 1-allow recruiting spies
-
 		//-------- create an unit ------//
-
-		int townRecno = TownId;
-		// save this town's info that is needed as promote_pop() will delete Town if all population of the town are promoted
-		int nationRecno = NationId;
 
 		//--- if there are spies in this town, chances are that they will be mobilized ---//
 
-		// 1-allow recruiting spies
-		bool shouldTrainSpy = RacesSpyCount[raceId - 1] >= Misc.Random(recruitableCount) + 1;
+		bool shouldTrainSpy = (RacesSpyCount[raceId - 1] >= Misc.Random(recruitableCount) + 1);
 
 		//---- if we are trying to train an enemy to our spy, then... -----//
 
@@ -2327,15 +2287,15 @@ public class Town
 			{
 				shouldTrainSpy = false;
 			}
-			//--- if all remaining units are spies, when you try to train one, all of them will become mobilized ---//
 
+			//--- if all remaining units are spies, when you try to train one, all of them will become mobilized ---//
 			else
 			{
-				int spyRecno = SpyArray.find_town_spy(TownId, raceId, 1);
+				int spyId = SpyArray.find_town_spy(TownId, raceId, 1);
 
-				Spy spy = SpyArray[spyRecno];
+				Spy spy = SpyArray[spyId];
 
-				if (spy.mobilize_town_spy() == 0)
+				if (spy.mobilize_town_spy() == null)
 					return 0;
 
 				spy.change_cloaked_nation(spy.true_nation_recno);
@@ -2346,7 +2306,7 @@ public class Town
 
 		//------- if we should train a spy --------//
 
-		int unitRecno = 0;
+		Unit unit = null;
 
 		if (shouldTrainSpy)
 		{
@@ -2357,12 +2317,11 @@ public class Town
 			// nation, then mobilize them finally.
 			//-----------------------------------------------------//
 
-			for (int mobileNationType = 1; unitRecno == 0 && mobileNationType <= 2; mobileNationType++)
+			for (int mobileNationType = 1; unit == null && mobileNationType <= 2; mobileNationType++)
 			{
-				if (mobileNationType == 2) // only mobilize our own spies are there are the only ones in the town
+				if (mobileNationType == 2) // only mobilize our own spies, there are the only ones in the town
 				{
-					if (RecruitableRacePopulation(raceId, true) >
-					    RacesSpyCount[raceId - 1]) // 1-allow recruiting spies
+					if (RecruitableRacePopulation(raceId, true) > RacesSpyCount[raceId - 1])
 						break;
 				}
 
@@ -2371,14 +2330,15 @@ public class Town
 					if (spy.spy_place == Spy.SPY_TOWN && spy.spy_place_para == TownId && spy.race_id == raceId)
 					{
 						// only mobilize spies from other nations, don't mobilize spies of our own nation
+						// TODO never train our spy into another skill
 						if (mobileNationType == 1)
 						{
 							if (spy.true_nation_recno == NationId)
 								continue;
 						}
 
-						// the parameter is whether decreasing the population immediately, if decrease immediately in recruit mode, not in training mode, 1-mobilize spies
-						unitRecno = spy.mobilize_town_spy(trainSkillId == -1);
+						// the parameter is whether decreasing the population immediately, decrease immediately in recruit mode, not in training mode
+						unit = spy.mobilize_town_spy(trainSkillId == -1);
 						break;
 					}
 				}
@@ -2387,16 +2347,14 @@ public class Town
 
 		//-------- mobilize normal peasant units -------//
 
-		if (unitRecno == 0)
+		if (unit == null)
 		{
-			// the 2nd parameter is whether decreasing the population immediately, if decrease immediately in recruit mode, not in training mode, 2nd para 0-don't mobilize spies
-			unitRecno = MobilizeTownPeople(raceId, trainSkillId == -1, false);
+			// the 2nd parameter is whether decreasing the population immediately, decrease immediately in recruit mode, not in training mode
+			unit = MobilizeTownPeople(raceId, trainSkillId == -1, false);
 		}
 
-		if (unitRecno == 0)
+		if (unit == null)
 			return 0;
-
-		Unit unit = UnitArray[unitRecno];
 
 		//-------- training skill -----------//
 
@@ -2404,18 +2362,24 @@ public class Town
 		{
 			if (trainSkillId == Skill.SKILL_SPYING)
 			{
-				unit.spy_recno = SpyArray.AddSpy(unitRecno, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
+				unit.spy_recno = SpyArray.AddSpy(unit.sprite_recno, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
 			}
 			else
 			{
-				if (trainSkillId == Skill.SKILL_LEADING) // also increase the combat level for leadership skill training
-					unit.set_combat_level(GameConstants.TRAIN_SKILL_LEVEL);
-
 				unit.skill.skill_id = trainSkillId;
 				unit.skill.skill_level = GameConstants.TRAIN_SKILL_LEVEL;
 			}
+			
+			//---- training solider or skilled unit takes time ----//
 
-			NationArray[nationRecno].add_expense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
+			TrainUnitId = unit.sprite_recno;
+			_startTrainFrameNumber = Sys.Instance.FrameNumber; // as an offset for displaying the progress bar correctly
+
+			unit.deinit_sprite();
+			unit.unit_mode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
+			unit.unit_mode_para = TownId;
+			
+			NationArray[NationId].add_expense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
 		}
 		else
 		{
@@ -2429,38 +2393,25 @@ public class Town
 			}
 		}
 
-		//---- training solider or skilled unit takes time ----//
-
-		if (trainSkillId >= 0)
-		{
-			TrainUnitId = unitRecno;
-			_startTrainFrameNumber = Sys.Instance.FrameNumber; // as an offset for displaying the progress bar correctly
-
-			unit.deinit_sprite();
-			unit.unit_mode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
-			unit.unit_mode_para = TownId;
-		}
-
-		//--- mobilize_pop() will delete the current Town if population goes down to 0 ---//
+		//--- DecPopulation() will delete the current town if population goes down to 0 ---//
 
 		if (TownId == TownArray.selected_recno)
 		{
-			if (TownArray.IsDeleted(townRecno))
+			if (TownArray.IsDeleted(TownId))
 				Info.disp();
 		}
 
-		return unitRecno;
+		return unit.sprite_recno;
 	}
 
 	public int RecruitDecLoyalty(int raceId, bool decNow = true)
 	{
-		double loyaltyDec =
-			Math.Min(5.0, Convert.ToDouble(GameConstants.MAX_TOWN_POPULATION) / RacesPopulation[raceId - 1]);
+		double loyaltyDec = Math.Min(5.0, Convert.ToDouble(GameConstants.MAX_TOWN_POPULATION) / RacesPopulation[raceId - 1]);
 
 		if (ConfigAdv.fix_recruit_dec_loyalty)
 		{
 			loyaltyDec += AccumulatedRecruitPenalty / 5.0;
-			loyaltyDec = Math.Min(loyaltyDec, 10);
+			loyaltyDec = Math.Min(loyaltyDec, 10.0);
 		}
 
 		//------ recruitment without training decreases loyalty --------//
@@ -2470,17 +2421,14 @@ public class Town
 			if (!ConfigAdv.fix_recruit_dec_loyalty)
 			{
 				loyaltyDec += AccumulatedRecruitPenalty / 5.0;
-
-				loyaltyDec = Math.Min(loyaltyDec, 10);
+				loyaltyDec = Math.Min(loyaltyDec, 10.0);
 			}
 
 			AccumulatedRecruitPenalty += 5;
 
-			//-------------------------------------//
-
 			RacesLoyalty[raceId - 1] -= loyaltyDec;
 
-			if (RacesLoyalty[raceId - 1] < 0)
+			if (RacesLoyalty[raceId - 1] < 0.0)
 				RacesLoyalty[raceId - 1] = 0.0;
 		}
 
@@ -2490,78 +2438,148 @@ public class Town
 			return (int)Math.Ceiling(loyaltyDec);
 		}
 
-		return Convert.ToInt32(loyaltyDec);
+		return (int)loyaltyDec;
 	}
 
-	public int ClosestOwnCamp()
+	public Unit MobilizeTownPeople(int raceId, bool decPop, bool mobilizeSpy)
 	{
-		int minDistance = Int32.MaxValue, closestFirmRecno = 0;
+		//---- if no jobless people, make workers and overseers jobless ----//
 
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+		if (RecruitableRacePopulation(raceId, mobilizeSpy) == 0)
+		{
+			if (!UnjobTownPeople(raceId, mobilizeSpy, false))
+				return null;
+		}
+
+		//----look for an empty location for the unit to stand ----//
+		//--- scan for the 5 rows right below the building ---//
+
+		int unitId = RaceRes[raceId].basic_unit_id;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		int locX = LocX1, locY = LocY1; // locX & locY are used for returning results
+
+		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return null;
+
+		//---------- add the unit now -----------//
+
+		Unit unit = UnitArray.AddUnit(unitId, NationId, Unit.RANK_SOLDIER, (int)RacesLoyalty[raceId - 1], locX, locY);
+
+		//------- set the unit's parameters --------//
+
+		unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL);
+
+		//-------- decrease the town's population ------//
+
+		if (decPop)
+			DecPopulation(raceId, false);
+
+		return unit;
+	}
+
+	private bool UnjobTownPeople(int raceId, bool unjobSpy, bool unjobOverseer)
+	{
+		//---- if no jobless people, workers will then get killed -----//
+
+		int racesJoblessPop = RacesJoblessPopulation[raceId - 1];
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
-				continue;
+			//------- scan for workers -----------//
 
-			int curDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
-				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
-
-			if (curDistance < minDistance)
+			for (int j = firm.workers.Count - 1; j >= 0; j--)
 			{
-				minDistance = curDistance;
-				closestFirmRecno = firm.firm_recno;
+				Worker worker = firm.workers[j];
+				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
+					continue;
+
+				//--- if the worker lives in this town ----//
+
+				if (worker.race_id == raceId && worker.town_recno == TownId)
+				{
+					if (firm.resign_worker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
+						return false;
+
+					return RacesJoblessPopulation[raceId - 1] == racesJoblessPop + 1;
+				}
 			}
 		}
 
-		return closestFirmRecno;
-	}
+		//----- if no worker removed, try to remove overseer ------//
 
-	public int CampInfluence(int unitRecno)
-	{
-		Unit unit = UnitArray[unitRecno];
-		Nation nation = NationArray[unit.nation_recno]; // nation of the unit
-
-		int thisInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
-
-		if (RaceRes.is_same_race(nation.race_id, unit.race_id))
-			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
-
-		thisInfluence += Convert.ToInt32(nation.reputation / 2);
-
-		thisInfluence = Math.Min(100, thisInfluence);
-
-		return thisInfluence;
-	}
-	
-	public bool HasPlayerSpy()
-	{
-		int i;
-		for (i = 0; i < GameConstants.MAX_RACE; i++)
+		if (unjobOverseer)
 		{
-			if (RacesSpyCount[i] > 0)
-				break;
-		}
-
-		if (i == GameConstants.MAX_RACE) // no spies in this nation
-			return false;
-
-		//----- look for player spy in the spy_array -----//
-
-		foreach (Spy spy in SpyArray)
-		{
-			if (spy.spy_place == Spy.SPY_TOWN &&
-			    spy.spy_place_para == TownId &&
-			    spy.true_nation_recno == NationArray.player_recno)
+			for (int i = 0; i < LinkedFirms.Count; i++)
 			{
-				return true;
+				Firm firm = FirmArray[LinkedFirms[i]];
+
+				//------- scan for overseer -----------//
+
+				if (firm.overseer_recno != 0)
+				{
+					//--- if the overseer lives in this town ----//
+
+					Unit overseerUnit = UnitArray[firm.overseer_recno];
+
+					if (overseerUnit.race_id == raceId && firm.overseer_town_recno == TownId)
+					{
+						int overseerId = firm.overseer_recno;
+						Unit overseer = UnitArray[overseerId];
+						firm.assign_overseer(0);
+						if (!UnitArray.IsDeleted(overseerId) && overseer.is_visible())
+							UnitArray.DisappearInTown(overseer, this);
+
+						return true;
+					}
+				}
 			}
 		}
 
 		return false;
 	}
 
-	
+	public void KillTownPeople(int raceId, int attackerNationId = 0)
+	{
+		if (raceId == 0)
+			raceId = PickRandomRace(true, true); 
+
+		if (raceId == 0)
+			return;
+
+		//---- jobless town people get killed first, if all jobless are killed, then kill workers ----//
+
+		if (RecruitableRacePopulation(raceId, true) == 0)
+		{
+			if (!UnjobTownPeople(raceId, true, true))
+				return;
+		}
+
+		//------ the killed unit can be a spy -----//
+
+		if (Misc.Random(RecruitableRacePopulation(raceId, true)) < RacesSpyCount[raceId - 1])
+		{
+			int spyId = SpyArray.find_town_spy(TownId, raceId, Misc.Random(RacesSpyCount[raceId - 1]) + 1);
+			SpyArray.DeleteSpy(SpyArray[spyId]);
+		}
+
+		//---- killing civilian people decreases loyalty -----//
+
+		// your people's loyalty decreases because you cannot protect them.
+		// but only when your units are killed by enemies, neutral disasters are not counted
+		if (NationId != 0 && attackerNationId != 0)
+			NationArray[NationId].civilian_killed(raceId, false, 2);
+
+		if (attackerNationId != 0) // the attacker's people's loyalty decreases because of the killing actions.
+			NationArray[attackerNationId].civilian_killed(raceId, true, 2); // the nation is the attacking one
+
+		SERes.sound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
+
+		DecPopulation(raceId, false);
+	}
+
+
 	private void SetupLink()
 	{
 		//-----------------------------------------------------------------------------//
@@ -2967,6 +2985,74 @@ public class Town
 		return false;
 	}
 	
+	public int ClosestOwnCamp()
+	{
+		int minDistance = Int32.MaxValue, closestFirmRecno = 0;
+
+		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+		{
+			Firm firm = FirmArray[LinkedFirms[i]];
+
+			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
+				continue;
+
+			int curDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
+
+			if (curDistance < minDistance)
+			{
+				minDistance = curDistance;
+				closestFirmRecno = firm.firm_recno;
+			}
+		}
+
+		return closestFirmRecno;
+	}
+
+	public int CampInfluence(int unitRecno)
+	{
+		Unit unit = UnitArray[unitRecno];
+		Nation nation = NationArray[unit.nation_recno]; // nation of the unit
+
+		int thisInfluence = unit.skill.get_skill(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
+
+		if (RaceRes.is_same_race(nation.race_id, unit.race_id))
+			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
+
+		thisInfluence += Convert.ToInt32(nation.reputation / 2);
+
+		thisInfluence = Math.Min(100, thisInfluence);
+
+		return thisInfluence;
+	}
+	
+	public bool HasPlayerSpy()
+	{
+		int i;
+		for (i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (RacesSpyCount[i] > 0)
+				break;
+		}
+
+		if (i == GameConstants.MAX_RACE) // no spies in this nation
+			return false;
+
+		//----- look for player spy in the spy_array -----//
+
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.spy_place == Spy.SPY_TOWN &&
+			    spy.spy_place_para == TownId &&
+			    spy.true_nation_recno == NationArray.player_recno)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
 	
 	public void ChangeNation(int newNationRecno)
 	{
@@ -3219,9 +3305,7 @@ public class Town
 
 		//------- mobilize jobless people if there are any -------//
 
-		int unitRecno = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spy town people
-
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spy town people
 
 		unit.set_mode(UnitConstants.UNIT_MODE_DEFEND_TOWN, TownId);
 
@@ -3253,7 +3337,7 @@ public class Town
 		if (RebelId != 0)
 			RebelArray[RebelId].mobile_rebel_count++; // increase the no. of mobile rebel units
 
-		return unitRecno != 0;
+		return true;
 	}
 
 	private void ClearDefenseMode()
@@ -3454,159 +3538,6 @@ public class Town
 		}
 	}
 
-	public int MobilizeTownPeople(int raceId, bool decPop, bool mobilizeSpy)
-	{
-		//---- if no jobless people, make workers and overseers jobless ----//
-
-		if (RecruitableRacePopulation(raceId, mobilizeSpy) == 0)
-		{
-			if (!UnjobTownPeople(raceId, mobilizeSpy, false)) // 0-don't unjob overseer
-				return 0;
-		}
-
-		//----look for an empty locatino for the unit to stand ----//
-		//--- scan for the 5 rows right below the building ---//
-
-		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
-
-		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return 0;
-
-		//---------- add the unit now -----------//
-
-		Unit unit = UnitArray.AddUnit(unitId, NationId, Unit.RANK_SOLDIER,
-			Convert.ToInt32(RacesLoyalty[raceId - 1]), xLoc, yLoc);
-
-		//------- set the unit's parameters --------//
-
-		unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL);
-
-		//-------- decrease the town's population ------//
-
-		if (decPop)
-			DecPopulation(raceId, false);
-
-		return unit.sprite_recno;
-	}
-
-	public void KillTownPeople(int raceId, int attackerNationRecno = 0)
-	{
-		if (raceId == 0)
-			raceId = PickRandomRace(true, true); // 1-pick has job unit, 1-pick spies 
-
-		if (raceId == 0)
-			return;
-
-		//---- jobless town people get killed first, if all jobless are killed, then kill workers ----//
-
-		if (RecruitableRacePopulation(raceId, true) == 0)
-		{
-			// 1-unjob spies, 1-unjob overseer if the only person left is a overseer
-			if (!UnjobTownPeople(raceId, true, true))
-				return;
-		}
-
-		//------ the killed unit can be a spy -----//
-
-		if (Misc.Random(RecruitableRacePopulation(raceId, true)) < RacesSpyCount[raceId - 1])
-		{
-			int spyRecno =
-				SpyArray.find_town_spy(TownId, raceId, Misc.Random(RacesSpyCount[raceId - 1]) + 1);
-
-			SpyArray.DeleteSpy(SpyArray[spyRecno]);
-		}
-
-		//---- killing civilian people decreases loyalty -----//
-
-		// your people's loyalty decreases because you cannot protect them.
-		if (NationId != 0 && attackerNationRecno != 0)
-			// but only when your units are killed by enemies, neutral disasters are not counted
-			NationArray[NationId].civilian_killed(raceId, false, 2);
-
-		if (attackerNationRecno != 0) //	the attacker's people's loyalty decreases because of the killing actions.
-			NationArray[attackerNationRecno].civilian_killed(raceId, true, 2); // the nation is the attacking one
-
-		// -------- sound effect ---------//
-
-		SERes.sound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
-
-		//-------- decrease population now --------//
-
-		DecPopulation(raceId, false); // 0-doesn't have a job
-	}
-
-	private bool UnjobTownPeople(int raceId, bool unjobSpy, bool unjobOverseer, bool killOverseer = false)
-	{
-		//---- if no jobless people, workers will then get killed -----//
-
-		int racePop = RacesJoblessPopulation[raceId - 1];
-
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
-		{
-			Firm firm = FirmArray[LinkedFirms[i]];
-
-			//------- scan for workers -----------//
-
-			for (int j = firm.workers.Count - 1; j >= 0; j--)
-			{
-				Worker worker = firm.workers[j];
-				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
-					continue;
-
-				//--- if the worker lives in this town ----//
-
-				if (worker.race_id == raceId && worker.town_recno == TownId)
-				{
-					if (firm.resign_worker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
-						return false;
-
-					return RacesJoblessPopulation[raceId - 1] == racePop + 1;
-				}
-			}
-		}
-
-		//----- if no worker killed, try to kill overseers ------//
-
-		if (unjobOverseer)
-		{
-			for (int i = LinkedFirms.Count - 1; i >= 0; i--)
-			{
-				Firm firm = FirmArray[LinkedFirms[i]];
-
-				//------- scan for overseer -----------//
-
-				if (firm.overseer_recno != 0)
-				{
-					//--- if the overseer lives in this town ----//
-
-					Unit overseerUnit = UnitArray[firm.overseer_recno];
-
-					if (overseerUnit.race_id == raceId && firm.overseer_town_recno == TownId)
-					{
-						if (killOverseer)
-						{
-							firm.kill_overseer();
-						}
-						else
-						{
-							int overseerUnitRecno = firm.overseer_recno;
-							Unit unit = UnitArray[overseerUnitRecno];
-							firm.assign_overseer(0);
-							if (!UnitArray.IsDeleted(overseerUnitRecno) && unit.is_visible())
-								UnitArray.disappear_in_town(overseerUnitRecno, TownId);
-						}
-
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
 	public bool FormNewNation()
 	{
 		if (NationArray.nation_count >= GameConstants.MAX_NATION)
@@ -3690,12 +3621,10 @@ public class Town
 				// 0-don't recruit spies
 				for (int i = 0; i < mobileCount && RecruitableRacePopulation(raceId, false) > 0; i++)
 				{
-					int unitRecno = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spies
+					Unit unit = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spies
 
-					if (unitRecno != 0)
+					if (unit != null)
 					{
-						Unit unit = UnitArray[unitRecno];
-
 						//------- randomly set a skill -------//
 
 						int skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
@@ -4066,7 +3995,7 @@ public class Town
 	}
 
 	
-	#region AIFunctions
+	#region Old AI Functions
 
 	public void ProcessAI()
 	{
@@ -5329,10 +5258,10 @@ public class Town
 
 					if (hasNewMission)
 					{
-						int unitRecno = spy.mobilize_town_spy();
-						if (unitRecno != 0)
+						Unit unit = spy.mobilize_town_spy();
+						if (unit != null)
 						{
-							ownNation.ai_start_spy_new_mission(unitRecno, xLoc, yLoc, cloakedNationRecno);
+							ownNation.ai_start_spy_new_mission(unit, xLoc, yLoc, cloakedNationRecno);
 							return true;
 						}
 					}
@@ -5812,12 +5741,10 @@ public class Town
 		//----- mobilize a villager ----//
 
 		// 1-dec population after mobilizing the unit, 0-don't mobilize spies
-		int unitRecno = MobilizeTownPeople(raceId, true, false);
+		Unit unit = MobilizeTownPeople(raceId, true, false);
 
-		if (unitRecno == 0)
+		if (unit == null)
 			return false;
-
-		Unit unit = UnitArray[unitRecno];
 
 		//----- set the skills of the unit -----//
 

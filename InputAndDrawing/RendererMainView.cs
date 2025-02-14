@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-    private void DrawMap()
+    private void DrawMainView()
     {
         Graphics.SetClipRectangle(ZoomMapX, ZoomMapY, ZoomMapX + ZoomMapLocWidth * ZoomTextureWidth, ZoomMapY + ZoomMapLocHeight * ZoomTextureHeight);
         
@@ -11,37 +11,44 @@ public partial class Renderer
             for (int y = topLeftY; (y < topLeftY + ZoomMapLocHeight) && y < GameConstants.MapSize; y++)
             {
                 Location location = World.get_loc(x, y);
-                if (location.explored())
-                {
-                    //Draw terrain
-                    int drawX = ZoomMapX + (x - topLeftX) * ZoomTextureWidth;
-                    int drawY = ZoomMapY + (y - topLeftY) * ZoomTextureHeight;
-                    TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
-                    Graphics.DrawBitmapScale(terrainInfo.GetTexture(Graphics), drawX, drawY, terrainInfo.bitmapWidth, terrainInfo.bitmapHeight);
+                if (!location.explored())
+                    continue;
 
-                    if (location.has_dirt())
+                //Draw terrain
+                //TODO terrain animation
+                int drawX = ZoomMapX + (x - topLeftX) * ZoomTextureWidth;
+                int drawY = ZoomMapY + (y - topLeftY) * ZoomTextureHeight;
+                TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
+                Graphics.DrawBitmapScale(terrainInfo.GetTexture(Graphics), drawX, drawY, terrainInfo.bitmapWidth, terrainInfo.bitmapHeight);
+
+                /*if (location.has_dirt())
+                {
+                    //rock_res.draw_block(rock_recno, xLoc, yLoc, xLoc-dirt.loc_x, yLoc-dirt.loc_y, cur_frame);
+                    RockInfo rockInfo = RockRes.get_rock_info(location.dirt_recno());
+                    int rockBlockRecno = locate_block(rockRecno, offsetX, offsetY);
+                    int rockBitmapRecno = get_bitmap_recno(rockBlockRecno, curFrame);
+                    if (rockBlockRecno != 0 && rockBitmapRecno != 0)
                     {
-                        //TODO draw dirt
-                        //DirtArray[location.dirt_recno()].draw_block(drawX, drawY);
+                        get_bitmap_info(rockBitmapRecno)->draw(xLoc, yLoc);
                     }
-                    
-                    //TODO draw snow
-                    
-                    if (location.has_hill())
-                    {
-                        if (location.hill_id2() != 0)
-                            DrawHill(HillRes[location.hill_id2()], drawX, drawY, 1);
-                        DrawHill(HillRes[location.hill_id1()], drawX, drawY, 1);
-                    }
-                    
-                    //TODO draw power
-                    
-                    // don't display if a building/object has already been built on the location
-                    if (location.has_site() && location.walkable(3))
-                    {
-                        //TODO draw site
-                        //site_array[locPtr->site_recno()]->draw(x, y);
-                    }
+                }*/
+
+                //TODO draw snow
+
+                if (location.has_hill())
+                {
+                    if (location.hill_id2() != 0)
+                        DrawHill(HillRes[location.hill_id2()], drawX, drawY, 1);
+                    DrawHill(HillRes[location.hill_id1()], drawX, drawY, 1);
+                }
+
+                //TODO draw power
+
+                // don't display if a building/object has already been built on the location
+                if (location.has_site() && location.walkable(3))
+                {
+                    //TODO draw site
+                    //site_array[locPtr->site_recno()]->draw(x, y);
                 }
             }
         }
@@ -126,7 +133,7 @@ public partial class Renderer
             if (town.LocY2 < topLeftY || town.LocY1 > topLeftY + ZoomMapLocHeight)
                 continue;
             
-            TownLayout townLayout = TownRes.get_layout(town.LayoutId);
+            TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
             int townX = ZoomMapX + (town.LocX1 - topLeftX) * ZoomTextureWidth;
             int townY = ZoomMapY + (town.LocY1 - topLeftY) * ZoomTextureHeight;
             int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * ZoomTextureWidth - townLayout.groundBitmapWidth * 3 / 2) / 2;
@@ -148,36 +155,36 @@ public partial class Renderer
             int townY = ZoomMapY + (town.LocY1 - topLeftY) * ZoomTextureHeight;
             bool isSelected = (town.TownId == selectedTownId);
 
-            TownLayout townLayout = TownRes.get_layout(town.LayoutId);
-            for (int i = 0; i < townLayout.slot_count; i++)
+            TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
+            for (int i = 0; i < townLayout.SlotCount; i++)
             {
-                TownSlot townSlot = TownRes.get_slot(townLayout.first_slot_recno + i);
+                TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
 
-                switch (townSlot.build_type)
+                switch (townSlot.BuildType)
                 {
                     case TownSlot.TOWN_OBJECT_HOUSE:
-                        TownBuild townBuild = TownRes.get_build(town.SlotObjectIds[i]);
-                        int townBuildX = townX + townSlot.base_x * 3 / 2 - townBuild.bitmapWidth * 3 / 2 / 2;
-                        int townBuildY = townY + townSlot.base_y * 3 / 2 - townBuild.bitmapHeight * 3 / 2;
+                        TownBuild townBuild = TownRes.GetBuild(town.SlotObjectIds[i]);
+                        int townBuildX = townX + townSlot.BaseX * 3 / 2 - townBuild.bitmapWidth * 3 / 2 / 2;
+                        int townBuildY = townY + townSlot.BaseY * 3 / 2 - townBuild.bitmapHeight * 3 / 2;
                         Graphics.DrawBitmapScale(townBuild.GetTexture(Graphics, town.NationId, isSelected), townBuildX, townBuildY,
                             townBuild.bitmapWidth, townBuild.bitmapHeight);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_PLANT:
                         PlantBitmap plantBitmap = PlantRes.get_bitmap(town.SlotObjectIds[i]);
-                        int townPlantX = townX + townSlot.base_x * 3 / 2 - plantBitmap.bitmapWidth * 3 / 2 / 2;
-                        int townPlantY = townY + townSlot.base_y * 3 / 2 - plantBitmap.bitmapHeight * 3 / 2;
+                        int townPlantX = townX + townSlot.BaseX * 3 / 2 - plantBitmap.bitmapWidth * 3 / 2 / 2;
+                        int townPlantY = townY + townSlot.BaseY * 3 / 2 - plantBitmap.bitmapHeight * 3 / 2;
                         Graphics.DrawBitmapScale(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY,
                             plantBitmap.bitmapWidth, plantBitmap.bitmapHeight);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FARM:
-                        int farmIndex = townSlot.build_code - 1;
-                        int townFarmX = townX + townSlot.base_x * 3 / 2;
-                        int townFarmY = townY + townSlot.base_y * 3 / 2;
+                        int farmIndex = townSlot.BuildCode - 1;
+                        int townFarmX = townX + townSlot.BaseX * 3 / 2;
+                        int townFarmY = townY + townSlot.BaseY * 3 / 2;
                         var farmTexture = TownRes.GetFarmTexture(Graphics, farmIndex);
                         Graphics.DrawBitmapScale(farmTexture, townFarmX, townFarmY,
-                            TownRes.farmWidths[farmIndex], TownRes.farmHeights[farmIndex]);
+                            TownRes.FarmWidths[farmIndex], TownRes.FarmHeights[farmIndex]);
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FLAG:
@@ -186,11 +193,11 @@ public partial class Renderer
                         
                         //TODO fix one flag slot with base_x == 57
                         int flagIndex = (int)(((Sys.Instance.FrameNumber + town.TownId) % 8) / 2);
-                        int townFlagX = townX + townSlot.base_x * 3 / 2 + TownFlagShiftX * 3 / 2;
-                        int townFlagY = townY + townSlot.base_y * 3 / 2 + TownFlagShiftY * 3 / 2;
+                        int townFlagX = townX + townSlot.BaseX * 3 / 2 + TownFlagShiftX * 3 / 2;
+                        int townFlagY = townY + townSlot.BaseY * 3 / 2 + TownFlagShiftY * 3 / 2;
                         var flagTexture = TownRes.GetFlagTexture(Graphics, flagIndex, town.NationId);
                         Graphics.DrawBitmapScale(flagTexture, townFlagX, townFlagY,
-                            TownRes.flagWidths[flagIndex], TownRes.flagHeights[flagIndex]);
+                            TownRes.FlagWidths[flagIndex], TownRes.FlagHeights[flagIndex]);
                         break;
                 }
             }

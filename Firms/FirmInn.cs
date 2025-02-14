@@ -397,7 +397,7 @@ public class FirmInn : Firm
 				int unitRecno = hire(i + 1);
 				if (unitRecno != 0)
 				{
-					ownNation.ai_start_spy_new_mission(unitRecno, loc_x1, loc_y1, cloakedNationRecno);
+					ownNation.ai_start_spy_new_mission(UnitArray[unitRecno], loc_x1, loc_y1, cloakedNationRecno);
 					return true;
 				}
 			}

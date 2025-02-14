@@ -77,24 +77,19 @@ public class RebelArray : DynArray<Rebel>
             rebel.process_leader_quit();
     }
 
-    public void settle_town(int unitRecno, int townRecno)
+    public void SettleTown(Unit unit, Town town)
     {
-        Unit unit = UnitArray[unitRecno];
-
         //---- decrease the unit count of the rebel group ----//
 
         int rebelRecno = unit.unit_mode_para;
         Rebel rebel = this[rebelRecno];
-
         rebel.mobile_rebel_count--;
 
         //--------- settle in a town ----------//
 
-        Town town = TownArray[townRecno];
-
         if (rebel.town_recno == 0 && town.RebelId == 0)
         {
-            rebel.town_recno = townRecno;
+            rebel.town_recno = town.TownId;
             town.RebelId = rebelRecno;
         }
     }

@@ -3122,7 +3122,7 @@ public class Nation : NationBase
 				if (bestUnit.spy_recno != 0 && bestUnit.true_nation_recno() == nation_recno)
 					SpyArray[bestUnit.spy_recno].drop_spy_identity(); // revert the spy to a normal unit
 
-				succeed_king(bestUnit.sprite_recno);
+				succeed_king(bestUnit);
 				return true;
 			}
 		}
@@ -3135,7 +3135,7 @@ public class Nation : NationBase
 
 			if (unitRecno != 0)
 			{
-				succeed_king(unitRecno);
+				succeed_king(UnitArray[unitRecno]);
 				return true;
 			}
 		}
@@ -3150,11 +3150,11 @@ public class Nation : NationBase
 			// if this town has people with the same race as the original king
 			if (town.RecruitableRacePopulation(race_id, false) > 0)
 			{
-				int unitRecno = town.MobilizeTownPeople(race_id, true, false); // 1-dec pop, 0-don't mobilize spies
+				Unit unit = town.MobilizeTownPeople(race_id, true, false);
 
-				if (unitRecno != 0)
+				if (unit != null)
 				{
-					succeed_king(unitRecno);
+					succeed_king(unit);
 					return true;
 				}
 			}
@@ -6789,20 +6789,19 @@ public class Nation : NationBase
 			worstSpy.drop_spy_identity();
 	}
 
-	public void ai_start_spy_new_mission(int unitRecno, int loc_x1, int loc_y1, int cloakedNationRecno)
+	public void ai_start_spy_new_mission(Unit spyUnit, int loc_x1, int loc_y1, int cloakedNationRecno)
 	{
 		if (cloakedNationRecno == 0 || cloakedNationRecno == nation_recno)
 		{
 			//--- move to the independent or our town ---//
 			add_action(loc_x1, loc_y1, -1, -1,
-				ACTION_AI_ASSIGN_SPY, cloakedNationRecno, 1, unitRecno);
+				ACTION_AI_ASSIGN_SPY, cloakedNationRecno, 1, spyUnit.sprite_recno);
 		}
 		else
 		{
 			//--- move to the random location and then change its color there ---//
 			int destXLoc = Misc.Random(GameConstants.MapSize);
 			int destYLoc = Misc.Random(GameConstants.MapSize);
-			Unit spyUnit = UnitArray[unitRecno];
 			spyUnit.move_to(destXLoc, destYLoc);
 		}
 	}

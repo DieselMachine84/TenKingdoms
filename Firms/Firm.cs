@@ -379,7 +379,7 @@ public abstract class Firm
 			// display number when there are multiple linked firms of the same type
 			// TRANSLATORS: <Town> <Short Firm Name> <Firm #>
 			// This is the name of the firm when there are multiple linked firms to a town.
-			str = TownRes.get_name(closest_town_name_id) + " " + FirmRes[firm_id].short_name;
+			str = TownRes.GetName(closest_town_name_id) + " " + FirmRes[firm_id].short_name;
 			if (firm_name_instance_id > 1)
 			{
 				str += " " + firm_name_instance_id;

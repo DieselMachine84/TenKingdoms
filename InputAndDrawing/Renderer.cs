@@ -66,12 +66,13 @@ public partial class Renderer
     
     public Graphics Graphics { get; }
 
-    public Font FontSan { get; private set; }
-    public Font FontStd { get; private set; }
+    public Font FontSan { get; }
+    public Font FontStd { get; }
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
     private static PlantRes PlantRes => Sys.Instance.PlantRes;
+    private static RockRes RockRes => Sys.Instance.RockRes;
     private static TownRes TownRes => Sys.Instance.TownRes;
     private static FirmRes FirmRes => Sys.Instance.FirmRes;
     private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
@@ -81,7 +82,7 @@ public partial class Renderer
     private static World World => Sys.Instance.World;
 
     
-    private static RockArray DirtArray => Sys.Instance.DirtArray;
+    //private static RockArray DirtArray => Sys.Instance.DirtArray;
     private static NationArray NationArray => Sys.Instance.NationArray;
     private static TownArray TownArray => Sys.Instance.TownArray;
     private static FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -138,7 +139,7 @@ public partial class Renderer
 
         lastFrame = Sys.Instance.FrameNumber;
         DrawMainScreen();
-        DrawMap();
+        DrawMainView();
         DrawMiniMap();
 
         Graphics.ResetClipRectangle();

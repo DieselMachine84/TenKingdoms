@@ -302,11 +302,11 @@ public class SpyArray : DynArray<Spy>
             {
                 //-------- mobilize the spy ----------//
 
-                int unitRecno = spy.mobilize_town_spy();
+                Unit unit = spy.mobilize_town_spy();
 
                 //----- think new action for the spy ------//
 
-                if (unitRecno != 0)
+                if (unit != null)
                     spy.think_mobile_spy_new_action();
             }
         }

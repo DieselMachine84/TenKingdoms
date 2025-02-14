@@ -325,7 +325,7 @@ public class TownArray : DynArray<Town>
 		int uYLoc = unit.next_y_loc();
 		Location location = World.get_loc(uXLoc, uYLoc);
 
-		town.AssignUnit(unitRecno);
+		town.AssignUnit(unit);
 
 		if (uXLoc >= town.LocX1 && uXLoc <= town.LocX2 && uYLoc >= town.LocY1 && uYLoc <= town.LocY2)
 			location.set_town(town.TownId);

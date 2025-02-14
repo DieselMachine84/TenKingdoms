@@ -94,12 +94,10 @@ public class UnitArray : SpriteArray
 	    DeleteSprite(unit);
     }
 
-    public void disappear_in_town(int unitRecno, int townRecno)
+    public void DisappearInTown(Unit unit, Town town)
     {
-	    Unit unit = this[unitRecno];
-
 	    if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
-		    RebelArray.settle_town(unitRecno, townRecno);
+		    RebelArray.SettleTown(unit, town);
 
 	    DeleteUnit(unit);
     }
