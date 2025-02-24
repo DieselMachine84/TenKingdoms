@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using SDL2;
 
@@ -13,13 +13,14 @@ public class Graphics
     public const int WindowHeight = Renderer.WindowHeight;
     
     private const uint SDLSubSystems = SDL.SDL_INIT_VIDEO;
-    private SDL.SDL_Color[] colors = new SDL.SDL_Color[256];
-    private IntPtr window = IntPtr.Zero;
-    private IntPtr renderer = IntPtr.Zero;
-    private IntPtr surface = IntPtr.Zero;
-    private IntPtr miniMapTexture = IntPtr.Zero;
-    private List<IntPtr> textures = new List<IntPtr>();
-    private bool initialized;
+    private IntPtr _window = IntPtr.Zero;
+    private IntPtr _renderer = IntPtr.Zero;
+    private IntPtr _surface = IntPtr.Zero;
+    private SDL.SDL_Color[] _colors;
+    private IntPtr _palette = IntPtr.Zero; 
+    private IntPtr _miniMapTexture = IntPtr.Zero;
+    private readonly List<IntPtr> _textures = new List<IntPtr>();
+    private bool _initialized;
 
     public Graphics()
     {
@@ -31,23 +32,7 @@ public class Graphics
         SDL.SDL_ClearError();
     }
 
-    private void LoadPalette()
-    {
-        using FileStream stream = new FileStream($"{Sys.GameDataFolder}/Resource/PAL_STD.RES", FileMode.Open, FileAccess.Read);
-        using BinaryReader reader = new BinaryReader(stream);
-        for (int i = 0; i < 8; i++)
-            reader.ReadByte();
-        byte[] sourceColors = reader.ReadBytes(256 * 3);
-        for (int i = 0; i < 256; i++)
-        {
-            colors[i].a = (byte)(i < Colors.MIN_TRANSPARENT_CODE ? 255 : 0);
-            colors[i].r = sourceColors[i * 3];
-            colors[i].g = sourceColors[i * 3 + 1];
-            colors[i].b = sourceColors[i * 3 + 2];
-        }
-    }
-
-    public bool Init()
+    public bool Init(Color[] paletteColors)
     {
         int errorCode = SDL.SDL_InitSubSystem(SDLSubSystems);
         if (errorCode != 0)
@@ -56,21 +41,16 @@ public class Graphics
             return false;
         }
 
-        //Save global mouse position
-        //SDL.SDL_GetGlobalMouseState();
-
-        window = SDL.SDL_CreateWindow(WindowTitle, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED,
+        _window = SDL.SDL_CreateWindow(WindowTitle, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED,
             WindowWidth, WindowHeight, SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED);
-        if (window == IntPtr.Zero)
+        if (_window == IntPtr.Zero)
         {
             LogError("There was an error when creating a window.");
             return false;
         }
         
-        //SDL.SDL_SetWindowGrab();
-
-        renderer = SDL.SDL_CreateRenderer(window, -1, 0);
-        if (renderer == IntPtr.Zero)
+        _renderer = SDL.SDL_CreateRenderer(_window, -1, 0);
+        if (_renderer == IntPtr.Zero)
         {
             LogError("There was an error when creating a renderer.");
             return false;
@@ -82,38 +62,46 @@ public class Graphics
         //SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
         //SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
 
-        //Restore global mouse position to avoid jump of a mouse cursor
-        //SDL.SDL_WarpMouseGlobal();
-
-        uint pixelFormat = SDL.SDL_GetWindowPixelFormat(window);
+        uint pixelFormat = SDL.SDL_GetWindowPixelFormat(_window);
         if (pixelFormat == SDL.SDL_PIXELFORMAT_UNKNOWN)
         {
             LogError("There was an error with window pixel format.");
             return false;
         }
 
-        surface = SDL.SDL_GetWindowSurface(window);
-        if (surface == IntPtr.Zero)
+        _surface = SDL.SDL_GetWindowSurface(_window);
+        if (_surface == IntPtr.Zero)
         {
             LogError("There was an error when creating a surface.");
             return false;
         }
 
-        SDL_image.IMG_Init(SDL_image.IMG_InitFlags.IMG_INIT_JPG | SDL_image.IMG_InitFlags.IMG_INIT_PNG);
-        LoadPalette();
+        //SDL_image.IMG_Init(SDL_image.IMG_InitFlags.IMG_INIT_JPG | SDL_image.IMG_InitFlags.IMG_INIT_PNG);
 
-        initialized = true;
+        _colors = new SDL.SDL_Color[paletteColors.Length];
+        for (int i = 0; i < _colors.Length; i++)
+        {
+            _colors[i].a = paletteColors[i].A;
+            _colors[i].r = paletteColors[i].R;
+            _colors[i].g = paletteColors[i].G;
+            _colors[i].b = paletteColors[i].B;
+        }
+        _palette = SDL.SDL_AllocPalette(_colors.Length);
+        SDL.SDL_SetPaletteColors(_palette, _colors, 0, _colors.Length);
+
+        _initialized = true;
         return true;
     }
 
     public void DeInit()
     {
-        if (!initialized)
+        if (!_initialized)
             return;
         
-        SDL_image.IMG_Quit();
+        //SDL_image.IMG_Quit();
+        SDL.SDL_FreePalette(_palette);
 
-        foreach (var item in textures)
+        foreach (var item in _textures)
         {
             if (item != IntPtr.Zero)
             {
@@ -121,19 +109,19 @@ public class Graphics
             }
         }
 
-        if (miniMapTexture != IntPtr.Zero)
-            SDL.SDL_DestroyTexture(miniMapTexture);
+        if (_miniMapTexture != IntPtr.Zero)
+            SDL.SDL_DestroyTexture(_miniMapTexture);
         
-        if (renderer != IntPtr.Zero)
-            SDL.SDL_DestroyRenderer(renderer);
+        if (_renderer != IntPtr.Zero)
+            SDL.SDL_DestroyRenderer(_renderer);
         
-        if (window != IntPtr.Zero)
-            SDL.SDL_DestroyWindow(window);
+        if (_window != IntPtr.Zero)
+            SDL.SDL_DestroyWindow(_window);
 
         SDL.SDL_QuitSubSystem(SDLSubSystems);
         SDL.SDL_Quit();
 
-        initialized = false;
+        _initialized = false;
     }
 
     /*public void SaveImageToDisc()
@@ -163,7 +151,7 @@ public class Graphics
         }
     }*/
 
-    public byte[] CutBitmapRect(byte[] bitmap, int bitmapWidth, int bitmapHeight, int x, int y, int width, int height)
+    public byte[] CopyBitmapRect(byte[] bitmap, int bitmapWidth, int bitmapHeight, int x, int y, int width, int height)
     {
         byte[] result = new byte[width * height];
         int index = 0;
@@ -179,21 +167,21 @@ public class Graphics
         return result;
     }
 
-    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, bool addToList = true)
+    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, int depth = 8, bool addToList = true)
     {
-        IntPtr sdlPalette = SDL.SDL_AllocPalette(256);
-        SDL.SDL_SetPaletteColors(sdlPalette, colors, 0, 256);
-
         GCHandle pinnedBmpImage = GCHandle.Alloc(bmpImage, GCHandleType.Pinned);
         IntPtr imageSurface = SDL.SDL_CreateRGBSurfaceFrom(pinnedBmpImage.AddrOfPinnedObject(),
-            width, height, 8, width, 0, 0, 0, 0);
-        SDL.SDL_SetSurfacePalette(imageSurface, sdlPalette);
+            width, height, depth, width * depth / 8, 0, 0, 0, 0);
+        if (depth == 8)
+            SDL.SDL_SetSurfacePalette(imageSurface, _palette);
+
         SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
-        IntPtr texture = SDL.SDL_CreateTextureFromSurface(renderer, imageSurface);
+        IntPtr texture = SDL.SDL_CreateTextureFromSurface(_renderer, imageSurface);
         SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
         if (addToList)
-            textures.Add(texture);
+            _textures.Add(texture);
         pinnedBmpImage.Free();
+        SDL.SDL_FreeSurface(imageSurface);
 
         return texture;
     }
@@ -205,110 +193,87 @@ public class Graphics
         rect.y = y;
         rect.w = width;
         rect.h = height;
-        SDL.SDL_RenderSetClipRect(renderer, ref rect);
+        SDL.SDL_RenderSetClipRect(_renderer, ref rect);
     }
 
     public void ResetClipRectangle()
     {
-        SDL.SDL_RenderSetClipRect(renderer, IntPtr.Zero);
+        SDL.SDL_RenderSetClipRect(_renderer, IntPtr.Zero);
     }
     
     public void CreateMiniMapTexture(byte[] image, int width, int height)
     {
-        if (miniMapTexture != IntPtr.Zero)
-            SDL.SDL_DestroyTexture(miniMapTexture);
+        if (_miniMapTexture != IntPtr.Zero)
+            SDL.SDL_DestroyTexture(_miniMapTexture);
         
-        miniMapTexture = CreateTextureFromBmp(image, width, height, false);
+        _miniMapTexture = CreateTextureFromBmp(image, width, height, 8, false);
     }
 
     public void DrawMiniMapGround(int x, int y, int width, int height)
     {
-        DrawBitmap(miniMapTexture, x, y, width, height);
+        DrawBitmap(_miniMapTexture, x, y, width, height);
     }
 
     public void DrawPoint(int x, int y, int paletteColor)
     {
-        var color = colors[paletteColor];
-        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-        SDL.SDL_RenderDrawPoint(renderer, x ,y);
+        var color = _colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
+        SDL.SDL_RenderDrawPoint(_renderer, x ,y);
     }
 
     public void DrawLine(int x1, int y1, int x2, int y2, int paletteColor)
     {
-        var color = colors[paletteColor];
-        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-        SDL.SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+        var color = _colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
+        SDL.SDL_RenderDrawLine(_renderer, x1, y1, x2, y2);
     }
 
     public void DrawRect(int x, int y, int width, int height, int paletteColor)
     {
-        var color = colors[paletteColor];
-        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        var color = _colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
         dstRect.w = width;
         dstRect.h = height;
-        SDL.SDL_RenderFillRect(renderer, ref dstRect);
+        SDL.SDL_RenderFillRect(_renderer, ref dstRect);
     }
 
     public void DrawFrame(int x, int y, int width, int height, int paletteColor)
     {
-        var color = colors[paletteColor];
-        SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        var color = _colors[paletteColor];
+        SDL.SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
         dstRect.w = width;
         dstRect.h = height;
-        SDL.SDL_RenderDrawRect(renderer, ref dstRect);
+        SDL.SDL_RenderDrawRect(_renderer, ref dstRect);
     }
     
     public void DrawBitmap(IntPtr texture, int x, int y, int width, int height)
     {
+        SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
         dstRect.w = width;
         dstRect.h = height;
-        SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
+        SDL.SDL_RenderCopy(_renderer, texture, IntPtr.Zero, ref dstRect);
     }
 
-    public void DrawBitmapScale(IntPtr texture, int x, int y, int width, int height)
+    public void DrawBitmapAndFlip(IntPtr texture, int x, int y, int width, int height)
     {
         SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;
-        dstRect.w = width * 3 / 2;
-        dstRect.h = height * 3 / 2;
-        SDL.SDL_RenderCopy(renderer, texture, IntPtr.Zero, ref dstRect);
-    }
-
-    public void DrawBitmapScaleAndFlip(IntPtr texture, int x, int y, int width, int height)
-    {
-        SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
-        SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
-        dstRect.x = x;
-        dstRect.y = y;
-        dstRect.w = width * 3 / 2;
-        dstRect.h = height * 3 / 2;
-        SDL.SDL_RenderCopyEx(renderer, texture, IntPtr.Zero, ref dstRect, 0.0, IntPtr.Zero, SDL.SDL_RendererFlip.SDL_FLIP_HORIZONTAL);
+        dstRect.w = width;
+        dstRect.h = height;
+        SDL.SDL_RenderCopyEx(_renderer, texture, IntPtr.Zero, ref dstRect, 0.0, IntPtr.Zero, SDL.SDL_RendererFlip.SDL_FLIP_HORIZONTAL);
     }
     
-    /*public void DrawBitmapByPoints(int x, int y, byte[] bitmap, int width, int height)
-    {
-        for (int j = y; j < y + height; j++)
-        {
-            for (int i = x; i < x + width; i++)
-            {
-                var color = colors[bitmap[(j - y) * width + (i - x)]];
-                SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-                SDL.SDL_RenderDrawPoint(renderer, i, j);
-            }
-        }
-    }*/
-
     public byte[] DecompressTransparentBitmap(byte[] bitmap, int width, int height, byte[] colorTable = null)
     {
         int esi = 0;
@@ -372,6 +337,6 @@ public class Graphics
 
     public void Render()
     {
-        SDL.SDL_RenderPresent(renderer);
+        SDL.SDL_RenderPresent(_renderer);
     }
 }

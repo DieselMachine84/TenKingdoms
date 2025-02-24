@@ -6,32 +6,32 @@ public partial class Renderer
     {
         if (eventType == InputConstants.LeftMousePressed)
         {
-            if (x >= ZoomMapX && x < ZoomMapX + ZoomMapWidth && y >= ZoomMapY && y < ZoomMapY + ZoomMapHeight)
+            if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
             {
-                int xLoc = topLeftX + (x - ZoomMapX) / ZoomTextureWidth;
-                int yLoc = topLeftY + (y - ZoomMapY) / ZoomTextureHeight;
+                int xLoc = _topLeftX + (x - MainViewX) / CellTextureWidth;
+                int yLoc = _topLeftY + (y - MainViewY) / CellTextureHeight;
 
                 Location location = World.get_loc(xLoc, yLoc);
                 if (location.is_town())
                 {
-                    selectedFirmId = 0;
-                    selectedUnitId = 0;
-                    selectedTownId = location.town_recno();
-                    Town town = TownArray[selectedTownId];
+                    _selectedFirmId = 0;
+                    _selectedUnitId = 0;
+                    _selectedTownId = location.town_recno();
                 }
 
                 if (location.is_firm())
                 {
-                    selectedTownId = 0;
-                    selectedUnitId = 0;
+                    _selectedTownId = 0;
+                    _selectedUnitId = 0;
+                    _selectedFirmId = location.firm_recno();
                 }
 
                 if (location.has_unit(UnitConstants.UNIT_LAND))
                 {
-                    selectedTownId = 0;
-                    selectedFirmId = 0;
-                    selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
-                    Unit unit = UnitArray[selectedUnitId];
+                    _selectedTownId = 0;
+                    _selectedFirmId = 0;
+                    _selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
+                    Unit unit = UnitArray[_selectedUnitId];
                     unit.selected_flag = true;
                 }
             }
@@ -51,17 +51,17 @@ public partial class Renderer
                     yLoc *= MiniMapScale;
                 }
                 
-                topLeftX = xLoc - ZoomMapLocWidth / 2;
-                if (topLeftX < 0)
-                    topLeftX = 0;
-                if (topLeftX > GameConstants.MapSize - ZoomMapLocWidth)
-                    topLeftX = GameConstants.MapSize - ZoomMapLocWidth;
+                _topLeftX = xLoc - MainViewWidthInCells / 2;
+                if (_topLeftX < 0)
+                    _topLeftX = 0;
+                if (_topLeftX > GameConstants.MapSize - MainViewWidthInCells)
+                    _topLeftX = GameConstants.MapSize - MainViewWidthInCells;
 
-                topLeftY = yLoc - ZoomMapLocHeight / 2;
-                if (topLeftY < 0)
-                    topLeftY = 0;
-                if (topLeftY > GameConstants.MapSize - ZoomMapLocHeight)
-                    topLeftY = GameConstants.MapSize - ZoomMapLocHeight;
+                _topLeftY = yLoc - MainViewHeightInCells / 2;
+                if (_topLeftY < 0)
+                    _topLeftY = 0;
+                if (_topLeftY > GameConstants.MapSize - MainViewHeightInCells)
+                    _topLeftY = GameConstants.MapSize - MainViewHeightInCells;
             }
         }
     }

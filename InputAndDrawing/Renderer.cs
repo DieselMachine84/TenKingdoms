@@ -1,68 +1,51 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
 public partial class Renderer
 {
-    public const int WindowWidth = ZoomMapX + ZoomMapWidth + 12 + MiniMapSize + 12;
-    public const int WindowHeight = ZoomMapY + ZoomMapHeight;
+    public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
+    public const int WindowHeight = MainViewY + MainViewHeight;
 
-    private const int GameMenuX = 4;
-    private const int GameMenuY = 2;
-    private const int GameMenuWidth = 302;
-    private const int GameMenuHeight = 48;
+    private const int GameMenuHeight = 84;
+    private const int BorderWidth = 18;
 
-    private const int ZoomMapX = 0;
-    private const int ZoomMapY = 8 + GameMenuHeight * 3 / 2;
-    private const int ZoomMapLocWidth = 30; //width in cells
-    private const int ZoomMapLocHeight = 19; //width in cells
-    public const int ZoomTextureWidth = 48;
-    public const int ZoomTextureHeight = 48;
-    private const int ZoomMapWidth = ZoomMapLocWidth * ZoomTextureWidth;
-    private const int ZoomMapHeight = ZoomMapLocHeight * ZoomTextureHeight;
+    public const int CellTextureWidth = 48;
+    public const int CellTextureHeight = 48;
+    private const int MainViewX = 0;
+    private const int MainViewY = GameMenuHeight;
+    private const int MainViewWidthInCells = 30;
+    private const int MainViewHeightInCells = 19;
+    private const int MainViewWidth = MainViewWidthInCells * CellTextureWidth;
+    private const int MainViewHeight = MainViewHeightInCells * CellTextureHeight;
 
-    private const int MiniMapX = ZoomMapX + ZoomMapLocWidth * ZoomTextureWidth + 12;
-    private const int MiniMapY = ZoomMapY;
+    private const int MiniMapX = MainViewX + MainViewWidth + BorderWidth;
+    private const int MiniMapY = MainViewY;
     private const int MiniMapSize = 400;
     private const int MiniMapScale = MiniMapSize / GameConstants.MapSize;
 
-    private const int DetailsX1 = ZoomMapX + ZoomMapLocWidth * ZoomTextureWidth + 8;
+    private const int DetailsX1 = MainViewX + MainViewWidth + 12;
     private const int DetailsX2 = DetailsX1 + DetailsWidth;
-    private const int DetailsY1 = MiniMapY + MiniMapSize + 9;
+    private const int DetailsY1 = MiniMapY + MiniMapSize + 12;
     private const int DetailsY2 = DetailsY1 + DetailsHeight;
-    private const int DetailsWidth = 408;
-    private const int DetailsHeight = 324;
-    private const int Details1Width = 208;
-    private const int Details1Height = 208;
-    private const int Details2Width = 64;
-    private const int Details2Height = Details1Height;
-    private const int Details3Height = 104;
-    private const int Details4Height = Details3Height;
+    private const int DetailsWidth = MiniMapSize + 12;
+    private const int DetailsHeight = WindowHeight - DetailsY1 - 12;
     
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
 
-    private int topLeftX;
-    private int topLeftY;
-    private long lastFrame;
+    private int _topLeftX;
+    private int _topLeftY;
+    private long _lastFrame;
     public bool NeedFullRedraw { get; set; }
-    private int screenSquareFrameCount = 0;
-    private int screenSquareFrameStep = 1;
-    private readonly byte[] miniMapImage = new byte[MiniMapSize * MiniMapSize];
-    private Dictionary<int, IntPtr> colorSquareTextures = new Dictionary<int, nint>();
-    private int colorSquareWidth;
-    private int colorSquareHeight;
-    private IntPtr gameMenuTexture;
-    private IntPtr detailsTexture1;
-    private IntPtr detailsTexture2;
-    private IntPtr detailsTexture3;
-    private IntPtr detailsTexture4;
+    private int _screenSquareFrameCount = 0;
+    private int _screenSquareFrameStep = 1;
+    private readonly byte[] _miniMapImage = new byte[MiniMapSize * MiniMapSize];
 
-    private int selectedTownId;
-    private int selectedFirmId;
-    private int selectedUnitId;
+    private int _selectedTownId;
+    private int _selectedFirmId;
+    private int _selectedUnitId;
     
     public Graphics Graphics { get; }
 
@@ -96,75 +79,86 @@ public partial class Renderer
         FontSan = new Font("SAN", 0, 0);
         FontStd = new Font("STD", 2, 0);
         
-        ResourceIdx imageButtons = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_BUTTON.RES");
-        byte[] colorSquare = imageButtons.Read("V_COLCOD");
-        colorSquareWidth = BitConverter.ToInt16(colorSquare, 0);
-        colorSquareHeight = BitConverter.ToInt16(colorSquare, 2);
-        byte[] colorSquareBitmap = colorSquare.Skip(4).ToArray();
-        for (int i = 0; i <= InternalConstants.MAX_COLOR_SCHEME; i++)
-        {
-            int textureKey = ColorRemap.GetTextureKey(i, false);
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(colorSquareBitmap, colorSquareWidth, colorSquareHeight,
-                ColorRemap.GetColorRemap(i, false).ColorTable);
-            colorSquareTextures.Add(textureKey, graphics.CreateTextureFromBmp(decompressedBitmap, colorSquareWidth, colorSquareHeight));
-        }
+        CreateUITextures();
+    }
 
-        ResourceIdx interfaceImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_IF.RES");
-        byte[] mainScreenBitmap = interfaceImages.Read("MAINSCR");
-        int mainScreenWidth = BitConverter.ToInt16(mainScreenBitmap, 0);
-        int mainScreenHeight = BitConverter.ToInt16(mainScreenBitmap, 2);
-        mainScreenBitmap = mainScreenBitmap.Skip(4).ToArray();
-
-        byte[] gameMenuBitmap = graphics.CutBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight, 4, 2, GameMenuWidth, GameMenuHeight);
-        gameMenuTexture = graphics.CreateTextureFromBmp(gameMenuBitmap, GameMenuWidth, GameMenuHeight);
-        
-        byte[] detailsBitmap1 = graphics.CutBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight, 584, 265,
-            Details1Width, Details1Height);
-        detailsTexture1 = graphics.CreateTextureFromBmp(detailsBitmap1, Details1Width, Details1Height);
-        byte[] detailsBitmap2 = graphics.CutBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight, 584 + Details1Width - Details2Width, 265,
-            Details2Width, Details2Height);
-        detailsTexture2 = graphics.CreateTextureFromBmp(detailsBitmap2, Details2Width, Details2Height);
-        byte[] detailsBitmap3 = graphics.CutBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight, 584, 265 + Details1Height,
-            Details1Width, Details3Height);
-        detailsTexture3 = graphics.CreateTextureFromBmp(detailsBitmap3, Details1Width, Details3Height);
-        byte[] detailsBitmap4 = graphics.CutBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight, 584 + Details1Width - Details2Width, 265 + Details1Height,
-            Details2Width, Details4Height);
-        detailsTexture4 = graphics.CreateTextureFromBmp(detailsBitmap4, Details2Width, Details4Height);
+    private int Scale(int size)
+    {
+        return size * 3 / 2;
     }
     
     public void DrawFrame()
     {
-        if (lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
+        if (_lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
             return;
 
-        lastFrame = Sys.Instance.FrameNumber;
+        _lastFrame = Sys.Instance.FrameNumber;
         DrawMainScreen();
         DrawMainView();
         DrawMiniMap();
 
         Graphics.ResetClipRectangle();
-        if (selectedTownId != 0 && !TownArray.IsDeleted(selectedTownId))
+        if (_selectedTownId != 0 && !TownArray.IsDeleted(_selectedTownId))
         {
-            DrawTownUI(TownArray[selectedTownId]);
+            DrawTownDetails(TownArray[_selectedTownId]);
+        }
+
+        if (_selectedFirmId != 0 && !FirmArray.IsDeleted(_selectedFirmId))
+        {
+            DrawFirmDetails(FirmArray[_selectedFirmId]);
+        }
+
+        if (_selectedUnitId != 0 && !UnitArray.IsDeleted(_selectedUnitId))
+        {
+            DrawUnitDetails(UnitArray[_selectedUnitId]);
         }
     }
 
     private void DrawMainScreen()
     {
-        Graphics.DrawBitmapScale(gameMenuTexture, GameMenuX, GameMenuY, GameMenuWidth, GameMenuHeight);
-        Graphics.DrawBitmapScale(detailsTexture1, DetailsX1, DetailsY1, Details1Width, Details1Height);
-        Graphics.DrawBitmapScale(detailsTexture2, DetailsX1 + Details1Width * 3 / 2, DetailsY1, Details2Width, Details2Height);
-        int totalHeight = DetailsY1 + Details1Height;
-        int i = 0;
-        while (totalHeight < WindowHeight)
+        Graphics.DrawBitmap(_gameMenuTexture1, 0, 0, Scale(_gameMenuTexture1Width), Scale(_gameMenuTexture1Height));
+        Graphics.DrawBitmap(_gameMenuTexture2, Scale(_gameMenuTexture1Width), 0, Scale(_gameMenuTexture2Width), Scale(_gameMenuTexture2Height));
+        int gameMenuWidth = Scale(_gameMenuTexture1Width) + Scale(_gameMenuTexture2Width);
+        while (gameMenuWidth < WindowWidth)
         {
-            Graphics.DrawBitmapScale(detailsTexture3, DetailsX1, DetailsY1 + Details1Height * 3 / 2 + i * Details3Height * 3 / 2,
-                Details1Width, Details3Height);
-            Graphics.DrawBitmapScale(detailsTexture4, DetailsX1 + Details1Width * 3 / 2, DetailsY1 + Details2Height * 3 / 2 + i * Details3Height * 3 / 2,
-                Details2Width, Details4Height);
-            totalHeight += Details3Height * 3 / 2;
-            i++;
+            Graphics.DrawBitmap(_gameMenuTexture3, gameMenuWidth, 0, Scale(_gameMenuTexture3Width), Scale(_gameMenuTexture3Height));
+            gameMenuWidth += Scale(_gameMenuTexture3Width);
         }
+
+        Graphics.DrawBitmap(_middleBorder1Texture, MainViewX + MainViewWidth, 0, Scale(_middleBorder1TextureWidth), Scale(_middleBorder1TextureHeight));
+        int middleBorderHeight = Scale(_middleBorder1TextureHeight);
+        while (middleBorderHeight < WindowHeight)
+        {
+            Graphics.DrawBitmap(_middleBorder2Texture, MainViewX + MainViewWidth, middleBorderHeight, Scale(_middleBorder2TextureWidth), Scale(_middleBorder2TextureHeight));
+            middleBorderHeight += Scale(_middleBorder2TextureHeight);
+        }
+
+        Graphics.DrawBitmap(_detailsTexture1, DetailsX1, DetailsY1, Scale(_detailsTexture1Width), Scale(_detailsTexture1Height));
+        Graphics.DrawBitmap(_detailsTexture2, DetailsX2 - Scale(_detailsTexture2Width), DetailsY1, Scale(_detailsTexture2Width), Scale(_detailsTexture2Height));
+        int detailsHeight = DetailsY1 + Scale(_detailsTexture1Width);
+        while (detailsHeight < WindowHeight)
+        {
+            Graphics.DrawBitmap(_detailsTexture3, DetailsX1, detailsHeight, Scale(_detailsTexture3Width), Scale(_detailsTexture3Height));
+            Graphics.DrawBitmap(_detailsTexture4, DetailsX2 - Scale(_detailsTexture4Width), detailsHeight, Scale(_detailsTexture4Width), Scale(_detailsTexture4Height));
+            detailsHeight += Scale(_detailsTexture3Width);
+        }
+
+        Graphics.DrawBitmap(_rightBorder1Texture, WindowWidth - Scale(_rightBorder1TextureWidth), 0, Scale(_rightBorder1TextureWidth), Scale(_rightBorder1TextureHeight));
+        int rightBorderHeight = Scale(_rightBorder1TextureHeight);
+        while (rightBorderHeight < WindowHeight)
+        {
+            Graphics.DrawBitmap(_rightBorder2Texture, WindowWidth - Scale(_rightBorder2TextureWidth), rightBorderHeight, Scale(_rightBorder2TextureWidth), Scale(_rightBorder2TextureHeight));
+            rightBorderHeight += Scale(_rightBorder2TextureHeight);
+        }
+        
+        Graphics.DrawBitmap(_miniMapBorder1Texture, MainViewX + MainViewWidth, MiniMapY + MiniMapSize,
+            Scale(_miniMapBorder1TextureWidth), Scale(_miniMapBorder1TextureHeight));
+        Graphics.DrawBitmap(_miniMapBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), MiniMapY + MiniMapSize,
+            Scale(_miniMapBorder2TextureWidth), Scale(_miniMapBorder2TextureHeight));
+        Graphics.DrawBitmap(_bottomBorder1Texture, MainViewX + MainViewWidth, WindowHeight - Scale(_bottomBorder1TextureHeight),
+            Scale(_bottomBorder1TextureWidth), Scale(_bottomBorder1TextureHeight));
+        Graphics.DrawBitmap(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
+            Scale(_bottomBorder2TextureWidth), Scale(_bottomBorder2TextureHeight));
     }
 
     private bool IsExplored(int x1Loc, int x2Loc, int y1Loc, int y2Loc)

@@ -1,4 +1,6 @@
 using System;
+using System.Drawing;
+using System.IO;
 using SDL2;
 
 namespace TenKingdoms;
@@ -15,8 +17,9 @@ public class Sys
 
     private Graphics Graphics { get; set; }
     private Renderer Renderer { get; set; }
+    public Color[] PaletteColors { get; } = new Color[256];
 
-    public GameSet GameSet { get; private set; }
+    private GameSet GameSet { get; set; }
     public TerrainRes TerrainRes { get; private set; }
     public HillRes HillRes { get; private set; }
     public PlantRes PlantRes { get; private set; }
@@ -154,10 +157,20 @@ public class Sys
 
     private void InitGraphics()
     {
+        using FileStream stream = new FileStream($"{Sys.GameDataFolder}/Resource/PAL_STD.RES", FileMode.Open, FileAccess.Read);
+        using BinaryReader reader = new BinaryReader(stream);
+        for (int i = 0; i < 8; i++)
+            reader.ReadByte();
+        byte[] sourceColors = reader.ReadBytes(256 * 3);
+        for (int i = 0; i < PaletteColors.Length; i++)
+        {
+            PaletteColors[i] = Color.FromArgb(i < Colors.MIN_TRANSPARENT_CODE ? 255 : 0, sourceColors[i * 3], sourceColors[i * 3 + 1], sourceColors[i * 3 + 2]);
+        }
+
         try
         {
             Graphics = new Graphics();
-            if (!Graphics.Init())
+            if (!Graphics.Init(PaletteColors))
             {
                 DeinitGraphics();
             }

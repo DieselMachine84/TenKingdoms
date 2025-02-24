@@ -129,7 +129,7 @@ public partial class Renderer
 
         if (NeedFullRedraw)
         {
-            Array.Clear(miniMapImage);
+            Array.Clear(_miniMapImage);
             for (int yLoc = 0; yLoc < GameConstants.MapSize; yLoc++)
             {
                 for (int xLoc = 0; xLoc < GameConstants.MapSize; xLoc++)
@@ -153,22 +153,22 @@ public partial class Renderer
 
                     if (MiniMapScale == 1)
                     {
-                        miniMapImage[yLoc * MiniMapSize + xLoc] = color;
+                        _miniMapImage[yLoc * MiniMapSize + xLoc] = color;
                     }
                     else
                     {
                         if (MiniMapScale == 2)
                         {
-                            miniMapImage[yLoc * MiniMapScale * MiniMapSize + xLoc * MiniMapScale] = color;
-                            miniMapImage[yLoc * MiniMapScale * MiniMapSize + xLoc * MiniMapScale + 1] = color;
-                            miniMapImage[(yLoc * MiniMapScale + 1) * MiniMapSize + xLoc * MiniMapScale] = color;
-                            miniMapImage[(yLoc * MiniMapScale + 1) * MiniMapSize + xLoc * MiniMapScale + 1] = color;
+                            _miniMapImage[yLoc * MiniMapScale * MiniMapSize + xLoc * MiniMapScale] = color;
+                            _miniMapImage[yLoc * MiniMapScale * MiniMapSize + xLoc * MiniMapScale + 1] = color;
+                            _miniMapImage[(yLoc * MiniMapScale + 1) * MiniMapSize + xLoc * MiniMapScale] = color;
+                            _miniMapImage[(yLoc * MiniMapScale + 1) * MiniMapSize + xLoc * MiniMapScale + 1] = color;
                         }
                     }
                 }
             }
 
-            Graphics.CreateMiniMapTexture(miniMapImage, MiniMapSize, MiniMapSize);
+            Graphics.CreateMiniMapTexture(_miniMapImage, MiniMapSize, MiniMapSize);
             NeedFullRedraw = false;
         }
 
@@ -284,18 +284,18 @@ public partial class Renderer
 
         //Draw war points
         
-        DrawFrameOnMiniMap(topLeftX - 1, topLeftY - 1, ZoomMapLocWidth + 2, ZoomMapLocHeight + 2,
-            Colors.VGA_YELLOW + screenSquareFrameCount);
+        DrawFrameOnMiniMap(_topLeftX - 1, _topLeftY - 1, MainViewWidthInCells + 2, MainViewHeightInCells + 2,
+            Colors.VGA_YELLOW + _screenSquareFrameCount);
 
         if (Sys.Instance.Speed != 0)
         {
-            screenSquareFrameCount += screenSquareFrameStep;
+            _screenSquareFrameCount += _screenSquareFrameStep;
 
-            if (screenSquareFrameCount == 0) // color with smaller number is brighter
-                screenSquareFrameStep = 1;
+            if (_screenSquareFrameCount == 0) // color with smaller number is brighter
+                _screenSquareFrameStep = 1;
 
-            if (screenSquareFrameCount == 6) // bi-directional color shift
-                screenSquareFrameStep = -1;
+            if (_screenSquareFrameCount == 6) // bi-directional color shift
+                _screenSquareFrameStep = -1;
         }
     }
 }

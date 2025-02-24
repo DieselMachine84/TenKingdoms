@@ -20,8 +20,9 @@ public class Town
 	public int TownNameId { get; private set; }
 	public int LayoutId { get; private set; }
 	public int[] SlotObjectIds { get; } = new int[TownLayout.MAX_TOWN_LAYOUT_SLOT]; // the race id. of each slot building
+	public string Name => TownRes.GetName(TownNameId);
 
-	
+
 	public int Population { get; private set; }
 	public int JoblessPopulation { get; set; }
 	public int WorkerPopulation => Population - JoblessPopulation;
@@ -373,11 +374,6 @@ public class Town
 
 		if (AccumulatedEnemyGrantPenalty > 0)
 			AccumulatedEnemyGrantPenalty--;
-	}
-
-	public string TownName()
-	{
-		return TownRes.GetName(TownNameId);
 	}
 
 	public int LocWidth()
@@ -2795,7 +2791,7 @@ public class Town
 
 		if (toggleFlag)
 		{
-			if ((sameNation && !setBoth) || setBoth) // 0 if setBoth == -1
+			if ((sameNation && !setBoth) || setBoth)
 				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
 			else
 				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;

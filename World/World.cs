@@ -1114,14 +1114,12 @@ public class World
 
 	private int rand_inner_x()
 	{
-		//TODO bad code
-		return Renderer.ZoomTextureWidth / 4 + Misc.Random(Renderer.ZoomTextureWidth / 2);
+		return Renderer.CellTextureWidth / 4 + Misc.Random(Renderer.CellTextureWidth / 2);
 	}
 
 	private int rand_inner_y()
 	{
-		//TODO bad code
-		return (Renderer.ZoomTextureHeight * 3) / 8 + Misc.Random(Renderer.ZoomTextureHeight / 4);
+		return (Renderer.CellTextureHeight * 3) / 8 + Misc.Random(Renderer.CellTextureHeight / 4);
 	}
 
 	public void plant_ops()
