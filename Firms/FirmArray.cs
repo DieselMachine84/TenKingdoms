@@ -18,9 +18,9 @@ public class FirmArray : DynArray<Firm>
 	{
 	}
 
-	protected override Firm CreateNewObject(int objectId)
+	protected override Firm CreateNewObject(int objectType)
 	{
-		switch (objectId)
+		switch (objectType)
 		{
 			case Firm.FIRM_BASE:
 				return new FirmBase();
@@ -74,8 +74,8 @@ public class FirmArray : DynArray<Firm>
 		//---------- create and build the firm -------------//
 
 		Firm firm = CreateNew(firmId);
-		firm.init(nextRecNo, nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
-		nextRecNo++;
+		firm.init(nextId, nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
+		nextId++;
 
 		//------ pay the land cost to the nation that owns the land ------//
 

@@ -142,7 +142,7 @@ public class Town
 		RegionId = World.get_region_id(LocCenterX, LocCenterY);
 
 		AITown = (NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI);
-		AILinkChecked = true; // check the linked towns and firms connected only if ai_link_checked==0
+		AILinkChecked = true; // check the linked towns and firms connected only if AILinkChecked is false
 
 		// the minimum rating a nation must have in order for an independent unit to join it
 		_independentUnitJoinNationMinRating = 100 + Misc.Random(150);
@@ -237,9 +237,9 @@ public class Town
 
 		//------- if the current town is the selected -----//
 
-		if (TownArray.selected_recno == TownId)
+		if (TownArray.SelectedTownId == TownId)
 		{
-			TownArray.selected_recno = 0;
+			TownArray.SelectedTownId = 0;
 			Info.disp();
 		}
 	}
@@ -1592,8 +1592,7 @@ public class Town
 					if (marketGoodsInfo.TotalSupply <= townDemand)
 					{
 						// evenly distribute the excessive demand on all markets
-						marketGoods.month_demand += marketGoods.stock_qty
-						                            + (townDemand - marketGoodsInfo.TotalSupply) / marketGoodsInfo.Markets.Count;
+						marketGoods.month_demand += marketGoods.stock_qty + (townDemand - marketGoodsInfo.TotalSupply) / marketGoodsInfo.Markets.Count;
 					}
 					else //---- if the supply is larger than the demand -----//
 					{
@@ -2391,7 +2390,7 @@ public class Town
 
 		//--- DecPopulation() will delete the current town if population goes down to 0 ---//
 
-		if (TownId == TownArray.selected_recno)
+		if (TownId == TownArray.SelectedTownId)
 		{
 			if (TownArray.IsDeleted(TownId))
 				Info.disp();
@@ -3013,9 +3012,9 @@ public class Town
 	}
 	
 	
-	public void ChangeNation(int newNationRecno)
+	public void ChangeNation(int newNationId)
 	{
-		if (NationId == newNationRecno)
+		if (NationId == newNationId)
 			return;
 
 		ClearDefenseMode();
@@ -3039,21 +3038,16 @@ public class Town
 		//----- set power region of the new nation ------//
 
 		World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0); // restore power of the old nation
-		World.set_power(LocX1, LocY1, LocX2, LocY2, newNationRecno); // set power of the new nation
+		World.set_power(LocX1, LocY1, LocX2, LocY2, newNationId); // set power of the new nation
 
-		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, TownId, NationId, newNationRecno);
+		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, TownId, NationId, newNationId);
 
-		//--------- set nation_recno --------//
+		NationId = newNationId;
 
-		NationId = newNationRecno;
-
-		if (NationId != 0) // reset rebel_recno if the town is then ruled by a nation
+		if (NationId != 0 && RebelId != 0) // reset RebelId if the town is then ruled by a nation
 		{
-			if (RebelId != 0)
-			{
-				RebelArray.DeleteRebel(RebelId); // delete the rebel group
-				RebelId = 0;
-			}
+			RebelArray.DeleteRebel(RebelId); // delete the rebel group
+			RebelId = 0;
 		}
 
 		//--------- update ai_town ----------//
@@ -3092,11 +3086,7 @@ public class Town
 			}
 		}
 
-		//------- reset town_combat_level -------//
-
 		TownCombatLevel = 0;
-
-		//------ reset accumulated penalty ------//
 
 		AccumulatedCollectTaxPenalty = 0;
 		AccumulatedRewardPenalty = 0;
@@ -3106,13 +3096,9 @@ public class Town
 		//---- if there is unit being trained currently, change its nation ---//
 
 		if (TrainUnitId != 0)
-			UnitArray[TrainUnitId].change_nation(newNationRecno);
-
-		//-------- update loyalty ---------//
+			UnitArray[TrainUnitId].change_nation(newNationId);
 
 		UpdateTargetLoyalty();
-
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
 
 		EstablishContactWithPlayer();
 
@@ -3136,38 +3122,35 @@ public class Town
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
 		SpyArray.set_action_mode(Spy.SPY_TOWN, TownId, Spy.SPY_IDLE);
 		
-		//-------- refresh display ----------//
-
-		if (TownArray.selected_recno == TownId)
+		if (TownArray.SelectedTownId == TownId)
 			Info.disp();
 	}
 
-	private void SetHostileNation(int nationRecno)
+	private void SetHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return;
 
-		_independentTownNationRelation |= (0x1 << nationRecno);
+		_independentTownNationRelation |= (0x1 << nationId);
 	}
 
-	public void ResetHostileNation(int nationRecno)
+	public void ResetHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return;
 
-		//TODO check it
-		_independentTownNationRelation &= ~(0x1 << nationRecno);
+		_independentTownNationRelation &= ~(0x1 << nationId);
 	}
 
-	public bool IsHostileNation(int nationRecno)
+	public bool IsHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return false;
 
-		return (_independentTownNationRelation & (0x1 << nationRecno)) != 0;
+		return (_independentTownNationRelation & (0x1 << nationId)) != 0;
 	}
 
-	private bool MobilizeDefender(int attackerNationRecno)
+	private bool MobilizeDefender(int attackerNationId)
 	{
 		// do not call out defenders any more if there is only one person left in the town, otherwise the town will be gone.
 		if (Population == 1)
@@ -3178,8 +3161,7 @@ public class Town
 		int randomPersonId = Misc.Random(Population) + 1;
 		int popSum = 0, raceId = 0;
 
-		int i;
-		for (i = 0; i < GameConstants.MAX_RACE; i++)
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			popSum += RacesPopulation[i];
 
@@ -3202,13 +3184,15 @@ public class Town
 		double curLoyalty;
 
 		if (NationId != 0)
+		{
 			curLoyalty = RacesLoyalty[raceId - 1];
+		}
 		else
 		{
-			if (attackerNationRecno == 0) // if independent units do not attack independent towns
+			if (attackerNationId == 0) // if independent units do not attack independent towns
 				return false;
 
-			curLoyalty = RacesResistance[raceId - 1, attackerNationRecno - 1];
+			curLoyalty = RacesResistance[raceId - 1, attackerNationId - 1];
 		}
 
 		//--- only mobilize new defenders when there aren't too many existing ones ---//
@@ -3239,14 +3223,14 @@ public class Town
 
 		//------ check if there are peasants to defend ------//
 
-		if (RecruitableRacePopulation(raceId, false) == 0) // 0-don't recruit spies
+		if (RecruitableRacePopulation(raceId, false) == 0) // don't recruit spies
 			return false;
 
 		//---------- create a defender unit --------------------//
 
 		//--------------------------------------------------------------//
 		//									 loyalty of that race
-		// decrease loyalty by: -------------------------------
+		// decrease loyalty by:         -------------------------------
 		//								no. of town people of that race
 		//--------------------------------------------------------------//
 
@@ -3258,21 +3242,20 @@ public class Town
 		}
 		else
 		{
-			for (i = 0; i < GameConstants.MAX_NATION; i++)
+			for (int i = 0; i < GameConstants.MAX_NATION; i++)
 				RacesResistance[raceId - 1, i] -= loyaltyDec;
 		}
 
 		//------- mobilize jobless people if there are any -------//
 
-		Unit unit = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spy town people
+		Unit unit = MobilizeTownPeople(raceId, true, false); // don't mobilize spies
 
 		unit.set_mode(UnitConstants.UNIT_MODE_DEFEND_TOWN, TownId);
 
-		// if the unit is a town defender, this var is temporary used for storing the loyalty that will be added back to the town if the defender returns to the town
-		unit.skill.skill_level = Convert.ToInt32(loyaltyDec);
+		// if the unit is a town defender, this var is temporarily used for storing the loyalty that will be added back to the town if the defender returns to the town
+		unit.skill.skill_level = (int)loyaltyDec;
 
 		int combatLevel = TownCombatLevel + Misc.Random(20) - 10; // -10 to +10 random difference
-
 		combatLevel = Math.Min(combatLevel, 100);
 		combatLevel = Math.Max(combatLevel, 10);
 
@@ -3285,13 +3268,10 @@ public class Town
 		unit.stop2();
 		unit.action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
 		unit.action_para2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
-
 		unit.action_misc = UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO;
 		unit.action_misc_para = TownId;
 
 		DefendersCount++;
-
-		//------- if this town is controlled by rebels --------//
 
 		if (RebelId != 0)
 			RebelArray[RebelId].mobile_rebel_count++; // increase the no. of mobile rebel units
@@ -3306,9 +3286,8 @@ public class Town
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.in_defend_town_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO
-			                               && unit.action_misc_para == TownId)
-				unit.clear_town_defend_mode(); // note: maybe, unit.nation_recno != nation_recno
+			if (unit.in_defend_town_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.action_misc_para == TownId)
+				unit.clear_town_defend_mode(); // note: maybe, unit.NationId != NationId
 		}
 	}
 
@@ -3317,16 +3296,12 @@ public class Town
 		if (--DefendersCount == 0)
 			_independentTownNationRelation = 0;
 
-		//------- if this town is controlled by rebels --------//
-
 		if (RebelId != 0)
 			RebelArray[RebelId].mobile_rebel_count--; // decrease the no. of mobile rebel units
 	}
 
-	public void AutoDefense(int targetRecno)
+	public void AutoDefense(int targetId)
 	{
-		int townRecno = TownId;
-
 		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
@@ -3334,60 +3309,54 @@ public class Town
 			if (firm.nation_recno != NationId || firm.firm_id != Firm.FIRM_CAMP)
 				continue;
 
-			//-------------------------------------------------------//
-			// the firm is a military camp of our nation
-			//-------------------------------------------------------//
 			FirmCamp camp = (FirmCamp)firm;
-			camp.defense(targetRecno);
+			camp.defense(targetId);
 
-			if (TownArray.IsDeleted(townRecno))
-				break; // the last unit in the town has be mobilized
+			if (TownArray.IsDeleted(TownId))
+				break;
 		}
 	}
 
-	public void BeingAttacked(int attackerUnitRecno, double attackDamage)
+	public void BeingAttacked(int attackerUnitId, double attackDamage)
 	{
-		if (RebelId != 0) // if this town is controlled by a rebel group
-			RebelArray[RebelId].town_being_attacked(attackerUnitRecno);
+		if (RebelId != 0)
+			RebelArray[RebelId].town_being_attacked(attackerUnitId);
 
 		if (Population == 0)
 			return;
 
-		DefendTargetId = attackerUnitRecno; // store the target recno
+		DefendTargetId = attackerUnitId; // store the target attacker id
 
-		Unit attackerUnit = UnitArray[attackerUnitRecno];
+		Unit attackerUnit = UnitArray[attackerUnitId];
 
 		if (attackerUnit.nation_recno == NationId) // this can happen when the unit has just changed nation 
 			return;
 
-		int attackerNationRecno = attackerUnit.nation_recno;
+		int attackerNationId = attackerUnit.nation_recno;
 
 		LastBeingAttackedDate = Info.game_date;
 
-		//--------- store attacker nation recno -----------//
-
-		SetHostileNation(attackerNationRecno);
+		SetHostileNation(attackerNationId);
 
 		//----------- call out defender -----------//
 
 		// only call out defender when the attacking unit is within the effective defending distance
 
-		if (Misc.rects_distance(attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
-			    attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
+		if (Misc.rects_distance(attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(), attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
 			    LocX1, LocY1, LocX2, LocY2) <= UnitConstants.EFFECTIVE_DEFEND_TOWN_DISTANCE)
 		{
 			while (true)
 			{
-				if (!MobilizeDefender(attackerNationRecno))
+				if (!MobilizeDefender(attackerNationId))
 					break;
 			}
 		}
 
-		AutoDefense(attackerUnitRecno);
+		AutoDefense(attackerUnitId);
 
 		//----- pick a race to be attacked by the attacker randomly -----//
 
-		int raceId = PickRandomRace(true, true); // 1-pick has job people, 1-pick spies
+		int raceId = PickRandomRace(true, true);
 
 		//-------- town people get killed ---------//
 
@@ -3397,11 +3366,9 @@ public class Town
 		{
 			_receivedHitCount = 0.0;
 
-			int townRecno = TownId;
+			KillTownPeople(raceId, attackerNationId);
 
-			KillTownPeople(raceId, attackerNationRecno); // kill a town people
-
-			if (TownArray.IsDeleted(townRecno)) // the town may have been deleted when all pop are killed
+			if (TownArray.IsDeleted(TownId)) // the town may have been deleted when all pop are killed
 				return;
 		}
 
@@ -3409,7 +3376,7 @@ public class Town
 
 		if (DefendersCount == 0)
 		{
-			//--- Resistance/loyalty of the town people decrease if the attacking continues ---//
+			//--- Resistance/loyalty of the town people decrease if the attack continues ---//
 			//
 			// Resistance/Loyalty decreases faster:
 			//
@@ -3417,8 +3384,6 @@ public class Town
 			// -when there is no defender
 			//
 			//---------------------------------------//
-
-			double loyaltyDec = 0.0;
 
 			if (NationId != 0) // if the town belongs to a nation
 			{
@@ -3429,17 +3394,19 @@ public class Town
 					if (RacesPopulation[raceId - 1] == 0)
 						continue;
 
+					double loyaltyDec = 0.0;
+
 					if (HasLinkedOwnCamp) // if it is linked to one of its camp, the loyalty will decrease slower
-						loyaltyDec = 5.0 / Convert.ToDouble(RacesPopulation[raceId - 1]);
+						loyaltyDec = 5.0 / (double)RacesPopulation[raceId - 1];
 					else
-						loyaltyDec = 10.0 / Convert.ToDouble(RacesPopulation[raceId - 1]);
+						loyaltyDec = 10.0 / (double)RacesPopulation[raceId - 1];
 
 					loyaltyDec = Math.Min(loyaltyDec, 1.0);
 
-					ChangeLoyalty(raceId, -loyaltyDec * attackDamage / (20 / InternalConstants.ATTACK_SLOW_DOWN));
+					ChangeLoyalty(raceId, -loyaltyDec * attackDamage / (20.0 / InternalConstants.ATTACK_SLOW_DOWN));
 				}
 
-				//--- if the resistance of all the races are zero, think_change_nation() ---//
+				//--- if the resistance of all the races are zero, think about surrendering ---//
 
 				int i;
 				for (i = 0; i < GameConstants.MAX_RACE; i++)
@@ -3453,7 +3420,7 @@ public class Town
 			}
 			else // if the town is an independent town
 			{
-				if (attackerNationRecno == 0) // if independent units do not attack independent towns
+				if (attackerNationId == 0) // if independent units do not attack independent towns
 					return;
 
 				//---- decrease resistance of all races in the town ----//
@@ -3464,27 +3431,23 @@ public class Town
 						continue;
 
 					// decrease faster for independent towns than towns belonging to nations
-					loyaltyDec = 10.0 / Convert.ToDouble(RacesPopulation[raceId - 1]);
+					double loyaltyDec = 10.0 / (double)RacesPopulation[raceId - 1];
 					loyaltyDec = Math.Min(loyaltyDec, 1.0);
 
-					RacesResistance[raceId - 1, attackerNationRecno - 1] -=
-						loyaltyDec * attackDamage / (20 / InternalConstants.ATTACK_SLOW_DOWN);
-
-					if (RacesResistance[raceId - 1, attackerNationRecno - 1] < 0.0)
-						RacesResistance[raceId - 1, attackerNationRecno - 1] = 0.0;
+					ChangeResistance(raceId, attackerNationId, -loyaltyDec * attackDamage / (20.0 / InternalConstants.ATTACK_SLOW_DOWN));
 				}
 
-				//--- if the resistance of all the races are zero, think_change_nation() ---//
+				//--- if the resistance of all the races are zero, think about surrendering ---//
 
 				int i;
 				for (i = 0; i < GameConstants.MAX_RACE; i++)
 				{
-					if (RacesResistance[i, attackerNationRecno - 1] >= 1.0)
+					if (RacesResistance[i, attackerNationId - 1] >= 1.0)
 						break;
 				}
 
 				if (i == GameConstants.MAX_RACE) // if resistance of all races drop to zero
-					Surrender(attackerNationRecno);
+					Surrender(attackerNationId);
 			}
 		}
 
@@ -3493,126 +3456,8 @@ public class Town
 		if (DefendersCount == 0 && NationId != 0)
 		{
 			if (attackerUnit.nation_recno != NationId) // they may become the same when the town has been captured 
-				NationArray[NationId].ai_defend(attackerUnitRecno);
+				NationArray[NationId].ai_defend(attackerUnitId);
 		}
-	}
-
-	public bool FormNewNation()
-	{
-		if (NationArray.nation_count >= GameConstants.MAX_NATION)
-			return false;
-
-		//----- determine the race with most population -----//
-
-		int maxPop = 0, raceId = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (RacesPopulation[i] > maxPop)
-			{
-				maxPop = RacesPopulation[i];
-				raceId = i + 1;
-			}
-		}
-
-
-		//---- create the king of the new nation ----//
-
-		int unitId = RaceRes[raceId].basic_unit_id;
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-
-		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return false;
-
-		//--------- create a new nation ---------//
-
-		int nationRecno = NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
-
-		//-------- create the king --------//
-
-		Unit kingUnit = UnitArray.AddUnit(unitId, nationRecno, Unit.RANK_KING, 100, xLoc, yLoc);
-
-		kingUnit.skill.skill_id = Skill.SKILL_LEADING;
-		kingUnit.skill.skill_level = 50 + Misc.Random(51);
-
-		kingUnit.set_combat_level(70 + Misc.Random(31));
-
-		NationArray[nationRecno].set_king(kingUnit.sprite_recno, 1); // 1-this is the first king of the nation
-
-		DecPopulation(raceId, false); // 0-the unit doesn't have a job
-
-		//------ set the nation of the rebel town -----//
-
-		ChangeNation(nationRecno); // set the town at last because set_nation() will delete the Town object
-
-		//------ increase the loyalty of the town -----//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			RacesLoyalty[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
-
-		//--------- add news ----------//
-
-		NewsArray.new_nation(nationRecno);
-
-		//--- random extra beginning advantages -----//
-
-		int mobileCount;
-		Nation nation = NationArray[nationRecno];
-
-		switch (Misc.Random(10))
-		{
-			case 1: // knowledge of weapon in the beginning.
-				TechRes[Misc.Random(TechRes.tech_info_array.Length) + 1].set_nation_tech_level(nationRecno, 1);
-				break;
-
-			case 2: // random additional cash
-				nation.cash += Misc.Random(5000);
-				break;
-
-			case 3: // random additional food
-				nation.food += Misc.Random(5000);
-				break;
-
-			case 4: // random additional skilled units
-				mobileCount = Misc.Random(5) + 1;
-
-				// 0-don't recruit spies
-				for (int i = 0; i < mobileCount && RecruitableRacePopulation(raceId, false) > 0; i++)
-				{
-					Unit unit = MobilizeTownPeople(raceId, true, false); // 1-dec pop, 0-don't mobilize spies
-
-					if (unit != null)
-					{
-						//------- randomly set a skill -------//
-
-						int skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
-						int loopCount = 0; // no spying skill
-
-						// no spy skill as skill_id can't be set as SKILL_SPY, for spies, spy_recno must be set instead
-						while (skillId == Skill.SKILL_SPYING)
-						{
-							if (++skillId > Skill.MAX_TRAINABLE_SKILL)
-							{
-								skillId = 1;
-							}
-
-						}
-
-						unit.skill.skill_id = skillId;
-						unit.skill.skill_level = 50 + Misc.Random(50);
-						unit.set_combat_level(50 + Misc.Random(50));
-					}
-					else
-						break;
-				}
-
-				break;
-		}
-
-		NationArray.update_statistic();
-
-		return nationRecno != 0;
 	}
 
 	private bool ThinkSurrender()
@@ -3643,7 +3488,8 @@ public class Town
 
 		//-------- think about surrender to which nation ------//
 
-		int curRating, bestRating = AverageLoyalty(), bestNationRecno = 0;
+		int bestRating = AverageLoyalty();
+		int bestNationId = 0;
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
@@ -3651,35 +3497,29 @@ public class Town
 
 			//---- if this is an enemy camp ----//
 
-			if (firm.firm_id == Firm.FIRM_CAMP &&
-			    firm.nation_recno != NationId &&
-			    firm.nation_recno != 0 &&
-			    firm.overseer_recno != 0)
+			if (firm.firm_id == Firm.FIRM_CAMP && firm.nation_recno != NationId && firm.nation_recno != 0 && firm.overseer_recno != 0)
 			{
-				// see camp_influence() for details on how the rating is calculated
 				Unit overseer = UnitArray[firm.overseer_recno];
-				curRating = overseer.CampInfluence();
+				int curRating = overseer.CampInfluence();
 
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					bestNationRecno = firm.nation_recno;
+					bestNationId = firm.nation_recno;
 				}
 			}
 		}
 
-		//------------------------------------//
-
-		if (bestNationRecno != 0)
+		if (bestNationId != 0)
 		{
-			Surrender(bestNationRecno);
+			Surrender(bestNationId);
 			return true;
 		}
-		else
-			return false;
+		
+		return false;
 	}
 
-	private void Surrender(int toNationRecno)
+	private void Surrender(int toNationId)
 	{
 		// if this is a rebel town and the mobile rebel count is > 0, don't surrender
 		// this function can be called by update_resistance() when resistance drops to zero
@@ -3687,24 +3527,20 @@ public class Town
 		if (RebelId != 0)
 		{
 			Rebel rebel = RebelArray[RebelId];
-
 			if (rebel.mobile_rebel_count > 0)
 				return;
 		}
 
-		//----------------------------------------//
-
-		if (NationId == NationArray.player_recno || toNationRecno == NationArray.player_recno)
+		if (NationId == NationArray.player_recno || toNationId == NationArray.player_recno)
 		{
-			NewsArray.town_surrendered(TownId, toNationRecno);
-			if (toNationRecno == NationArray.player_recno)
+			NewsArray.town_surrendered(TownId, toNationId);
+			if (toNationId == NationArray.player_recno)
 			{
-				// sound effect
 				SECtrl.immediate_sound("GET_TOWN");
 			}
 		}
 
-		ChangeNation(toNationRecno);
+		ChangeNation(toNationId);
 	}
 
 	private void ThinkRebel()
@@ -3716,7 +3552,7 @@ public class Town
 			return;
 
 		// don't rebel within ten days after being attacked by a hostile unit
-		if (DefendersCount > 0 || Info.game_date < LastBeingAttackedDate.AddDays(10.0))
+		if (DefendersCount > 0 || Info.game_date < LastBeingAttackedDate.AddDays(10))
 			return;
 
 		//--- rebel if 2/3 of the population becomes discontented ---//
@@ -3785,23 +3621,23 @@ public class Town
 		//----- create the rebel leader and the rebel group ------//
 
 		int rebelCount = 1;
-		int leaderUnitRecno = CreateRebelUnit(rebelLeaderRaceId, true); // 1-the unit is the rebel leader
+		Unit rebelLeader = CreateRebelUnit(rebelLeaderRaceId, true); // 1-the unit is the rebel leader
 
-		if (leaderUnitRecno == 0)
+		if (rebelLeader == null)
 			return;
 
 		int curGroupId = UnitArray.cur_group_id++;
-		Unit unit = UnitArray[leaderUnitRecno];
-		unit.unit_group_id = curGroupId;
+		rebelLeader.unit_group_id = curGroupId;
 
 		if (oneRebelOnly) // if there was just one unit in the town and he rebels
 		{
-			RebelArray.AddRebel(leaderUnitRecno, NationId);
+			RebelArray.AddRebel(rebelLeader, NationId);
 			return;
 		}
 
-		// create a rebel group
-		Rebel rebel = RebelArray.AddRebel(leaderUnitRecno, NationId, Rebel.REBEL_ATTACK_TOWN, TownId);
+		//------- create a rebel group -----//
+
+		Rebel rebel = RebelArray.AddRebel(rebelLeader, NationId, Rebel.REBEL_ATTACK_TOWN, TownId);
 
 		//------- create other rebel units in the rebel group -----//
 
@@ -3819,16 +3655,15 @@ public class Town
 			int j = 0;
 			for (; j < raceRebelCount; j++) // no. of rebel units of this race
 			{
-				int unitRecno = CreateRebelUnit(i + 1, false);
+				Unit rebelUnit = CreateRebelUnit(i + 1, false);
 
-				if (unitRecno == 0) // 0-the unit is not the rebel leader
+				if (rebelUnit == null)
 					break;
 
-				Unit rebelUnit = UnitArray[unitRecno];
 				rebelUnit.unit_group_id = curGroupId;
-				rebelUnit.leader_unit_recno = leaderUnitRecno;
+				rebelUnit.leader_unit_recno = rebelLeader.sprite_recno;
 
-				rebel.join(unitRecno);
+				rebel.join(rebelUnit);
 
 				rebelCount++;
 			}
@@ -3838,11 +3673,10 @@ public class Town
 			ChangeLoyalty(i + 1, 50.0 * j / RacesPopulation[i]);
 		}
 
-		//---------- add news -------------//
-
 		_lastRebelDate = Info.game_date;
 
-		// add the news first as after callijng ai_spy_town_rebel, the town may disappear as all peasants are gone
+		//--- add the news first as after calling ai_spy_town_rebel, the town may disappear as all peasants are gone ---//
+
 		NewsArray.town_rebel(TownId, rebelCount);
 
 		//--- tell the AI spies in the town that a rebellion is happening ---//
@@ -3850,63 +3684,19 @@ public class Town
 		SpyArray.ai_spy_town_rebel(TownId);
 	}
 	
-	private int CreateRebelUnit(int raceId, bool isLeader)
+	private Unit CreateRebelUnit(int raceId, bool isLeader)
 	{
-		/*	//--- do not mobilize spies as rebels ----//
-	
-			//---------------------------------------//
-			//
-			// If there are spies in this town, first mobilize
-			// the spies whose actions are "Sow Dissent".
-			//
-			//---------------------------------------//
-	
-			int idleSpyCount=0;
-	
-			if( race_spy_count_array[raceId-1] > 0 )
-			{
-				Spy* spy;
-	
-				for( int i=SpyArray.size() ; i>0 ; i-- )
-				{
-					if( SpyArray.is_deleted(i) )
-						continue;
-	
-					spy = SpyArray[i];
-	
-					if( spy.spy_place==Spy.SPY_TOWN && spy.spy_place_para==town_recno && spy.race_id==raceId )
-					{
-						if( spy.action_mode == SPY_SOW_DISSENT )
-						{
-							int unitRecno = spy.mobilize_town_spy();
-	
-							if( isLeader )
-								unit_array[unitRecno].set_rank(Unit.RANK_GENERAL);
-	
-							return unitRecno;
-						}
-	
-						idleSpyCount++;
-					}
-				}
-			}
-			//---- if the remaining population are all sleep spy, no new rebels ----//
-	
-			if( race_pop_array[raceId-1] == idleSpyCount )
-				return 0;
-	
-		*/
+		//--- do not mobilize spies as rebels ----//
 
 		//---- if no jobless people, make workers and overseers jobless ----//
 
-		// 0-don't recruit spies as the above code should have handle spies already
 		if (RecruitableRacePopulation(raceId, false) == 0)
 		{
-			if (!UnjobTownPeople(raceId, false, false)) // 0-don't unjob spies, 0-don't unjob overseer
-				return 0;
+			if (!UnjobTownPeople(raceId, false, false))
+				return null;
 
 			if (RecruitableRacePopulation(raceId, false) == 0) // if the unjob unit is a spy too, then don't rebel
-				return 0;
+				return null;
 		}
 
 		//----look for an empty location for the unit to stand ----//
@@ -3914,21 +3704,16 @@ public class Town
 
 		int unitId = RaceRes[raceId].basic_unit_id;
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
+		int locX = LocX1, locY = LocY1; // xLoc & yLoc are used for returning results
 
-		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
-			return 0;
+		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return null;
 
 		//---------- add the unit now -----------//
 
-		int rankId;
+		int rankId = isLeader ? Unit.RANK_GENERAL : Unit.RANK_SOLDIER;
 
-		if (isLeader)
-			rankId = Unit.RANK_GENERAL;
-		else
-			rankId = Unit.RANK_SOLDIER;
-
-		Unit unit = UnitArray.AddUnit(unitId, 0, rankId, 0, xLoc, yLoc);
+		Unit unit = UnitArray.AddUnit(unitId, 0, rankId, 0, locX, locY);
 
 		DecPopulation(raceId, false); // decrease the town's population
 
@@ -3936,9 +3721,9 @@ public class Town
 
 		if (isLeader)
 		{
-			// the higher the population is, the higher the combat level will be
+			// the higher the population, the higher the combat level will be
 			int combatLevel = 10 + Population * 2 + Misc.Random(10);
-			// the higher the population is, the higher the combat level will be
+			// the higher the population, the higher the leadership will be
 			int leadershipLevel = 10 + Population + Misc.Random(10);
 
 			unit.set_combat_level(Math.Min(combatLevel, 100));
@@ -3948,12 +3733,321 @@ public class Town
 		}
 		else
 		{
-			unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL); // combat: 10
+			unit.set_combat_level(GameConstants.CITIZEN_COMBAT_LEVEL);
 		}
 
-		return unit.sprite_recno;
+		return unit;
+	}
+	
+	public void FormNewNation()
+	{
+		if (NationArray.nation_count >= GameConstants.MAX_NATION)
+			return;
+
+		//----- determine the race with most population -----//
+
+		int maxPop = 0, raceId = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (RacesPopulation[i] > maxPop)
+			{
+				maxPop = RacesPopulation[i];
+				raceId = i + 1;
+			}
+		}
+
+		int unitId = RaceRes[raceId].basic_unit_id;
+		int locX = LocX1, locY = LocY1;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+
+		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+			return;
+
+		//--------- create a new nation ---------//
+
+		Nation newNation = NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
+
+		//-------- create the king --------//
+
+		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.nation_recno, Unit.RANK_KING, 100, locX, locY);
+		kingUnit.skill.skill_id = Skill.SKILL_LEADING;
+		kingUnit.skill.skill_level = 50 + Misc.Random(51);
+		kingUnit.set_combat_level(70 + Misc.Random(31));
+
+		newNation.set_king(kingUnit.sprite_recno, 1);
+
+		DecPopulation(raceId, false);
+
+		ChangeNation(newNation.nation_recno);
+
+		//------ increase the loyalty of the town -----//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+			RacesLoyalty[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
+
+		NewsArray.new_nation(newNation.nation_recno);
+
+		//--- random extra beginning advantages -----//
+
+		switch (Misc.Random(10))
+		{
+			case 1: // knowledge of weapon in the beginning.
+				TechRes[Misc.Random(TechRes.tech_info_array.Length) + 1].set_nation_tech_level(newNation.nation_recno, 1);
+				break;
+
+			case 2: // random additional cash
+				newNation.cash += Misc.Random(5000);
+				break;
+
+			case 3: // random additional food
+				newNation.food += Misc.Random(5000);
+				break;
+
+			case 4: // random additional skilled units
+				int mobileCount = Misc.Random(5) + 1;
+
+				for (int i = 0; i < mobileCount && RecruitableRacePopulation(raceId, false) > 0; i++)
+				{
+					Unit unit = MobilizeTownPeople(raceId, true, false);
+
+					if (unit == null)
+						break;
+
+					//------- randomly set a skill -------//
+
+					int skillId;
+					do
+					{
+						skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
+					} while (skillId == Skill.SKILL_SPYING);
+
+					unit.skill.skill_id = skillId;
+					unit.skill.skill_level = 50 + Misc.Random(50);
+					unit.set_combat_level(50 + Misc.Random(50));
+				}
+				break;
+		}
+
+		NationArray.update_statistic();
 	}
 
+	#region IndependentTownAIFunctions
+
+	public void ThinkIndependentTown()
+	{
+		if (RebelId != 0) // if this is a rebel town, its AI will be executed in Rebel.ThinkTownAction()
+			return;
+
+		//---- think about toggling town links ----//
+
+		if (Info.TotalDays % 15 == TownId % 15)
+		{
+			ThinkIndependentSetLink();
+		}
+
+		//---- think about independent units join existing nations ----//
+
+		if (Info.TotalDays % 60 == TownId % 60)
+		{
+			ThinkIndependentUnitJoinNation();
+		}
+
+		//----- think about form a new nation -----//
+
+		if (Info.TotalDays % 365 == TownId % 365)
+		{
+			ThinkIndependentFormNewNation();
+		}
+	}
+
+	private void ThinkIndependentSetLink()
+	{
+		//---- think about working for foreign firms ------//
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
+		{
+			Firm firm = FirmArray[LinkedFirms[i]];
+
+			if (firm.firm_id == Firm.FIRM_CAMP) // a town cannot change its status with a military camp
+				continue;
+
+			//---- think about the link status ----//
+
+			bool linkStatus = (firm.nation_recno == 0); // if the firm is also an independent firm
+
+			if (AverageResistance(firm.nation_recno) <= GameConstants.INDEPENDENT_LINK_RESISTANCE)
+				linkStatus = true;
+
+			//---- set the link status -------//
+
+			ToggleFirmLink(i + 1, linkStatus, InternalConstants.COMMAND_AI);
+		}
+
+		AILinkChecked = true;
+	}
+
+	private void ThinkIndependentFormNewNation()
+	{
+		if (Misc.Random(10) > 0) // 1/10 chance to set up a new nation.
+			return;
+
+		//-------- check if the town is big enough -------//
+
+		if (Population < 30)
+			return;
+
+		//---- don't form if the world is already densely populated ----//
+
+		if (NationArray.all_nation_population > ConfigAdv.town_ai_emerge_nation_pop_limit)
+			return;
+
+		//----------------------------------------------//
+
+		if (!NationArray.can_form_new_ai_nation())
+			return;
+
+		FormNewNation();
+	}
+
+	private bool ThinkIndependentUnitJoinNation()
+	{
+		if (JoblessPopulation == 0)
+			return false;
+
+		_independentUnitJoinNationMinRating -= 2; // make it easier to join nation everytime it's called
+		// -2 each time, adding of 30 after a unit has been recruited and calling it once every 2 months make it a normal rate of joining once a year per town
+
+		//------ think about which nation to turn towards -----//
+
+		int bestNationId = 0, bestRaceId = 0;
+		int bestRating = _independentUnitJoinNationMinRating;
+
+		if (RegionArray.GetRegionInfo(RegionId).region_stat_id == 0)
+			return false;
+
+		RegionStat regionStat = RegionArray.get_region_stat(RegionId);
+
+		foreach (Nation nation in NationArray)
+		{
+			if (nation.race_id == 0)
+				continue;
+
+			if (nation.cash <= 0.0)
+				continue;
+
+			// don't join too frequently, at most 3 months a unit
+			if (Info.game_date < nation.last_independent_unit_join_date.AddDays(90))
+				continue;
+
+			//--- only join the nation if the nation has town in the town's region ---//
+
+			if (regionStat.town_nation_count_array[nation.nation_recno - 1] == 0)
+				continue;
+
+			//----- calculate the rating of the nation -----//
+
+			int curRating = (int)nation.reputation + nation.overall_rating;
+			int raceId = 0;
+
+			if (RecruitableRacePopulation(nation.race_id, false) > 0)
+			{
+				curRating += 30;
+				raceId = nation.race_id;
+			}
+
+			if (curRating > bestRating)
+			{
+				bestRating = curRating;
+				bestNationId = nation.nation_recno;
+				bestRaceId = raceId;
+			}
+		}
+
+		if (bestNationId == 0)
+			return false;
+
+		if (bestRaceId == 0)
+			bestRaceId = PickRandomRace(false, false);
+
+		if (bestRaceId == 0)
+			return false;
+
+		if (!IndependentUnitJoinNation(bestRaceId, bestNationId))
+			return false;
+
+		_independentUnitJoinNationMinRating = bestRating + 100 + Misc.Random(30); // reset it to a higher rating
+
+		if (_independentUnitJoinNationMinRating < 100)
+			_independentUnitJoinNationMinRating = 100;
+
+		return true;
+	}
+
+	private bool IndependentUnitJoinNation(int raceId, int toNationId)
+	{
+		//----- mobilize a villager ----//
+
+		Unit unit = MobilizeTownPeople(raceId, true, false);
+
+		if (unit == null)
+			return false;
+
+		//----- set the skills of the unit -----//
+
+		int skillId = 0, skillLevel = 0, combatLevel = 0;
+
+		switch (Misc.Random(3))
+		{
+			case 0: // leaders
+				skillId = Skill.SKILL_LEADING;
+
+				if (Misc.Random(3) == 0)
+					skillLevel = Misc.Random(100);
+				else
+					skillLevel = Misc.Random(50);
+
+				combatLevel = skillLevel + Misc.Random(40) - 20;
+				combatLevel = Math.Min(combatLevel, 100);
+				combatLevel = Math.Max(combatLevel, 10);
+				break;
+
+			case 1: // peasants
+				skillId = 0;
+				skillLevel = 0;
+				combatLevel = 10;
+				break;
+
+			case 2: // skilled units
+				do
+				{
+					skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
+				} while (skillId == Skill.SKILL_SPYING);
+
+				skillLevel = 10 + Misc.Random(80);
+				combatLevel = 10 + Misc.Random(30);
+				break;
+		}
+
+		unit.skill.skill_id = skillId;
+		unit.skill.skill_level = skillLevel;
+		unit.set_combat_level(combatLevel);
+
+		//------ change nation now --------//
+
+		if (!unit.betray(toNationId))
+			return false;
+
+		//---- the unit moves close to the newly joined nation ----//
+
+		unit.ai_move_to_nearby_town();
+
+		NationArray[toNationId].last_independent_unit_join_date = Info.game_date;
+
+		return true;
+	}
+	
+	#endregion
 	
 	#region Old AI Functions
 
@@ -4271,15 +4365,13 @@ public class Town
 
 		int buildXLoc, buildYLoc;
 
-		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, LocX1, LocY1,
-			    out buildXLoc, out buildYLoc))
+		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, LocX1, LocY1, out buildXLoc, out buildYLoc))
 		{
 			NoNeighborSpace = true;
 			return false;
 		}
 
-		ownNation.add_action(buildXLoc, buildYLoc, LocX1, LocY1,
-			Nation.ACTION_AI_BUILD_FIRM, Firm.FIRM_MARKET);
+		ownNation.add_action(buildXLoc, buildYLoc, LocX1, LocY1, Nation.ACTION_AI_BUILD_FIRM, Firm.FIRM_MARKET);
 
 		return true;
 	}
@@ -4309,8 +4401,7 @@ public class Town
 				continue;
 
 			// if this camp is still trying to recruit soldiers
-			if (firmCamp.under_construction || firmCamp.ai_recruiting_soldier ||
-			    firmCamp.workers.Count < Firm.MAX_WORKER)
+			if (firmCamp.under_construction || firmCamp.ai_recruiting_soldier || firmCamp.workers.Count < Firm.MAX_WORKER)
 				return false;
 
 			campCount++;
@@ -4344,8 +4435,7 @@ public class Town
 		{
 			int needUrgency = 100 * (protectionNeeded - protectionAvailable) / protectionNeeded;
 
-			if (nation.total_jobless_population - Firm.MAX_WORKER <
-			    (100 - needUrgency) * (200 - nation.pref_military_development) / 200)
+			if (nation.total_jobless_population - Firm.MAX_WORKER < (100 - needUrgency) * (200 - nation.pref_military_development) / 200)
 			{
 				return false;
 			}
@@ -4738,9 +4828,7 @@ public class Town
 		{
 			Town town = TownArray[LinkedTowns[i]];
 
-			if (town.NationId == NationId &&
-			    town.Population < 20 &&
-			    town.MajorityRace() == raceId)
+			if (town.NationId == NationId && town.Population < 20 && town.MajorityRace() == raceId)
 			{
 				return false;
 			}
@@ -4883,8 +4971,6 @@ public class Town
 
 		if (enemyCombatLevel > 0)
 		{
-			//err_when( enemyXLoc < 0 );
-
 			nation.ai_attack_target(enemyXLoc, enemyYLoc, enemyCombatLevel);
 			return true;
 		}
@@ -4895,7 +4981,6 @@ public class Town
 	private bool ThinkAttackLinkedEnemy()
 	{
 		Nation ownNation = NationArray[NationId];
-		int targetCombatLevel;
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
@@ -4912,14 +4997,14 @@ public class Town
 
 			//--- only attack AI firms when they belong to a hostile nation ---//
 
-			if (firm.firm_ai &&
-			    ownNation.get_relation_status(firm.nation_recno) != NationBase.NATION_HOSTILE)
+			if (firm.firm_ai && ownNation.get_relation_status(firm.nation_recno) != NationBase.NATION_HOSTILE)
 			{
 				continue;
 			}
 
 			//---- if this is a camp -----//
 
+			int targetCombatLevel;
 			if (firm.firm_id == Firm.FIRM_CAMP)
 			{
 				//----- if we are friendly with the target nation ------//
@@ -4935,10 +5020,9 @@ public class Town
 				}
 				else if (nationStatus == NationBase.NATION_NEUTRAL)
 				{
-					//-- if the link is off and the nation's miliary strength is bigger than us, don't attack --//
+					//-- if the link is off and the nation's military strength is bigger than us, don't attack --//
 
-					if (NationArray[firm.nation_recno].military_rank_rating() >
-					    ownNation.military_rank_rating())
+					if (NationArray[firm.nation_recno].military_rank_rating() > ownNation.military_rank_rating())
 					{
 						continue;
 					}
@@ -4948,8 +5032,7 @@ public class Town
 
 				int tradeRating = ownNation.trade_rating(firm.nation_recno);
 
-				if (tradeRating > 50 ||
-				    tradeRating + ownNation.ai_trade_with_rating(firm.nation_recno) > 100)
+				if (tradeRating > 50 || tradeRating + ownNation.ai_trade_with_rating(firm.nation_recno) > 100)
 				{
 					continue;
 				}
@@ -5190,8 +5273,7 @@ public class Town
 		if (!ownNation.ai_should_create_new_spy(0)) //0 means take into account all spies
 			return false;
 
-		int spyCount;
-		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out spyCount);
+		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out _);
 		int neededSpyLevel = NeededAntiSpyLevel();
 
 		if (curSpyLevel > neededSpyLevel + 30)
@@ -5209,12 +5291,10 @@ public class Town
 
 				if (spy.spy_skill > 50)
 				{
-					int xLoc;
-					int yLoc;
+					int xLoc, yLoc;
 					int cloakedNationRecno;
 
-					bool hasNewMission = ownNation.think_spy_new_mission(spy.race_id, RegionId,
-						out xLoc, out yLoc, out cloakedNationRecno);
+					bool hasNewMission = ownNation.think_spy_new_mission(spy.race_id, RegionId, out xLoc, out yLoc, out cloakedNationRecno);
 
 					if (hasNewMission)
 					{
@@ -5244,8 +5324,7 @@ public class Town
 
 		//------- check if we need additional spies ------//
 
-		int spyCount;
-		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out spyCount);
+		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out _);
 		int neededSpyLevel = NeededAntiSpyLevel();
 
 		if (neededSpyLevel > curSpyLevel + 30)
@@ -5275,8 +5354,7 @@ public class Town
 
 	public int NeededAntiSpyLevel()
 	{
-		return (LinkedFirms.Count * 10 + 100 * Population / GameConstants.MAX_TOWN_POPULATION)
-			* (100 + NationArray[NationId].pref_counter_spy) / 100;
+		return (LinkedFirms.Count * 10 + 100 * Population / GameConstants.MAX_TOWN_POPULATION) * (100 + NationArray[NationId].pref_counter_spy) / 100;
 	}
 
 	public bool ShouldAIMigrate()
@@ -5394,8 +5472,7 @@ public class Town
 
 			if (!minimumProtection)
 			{
-				if ((overseer.hit_points < overseer.max_hit_points) &&
-				    (overseer.hit_points < 100 - ownNation.pref_military_courage / 2))
+				if ((overseer.hit_points < overseer.max_hit_points) && (overseer.hit_points < 100 - ownNation.pref_military_courage / 2))
 				{
 					thisTownProtectionCamps.Add(firmRecno);
 				}
@@ -5490,6 +5567,7 @@ public class Town
 		double prefRecruiting = 0.0;
 		if (ownNation.yearly_food_change() > 0)
 			prefRecruiting = ownNation.pref_military_development + (100.0 - ownNation.pref_inc_pop_by_growth);
+
 		return LinkedCampSoldiersCount() <= Population * (4.0 + 4.0 * prefRecruiting / 200.0) / 20.0;
 	}
 
@@ -5509,8 +5587,8 @@ public class Town
 
 		//------- it must be within the effective town-to-town distance ---//
 
-		if (Misc.rects_distance(LocX1, LocY1, LocX2, LocY2, xLoc, yLoc,
-			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1) >
+		if (Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+			    xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1) >
 		    InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
 		{
 			return false;
@@ -5530,242 +5608,5 @@ public class Town
 		return true;
 	}
 
-	#endregion
-
-	
-	#region IndependentTownAIFunctions
-
-	public void ThinkIndependentTown()
-	{
-		if (RebelId != 0) // if this is a rebel town, its AI will be executed in Rebel::think_town_action()
-			return;
-
-		//---- think about toggling town links ----//
-
-		if (Info.TotalDays % 15 == TownId % 15)
-		{
-			ThinkIndependentSetLink();
-		}
-
-		//---- think about independent units join existing nations ----//
-
-		if (Info.TotalDays % 60 == TownId % 60)
-		{
-			ThinkIndependentUnitJoinNation();
-		}
-
-		//----- think about form a new nation -----//
-
-		if (Info.TotalDays % 365 == TownId % 365)
-		{
-			ThinkIndependentFormNewNation();
-		}
-	}
-
-	private void ThinkIndependentSetLink()
-	{
-		//---- think about working for foreign firms ------//
-
-		for (int i = 0; i < LinkedFirms.Count; i++)
-		{
-			Firm firm = FirmArray[LinkedFirms[i]];
-
-			if (firm.firm_id == Firm.FIRM_CAMP) // a town cannot change its status with a military camp
-				continue;
-
-			//---- think about the link status ----//
-
-			bool linkStatus = false;
-
-			if (firm.nation_recno == 0) // if the firm is also an independent firm
-				linkStatus = true;
-
-			if (AverageResistance(firm.nation_recno) <= GameConstants.INDEPENDENT_LINK_RESISTANCE)
-				linkStatus = true;
-
-			//---- set the link status -------//
-
-			ToggleFirmLink(i + 1, linkStatus, InternalConstants.COMMAND_AI);
-		}
-
-		AILinkChecked = true;
-	}
-
-	private bool ThinkIndependentFormNewNation()
-	{
-		if (Misc.Random(10) > 0) // 1/10 chance to set up a new nation.
-			return false;
-
-		//-------- check if the town is big enough -------//
-
-		if (Population < 30)
-			return false;
-
-		//---- don't form if the world is already densely populated ----//
-
-		if (NationArray.all_nation_population > ConfigAdv.town_ai_emerge_nation_pop_limit)
-			return false;
-
-		//----------------------------------------------//
-
-		if (!NationArray.can_form_new_ai_nation())
-			return false;
-
-		//----------------------------------------------//
-
-		return FormNewNation();
-	}
-
-	private bool ThinkIndependentUnitJoinNation()
-	{
-		if (JoblessPopulation == 0)
-			return false;
-
-		_independentUnitJoinNationMinRating -= 2; // make it easier to join nation everytime it's called
-		// -2 each time, adding of 30 after a unit has been recruited and calling it once every 2 months make it a normal rate of joining once a year per town
-
-		//------ think about which nation to turn towards -----//
-
-		int bestNationRecno = 0, curRating, raceId, bestRaceId = 0;
-		int bestRating = _independentUnitJoinNationMinRating;
-
-		if (RegionArray.GetRegionInfo(RegionId).region_stat_id == 0)
-			return false;
-
-		RegionStat regionStat = RegionArray.get_region_stat(RegionId);
-
-		foreach (Nation nation in NationArray)
-		{
-			if (nation.race_id == 0)
-				continue;
-
-			if (nation.cash <= 0)
-				continue;
-
-			// don't join too frequently, at most 3 months a unit
-			if (Info.game_date < nation.last_independent_unit_join_date.AddDays(90.0))
-				continue;
-
-			//--- only join the nation if the nation has town in the town's region ---//
-
-			if (regionStat.town_nation_count_array[nation.nation_recno - 1] == 0)
-				continue;
-
-			//----- calculate the rating of the nation -----//
-
-			curRating = (int)nation.reputation + nation.overall_rating;
-
-			if (RecruitableRacePopulation(nation.race_id, false) > 0) // 0-don't count spies
-			{
-				curRating += 30;
-				raceId = nation.race_id;
-			}
-			else
-				raceId = 0;
-
-			if (curRating > bestRating)
-			{
-				bestRating = curRating;
-				bestNationRecno = nation.nation_recno;
-				bestRaceId = raceId;
-			}
-		}
-
-		//--------------------------------------------//
-
-		if (bestNationRecno == 0)
-			return false;
-
-		// 0-only pick jobless unit, 0-don't pick spy units
-		if (bestRaceId == 0)
-			bestRaceId = PickRandomRace(false, false);
-
-		if (bestRaceId == 0)
-			return false;
-
-		if (!IndependentUnitJoinNation(bestRaceId, bestNationRecno))
-			return false;
-
-		//--- set a new value to independent_unit_join_nation_min_rating ---//
-
-		_independentUnitJoinNationMinRating = bestRating + 100 + Misc.Random(30); // reset it to a higher rating
-
-		if (_independentUnitJoinNationMinRating < 100)
-			_independentUnitJoinNationMinRating = 100;
-
-		return true;
-	}
-
-	private bool IndependentUnitJoinNation(int raceId, int toNationRecno)
-	{
-		//----- mobilize a villager ----//
-
-		// 1-dec population after mobilizing the unit, 0-don't mobilize spies
-		Unit unit = MobilizeTownPeople(raceId, true, false);
-
-		if (unit == null)
-			return false;
-
-		//----- set the skills of the unit -----//
-
-		int skillId = 0, skillLevel = 0, combatLevel = 0;
-
-		switch (Misc.Random(3))
-		{
-			case 0: // leaders
-				skillId = Skill.SKILL_LEADING;
-
-				if (Misc.Random(3) == 0)
-					skillLevel = Misc.Random(100);
-				else
-					skillLevel = Misc.Random(50);
-
-				combatLevel = skillLevel + Misc.Random(40) - 20;
-				combatLevel = Math.Min(combatLevel, 100);
-				combatLevel = Math.Max(combatLevel, 10);
-				break;
-
-			case 1: // peasants
-				skillId = 0;
-				skillLevel = 0;
-				combatLevel = 10;
-				break;
-
-			case 2: // skilled units
-				skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
-			{
-				while (skillId == Skill.SKILL_SPYING)
-				{
-					if (++skillId > Skill.MAX_TRAINABLE_SKILL)
-						skillId = 1;
-				}
-			}
-				skillLevel = 10 + Misc.Random(80);
-				combatLevel = 10 + Misc.Random(30);
-				break;
-		}
-
-		//--------------------------------------//
-
-		unit.skill.skill_id = skillId;
-		unit.skill.skill_level = skillLevel;
-		unit.set_combat_level(combatLevel);
-
-		//------ change nation now --------//
-
-		if (!unit.betray(toNationRecno))
-			return false;
-
-		//---- the unit moves close to the newly joined nation ----//
-
-		unit.ai_move_to_nearby_town();
-
-		//-------- set last_independent_unit_join_date --------//
-
-		NationArray[toNationRecno].last_independent_unit_join_date = Info.game_date;
-
-		return true;
-	}
-	
 	#endregion
 }

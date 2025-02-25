@@ -48,9 +48,9 @@ public class UnitArray : SpriteArray
 	    visible_unit_count = 0;
     }
 
-    protected override Sprite CreateNewObject(int objectId)
+    protected override Sprite CreateNewObject(int objectType)
     {
-	    switch (objectId)
+	    switch (objectType)
 	    {
 		    case UnitConstants.UNIT_CARAVAN:
 			    return new UnitCaravan();
@@ -65,7 +65,7 @@ public class UnitArray : SpriteArray
 			    return new UnitExpCart();
 
 		    default:
-			    UnitInfo unitInfo = UnitRes[objectId];
+			    UnitInfo unitInfo = UnitRes[objectType];
 
 			    if (unitInfo.is_monster != 0)
 				    return new UnitMonster();
@@ -73,7 +73,7 @@ public class UnitArray : SpriteArray
 			    if (unitInfo.solider_id != 0) // if it is a vehicle unit
 				    return new UnitVehicle();
 
-			    if (GodRes.is_god_unit(objectId))
+			    if (GodRes.is_god_unit(objectType))
 				    return new UnitGod();
 
 			    return new Unit();

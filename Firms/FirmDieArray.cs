@@ -8,7 +8,7 @@ public class FirmDieArray : DynArray<FirmDie>
     {
     }
 
-    protected override FirmDie CreateNewObject(int objectId)
+    protected override FirmDie CreateNewObject(int objectType)
     {
         return new FirmDie();
     }
@@ -16,9 +16,9 @@ public class FirmDieArray : DynArray<FirmDie>
     public void Add(Firm firm)
     {
         FirmDie firmDie = CreateNew();
-        firmDie.firmdie_recno = nextRecNo;
+        firmDie.firmdie_recno = nextId;
         firmDie.Init(firm);
-        nextRecNo++;
+        nextId++;
     }
 
     public override bool IsDeleted(int recNo)

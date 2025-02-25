@@ -24,7 +24,7 @@ public class SiteArray : DynArray<Site>
 	{
 	}
 
-	protected override Site CreateNewObject(int objectId)
+	protected override Site CreateNewObject(int objectType)
 	{
 		return new Site();
 	}
@@ -32,8 +32,8 @@ public class SiteArray : DynArray<Site>
 	public Site AddSite(int xLoc, int yLoc, int siteType, int objectId, int reserveQty = 0)
 	{
 		Site site = CreateNew();
-		site.site_recno = nextRecNo;
-		nextRecNo++;
+		site.site_recno = nextId;
+		nextId++;
 		site.Init(siteType, xLoc, yLoc, objectId, reserveQty);
 
 		switch (siteType)

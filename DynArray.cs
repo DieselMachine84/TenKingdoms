@@ -6,19 +6,20 @@ namespace TenKingdoms;
 
 public abstract class DynArray<T> : IEnumerable<T> where T : class
 {
-    protected int nextRecNo = 1;
-    private List<T> list = new List<T>();
-    private Dictionary<int, int> recNoIndexes = new Dictionary<int, int>();
+    protected int nextId = 1;
+    private readonly List<T> _list = new List<T>();
+    private readonly Dictionary<int, int> _idIndexes = new Dictionary<int, int>();
 
-    protected abstract T CreateNewObject(int objectId);
-    protected T CreateNew(int objectId = 0)
+    protected abstract T CreateNewObject(int objectType);
+
+    protected T CreateNew(int objectType = 0)
     {
-        T result = CreateNewObject(objectId);
+        T result = CreateNewObject(objectType);
 
         int unusedIndex = -1;
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < _list.Count; i++)
         {
-            if (list[i] == null)
+            if (_list[i] == default(T))
             {
                 unusedIndex = i;
                 break;
@@ -28,45 +29,45 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class
         int resultIndex;
         if (unusedIndex != -1)
         {
-            list[unusedIndex] = result;
+            _list[unusedIndex] = result;
             resultIndex = unusedIndex;
         }
         else
         {
-            list.Add(result);
-            resultIndex = list.Count - 1;
+            _list.Add(result);
+            resultIndex = _list.Count - 1;
         }
         
-        recNoIndexes.Add(nextRecNo, resultIndex);
+        _idIndexes.Add(nextId, resultIndex);
         
         return result;
     }
 
-    protected void Delete(int recNo)
+    protected void Delete(int id)
     {
-        if (!recNoIndexes.ContainsKey(recNo))
+        if (!_idIndexes.ContainsKey(id))
             return;
 
-        int index = recNoIndexes[recNo];
-        list[index] = default(T);
-        recNoIndexes.Remove(recNo);
+        int index = _idIndexes[id];
+        _list[index] = default(T);
+        _idIndexes.Remove(id);
     }
 
-    public virtual T this[int recNo] => recNoIndexes.ContainsKey(recNo) ? list[recNoIndexes[recNo]] : default(T);
+    public virtual T this[int id] => _idIndexes.ContainsKey(id) ? _list[_idIndexes[id]] : default(T);
 
-    public virtual bool IsDeleted(int recNo)
+    public virtual bool IsDeleted(int id)
     {
-        return !recNoIndexes.ContainsKey(recNo);
+        return !_idIndexes.ContainsKey(id);
     }
 
     public IEnumerator<T> GetEnumerator()
     {
-        List<int> keys = recNoIndexes.Keys.ToList();
+        List<int> keys = _idIndexes.Keys.ToList();
         for (int i = 0; i < keys.Count; i++)
         {
             if (!IsDeleted(keys[i]))
             {
-                yield return list[recNoIndexes[keys[i]]];
+                yield return _list[_idIndexes[keys[i]]];
             }
         }
     }
@@ -78,11 +79,11 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class
 
     public IEnumerable<T> EnumerateRandom()
     {
-        List<int> keys = recNoIndexes.Keys.ToList();
+        List<int> keys = _idIndexes.Keys.ToList();
         int keyIndex = Misc.Random(keys.Count);
         for (int i = 0; i < keys.Count; i++)
         {
-            yield return list[recNoIndexes[keys[keyIndex]]];
+            yield return _list[_idIndexes[keys[keyIndex]]];
 
             keyIndex++;
             if (keyIndex == keys.Count)
@@ -90,14 +91,14 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class
         }
     }
 
-    public IEnumerable<int> EnumerateAll(int startRecNo, bool forward)
+    protected IEnumerable<int> EnumerateAll(int startId, bool forward)
     {
-        List<int> keys = recNoIndexes.Keys.ToList();
+        List<int> keys = _idIndexes.Keys.ToList();
         
         int startIndex = -1;
         for (int i = 0; i < keys.Count; i++)
         {
-            if (keys[i] == startRecNo)
+            if (keys[i] == startId)
             {
                 startIndex = i;
             }
@@ -109,23 +110,20 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class
         int index = startIndex;
         for (int i = 0; i < keys.Count; i++)
         {
+            yield return keys[index];
+
             if (forward)
             {
+                index++;
                 if (index == keys.Count)
                     index = 0;
             }
             else
             {
+                index--;
                 if (index == -1)
                     index = keys.Count - 1;
             }
-
-            yield return keys[index];
-
-            if (forward)
-                index++;
-            else
-                index--;
         }
     }
 }

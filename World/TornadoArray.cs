@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class TornadoArray : SpriteArray
 {
-    protected override Tornado CreateNewObject(int objectId)
+    protected override Tornado CreateNewObject(int objectType)
     {
         return new Tornado();
     }

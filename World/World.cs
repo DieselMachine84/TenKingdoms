@@ -92,7 +92,7 @@ public class World
 
 		//--- if the selected one is a town ----//
 
-		if (TownArray.selected_recno != 0)
+		if (TownArray.SelectedTownId != 0)
 		{
 			TownArray.DisplayNext(seekDir, sameNation);
 		}

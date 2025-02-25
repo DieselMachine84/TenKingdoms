@@ -32,15 +32,15 @@ public class Rebel
     {
     }
 
-    public void Init(int unitRecno, int hostileNationRecno, int actionMode, int actionPara)
+    public void Init(Unit unit, int hostileNationRecno, int actionMode, int actionPara)
     {
-        leader_unit_recno = unitRecno;
+        leader_unit_recno = unit.sprite_recno;
         action_mode = actionMode;
         action_para = actionPara;
         mobile_rebel_count = 1;
         set_hostile_nation(hostileNationRecno);
 
-        UnitArray[unitRecno].set_mode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
+        unit.set_mode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
     }
 
     public void Deinit()
@@ -104,10 +104,8 @@ public class Rebel
         }
     }
 
-    public void join(int unitRecno)
+    public void join(Unit unit)
     {
-        Unit unit = UnitArray[unitRecno];
-
         unit.set_mode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
 
         mobile_rebel_count++;

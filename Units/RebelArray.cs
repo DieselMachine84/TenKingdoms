@@ -7,12 +7,12 @@ public class RebelArray : DynArray<Rebel>
     private UnitArray UnitArray => Sys.Instance.UnitArray;
     private TownArray TownArray => Sys.Instance.TownArray;
 
-    protected override Rebel CreateNewObject(int objectId)
+    protected override Rebel CreateNewObject(int objectType)
     {
         return new Rebel();
     }
 
-    public Rebel AddRebel(int unitRecno, int hostileNationRecno, int actionMode = Rebel.REBEL_IDLE, int actionPara = 0)
+    public Rebel AddRebel(Unit rebelUnit, int hostileNationRecno, int actionMode = Rebel.REBEL_IDLE, int actionPara = 0)
     {
         //------------------------------------------//
         //	See if there are a rebel group nearby
@@ -24,7 +24,7 @@ public class RebelArray : DynArray<Rebel>
         {
             if (rebel.action_mode == actionMode && rebel.action_para == actionPara)
             {
-                rebel.join(unitRecno); // join the rebel group
+                rebel.join(rebelUnit); // join the rebel group
                 return rebel;
             }
         }
@@ -32,9 +32,9 @@ public class RebelArray : DynArray<Rebel>
         //-------- create a new rebel group ---------//
 
         Rebel newRebel = CreateNew();
-        newRebel.rebel_recno = nextRecNo;
-        nextRecNo++;
-        newRebel.Init(unitRecno, hostileNationRecno, actionMode, actionPara);
+        newRebel.rebel_recno = nextId;
+        nextId++;
+        newRebel.Init(rebelUnit, hostileNationRecno, actionMode, actionPara);
 
         return newRebel;
     }

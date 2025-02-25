@@ -14,9 +14,9 @@ public class BulletArray : SpriteArray
 	{
 	}
 
-	protected override Sprite CreateNewObject(int objectId)
+	protected override Sprite CreateNewObject(int objectType)
 	{
-		SpriteInfo spriteInfo = SpriteRes[objectId];
+		SpriteInfo spriteInfo = SpriteRes[objectType];
 
 		switch (spriteInfo.sprite_sub_type)
 		{

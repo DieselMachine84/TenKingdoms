@@ -76,7 +76,7 @@ public class NationArray : DynArray<Nation>
 		nation_power_color_array[GameConstants.MAX_NATION + 1] = Colors.VGA_GRAY + 10;
 	}
 
-	protected override Nation CreateNewObject(int objectId)
+	protected override Nation CreateNewObject(int objectType)
 	{
 		return new Nation();
 	}
@@ -99,9 +99,9 @@ public class NationArray : DynArray<Nation>
 			}
 		}
 
-		nextRecNo = freeRecno;
+		nextId = freeRecno;
 		Nation newNation = CreateNew();
-		newNation.nation_recno = nextRecNo;
+		newNation.nation_recno = nextId;
 
 		return newNation;
 	}
@@ -137,7 +137,7 @@ public class NationArray : DynArray<Nation>
 		update_statistic(); // as max_overall_nation_recno and others may be pointing to the deleted nation
 	}
 
-	public int new_nation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
+	public Nation new_nation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
 	{
 		Nation nation = AddNation();
 
@@ -175,7 +175,7 @@ public class NationArray : DynArray<Nation>
 
 		update_statistic();
 
-		return nation.nation_recno;
+		return nation;
 	}
 
 	public bool can_form_new_ai_nation()

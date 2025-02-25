@@ -15,7 +15,7 @@ public class SpyArray : DynArray<Spy>
     {
     }
 
-    protected override Spy CreateNewObject(int objectId)
+    protected override Spy CreateNewObject(int objectType)
     {
         return new Spy();
     }
@@ -31,8 +31,8 @@ public class SpyArray : DynArray<Spy>
     public Spy AddSpy(int unitRecno, int spySkill)
     {
         Spy spy = CreateNew();
-        spy.spy_recno = nextRecNo;
-        nextRecNo++;
+        spy.spy_recno = nextId;
+        nextId++;
         spy.Init(unitRecno, spySkill);
 
         return spy;

@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public class EffectArray : SpriteArray
 {
-    protected override Effect CreateNewObject(int objectId)
+    protected override Effect CreateNewObject(int objectType)
     {
         return new Effect();
     }

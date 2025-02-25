@@ -6906,12 +6906,6 @@ public class Unit : Sprite
 		//return;
 		//}
 
-		//---- increase the wandering count when a unit is disbanded ----//
-
-		// disbanding one resulted in two wandering units to make the effect more significant
-		if (race_id != 0)
-			TownArray.race_wander_pop_array[race_id - 1] += 2;
-
 		//--- if the unit is visible, call stop2() so if it has an AI action queue, that will be reset ---//
 
 		if (is_visible())

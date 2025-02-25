@@ -1,15 +1,14 @@
 using System;
-using System.Collections.Generic;
 
 namespace TenKingdoms;
 
 public class TownArray : DynArray<Town>
 {
 	// the town current being selected
-	public int selected_recno;
+	public int SelectedTownId { get; set; }
 
 	// no. of wandering people of each race. They are people for setting up independent towns later
-	public int[] race_wander_pop_array = new int[GameConstants.MAX_RACE];
+	private int[] _raceWandereres = new int[GameConstants.MAX_RACE];
 
 	private Config Config => Sys.Instance.Config;
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
@@ -24,18 +23,18 @@ public class TownArray : DynArray<Town>
 	{
 	}
 
-	protected override Town CreateNewObject(int objectId)
+	protected override Town CreateNewObject(int objectType)
 	{
 		return new Town();
 	}
 
-	public Town AddTown(int nationRecno, int raceId, int xLoc, int yLoc)
+	public Town AddTown(int nationId, int raceId, int locX, int locY)
 	{
 		Town town = CreateNew();
-		town.Init(nextRecNo, nationRecno, raceId, xLoc, yLoc);
-		nextRecNo++;
+		town.Init(nextId, nationId, raceId, locX, locY);
+		nextId++;
 
-		NationArray.update_statistic(); // update largest_town_recno
+		NationArray.update_statistic();
 
 		return town;
 	}
@@ -96,6 +95,28 @@ public class TownArray : DynArray<Town>
 			ThinkNewIndependentTown();
 	}
 
+	public void DistributeDemand()
+	{
+		//--- reset market place demand ----//
+
+		foreach (Firm firm in FirmArray)
+		{
+			if (firm.firm_id == Firm.FIRM_MARKET)
+			{
+				FirmMarket firmMarket = (FirmMarket)firm;
+				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+				{
+					firmMarket.market_goods_array[i].month_demand = 0.0;
+				}
+			}
+		}
+
+		foreach (Town town in this)
+		{
+			town.DistributeDemand();
+		}
+	}
+	
 	private void ThinkNewIndependentTown()
 	{
 		if (!Config.new_independent_town_emerge)
@@ -116,11 +137,12 @@ public class TownArray : DynArray<Town>
 				independentTownCount++;
 		}
 
+		//TODO this constant should depend on the map size
 		if (independentTownCount >= 10) // only when the no. of independent town is less than 10
 			return;
 
 		//--- if the total population of all nations combined > 1000, then no new independent town will emerge ---//
-
+		//TODO this constant should depend on the map size
 		if (allTotalPop > ConfigAdv.town_ai_emerge_town_pop_limit)
 			return;
 
@@ -131,7 +153,7 @@ public class TownArray : DynArray<Town>
 		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
 		{
 			raceId = ConfigAdv.race_random_list[i];
-			race_wander_pop_array[raceId - 1] += 2 + Misc.Random(5);
+			_raceWandereres[raceId - 1] += 2 + Misc.Random(5);
 		}
 
 		//----- check if there are enough wanderers to set up a new town ---//
@@ -144,7 +166,7 @@ public class TownArray : DynArray<Town>
 			if (++raceId > GameConstants.MAX_RACE)
 				raceId = 1;
 
-			if (race_wander_pop_array[raceId - 1] >= 10) // one of the race must have at least 10 people
+			if (_raceWandereres[raceId - 1] >= 10) // one of the race must have at least 10 people
 			{
 				hasWanderers = true;
 				break;
@@ -169,15 +191,14 @@ public class TownArray : DynArray<Town>
 
 		while (true)
 		{
-			int addPop = race_wander_pop_array[raceId - 1];
+			int addPop = _raceWandereres[raceId - 1];
 			addPop = Math.Min(maxTownPop - newTown.Population, addPop);
 
 			int townResistance = IndependentTownResistance();
 
-			// 0-the add pop do not have jobs, 1-first init
 			newTown.InitPopulation(raceId, addPop, townResistance, false, true);
 
-			race_wander_pop_array[raceId - 1] -= addPop;
+			_raceWandereres[raceId - 1] -= addPop;
 
 			if (newTown.Population >= maxTownPop)
 				break;
@@ -192,7 +213,7 @@ public class TownArray : DynArray<Town>
 				if (++raceId > GameConstants.MAX_RACE)
 					raceId = 1;
 
-				if (race_wander_pop_array[raceId - 1] >= 5)
+				if (_raceWandereres[raceId - 1] >= 5)
 				{
 					hasWanderers = true;
 					break;
@@ -202,8 +223,6 @@ public class TownArray : DynArray<Town>
 			if (!hasWanderers) // no suitable race
 				break;
 		}
-
-		//---------- set town layout -----------//
 
 		newTown.AutoSetLayout();
 	}
@@ -228,7 +247,6 @@ public class TownArray : DynArray<Town>
 	
 	public bool ThinkTownLoc(int maxTries, out int xLoc, out int yLoc)
 	{
-		const int MIN_INTER_TOWN_DISTANCE = 16;
 		const int BUILD_TOWN_LOC_WIDTH = 16;
 		const int BUILD_TOWN_LOC_HEIGHT = 16;
 
@@ -247,7 +265,6 @@ public class TownArray : DynArray<Town>
 
 			for (int y = yLoc; y < yLoc + BUILD_TOWN_LOC_HEIGHT; y++)
 			{
-
 				for (int x = xLoc; x < xLoc + BUILD_TOWN_LOC_WIDTH; x++)
 				{
 					Location location = World.get_loc(x, y);
@@ -267,7 +284,7 @@ public class TownArray : DynArray<Town>
 			foreach (Town town in this)
 			{
 				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-					    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < MIN_INTER_TOWN_DISTANCE)
+					    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < InternalConstants.MIN_INTER_TOWN_DISTANCE)
 				{
 					canBuildFlag = false;
 					break;
@@ -278,6 +295,7 @@ public class TownArray : DynArray<Town>
 				continue;
 
 			//-------- check if it's too close to monster firms --------//
+			//TODO this code actually checks all firms
 
 			foreach (Firm firm in FirmArray)
 			{
@@ -292,109 +310,73 @@ public class TownArray : DynArray<Town>
 			if (!canBuildFlag) // if it's too close to monster firms
 				continue;
 
-			//----------------------------------------//
-
 			return true;
 		}
 
 		return false;
 	}
 
-	public bool Settle(int unitRecno, int xLoc, int yLoc)
+	public bool Settle(int unitId, int xLoc, int yLoc)
 	{
-		if (!World.can_build_town(xLoc, yLoc, unitRecno))
+		if (!World.can_build_town(xLoc, yLoc, unitId))
 			return false;
 
-		//--------- get the nearest town town ------------//
+		Unit unit = UnitArray[unitId];
 
-		Unit unit = UnitArray[unitRecno];
-
-		int nationRecno = unit.nation_recno;
+		int nationId = unit.nation_recno;
 
 		//----- it's far enough to form another town --------//
 
-		Town town = AddTown(nationRecno, unit.race_id, xLoc, yLoc);
+		Town town = AddTown(nationId, unit.race_id, xLoc, yLoc);
 
 		//----------------------------------------------------//
 		// if the settle unit is standing in the town area
-		// cargo_recno of that location is unchanged in town_array.add_town
+		// cargoId of that location is unchanged in AddTown()
 		// so update the location now
 		//----------------------------------------------------//
 
-		int uXLoc = unit.next_x_loc();
-		int uYLoc = unit.next_y_loc();
-		Location location = World.get_loc(uXLoc, uYLoc);
+		int unitLocX = unit.next_x_loc();
+		int unitLocY = unit.next_y_loc();
+		Location location = World.get_loc(unitLocX, unitLocY);
 
 		town.AssignUnit(unit);
 
-		if (uXLoc >= town.LocX1 && uXLoc <= town.LocX2 && uYLoc >= town.LocY1 && uYLoc <= town.LocY2)
+		if (unitLocX >= town.LocX1 && unitLocX <= town.LocX2 && unitLocY >= town.LocY1 && unitLocY <= town.LocY2)
 			location.set_town(town.TownId);
 
 		town.UpdateTargetLoyalty();
 
-		//--------- hide the unit from the map ----------//
-
 		return true;
 	}
 
-	public void DistributeDemand()
-	{
-		//--- reset market place demand ----//
-
-		foreach (Firm firm in FirmArray)
-		{
-			if (firm.firm_id == Firm.FIRM_MARKET)
-			{
-				FirmMarket firmMarket = (FirmMarket)firm;
-				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-				{
-					firmMarket.market_goods_array[i].month_demand = 0.0;
-				}
-			}
-		}
-
-		//-------- distribute demand -------//
-
-		foreach (Town town in this)
-		{
-			town.DistributeDemand();
-		}
-	}
-
-	public void StopAttackNation(int nationRecno)
+	public void StopAttackNation(int nationId)
 	{
 		foreach (Town town in this)
 		{
-			town.ResetHostileNation(nationRecno);
+			town.ResetHostileNation(nationId);
 		}
 	}
 
 	public void DisplayNext(int seekDir, bool sameNation)
 	{
-		if (selected_recno == 0)
+		if (SelectedTownId == 0)
 			return;
 
-		int nationRecno = this[selected_recno].NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(selected_recno, true) : EnumerateAll(selected_recno, false);
+		int nationId = this[SelectedTownId].NationId;
+		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedTownId, true) : EnumerateAll(SelectedTownId, false);
 
-		foreach (int recNo in enumerator)
+		foreach (int townId in enumerator)
 		{
-			Town town = this[recNo];
+			Town town = this[townId];
 
-			//-------- if are of the same nation --------//
-
-			if (sameNation && town.NationId != nationRecno)
+			if (sameNation && town.NationId != nationId)
 				continue;
-
-			//--- check if the location of this town has been explored ---//
 
 			if (!World.get_loc(town.LocCenterX, town.LocCenterY).explored())
 				continue;
 
-			//---------------------------------//
-
 			Power.reset_selection();
-			selected_recno = town.TownId;
+			SelectedTownId = town.TownId;
 
 			World.go_loc(town.LocCenterX, town.LocCenterY);
 			return;
