@@ -24,6 +24,637 @@
       <None Remove="Resource\**" />
       <None Remove="Sprite\**" />
       <None Remove="Images\**" />
+      <None Update="Assets\Resource\A_WAVE1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\A_WAVE2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\CURSOR.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\EXPLMASK.BIN">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\EXPREMAP.BIN">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_BARD.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_CASA.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_CASA_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_CASA_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_CASA_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_HITP.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_MID.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_MID_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_MID_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_MID_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_NEWS.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_NEWS_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_NEWS_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_NEWS_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SAN.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SAN_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SAN_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SAN_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SMAL.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SMAL_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SMAL_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_SMAL_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_STD.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_STD_88592.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_STD_88593.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\FNT_STD_88595.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\HELP.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\HILL1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\HILL2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\HILL3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_BUTTON.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_CURSOR.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_ENCYC.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_FIRM.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_FIRMDI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_HILL1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_HILL2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_HILL3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_ICON.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_IF.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_MENU.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_MENU2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_PLANT1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_PLANT2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_PLANT3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_RACE.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_RAW.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_ROCK1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_ROCK2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_ROCK3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_SNOW.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_SPICT.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TECH.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERA1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERA2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERA3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERN1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERN2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TERN3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TOWN.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TPICT1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TPICT2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_TPICT3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITGI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITKI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITLI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITSI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITTI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_UNITUI.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\I_WALL.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\LOCALE.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PAL_ENC.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PAL_MENU.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PAL_STD.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PAL_WIN.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANT1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANT2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANT3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANTBM1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANTBM2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\PLANTBM3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCK1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCK2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCK3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKANI1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKANI2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKANI3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBLK1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBLK2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBLK3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBMP1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBMP2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\ROCKBMP3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\STD.SET">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERANM1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERANM2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERANM3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERRAIN1.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERRAIN2.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERRAIN3.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TERSUB.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TUT_INTR.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TUT_LIST.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TUT_PICT.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Resource\TUT_TEXT.RES">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\BAATEZU.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\BALLISTA.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CANBALL.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CANBALLA.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CANBALLS.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CANNON.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CANSMOKE.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CARAVAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CARAVE_S.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CARAVEL.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATAPULT.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATFIRE.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATFIREA.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATFIRES.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATSTONA.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATSTONE.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CATSTONS.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CH_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CHDRAGON.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\CHINESE.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\DR_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\DRAGON.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\EG_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\EG_GOD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\EG_POWAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\EGYPTIAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\EXPCART.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\F_BALLIS.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FB_ARRA0.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FB_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FB_ARRS0.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FCATAPUL.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FIREKIN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FL_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FLAMETHR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\FPERSIAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GALLEO_S.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GALLEON.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GC_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GE_STAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GI_STAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GIANTET.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GITH.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GJ_STAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GNOLL.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GOBLIN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GP_STAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GREEK.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GREMJERM.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\GZ_STAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\HEADLESS.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\HITSPAR2.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\HITSPARK.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\HOBGLOB.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\IN_GOD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\INDIAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\JA_GOD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\JA_POWER.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\JAPANESE.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\KUKULCAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\LIZARD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\LYW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\MAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\MAYA.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\MOLDMAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\NO_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\NORMAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\PE_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\PE_POWAR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\PEHEALER.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\PERSIAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\PHEONIX.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\RM_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\ROCKMAN.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\SKELETON.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\STEAM.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARR00.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARR01.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARR02.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRA0.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRA1.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRA2.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRS0.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRS1.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TC_ARRS2.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TORNADO.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TRANSP_S.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\TRANSPOR.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\V_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\V_SPLASH.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\VESSEL.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\VESSEL_S.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\VI_GOD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\VIKING.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\ZU_ARROW.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\ZU_GOD.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\Sprite\ZULU.SPR">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Assets\Resource\" />
+      <Folder Include="Assets\Sprite\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Hexa.NET.SDL2.Image" Version="1.0.0" />
+      <PackageReference Include="ppy.SDL2-CS" Version="1.0.741-alpha" />
     </ItemGroup>
 
 </Project>

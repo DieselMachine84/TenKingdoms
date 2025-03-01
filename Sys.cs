@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class Sys
 {
-    public const string GameDataFolder = "/home/diesel/Projects/TenKingdoms";
+    public const string GameDataFolder = "Assets";
     
     public static Sys Instance { get; set; }
     public long FrameNumber { get; private set; }
