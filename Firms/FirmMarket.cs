@@ -203,8 +203,6 @@ public class FirmMarket : Firm
 
 	public int hire_caravan(int remoteAction)
 	{
-		return 0;
-		
 		if (can_hire_caravan() == 0)
 			return 0;
 

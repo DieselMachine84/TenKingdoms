@@ -58,6 +58,7 @@ public static class GameConstants
     public const int DEFAULT_MINE_MAX_STOCK_QTY = 500;
     public const int DEFAULT_FACTORY_MAX_RAW_STOCK_QTY = 500;
     public const int DEFAULT_FACTORY_MAX_STOCK_QTY = 500;
+    public const int MIN_FIRM_STOCK_QTY = 100;
     public const int MIN_FACTORY_IMPORT_STOCK_QTY = 20;
     public const int PROCESS_GOODS_INTERVAL = 3; // Process goods in mines, factories and market places once 3 days
     public const int MAX_MARKET_GOODS = 3;
@@ -101,6 +102,7 @@ public static class GameConstants
     public const int EXPLODE_DAMAGE = 50;
     public const int EFFECTIVE_LEADING_DISTANCE = 10;
     public const int MAX_NATION_CONTRIBUTION = 1000000;
+    public const int MAX_CARAVAN_CARRY_QTY = 100;	// Maximum qty of goods a caravan can carry
 
     //Raw resource
     public const int MAX_RAW = 3;
