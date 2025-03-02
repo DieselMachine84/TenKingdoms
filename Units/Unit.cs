@@ -190,11 +190,9 @@ public class Unit : Sprite
 	//------- path seeking vars --------//
 
 	public List<int> PathNodes { get; } = new List<int>();
-	public int result_node_recno;
-	public int result_path_dist;
-
-	//----------- way points -----------//
-	private List<int> wayPoints = new List<int>();
+	public int PathNodeIndex { get; private set; } = -1;
+	private int _pathNodeDistance;
+	private readonly List<int> wayPoints = new List<int>();
 
 	//--------- AI parameters ------------//
 
@@ -430,10 +428,6 @@ public class Unit : Sprite
 
 		range_attack_x_loc = -1;
 		range_attack_y_loc = -1;
-
-		//------- initialize path seek vars -------//
-
-		result_node_recno = result_path_dist = 0;
 
 		//------- initialize way point vars -------//
 		wayPoints.Clear();
@@ -3238,7 +3232,7 @@ public class Unit : Sprite
 					//----------------------------------------------------------------------------//
 					// calculate the result_path_dist as the unit move from one tile to another
 					//----------------------------------------------------------------------------//
-					result_path_dist += para;
+					_pathNodeDistance += para;
 				}
 
 				next_x = newNextX;
@@ -5997,7 +5991,7 @@ public class Unit : Sprite
 			//--------------------------------------------------------------//
 			// reduce the result_path_dist by 1
 			//--------------------------------------------------------------//
-			result_path_dist--;
+			_pathNodeDistance--;
 		}
 
 		//-- set action if the burning location can be reached, otherwise just move nearby --//
@@ -8386,7 +8380,7 @@ public class Unit : Sprite
 		// i.e. sprite_info.loc_width == sprite_info.loc_height
 		//--------------------------------------------------------------------------//
 
-		result_node_recno = 0;
+		reset_path();
 
 		SeekPath.SetNationId(nation_recno);
 
@@ -8395,8 +8389,7 @@ public class Unit : Sprite
 		int seekResult = SeekPath.Seek(startLocX, startLocY, destLocX, destLocY, unit_group_id,
 			mobile_type, searchMode, miscNo, numOfPaths);
 
-		PathNodes.Clear();
-		PathNodes.AddRange(SeekPath.GetResult(out result_path_dist));
+		PathNodes.AddRange(SeekPath.GetResult(out _pathNodeDistance));
 		SeekPath.SetSubMode(); // reset sub_mode searching
 
 		if (seekResult == SeekPath.PATH_IMPOSSIBLE)
@@ -8440,7 +8433,7 @@ public class Unit : Sprite
 			int lastNode = PathNodes[^1];
 			World.GetLocXAndLocY(lastNode, out move_to_x_loc, out move_to_y_loc);
 
-			result_node_recno = 1; // skip the first node which is the current location
+			PathNodeIndex = 0;
 			// check if the unit is moving right now, wait until it reaches the nearest complete tile.
 			if (cur_action != SPRITE_MOVE)
 			{
@@ -8717,7 +8710,7 @@ public class Unit : Sprite
 				{
 					PathNodes.RemoveAt(PathNodes.Count - 1);
 				}
-				result_path_dist = pathDist;
+				_pathNodeDistance = pathDist;
 				move_to_x_loc = checkXLoc;
 				move_to_y_loc = checkYLoc;
 				break;
@@ -8948,7 +8941,7 @@ public class Unit : Sprite
 			move_to_x_loc = preX;
 			move_to_y_loc = preY;
 
-			result_path_dist -= (removedStep) * move_step_magn();
+			_pathNodeDistance -= (removedStep) * move_step_magn();
 		}
 
 		return found;
@@ -8993,9 +8986,9 @@ public class Unit : Sprite
 			{
 				unit.PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
 			}
-			for (int i = 0; i < PathNodes.Count - result_node_recno + 1; i++)
+			for (int i = PathNodeIndex; i < PathNodes.Count; i++)
 			{
-				unit.PathNodes.Add(PathNodes[result_node_recno - 1 + i]);
+				unit.PathNodes.Add(PathNodes[i]);
 			}
 
 			//--------------- set unit action ---------------//
@@ -9019,8 +9012,8 @@ public class Unit : Sprite
 			}
 
 			//----------------- set unit movement parameters -----------------//
-			unit.result_node_recno = 1;
-			unit.result_path_dist = result_path_dist - moveScale;
+			unit.PathNodeIndex = 0;
+			unit._pathNodeDistance = _pathNodeDistance - moveScale;
 			unit.move_to_x_loc = move_to_x_loc;
 			unit.move_to_y_loc = move_to_y_loc;
 			unit.next_move();
@@ -9033,13 +9026,13 @@ public class Unit : Sprite
 		if (next_x == unit.cur_x && next_y == unit.cur_y)
 		{
 			reset_path();
-			result_path_dist = 0;
+			_pathNodeDistance = 0;
 		}
 		else
 		{
 			terminate_move();
 			shouldWait++;
-			result_path_dist = moveScale;
+			_pathNodeDistance = moveScale;
 		}
 
 		go_x = unit.cur_x;
@@ -9057,7 +9050,8 @@ public class Unit : Sprite
 		PathNodes.Clear();
 		PathNodes.Add(World.GetMatrixIndex(curX, curY));
 		PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
-		result_node_recno = 2;
+		//TODO check this
+		PathNodeIndex = 1;
 		if (shouldWait != 0)
 			set_wait(); // wait for the blocking unit to move first
 	}
@@ -9455,7 +9449,7 @@ public class Unit : Sprite
 
 	private bool on_my_path(int checkXLoc, int checkYLoc)
 	{
-		for (int i = result_node_recno - 1; i < PathNodes.Count; i++)
+		for (int i = PathNodeIndex; i < PathNodes.Count; i++)
 		{
 			int curNode = PathNodes[i - 1];
 			World.GetLocXAndLocY(curNode, out int curNodeLocX, out int curNodeLocY);
@@ -9939,7 +9933,7 @@ public class Unit : Sprite
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------ no suitable location to attack target by bullet, move to target --------//
-					if (PathNodes.Count == 0 || result_path_dist == 0)
+					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
 						if (move_try_to_range_attack(targetUnit) == 0)
 							return; // can't reach a location to attack target
 				}
@@ -9988,10 +9982,10 @@ public class Unit : Sprite
 				// for close attack, the unit unable to attack the target if
 				// it is not in the target surrounding
 				//------------------------------------------------------------//
-				if (result_path_dist > attack_range)
+				if (_pathNodeDistance > attack_range)
 					return detect_surround_target();
 			}
-			else if (result_path_dist != 0 && cur_action != SPRITE_TURN)
+			else if (_pathNodeDistance != 0 && cur_action != SPRITE_TURN)
 			{
 				if (detect_surround_target())
 					return true; // detect surrounding target while walking
@@ -10022,7 +10016,7 @@ public class Unit : Sprite
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------- no suitable location, move to target ---------//
-					if (PathNodes.Count == 0 || result_path_dist == 0)
+					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
 						if (move_try_to_range_attack(targetUnit) == 0)
 							return false; // can't reach a location to attack target
 
@@ -10099,29 +10093,29 @@ public class Unit : Sprite
 
 	private bool update_attack_path_dist()
 	{
-		if (result_path_dist <= 6) //1-6
+		if (_pathNodeDistance <= 6) //1-6
 		{
 			return true;
 		}
-		else if (result_path_dist <= 10) // 8, 10
+		else if (_pathNodeDistance <= 10) // 8, 10
 		{
-			return ((result_path_dist - 6) % 2) == 0;
+			return ((_pathNodeDistance - 6) % 2) == 0;
 		}
-		else if (result_path_dist <= 20) // 15, 20
+		else if (_pathNodeDistance <= 20) // 15, 20
 		{
-			return ((result_path_dist - 10) % 5) == 0;
+			return ((_pathNodeDistance - 10) % 5) == 0;
 		}
-		else if (result_path_dist <= 60) // 28, 36, 44, 52, 60
+		else if (_pathNodeDistance <= 60) // 28, 36, 44, 52, 60
 		{
-			return ((result_path_dist - 20) % 8) == 0;
+			return ((_pathNodeDistance - 20) % 8) == 0;
 		}
-		else if (result_path_dist <= 90) // 75, 90
+		else if (_pathNodeDistance <= 90) // 75, 90
 		{
-			return ((result_path_dist - 60) % 15) == 0;
+			return ((_pathNodeDistance - 60) % 15) == 0;
 		}
 		else // 110, 130, 150, etc
 		{
-			return ((result_path_dist - 90) % 20) == 0;
+			return ((_pathNodeDistance - 90) % 20) == 0;
 		}
 	}
 
@@ -12054,7 +12048,7 @@ public class Unit : Sprite
 						{
 							PathNodes.RemoveAt(PathNodes.Count - 1);
 						}
-						result_path_dist = pathDist;
+						_pathNodeDistance = pathDist;
 					}
 					else
 					{
@@ -12076,7 +12070,7 @@ public class Unit : Sprite
 						{
 							PathNodes.RemoveAt(PathNodes.Count - 1);
 						}
-						result_path_dist = pathDist;
+						_pathNodeDistance = pathDist;
 					}
 
 					move_to_x_loc = preXLoc;
@@ -12508,7 +12502,7 @@ public class Unit : Sprite
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (result_path_dist > attack_range)
+				if (_pathNodeDistance > attack_range)
 					return;
 			}
 
@@ -12814,7 +12808,7 @@ public class Unit : Sprite
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (result_path_dist > attack_range)
+				if (_pathNodeDistance > attack_range)
 					return;
 			}
 
@@ -12973,7 +12967,7 @@ public class Unit : Sprite
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (result_path_dist > attack_range)
+				if (_pathNodeDistance > attack_range)
 					return;
 			}
 
@@ -13529,13 +13523,14 @@ public class Unit : Sprite
 
 	protected void next_move()
 	{
-		if (PathNodes.Count  == 0 || result_node_recno == 0)
+		if (PathNodes.Count == 0)
 			return;
 
-		if (++result_node_recno > PathNodes.Count)
+		PathNodeIndex++;
+		if (PathNodeIndex == PathNodes.Count)
 		{
 			//------------ all nodes are visited --------------//
-			PathNodes.Clear();
+			reset_path();
 			set_idle();
 
 			if (action_mode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
@@ -13553,7 +13548,7 @@ public class Unit : Sprite
 
 		//---- order the unit to move to the next checkpoint following the path ----//
 
-		int resultNode = PathNodes[result_node_recno - 1];
+		int resultNode = PathNodes[PathNodeIndex];
 		World.GetLocXAndLocY(resultNode, out int resultNodeLocX, out int resultNodeLocY);
 
 		sprite_move(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
@@ -13576,7 +13571,8 @@ public class Unit : Sprite
 	protected void reset_path()
 	{
 		PathNodes.Clear();
-		result_path_dist = result_node_recno = 0;
+		PathNodeIndex = -1;
+		_pathNodeDistance = 0;
 	}
 
 	protected void king_die()
