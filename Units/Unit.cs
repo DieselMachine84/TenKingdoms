@@ -189,13 +189,12 @@ public class Unit : Sprite
 
 	//------- path seeking vars --------//
 
-	public ResultNode[] result_node_array;
-	public int result_node_count;
+	public List<int> PathNodes { get; } = new List<int>();
 	public int result_node_recno;
 	public int result_path_dist;
 
 	//----------- way points -----------//
-	private List<ResultNode> wayPoints = new List<ResultNode>();
+	private List<int> wayPoints = new List<int>();
 
 	//--------- AI parameters ------------//
 
@@ -434,7 +433,7 @@ public class Unit : Sprite
 
 		//------- initialize path seek vars -------//
 
-		result_node_count = result_node_recno = result_path_dist = 0;
+		result_node_recno = result_path_dist = 0;
 
 		//------- initialize way point vars -------//
 		wayPoints.Clear();
@@ -2958,30 +2957,27 @@ public class Unit : Sprite
 
 		if (cur_x == go_x && cur_y == go_y)
 		{
-			if (result_node_array != null)
-			{
-				next_move();
-				if (cur_action != SPRITE_MOVE) // if next_move() is not successful, the movement has been stopped
-					return;
+			next_move();
+			if (cur_action != SPRITE_MOVE) // if next_move() is not successful, the movement has been stopped
+				return;
 
-				//---------------------------------------------------------------------------//
-				// If (1) the unit is blocked at cur_? == go_? and go_? != destination and 
-				//		(2) a new path is generated if calling the previous next_move(),
-				//	then cur_? still equal to go_?.
-				//
-				// The following Sprite::process_move() call will set the unit to SPRITE_IDLE 
-				// since cur_? == go_?. Thus, the unit terminates its move although it has not
-				// reached its destination.
-				//
-				// (note: if it has reached its destination, cur_? == go_? and cur_action =
-				//			 SPRITE_IDLE)
-				//
-				// if the unit is still moving and cur_? == go_?, call next_move() again to reset
-				// the go_?.
-				//---------------------------------------------------------------------------//
-				if (cur_action == SPRITE_MOVE && cur_x == go_x && cur_y == go_y)
-					next_move();
-			}
+			//---------------------------------------------------------------------------//
+			// If (1) the unit is blocked at cur_? == go_? and go_? != destination and 
+			//		(2) a new path is generated if calling the previous next_move(),
+			//	then cur_? still equal to go_?.
+			//
+			// The following Sprite::process_move() call will set the unit to SPRITE_IDLE 
+			// since cur_? == go_?. Thus, the unit terminates its move although it has not
+			// reached its destination.
+			//
+			// (note: if it has reached its destination, cur_? == go_? and cur_action =
+			//			 SPRITE_IDLE)
+			//
+			// if the unit is still moving and cur_? == go_?, call next_move() again to reset
+			// the go_?.
+			//---------------------------------------------------------------------------//
+			if (cur_action == SPRITE_MOVE && cur_x == go_x && cur_y == go_y)
+				next_move();
 		}
 
 		//--------- process the move, update sprite position ---------//
@@ -3519,8 +3515,8 @@ public class Unit : Sprite
 		//---------- reset way point array since new action is assigned --------//
 		if (wayPoints.Count > 0)
 		{
-			ResultNode node = wayPoints[0];
-			if (node.node_x != destX || node.node_y != destY)
+			World.GetLocXAndLocY(wayPoints[0], out var locX, out var locY);
+			if (locX != destX || locY != destY)
 				ResetWayPoints();
 		}
 
@@ -3563,7 +3559,7 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					if (result_node_array == null) // cannot move
+					if (PathNodes.Count == 0) // cannot move
 					{
 						if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 						{
@@ -3640,7 +3636,7 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					if (result_node_array == null) // cannot move
+					if (PathNodes.Count == 0) // cannot move
 					{
 						set_idle();
 					}
@@ -3713,7 +3709,7 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					if (result_node_array == null) // cannot move
+					if (PathNodes.Count == 0) // cannot move
 					{
 						set_idle();
 					}
@@ -3772,7 +3768,7 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					if (result_node_array == null) // cannot move
+					if (PathNodes.Count == 0) // cannot move
 					{
 						set_idle();
 					}
@@ -3830,7 +3826,7 @@ public class Unit : Sprite
 				if (cur_action != SPRITE_IDLE)
 				{
 					//-------- the old order is processing --------//
-					if (result_node_array == null) // cannot move
+					if (PathNodes.Count == 0) // cannot move
 					{
 						set_idle();
 					}
@@ -3870,13 +3866,13 @@ public class Unit : Sprite
 		if (!ConfigAdv.unit_allow_path_power_mode)
 		{
 			// cancel the selection
-			SeekPath.set_sub_mode();
+			SeekPath.SetSubMode();
 			return;
 		}
 
 		if (nation_recno == 0 || ignore_power_nation != 0)
 		{
-			SeekPath.set_sub_mode(); // always using normal mode for independent unit
+			SeekPath.SetSubMode(); // always using normal mode for independent unit
 			return;
 		}
 
@@ -3895,12 +3891,12 @@ public class Unit : Sprite
 
 		if (subModeOn) // true only when both start and end locations are passable for this nation
 		{
-			SeekPath.set_nation_passable(nation.relation_passable_array);
-			SeekPath.set_sub_mode(SeekPath.SEARCH_SUB_MODE_PASSABLE);
+			SeekPath.SetNationPassable(nation.relation_passable_array);
+			SeekPath.SetSubMode(SeekPath.SEARCH_SUB_MODE_PASSABLE);
 		}
 		else
 		{
-			SeekPath.set_sub_mode(); //----- normal sub mode, normal searching
+			SeekPath.SetSubMode(); // normal sub mode, normal searching
 		}
 	}
 
@@ -5941,58 +5937,61 @@ public class Unit : Sprite
 		}
 
 		//--------------------------------------------------------//
-		// edit the result path such that the unit can reach the
-		// burning location surrounding
+		// edit the result path such that the unit can reach the burning location surrounding
 		//--------------------------------------------------------//
-		if (result_node_array != null && result_node_count > 0)
+		if (PathNodes.Count > 0)
 		{
 			//--------------------------------------------------------//
-			// there should be at least two nodes, and should take at
-			// least two steps to the destination
+			// there should be at least two nodes, and should take at least two steps to the destination
 			//--------------------------------------------------------//
 
-			ResultNode lastNode1 = result_node_array[result_node_count - 1]; // the last node
-			ResultNode lastNode2 = result_node_array[result_node_count - 2]; // the node before the last node
+			int lastNode1 = PathNodes[^1]; // the last node
+			World.GetLocXAndLocY(lastNode1, out int lastNode1LocX, out int lastNode1LocY);
+			int lastNode2 = PathNodes[^2]; // the node before the last node
+			World.GetLocXAndLocY(lastNode2, out int lastNode2LocX, out int lastNode2LocY);
 
-			int vX = lastNode1.node_x - lastNode2.node_x; // get the vectors direction
-			int vY = lastNode1.node_y - lastNode2.node_y;
+			int vX = lastNode1LocX - lastNode2LocX; // get the vectors direction
+			int vY = lastNode1LocY - lastNode2LocY;
 			int vDirX = (vX != 0) ? vX / Math.Abs(vX) : 0;
 			int vDirY = (vY != 0) ? vY / Math.Abs(vY) : 0;
 
-			if (result_node_count > 2) // go_? should not be the burning location 
+			if (PathNodes.Count > 2) // go_? should not be the burning location 
 			{
 				if (Math.Abs(vX) > 1 || Math.Abs(vY) > 1)
 				{
-					lastNode1.node_x -= vDirX;
-					lastNode1.node_y -= vDirY;
+					lastNode1LocX -= vDirX;
+					lastNode1LocY -= vDirY;
+					PathNodes[^1] = World.GetMatrixIndex(lastNode1LocX, lastNode1LocY);
 
-					move_to_x_loc = lastNode1.node_x;
-					move_to_y_loc = lastNode1.node_y;
+					move_to_x_loc = lastNode1LocX;
+					move_to_y_loc = lastNode1LocY;
 				}
 				else // move only one step
 				{
-					result_node_count--; // remove a node
-					move_to_x_loc = lastNode2.node_x;
-					move_to_y_loc = lastNode2.node_y;
+					//TODO check
+					PathNodes.RemoveAt(PathNodes.Count - 1); // remove a node
+					move_to_x_loc = lastNode2LocX;
+					move_to_y_loc = lastNode2LocY;
 				}
 			}
 			else // go_? may be the burning location
 			{
-				lastNode1.node_x -= vDirX;
-				lastNode1.node_y -= vDirY;
+				lastNode1LocX -= vDirX;
+				lastNode1LocY -= vDirY;
+				PathNodes[^1] = World.GetMatrixIndex(lastNode1LocX, lastNode1LocY);
 
-				if (go_x >> InternalConstants.CellWidthShift == burnXLoc &&
-				    go_y >> InternalConstants.CellHeightShift == burnYLoc) // go_? is the burning location
+				if (go_x >> InternalConstants.CellWidthShift == burnXLoc && go_y >> InternalConstants.CellHeightShift == burnYLoc)
 				{
+					// go_? is the burning location
 					//--- edit parameters such that only moving to the nearby location to do the action ---//
 
-					go_x = lastNode1.node_x * InternalConstants.CellWidth;
-					go_y = lastNode1.node_y * InternalConstants.CellHeight;
+					go_x = lastNode1LocX * InternalConstants.CellWidth;
+					go_y = lastNode1LocY * InternalConstants.CellHeight;
 				}
-				//else the unit is still doing sthg else, no action here
+				//else the unit is still doing something else, no action here
 
-				move_to_x_loc = lastNode1.node_x;
-				move_to_y_loc = lastNode1.node_y;
+				move_to_x_loc = lastNode1LocX;
+				move_to_y_loc = lastNode1LocY;
 			}
 
 			//--------------------------------------------------------------//
@@ -6395,14 +6394,14 @@ public class Unit : Sprite
 		unitGod.cast_target_y = castYLoc;
 	}
 
-	public void AddWayPoint(int x, int y)
+	public void AddWayPoint(int locX, int locY)
 	{
 		if (wayPoints.Count > 1) // don't allow to remove the 1st node, since the unit is moving there
 		{
 			for (int i = wayPoints.Count - 1; i >= 0; i--)
 			{
-				ResultNode node = wayPoints[i];
-				if (node.node_x == x && node.node_y == y) // remove this node
+				World.GetLocXAndLocY(wayPoints[i], out int wayPointLocX, out int wayPointLocY);
+				if (wayPointLocX == locX && wayPointLocY == locY) // remove this node
 				{
 					wayPoints.RemoveAt(i);
 					return; // there should be one and only one node with the same value
@@ -6410,20 +6409,18 @@ public class Unit : Sprite
 			}
 		}
 
-		//-------------- add new node -----------------//
-		ResultNode newNode = new ResultNode(x, y);
-		wayPoints.Add(newNode);
+		wayPoints.Add(World.GetMatrixIndex(locX, locY));
 
 		if (wayPoints.Count == 1)
-			move_to(x, y);
+			move_to(locX, locY);
 	}
 
 	public void ResetWayPoints()
 	{
 		//------------------------------------------------------------------------------------//
-		// There are only two conditions to reset the way_point_array
+		// There are only two conditions to reset the wayPoints
 		// 1) action_mode2!=ACTION_MOVE in Unit::stop()
-		// 2) dest? != node_? in the first node of way_point_array in calling Unit::move_to()
+		// 2) dest? != node_? in the first node of wayPoints in calling Unit::move_to()
 		//------------------------------------------------------------------------------------//
 		wayPoints.Clear();
 	}
@@ -6433,16 +6430,16 @@ public class Unit : Sprite
 		int destX, destY;
 		if (wayPoints.Count > 1)
 		{
-			ResultNode node = wayPoints[1];
-			destX = node.node_x;
-			destY = node.node_y;
+			World.GetLocXAndLocY(wayPoints[1], out int wayPointLocX, out int wayPointLocY);
+			destX = wayPointLocX;
+			destY = wayPointLocY;
 			wayPoints.RemoveAt(1);
 		}
 		else // only one unprocessed node
 		{
-			ResultNode node = wayPoints[0];
-			destX = node.node_x;
-			destY = node.node_y;
+			World.GetLocXAndLocY(wayPoints[0], out int wayPointLocX, out int wayPointLocY);
+			destX = wayPointLocX;
+			destY = wayPointLocY;
 		}
 
 		move_to(destX, destY);
@@ -7523,14 +7520,13 @@ public class Unit : Sprite
 		if (!is_dir_correct())
 			return true; // cheating for turning the direction
 
-		Location loc;
 		int curXLoc = move_to_x_loc;
 		int curYLoc = move_to_y_loc;
+		Location location;
 
 		bool hasSearch = false;
 		bool returnFlag = false;
 
-		SeekPath.set_status(SeekPath.PATH_WAIT);
 		switch (action_mode2)
 		{
 			case UnitConstants.ACTION_STOP:
@@ -7557,8 +7553,8 @@ public class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_FIRM:
-				loc = World.get_loc(action_x_loc2, action_y_loc2);
-				if (action_para2 == 0 || !loc.is_firm())
+				location = World.get_loc(action_x_loc2, action_y_loc2);
+				if (action_para2 == 0 || !location.is_firm())
 					stop2(); // stop since target is already destroyed
 				else
 				{
@@ -7577,8 +7573,8 @@ public class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_TOWN:
-				loc = World.get_loc(action_x_loc2, action_y_loc2);
-				if (action_para2 == 0 || !loc.is_town())
+				location = World.get_loc(action_x_loc2, action_y_loc2);
+				if (action_para2 == 0 || !location.is_town())
 					stop2(); // stop since target is deleted
 				else
 				{
@@ -7595,8 +7591,8 @@ public class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_WALL:
-				loc = World.get_loc(action_x_loc2, action_y_loc2);
-				if (!loc.is_wall())
+				location = World.get_loc(action_x_loc2, action_y_loc2);
+				if (!location.is_wall())
 					stop2(); // stop since target doesn't exist
 				else
 				{
@@ -7737,7 +7733,7 @@ public class Unit : Sprite
 				break;
 		}
 
-		if (hasSearch && SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE && next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc)
+		if (hasSearch && SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE && next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc)
 		{
 			//TODO check
 			
@@ -7751,7 +7747,7 @@ public class Unit : Sprite
 		bool abort = false;
 		if (returnFlag)
 		{
-			if (curXLoc == move_to_x_loc && curYLoc == move_to_y_loc && SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
+			if (curXLoc == move_to_x_loc && curYLoc == move_to_y_loc && SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE)
 			{
 				//TODO check
 
@@ -8319,11 +8315,10 @@ public class Unit : Sprite
 	}
 
 	//------------ movement action -----------------//
-	private int search(int destXLoc, int destYLoc, int preserveAction = 0, int searchMode = 1, int miscNo = 0, int numOfPath = 1)
+	private int search(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPaths = 1)
 	{
-		if (destXLoc < 0 || destXLoc >= GameConstants.MapSize || destYLoc < 0 || destYLoc >= GameConstants.MapSize ||
-		    hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE ||
-		    searchMode <= 0 || searchMode > SeekPath.MAX_SEARCH_MODE_TYPE)
+		if (destLocX < 0 || destLocX >= GameConstants.MapSize || destLocY < 0 || destLocY >= GameConstants.MapSize ||
+		    hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 		{
 			//TODO check, this code should be never executed
 			stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
@@ -8337,7 +8332,7 @@ public class Unit : Sprite
 			switch (ship.extra_move_in_beach)
 			{
 				case UnitMarine.NO_EXTRA_MOVE:
-					result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
+					result = Searching(destLocX, destLocY, preserveAction, searchMode, miscNo, numOfPaths);
 					break;
 
 				case UnitMarine.EXTRA_MOVING_IN:
@@ -8351,46 +8346,30 @@ public class Unit : Sprite
 		}
 		else
 		{
-			result = searching(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
+			result = Searching(destLocX, destLocY, preserveAction, searchMode, miscNo, numOfPaths);
 		}
 
-		if (wayPoints.Count > 0 && result_node_array == null) // can move no more
+		if (wayPoints.Count > 0 && PathNodes.Count == 0) // can move no more
 			ResetWayPoints();
 
 		// 0 means extra_move_in_beach != UnitMarine.NO_EXTRA_MOVE
 		return result != 0 ? 1 : 0;
 	}
 
-	private static double avgTimes;
-	private static System.Collections.Generic.List<double> times = new System.Collections.Generic.List<double>();
-	
-	private int searching(int destXLoc, int destYLoc, int preserveAction, int searchMode, int miscNo, int numOfPath)
+	private int Searching(int destLocX, int destLocY, int preserveAction, int searchMode, int miscNo, int numOfPaths)
 	{
 		stop(preserveAction); // stop the unit as soon as possible
 
-		int startXLocLoc = next_x_loc(); // next location the sprite is moving towards
-		int startYLocLoc = next_y_loc();
+		int startLocX = next_x_loc(); // next location the sprite is moving towards
+		int startLocY = next_y_loc();
 
-		//---------------------------------------------------------------------------//
-		// adjust the destination for unit size
-		//---------------------------------------------------------------------------//
-		/*err_when(sprite_info.loc_width!=sprite_info.loc_height);
-		if(sprite_info.loc_width>1) // not size 1x1
-		{
-			destXLoc = move_to_x_loc = MIN(destXLoc, MAX_WORLD_X_LOC-sprite_info.loc_width);
-			destYLoc = move_to_y_loc = MIN(destYLoc, MAX_WORLD_Y_LOC-sprite_info.loc_height);
-		}
-		else
-		{*/
-		move_to_x_loc = destXLoc;
-		move_to_y_loc = destYLoc;
-		//}
+		move_to_x_loc = destLocX;
+		move_to_y_loc = destLocY;
 
 		//------------------------------------------------------------//
 		// fast checking for destination == current location
 		//------------------------------------------------------------//
-		//if(startXLocLoc==move_to_x_loc && startYLocLoc==move_to_y_loc) // already here
-		if (startXLocLoc == destXLoc && startYLocLoc == destYLoc) // already here
+		if (startLocX == destLocX && startLocY == destLocY) // already here
 		{
 			if (cur_x != next_x || cur_y != next_y)
 				set_move();
@@ -8402,24 +8381,23 @@ public class Unit : Sprite
 
 		//------------------------ find the shortest path --------------------------//
 		//
-		// Note: seek() will never return PATH_SEEKING as the maxTries==max_node in calling seek()
-		//
 		// decide the searching to use according to the unit size
 		// assume the unit size is always 1x1, 2x2, 3x3 and so on
 		// i.e. sprite_info.loc_width == sprite_info.loc_height
 		//--------------------------------------------------------------------------//
 
-		result_node_recno = result_node_count = 0;
+		result_node_recno = 0;
 
-		SeekPath.set_nation_recno(nation_recno);
+		SeekPath.SetNationId(nation_recno);
 
 		if (mobile_type == UnitConstants.UNIT_LAND)
-			select_search_sub_mode(startXLocLoc, startYLocLoc, destXLoc, destYLoc, nation_recno, searchMode);
-		int seekResult = SeekPath.seek(startXLocLoc, startYLocLoc, destXLoc, destYLoc, unit_group_id,
-			mobile_type, searchMode, miscNo, numOfPath);
+			select_search_sub_mode(startLocX, startLocY, destLocX, destLocY, nation_recno, searchMode);
+		int seekResult = SeekPath.Seek(startLocX, startLocY, destLocX, destLocY, unit_group_id,
+			mobile_type, searchMode, miscNo, numOfPaths);
 
-		result_node_array = SeekPath.get_result(out result_node_count, out result_path_dist);
-		SeekPath.set_sub_mode(); // reset sub_mode searching
+		PathNodes.Clear();
+		PathNodes.AddRange(SeekPath.GetResult(out result_path_dist));
+		SeekPath.SetSubMode(); // reset sub_mode searching
 
 		if (seekResult == SeekPath.PATH_IMPOSSIBLE)
 			reset_path();
@@ -8457,25 +8435,25 @@ public class Unit : Sprite
 		// if closest node is returned, the destination should not be the real
 		// location to go to.  Thus, move_to_?_loc should be adjusted
 		//-----------------------------------------------------------------------//
-		if (result_node_array != null && result_node_count != 0)
+		if (PathNodes.Count > 0)
 		{
-			ResultNode lastNode = result_node_array[result_node_count - 1];
-			move_to_x_loc = lastNode.node_x; // adjust move_to_?_loc
-			move_to_y_loc = lastNode.node_y;
+			int lastNode = PathNodes[^1];
+			World.GetLocXAndLocY(lastNode, out move_to_x_loc, out move_to_y_loc);
 
 			result_node_recno = 1; // skip the first node which is the current location
 			// check if the unit is moving right now, wait until it reaches the nearest complete tile.
 			if (cur_action != SPRITE_MOVE)
 			{
-				ResultNode nextNode = result_node_array[1];
-				set_dir(startXLocLoc, startYLocLoc, nextNode.node_x, nextNode.node_y);
+				int nextNode = PathNodes[1];
+				World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
+				set_dir(startLocX, startLocY, nextNodeLocX, nextNodeLocY);
 				next_move();
 			}
 		}
 		else // stay in the current location
 		{
-			move_to_x_loc = startXLocLoc; // adjust move_to_?_loc
-			move_to_y_loc = startYLocLoc;
+			move_to_x_loc = startLocX; // adjust move_to_?_loc
+			move_to_y_loc = startLocY;
 
 			if (cur_x != next_x || cur_y != next_y)
 				set_move();
@@ -8589,11 +8567,8 @@ public class Unit : Sprite
 			//====================================================================//
 			// part 2
 			//====================================================================//
-			if (result_node_array != null && result_node_count != 0)
-				return edit_path_to_surround(buildXLoc, buildYLoc, buildXLoc + width - 1, buildYLoc + height - 1,
-					readyDist);
-			else
-				return 0;
+			return PathNodes.Count > 0 ? edit_path_to_surround(buildXLoc, buildYLoc,
+					buildXLoc + width - 1, buildYLoc + height - 1, readyDist) : 0;
 		}
 		else // in the surrounding, no need to move
 		{
@@ -8615,7 +8590,7 @@ public class Unit : Sprite
 
 	private int edit_path_to_surround(int objectXLoc1, int objectYLoc1, int objectXLoc2, int objectYLoc2, int readyDist)
 	{
-		if (result_node_count < 2)
+		if (PathNodes.Count < 2)
 			return 0;
 
 		//----------------------------------------------------------------------------//
@@ -8663,15 +8638,17 @@ public class Unit : Sprite
 		int checkYLoc = next_y_loc();
 		int editNode1Index = 0;
 		int editNode2Index = 1;
-		ResultNode editNode1 = result_node_array[editNode1Index]; // alias the unit's result_node_array
-		ResultNode editNode2 = result_node_array[editNode2Index]; // ditto
+		int editNode1 = PathNodes[editNode1Index]; // alias the unit's result_node_array
+		World.GetLocXAndLocY(editNode1, out int editNode1LocX, out int editNode1LocY);
+		int editNode2 = PathNodes[editNode2Index]; // ditto
+		World.GetLocXAndLocY(editNode2, out int editNode2LocX, out int editNode2LocY);
 
 		int hasMoveStep = 0;
-		if (checkXLoc != editNode1.node_x || checkYLoc != editNode1.node_y)
+		if (checkXLoc != editNode1LocX || checkYLoc != editNode1LocY)
 		{
 			hasMoveStep += moveScale;
-			checkXLoc = editNode1.node_x;
-			checkYLoc = editNode1.node_y;
+			checkXLoc = editNode1LocX;
+			checkYLoc = editNode1LocY;
 		}
 
 		int i, j;
@@ -8680,14 +8657,16 @@ public class Unit : Sprite
 		int vecX, vecY, xMagn, yMagn, magn;
 
 		//------- find the first node that is on the surrounding of the object -------//
-		for (i = 1; i < result_node_count; ++i, editNode1Index++, editNode2Index++)
+		for (i = 1; i < PathNodes.Count; i++, editNode1Index++, editNode2Index++)
 		{
-			editNode1 = result_node_array[editNode1Index]; // alias the unit's result_node_array
-			editNode2 = result_node_array[editNode2Index]; // ditto
+			editNode1 = PathNodes[editNode1Index]; // alias the unit's result_node_array
+			World.GetLocXAndLocY(editNode1, out editNode1LocX, out editNode1LocY);
+			editNode2 = PathNodes[editNode2Index]; // ditto
+			World.GetLocXAndLocY(editNode2, out editNode2LocX, out editNode2LocY);
 
 			//------------ calculate parameters for checking ------------//
-			vecX = editNode2.node_x - editNode1.node_x;
-			vecY = editNode2.node_y - editNode1.node_y;
+			vecX = editNode2LocX - editNode1LocX;
+			vecY = editNode2LocY - editNode1LocY;
 
 			magn = ((xMagn = Math.Abs(vecX)) > (yMagn = Math.Abs(vecY))) ? xMagn : yMagn;
 			if (xMagn != 0)
@@ -8702,7 +8681,7 @@ public class Unit : Sprite
 				vecY *= moveScale;
 			}
 
-			//------------- check each location bewteen editNode1 and editNode2 -------------//
+			//------------- check each location between editNode1 and editNode2 -------------//
 			for (j = 0; j < magn; j += moveScale)
 			{
 				checkXLoc += vecX;
@@ -8720,13 +8699,12 @@ public class Unit : Sprite
 			//-------------------------------------------------------------------------------//
 			if (found != 0)
 			{
-				editNode2.node_x = checkXLoc;
-				editNode2.node_y = checkYLoc;
+				PathNodes[editNode2Index] = World.GetMatrixIndex(checkXLoc, checkYLoc);
 
 				if (i == 1) // first editing
 				{
-					ResultNode firstNode = result_node_array[0];
-					if (cur_x == firstNode.node_x * InternalConstants.CellWidth && cur_y == firstNode.node_y * InternalConstants.CellHeight)
+					World.GetLocXAndLocY(PathNodes[0], out int firstNodeLocX, out int firstNodeLocY);
+					if (cur_x == firstNodeLocX * InternalConstants.CellWidth && cur_y == firstNodeLocY * InternalConstants.CellHeight)
 					{
 						go_x = checkXLoc * InternalConstants.CellWidth;
 						go_y = checkYLoc * InternalConstants.CellHeight;
@@ -8735,7 +8713,10 @@ public class Unit : Sprite
 
 				pathDist += (j + moveScale);
 				pathDist -= hasMoveStep;
-				result_node_count = i + 1;
+				while (PathNodes.Count > i + 1)
+				{
+					PathNodes.RemoveAt(PathNodes.Count - 1);
+				}
 				result_path_dist = pathDist;
 				move_to_x_loc = checkXLoc;
 				move_to_y_loc = checkYLoc;
@@ -8850,12 +8831,12 @@ public class Unit : Sprite
 		//---------------------------------------------------------------------------------//
 		// part 1, searching
 		//---------------------------------------------------------------------------------//
-		SeekPath.set_attack_range_para(maxRange);
+		SeekPath.SetAttackRange(maxRange);
 		search(targetXLoc, targetYLoc, 1, searchMode, miscNo);
-		SeekPath.reset_attack_range_para();
+		SeekPath.ResetAttackRange();
 		//search(targetXLoc, targetYLoc, 1, searchMode, maxRange);
 
-		if (result_node_array == null || result_node_count == 0)
+		if (PathNodes.Count == 0)
 			return 0;
 
 		//---------------------------------------------------------------------------------//
@@ -8866,25 +8847,27 @@ public class Unit : Sprite
 		int regionId = loc.region_id; // the region_id this unit in
 
 		//----------------------------------------------------//
-		int editNode1Index = result_node_count - 1;
-		int editNode2Index = result_node_count - 2;
-		ResultNode editNode1 = result_node_array[editNode1Index];
-		ResultNode editNode2 = result_node_array[editNode2Index];
-		int vecX = editNode1.node_x - editNode2.node_x;
-		int vecY = editNode1.node_y - editNode2.node_y;
+		int editNode1Index = PathNodes.Count - 1;
+		int editNode2Index = PathNodes.Count - 2;
+		int editNode1 = PathNodes[editNode1Index];
+		World.GetLocXAndLocY(editNode1, out int editNode1LocX, out int editNode1LocY);
+		int editNode2 = PathNodes[editNode2Index];
+		World.GetLocXAndLocY(editNode2, out int editNode2LocX, out int editNode2LocY);
+		int vecX = editNode1LocX - editNode2LocX;
+		int vecY = editNode1LocY - editNode2LocY;
 
 		if (vecX != 0)
 			vecX = ((vecX > 0) ? 1 : -1) * move_step_magn();
 		if (vecY != 0)
 			vecY = ((vecY > 0) ? 1 : -1) * move_step_magn();
 
-		int x = editNode1.node_x;
-		int y = editNode1.node_y;
+		int x = editNode1LocX;
+		int y = editNode1LocY;
 		int i, found = 0, removedStep = 0, preX = 0, preY = 0;
 
-		for (i = result_node_count; i > 1; i--)
+		for (i = PathNodes.Count; i > 1; i--)
 		{
-			while (x != editNode2.node_x || y != editNode2.node_y)
+			while (x != editNode2LocX || y != editNode2LocY)
 			{
 				loc = World.get_loc(x, y);
 				if (loc.region_id == regionId)
@@ -8907,18 +8890,20 @@ public class Unit : Sprite
 
 			editNode1Index = editNode2Index;
 			editNode2Index--;
-			editNode1 = result_node_array[editNode1Index];
-			editNode2 = result_node_array[editNode2Index];
+			editNode1 = PathNodes[editNode1Index];
+			World.GetLocXAndLocY(editNode1, out editNode1LocX, out editNode1LocY);
+			editNode2 = PathNodes[editNode2Index];
+			World.GetLocXAndLocY(editNode2, out editNode2LocX, out editNode2LocY);
 
-			vecX = editNode1.node_x - editNode2.node_x;
-			vecY = editNode1.node_y - editNode2.node_y;
+			vecX = editNode1LocX - editNode2LocX;
+			vecY = editNode1LocY - editNode2LocY;
 			if (vecX != 0)
 				vecX = ((vecX > 0) ? 1 : -1) * move_step_magn();
 			if (vecY != 0)
 				vecY = ((vecY > 0) ? 1 : -1) * move_step_magn();
 
-			x = editNode1.node_x;
-			y = editNode1.node_y;
+			x = editNode1LocX;
+			y = editNode1LocY;
 		}
 
 		//---------------------------------------------------------------------------//
@@ -8926,8 +8911,10 @@ public class Unit : Sprite
 		//---------------------------------------------------------------------------//
 		if (found != 0)
 		{
-			result_node_count = found;
-			ResultNode lastNode = result_node_array[result_node_count - 1];
+			while (PathNodes.Count > found)
+			{
+				PathNodes.RemoveAt(PathNodes.Count - 1);
+			}
 			int goX = go_x >> InternalConstants.CellWidthShift;
 			int goY = go_y >> InternalConstants.CellHeightShift;
 
@@ -8936,12 +8923,12 @@ public class Unit : Sprite
 			//			>MAX_WORLD_?_LOC.  To prevent errors from occuring, goX, goY
 			//			must not be outside the map boundary
 			//---------------------------------------------------------------------//
-			if (goX == editNode1.node_x && goY == editNode1.node_y)
+			if (goX == editNode1LocX && goY == editNode1LocY)
 			{
 				go_x = preX * InternalConstants.CellWidth;
 				go_y = preY * InternalConstants.CellHeight;
 			}
-			else if (result_node_count == 2)
+			else if (PathNodes.Count == 2)
 			{
 				int magnCG = Misc.points_distance(cur_x, cur_y, go_x, go_y);
 				int magnNG = Misc.points_distance(next_x, next_y, go_x, go_y);
@@ -8949,8 +8936,7 @@ public class Unit : Sprite
 				if (magnCG != 0 && magnNG != 0)
 				{
 					//---------- lie on the same line -----------//
-					if ((go_x - cur_x) / magnCG == (go_x - next_x) / magnNG &&
-					    (go_y - cur_y) / magnCG == (go_y - next_y) / magnNG)
+					if ((go_x - cur_x) / magnCG == (go_x - next_x) / magnNG && (go_y - cur_y) / magnCG == (go_y - next_y) / magnNG)
 					{
 						go_x = preX * InternalConstants.CellWidth;
 						go_y = preY * InternalConstants.CellHeight;
@@ -8958,10 +8944,9 @@ public class Unit : Sprite
 				}
 			}
 
-			lastNode.node_x = preX;
-			lastNode.node_y = preY;
-			move_to_x_loc = lastNode.node_x;
-			move_to_y_loc = lastNode.node_y;
+			PathNodes[^1] = World.GetMatrixIndex(preX, preY);
+			move_to_x_loc = preX;
+			move_to_y_loc = preY;
 
 			result_path_dist -= (removedStep) * move_step_magn();
 		}
@@ -8996,35 +8981,21 @@ public class Unit : Sprite
 		//------------------------------------------------------------------//
 		// setting for unit pointed by unit
 		//------------------------------------------------------------------//
-		if (result_node_array == null) //************BUGHERE
+		if (PathNodes.Count == 0) //************BUGHERE
 		{
 			unit.move_to(destX, destY, 1); // unit pointed by unit is idle before calling searching
 		}
 		else
 		{
-			ResultNode resultNode = result_node_array[result_node_recno - 1];
-			if (go_x == unit.next_x && go_y == unit.next_y)
+			//TODO check
+			unit.PathNodes.Clear();
+			if (go_x != unit.next_x || go_y != unit.next_y)
 			{
-				//------ Unit B is in one of the node of the result_node_array ---//
-				unit.result_node_count = result_node_count - result_node_recno + 1; // at least there are 2 nodes
-				unit.result_node_array = new ResultNode[unit.result_node_count];
-				for (int i = 0; i < unit.result_node_count; i++)
-				{
-					unit.result_node_array[i] = result_node_array[result_node_recno - 1 + i];
-				}
+				unit.PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
 			}
-			else
+			for (int i = 0; i < PathNodes.Count - result_node_recno + 1; i++)
 			{
-				//----- Unit B is in the middle of two nodes in the result_node_array -----//
-				unit.result_node_count = result_node_count - result_node_recno + 2;
-				unit.result_node_array = new ResultNode[unit.result_node_count];
-				ResultNode curNode = unit.result_node_array[0];
-				curNode.node_x = unitCurX;
-				curNode.node_y = unitCurY;
-				for (int i = 0; i < unit.result_node_count - 1; i++)
-				{
-					unit.result_node_array[i + 1] = result_node_array[result_node_recno - 1 + i];
-				}
+				unit.PathNodes.Add(PathNodes[result_node_recno - 1 + i]);
 			}
 
 			//--------------- set unit action ---------------//
@@ -9041,9 +9012,9 @@ public class Unit : Sprite
 				}
 				else
 				{
-					ResultNode lastNode = unit.result_node_array[unit.result_node_count - 1];
-					unit.action_x_loc = unit.action_x_loc2 = lastNode.node_x;
-					unit.action_y_loc = unit.action_y_loc2 = lastNode.node_y;
+					World.GetLocXAndLocY(unit.PathNodes[^1], out int lastNodeLocX, out int lastNodeLocY);
+					unit.action_x_loc = unit.action_x_loc2 = lastNodeLocX;
+					unit.action_y_loc = unit.action_y_loc2 = lastNodeLocY;
 				}
 			}
 
@@ -9083,10 +9054,9 @@ public class Unit : Sprite
 		}
 
 		//---------- note: the cur_dir is already the correct direction ---------------//
-		result_node_array = new ResultNode[2];
-		result_node_array[0] = new ResultNode(curX, curY);
-		result_node_array[1] = new ResultNode(unitCurX, unitCurY);
-		result_node_count = 2;
+		PathNodes.Clear();
+		PathNodes.Add(World.GetMatrixIndex(curX, curY));
+		PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
 		result_node_recno = 2;
 		if (shouldWait != 0)
 			set_wait(); // wait for the blocking unit to move first
@@ -9485,12 +9455,13 @@ public class Unit : Sprite
 
 	private bool on_my_path(int checkXLoc, int checkYLoc)
 	{
-		for (int i = result_node_recno - 1; i < result_node_count; i++)
+		for (int i = result_node_recno - 1; i < PathNodes.Count; i++)
 		{
-			ResultNode curNode = result_node_array[i - 1];
-			ResultNode nextNode = result_node_array[i];
-			if ((curNode.node_x - checkXLoc) * (checkYLoc - nextNode.node_y) ==
-			    (curNode.node_y - checkYLoc) * (checkXLoc - nextNode.node_x)) // point of division
+			int curNode = PathNodes[i - 1];
+			World.GetLocXAndLocY(curNode, out int curNodeLocX, out int curNodeLocY);
+			int nextNode = PathNodes[i];
+			World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
+			if ((curNodeLocX - checkXLoc) * (checkYLoc - nextNodeLocY) == (curNodeLocY - checkYLoc) * (checkXLoc - nextNodeLocX)) // point of division
 				return true;
 		}
 
@@ -9676,89 +9647,6 @@ public class Unit : Sprite
 			World.set_unit_recno(nextUnit.cur_x_loc(), nextUnit.cur_y_loc(), nextUnit.mobile_type, 0);
 
 			nextUnit.swapping = 1;
-		}
-	}
-
-	private void opposite_direction_blocked(int vecX, int vecY, int unitVecX, int unitVecY, Unit unit)
-	{
-		//---------------------------------------------------------------------------//
-		// processing swapping only when both units are exactly in the tiles
-		//---------------------------------------------------------------------------//
-		if (unit.cur_action != SPRITE_IDLE)
-		{
-			if (unit.move_to_x_loc != move_to_x_loc || unit.move_to_y_loc != move_to_y_loc)
-			{
-				int stepMagn = move_step_magn();
-
-				World.set_unit_recno(unit.cur_x_loc(), unit.cur_y_loc(), mobile_type, 0);
-				set_next(unit.cur_x, unit.cur_y, -stepMagn, -1);
-
-				World.set_unit_recno(unit.cur_x_loc(), unit.cur_y_loc(), mobile_type, unit.sprite_recno);
-				World.set_unit_recno(cur_x_loc(), cur_y_loc(), unit.mobile_type, 0);
-				unit.set_next(cur_x, cur_y, -stepMagn, 1);
-
-				World.set_unit_recno(unit.cur_x_loc(), unit.cur_y_loc(), mobile_type, sprite_recno);
-				World.set_unit_recno(cur_x_loc(), cur_y_loc(), unit.mobile_type, unit.sprite_recno);
-
-				set_move();
-				unit.set_move();
-
-				swapping = 1;
-				unit.swapping = 1;
-			}
-			else
-			{
-				terminate_move();
-			}
-		}
-		else
-		{
-			//----------------------------------------------------------------------//
-			// If the unit pointed by unit (unit B) has the same unit_id, rank_id
-			//	and both	are in the same group, this unit will order the other unit to
-			// move to its location and this unit will occupy the location of the unit B.
-			//
-			// If the above condition is not fulfilled, swapping is processed.
-			//----------------------------------------------------------------------//
-			if (unit_id != unit.unit_id || rank_id != unit.rank_id || unit_group_id != unit.unit_group_id)
-			{
-				if (unit.move_to_x_loc != move_to_x_loc || unit.move_to_y_loc != move_to_y_loc)
-				{
-					//----------------- process swapping ---------------//
-					set_wait();
-					unit.set_dir(unit.next_x, unit.next_y, next_x, next_y);
-					set_dir(next_x, next_y, unit.next_x, unit.next_y);
-
-					unit.result_node_array = new ResultNode[2];
-					unit.result_node_array[0].node_x = next_x_loc();
-					unit.result_node_array[0].node_y = next_y_loc();
-					unit.result_node_array[1].node_x = unit.next_x_loc();
-					unit.result_node_array[1].node_y = unit.next_y_loc();
-					unit.result_node_count = 2;
-					unit.result_node_recno = 1;
-
-					unit.set_wait();
-					unit.go_x = next_x;
-					unit.go_y = next_y;
-
-					unit.result_path_dist = 2;
-
-					swapping = 1;
-					unit.swapping = 1;
-				}
-				else
-				{
-					terminate_move();
-				}
-			}
-			else
-			{
-				//------------ process move_to_my_loc or terminate the movement -----------//
-				if (unit.move_to_x_loc != move_to_x_loc || unit.move_to_y_loc != move_to_y_loc)
-					move_to_my_loc(unit);
-				else
-					terminate_move();
-			}
 		}
 	}
 
@@ -10051,7 +9939,7 @@ public class Unit : Sprite
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------ no suitable location to attack target by bullet, move to target --------//
-					if (result_node_array == null || result_node_count == 0 || result_path_dist == 0)
+					if (PathNodes.Count == 0 || result_path_dist == 0)
 						if (move_try_to_range_attack(targetUnit) == 0)
 							return; // can't reach a location to attack target
 				}
@@ -10134,7 +10022,7 @@ public class Unit : Sprite
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------- no suitable location, move to target ---------//
-					if (result_node_array == null || result_node_count == 0 || result_path_dist == 0)
+					if (PathNodes.Count == 0 || result_path_dist == 0)
 						if (move_try_to_range_attack(targetUnit) == 0)
 							return false; // can't reach a location to attack target
 
@@ -12090,14 +11978,16 @@ public class Unit : Sprite
 		// edit the result path to get a location for embarking
 		//------------------------------------------------------------------------------//
 
-		if (result_node_array != null && result_node_count > 0)
+		if (PathNodes.Count > 0)
 		{
 			int curNodeIndex = 0;
 			int nextNodeIndex = 1;
-			ResultNode curNode = result_node_array[curNodeIndex];
-			ResultNode nextNode = result_node_array[nextNodeIndex];
+			int curNode = PathNodes[curNodeIndex];
+			World.GetLocXAndLocY(curNode, out int curNodeLocX, out int curNodeLocY);
+			int nextNode = PathNodes[nextNodeIndex];
+			World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
 			int moveScale = move_step_magn();
-			int nodeCount = result_node_count;
+			int nodeCount = PathNodes.Count;
 			Location loc;
 			int i, j, found, pathDist;
 
@@ -12105,11 +11995,11 @@ public class Unit : Sprite
 			int checkXLoc = curXLoc;
 			int checkYLoc = curYLoc;
 			int hasMoveStep = 0;
-			if (checkXLoc != curNode.node_x || checkYLoc != curNode.node_y)
+			if (checkXLoc != curNodeLocX || checkYLoc != curNodeLocY)
 			{
 				hasMoveStep += moveScale;
-				checkXLoc = curNode.node_x;
-				checkYLoc = curNode.node_y;
+				checkXLoc = curNodeLocX;
+				checkYLoc = curNodeLocY;
 			}
 
 			//-----------------------------------------------------------------//
@@ -12119,10 +12009,12 @@ public class Unit : Sprite
 
 			for (pathDist = 0, found = 0, i = 1; i < nodeCount; ++i, curNodeIndex++, nextNodeIndex++)
 			{
-				curNode = result_node_array[curNodeIndex];
-				nextNode = result_node_array[nextNodeIndex];
-				int vecX = nextNode.node_x - curNode.node_x;
-				int vecY = nextNode.node_y - curNode.node_y;
+				curNode = PathNodes[curNodeIndex];
+				World.GetLocXAndLocY(curNode, out curNodeLocX, out curNodeLocY);
+				nextNode = PathNodes[nextNodeIndex];
+				World.GetLocXAndLocY(nextNode, out nextNodeLocX, out nextNodeLocY);
+				int vecX = nextNodeLocX - curNodeLocX;
+				int vecY = nextNodeLocY - curNodeLocY;
 				magn = ((xMagn = Math.Abs(vecX)) > (yMagn = Math.Abs(vecY))) ? xMagn : yMagn;
 				if (xMagn != 0)
 				{
@@ -12136,7 +12028,7 @@ public class Unit : Sprite
 					vecY *= moveScale;
 				}
 
-				//------------- check each location bewteen editNode1 and editNode2 -------------//
+				//------------- check each location between editNode1 and editNode2 -------------//
 				for (j = 0; j < magn; j += moveScale)
 				{
 					preXLoc = checkXLoc;
@@ -12158,19 +12050,20 @@ public class Unit : Sprite
 					if (j == 0) // end node should be curNode pointed at
 					{
 						pathDist -= hasMoveStep;
-						result_node_count = i;
+						while (PathNodes.Count > i)
+						{
+							PathNodes.RemoveAt(PathNodes.Count - 1);
+						}
 						result_path_dist = pathDist;
 					}
 					else
 					{
-						nextNode.node_x = checkXLoc;
-						nextNode.node_y = checkYLoc;
+						PathNodes[nextNodeIndex] = World.GetMatrixIndex(checkXLoc, checkYLoc);
 
 						if (i == 1) // first editing
 						{
-							ResultNode firstNode = result_node_array[0];
-							if (cur_x == firstNode.node_x * InternalConstants.CellWidth &&
-							    cur_y == firstNode.node_y * InternalConstants.CellHeight)
+							World.GetLocXAndLocY(PathNodes[0], out int firstNodeLocX, out int firstNodeLocY);
+							if (cur_x == firstNodeLocX * InternalConstants.CellWidth && cur_y == firstNodeLocY * InternalConstants.CellHeight)
 							{
 								go_x = checkXLoc * InternalConstants.CellWidth;
 								go_y = checkYLoc * InternalConstants.CellHeight;
@@ -12179,7 +12072,10 @@ public class Unit : Sprite
 
 						pathDist += (j + moveScale);
 						pathDist -= hasMoveStep;
-						result_node_count = i + 1;
+						while (PathNodes.Count > i + 1)
+						{
+							PathNodes.RemoveAt(PathNodes.Count - 1);
+						}
 						result_path_dist = pathDist;
 					}
 
@@ -12205,8 +12101,8 @@ public class Unit : Sprite
 
 			if (found == 0)
 			{
-				ResultNode endNode = result_node_array[result_node_count - 1];
-				if (Math.Abs(endNode.node_x - resultXLoc) > 1 || Math.Abs(endNode.node_y - resultYLoc) > 1)
+				World.GetLocXAndLocY(PathNodes[^1], out int endNodeLocX, out int endNodeLocY);
+				if (Math.Abs(endNodeLocX - resultXLoc) > 1 || Math.Abs(endNodeLocY - resultYLoc) > 1)
 				{
 					move_to(resultXLoc, resultYLoc, -1);
 					return false;
@@ -12640,7 +12536,7 @@ public class Unit : Sprite
 						    attackInfo.bullet_sprite_id))
 					{
 						//------- no suitable location, move to target ---------//
-						if (result_node_array == null || result_node_count == 0) // no step for continue moving
+						if (PathNodes.Count  == 0) // no step for continue moving
 							set_move_to_surround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
 								UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 
@@ -12945,7 +12841,7 @@ public class Unit : Sprite
 						    attackInfo.bullet_sprite_id))
 					{
 						//------- no suitable location, move to target ---------//
-						if (result_node_array == null || result_node_count == 0) // no step for continuing moving
+						if (PathNodes.Count  == 0) // no step for continuing moving
 							set_move_to_surround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 								UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 
@@ -13102,7 +12998,7 @@ public class Unit : Sprite
 						    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 					{
 						//------- no suitable location, move to target ---------//
-						if (result_node_array == null || result_node_count == 0) // no step for continuing moving
+						if (PathNodes.Count == 0) // no step for continuing moving
 							set_move_to_surround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 
 						return; // unable to attack, continue to move
@@ -13633,13 +13529,13 @@ public class Unit : Sprite
 
 	protected void next_move()
 	{
-		if (result_node_array == null || result_node_count == 0 || result_node_recno == 0)
+		if (PathNodes.Count  == 0 || result_node_recno == 0)
 			return;
 
-		if (++result_node_recno > result_node_count)
+		if (++result_node_recno > PathNodes.Count)
 		{
 			//------------ all nodes are visited --------------//
-			result_node_array = null;
+			PathNodes.Clear();
 			set_idle();
 
 			if (action_mode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
@@ -13657,9 +13553,10 @@ public class Unit : Sprite
 
 		//---- order the unit to move to the next checkpoint following the path ----//
 
-		ResultNode resultNode = result_node_array[result_node_recno - 1];
+		int resultNode = PathNodes[result_node_recno - 1];
+		World.GetLocXAndLocY(resultNode, out int resultNodeLocX, out int resultNodeLocY);
 
-		sprite_move(resultNode.node_x * InternalConstants.CellWidth, resultNode.node_y * InternalConstants.CellHeight);
+		sprite_move(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
 	}
 
 	protected void terminate_move()
@@ -13678,8 +13575,8 @@ public class Unit : Sprite
 
 	protected void reset_path()
 	{
-		result_node_array = null;
-		result_path_dist = result_node_count = result_node_recno = 0;
+		PathNodes.Clear();
+		result_path_dist = result_node_recno = 0;
 	}
 
 	protected void king_die()

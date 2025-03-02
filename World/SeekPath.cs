@@ -3,18 +3,6 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class ResultNode
-{
-	public int node_x;
-	public int node_y;
-
-	public ResultNode(int nodeX, int nodeY)
-	{
-		node_x = nodeX;
-		node_y = nodeY;
-	}
-}
-
 public class SeekPath
 {
 	public const int PATH_WAIT = 0;
@@ -25,7 +13,7 @@ public class SeekPath
 	public const int SEARCH_MODE_A_UNIT_IN_GROUP = 2;
 	public const int SEARCH_MODE_TO_ATTACK = 3;
 	//public const int SEARCH_MODE_REUSE = 4;
-	public const int SEARCH_MODE_BLOCKING = 5;
+	//public const int SEARCH_MODE_BLOCKING = 5;
 	public const int SEARCH_MODE_TO_VEHICLE = 6;
 	public const int SEARCH_MODE_TO_FIRM = 7;
 	public const int SEARCH_MODE_TO_TOWN = 8;
@@ -42,212 +30,173 @@ public class SeekPath
 	public const int SEARCH_SUB_MODE_NORMAL = 0;
 	public const int SEARCH_SUB_MODE_PASSABLE = 1;
 
-	public int path_status;
+	public int PathStatus { get; private set; } = PATH_WAIT;
 
-	public int[] node_matrix;
-	public int max_node;
-	public int node_count;
+	private readonly int[] _nodeMatrix = new int[GameConstants.MapSize * GameConstants.MapSize];
+	private readonly bool[] _nationPassable = new bool[GameConstants.MAX_NATION + 1];
+	private int _searchSubMode;
 
-	public int group_id;
-	public int search_mode;
-	public int mobile_type;
-	public int seek_nation_recno;
-	public int attack_range; // used in search_mode = SEARCH_MODE_ATTACK_UNIT_BY_RANGE
+	private int _groupId;
+	private int _searchMode;
+	private int _mobileType;
+	private int _seekNationId;
+	private int _attackRange; // used in search_mode = SEARCH_MODE_ATTACK_UNIT_BY_RANGE
 
 	// used in search_mode = SEARCH_MODE_TO_ATTACK or SEARCH_MODE_TO_VEHICLE, get from miscNo
-	public int target_recno;
-	public int region_id; // used in search_mode = SEARCH_MODE_TO_LAND_FOR_SHIP
-	public int building_id; // used in search_mode = SEARCH_MODE_TO_FIRM or SEARCH_MODE_TO_TOWN, get from miscNo
-	public int building_x1, building_y1, building_x2, building_y2;
-	public FirmInfo search_firm_info;
+	private int _targetId;
+	private int _regionId; // used in search_mode = SEARCH_MODE_TO_LAND_FOR_SHIP
+	private int _buildingId; // used in search_mode = SEARCH_MODE_TO_FIRM or SEARCH_MODE_TO_TOWN, get from miscNo
+	private int _buildingX1, _buildingY1, _buildingX2, _buildingY2;
 
-	public int final_dest_x; //	in search_mode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
-	public int final_dest_y; // i.e. the value used finally may not be the real dest_? given.
-
-	//------- aliasing class member vars for fast access ------//
-
-	public bool[] nation_passable = new bool[GameConstants.MAX_NATION + 1];
-	public int search_sub_mode;
-
-	private ResultNode max_size_result_node_ptr; // point to the temporary result node list
-	private int max_size_result_node_ptr_index;
-	// the parent node of the currently node pointed by max_size_result_node_ptr
-	private ResultNode parent_result_node_ptr;
-	private int parent_result_node_ptr_index;
-
-	private int upper_left_x; // x coord. of upper left corner of the 2x2 node
-	private int upper_left_y; // y coord. of upper left corner of the 2x2 node
+	private int _finalDestX; //	in search_mode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
+	private int _finalDestY; // i.e. the value used finally may not be the real dest_? given.
 
 	private static UnitArray UnitArray => Sys.Instance.UnitArray;
 
 	public SeekPath()
 	{
-		node_matrix = new int[GameConstants.MapSize * GameConstants.MapSize];
-		path_status = PATH_WAIT;
 	}
 
-	public void set_status(int newStatus)
+	public void SetAttackRange(int attackRange)
 	{
-		path_status = newStatus;
+		_attackRange = attackRange;
 	}
 
-	public void set_attack_range_para(int attackRange)
+	public void ResetAttackRange()
 	{
-		attack_range = attackRange;
+		_attackRange = 0;
 	}
 
-	public void reset_attack_range_para()
+	public void SetNationId(int nationId)
 	{
-		attack_range = 0;
+		_seekNationId = nationId;
 	}
 
-	public void set_nation_recno(int nationRecno)
+	public void SetNationPassable(bool[] nationPassable)
 	{
-		seek_nation_recno = nationRecno;
-	}
-
-	public void set_nation_passable(bool[] nationPassable)
-	{
-		for (int i = 0; i < nation_passable.Length; i++)
+		for (int i = 0; i < _nationPassable.Length; i++)
 		{
-			nation_passable[i] = nationPassable[i];
+			_nationPassable[i] = nationPassable[i];
 		}
 	}
 
-	public void set_sub_mode(int subMode = SEARCH_SUB_MODE_NORMAL)
+	public void SetSubMode(int subMode = SEARCH_SUB_MODE_NORMAL)
 	{
-		search_sub_mode = subMode;
+		_searchSubMode = subMode;
 	}
 
-	private void bound_check_x(ref int paraX)
+	private bool CanMoveTo(int locX, int locY)
 	{
-		if (paraX < 0)
-			paraX = 0;
-		else if (paraX >= GameConstants.MapSize - 1)
-			paraX = GameConstants.MapSize - 1;
-	}
-
-	private void bound_check_y(ref int paraY)
-	{
-		if (paraY < 0)
-			paraY = 0;
-		else if (paraY >= GameConstants.MapSize - 1)
-			paraY = GameConstants.MapSize - 1;
-	}
-
-	private bool can_move_to(int xLoc, int yLoc)
-	{
-		Location loc = Sys.Instance.World.get_loc(xLoc, yLoc);
+		Location location = Sys.Instance.World.get_loc(locX, locY);
 		Unit unit;
-		int recno;
-		int powerNationRecno = loc.power_nation_recno;
-		int unitCurAction;
+		int cargoId;
+		int powerNationId = location.power_nation_recno;
+		int unitCurrentAction;
 
-		//------ check terrain id. -------//
-		switch (mobile_type)
+		switch (_mobileType)
 		{
 			case UnitConstants.UNIT_LAND:
-				if (search_sub_mode == SEARCH_SUB_MODE_PASSABLE && (powerNationRecno != 0) && !nation_passable[powerNationRecno])
+				if (_searchSubMode == SEARCH_SUB_MODE_PASSABLE && (powerNationId != 0) && !_nationPassable[powerNationId])
 					return false;
 
-				//------ be careful for the checking for search_mode>=SEARCH_MODE_TO_FIRM
-				if (search_mode < SEARCH_MODE_TO_FIRM)
+				if (_searchMode < SEARCH_MODE_TO_FIRM) //------ be careful for the checking for search_mode>=SEARCH_MODE_TO_FIRM
 				{
-					//------------------------------------------------------------------------//
-					if (!loc.walkable())
+					if (!location.walkable())
 						return false;
 
-					recno = loc.cargo_recno;
-					if (recno == 0)
+					cargoId = location.cargo_recno;
+					if (cargoId == 0)
 						return true;
 
-					switch (search_mode)
+					switch (_searchMode)
 					{
 						case SEARCH_MODE_IN_A_GROUP: // group move
 						//case SEARCH_MODE_REUSE: // path-reuse
 							break;
 
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
-							unit = UnitArray[recno];
+							unit = UnitArray[cargoId];
+							//TODO what's the difference between caravan and trader?
 							return unit.cur_action == Sprite.SPRITE_MOVE && unit.unit_id != UnitConstants.UNIT_CARAVAN;
 
 						case SEARCH_MODE_TO_ATTACK: // to attack target
 						case SEARCH_MODE_TO_VEHICLE: // move to a vehicle
-							if (recno == target_recno)
+							if (cargoId == _targetId)
 								return true;
 							break;
 
-						case SEARCH_MODE_BLOCKING: // 2x2 unit blocking
-							unit = UnitArray[recno];
-							return unit.unit_group_id == group_id &&
-							       (unit.cur_action == Sprite.SPRITE_MOVE || unit.cur_action == Sprite.SPRITE_READY_TO_MOVE);
+						//TODO looks like unused
+						//case SEARCH_MODE_BLOCKING: // 2x2 unit blocking
+							//unit = UnitArray[cargoId];
+							//return unit.unit_group_id == _groupId &&
+							       //(unit.cur_action == Sprite.SPRITE_MOVE || unit.cur_action == Sprite.SPRITE_READY_TO_MOVE);
 					}
 				}
 				else
 				{
 					//--------------------------------------------------------------------------------//
-					// for the following search_mode, location may be treated as walkable although it is not.
+					// for the following _searchMode, location may be treated as walkable although it is not.
 					//--------------------------------------------------------------------------------//
-					switch (search_mode)
+					switch (_searchMode)
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
 						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
-							if (!loc.walkable())
-								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							if (!location.walkable())
+								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
 						case SEARCH_MODE_TO_WALL_FOR_GROUP: // move to wall for a group, (location may be not walkable)
-							if (!loc.walkable())
-								return (xLoc == final_dest_x && yLoc == final_dest_y);
+							if (!location.walkable())
+								return (locX == _finalDestX && locY == _finalDestY);
 							break;
 
 						case SEARCH_MODE_TO_WALL_FOR_UNIT: // move to wall for a unit only, (location may be not walkable)
-							return (loc.walkable() && loc.cargo_recno == 0) || (xLoc == final_dest_x && yLoc == final_dest_y);
+							return (location.walkable() && location.cargo_recno == 0) || (locX == _finalDestX && locY == _finalDestY);
 
 						case SEARCH_MODE_ATTACK_UNIT_BY_RANGE: // same as that used in SEARCH_MODE_TO_FIRM
 						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-							if (!loc.walkable())
-								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							if (!location.walkable())
+								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 					}
 
-					recno = (mobile_type != UnitConstants.UNIT_AIR) ? loc.cargo_recno : loc.air_cargo_recno;
-					if (recno == 0)
+					cargoId = location.cargo_recno;
+					if (cargoId == 0)
 						return true;
 				}
 
-				//------- checking for unit's group_id, cur_action, nation_recno and position --------//
-				unit = UnitArray[recno];
-				unitCurAction = unit.cur_action;
-				return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
-				       (unitCurAction == Sprite.SPRITE_MOVE &&
+				//------- checking for unit's groupId, curAction, nationId and position --------//
+				unit = UnitArray[cargoId];
+				unitCurrentAction = unit.cur_action;
+				return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
+				       (unitCurrentAction == Sprite.SPRITE_MOVE &&
 				        unit.cur_x - unit.next_x <= InternalConstants.CellWidth / 2 &&
 				        unit.cur_y - unit.next_y <= InternalConstants.CellHeight / 2) ||
-				       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+				       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 			case UnitConstants.UNIT_SEA:
-				if (search_mode < SEARCH_MODE_TO_FIRM) //--------- be careful for the search_mode >= SEARCH_MODE_TO_FIRM
+				if (_searchMode < SEARCH_MODE_TO_FIRM) //--------- be careful for the search_mode >= SEARCH_MODE_TO_FIRM
 				{
-					if (!loc.sailable())
+					if (!location.sailable())
 						return false;
 
-					recno = loc.cargo_recno;
-					if (recno == 0)
+					cargoId = location.cargo_recno;
+					if (cargoId == 0)
 						return true;
 
-					switch (search_mode)
+					switch (_searchMode)
 					{
 						case SEARCH_MODE_IN_A_GROUP: // group move
 						//case SEARCH_MODE_REUSE: // path-reuse
 							break;
 
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
-							return UnitArray[recno].cur_action == Sprite.SPRITE_MOVE;
+							return UnitArray[cargoId].cur_action == Sprite.SPRITE_MOVE;
 
 						case SEARCH_MODE_TO_ATTACK:
-							if (recno == target_recno)
+							if (cargoId == _targetId)
 								return true;
 							break;
 					}
@@ -255,14 +204,14 @@ public class SeekPath
 				else
 				{
 					//--------------------------------------------------------------------------------//
-					// for the following search_mode, location may be treated as sailable although it is not.
+					// for the following _searchMode, location may be treated as sailable although it is not.
 					//--------------------------------------------------------------------------------//
-					switch (search_mode)
+					switch (_searchMode)
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
 						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
-							if (!loc.sailable())
-								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							if (!location.sailable())
+								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
 						//case SEARCH_MODE_TO_WALL_FOR_GROUP:	// move to wall for a group, (location may be not walkable)
@@ -272,46 +221,48 @@ public class SeekPath
 						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-							if (!loc.sailable())
-								return (xLoc >= building_x1 && xLoc <= building_x2 && yLoc >= building_y1 && yLoc <= building_y2);
+							if (!location.sailable())
+								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
 						case SEARCH_MODE_TO_LAND_FOR_SHIP:
-							if (loc.sailable())
+							if (location.sailable())
 							{
-								recno = loc.cargo_recno;
-								if (recno == 0)
+								cargoId = location.cargo_recno;
+								if (cargoId == 0)
 									return true;
 
-								unit = UnitArray[recno];
-								unitCurAction = unit.cur_action;
-								return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK &&
+								unit = UnitArray[cargoId];
+								unitCurrentAction = unit.cur_action;
+								return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK &&
 								        unit.action_mode2 != UnitConstants.ACTION_SHIP_TO_BEACH) ||
-								       (unit.unit_group_id != group_id && unitCurAction == Sprite.SPRITE_MOVE);
+								       (unit.unit_group_id != _groupId && unitCurrentAction == Sprite.SPRITE_MOVE);
 							}
-							else if (loc.walkable() && loc.region_id == region_id)
-								return true;
 							else
-								return false;
+							{
+								return location.walkable() && location.region_id == _regionId;
+							}
 					}
 
-					recno = loc.cargo_recno;
-					if (recno == 0)
+					cargoId = location.cargo_recno;
+					if (cargoId == 0)
 						return true;
 				}
 
-				//------- checking for unit's group_id, cur_action, nation_recno and position --------//
-				unit = UnitArray[recno];
-				unitCurAction = unit.cur_action;
-				return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
-				       unitCurAction == Sprite.SPRITE_MOVE ||
-				       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+				//------- checking for unit's groupId, curAction, nationId and position --------//
+				unit = UnitArray[cargoId];
+				unitCurrentAction = unit.cur_action;
+				//TODO different condition with UNIT_LAND
+				return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
+				       unitCurrentAction == Sprite.SPRITE_MOVE ||
+				       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 			case UnitConstants.UNIT_AIR:
-				recno = loc.air_cargo_recno;
-				if (recno == 0)
+				cargoId = location.air_cargo_recno;
+				if (cargoId == 0)
 					return true;
-				switch (search_mode)
+
+				switch (_searchMode)
 				{
 					case SEARCH_MODE_IN_A_GROUP:
 					//case SEARCH_MODE_REUSE:
@@ -324,156 +275,160 @@ public class SeekPath
 					case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 					case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 					case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-						unit = UnitArray[recno];
-						unitCurAction = unit.cur_action;
-						return (unit.unit_group_id == group_id && unitCurAction != Sprite.SPRITE_ATTACK) ||
-						       unitCurAction == Sprite.SPRITE_MOVE ||
-						       (unit.nation_recno == seek_nation_recno && unitCurAction == Sprite.SPRITE_IDLE);
+						unit = UnitArray[cargoId];
+						unitCurrentAction = unit.cur_action;
+						return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
+						       unitCurrentAction == Sprite.SPRITE_MOVE ||
+						       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 					case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
-						return UnitArray[recno].cur_action == Sprite.SPRITE_MOVE;
+						return UnitArray[cargoId].cur_action == Sprite.SPRITE_MOVE;
 				}
 
-				break;
+				return false;
 		}
 
 		return false;
 	}
 
-	public int seek(int sx, int sy, int dx, int dy, int groupId, int mobileType, int searchMode = SEARCH_MODE_IN_A_GROUP,
+	public int Seek(int sx, int sy, int dx, int dy, int groupId, int mobileType, int searchMode = SEARCH_MODE_IN_A_GROUP,
 		int miscNo = 0, int numOfPath = 1)
 	{
+		PathStatus = PATH_WAIT;
+		
 		//-------- initialize vars --------------//
-		search_mode = searchMode;
-		group_id = groupId;
-		mobile_type = mobileType;
+		_searchMode = searchMode;
+		_groupId = groupId;
+		_mobileType = mobileType;
 
 		//------------------------------------------------------------------------------//
 		// extract information from the parameter "miscNo"
 		//------------------------------------------------------------------------------//
-		target_recno = building_id = 0;
-		building_x1 = building_y1 = building_x2 = building_y2 = -1;
+		_targetId = _buildingId = 0;
+		_buildingX1 = _buildingY1 = _buildingX2 = _buildingY2 = -1;
+		FirmInfo searchFirmInfo = null;
 
-		switch (search_mode)
+		switch (_searchMode)
 		{
 			case SEARCH_MODE_TO_ATTACK:
 			case SEARCH_MODE_TO_VEHICLE:
-				target_recno = miscNo;
+				_targetId = miscNo;
 				break;
 
 			case SEARCH_MODE_TO_FIRM:
-				building_id = miscNo;
-				building_x1 = dx; // upper left corner location
-				building_y1 = dy;
-				search_firm_info = Sys.Instance.FirmRes[building_id];
-				building_x2 = dx + search_firm_info.loc_width - 1;
-				building_y2 = dy + search_firm_info.loc_height - 1;
+				_buildingId = miscNo;
+				_buildingX1 = dx; // upper left corner location
+				_buildingY1 = dy;
+				searchFirmInfo = Sys.Instance.FirmRes[_buildingId];
+				_buildingX2 = dx + searchFirmInfo.loc_width - 1;
+				_buildingY2 = dy + searchFirmInfo.loc_height - 1;
 				break;
 
 			case SEARCH_MODE_TO_TOWN:
-				building_id = miscNo;
-				building_x1 = dx; // upper left corner location
-				building_y1 = dy;
+				_buildingId = miscNo;
+				_buildingX1 = dx; // upper left corner location
+				_buildingY1 = dy;
 				if (miscNo != -1)
 				{
-					Location buildPtr = Sys.Instance.World.get_loc(dx, dy);
-					Town targetTown = Sys.Instance.TownArray[buildPtr.town_recno()];
-					building_x2 = targetTown.LocX2;
-					building_y2 = targetTown.LocY2;
+					Location location = Sys.Instance.World.get_loc(dx, dy);
+					Town targetTown = Sys.Instance.TownArray[location.town_recno()];
+					_buildingX2 = targetTown.LocX2;
+					_buildingY2 = targetTown.LocY2;
 				}
-				else // searching to settle. Detail explained in function set_move_to_surround()
+				else // searching to settle. Detail explained in function SetMoveToSurround()
 				{
-					building_x2 = building_x1 + InternalConstants.TOWN_WIDTH - 1;
-					building_y2 = building_y1 + InternalConstants.TOWN_HEIGHT - 1;
+					_buildingX2 = _buildingX1 + InternalConstants.TOWN_WIDTH - 1;
+					_buildingY2 = _buildingY1 + InternalConstants.TOWN_HEIGHT - 1;
 				}
 
 				break;
 
 			case SEARCH_MODE_ATTACK_UNIT_BY_RANGE:
 			case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-				building_id = miscNo;
-				building_x1 = Math.Max(dx - attack_range, 0);
-				building_y1 = Math.Max(dy - attack_range, 0);
-				building_x2 = Math.Min(dx + attack_range, GameConstants.MapSize - 1);
-				building_y2 = Math.Min(dy + attack_range, GameConstants.MapSize - 1);
+				_buildingId = miscNo;
+				_buildingX1 = Math.Max(dx - _attackRange, 0);
+				_buildingY1 = Math.Max(dy - _attackRange, 0);
+				_buildingX2 = Math.Min(dx + _attackRange, GameConstants.MapSize - 1);
+				_buildingY2 = Math.Min(dy + _attackRange, GameConstants.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
-				building_id = miscNo;
-				building_x1 = Math.Max(dx - attack_range, 0);
-				building_y1 = Math.Max(dy - attack_range, 0);
-				search_firm_info = Sys.Instance.FirmRes[building_id];
-				building_x2 = Math.Min(dx + search_firm_info.loc_width - 1 + attack_range, GameConstants.MapSize - 1);
-				building_y2 = Math.Min(dy + search_firm_info.loc_height - 1 + attack_range, GameConstants.MapSize - 1);
+				_buildingId = miscNo;
+				_buildingX1 = Math.Max(dx - _attackRange, 0);
+				_buildingY1 = Math.Max(dy - _attackRange, 0);
+				searchFirmInfo = Sys.Instance.FirmRes[_buildingId];
+				_buildingX2 = Math.Min(dx + searchFirmInfo.loc_width - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingY2 = Math.Min(dy + searchFirmInfo.loc_height - 1 + _attackRange, GameConstants.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
-				building_id = miscNo;
-				building_x1 = Math.Max(dx - attack_range, 0);
-				building_y1 = Math.Max(dy - attack_range, 0);
-				building_x2 = Math.Min(dx + InternalConstants.TOWN_WIDTH - 1 + attack_range, GameConstants.MapSize - 1);
-				building_y2 = Math.Min(dy + InternalConstants.TOWN_HEIGHT - 1 + attack_range, GameConstants.MapSize - 1);
+				_buildingId = miscNo;
+				_buildingX1 = Math.Max(dx - _attackRange, 0);
+				_buildingY1 = Math.Max(dy - _attackRange, 0);
+				_buildingX2 = Math.Min(dx + InternalConstants.TOWN_WIDTH - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingY2 = Math.Min(dy + InternalConstants.TOWN_HEIGHT - 1 + _attackRange, GameConstants.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_TO_LAND_FOR_SHIP:
-				region_id = miscNo;
+				_regionId = miscNo;
 				break;
 		}
 
 		//------------------------------------------------------------------------------//
-		// set start location and destination location
+		// adjust destination for some kind of searching
 		//------------------------------------------------------------------------------//
-		//---------- adjust destination for some kind of searching ------------//
-		switch (search_mode)
+		switch (_searchMode)
 		{
 			case SEARCH_MODE_TO_FIRM:
 			case SEARCH_MODE_TO_TOWN:
-				final_dest_x = (building_x1 + building_x2) / 2; // the destination is set to be the middle of the building
-				final_dest_y = (building_y1 + building_y2) / 2;
+				//TODO why use the middle?
+				_finalDestX = (_buildingX1 + _buildingX2) / 2; // the destination is set to be the middle of the building
+				_finalDestY = (_buildingY1 + _buildingY2) / 2;
 
 				//---------------------------------------------------------------------------------//
 				// for group assign/settle, the final destination is adjusted by the value of numOfPath
 				//---------------------------------------------------------------------------------//
 				int area;
-				if (search_mode == SEARCH_MODE_TO_TOWN)
+				if (_searchMode == SEARCH_MODE_TO_TOWN)
 					area = InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT;
 				else // search_mode == SEARCH_MODE_TO_FIRM
-					area = search_firm_info.loc_width * search_firm_info.loc_height;
+					area = searchFirmInfo.loc_width * searchFirmInfo.loc_height;
 
 				int pathNum = (numOfPath > area) ? (numOfPath - 1) % area + 1 : numOfPath;
 
 				int xShift, yShift;
-				if (search_mode == SEARCH_MODE_TO_TOWN)
+				if (_searchMode == SEARCH_MODE_TO_TOWN)
 					Misc.cal_move_around_a_point(pathNum, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, out xShift, out yShift);
 				else
-					Misc.cal_move_around_a_point(pathNum, search_firm_info.loc_width, search_firm_info.loc_height, out xShift, out yShift);
+					Misc.cal_move_around_a_point(pathNum, searchFirmInfo.loc_width, searchFirmInfo.loc_height, out xShift, out yShift);
 
-				final_dest_x += xShift;
-				final_dest_y += yShift;
-
-				bound_check_x(ref final_dest_x);
-				bound_check_y(ref final_dest_y);
+				_finalDestX += xShift;
+				_finalDestY += yShift;
+				_finalDestX = Math.Max(_finalDestX, 0);
+				_finalDestX = Math.Min(_finalDestX, GameConstants.MapSize - 1);
+				_finalDestY = Math.Max(_finalDestY, 0);
+				_finalDestY = Math.Min(_finalDestY, GameConstants.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_UNIT_BY_RANGE:
 			case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 			case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 			case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-				final_dest_x = (building_x1 + building_x2) / 2; // the destination is set to be the middle of the building
-				final_dest_y = (building_y1 + building_y2) / 2;
+				_finalDestX = (_buildingX1 + _buildingX2) / 2; // the destination is set to be the middle of the building
+				_finalDestY = (_buildingY1 + _buildingY2) / 2;
 				break;
 
 			default:
-				final_dest_x = dx;
-				final_dest_y = dy;
+				_finalDestX = dx;
+				_finalDestY = dy;
 				break;
 		}
 
-		if (sx == final_dest_x && sy == final_dest_y)
+		if (sx == _finalDestX && sy == _finalDestY)
 			return PATH_FOUND;
 
-		Array.Clear(node_matrix);
-		node_matrix[sy * GameConstants.MapSize + sx] = 1;
+		Array.Clear(_nodeMatrix);
+		_nodeMatrix[sy * GameConstants.MapSize + sx] = 1;
 		List<int> oldChangedNodesX = new List<int>(GameConstants.MapSize);
 		List<int> oldChangedNodesY = new List<int>(GameConstants.MapSize);
 		List<int> newChangedNodesX = new List<int>(GameConstants.MapSize);
@@ -505,33 +460,33 @@ public class SeekPath
 							continue;
 
 						int nearIndex = nearY * GameConstants.MapSize + nearX;
-						if (node_matrix[nearIndex] == -1)
+						if (_nodeMatrix[nearIndex] == -1)
 							continue;
 
-						if (node_matrix[nearIndex] == 0 && !can_move_to(nearX, nearY))
+						if (_nodeMatrix[nearIndex] == 0 && !CanMoveTo(nearX, nearY))
 						{
-							node_matrix[nearIndex] = -1;
+							_nodeMatrix[nearIndex] = -1;
 							continue;
 						}
 
 						int newValue = 0;
 						if (nearX == x || nearY == y)
-							newValue = node_matrix[currentIndex] + 2;
+							newValue = _nodeMatrix[currentIndex] + 2;
 						else
-							newValue = node_matrix[currentIndex] + 3;
+							newValue = _nodeMatrix[currentIndex] + 3;
 
-						if (node_matrix[nearIndex] == 0 || node_matrix[nearIndex] > newValue)
+						if (_nodeMatrix[nearIndex] == 0 || _nodeMatrix[nearIndex] > newValue)
 						{
-							node_matrix[nearIndex] = newValue;
+							_nodeMatrix[nearIndex] = newValue;
 							newChangedNodesX.Add(nearX);
 							newChangedNodesY.Add(nearY);
 						}
 					}
 
-					if (x == final_dest_x && y == final_dest_y && node_matrix[currentIndex] > 0)
+					if (x == _finalDestX && y == _finalDestY && _nodeMatrix[currentIndex] > 0)
 					{
-						path_status = PATH_FOUND;
-						return path_status;
+						PathStatus = PATH_FOUND;
+						return PathStatus;
 					}
 				}
 			}
@@ -542,23 +497,23 @@ public class SeekPath
 			oldChangedNodesY.AddRange(newChangedNodesY);
 		}
 
-		path_status = PATH_IMPOSSIBLE;
-		return path_status;
+		PathStatus = PATH_IMPOSSIBLE;
+		return PathStatus;
 	}
 
-	public ResultNode[] get_result(out int resultNodeCount, out int pathDist)
+	public List<int> GetResult(out int pathDist)
 	{
-		resultNodeCount = 0;
+		//TODO pathDist calculated not like that in the original version
 		pathDist = 0;
 		int resultIndex = -1;
 		int resultX = -1;
 		int resultY = -1;
-		switch (path_status)
+		switch (PathStatus)
 		{
 			case PATH_FOUND:
-				resultIndex = final_dest_y * GameConstants.MapSize + final_dest_x;
-				resultX = final_dest_x;
-				resultY = final_dest_y;
+				resultIndex = _finalDestY * GameConstants.MapSize + _finalDestX;
+				resultX = _finalDestX;
+				resultY = _finalDestY;
 				break;
 
 			case PATH_IMPOSSIBLE:
@@ -569,16 +524,16 @@ public class SeekPath
 					int minDistance = GameConstants.MapSize * GameConstants.MapSize;
 					//TODO move bounds
 					//TODO scan only borders
-					for (int x = Math.Max(final_dest_x - regionSize, 0); x < Math.Min(final_dest_x + regionSize, GameConstants.MapSize - 1); x++)
+					for (int x = Math.Max(_finalDestX - regionSize, 0); x < Math.Min(_finalDestX + regionSize, GameConstants.MapSize - 1); x++)
 					{
-						for (int y = Math.Max(final_dest_y - regionSize, 0); y < Math.Min(final_dest_y + regionSize, GameConstants.MapSize - 1); y++)
+						for (int y = Math.Max(_finalDestY - regionSize, 0); y < Math.Min(_finalDestY + regionSize, GameConstants.MapSize - 1); y++)
 						{
 							int currentIndex = y * GameConstants.MapSize + x;
-							if (node_matrix[currentIndex] > 0)
+							if (_nodeMatrix[currentIndex] > 0)
 							{
-								if (node_matrix[currentIndex] < minDistance)
+								if (_nodeMatrix[currentIndex] < minDistance)
 								{
-									minDistance = node_matrix[currentIndex];
+									minDistance = _nodeMatrix[currentIndex];
 									resultIndex = currentIndex;
 									resultX = x;
 									resultY = y;
@@ -599,16 +554,17 @@ public class SeekPath
 
 		int pathX = resultX;
 		int pathY = resultY;
-		int pathValue = node_matrix[resultIndex];
+		int pathValue = _nodeMatrix[resultIndex];
 
-		List<ResultNode> reversedPath = new List<ResultNode>(pathValue);
-		reversedPath.Add(new ResultNode(pathX, pathY));
+		List<int> reversedPath = new List<int>(pathValue);
+		reversedPath.Add(resultIndex);
 
 		pathDist = pathValue / 2;
 		while (true)
 		{
 			int pathXCopy = pathX;
 			int pathYCopy = pathY;
+			int pathIndex = -1;
 			for (int i = -1; i <= 1; i++)
 			{
 				for (int j = -1; j <= 1; j++)
@@ -623,28 +579,23 @@ public class SeekPath
 						continue;
 
 					int currentIndex = nearY * GameConstants.MapSize + nearX;
-					if (node_matrix[currentIndex] > 0 && node_matrix[currentIndex] < pathValue)
+					if (_nodeMatrix[currentIndex] > 0 && _nodeMatrix[currentIndex] < pathValue)
 					{
-						pathValue = node_matrix[currentIndex];
+						pathIndex = currentIndex;
+						pathValue = _nodeMatrix[currentIndex];
 						pathX = nearX;
 						pathY = nearY;
 					}
 				}
 			}
 
-			reversedPath.Add(new ResultNode(pathX, pathY));
+			reversedPath.Add(pathIndex);
 
 			if (pathValue == 1)
 				break;
 		}
-
-		ResultNode[] resultPath = new ResultNode[reversedPath.Count];
-		for (int i = 0; i < reversedPath.Count; i++)
-		{
-			resultPath[i] = new ResultNode(reversedPath[reversedPath.Count - i - 1].node_x, reversedPath[reversedPath.Count - i - 1].node_y);
-		}
-
-		resultNodeCount = resultPath.Length;
-		return resultPath;
+		
+		reversedPath.Reverse();
+		return reversedPath;
 	}
 }

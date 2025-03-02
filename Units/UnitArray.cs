@@ -595,7 +595,7 @@ public class UnitArray : SpriteArray
 				    if (firstUnit.mobile_type == UnitConstants.UNIT_LAND)
 				    {
 					    move_to_now_with_filter(destXLoc, destYLoc, selectedUnitArray);
-					    SeekPath.set_sub_mode(); // reset sub_mode searching
+					    SeekPath.SetSubMode(); // reset sub_mode searching
 				    }
 				    else
 				    {
@@ -918,7 +918,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
+			    if (SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1121,7 +1121,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
+			    if (SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1323,7 +1323,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
+			    if (SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;
@@ -1519,7 +1519,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
 			    //------------------------------------------------------------//
-			    if (SeekPath.path_status == SeekPath.PATH_IMPOSSIBLE)
+			    if (SeekPath.PathStatus == SeekPath.PATH_IMPOSSIBLE)
 			    {
 				    unreachable_table[xOffset + SHIFT_ADJUST, yOffset + SHIFT_ADJUST] = true;
 				    analyseResult--;

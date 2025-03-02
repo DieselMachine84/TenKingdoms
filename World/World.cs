@@ -54,9 +54,20 @@ public class World
 		ClearLocation();
 	}
 	
-	public Location get_loc(int xLoc, int yLoc)
+	public Location get_loc(int locX, int locY)
 	{
-		return loc_matrix[GameConstants.MapSize * yLoc + xLoc];
+		return loc_matrix[GetMatrixIndex(locX, locY)];
+	}
+
+	public int GetMatrixIndex(int locX, int locY)
+	{
+		return locY * GameConstants.MapSize + locX;
+	}
+
+	public void GetLocXAndLocY(int matrixIndex, out int locX, out int locY)
+	{
+		locX = matrixIndex % GameConstants.MapSize;
+		locY = matrixIndex / GameConstants.MapSize;
 	}
 
 	public int get_region_id(int xLoc, int yLoc)
