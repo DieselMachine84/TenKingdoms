@@ -6,11 +6,6 @@ public class UnitCaravan : Unit
 {
 	public const int MAX_STOP_FOR_CARAVAN = 3;
 
-	public const int NO_STOP_DEFINED = 0;
-	public const int ON_WAY_TO_FIRM = 1;
-	public const int SURROUND_FIRM = 2;
-	public const int INSIDE_FIRM = 3;
-
 	public int caravan_id; // id. of the caravan, for name display
 
 	public int journey_status; // 1 for not unload but can up load, 2 for unload but not up load
@@ -40,7 +35,7 @@ public class UnitCaravan : Unit
 		for (int i = 0; i < stop_array.Length; i++)
 			stop_array[i] = new CaravanStop();
 
-		journey_status = ON_WAY_TO_FIRM;
+		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 		dest_stop_id = 1;
 		stop_defined_num = 0;
 		wait_count = 0;
@@ -193,16 +188,16 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// handle if current stop changed when mobile
 		//-------------------------------------------------------//
-		if (dest_stop_id != 0 && journey_status != INSIDE_FIRM)
+		if (dest_stop_id != 0 && journey_status != InternalConstants.INSIDE_FIRM)
 		{
 			if ((newStopFirmRecno = stop_array[dest_stop_id - 1].firm_recno) != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
 				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, stop_array[dest_stop_id - 1].firm_id);
-				journey_status = ON_WAY_TO_FIRM;
+				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
-		else if (journey_status != INSIDE_FIRM)
+		else if (journey_status != InternalConstants.INSIDE_FIRM)
 			stop2();
 
 		if (UnitArray.selected_recno == sprite_recno)
@@ -384,8 +379,8 @@ public class UnitCaravan : Unit
 		{
 			for (i = 0; i < stop_array.Length; i++)
 				stop_array[i] = new CaravanStop();
-			if (journey_status != INSIDE_FIRM)
-				journey_status = ON_WAY_TO_FIRM;
+			if (journey_status != InternalConstants.INSIDE_FIRM)
+				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			dest_stop_id = 0;
 			stop_defined_num = 0;
 			return;
@@ -413,6 +408,7 @@ public class UnitCaravan : Unit
 
 				if (dist < minDist)
 				{
+					//TODO bug
 					dist = minDist;
 					dest_stop_id = i + 1;
 				}
@@ -557,7 +553,7 @@ public class UnitCaravan : Unit
 			//---- the entering location is blocked, select another location to leave ----//
 			firm = FirmArray[action_para];
 
-			if (appear_in_firm_surround(ref xLoc, ref yLoc, ref firm))
+			if (appear_in_firm_surround(ref xLoc, ref yLoc, firm))
 			{
 				init_sprite(xLoc, yLoc);
 				stop();
@@ -574,7 +570,7 @@ public class UnitCaravan : Unit
 		if (nextStopId == 0 || dest_stop_id == nextStopId)
 		{
 			dest_stop_id = nextStopId;
-			journey_status = (nextStopId == 0) ? NO_STOP_DEFINED : SURROUND_FIRM;
+			journey_status = (nextStopId == 0) ? InternalConstants.NO_STOP_DEFINED : InternalConstants.SURROUND_FIRM;
 			return; // no stop or only one stop is valid
 		}
 
@@ -584,7 +580,7 @@ public class UnitCaravan : Unit
 		action_para = 0; // since action_para is used to store the current market recno, reset before searching
 		move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 
-		journey_status = ON_WAY_TO_FIRM;
+		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 	}
 
 	public void caravan_on_way()
@@ -594,7 +590,7 @@ public class UnitCaravan : Unit
 		int nextXLoc = -1;
 		int nextYLoc = -1;
 
-		if (cur_action == SPRITE_IDLE && journey_status != SURROUND_FIRM)
+		if (cur_action == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
 		{
 			if (!FirmArray.IsDeleted(stop.firm_recno))
 			{
@@ -606,7 +602,7 @@ public class UnitCaravan : Unit
 				// hard code 1 for caravan size 1x1
 				if (nextXLoc >= firm.loc_x1 - 1 && nextXLoc <= firm.loc_x2 + 1 && nextYLoc >= firm.loc_y1 - 1 &&
 				    nextYLoc <= firm.loc_y2 + 1)
-					journey_status = SURROUND_FIRM;
+					journey_status = InternalConstants.SURROUND_FIRM;
 
 				if (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && ignore_power_nation == 0)
 					ignore_power_nation = 1;
@@ -639,7 +635,7 @@ public class UnitCaravan : Unit
 		nextXLoc = next_x_loc();
 		nextYLoc = next_y_loc();
 
-		if (journey_status == SURROUND_FIRM ||
+		if (journey_status == InternalConstants.SURROUND_FIRM ||
 		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && cur_x == next_x && cur_y == next_y && // move in a tile exactly
 		     (nextXLoc >= firm.loc_x1 - 1 && nextXLoc <= firm.loc_x2 + 1 &&
 		      nextYLoc >= firm.loc_y1 - 1 && nextYLoc <= firm.loc_y2 + 1))) // in the surrounding of the firm
@@ -689,7 +685,7 @@ public class UnitCaravan : Unit
 
 			cur_x--; // set cur_x to -2, such that invisible but still process pre_process()
 
-			journey_status = INSIDE_FIRM;
+			journey_status = InternalConstants.INSIDE_FIRM;
 		}
 		else
 		{
@@ -700,7 +696,7 @@ public class UnitCaravan : Unit
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
 				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
-				journey_status = ON_WAY_TO_FIRM;
+				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
 	}
@@ -711,8 +707,6 @@ public class UnitCaravan : Unit
 
 		if (cur_x == -1) // can't use !is_visible(), keep process if cur_x < -1
 			return;
-
-		const int SURROUND_FIRM_WAIT_FACTOR = 10;
 
 		//-----------------------------------------------------------------------------//
 		// if all the hit points are lost, die now
@@ -728,7 +722,7 @@ public class UnitCaravan : Unit
 		//-----------------------------------------------------------------------------//
 		// process when in firm
 		//-----------------------------------------------------------------------------//
-		if (journey_status == INSIDE_FIRM)
+		if (journey_status == InternalConstants.INSIDE_FIRM)
 		{
 			caravan_in_firm();
 			return;
@@ -739,10 +733,10 @@ public class UnitCaravan : Unit
 		//-----------------------------------------------------------------------------//
 		if (stop_defined_num == 0)
 		{
-			if (journey_status != NO_STOP_DEFINED)
+			if (journey_status != InternalConstants.NO_STOP_DEFINED)
 				stop(); // stop if no valid stop is defined
 
-			journey_status = NO_STOP_DEFINED;
+			journey_status = InternalConstants.NO_STOP_DEFINED;
 			return;
 		}
 
@@ -780,11 +774,11 @@ public class UnitCaravan : Unit
 				if (cur_action == SPRITE_IDLE)
 					move_to_firm_surround(firmXLoc1, firmYLoc1, sprite_info.loc_width, sprite_info.loc_height, firmId);
 				else
-					journey_status = ON_WAY_TO_FIRM;
+					journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 			else
 			{
-				journey_status = SURROUND_FIRM;
+				journey_status = InternalConstants.SURROUND_FIRM;
 				//if(firm->nation_recno==nation_recno)
 				if (NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty)
 				{
@@ -805,7 +799,7 @@ public class UnitCaravan : Unit
 								break;
 						}
 
-						wait_count = GameConstants.MAX_CARAVAN_WAIT_TERM * SURROUND_FIRM_WAIT_FACTOR;
+						wait_count = GameConstants.MAX_CARAVAN_WAIT_TERM * InternalConstants.SURROUND_FIRM_WAIT_FACTOR;
 					}
 					else
 						wait_count--;
@@ -1627,7 +1621,7 @@ public class UnitCaravan : Unit
 	}
 
 	// select a suitable location to leave the stop
-	private bool appear_in_firm_surround(ref int xLoc, ref int yLoc, ref Firm firm)
+	private bool appear_in_firm_surround(ref int xLoc, ref int yLoc, Firm firm)
 	{
 		int upperLeftBoundX = firm.loc_x1 - 1; // the surrounding coordinates of the firm
 		int upperLeftBoundY = firm.loc_y1 - 1;

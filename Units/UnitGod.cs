@@ -165,12 +165,12 @@ public class UnitGod : Unit
 			{
 				UnitMarine unitMarine = (UnitMarine)unit;
 
-				for (int i = 0; i < unitMarine.unit_recno_array.Count; i++)
+				for (int i = 0; i < unitMarine.UnitsOnBoard.Count; i++)
 				{
 					int divider = 4; // the size of a ship is 4 locations (2x2)
 
 					// the effects are weaken on ship units, only 50% of the original effects
-					cast_on_unit(unitMarine.unit_recno_array[i], divider);
+					cast_on_unit(unitMarine.UnitsOnBoard[i], divider);
 				}
 			}
 		}

@@ -97,6 +97,7 @@ public static class GameConstants
     public const int NEW_KING_SAME_RACE_LOYALTY_INC = 20;
     public const int NEW_KING_DIFFERENT_RACE_LOYALTY_DEC = 30;
     public const int MAX_CARAVAN_WAIT_TERM = 8;
+    public const int MAX_SHIP_WAIT_TERM = 8;
     public const int CHAIN_TRIGGER_RANGE = 2;
     public const int EXPLODE_RANGE = 1;
     public const int EXPLODE_DAMAGE = 50;
@@ -128,6 +129,7 @@ public static class InternalConstants
     public const int STD_ACTION_RETRY_COUNT = 4;
     public const int WARPOINT_ZONE_SIZE = 8;
     public const int MAX_BIRD = 17;
+    public const int WAVE_CYCLE = 8;
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;
@@ -142,6 +144,12 @@ public static class InternalConstants
     public const int EFFECTIVE_POWER_DISTANCE = 3;
     public const int WALL_SPACE_LOC = 5;
 
+    public const int NO_STOP_DEFINED = 0;
+    public const int ON_WAY_TO_FIRM = 1;
+    public const int SURROUND_FIRM = 2;
+    public const int INSIDE_FIRM = 3;
+    public const int SURROUND_FIRM_WAIT_FACTOR = 10;
+    
     public const int CellWidth = 32;
     public const int CellHeight = 32;
     public const int CellWidthShift = 5; // 2^5 = CellWidth

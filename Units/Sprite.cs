@@ -264,12 +264,24 @@ public class Sprite
 	{
 		cur_x = curX;
 		cur_y = curY;
+		update_abs_pos();
 	}
 
 	public virtual void set_next(int nextX, int nextY, int para = 0, int blockedChecked = 0)
 	{
 		next_x = nextX;
 		next_y = nextY;
+	}
+
+	protected virtual void update_abs_pos(SpriteFrame spriteFrame = null)
+	{
+		spriteFrame ??= cur_sprite_frame(out _);
+
+		//abs_x1 = cur_x + spriteFrame.offset_x;		// absolute position 
+		//abs_y1 = cur_y + spriteFrame.offset_y;
+
+		//abs_x2 = abs_x1 + spriteFrame.width  - 1;
+		//abs_y2 = abs_y1 + spriteFrame.height - 1;
 	}
 
 	public int move_step_magn()
