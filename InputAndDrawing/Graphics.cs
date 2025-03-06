@@ -252,7 +252,7 @@ public class Graphics
         SDL.SDL_RenderDrawRect(_renderer, ref dstRect);
     }
     
-    public void DrawBitmap(IntPtr texture, int x, int y, int width, int height)
+    public void DrawBitmap(IntPtr texture, int x, int y, int width, int height, bool flip = false)
     {
         SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
@@ -260,18 +260,10 @@ public class Graphics
         dstRect.y = y;
         dstRect.w = width;
         dstRect.h = height;
-        SDL.SDL_RenderCopy(_renderer, texture, IntPtr.Zero, ref dstRect);
-    }
-
-    public void DrawBitmapAndFlip(IntPtr texture, int x, int y, int width, int height)
-    {
-        SDL.SDL_SetTextureScaleMode(texture, SDL.SDL_ScaleMode.SDL_ScaleModeBest);
-        SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
-        dstRect.x = x;
-        dstRect.y = y;
-        dstRect.w = width;
-        dstRect.h = height;
-        SDL.SDL_RenderCopyEx(_renderer, texture, IntPtr.Zero, ref dstRect, 0.0, IntPtr.Zero, SDL.SDL_RendererFlip.SDL_FLIP_HORIZONTAL);
+        if (flip)
+            SDL.SDL_RenderCopyEx(_renderer, texture, IntPtr.Zero, ref dstRect, 0.0, IntPtr.Zero, SDL.SDL_RendererFlip.SDL_FLIP_HORIZONTAL);
+        else
+            SDL.SDL_RenderCopy(_renderer, texture, IntPtr.Zero, ref dstRect);
     }
     
     public byte[] DecompressTransparentBitmap(byte[] bitmap, int width, int height, byte[] colorTable = null)
