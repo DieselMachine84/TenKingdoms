@@ -24,6 +24,19 @@
       <None Remove="Resource\**" />
       <None Remove="Sprite\**" />
       <None Remove="Images\**" />
+      <None Update="Assets\**">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Assets\Resource\" />
+      <Folder Include="Assets\Sprite\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Hexa.NET.SDL2.Image" Version="1.0.0" />
+      <PackageReference Include="ppy.SDL2-CS" Version="1.0.741-alpha" />
     </ItemGroup>
 
 </Project>
