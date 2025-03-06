@@ -6259,7 +6259,7 @@ public class Nation : NationBase
 		//--- make a copy of the recnos of the unit on the ship ---//
 
 		List<int> unitRecnoArray = new List<int>();
-		unitRecnoArray.AddRange(unitMarine.unit_recno_array);
+		unitRecnoArray.AddRange(unitMarine.UnitsOnBoard);
 
 		unitMarine.unload_all_units(InternalConstants.COMMAND_AI); // unload all units now
 
@@ -6355,7 +6355,7 @@ public class Nation : NationBase
 			UnitMarine unitMarine = (UnitMarine)UnitArray[ai_ship_array[i]];
 
 			// if there are already units in the ship or if the ship does not carry units
-			if (unitMarine.unit_recno_array.Count > 0 || UnitRes[unitMarine.unit_id].carry_unit_capacity == 0)
+			if (unitMarine.UnitsOnBoard.Count > 0 || UnitRes[unitMarine.unit_id].carry_unit_capacity == 0)
 			{
 				continue;
 			}
