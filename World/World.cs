@@ -25,14 +25,12 @@ public class World
 	private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
 	private HillRes HillRes => Sys.Instance.HillRes;
 	private PlantRes PlantRes => Sys.Instance.PlantRes;
-	private RockRes RockRes => Sys.Instance.RockRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private SECtrl SECtrl => Sys.Instance.SECtrl;
 	private Config Config => Sys.Instance.Config;
 	private Info Info => Sys.Instance.Info;
-	private Power Power => Sys.Instance.Power;
 	private Weather Weather => Sys.Instance.Weather;
 	private Weather[] WeatherForecast => Sys.Instance.WeatherForecast;
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
@@ -43,8 +41,6 @@ public class World
 	private SiteArray SiteArray => Sys.Instance.SiteArray;
 	private TornadoArray TornadoArray => Sys.Instance.TornadoArray;
 	private NewsArray NewsArray => Sys.Instance.NewsArray;
-	private RockArray RockArray => Sys.Instance.RockArray;
-	private RockArray DirtArray => Sys.Instance.DirtArray;
 
 	public World()
 	{
@@ -411,14 +407,12 @@ public class World
 		if (xLoc2 >= GameConstants.MapSize || yLoc2 > GameConstants.MapSize)
 			return 0;
 
-		int teraMask, pierFlag;
-
 		switch (firmInfo.tera_type)
 		{
 			case 1: // default : land firm
 			case 2: // sea firm
 			case 3: // land or sea firm
-				teraMask = firmInfo.tera_type;
+				int teraMask = firmInfo.tera_type;
 				for (yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
 				{
 					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
@@ -445,7 +439,12 @@ public class World
 				if (firmInfo.loc_width != 3 || firmInfo.loc_height != 3)
 					return 0;
 
-				pierFlag = 1 | 2 | 4 | 8; // bit0=north, bit1=south, bit2=west, bit3=east
+				int[,] northPierTera = { { 2, 2, 2 }, { 2, 2, 2 }, { 3, 1, 3 } };
+				int[,] southPierTera = { { 3, 1, 3 }, { 2, 2, 2 }, { 2, 2, 2 } };
+				int[,] westPierTera = { { 2, 2, 3 }, { 2, 2, 1 }, { 2, 2, 3 } };
+				int[,] eastPierTera = { { 3, 2, 2 }, { 1, 2, 2 }, { 3, 2, 2 } };
+
+				int pierFlag = 1 | 2 | 4 | 8; // bit0=north, bit1=south, bit2=west, bit3=east
 				for (yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
 				{
 					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
@@ -454,11 +453,6 @@ public class World
 						// don't allow building any buildings other than mines on a location with a site
 						if (location.has_site())
 							return 0;
-
-						int[,] northPierTera = { { 2, 2, 2 }, { 2, 2, 2 }, { 3, 1, 3 } };
-						int[,] southPierTera = { { 3, 1, 3 }, { 2, 2, 2 }, { 2, 2, 2 } };
-						int[,] westPierTera = { { 2, 2, 3 }, { 2, 2, 1 }, { 2, 2, 3 } };
-						int[,] eastPierTera = { { 3, 2, 2 }, { 1, 2, 2 }, { 3, 2, 2 } };
 
 						int x = xLoc - xLoc1;
 						int y = yLoc - yLoc1;
@@ -1015,21 +1009,6 @@ public class World
 			//FirmArray[firmRecno].nation_recno = nationRecno;
 	}
 
-	public void set_surr_power_off(int xLoc, int yLoc)
-	{
-		if (xLoc > 0) // west
-			get_loc(xLoc - 1, yLoc).set_power_off();
-
-		if (xLoc < GameConstants.MapSize - 1)
-			get_loc(xLoc + 1, yLoc).set_power_off();
-
-		if (yLoc > 0) // north
-			get_loc(xLoc, yLoc - 1).set_power_off();
-
-		if (yLoc < GameConstants.MapSize - 1) // south
-			get_loc(xLoc, yLoc + 1).set_power_off();
-	}
-
 	public void Process()
 	{
 		//-------- process wall ----------//
@@ -1433,6 +1412,7 @@ public class World
 	{
 		const int PLANT_ARRAY_SIZE = 8;
 
+		//TODO should depend on map size
 		plant_count = 0;
 		int trial;
 		for (trial = 50; trial > 0; --trial)
@@ -1802,83 +1782,6 @@ public class World
 		}
 	}
 
-	//-------- function related to rock ----------//
-	public void add_rock(int rockRecno, int x1, int y1)
-	{
-		// ------- get the delay remain count for the first frame -----//
-		Rock newRock = new Rock(RockRes, rockRecno, x1, y1);
-		int rockArrayRecno = RockArray.Add(newRock);
-		RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-
-		for (int dy = 0; dy < rockInfo.loc_height && y1 + dy < GameConstants.MapSize; ++dy)
-		{
-			for (int dx = 0; dx < rockInfo.loc_width && x1 + dx < GameConstants.MapSize; ++dx)
-			{
-				int rockBlockRecno = RockRes.locate_block(rockRecno, dx, dy);
-				if (rockBlockRecno != 0)
-				{
-					Location location = get_loc(x1 + dx, y1 + dy);
-					location.set_rock(rockArrayRecno);
-					location.set_power_off();
-					set_surr_power_off(x1, y1);
-				}
-			}
-		}
-	}
-
-	public void add_dirt(int dirtRecno, int x1, int y1)
-	{
-		// ------- get the delay remain count for the first frame -----//
-		Rock newDirt = new Rock(RockRes, dirtRecno, x1, y1);
-		int dirtArrayRecno = DirtArray.Add(newDirt);
-
-		RockInfo dirtInfo = RockRes.get_rock_info(dirtRecno);
-
-		for (int dy = 0; dy < dirtInfo.loc_height && y1 + dy < GameConstants.MapSize; ++dy)
-		{
-			for (int dx = 0; dx < dirtInfo.loc_width && x1 + dx < GameConstants.MapSize; ++dx)
-			{
-				int dirtBlockRecno = RockRes.locate_block(dirtRecno, dx, dy);
-				if (dirtBlockRecno != 0)
-				{
-					Location location = get_loc(x1 + dx, y1 + dy);
-					location.set_dirt(dirtArrayRecno);
-
-					if (dirtInfo.rock_type == RockInfo.DIRT_BLOCKING_TYPE)
-						location.walkable_off();
-				}
-			}
-		}
-	}
-
-	public bool can_add_rock(int x1, int y1, int x2, int y2)
-	{
-		for (int y = y1; y <= y2; y++)
-		{
-			for (int x = x1; x <= x2; x++)
-			{
-				if (!get_loc(x, y).can_add_rock(3))
-					return false;
-			}
-		}
-
-		return true;
-	}
-
-	public bool can_add_dirt(int x1, int y1, int x2, int y2)
-	{
-		for (int y = y1; y <= y2; y++)
-		{
-			for (int x = x1; x <= x2; x++)
-			{
-				if (!get_loc(x, y).can_add_dirt())
-					return false;
-			}
-		}
-
-		return true;
-	}
-
 	// ------ function related to weather ---------//
 	public void earth_quake()
 	{
@@ -2100,68 +2003,6 @@ public class World
 				relVolume.rel_vol = 80;
 
 			SECtrl.request(sndFile, relVolume);
-		}
-	}
-
-	public void SetLocFlags()
-	{
-		int totalLoc = GameConstants.MapSize * GameConstants.MapSize;
-
-		//----- set power_off of the map edges -----//
-
-		for (int xLoc = 0; xLoc < GameConstants.MapSize; xLoc++) // set the top and bottom edges
-		{
-			get_loc(xLoc, 0).set_power_off();
-			get_loc(xLoc, GameConstants.MapSize - 1).set_power_off();
-		}
-
-		for (int yLoc = 0; yLoc < GameConstants.MapSize; yLoc++) // set the left and right edges
-		{
-			get_loc(0, yLoc).set_power_off();
-			get_loc(GameConstants.MapSize - 1, yLoc).set_power_off();
-		}
-
-		//-----------------------------------------//
-
-		if (Config.explore_whole_map)
-		{
-			for (int i = 0; i < loc_matrix.Length; i++)
-			{
-				Location location = loc_matrix[i];
-				//------- set explored flag ----------//
-				location.explored_on();
-				TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
-				if (terrainInfo.is_coast())
-				{
-					location.loc_flag |= Location.LOCATE_COAST;
-					if (terrainInfo.average_type != TerrainTypeCode.TERRAIN_OCEAN)
-						location.set_power_off();
-					else
-						set_surr_power_off(i % GameConstants.MapSize, i / GameConstants.MapSize);
-				}
-
-				location.walkable_reset();
-			}
-		}
-		else
-		{
-			for (int i = 0; i < loc_matrix.Length; i++)
-			{
-				Location location = loc_matrix[i];
-				//------- clear explored flag ----------//
-				location.explored_off();
-				TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
-				if (terrainInfo.is_coast())
-				{
-					location.loc_flag |= Location.LOCATE_COAST;
-					if (terrainInfo.average_type != TerrainTypeCode.TERRAIN_OCEAN)
-						location.set_power_off();
-					else
-						set_surr_power_off(i % GameConstants.MapSize, i / GameConstants.MapSize);
-				}
-
-				location.walkable_reset();
-			}
 		}
 	}
 

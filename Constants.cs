@@ -130,6 +130,8 @@ public static class InternalConstants
     public const int WARPOINT_ZONE_SIZE = 8;
     public const int MAX_BIRD = 17;
     public const int WAVE_CYCLE = 8;
+    public const int MAX_ROCK_WIDTH = 4;
+    public const int MAX_ROCK_HEIGHT = 4;
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;

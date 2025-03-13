@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -9,41 +10,41 @@ public class RockRec
     public const int RECNO_LEN = 4;
     public const int MAX_FRAME_LEN = 2;
 
-    public char[] rock_id = new char[ROCKID_LEN];
-    public char rock_type;
-    public char[] loc_width = new char[LOC_LEN];
-    public char[] loc_height = new char[LOC_LEN];
-    public char terrain_1;
-    public char terrain_2;
-    public char[] first_anim_recno = new char[RECNO_LEN];
-    public char[] max_frame = new char[MAX_FRAME_LEN];
+    public char[] rockId = new char[ROCKID_LEN];
+    public char rockType;
+    public char[] locWidth = new char[LOC_LEN];
+    public char[] locHeight = new char[LOC_LEN];
+    public char terrain1;
+    public char terrain2;
+    public char[] firstAnimRecno = new char[RECNO_LEN];
+    public char[] maxFrame = new char[MAX_FRAME_LEN];
 
     public RockRec(byte[] data)
     {
         int dataIndex = 0;
-        for (int i = 0; i < rock_id.Length; i++, dataIndex++)
-            rock_id[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < rockId.Length; i++, dataIndex++)
+            rockId[i] = Convert.ToChar(data[dataIndex]);
         
-        rock_type = Convert.ToChar(data[dataIndex]);
+        rockType = Convert.ToChar(data[dataIndex]);
         dataIndex++;
         
-        for (int i = 0; i < loc_width.Length; i++, dataIndex++)
-            loc_width[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locWidth.Length; i++, dataIndex++)
+            locWidth[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < loc_height.Length; i++, dataIndex++)
-            loc_height[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locHeight.Length; i++, dataIndex++)
+            locHeight[i] = Convert.ToChar(data[dataIndex]);
         
-        terrain_1 = Convert.ToChar(data[dataIndex]);
+        terrain1 = Convert.ToChar(data[dataIndex]);
         dataIndex++;
         
-        terrain_2 = Convert.ToChar(data[dataIndex]);
+        terrain2 = Convert.ToChar(data[dataIndex]);
         dataIndex++;
         
-        for (int i = 0; i < first_anim_recno.Length; i++, dataIndex++)
-            first_anim_recno[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < firstAnimRecno.Length; i++, dataIndex++)
+            firstAnimRecno[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < max_frame.Length; i++, dataIndex++)
-            max_frame[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < maxFrame.Length; i++, dataIndex++)
+            maxFrame[i] = Convert.ToChar(data[dataIndex]);
     }
 }
 
@@ -53,29 +54,29 @@ public class RockBlockRec
     public const int LOC_LEN = 2;
     public const int RECNO_LEN = 4;
 
-    public char[] rock_id = new char[ROCKID_LEN];
-    public char[] loc_x = new char[LOC_LEN];
-    public char[] loc_y = new char[LOC_LEN];
-    public char[] rock_recno = new char[RECNO_LEN];
-    public char[] first_bitmap = new char[RECNO_LEN];
+    public char[] rockId = new char[ROCKID_LEN];
+    public char[] locX = new char[LOC_LEN];
+    public char[] locY = new char[LOC_LEN];
+    public char[] rockRecno = new char[RECNO_LEN];
+    public char[] firstBitmap = new char[RECNO_LEN];
 
     public RockBlockRec(byte[] data)
     {
         int dataIndex = 0;
-        for (int i = 0; i < rock_id.Length; i++, dataIndex++)
-            rock_id[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < rockId.Length; i++, dataIndex++)
+            rockId[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < loc_x.Length; i++, dataIndex++)
-            loc_x[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locX.Length; i++, dataIndex++)
+            locX[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < loc_y.Length; i++, dataIndex++)
-            loc_y[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locY.Length; i++, dataIndex++)
+            locY[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < rock_recno.Length; i++, dataIndex++)
-            rock_recno[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < rockRecno.Length; i++, dataIndex++)
+            rockRecno[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < first_bitmap.Length; i++, dataIndex++)
-            first_bitmap[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < firstBitmap.Length; i++, dataIndex++)
+            firstBitmap[i] = Convert.ToChar(data[dataIndex]);
     }
 }
 
@@ -87,33 +88,33 @@ public class RockBitmapRec
     public const int FILE_NAME_LEN = 8;
     public const int BITMAP_PTR_LEN = 4;
 
-    public char[] rock_id = new char[ROCKID_LEN];
-    public char[] loc_x = new char[LOC_LEN];
-    public char[] loc_y = new char[LOC_LEN];
+    public char[] rockId = new char[ROCKID_LEN];
+    public char[] locX = new char[LOC_LEN];
+    public char[] locY = new char[LOC_LEN];
     public char[] frame = new char[FRAME_NO_LEN];
-    public char[] file_name = new char[FILE_NAME_LEN];
-    public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
+    public char[] fileName = new char[FILE_NAME_LEN];
+    public byte[] bitmap = new byte[BITMAP_PTR_LEN];
 
     public RockBitmapRec(byte[] data)
     {
         int dataIndex = 0;
-        for (int i = 0; i < rock_id.Length; i++, dataIndex++)
-            rock_id[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < rockId.Length; i++, dataIndex++)
+            rockId[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < loc_x.Length; i++, dataIndex++)
-            loc_x[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locX.Length; i++, dataIndex++)
+            locX[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < loc_y.Length; i++, dataIndex++)
-            loc_y[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < locY.Length; i++, dataIndex++)
+            locY[i] = Convert.ToChar(data[dataIndex]);
         
         for (int i = 0; i < frame.Length; i++, dataIndex++)
             frame[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < fileName.Length; i++, dataIndex++)
+            fileName[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+        for (int i = 0; i < bitmap.Length; i++, dataIndex++)
+            bitmap[i] = data[dataIndex];
     }
 }
 
@@ -123,17 +124,17 @@ public class RockAnimRec
     public const int FRAME_NO_LEN = 2;
     public const int DELAY_LEN = 3;
 
-    public char[] rock_id = new char[ROCKID_LEN];
+    public char[] rockId = new char[ROCKID_LEN];
     public char[] frame = new char[FRAME_NO_LEN];
     public char[] delay = new char[DELAY_LEN];
-    public char[] next_frame = new char[FRAME_NO_LEN];
-    public char[] alt_next = new char[FRAME_NO_LEN];
+    public char[] nextFrame = new char[FRAME_NO_LEN];
+    public char[] altNext = new char[FRAME_NO_LEN];
 
     public RockAnimRec(byte[] data)
     {
         int dataIndex = 0;
-        for (int i = 0; i < rock_id.Length; i++, dataIndex++)
-            rock_id[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < rockId.Length; i++, dataIndex++)
+            rockId[i] = Convert.ToChar(data[dataIndex]);
         
         for (int i = 0; i < frame.Length; i++, dataIndex++)
             frame[i] = Convert.ToChar(data[dataIndex]);
@@ -141,83 +142,98 @@ public class RockAnimRec
         for (int i = 0; i < delay.Length; i++, dataIndex++)
             delay[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < next_frame.Length; i++, dataIndex++)
-            next_frame[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < nextFrame.Length; i++, dataIndex++)
+            nextFrame[i] = Convert.ToChar(data[dataIndex]);
         
-        for (int i = 0; i < alt_next.Length; i++, dataIndex++)
-            alt_next[i] = Convert.ToChar(data[dataIndex]);
+        for (int i = 0; i < altNext.Length; i++, dataIndex++)
+            altNext[i] = Convert.ToChar(data[dataIndex]);
     }
 }
 
 public class RockInfo
 {
+    public const char ROCK_BLOCKING_TYPE = 'R';
+    public const char DIRT_NON_BLOCKING_TYPE = 'D';
     public const char DIRT_BLOCKING_TYPE = 'E';
     
-    public string rock_name;
-    public char rock_type;
-    public int loc_width;
-    public int loc_height;
-    public int terrain_1; // TerrainTypeCode
-    public int terrain_2; // TerrainTypeCode
-    public int first_anim_recno;
-    public int max_frame;
-    public int first_block_recno;
+    public string rockName;
+    public char rockType;
+    public int locWidth;
+    public int locHeight;
+    public int terrain1; // TerrainTypeCode
+    public int terrain2; // TerrainTypeCode
+    public int firstAnimId;
+    public int maxFrame;
+    public int firstBlockId;
 
-    public int[,] block_offset = new int[RockRes.MAX_ROCK_HEIGHT, RockRes.MAX_ROCK_WIDTH];
+    public readonly int[,] blockOffset = new int[InternalConstants.MAX_ROCK_HEIGHT, InternalConstants.MAX_ROCK_WIDTH];
 
-    public bool valid_terrain(int terrainType)
+    public bool IsTerrainValid(int terrainType)
     {
-        return terrainType >= terrain_1 && terrainType <= terrain_2;
+        return terrainType >= terrain1 && terrainType <= terrain2;
     }
 }
 
 public class RockBlockInfo
 {
-    public int loc_x;
-    public int loc_y;
-    public int rock_recno; // recno in RockRec/RockInfo
-    public int first_bitmap; // recno in RockBitmapRec/RockBitmapInfo
+    public int locX;
+    public int locY;
+    public int rockId; // id in RockRec/RockInfo
+    public int firstBitmap; // id in RockBitmapRec/RockBitmapInfo
 }
 
 public class RockBitmapInfo
 {
-    public int loc_x; // checking only
-    public int loc_y; // checking only
+    public int locX; // checking only
+    public int locY; // checking only
     public int frame; // checking only
     public byte[] bitmap;
     public int bitmapWidth;
     public int bitmapHeight;
+    private IntPtr _texture;
+    
+    public IntPtr GetTexture(Graphics graphics)
+    {
+        if (_texture == default)
+            _texture = graphics.CreateTextureFromBmp(bitmap, bitmapWidth, bitmapHeight);
+
+        return _texture;
+    }
 }
 
 public class RockAnimInfo
 {
     public int frame; // checking only
     public int delay;
-    public int next_frame;
-    public int alt_next;
+    public int nextFrame;
+    public int altNext;
 
-    public int choose_next(long path)
+    public int ChooseNext(int path)
     {
-        return path != 0 ? next_frame : alt_next;
+        return path != 0 ? nextFrame : altNext;
     }
 }
 
 public class RockRes
 {
-    public const int MAX_ROCK_WIDTH = 4;
-    public const int MAX_ROCK_HEIGHT = 4;
+    private RockInfo[] _rockInfos;
+    private RockBlockInfo[] _rockBlockInfos;
+    private RockBitmapInfo[] _rockBitmapInfos;
+    private RockAnimInfo[] _rockAnimInfos;
+    
+    private RockAnimInfo _unanimatedInfo;
 
-    public RockInfo[] rock_info_array;
-    public RockBlockInfo[] rock_block_array;
-    public RockBitmapInfo[] rock_bitmap_array;
-    public RockAnimInfo[] rock_anim_array;
-
-    public ResourceDb res_bitmap;
+    private readonly ResourceDb _resources;
 
     public RockRes()
     {
-        string rockDbName = $"{Sys.GameDataFolder}/Resource/I_ROCK{Sys.Instance.Config.terrain_set}.RES";
-        res_bitmap = new ResourceDb(rockDbName);
+        _unanimatedInfo = new RockAnimInfo();
+        _unanimatedInfo.frame = 1;
+        _unanimatedInfo.delay = 99;
+        _unanimatedInfo.nextFrame = 1;
+        _unanimatedInfo.altNext = 1;
+        
+        _resources = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_ROCK{Sys.Instance.Config.terrain_set}.RES");
 
         LoadInfo();
         LoadBitmapInfo();
@@ -225,265 +241,210 @@ public class RockRes
         LoadAnimInfo();
     }
 
-    public RockInfo get_rock_info(int rockRecno)
+    public RockInfo GetRockInfo(int rockId)
     {
-        return rock_info_array[rockRecno - 1];
+        return _rockInfos[rockId - 1];
     }
 
-    public RockBlockInfo get_block_info(int rockBlockRecno)
+    public RockBlockInfo GetBlockInfo(int rockBlockId)
     {
-        return rock_block_array[rockBlockRecno - 1];
+        return _rockBlockInfos[rockBlockId - 1];
     }
 
-    public RockBitmapInfo get_bitmap_info(int rockBitmapRecno)
+    public RockBitmapInfo GetBitmapInfo(int rockBitmapId)
     {
-        return rock_bitmap_array[rockBitmapRecno - 1];
+        return _rockBitmapInfos[rockBitmapId - 1];
     }
 
-    public RockAnimInfo get_anim_info(int rockAnimRecno)
+    public RockAnimInfo GetAnimInfo(int rockAnimId)
     {
-        if (rockAnimRecno == -1) // non-animated rock
-        {
-            RockAnimInfo unanimatedInfo = new RockAnimInfo();
-            unanimatedInfo.frame = 1;
-            unanimatedInfo.delay = 99;
-            unanimatedInfo.next_frame = 1;
-            unanimatedInfo.alt_next = 1;
-            return unanimatedInfo;
-        }
-
-        return rock_anim_array[rockAnimRecno - 1];
+        return rockAnimId == -1 ? _unanimatedInfo : _rockAnimInfos[rockAnimId - 1];
     }
 
-    public int choose_next(int rockRecno, int curFrame, long path)
+    public int GetBitmapId(int rockBlockId, int curFrame)
     {
-        // -------- validate rockRecno ---------//
-        RockInfo rockInfo = get_rock_info(rockRecno);
+        RockBlockInfo rockBlockInfo = GetBlockInfo(rockBlockId);
+        return rockBlockInfo.firstBitmap + curFrame - 1;
+    }
+
+    public int GetAnimId(int rockId, int curFrame)
+    {
+        RockInfo rockInfo = GetRockInfo(rockId);
+        return rockInfo.firstAnimId != 0 ? rockInfo.firstAnimId + (curFrame - 1) : -1;
+    }
+    
+    public int ChooseNext(int rockId, int curFrame, int path)
+    {
+        // -------- validate rockId ---------//
+        RockInfo rockInfo = GetRockInfo(rockId);
 
         // -------- validate curFrame ----------//
-        RockAnimInfo rockAnimInfo = get_anim_info(get_anim_recno(rockRecno, curFrame));
+        RockAnimInfo rockAnimInfo = GetAnimInfo(GetAnimId(rockId, curFrame));
 
         // -------- validate frame, next_frame and alt_next in rockAnimInfo -------/
-        return rockAnimInfo.choose_next(path);
+        return rockAnimInfo.ChooseNext(path);
     }
 
-    public RockBlockInfo this[int rockBlockRecno] => rock_block_array[rockBlockRecno - 1];
-
-    public int search(string rockTypes, int minWidth, int maxWidth, int minHeight, int maxHeight,
+    public int Search(string rockTypes, int minWidth, int maxWidth, int minHeight, int maxHeight,
         int animatedFlag = -1, bool findFirst = false, int terrainType = 0)
     {
         // -------- search a rock by rock_type, width and height ---------//
-        int rockRecno = 0;
+        int rockId = 0;
         int findCount = 0;
 
-        for (int i = 0; i < rock_info_array.Length; i++)
+        for (int i = 0; i < _rockInfos.Length; i++)
         {
-            RockInfo rockInfo = rock_info_array[i];
-            if ((string.IsNullOrEmpty(rockTypes) || rockTypes.Contains(rockInfo.rock_type))
-                && (terrainType == 0 || rockInfo.valid_terrain(terrainType))
-                && rockInfo.loc_width >= minWidth && rockInfo.loc_width <= maxWidth
-                && rockInfo.loc_height >= minHeight && rockInfo.loc_height <= maxHeight
-                && (animatedFlag < 0 || animatedFlag == 0 && rockInfo.max_frame == 1 ||
-                    animatedFlag > 0 && rockInfo.max_frame > 1))
+            RockInfo rockInfo = _rockInfos[i];
+            if ((string.IsNullOrEmpty(rockTypes) || rockTypes.Contains(rockInfo.rockType)) &&
+                (terrainType == 0 || rockInfo.IsTerrainValid(terrainType)) &&
+                rockInfo.locWidth >= minWidth && rockInfo.locWidth <= maxWidth &&
+                rockInfo.locHeight >= minHeight && rockInfo.locHeight <= maxHeight &&
+                (animatedFlag < 0 || animatedFlag == 0 && rockInfo.maxFrame == 1 || animatedFlag > 0 && rockInfo.maxFrame > 1))
             {
-                ++findCount;
+                findCount++;
                 if (findFirst)
                 {
-                    rockRecno = i + 1;
+                    rockId = i + 1;
                     break;
                 }
                 else if (Misc.Random(findCount) == 0)
                 {
-                    rockRecno = i + 1;
+                    rockId = i + 1;
                 }
             }
         }
 
-        return rockRecno;
+        return rockId;
     }
 
-    public int locate(string rockName)
+    public int LocateBlock(int rockId, int locX, int locY)
     {
-        int rockRecno = 0;
-
-        for (int i = 1; i <= rock_info_array.Length; ++i)
+        if (locX < InternalConstants.MAX_ROCK_WIDTH && locY < InternalConstants.MAX_ROCK_HEIGHT)
         {
-            RockInfo rockInfo = rock_info_array[i];
-            if (rockName == new string(rockInfo.rock_name))
-            {
-                rockRecno = i;
-                break;
-            }
-        }
-
-        return rockRecno;
-    }
-
-    public int locate_block(int rockRecno, int xLoc, int yLoc)
-    {
-        if (xLoc < MAX_ROCK_WIDTH && yLoc < MAX_ROCK_HEIGHT)
-        {
-            // if xLoc and yLoc is small enough, the block of offset x and offset y
-            // can be found in block_offset,
-            return get_rock_info(rockRecno).block_offset[yLoc, xLoc];
+            // if xLoc and yLoc is small enough, the block of offset x and offset y can be found in block_offset,
+            return GetRockInfo(rockId).blockOffset[locY, locX];
         }
         else
         {
             // otherwise, linear search
-            int rockBlockRecno = get_rock_info(rockRecno).first_block_recno;
-            for (; rockBlockRecno <= rock_block_array.Length; rockBlockRecno++)
+            for (int rockBlockId = GetRockInfo(rockId).firstBlockId; rockBlockId <= _rockBlockInfos.Length; rockBlockId++)
             {
-                RockBlockInfo rockBlockInfo = get_block_info(rockBlockRecno);
-                if (rockBlockInfo.rock_recno != rockRecno)
+                RockBlockInfo rockBlockInfo = GetBlockInfo(rockBlockId);
+                if (rockBlockInfo.rockId != rockId)
                     break;
-                if (rockBlockInfo.loc_x == xLoc && rockBlockInfo.loc_y == yLoc)
-                    return rockBlockRecno;
+                if (rockBlockInfo.locX == locX && rockBlockInfo.locY == locY)
+                    return rockBlockId;
             }
 
             return 0;
         }
     }
 
-    public int get_bitmap_recno(int rockBlockRecno, int curFrame)
-    {
-        RockBlockInfo rockBlockInfo = get_block_info(rockBlockRecno);
-        return rockBlockInfo.first_bitmap + curFrame - 1;
-    }
-
-    // return rockAnimRecno
-    public int get_anim_recno(int rockRecno, int curFrame)
-    {
-        RockInfo rockInfo = get_rock_info(rockRecno);
-
-        return rockInfo.first_anim_recno != 0 ? rockInfo.first_anim_recno + (curFrame - 1) : -1;
-    }
-
     private void LoadInfo()
     {
-        //---- read in rock count and initialize rock info array ----//
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCK{Sys.Instance.Config.terrain_set}.RES");
+        _rockInfos = new RockInfo[dbRock.RecordCount];
 
-        string rockDbName = $"{Sys.GameDataFolder}/Resource/ROCK{Sys.Instance.Config.terrain_set}.RES";
-        Database dbRock = new Database(rockDbName);
-
-        rock_info_array = new RockInfo[dbRock.RecordCount];
-
-        //---------- read in ROCK.DBF ---------//
-
-        for (int i = 0; i < rock_info_array.Length; i++)
+        for (int i = 0; i < _rockInfos.Length; i++)
         {
             RockRec rockRec = new RockRec(dbRock.Read(i + 1));
             RockInfo rockInfo = new RockInfo();
-            rock_info_array[i] = rockInfo;
+            _rockInfos[i] = rockInfo;
 
-            rockInfo.rock_name = Misc.ToString(rockRec.rock_id);
-            rockInfo.rock_type = rockRec.rock_type;
-            rockInfo.loc_width = Misc.ToInt32(rockRec.loc_width);
-            rockInfo.loc_height = Misc.ToInt32(rockRec.loc_height);
-            if (rockRec.terrain_1 == 0 || rockRec.terrain_1 == ' ')
-                rockInfo.terrain_1 = 0;
+            rockInfo.rockName = Misc.ToString(rockRec.rockId);
+            rockInfo.rockType = rockRec.rockType;
+            rockInfo.locWidth = Misc.ToInt32(rockRec.locWidth);
+            rockInfo.locHeight = Misc.ToInt32(rockRec.locHeight);
+            if (rockRec.terrain1 == 0 || rockRec.terrain1 == ' ')
+                rockInfo.terrain1 = 0;
             else
-                rockInfo.terrain_1 = TerrainRes.terrain_code(rockRec.terrain_1);
-            if (rockRec.terrain_2 == 0 || rockRec.terrain_2 == ' ')
-                rockInfo.terrain_2 = 0;
+                rockInfo.terrain1 = TerrainRes.terrain_code(rockRec.terrain1);
+            if (rockRec.terrain2 == 0 || rockRec.terrain2 == ' ')
+                rockInfo.terrain2 = 0;
             else
-                rockInfo.terrain_2 = TerrainRes.terrain_code(rockRec.terrain_2);
-            rockInfo.first_anim_recno = Misc.ToInt32(rockRec.first_anim_recno);
-            if (rockInfo.first_anim_recno != 0)
-                rockInfo.max_frame = Misc.ToInt32(rockRec.max_frame);
+                rockInfo.terrain2 = TerrainRes.terrain_code(rockRec.terrain2);
+            rockInfo.firstAnimId = Misc.ToInt32(rockRec.firstAnimRecno);
+            if (rockInfo.firstAnimId != 0)
+                rockInfo.maxFrame = Misc.ToInt32(rockRec.maxFrame);
             else
-                rockInfo.max_frame = 1; // unanimated, rock anim recno must be -1
+                rockInfo.maxFrame = 1; // unanimated, rock anim recno must be -1
 
-            rockInfo.first_block_recno = 0;
+            rockInfo.firstBlockId = 0;
         }
     }
 
     private void LoadBlockInfo()
     {
-        //---- read in rock count and initialize rock info array ----//
-        string rockDbName = $"{Sys.GameDataFolder}/Resource/ROCKBLK{Sys.Instance.Config.terrain_set}.RES";
-        Database dbRock = new Database(rockDbName);
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBLK{Sys.Instance.Config.terrain_set}.RES");
+        _rockBlockInfos = new RockBlockInfo[dbRock.RecordCount];
 
-        rock_block_array = new RockBlockInfo[dbRock.RecordCount];
-
-        //---------- read in ROCKBLK.DBF ---------//
-
-        for (int i = 0; i < rock_block_array.Length; i++)
+        for (int i = 0; i < _rockBlockInfos.Length; i++)
         {
             RockBlockRec rockBlockRec = new RockBlockRec(dbRock.Read(i + 1));
             RockBlockInfo rockBlockInfo = new RockBlockInfo();
-            rock_block_array[i] = rockBlockInfo;
+            _rockBlockInfos[i] = rockBlockInfo;
 
-            rockBlockInfo.loc_x = Misc.ToInt32(rockBlockRec.loc_x);
-            rockBlockInfo.loc_y = Misc.ToInt32(rockBlockRec.loc_y);
-            rockBlockInfo.rock_recno = Misc.ToInt32(rockBlockRec.rock_recno);
-            rockBlockInfo.first_bitmap = Misc.ToInt32(rockBlockRec.first_bitmap);
+            rockBlockInfo.locX = Misc.ToInt32(rockBlockRec.locX);
+            rockBlockInfo.locY = Misc.ToInt32(rockBlockRec.locY);
+            rockBlockInfo.rockId = Misc.ToInt32(rockBlockRec.rockRecno);
+            rockBlockInfo.firstBitmap = Misc.ToInt32(rockBlockRec.firstBitmap);
 
             // ------- validate rock_recno --------//
-            RockInfo rockInfo = rock_info_array[rockBlockInfo.rock_recno - 1];
-            if (rockInfo.first_block_recno == 0)
-                rockInfo.first_block_recno = i + 1;
+            RockInfo rockInfo = _rockInfos[rockBlockInfo.rockId - 1];
+            if (rockInfo.firstBlockId == 0)
+                rockInfo.firstBlockId = i + 1;
 
             // ------- set block_offset in rockInfo ----------//
-            if (rockBlockInfo.loc_x < MAX_ROCK_WIDTH && rockBlockInfo.loc_y < MAX_ROCK_HEIGHT)
+            if (rockBlockInfo.locX < InternalConstants.MAX_ROCK_WIDTH && rockBlockInfo.locY < InternalConstants.MAX_ROCK_HEIGHT)
             {
-                // store the rockBlockRecno (i.e. i+1) in rockInfo->block_offset
+                // store the rockBlockRecno (i.e. i+1) in rockInfo.block_offset
                 // in order to find a rock block from rock recno and x offset, y offset
                 // thus make RockRes::locate_block() faster
-                rockInfo.block_offset[rockBlockInfo.loc_y, rockBlockInfo.loc_x] = i + 1;
+                rockInfo.blockOffset[rockBlockInfo.locY, rockBlockInfo.locX] = i + 1;
             }
         }
     }
 
     private void LoadBitmapInfo()
     {
-        //---- read in rock count and initialize rock info array ----//
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBMP{Sys.Instance.Config.terrain_set}.RES");
+        _rockBitmapInfos = new RockBitmapInfo[dbRock.RecordCount];
 
-        string rockDbName = $"{Sys.GameDataFolder}/Resource/ROCKBMP{Sys.Instance.Config.terrain_set}.RES";
-        Database dbRock = new Database(rockDbName);
-
-        rock_bitmap_array = new RockBitmapInfo[dbRock.RecordCount];
-
-        //---------- read in ROCKBMP.DBF ---------//
-
-        for (int i = 0; i < rock_bitmap_array.Length; i++)
+        for (int i = 0; i < _rockBitmapInfos.Length; i++)
         {
             RockBitmapRec rockBitmapRec = new RockBitmapRec(dbRock.Read(i + 1));
             RockBitmapInfo rockBitmapInfo = new RockBitmapInfo();
-            rock_bitmap_array[i] = rockBitmapInfo;
+            _rockBitmapInfos[i] = rockBitmapInfo;
 
-            rockBitmapInfo.loc_x = Misc.ToInt32(rockBitmapRec.loc_x);
-            rockBitmapInfo.loc_y = Misc.ToInt32(rockBitmapRec.loc_y);
+            rockBitmapInfo.locX = Misc.ToInt32(rockBitmapRec.locX);
+            rockBitmapInfo.locY = Misc.ToInt32(rockBitmapRec.locY);
             rockBitmapInfo.frame = Misc.ToInt32(rockBitmapRec.frame);
 
-            int bitmapOffset = BitConverter.ToInt32(rockBitmapRec.bitmap_ptr, 0);
-            rockBitmapInfo.bitmap = res_bitmap.Read(bitmapOffset);
+            int bitmapOffset = BitConverter.ToInt32(rockBitmapRec.bitmap, 0);
+            rockBitmapInfo.bitmap = _resources.Read(bitmapOffset);
             rockBitmapInfo.bitmapWidth = BitConverter.ToInt16(rockBitmapInfo.bitmap, 0);
             rockBitmapInfo.bitmapHeight = BitConverter.ToInt16(rockBitmapInfo.bitmap, 2);
+            rockBitmapInfo.bitmap = rockBitmapInfo.bitmap.Skip(4).ToArray();
         }
     }
 
     private void LoadAnimInfo()
     {
-        //---- read in rock count and initialize rock info array ----//
-        string rockDbName = $"{Sys.GameDataFolder}/Resource/ROCKANI{Sys.Instance.Config.terrain_set}.RES";
-        Database dbRock = new Database(rockDbName);
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKANI{Sys.Instance.Config.terrain_set}.RES");
+        _rockAnimInfos = new RockAnimInfo[dbRock.RecordCount];
 
-        rock_anim_array = new RockAnimInfo[dbRock.RecordCount];
-
-        //---------- read in ROCKANIM.DBF ---------//
-
-        for (int i = 0; i < rock_anim_array.Length; i++)
+        for (int i = 0; i < _rockAnimInfos.Length; i++)
         {
             RockAnimRec rockAnimRec = new RockAnimRec(dbRock.Read(i + 1));
             RockAnimInfo rockAnimInfo = new RockAnimInfo();
-            rock_anim_array[i] = rockAnimInfo;
+            _rockAnimInfos[i] = rockAnimInfo;
 
             rockAnimInfo.frame = Misc.ToInt32(rockAnimRec.frame);
             rockAnimInfo.delay = Misc.ToInt32(rockAnimRec.delay);
-            rockAnimInfo.next_frame = Misc.ToInt32(rockAnimRec.next_frame);
-            rockAnimInfo.alt_next = Misc.ToInt32(rockAnimRec.alt_next);
-            if (rockAnimInfo.alt_next == 0)
-                rockAnimInfo.alt_next = rockAnimInfo.next_frame;
+            rockAnimInfo.nextFrame = Misc.ToInt32(rockAnimRec.nextFrame);
+            rockAnimInfo.altNext = Misc.ToInt32(rockAnimRec.altNext);
+            if (rockAnimInfo.altNext == 0)
+                rockAnimInfo.altNext = rockAnimInfo.nextFrame;
         }
     }
 }

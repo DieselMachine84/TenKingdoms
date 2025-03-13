@@ -4,22 +4,22 @@ namespace TenKingdoms;
 
 public class RockArray
 {
-    private List<Rock> rocks = new List<Rock>();
+    private readonly List<Rock> _rocks = new List<Rock>();
     public RockArray()
     {
     }
 
-    public Rock this[int recNo] => rocks[recNo - 1];    
+    public Rock this[int id] => _rocks[id - 1];    
     
     public int Add(Rock rock)
     {
-        rocks.Add(rock);
-        return rocks.Count;
+        _rocks.Add(rock);
+        return _rocks.Count;
     }
 
     public void Process()
     {
-        foreach (Rock rock in rocks)
+        foreach (Rock rock in _rocks)
         {
             rock.Process();
         }

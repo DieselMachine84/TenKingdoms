@@ -2,52 +2,41 @@ namespace TenKingdoms;
 
 public class Rock
 {
-	public const int ROCK_ALT_PATH = 19;
+	private const int ROCK_ALT_PATH = 19;
 
-	public int rock_recno;
-	public int cur_frame;
-	public int delay_remain;
-	public int loc_x;
-	public int loc_y;
+	private int _remainDelay;
 
-	private uint seed;
+	public int RockId { get; }
+	public int LocX { get; }
+	public int LocY { get; }
+	public int CurFrame { get; private set; }
 	
-	public RockRes RockRes { get; }
+	private RockRes RockRes => Sys.Instance.RockRes;
 
 	public Rock()
 	{
 	}
 
-	public Rock(RockRes rockRes, int rockRecno, int xLoc, int yLoc)
+	public Rock(int rockId, int locX, int locY)
 	{
-		RockRes = rockRes;
-		rock_recno = rockRecno;
-		loc_x = xLoc;
-		loc_y = yLoc;
-		seed = (uint)((xLoc + yLoc + 3) * (2 * xLoc + 7 * yLoc + 5));
+		RockId = rockId;
+		LocX = locX;
+		LocY = locY;
 
 		// ------- random frame, random initial delay_remain  -----//
-		RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-		cur_frame = 1 + random(rockInfo.max_frame);
+		RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+		CurFrame = 1 + Misc.Random(rockInfo.maxFrame);
 
-		int initDelayCount = RockRes.get_anim_info(RockRes.get_anim_recno(rockRecno, cur_frame)).delay;
-		delay_remain = 1 + random(initDelayCount);
+		int initDelayCount = RockRes.GetAnimInfo(RockRes.GetAnimId(rockId, CurFrame)).delay;
+		_remainDelay = 1 + Misc.Random(initDelayCount);
 	}
 
 	public void Process()
 	{
-		if (--delay_remain <= 0)
+		if (--_remainDelay <= 0)
 		{
-			cur_frame = RockRes.choose_next(rock_recno, cur_frame, random(ROCK_ALT_PATH));
-			delay_remain = RockRes.get_anim_info(RockRes.get_anim_recno(rock_recno, cur_frame)).delay;
+			CurFrame = RockRes.ChooseNext(RockId, CurFrame, Misc.Random(ROCK_ALT_PATH));
+			_remainDelay = RockRes.GetAnimInfo(RockRes.GetAnimId(RockId, CurFrame)).delay;
 		}
-	}
-
-	private int random(int bound)
-	{
-		const int MULTIPLIER = 0x015a4e35;
-		const int INCREMENT = 1;
-		seed = MULTIPLIER * seed + INCREMENT;
-		return (int)(seed % bound);
 	}
 }

@@ -65,7 +65,7 @@ public partial class Renderer
     private static World World => Sys.Instance.World;
 
     
-    //private static RockArray DirtArray => Sys.Instance.DirtArray;
+    private static RockArray DirtArray => Sys.Instance.DirtArray;
     private static NationArray NationArray => Sys.Instance.NationArray;
     private static TownArray TownArray => Sys.Instance.TownArray;
     private static FirmArray FirmArray => Sys.Instance.FirmArray;

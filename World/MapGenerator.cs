@@ -17,6 +17,8 @@ public class MapGenerator
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private World World => Sys.Instance.World;
 
+	private RockArray RockArray => Sys.Instance.RockArray;
+	private RockArray DirtArray => Sys.Instance.DirtArray;
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private SiteArray SiteArray => Sys.Instance.SiteArray;
 	private NationArray NationArray => Sys.Instance.NationArray;
@@ -135,14 +137,16 @@ public class MapGenerator
 
 		SubstitutePattern();
 
-		World.SetLocFlags();
+		SetLocFlags();
 
 		GenerateHills(TerrainTypeCode.TERRAIN_DARK_DIRT);
 
 		SetRegionId();
 
+		//TODO should depend on map size
 		GenDirt(40, 30, 60);
 
+		//TODO should depend on map size
 		GenRocks(5, 10, 30);
 
 		SetHarborBit();
@@ -439,6 +443,64 @@ public class MapGenerator
 		}
 	}
 
+	private void SetLocFlags()
+	{
+		//----- set power_off of the map edges -----//
+
+		for (int locX = 0; locX < GameConstants.MapSize; locX++) // set the top and bottom edges
+		{
+			World.get_loc(locX, 0).set_power_off();
+			World.get_loc(locX, GameConstants.MapSize - 1).set_power_off();
+		}
+
+		for (int locY = 0; locY < GameConstants.MapSize; locY++) // set the left and right edges
+		{
+			World.get_loc(0, locY).set_power_off();
+			World.get_loc(GameConstants.MapSize - 1, locY).set_power_off();
+		}
+
+		//-----------------------------------------//
+
+		for (int locY = 0; locY < GameConstants.MapSize; locY++)
+		{
+			for (int locX = 0; locX < GameConstants.MapSize; locX++)
+			{
+				Location location = World.get_loc(locX, locY);
+				if (Config.explore_whole_map)
+					location.explored_on();
+				else
+					location.explored_off();
+
+				TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
+				if (terrainInfo.is_coast())
+				{
+					location.loc_flag |= Location.LOCATE_COAST;
+					if (terrainInfo.average_type != TerrainTypeCode.TERRAIN_OCEAN)
+						location.set_power_off();
+					else
+						SetSurroundPowerOff(locX, locY);
+				}
+
+				location.walkable_reset();
+			}
+		}
+	}
+
+	private void SetSurroundPowerOff(int locX, int locY)
+	{
+		if (locX > 0) // west
+			World.get_loc(locX - 1, locY).set_power_off();
+
+		if (locX < GameConstants.MapSize - 1) // east
+			World.get_loc(locX + 1, locY).set_power_off();
+
+		if (locY > 0) // north
+			World.get_loc(locX, locY - 1).set_power_off();
+
+		if (locY < GameConstants.MapSize - 1) // south
+			World.get_loc(locX, locY + 1).set_power_off();
+	}
+
 	private void GenerateHills(int terrainType)
 	{
 		// ------- scan each tile for an above-hill terrain tile -----//
@@ -484,7 +546,7 @@ public class MapGenerator
 						location.set_fire_src(-100);
 						//### begin alex 24/6 ###//
 						location.set_power_off();
-						World.set_surr_power_off(x, y);
+						SetSurroundPowerOff(x, y);
 						//#### end alex 24/6 ####//
 						if (y > 0)
 						{
@@ -493,7 +555,7 @@ public class MapGenerator
 							aboveLoc.set_fire_src(-100);
 							//### begin alex 24/6 ###//
 							aboveLoc.set_power_off();
-							World.set_surr_power_off(x, y - 1);
+							SetSurroundPowerOff(x, y - 1);
 							//#### end alex 24/6 ####//
 						}
 
@@ -563,7 +625,7 @@ public class MapGenerator
 								location.remove_hill();
 								location.set_hill(hillId);
 								location.set_power_off();
-								World.set_surr_power_off(x, y);
+								SetSurroundPowerOff(x, y);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									location.terrain_id = terrainId;
 
@@ -581,7 +643,7 @@ public class MapGenerator
 
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 1);
+								SetSurroundPowerOff(x, y + 1);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1,
 									    0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
@@ -623,7 +685,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x + 2, y);
+								SetSurroundPowerOff(x + 2, y);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1,
 									    0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
@@ -642,7 +704,7 @@ public class MapGenerator
 
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x + 2, y + 1);
+								SetSurroundPowerOff(x + 2, y + 1);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -709,7 +771,7 @@ public class MapGenerator
 								location.remove_hill();
 								location.set_hill(hillId);
 								location.set_power_off();
-								World.set_surr_power_off(x, y);
+								SetSurroundPowerOff(x, y);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									location.terrain_id = terrainId;
 
@@ -740,7 +802,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x + 2, y);
+								SetSurroundPowerOff(x + 2, y);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -808,7 +870,7 @@ public class MapGenerator
 								location.remove_hill();
 								location.set_hill(hillId);
 								location.set_power_off();
-								World.set_surr_power_off(x, y);
+								SetSurroundPowerOff(x, y);
 								if (hill2 != 0)
 									location.set_hill(hill2);
 
@@ -820,7 +882,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 1);
+								SetSurroundPowerOff(x, y + 1);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -851,7 +913,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 3);
+								SetSurroundPowerOff(x, y + 3);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -862,7 +924,7 @@ public class MapGenerator
 									HillRes.LOW_HILL_PRIORITY, WEST_BOTTOM_SPECIAL);
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 4);
+								SetSurroundPowerOff(x, y + 4);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 								lastExit = MIN_EXIT_SEPARATION;
@@ -930,7 +992,7 @@ public class MapGenerator
 								if (hill2 != 0)
 									location.set_hill(hill2);
 								location.set_power_off();
-								World.set_surr_power_off(x, y);
+								SetSurroundPowerOff(x, y);
 
 								// next row
 								Location loc2 = World.get_loc(x, y + 1);
@@ -940,7 +1002,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 1);
+								SetSurroundPowerOff(x, y + 1);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -971,7 +1033,7 @@ public class MapGenerator
 								loc2.remove_hill();
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 3);
+								SetSurroundPowerOff(x, y + 3);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 
@@ -982,7 +1044,7 @@ public class MapGenerator
 									EAST_BOTTOM_SPECIAL);
 								loc2.set_hill(hillId);
 								loc2.set_power_off();
-								World.set_surr_power_off(x, y + 4);
+								SetSurroundPowerOff(x, y + 4);
 								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.terrain_id = terrainId;
 								lastExit = MIN_EXIT_SEPARATION;
@@ -1141,57 +1203,53 @@ public class MapGenerator
 			// generate grouped dirt
 			if (nGrouped > 0)
 			{
-				int x = (GAP + SMALL_ROCK_SIZE) +
-				        Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
-				int y = (GAP + SMALL_ROCK_SIZE) +
-				        Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
 				int x2 = x + LARGE_ROCK_SIZE - 1;
 				int y2 = y + LARGE_ROCK_SIZE - 1;
 
-				if (World.can_add_dirt(x, y, x2, y2))
+				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("DE", 1, LARGE_ROCK_SIZE,
+					int rockId = RockRes.Search("DE", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type)
-					    && rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type)
-					    && rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_dirt(rockRecno, x, y);
+						AddDirt(rockId, x, y);
 
 						// add other smaller rock
 						for (int subTrial = Misc.Random(14); subTrial > 0; --subTrial)
 						{
 							// sx from x-SMALL_ROCK_SIZE to x+4-1+SMALL_ROCK_SIZE
-							int sx = x - SMALL_ROCK_SIZE - GAP +
-							         Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
-							int sy = y - SMALL_ROCK_SIZE - GAP +
-							         Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
+							int sx = x - SMALL_ROCK_SIZE - GAP + Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
+							int sy = y - SMALL_ROCK_SIZE - GAP + Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
 							int sx2 = sx + SMALL_ROCK_SIZE - 1;
 							int sy2 = sy + SMALL_ROCK_SIZE - 1;
 
-							if (World.can_add_dirt(sx, sy, sx2, sy2))
+							if (CanAddDirt(sx, sy, sx2, sy2))
 							{
-								int rock2Recno = RockRes.search("DE", 1, SMALL_ROCK_SIZE,
+								int rock2Id = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
 									TerrainRes[World.get_loc(sx, sy).terrain_id].average_type);
-								if (rock2Recno == 0)
+								if (rock2Id == 0)
 									continue;
 
-								RockInfo rock2Info = RockRes.get_rock_info(rock2Recno);
-								sx2 = sx + rock2Info.loc_width - 1;
-								sy2 = sy + rock2Info.loc_height - 1;
-								if (rock2Info.valid_terrain(TerrainRes[World.get_loc(sx2, sy).terrain_id].average_type) &&
-								    rock2Info.valid_terrain(TerrainRes[World.get_loc(sx, sy2).terrain_id].average_type) &&
-								    rock2Info.valid_terrain(TerrainRes[World.get_loc(sx2, sy2).terrain_id].average_type))
+								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
+								sx2 = sx + rock2Info.locWidth - 1;
+								sy2 = sy + rock2Info.locHeight - 1;
+								if (rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy).terrain_id].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx, sy2).terrain_id].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy2).terrain_id].average_type))
 								{
-									World.add_dirt(rock2Recno, sx, sy);
+									AddDirt(rock2Id, sx, sy);
 								}
 							}
 						}
@@ -1209,22 +1267,22 @@ public class MapGenerator
 				int x2 = x + HUGE_ROCK_SIZE - 1;
 				int y2 = y + HUGE_ROCK_SIZE - 1;
 
-				if (World.can_add_dirt(x, y, x2, y2))
+				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
+					int rockId = RockRes.Search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
 						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_dirt(rockRecno, x, y);
+						AddDirt(rockId, x, y);
 						nLarge--;
 					}
 				}
@@ -1238,22 +1296,22 @@ public class MapGenerator
 				int x2 = x + SMALL_ROCK_SIZE - 1;
 				int y2 = y + SMALL_ROCK_SIZE - 1;
 
-				if (World.can_add_dirt(x, y, x2, y2))
+				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("DE", 1, SMALL_ROCK_SIZE,
+					int rockId = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_dirt(rockRecno, x, y);
+						AddDirt(rockId, x, y);
 						nSmall--;
 					}
 				}
@@ -1261,6 +1319,44 @@ public class MapGenerator
 		}
 	}
 
+	private bool CanAddDirt(int x1, int y1, int x2, int y2)
+	{
+		for (int y = y1; y <= y2; y++)
+		{
+			for (int x = x1; x <= x2; x++)
+			{
+				if (!World.get_loc(x, y).can_add_dirt())
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	private void AddDirt(int dirtId, int x1, int y1)
+	{
+		// ------- get the delay remain count for the first frame -----//
+		Rock newDirt = new Rock(dirtId, x1, y1);
+		int dirtArrayId = DirtArray.Add(newDirt);
+		RockInfo dirtInfo = RockRes.GetRockInfo(dirtId);
+
+		for (int dy = 0; dy < dirtInfo.locHeight && y1 + dy < GameConstants.MapSize; dy++)
+		{
+			for (int dx = 0; dx < dirtInfo.locWidth && x1 + dx < GameConstants.MapSize; dx++)
+			{
+				int dirtBlockId = RockRes.LocateBlock(dirtId, dx, dy);
+				if (dirtBlockId != 0)
+				{
+					Location location = World.get_loc(x1 + dx, y1 + dy);
+					location.set_dirt(dirtArrayId);
+
+					if (dirtInfo.rockType == RockInfo.DIRT_BLOCKING_TYPE)
+						location.walkable_off();
+				}
+			}
+		}
+	}
+	
 	private void GenRocks(int nGrouped, int nLarge, int nSmall)
 	{
 		// one 'large' (size 1 to 4) at the center
@@ -1278,57 +1374,53 @@ public class MapGenerator
 			// generate grouped rocks
 			if (nGrouped > 0)
 			{
-				int x = (GAP + SMALL_ROCK_SIZE) +
-				        Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
-				int y = (GAP + SMALL_ROCK_SIZE) +
-				        Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
 				int x2 = x + LARGE_ROCK_SIZE - 1;
 				int y2 = y + LARGE_ROCK_SIZE - 1;
 
-				if (World.can_add_rock(x, y, x2, y2))
+				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("R", 1, LARGE_ROCK_SIZE,
+					int rockId = RockRes.Search("R", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_rock(rockRecno, x, y);
+						AddRock(rockId, x, y);
 
 						// add other smaller rock
 						for (int subTrial = Misc.Random(14); subTrial > 0; --subTrial)
 						{
 							// sx from x-SMALL_ROCK_SIZE to x+4-1+SMALL_ROCK_SIZE
-							int sx = x - SMALL_ROCK_SIZE - GAP +
-							         Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
-							int sy = y - SMALL_ROCK_SIZE - GAP +
-							         Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
+							int sx = x - SMALL_ROCK_SIZE - GAP + Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
+							int sy = y - SMALL_ROCK_SIZE - GAP + Misc.Random(LARGE_ROCK_SIZE + SMALL_ROCK_SIZE + 2 * GAP);
 							int sx2 = sx + SMALL_ROCK_SIZE - 1;
 							int sy2 = sy + SMALL_ROCK_SIZE - 1;
 
-							if (World.can_add_rock(sx, sy, sx2, sy2))
+							if (CanAddRock(sx, sy, sx2, sy2))
 							{
-								int rock2Recno = RockRes.search("R", 1, SMALL_ROCK_SIZE,
+								int rock2Id = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
 									TerrainRes[World.get_loc(sx, sy).terrain_id].average_type);
-								if (rock2Recno == 0)
+								if (rock2Id == 0)
 									continue;
 
-								RockInfo rock2Info = RockRes.get_rock_info(rock2Recno);
-								sx2 = sx + rock2Info.loc_width - 1;
-								sy2 = sy + rock2Info.loc_height - 1;
-								if (rock2Info.valid_terrain(TerrainRes[World.get_loc(sx2, sy).terrain_id].average_type) &&
-								    rock2Info.valid_terrain(TerrainRes[World.get_loc(sx, sy2).terrain_id].average_type) &&
-								    rock2Info.valid_terrain(TerrainRes[World.get_loc(sx2, sy2).terrain_id].average_type))
+								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
+								sx2 = sx + rock2Info.locWidth - 1;
+								sy2 = sy + rock2Info.locHeight - 1;
+								if (rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy).terrain_id].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx, sy2).terrain_id].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy2).terrain_id].average_type))
 								{
-									World.add_rock(rock2Recno, sx, sy);
+									AddRock(rock2Id, sx, sy);
 								}
 							}
 						}
@@ -1346,22 +1438,22 @@ public class MapGenerator
 				int x2 = x + HUGE_ROCK_SIZE - 1;
 				int y2 = y + HUGE_ROCK_SIZE - 1;
 
-				if (World.can_add_rock(x, y, x2, y2))
+				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
-						LARGE_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
+					int rockId = RockRes.Search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
+						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_rock(rockRecno, x, y);
+						AddRock(rockId, x, y);
 						nLarge--;
 					}
 				}
@@ -1375,24 +1467,61 @@ public class MapGenerator
 				int x2 = x + SMALL_ROCK_SIZE - 1;
 				int y2 = y + SMALL_ROCK_SIZE - 1;
 
-				if (World.can_add_rock(x, y, x2, y2))
+				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockRecno = RockRes.search("R", 1, SMALL_ROCK_SIZE,
+					int rockId = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
 						TerrainRes[World.get_loc(x, y).terrain_id].average_type);
-					if (rockRecno == 0)
+					if (rockId == 0)
 						continue;
 
-					RockInfo rockInfo = RockRes.get_rock_info(rockRecno);
-					x2 = x + rockInfo.loc_width - 1;
-					y2 = y + rockInfo.loc_height - 1;
-					if (rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
-					    rockInfo.valid_terrain(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
+					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+					x2 = x + rockInfo.locWidth - 1;
+					y2 = y + rockInfo.locHeight - 1;
+					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).terrain_id].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).terrain_id].average_type))
 					{
-						World.add_rock(rockRecno, x, y);
+						AddRock(rockId, x, y);
 						nSmall--;
 					}
+				}
+			}
+		}
+	}
+
+	private bool CanAddRock(int x1, int y1, int x2, int y2)
+	{
+		for (int y = y1; y <= y2; y++)
+		{
+			for (int x = x1; x <= x2; x++)
+			{
+				if (!World.get_loc(x, y).can_add_rock(3))
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	private void AddRock(int rockId, int x1, int y1)
+	{
+		// ------- get the delay remain count for the first frame -----//
+		Rock newRock = new Rock(rockId, x1, y1);
+		int rockArrayId = RockArray.Add(newRock);
+		RockInfo rockInfo = RockRes.GetRockInfo(rockId);
+
+		for (int dy = 0; dy < rockInfo.locHeight && y1 + dy < GameConstants.MapSize; dy++)
+		{
+			for (int dx = 0; dx < rockInfo.locWidth && x1 + dx < GameConstants.MapSize; dx++)
+			{
+				int rockBlockId = RockRes.LocateBlock(rockId, dx, dy);
+				if (rockBlockId != 0)
+				{
+					Location location = World.get_loc(x1 + dx, y1 + dy);
+					location.set_rock(rockArrayId);
+					location.set_power_off();
+					SetSurroundPowerOff(x1, y1);
 				}
 			}
 		}
@@ -1413,7 +1542,7 @@ public class MapGenerator
 			}
 		}
 	}
-
+	
 	private void CreateAINation(int aiNationCount)
 	{
 		for (int i = 0; i < aiNationCount; i++)

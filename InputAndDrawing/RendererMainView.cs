@@ -6,32 +6,37 @@ public partial class Renderer
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         
-        for (int x = _topLeftX; (x < _topLeftX + MainViewWidthInCells) && x < GameConstants.MapSize; x++)
+        for (int locX = _topLeftX; (locX < _topLeftX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
         {
-            for (int y = _topLeftY; (y < _topLeftY + MainViewHeightInCells) && y < GameConstants.MapSize; y++)
+            for (int locY = _topLeftY; (locY < _topLeftY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
-                Location location = World.get_loc(x, y);
+                Location location = World.get_loc(locX, locY);
                 if (!location.explored())
                     continue;
 
                 //Draw terrain
                 //TODO terrain animation
-                int drawX = MainViewX + (x - _topLeftX) * CellTextureWidth;
-                int drawY = MainViewY + (y - _topLeftY) * CellTextureHeight;
+                int drawX = MainViewX + (locX - _topLeftX) * CellTextureWidth;
+                int drawY = MainViewY + (locY - _topLeftY) * CellTextureHeight;
                 TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
                 Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), drawX, drawY, Scale(terrainInfo.bitmapWidth), Scale(terrainInfo.bitmapHeight));
 
-                /*if (location.has_dirt())
+                if (location.has_dirt())
                 {
-                    //rock_res.draw_block(rock_recno, xLoc, yLoc, xLoc-dirt.loc_x, yLoc-dirt.loc_y, cur_frame);
-                    RockInfo rockInfo = RockRes.get_rock_info(location.dirt_recno());
-                    int rockBlockRecno = locate_block(rockRecno, offsetX, offsetY);
-                    int rockBitmapRecno = get_bitmap_recno(rockBlockRecno, curFrame);
-                    if (rockBlockRecno != 0 && rockBitmapRecno != 0)
+                    int dirtId = location.dirt_recno();
+                    Rock dirt = DirtArray[dirtId];
+                    int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
+                    if (dirtBlockId != 0)
                     {
-                        get_bitmap_info(rockBitmapRecno)->draw(xLoc, yLoc);
+                        int dirtBitmapId = RockRes.GetBitmapId(dirtBlockId, dirt.CurFrame);
+                        if (dirtBitmapId != 0)
+                        {
+                            RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
+                            Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), drawX, drawY,
+                                Scale(dirtBitmapInfo.bitmapWidth), Scale(dirtBitmapInfo.bitmapHeight));
+                        }
                     }
-                }*/
+                }
 
                 //TODO draw snow
 
@@ -56,6 +61,8 @@ public partial class Renderer
         DrawTownsGround();
         
         DrawTownsStructures();
+        
+        DrawUnitPaths();
 
         DrawUnits();
 
@@ -335,5 +342,10 @@ public partial class Renderer
             Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, isSelected), unitX, unitY,
                 Scale(spriteFrame.width), Scale(spriteFrame.height), needMirror);
         }
+    }
+
+    private void DrawUnitPaths()
+    {
+        //
     }
 }
