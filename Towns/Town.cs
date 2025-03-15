@@ -234,14 +234,6 @@ public class Town
 
 		if (TrainUnitId != 0)
 			UnitArray.DisappearInTown(UnitArray[TrainUnitId], this);
-
-		//------- if the current town is the selected -----//
-
-		if (TownArray.SelectedTownId == TownId)
-		{
-			TownArray.SelectedTownId = 0;
-			Info.disp();
-		}
 	}
 
 	public void NextDay()
@@ -4181,7 +4173,7 @@ public class Town
 			//--- the following functions will only be called when the nation has at least a mine ---//
 
 			// don't build other structures if there are untapped raw sites and our nation still doesn't have any
-			if (SiteArray.untapped_raw_count > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.true_profit_365days() < 0)
+			if (SiteArray.UntappedRawCount > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.true_profit_365days() < 0)
 			{
 				return;
 			}

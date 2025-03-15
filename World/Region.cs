@@ -214,10 +214,10 @@ public class RegionStat
 
 		foreach (Site site in SiteArray)
 		{
-			if (site.region_id != region_id)
+			if (site.RegionId != region_id)
 				continue;
 
-			if (site.site_type == Site.SITE_RAW)
+			if (site.SiteType == Site.SITE_RAW)
 				raw_count++;
 
 			site_count++;

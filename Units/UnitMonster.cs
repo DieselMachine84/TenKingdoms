@@ -126,7 +126,7 @@ public class UnitMonster : Unit
                 int goldAmount = 2 * max_hit_points * monsterInfo.level * (100 + Misc.Random(30)) / 100;
 
                 SiteArray.AddSite(xLoc, yLoc, Site.SITE_GOLD_COIN, goldAmount);
-                SiteArray.ai_get_site_object(); // ask AI units to get the gold coins
+                SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
             }
 
             //--- when a king monster is killed, it leaves a scroll of power ---//
@@ -380,7 +380,7 @@ public class UnitMonster : Unit
                 int scrollGodId = bestRaceId;
 
                 SiteArray.AddSite(xLoc, yLoc, Site.SITE_SCROLL, scrollGodId);
-                SiteArray.ai_get_site_object(); // ask AI units to get the scroll
+                SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the scroll
                 break;
             }
         }

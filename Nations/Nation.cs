@@ -1100,12 +1100,12 @@ public class Nation : NationBase
 		{
 			//--- if there is already a mine built on this raw site ---//
 
-			if (site.has_mine)
+			if (site.HasMine)
 				continue;
 
 			//----- if there is a unit standing on this site -----//
 
-			Location location = World.get_loc(site.map_x_loc, site.map_y_loc);
+			Location location = World.get_loc(site.LocX, site.LocY);
 
 			if (!location.has_unit(UnitConstants.UNIT_LAND))
 				continue;
@@ -1123,7 +1123,7 @@ public class Nation : NationBase
 			// ####### patch begin Gilbert 16/3 ########//
 			//if( region_array.get_region_stat(site.region_id).base_town_nation_count_array[nation_recno-1] == 0 )
 			//	continue;
-			if (base_town_count_in_region(site.region_id) == 0)
+			if (base_town_count_in_region(site.RegionId) == 0)
 				continue;
 			// ####### patch end Gilbert 16/3 ########//
 
@@ -1138,11 +1138,11 @@ public class Nation : NationBase
 
 			//--------- attack the enemy unit ---------//
 
-			if (is_battle(site.map_x_loc, site.map_y_loc) > 0)
+			if (is_battle(site.LocX, site.LocY) > 0)
 				continue;
 
-			int enemyCombatLevel = ai_evaluate_target_combat_level(site.map_x_loc, site.map_y_loc, unit.nation_recno);
-			if (ai_attack_target(site.map_x_loc, site.map_y_loc, enemyCombatLevel,
+			int enemyCombatLevel = ai_evaluate_target_combat_level(site.LocX, site.LocY, unit.nation_recno);
+			if (ai_attack_target(site.LocX, site.LocY, enemyCombatLevel,
 				    false, 0, 0, true))
 				return true;
 		}
@@ -1194,7 +1194,7 @@ public class Nation : NationBase
 		if (total_jobless_population < 16)
 			return false;
 
-		if (SiteArray.untapped_raw_count == 0)
+		if (SiteArray.UntappedRawCount == 0)
 			return false;
 
 		if (!can_ai_build(Firm.FIRM_MINE))
@@ -1243,7 +1243,7 @@ public class Nation : NationBase
 		refXLoc = -1;
 		refYLoc = -1;
 
-		if (SiteArray.untapped_raw_count == 0)
+		if (SiteArray.UntappedRawCount == 0)
 			return 0;
 
 		int[] raw_kind_mined = new int[GameConstants.MAX_RAW];
@@ -1277,15 +1277,15 @@ public class Nation : NationBase
 		//--------------------------------------------//
 		foreach (Site site in SiteArray)
 		{
-			if (site.site_type != Site.SITE_RAW)
+			if (site.SiteType != Site.SITE_RAW)
 				continue;
 
-			Location siteLoc = World.get_loc(site.map_x_loc, site.map_y_loc);
+			Location siteLoc = World.get_loc(site.LocX, site.LocY);
 
 			if (!siteLoc.can_build_firm())
 				continue;
 
-			int siteId = site.object_id - 1;
+			int siteId = site.ObjectId - 1;
 
 			if (townWithMine[siteId] != 0)
 				continue; // a site connected to town is found before
@@ -1294,7 +1294,7 @@ public class Nation : NationBase
 			// continue if action to this site already exist
 			//--------------------------------------------//
 
-			if (get_action(-1, -1, site.map_x_loc, site.map_y_loc,
+			if (get_action(-1, -1, site.LocX, site.LocY,
 				    ACTION_AI_BUILD_FIRM, Firm.FIRM_MINE) != null)
 				continue;
 
@@ -1307,7 +1307,7 @@ public class Nation : NationBase
 				if (siteLoc.region_id != location.region_id)
 					continue; // not on the same territory
 
-				int dist = Misc.rects_distance(site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc,
+				int dist = Misc.rects_distance(site.LocX, site.LocY, site.LocX, site.LocY,
 					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 				//-------------------------------------------------------------------------//
@@ -1333,12 +1333,12 @@ public class Nation : NationBase
 					//------ can build or not ----------//
 					bool canBuild = false;
 
-					for (int ix = site.map_x_loc - firmInfo.loc_width + 1; ix <= site.map_x_loc && !canBuild; ix++)
+					for (int ix = site.LocX - firmInfo.loc_width + 1; ix <= site.LocX && !canBuild; ix++)
 					{
 						if (ix < 0 || ix >= GameConstants.MapSize)
 							continue;
 
-						for (int iy = site.map_y_loc - firmInfo.loc_height + 1; iy <= site.map_y_loc && !canBuild; iy++)
+						for (int iy = site.LocY - firmInfo.loc_height + 1; iy <= site.LocY && !canBuild; iy++)
 						{
 							if (iy < 0 || iy >= GameConstants.MapSize)
 								continue;
@@ -1355,7 +1355,7 @@ public class Nation : NationBase
 
 					if (canBuild)
 					{
-						nearSite[siteId] = site.site_recno;
+						nearSite[siteId] = site.SiteId;
 						minDist[siteId] = dist;
 
 						if (connected && dist <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
@@ -1430,16 +1430,16 @@ public class Nation : NationBase
 			Site site = SiteArray[siteRecno];
 			xLoc = buildXLoc[pos];
 			yLoc = buildYLoc[pos];
-			refXLoc = site.map_x_loc;
-			refYLoc = site.map_y_loc;
+			refXLoc = site.LocX;
+			refYLoc = site.LocY;
 
 			//--------------------------------------------------------------//
 			// do some adjustment such that the firm will be built far away
 			// from other firms by at least one step.
 			//--------------------------------------------------------------//
-			seek_best_build_mine_location(ref xLoc, ref yLoc, site.map_x_loc, site.map_y_loc);
+			seek_best_build_mine_location(ref xLoc, ref yLoc, site.LocX, site.LocY);
 
-			return site.object_id; // the raw id.
+			return site.ObjectId; // the raw id.
 		}
 
 		return 0;
@@ -5828,7 +5828,7 @@ public class Nation : NationBase
 		foreach (Site site in SiteArray)
 		{
 			//TODO only raw resource?
-			if (site.region_id == bestRegionId)
+			if (site.RegionId == bestRegionId)
 			{
 				bestSite = site;
 				break;
@@ -5840,8 +5840,7 @@ public class Nation : NationBase
 
 		//----- decide the location of the settlement -----//
 
-		return ai_build_camp_town_next_to(bestSite.map_x_loc - 1, bestSite.map_y_loc - 1,
-			bestSite.map_x_loc + 1, bestSite.map_y_loc + 1);
+		return ai_build_camp_town_next_to(bestSite.LocX - 1, bestSite.LocY - 1, bestSite.LocX + 1, bestSite.LocY + 1);
 	}
 
 	public bool ai_build_camp_town_next_to(int xLoc1, int yLoc1, int xLoc2, int yLoc2)

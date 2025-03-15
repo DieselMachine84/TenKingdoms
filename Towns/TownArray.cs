@@ -45,6 +45,9 @@ public class TownArray : DynArray<Town>
 		Delete(town.TownId);
 
 		NationArray.update_statistic();
+		
+		if (SelectedTownId == town.TownId)
+			SelectedTownId = 0;
 	}
 
 	public override bool IsDeleted(int recNo)

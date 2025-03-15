@@ -8,18 +8,15 @@ public class Site
     public const int SITE_SCROLL = 2;
     public const int SITE_GOLD_COIN = 3;
 
-    public int site_recno;
+    public int SiteId { get; private set; }
+    public int SiteType { get; private set; } // SITE_RAW, SITE_SCROLL or SITE_GOLD_COIN
+    public int ObjectId { get; private set; }
+    public int LocX { get; private set; }
+    public int LocY { get; private set; }
+    public int RegionId { get; private set; }
 
-    public int site_type; // SITE_RAW, SITE_ARTIFACT or SITE_SCROLL
-
-    public int object_id; // id. of the object,
-    public int reserve_qty; // for raw material only
-    public bool has_mine; // whether there is a mine on this site
-
-    public int map_x_loc;
-    public int map_y_loc;
-
-    public int region_id;
+    public int ReserveQty { get; set; } // for raw material only
+    public bool HasMine { get; set; } // whether there is a mine on this site
     
     private GodRes GodRes => Sys.Instance.GodRes;
     private World World => Sys.Instance.World;
@@ -32,60 +29,51 @@ public class Site
     {
     }
 
-    public void Init(int siteType, int xLoc, int yLoc, int objectId, int reserveQty)
+    public void Init(int siteId, int siteType, int objectId, int locX, int locY, int reserveQty)
     {
-        site_type = siteType;
-        map_x_loc = xLoc;
-        map_y_loc = yLoc;
-        object_id = objectId;
-        reserve_qty = reserveQty;
+        SiteId = siteId;
+        SiteType = siteType;
+        ObjectId = objectId;
+        LocX = locX;
+        LocY = locY;
+        ReserveQty = reserveQty;
 
-        //------- set world's location --------//
-
-        Location location = World.get_loc(xLoc, yLoc);
-        location.set_site(site_recno);
-        region_id = location.region_id;
+        Location location = World.get_loc(locX, locY);
+        location.set_site(siteId);
+        RegionId = location.region_id;
     }
 
     public void Deinit()
     {
-        World.get_loc(map_x_loc, map_y_loc).remove_site();
+        World.get_loc(LocX, LocY).remove_site();
     }
 
-    public bool get_site_object(int unitRecno)
+    public bool GetByUnit(int unitId)
     {
-        Unit unit = UnitArray[unitRecno];
-        bool objectTaken = false;
-
+        Unit unit = UnitArray[unitId];
         if (unit.nation_recno == 0)
             return false;
 
-        //----- if this is a scroll site ------//
+        bool objectTaken = false;
 
-        if (site_type == SITE_SCROLL)
+        if (SiteType == SITE_SCROLL)
         {
-            if (GodRes[object_id].race_id == unit.race_id)
+            if (GodRes[ObjectId].race_id == unit.race_id)
             {
-                GodRes[object_id].enable_know(unit.nation_recno);
-
+                GodRes[ObjectId].enable_know(unit.nation_recno);
                 objectTaken = true;
-
-                NewsArray.scroll_acquired(unit.nation_recno, GodRes[object_id].race_id);
+                NewsArray.scroll_acquired(unit.nation_recno, GodRes[ObjectId].race_id);
             }
         }
 
-        //------ if there are gold coins on this site -----//
-
-        if (site_type == SITE_GOLD_COIN)
+        if (SiteType == SITE_GOLD_COIN)
         {
-            NationArray[unit.nation_recno].add_income(NationBase.INCOME_TREASURE, object_id);
+            NationArray[unit.nation_recno].add_income(NationBase.INCOME_TREASURE, ObjectId);
             objectTaken = true;
 
             if (unit.nation_recno == NationArray.player_recno)
-                NewsArray.monster_gold_acquired(object_id);
+                NewsArray.monster_gold_acquired(ObjectId);
         }
-
-        //---- if the object has been taken by the unit ----//
 
         if (objectTaken)
         {
@@ -96,44 +84,37 @@ public class Site
         return false;
     }
 
-    public bool ai_get_site_object()
+    public bool OrderAIUnitsToGetThisSite()
     {
-        const int NOTIFY_GET_RANGE = 30; // only notify units within this range
-        const int MAX_UNIT_TO_ORDER = 5;
-
-        int xOffset = 0, yOffset = 0;
         int unitOrderedCount = 0;
         int siteRaceId = 0;
 
-        if (site_type == SITE_SCROLL)
-            siteRaceId = GodRes[object_id].race_id;
+        if (SiteType == SITE_SCROLL)
+            siteRaceId = GodRes[ObjectId].race_id;
 
-        for (int i = 2; i < NOTIFY_GET_RANGE * NOTIFY_GET_RANGE; i++)
+        for (int i = 2; i < InternalConstants.GET_SITE_RANGE * InternalConstants.GET_SITE_RANGE; i++)
         {
-            Misc.cal_move_around_a_point(i, NOTIFY_GET_RANGE, NOTIFY_GET_RANGE, out xOffset, out yOffset);
+            Misc.cal_move_around_a_point(i, InternalConstants.GET_SITE_RANGE, InternalConstants.GET_SITE_RANGE, out int xOffset, out int yOffset);
 
-            int xLoc = map_x_loc + xOffset;
-            int yLoc = map_y_loc + yOffset;
+            int locX = LocX + xOffset;
+            int locY = LocY + yOffset;
 
-            xLoc = Math.Max(0, xLoc);
-            xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+            locX = Math.Max(0, locX);
+            locX = Math.Min(GameConstants.MapSize - 1, locX);
 
-            yLoc = Math.Max(0, yLoc);
-            yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
+            locY = Math.Max(0, locY);
+            locY = Math.Min(GameConstants.MapSize - 1, locY);
 
-            Location location = Sys.Instance.World.get_loc(xLoc, yLoc);
-
+            Location location = Sys.Instance.World.get_loc(locX, locY);
             if (!location.has_unit(UnitConstants.UNIT_LAND))
                 continue;
 
-            //------------------------------//
+            int unitId = location.unit_recno(UnitConstants.UNIT_LAND);
 
-            int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
-
-            if (UnitArray.IsDeleted(unitRecno))
+            if (UnitArray.IsDeleted(unitId))
                 continue;
 
-            Unit unit = UnitArray[unitRecno];
+            Unit unit = UnitArray[unitId];
 
             if (unit.race_id == 0 || !unit.ai_unit || unit.ai_action_id != 0)
                 continue;
@@ -141,15 +122,15 @@ public class Site
             if (siteRaceId != 0 && siteRaceId != unit.race_id)
                 continue;
 
-            unit.move_to(map_x_loc, map_y_loc);
+            unit.move_to(LocX, LocY);
 
             //--- if the unit is just standing next to the site ---//
 
-            if (Math.Abs(map_x_loc - xLoc) <= 1 && Math.Abs(map_y_loc - yLoc) <= 1)
+            if (Math.Abs(LocX - locX) <= 1 && Math.Abs(LocY - locY) <= 1)
                 return true;
 
             // order more than one unit to get the site at the same time
-            if (++unitOrderedCount >= MAX_UNIT_TO_ORDER)
+            if (++unitOrderedCount >= InternalConstants.MAX_UNIT_TO_GET_SITE)
                 return true;
         }
 

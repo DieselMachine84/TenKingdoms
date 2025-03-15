@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -142,10 +144,29 @@ public class MonsterRes
 
     public ResourceDb res_bitmap;
 
+    private readonly List<byte[]> _goldCoinBitmaps = new List<byte[]>();
+    public int goldCoinWidth;
+    public int goldCoinHeight;
+    private readonly List<IntPtr> _goldCoinTextures = new List<nint>();
+    
+    public IntPtr GetGoldCoinTexture(Graphics graphics, int value)
+    {
+        if (_goldCoinTextures.Count == 0)
+        {
+            for (int i = 0; i < _goldCoinBitmaps.Count; i++)
+            {
+                byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(_goldCoinBitmaps[i], goldCoinWidth, goldCoinHeight);
+                IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, goldCoinWidth, goldCoinHeight);
+                _goldCoinTextures.Add(texture);
+            }
+        }
+        
+        return _goldCoinTextures[_goldCoinTextures.Count % value];
+    }
+
     private FirmArray FirmArray => Sys.Instance.FirmArray;
 
     public GameSet GameSet { get; }
-
     public UnitRes UnitRes { get; }
 
     public MonsterRes(GameSet gameSet, UnitRes unitRes)
@@ -154,6 +175,7 @@ public class MonsterRes
         UnitRes = unitRes;
 
         LoadMonsterInfo();
+        LoadGoldCoins();
     }
 
     public void init_active_monster()
@@ -247,6 +269,23 @@ public class MonsterRes
             //---- set the monster_id in UnitInfo ----//
 
             UnitRes[monsterInfo.unit_id].is_monster = 1;
+        }
+    }
+
+    private void LoadGoldCoins()
+    {
+        const int MAX_COINS_TYPE = 8;
+        ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
+        for (int i = 0; i < MAX_COINS_TYPE; i++)
+        {
+            byte[] coinsData = images.Read("COINS-" + (i + 1).ToString());
+            if (i == 0)
+            {
+                goldCoinWidth = BitConverter.ToInt16(coinsData, 0);
+                goldCoinHeight = BitConverter.ToInt16(coinsData, 2);
+            }
+
+            _goldCoinBitmaps.Add(coinsData.Skip(4).ToArray());
         }
     }
 }

@@ -19,7 +19,7 @@ public class BuildMineTask : AITask
             return true;
 
         Site site = SiteArray[SiteId];
-        if (site.has_mine)
+        if (site.HasMine)
             return true;
 
         return false;
@@ -42,13 +42,13 @@ public class BuildMineTask : AITask
                     continue;
 
                 // TODO other region
-                if (firm.region_id != site.region_id)
+                if (firm.region_id != site.RegionId)
                     continue;
 
                 // TODO use pref
                 if (firm.builder_recno != 0 && firm.hit_points > firm.max_hit_points / 2.0)
                 {
-                    int firmDistance = Misc.points_distance(firm.loc_x1, firm.loc_y1, site.map_x_loc, site.map_y_loc);
+                    int firmDistance = Misc.points_distance(firm.loc_x1, firm.loc_y1, site.LocX, site.LocY);
                     if (firmDistance < minFirmDistance)
                     {
                         //TODO prefer firms at the same region
@@ -66,13 +66,13 @@ public class BuildMineTask : AITask
                     continue;
 
                 // TODO other region
-                if (town.RegionId != site.region_id)
+                if (town.RegionId != site.RegionId)
                     continue;
 
                 if (town.JoblessPopulation == 0)
                     continue;
 
-                int townDistance = Misc.points_distance(town.LocX1, town.LocY1, site.map_x_loc, site.map_y_loc);
+                int townDistance = Misc.points_distance(town.LocX1, town.LocY1, site.LocX, site.LocY);
                 if (townDistance < minTownDistance)
                 {
                     //TODO prefer towns at the same region
@@ -128,7 +128,7 @@ public class BuildMineTask : AITask
         {
             //World.can_build_firm()
             //TODO find best location
-            builder.build_firm(site.map_x_loc, site.map_y_loc, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
+            builder.build_firm(site.LocX, site.LocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
             _builderSent = true;
         }
         else

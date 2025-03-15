@@ -68,6 +68,19 @@ public class RaceInfo
 	public int icon_bitmapWidth;
 	public int icon_bitmapHeight;
 
+	public byte[] scrollBitmap;
+	public int scrollBitmapWidth;
+	public int scrollBitmapHeight;
+	private IntPtr _scrollTexture;
+
+	public IntPtr GetScrollTexture(Graphics graphics)
+	{
+		if (_scrollTexture == default)
+			_scrollTexture = graphics.CreateTextureFromBmp(scrollBitmap, scrollBitmapWidth, scrollBitmapHeight);
+
+		return _scrollTexture;
+	}
+	
 	//----------------------//
 
 	public int first_first_name_id; // first <first name> of this race in first_name_array[]
@@ -290,7 +303,8 @@ public class RaceRes
 	public RaceName[] name_array;
 	public byte[] name_used_array;
 
-	ResourceDb res_bitmap;
+	private ResourceDb res_bitmap;
+	private ResourceIdx _scrollResources;
 
 	public GameSet GameSet { get; }
 	public UnitRes UnitRes { get; }
@@ -301,6 +315,7 @@ public class RaceRes
 		UnitRes = unitRes;
 
 		res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_RACE.RES");
+		_scrollResources = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
 
 		//------- load database information --------//
 
@@ -345,6 +360,11 @@ public class RaceRes
 			raceInfo.icon_bitmapWidth = BitConverter.ToInt16(raceInfo.icon_bitmap, 0);
 			raceInfo.icon_bitmapHeight = BitConverter.ToInt16(raceInfo.icon_bitmap, 2);
 			raceInfo.icon_bitmap = raceInfo.icon_bitmap.Skip(4).ToArray();
+
+			byte[] scrollData = _scrollResources.Read("SCROLL-" + raceInfo.code[0]);
+			raceInfo.icon_bitmapWidth = BitConverter.ToInt16(scrollData, 0);
+			raceInfo.icon_bitmapHeight = BitConverter.ToInt16(scrollData, 2);
+			raceInfo.icon_bitmap = scrollData.Skip(4).ToArray();
 
 			for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
 			{

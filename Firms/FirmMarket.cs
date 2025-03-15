@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
@@ -842,11 +843,43 @@ public class FirmMarket : Firm
 		Firm bestFirm = null;
 		int bestRating = 0;
 
-		RawInfo rawInfo = RawRes[productId];
+		List<int> product_supply_firm_array = new List<int>();
 
-		for (int i = rawInfo.product_supply_firm_array.Count - 1; i >= 0; i--)
+		foreach (Firm firm in FirmArray)
 		{
-			int firmRecno = rawInfo.get_product_supply_firm(i);
+			//-------- factory as a potential supplier ------//
+
+			if (firm.firm_id == FIRM_FACTORY)
+			{
+				FirmFactory firmFactory = (FirmFactory)firm;
+
+				if (firmFactory.product_raw_id == productId && firmFactory.stock_qty > firmFactory.max_stock_qty / 5.0)
+				{
+					product_supply_firm_array.Add(firm.firm_recno);
+				}
+			}
+
+			//-------- market place as a potential supplier ------//
+
+			else if (firm.firm_id == FIRM_MARKET)
+			{
+				FirmMarket firmMarket = (FirmMarket)firm;
+
+				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
+				{
+					MarketGoods marketGoods = firmMarket.market_goods_array[i];
+					if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5.0)
+					{
+						if (marketGoods.product_raw_id == productId)
+							product_supply_firm_array.Add(firm.firm_recno);
+					}
+				}
+			}
+		}
+
+		for (int i = product_supply_firm_array.Count - 1; i >= 0; i--)
+		{
+			int firmRecno = product_supply_firm_array[i];
 
 			if (FirmArray.IsDeleted(firmRecno) || firmRecno == firm_recno)
 				continue;
@@ -964,11 +997,43 @@ public class FirmMarket : Firm
 		int bestRating = 0;
 		Nation nation = NationArray[nation_recno];
 
-		RawInfo rawInfo = RawRes[rawId];
+		List<int> raw_supply_firm_array = new List<int>();
 
-		for (int i = rawInfo.raw_supply_firm_array.Count - 1; i >= 0; i--)
+		foreach (Firm firm in FirmArray)
 		{
-			int firmRecno = rawInfo.get_raw_supply_firm(i);
+			//-------- mine as a potential supplier ------//
+
+			if (firm.firm_id == FIRM_MINE)
+			{
+				FirmMine firmMine = (FirmMine)firm;
+
+				if (firmMine.raw_id == rawId && firmMine.stock_qty > firmMine.max_stock_qty / 5.0)
+				{
+					raw_supply_firm_array.Add(firm.firm_recno);
+				}
+			}
+
+			//-------- market place as a potential supplier ------//
+
+			else if (firm.firm_id == FIRM_MARKET)
+			{
+				FirmMarket firmMarket = (FirmMarket)firm;
+
+				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
+				{
+					MarketGoods marketGoods = firmMarket.market_goods_array[i];
+					if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5.0)
+					{
+						if (marketGoods.raw_id == rawId)
+							raw_supply_firm_array.Add(firm.firm_recno);
+					}
+				}
+			}
+		}
+		
+		for (int i = raw_supply_firm_array.Count - 1; i >= 0; i--)
+		{
+			int firmRecno = raw_supply_firm_array[i];
 
 			if (FirmArray.IsDeleted(firmRecno) || firmRecno == firm_recno)
 				continue;

@@ -1779,7 +1779,7 @@ public class MapGenerator
 			//------ create mines near towns in the beginning -----//
 
 			if (Config.start_up_has_mine_nearby && !nation.is_ai())
-				SiteArray.create_raw_site(town.TownId);
+				SiteArray.CreateRawSite(town.TownId);
 
 			//------ set ai base town -----//
 			if (nation.is_ai())
@@ -1805,7 +1805,7 @@ public class MapGenerator
 		//int startUpRawSite = config.start_up_raw_site;
 		int startUpMonsterFirm = 15;
 
-		SiteArray.generate_raw_site(Config.start_up_raw_site);
+		SiteArray.GenerateRawSite(Config.start_up_raw_site);
 
 		int maxLoopCount = startUpIndependentTown + startUpMonsterFirm;
 

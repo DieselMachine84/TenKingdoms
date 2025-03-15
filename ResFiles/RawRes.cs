@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -24,169 +24,123 @@ public class RawRec
 
 public class RawInfo
 {
-    public int	raw_id;
+    public int rawId;
     public string name;
-    public int  tera_type;
+    public int teraType;
 
-    public List<int> raw_supply_firm_array = new List<int>();
-    public List<int> product_supply_firm_array = new List<int>();
+    public byte[] largeProductIcon;
+    public int largeProductIconWidth;
+    public int largeProductIconHeight;
+    private IntPtr _largeProductTexture;
+    public byte[] smallProductIcon;
+    public int smallProductIconWidth;
+    public int smallProductIconHeight;
+    private IntPtr _smallProductTexture;
+    public byte[] largeRawIcon;
+    public int largeRawIconWidth;
+    public int largeRawIconHeight;
+    private IntPtr _largeRawTexture;
+    public byte[] smallRawIcon;
+    public int smallRawIconWidth;
+    public int smallRawIconHeight;
+    private IntPtr _smallRawTexture;
 
-    public RawInfo()
+    public IntPtr GetLargeProductTexture(Graphics graphics)
     {
+        if (_largeProductTexture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(largeProductIcon, largeProductIconWidth, largeProductIconHeight);
+            _largeProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, largeProductIconWidth, largeProductIconHeight);
+        }
+
+        return _largeProductTexture;
     }
 
-    public void add_raw_supply_firm(int firmRecno)
+    public IntPtr GetSmallProductTexture(Graphics graphics)
     {
-        raw_supply_firm_array.Add(firmRecno);
+        if (_smallProductTexture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(smallProductIcon, smallProductIconWidth, smallProductIconHeight);
+            _smallProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, smallProductIconWidth, smallProductIconHeight);
+        }
+
+        return _smallProductTexture;
     }
 
-    public void add_product_supply_firm(int firmRecno)
+    public IntPtr GetLargeRawTexture(Graphics graphics)
     {
-        product_supply_firm_array.Add(firmRecno);
+        if (_largeRawTexture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(largeRawIcon, largeRawIconWidth, largeRawIconHeight);
+            _largeRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, largeRawIconWidth, largeRawIconHeight);
+        }
+
+        return _largeRawTexture;
     }
 
-    public int get_raw_supply_firm(int index)
+    public IntPtr GetSmallRawTexture(Graphics graphics)
     {
-        return raw_supply_firm_array[index];
-    }
+        if (_smallRawTexture == default)
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(smallRawIcon, smallRawIconWidth, smallRawIconHeight);
+            _smallRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, smallRawIconWidth, smallRawIconHeight);
+        }
 
-    public int get_product_supply_firm(int index)
-    {
-        return product_supply_firm_array[index];
+        return _smallRawTexture;
     }
 }
 
 public class RawRes
 {
-    public const string RAW_DB = "RAW";
+    private const string RAW_DB = "RAW";
 
-    public RawInfo[] raw_info_array;
+    private RawInfo[] _rawInfos;
 
-    public Resource res_icon;
+    private readonly Resource _iconResource;
 
-    public GameSet GameSet { get; }
-    protected Info Info => Sys.Instance.Info;
-    protected FirmArray FirmArray => Sys.Instance.FirmArray;
+    private GameSet GameSet { get; }
 
     public RawRes(GameSet gameSet)
     {
         GameSet = gameSet;
 
-        res_icon = new Resource($"{Sys.GameDataFolder}/Resource/I_RAW.RES");
+        _iconResource = new Resource($"{Sys.GameDataFolder}/Resource/I_RAW.RES");
 
         LoadAllInfo();
     }
 
-    public void next_day()
-    {
-        if (Info.TotalDays % 15 == 0)
-            update_supply_firm();
-    }
-
-    public void update_supply_firm()
-    {
-        //----- reset the supply array of each raw and product ----//
-
-        for (int i = 0; i < GameConstants.MAX_RAW; i++)
-        {
-            raw_info_array[i].raw_supply_firm_array.Clear();
-            raw_info_array[i].product_supply_firm_array.Clear();
-        }
-
-        //---- locate for suppliers that supply the products needed ----//
-
-        foreach (Firm firm in FirmArray)
-        {
-            //-------- factory as a potential supplier ------//
-
-            if (firm.firm_id == Firm.FIRM_FACTORY)
-            {
-                FirmFactory firmFactory = (FirmFactory)firm;
-
-                if (firmFactory.product_raw_id != 0 && firmFactory.stock_qty > firmFactory.max_stock_qty / 5.0)
-                {
-                    this[firmFactory.product_raw_id].add_product_supply_firm(firm.firm_recno);
-                }
-            }
-
-            //-------- mine as a potential supplier ------//
-
-            if (firm.firm_id == Firm.FIRM_MINE)
-            {
-                FirmMine firmMine = (FirmMine)firm;
-
-                if (firmMine.raw_id != 0 && firmMine.stock_qty > firmMine.max_stock_qty / 5.0)
-                {
-                    this[firmMine.raw_id].add_raw_supply_firm(firm.firm_recno);
-                }
-            }
-
-            //-------- market place as a potential supplier ------//
-
-            else if (firm.firm_id == Firm.FIRM_MARKET)
-            {
-                FirmMarket firmMarket = (FirmMarket)firm;
-
-                for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
-                {
-                    MarketGoods marketGoods = firmMarket.market_goods_array[i];
-                    if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5.0)
-                    {
-                        if (marketGoods.product_raw_id != 0)
-                            this[marketGoods.product_raw_id].add_product_supply_firm(firm.firm_recno);
-
-                        else if (marketGoods.raw_id != 0)
-                            this[marketGoods.raw_id].add_raw_supply_firm(firm.firm_recno);
-                    }
-                }
-            }
-        }
-    }
-
-    private string[] product_name_str = { "Clay Products", "Copper Products", "Iron Products" };
-
-    public string product_name(int rawId)
-    {
-        return product_name_str[rawId - 1];
-    }
-
-    public byte[] large_product_icon(int rawId)
-    {
-        return res_icon.Read(rawId);
-    }
-
-    public byte[] small_product_icon(int rawId)
-    {
-        return res_icon.Read(GameConstants.MAX_RAW + rawId);
-    }
-
-    public byte[] large_raw_icon(int rawId)
-    {
-        return res_icon.Read(GameConstants.MAX_RAW * 2 + rawId);
-    }
-
-    public byte[] small_raw_icon(int rawId)
-    {
-        return res_icon.Read(GameConstants.MAX_RAW * 3 + rawId);
-    }
-
-    public RawInfo this[int rawId] => raw_info_array[rawId - 1];
+    public RawInfo this[int rawId] => _rawInfos[rawId - 1];
 
     private void LoadAllInfo()
     {
         Database dbRaw = GameSet.OpenDb(RAW_DB);
+        _rawInfos = new RawInfo[dbRaw.RecordCount];
 
-        raw_info_array = new RawInfo[dbRaw.RecordCount];
-
-        for (int i = 0; i < raw_info_array.Length; i++)
+        for (int i = 0; i < _rawInfos.Length; i++)
         {
             RawRec rawRec = new RawRec(dbRaw.Read(i + 1));
             RawInfo rawInfo = new RawInfo();
-            raw_info_array[i] = rawInfo;
+            _rawInfos[i] = rawInfo;
 
+            rawInfo.rawId = i + 1;
             rawInfo.name = Misc.ToString(rawRec.name);
-            rawInfo.raw_id = i + 1;
-            rawInfo.tera_type = Misc.ToInt32(rawRec.tera_type);
+            rawInfo.teraType = Misc.ToInt32(rawRec.tera_type);
+            rawInfo.largeProductIcon = _iconResource.Read(i + 1);
+            rawInfo.largeProductIconWidth = BitConverter.ToInt16(rawInfo.largeProductIcon, 0);
+            rawInfo.largeProductIconHeight = BitConverter.ToInt16(rawInfo.largeProductIcon, 2);
+            rawInfo.largeProductIcon = rawInfo.largeProductIcon.Skip(4).ToArray();
+            rawInfo.smallProductIcon = _iconResource.Read(GameConstants.MAX_RAW + i + 1);
+            rawInfo.smallProductIconWidth = BitConverter.ToInt16(rawInfo.smallProductIcon, 0);
+            rawInfo.smallProductIconHeight = BitConverter.ToInt16(rawInfo.smallProductIcon, 2);
+            rawInfo.smallProductIcon = rawInfo.smallProductIcon.Skip(4).ToArray();
+            rawInfo.largeRawIcon = _iconResource.Read(GameConstants.MAX_RAW * 2 + i + 1);
+            rawInfo.largeRawIconWidth = BitConverter.ToInt16(rawInfo.largeRawIcon, 0);
+            rawInfo.largeRawIconHeight = BitConverter.ToInt16(rawInfo.largeRawIcon, 2);
+            rawInfo.largeRawIcon = rawInfo.largeRawIcon.Skip(4).ToArray();
+            rawInfo.smallRawIcon = _iconResource.Read(GameConstants.MAX_RAW * 3 + i + 1);
+            rawInfo.smallRawIconWidth = BitConverter.ToInt16(rawInfo.smallRawIcon, 0);
+            rawInfo.smallRawIconHeight = BitConverter.ToInt16(rawInfo.smallRawIcon, 2);
+            rawInfo.smallRawIcon = rawInfo.smallRawIcon.Skip(4).ToArray();
         }
     }
 }

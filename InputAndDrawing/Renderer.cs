@@ -46,6 +46,7 @@ public partial class Renderer
     private int _selectedTownId;
     private int _selectedFirmId;
     private int _selectedUnitId;
+    private int _selectedSiteId;
     
     public Graphics Graphics { get; }
 
@@ -56,9 +57,12 @@ public partial class Renderer
     private static HillRes HillRes => Sys.Instance.HillRes;
     private static PlantRes PlantRes => Sys.Instance.PlantRes;
     private static RockRes RockRes => Sys.Instance.RockRes;
+    private static RawRes RawRes => Sys.Instance.RawRes;
+    private static RaceRes RaceRes => Sys.Instance.RaceRes;
     private static TownRes TownRes => Sys.Instance.TownRes;
     private static FirmRes FirmRes => Sys.Instance.FirmRes;
     private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
+    private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
     private static Config Config => Sys.Instance.Config;
     private static Info Info => Sys.Instance.Info;

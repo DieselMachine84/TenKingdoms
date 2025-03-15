@@ -83,11 +83,11 @@ public class World
 
 	public void disp_next(int seekDir, bool sameNation)
 	{
-		//--- if the selected one is a unit ----//
+		//--- if the selected one is a town ----//
 
-		if (UnitArray.selected_recno != 0)
+		if (TownArray.SelectedTownId != 0)
 		{
-			UnitArray.disp_next(seekDir, sameNation);
+			TownArray.DisplayNext(seekDir, sameNation);
 		}
 
 		//--- if the selected one is a firm ----//
@@ -97,18 +97,18 @@ public class World
 			FirmArray.disp_next(seekDir, sameNation);
 		}
 
-		//--- if the selected one is a town ----//
+		//--- if the selected one is a unit ----//
 
-		if (TownArray.SelectedTownId != 0)
+		if (UnitArray.selected_recno != 0)
 		{
-			TownArray.DisplayNext(seekDir, sameNation);
+			UnitArray.disp_next(seekDir, sameNation);
 		}
 
 		//--- if the selected one is a natural resource site ----//
 
-		if (SiteArray.selected_recno != 0)
+		if (SiteArray.SelectedSiteId != 0)
 		{
-			SiteArray.disp_next(seekDir, sameNation);
+			SiteArray.DisplayNext(seekDir, sameNation);
 		}
 	}
 

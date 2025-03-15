@@ -222,7 +222,7 @@ public class NationNew : NationBase
         Site bestSite = null;
         foreach (Site site in SiteArray)
         {
-            if (site.site_type != Site.SITE_RAW || site.has_mine)
+            if (site.SiteType != Site.SITE_RAW || site.HasMine)
                 continue;
 
             foreach (Town town in TownArray)
@@ -231,17 +231,17 @@ public class NationNew : NationBase
                     continue;
 
                 // TODO other region
-                if (town.RegionId != site.region_id)
+                if (town.RegionId != site.RegionId)
                     continue;
 
                 int siteRating = GameConstants.MapSize - Misc.PointsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-                    site.map_x_loc, site.map_y_loc, site.map_x_loc, site.map_y_loc);
+                    site.LocX, site.LocY, site.LocX, site.LocY);
                 if (siteRating > bestRating)
                 {
                     bool hasBuildMineTask = false;
                     foreach (var buildMineTask in _buildMineTasks)
                     {
-                        if (buildMineTask.SiteId == site.site_recno)
+                        if (buildMineTask.SiteId == site.SiteId)
                             hasBuildMineTask = true;
                     }
 
@@ -258,7 +258,7 @@ public class NationNew : NationBase
         {
             //TODO check if we should capture several mines simultaneously
             if (_buildMineTasks.Count == 0)
-                _buildMineTasks.Add(new BuildMineTask(this, bestSite.site_recno));
+                _buildMineTasks.Add(new BuildMineTask(this, bestSite.SiteId));
         }
     }
 

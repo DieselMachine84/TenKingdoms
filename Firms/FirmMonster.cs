@@ -110,7 +110,7 @@ public class FirmMonster : Firm
 		int goldAmount = 800 * (MonsterRes[monster_id].level * 30 + Misc.Random(50)) / 100;
 
 		SiteArray.AddSite(center_x, center_y, Site.SITE_GOLD_COIN, goldAmount);
-		SiteArray.ai_get_site_object(); // ask AI units to get the gold coins
+		SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
 	}
 
 	public override string firm_name()

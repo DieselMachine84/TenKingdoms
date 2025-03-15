@@ -14,25 +14,26 @@ public partial class Renderer
                 Location location = World.get_loc(xLoc, yLoc);
                 if (location.is_town())
                 {
-                    _selectedFirmId = 0;
-                    _selectedUnitId = 0;
+                    _selectedFirmId = _selectedUnitId = _selectedSiteId = 0;
                     _selectedTownId = location.town_recno();
                 }
 
                 if (location.is_firm())
                 {
-                    _selectedTownId = 0;
-                    _selectedUnitId = 0;
+                    _selectedTownId = _selectedUnitId = _selectedSiteId = 0;
                     _selectedFirmId = location.firm_recno();
                 }
 
                 if (location.has_unit(UnitConstants.UNIT_LAND))
                 {
-                    _selectedTownId = 0;
-                    _selectedFirmId = 0;
+                    _selectedTownId = _selectedFirmId = _selectedSiteId = 0;
                     _selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
-                    Unit unit = UnitArray[_selectedUnitId];
-                    unit.selected_flag = true;
+                }
+
+                if (location.has_site())
+                {
+                    _selectedTownId = _selectedFirmId = _selectedUnitId = 0;
+                    _selectedSiteId = location.site_recno();
                 }
             }
 

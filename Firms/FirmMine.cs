@@ -34,11 +34,11 @@ public class FirmMine : Firm
         if (location != null)
         {
             site_recno = location.site_recno();
-            raw_id = SiteArray[site_recno].object_id;
-            reserve_qty = SiteArray[site_recno].reserve_qty;
+            raw_id = SiteArray[site_recno].ObjectId;
+            reserve_qty = SiteArray[site_recno].ReserveQty;
 
-            SiteArray[site_recno].has_mine = true;
-            SiteArray.untapped_raw_count--;
+            SiteArray[site_recno].HasMine = true;
+            SiteArray.UntappedRawCount--;
         }
         else
         {
@@ -60,17 +60,17 @@ public class FirmMine : Firm
     {
         if (site_recno != 0)
         {
-            SiteArray.untapped_raw_count++;
+            SiteArray.UntappedRawCount++;
 
             Site site = SiteArray[site_recno];
-            if (reserve_qty == 0) // if the reserve has been used up
+            if (reserve_qty <= 0.0) // if the reserve has been used up
             {
                 SiteArray.DeleteSite(site);
             }
             else // restore the site
             {
-                site.reserve_qty = Convert.ToInt32(reserve_qty);
-                site.has_mine = false;
+                site.ReserveQty = (int)reserve_qty;
+                site.HasMine = false;
             }
         }
 
@@ -217,13 +217,13 @@ public class FirmMine : Firm
         cur_month_production += produceQty;
 
         Site site = SiteArray[site_recno];
-        site.reserve_qty = (int)reserve_qty; // update the reserve_qty in SiteArray
+        site.ReserveQty = (int)reserve_qty; // update the reserve_qty in SiteArray
 
         //---- add news if run out of raw deposit ----//
 
         if (reserve_qty == 0)
         {
-            SiteArray.untapped_raw_count++; // have to restore its first as del_site() will decrease uptapped_raw_count
+            SiteArray.UntappedRawCount++; // have to restore its first as del_site() will decrease uptapped_raw_count
 
             SiteArray.DeleteSite(site);
             site_recno = 0;
@@ -243,7 +243,7 @@ public class FirmMine : Firm
             {
                 Location location = World.get_loc(xLoc, yLoc);
 
-                if (location.has_site() && SiteArray[location.site_recno()].site_type == Site.SITE_RAW)
+                if (location.has_site() && SiteArray[location.site_recno()].SiteType == Site.SITE_RAW)
                 {
                     return location;
                 }

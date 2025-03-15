@@ -212,7 +212,6 @@ public class Sys
             SpyArray.NextDay();
             if (Config.weather_effect != 0)
                 SpriteRes.update_speed();
-            RawRes.next_day();
             TalkRes.next_day();
             RegionArray.next_day();
 

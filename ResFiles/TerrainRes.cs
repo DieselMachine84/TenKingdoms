@@ -113,16 +113,16 @@ public class TerrainInfo
     public byte[] bitmap;
     public int bitmapWidth;
     public int bitmapHeight;
-    private IntPtr texture;
+    private IntPtr _texture;
     public int anim_frames;
     public byte[][] anim_bitmap_ptr;
 
     public IntPtr GetTexture(Graphics graphics)
     {
-	    if (texture == default)
-		    texture = graphics.CreateTextureFromBmp(bitmap, bitmapWidth, bitmapHeight);
+	    if (_texture == default)
+		    _texture = graphics.CreateTextureFromBmp(bitmap, bitmapWidth, bitmapHeight);
 
-	    return texture;
+	    return _texture;
     }
 
     public byte[] get_bitmap(int frameNo)

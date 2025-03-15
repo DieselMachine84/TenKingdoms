@@ -109,6 +109,7 @@ public static class GameConstants
     public const int MAX_RAW = 3;
     public const int MAX_PRODUCT = 3;
     public const int MAX_RAW_RESERVE_QTY = 20000;
+    public const int SMALLEST_RAW_REGION = 50; // only put raw on the region if its size is larger than this
     // only sites with reserve qty >= 5% of MAX_RAW_RESERVE_QTY are counted as raw sites
     public const int EXIST_RAW_RESERVE_QTY = MAX_RAW_RESERVE_QTY / 20;
 }
@@ -132,6 +133,8 @@ public static class InternalConstants
     public const int WAVE_CYCLE = 8;
     public const int MAX_ROCK_WIDTH = 4;
     public const int MAX_ROCK_HEIGHT = 4;
+    public const int GET_SITE_RANGE = 30; // only notify units within this range
+    public const int MAX_UNIT_TO_GET_SITE = 5;
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;

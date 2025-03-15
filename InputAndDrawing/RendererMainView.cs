@@ -23,19 +23,7 @@ public partial class Renderer
 
                 if (location.has_dirt())
                 {
-                    int dirtId = location.dirt_recno();
-                    Rock dirt = DirtArray[dirtId];
-                    int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
-                    if (dirtBlockId != 0)
-                    {
-                        int dirtBitmapId = RockRes.GetBitmapId(dirtBlockId, dirt.CurFrame);
-                        if (dirtBitmapId != 0)
-                        {
-                            RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
-                            Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), drawX, drawY,
-                                Scale(dirtBitmapInfo.bitmapWidth), Scale(dirtBitmapInfo.bitmapHeight));
-                        }
-                    }
+                    DrawDirt(location, locX, locY, drawX, drawY);
                 }
 
                 //TODO draw snow
@@ -52,8 +40,7 @@ public partial class Renderer
                 // don't display if a building/object has already been built on the location
                 if (location.has_site() && location.walkable(3))
                 {
-                    //TODO draw site
-                    //site_array[locPtr->site_recno()]->draw(x, y);
+                    DrawSite(location, drawX, drawY);
                 }
             }
         }
@@ -101,6 +88,23 @@ public partial class Renderer
         //DispText();
     }
 
+    private void DrawDirt(Location location, int locX, int locY, int drawX, int drawY)
+    {
+        int dirtId = location.dirt_recno();
+        Rock dirt = DirtArray[dirtId];
+        int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
+        if (dirtBlockId != 0)
+        {
+            int dirtBitmapId = RockRes.GetBitmapId(dirtBlockId, dirt.CurFrame);
+            if (dirtBitmapId != 0)
+            {
+                RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
+                Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), drawX, drawY,
+                    Scale(dirtBitmapInfo.bitmapWidth), Scale(dirtBitmapInfo.bitmapHeight));
+            }
+        }
+    }
+
     private void DrawHill(HillBlockInfo hillBlockInfo, int drawX, int drawY, int layerMask)
     {
         //TODO check this
@@ -111,6 +115,28 @@ public partial class Renderer
         int hillY = drawY + Scale(hillBlockInfo.offset_y);
 		
         Graphics.DrawBitmap(hillBlockInfo.GetTexture(Graphics), hillX, hillY, Scale(hillBlockInfo.bitmapWidth), Scale(hillBlockInfo.bitmapHeight));
+    }
+
+    private void DrawSite(Location location, int drawX, int drawY)
+    {
+        Site site = SiteArray[location.site_recno()];
+        switch (site.SiteType)
+        {
+            case Site.SITE_RAW:
+                RawInfo rawInfo = RawRes[site.ObjectId];
+                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), drawX, drawY, Scale(rawInfo.largeRawIconWidth), Scale(rawInfo.largeRawIconHeight));
+                break;
+            case Site.SITE_SCROLL:
+                RaceInfo raceInfo = RaceRes[site.ObjectId];
+                Graphics.DrawBitmap(raceInfo.GetScrollTexture(Graphics), drawX, drawY, Scale(raceInfo.scrollBitmapWidth), Scale(raceInfo.scrollBitmapHeight));
+                break;
+            case Site.SITE_GOLD_COIN:
+                Graphics.DrawBitmap(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), drawX, drawY,
+                    Scale(MonsterRes.goldCoinWidth), Scale(MonsterRes.goldCoinHeight));
+                break;
+        }
+        
+        //TODO draw selected site
     }
 
     private void DrawPlants()
