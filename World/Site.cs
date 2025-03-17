@@ -122,7 +122,7 @@ public class Site
             if (siteRaceId != 0 && siteRaceId != unit.race_id)
                 continue;
 
-            unit.move_to(LocX, LocY);
+            unit.MoveTo(LocX, LocY);
 
             //--- if the unit is just standing next to the site ---//
 

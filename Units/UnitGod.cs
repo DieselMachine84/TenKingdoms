@@ -592,7 +592,7 @@ public class UnitGod : Unit
 		int xLoc = Misc.Random(GameConstants.MapSize);
 		int yLoc = Misc.Random(GameConstants.MapSize);
 
-		move_to(xLoc, yLoc);
+		MoveTo(xLoc, yLoc);
 	}
 
 	private void think_viking_god()
@@ -873,7 +873,7 @@ public class UnitGod : Unit
 				if (Misc.points_distance(next_x_loc(), next_y_loc(), xLoc, yLoc) <= GodRes[god_id].cast_power_range)
 					go_cast_power(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
-					move_to(xLoc, yLoc);
+					MoveTo(xLoc, yLoc);
 			}
 			else if (Misc.Random(4) == 0)
 			{
@@ -888,7 +888,7 @@ public class UnitGod : Unit
 					yLoc = 0;
 				if (yLoc >= GameConstants.MapSize)
 					yLoc = GameConstants.MapSize - 1;
-				move_to(xLoc, yLoc);
+				MoveTo(xLoc, yLoc);
 			}
 		}
 	}

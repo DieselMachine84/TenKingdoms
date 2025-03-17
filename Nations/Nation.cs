@@ -630,7 +630,7 @@ public class Nation : NationBase
 
 		//-- must use UnitArray.move_to() instead of unit.move_to() because the destination may be reachable, it can be in a different region --//
 
-		UnitArray.move_to(actionNode.action_x_loc, actionNode.action_y_loc, false, selectedArray, InternalConstants.COMMAND_AI);
+		UnitArray.MoveTo(actionNode.action_x_loc, actionNode.action_y_loc, false, selectedArray, InternalConstants.COMMAND_AI);
 
 		unit.ai_action_id = actionNode.action_id;
 
@@ -770,7 +770,7 @@ public class Nation : NationBase
 			destYLoc = Math.Max(0, destYLoc);
 			destYLoc = Math.Min(GameConstants.MapSize - 1, destXLoc);
 
-			spyUnit.move_to(destXLoc, destYLoc);
+			spyUnit.MoveTo(destXLoc, destYLoc);
 
 			actionNode.retry_count++; // never give up
 			return 0; // return now and try again later
@@ -3630,7 +3630,7 @@ public class Nation : NationBase
 
 					if (!directAttack)
 					{
-						UnitArray.move_to(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
+						UnitArray.MoveTo(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
 							firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 					}
 					else
@@ -4061,7 +4061,7 @@ public class Nation : NationBase
 							firmCamp.validate_patrol_unit();
 							if (firmCamp.patrol_unit_array.Count > 0)
 							{
-								UnitArray.move_to(attackerXLoc, attackerYLoc, false,
+								UnitArray.MoveTo(attackerXLoc, attackerYLoc, false,
 									firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 							}
 
@@ -4098,7 +4098,7 @@ public class Nation : NationBase
 			firmCamp.validate_patrol_unit();
 			if (firmCamp.patrol_unit_array.Count > 0)
 			{
-				UnitArray.move_to(attackerXLoc, attackerYLoc, false,
+				UnitArray.MoveTo(attackerXLoc, attackerYLoc, false,
 					firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 			}
 		}
@@ -6313,7 +6313,7 @@ public class Nation : NationBase
 				break;
 
 			case SEA_ACTION_MOVE:
-				UnitArray.move_to(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
+				UnitArray.MoveTo(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
 				break;
 
 			case SEA_ACTION_NONE:
@@ -6801,7 +6801,7 @@ public class Nation : NationBase
 			//--- move to the random location and then change its color there ---//
 			int destXLoc = Misc.Random(GameConstants.MapSize);
 			int destYLoc = Misc.Random(GameConstants.MapSize);
-			spyUnit.move_to(destXLoc, destYLoc);
+			spyUnit.MoveTo(destXLoc, destYLoc);
 		}
 	}
 

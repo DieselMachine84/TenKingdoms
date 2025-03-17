@@ -512,7 +512,7 @@ public class UnitArray : SpriteArray
     }
 
     //---------- move main functions -------------//
-    public void move_to(int destXLoc, int destYLoc, bool divided, List<int> selectedUnitArray, int remoteAction)
+    public void MoveTo(int destXLoc, int destYLoc, bool divided, List<int> selectedUnitArray, int remoteAction)
     {
 	    //-------- if it's a multiplayer game --------//
 	    /*if (!remoteAction && remote.is_enable())
@@ -536,19 +536,19 @@ public class UnitArray : SpriteArray
 
 			    //---------- process group move --------------//
 			    if (selected_land_units.Count > 0)
-				    move_to(destXLoc, destYLoc, true, selected_land_units, InternalConstants.COMMAND_AUTO);
+				    MoveTo(destXLoc, destYLoc, true, selected_land_units, InternalConstants.COMMAND_AUTO);
 
 			    if (selected_sea_units.Count > 0)
 			    {
 				    Location location = World.get_loc(destXLoc, destYLoc);
 				    if (TerrainRes[location.terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN)
-					    move_to(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
+					    MoveTo(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
 				    else
-					    ship_to_beach(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
+					    ShipToBeach(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
 			    }
 
 			    if (selected_air_units.Count > 0)
-				    move_to(destXLoc, destYLoc, true, selected_air_units, InternalConstants.COMMAND_AUTO);
+				    MoveTo(destXLoc, destYLoc, true, selected_air_units, InternalConstants.COMMAND_AUTO);
 
 			    //---------------- deinit static parameters ------------------//
 			    selected_land_units.Clear();
@@ -586,7 +586,7 @@ public class UnitArray : SpriteArray
 			    if (selectedUnitArray.Count == 1)
 			    {
 				    Unit unit = this[selectedUnitArray[0]];
-				    unit.move_to(destXLoc, destYLoc, 1);
+				    unit.MoveTo(destXLoc, destYLoc, 1);
 			    }
 			    else
 			    {
@@ -594,12 +594,12 @@ public class UnitArray : SpriteArray
 
 				    if (firstUnit.mobile_type == UnitConstants.UNIT_LAND)
 				    {
-					    move_to_now_with_filter(destXLoc, destYLoc, selectedUnitArray);
+					    MoveToNowWithFilter(destXLoc, destYLoc, selectedUnitArray);
 					    SeekPath.SetSubMode(); // reset sub_mode searching
 				    }
 				    else
 				    {
-					    move_to_now_with_filter(destXLoc, destYLoc, selectedUnitArray);
+					    MoveToNowWithFilter(destXLoc, destYLoc, selectedUnitArray);
 				    }
 			    }
 		    }
@@ -1629,17 +1629,17 @@ public class UnitArray : SpriteArray
 					    if (firm.firm_id == Firm.FIRM_HARBOR) // recursive call
 						    assign(destX, destY, true, remoteAction, selected_sea_units);
 					    else
-						    ship_to_beach(destX, destY, true, selected_sea_units, remoteAction);
+						    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
 				    }
 				    //else if(loc.is_town())
 				    else
 				    {
-					    ship_to_beach(destX, destY, true, selected_sea_units, remoteAction);
+					    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
 				    }
 			    }
 
 			    if (selected_air_units.Count > 0) // no assign for air units
-				    move_to(destX, destY, true, selected_air_units, remoteAction);
+				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
 
 			    //------------ deinit static variables ------------//
 			    selected_land_units.Clear();
@@ -1662,13 +1662,13 @@ public class UnitArray : SpriteArray
 				    {
 					    Location loc = World.get_loc(destX, destY);
 					    if (loc.is_firm())
-						    unit.move_to_firm_surround(destX, destY, unit.sprite_info.loc_width,
+						    unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
 							    unit.sprite_info.loc_height, loc.firm_recno());
 					    else if (loc.is_town())
-						    unit.move_to_town_surround(destX, destY, unit.sprite_info.loc_width,
+						    unit.MoveToTownSurround(destX, destY, unit.sprite_info.loc_width,
 							    unit.sprite_info.loc_height);
 					    else if (loc.has_unit(UnitConstants.UNIT_LAND))
-						    unit.move_to_unit_surround(destX, destY, unit.sprite_info.loc_width,
+						    unit.MoveToUnitSurround(destX, destY, unit.sprite_info.loc_width,
 							    unit.sprite_info.loc_height, loc.unit_recno(UnitConstants.UNIT_LAND));
 				    }
 			    }
@@ -1707,14 +1707,14 @@ public class UnitArray : SpriteArray
 		    if (assignArray.Count > 0)
 			    assign(destX, destY, true, remoteAction, assignArray);
 		    if (moveArray.Count > 0)
-			    move_to(destX, destY, true, moveArray, remoteAction);
+			    MoveTo(destX, destY, true, moveArray, remoteAction);
 	    }
 
 	    if (selected_sea_units.Count > 0)
-		    ship_to_beach(destX, destY, true, selected_sea_units, remoteAction);
+		    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
 
 	    if (selected_air_units.Count > 0)
-		    move_to(destX, destY, true, selected_air_units, remoteAction);
+		    MoveTo(destX, destY, true, selected_air_units, remoteAction);
 
 	    //---------------- deinit static parameters ---------------//
 	    selected_land_units.Clear();
@@ -1773,10 +1773,10 @@ public class UnitArray : SpriteArray
 				    settle(destX, destY, true, remoteAction, selected_land_units);
 
 			    if (selected_sea_units.Count > 0)
-				    ship_to_beach(destX, destY, true, selected_sea_units, remoteAction);
+				    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
 
 			    if (selected_air_units.Count > 0)
-				    move_to(destX, destY, true, selected_air_units, remoteAction);
+				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
 
 			    //-------------- deinit static parameters --------------//
 			    selected_land_units.Clear();
@@ -1824,13 +1824,13 @@ public class UnitArray : SpriteArray
 		    divide_array(shipXLoc, shipYLoc, selectedUnits);
 
 		    if (selected_sea_units.Count > 0) // Note: the order to call ship unit first
-			    move_to(shipXLoc, shipYLoc, true, selected_sea_units, remoteAction);
+			    MoveTo(shipXLoc, shipYLoc, true, selected_sea_units, remoteAction);
 
 		    if (selected_land_units.Count > 0)
 			    assign_to_ship(shipXLoc, shipYLoc, true, selected_land_units, remoteAction, shipRecno);
 
 		    if (selected_air_units.Count > 0)
-			    move_to(shipXLoc, shipYLoc, true, selected_air_units, remoteAction);
+			    MoveTo(shipXLoc, shipYLoc, true, selected_air_units, remoteAction);
 
 		    //---------------- deinit static parameters -----------------//
 		    selected_sea_units.Clear();
@@ -1948,7 +1948,7 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    public void ship_to_beach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
+    public void ShipToBeach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
     {
 	    /*if (!remoteAction && remote.is_enable())
 	    {
@@ -1994,7 +1994,7 @@ public class UnitArray : SpriteArray
 		    }
 		    else
 		    {
-			    unit.move_to(destX, destY, 1);
+			    unit.MoveTo(destX, destY, 1);
 		    }
 	    }
 
@@ -2060,7 +2060,7 @@ public class UnitArray : SpriteArray
 			    }
 		    }
 		    else // cannot carry units
-			    unit.move_to(destX, destY, 1);
+			    unit.MoveTo(destX, destY, 1);
 	    }
     }
 
@@ -2223,7 +2223,7 @@ public class UnitArray : SpriteArray
 	}
 
 	//------------ move sub-functions --------------//
-	private void move_to_now_with_filter(int destX, int destY, List<int> selectedUnits)
+	private void MoveToNowWithFilter(int destX, int destY, List<int> selectedUnits)
 	{
 		int destRegionId = World.get_loc(destX, destY).region_id;
 		Unit unit = this[selectedUnits[0]];
@@ -2231,7 +2231,7 @@ public class UnitArray : SpriteArray
 		//-------------- no filtering for unit air --------------------------//
 		if (unit.mobile_type == UnitConstants.UNIT_AIR)
 		{
-			move_to_now(destX, destY, selectedUnits);
+			MoveToNow(destX, destY, selectedUnits);
 			return;
 		}
 
@@ -2268,7 +2268,7 @@ public class UnitArray : SpriteArray
 
 			//---- process for filtered_unit_array and prepare for looping ----//
 			if (filtered_unit_array.Count > 0)
-				move_to_now(filterDestX, filterDestY, filtered_unit_array);
+				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
 
 			if (filtering_unit_count == 0)
 				break;
@@ -2278,11 +2278,11 @@ public class UnitArray : SpriteArray
 			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
 			filterDestX = destX;
 			filterDestY = destY;
-			unit.different_territory_destination(ref filterDestX, ref filterDestY);
+			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
 		}
 	}
 
-	private void move_to_now(int destXLoc, int destYLoc, List<int> selectedUnits)
+	private void MoveToNow(int destXLoc, int destYLoc, List<int> selectedUnits)
 	{
 		//------------ define vars -----------------------//
 		int unprocessCount; // = selectedCount;		// num. of unprocessed sprite
@@ -2508,22 +2508,22 @@ public class UnitArray : SpriteArray
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
 						else
-							unit.move_to(i, y, 1);
+							unit.MoveTo(i, y, 1);
 
 						unprocessCount--;
 					}
@@ -2551,22 +2551,22 @@ public class UnitArray : SpriteArray
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.select_search_sub_mode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.move_to(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
 						else
-							unit.move_to(i, y, 1);
+							unit.MoveTo(i, y, 1);
 
 						unprocessCount--;
 					}
@@ -3774,7 +3774,7 @@ public class UnitArray : SpriteArray
 				} while (found > 0);
 
 				Unit unit = this[recno];
-				unit.move_to(processed.move_to_x_loc, processed.move_to_y_loc);
+				unit.MoveTo(processed.move_to_x_loc, processed.move_to_y_loc);
 
 				switch (targetType)
 				{
@@ -3845,7 +3845,7 @@ public class UnitArray : SpriteArray
 			while (unprocessed > 0)
 			{
 				Unit unit = this[selectedUnits[unprocessed - 1]];
-				unit.move_to(moveToXLoc, moveToYLoc);
+				unit.MoveTo(moveToXLoc, moveToYLoc);
 
 				switch (targetType)
 				{
@@ -3921,17 +3921,17 @@ public class UnitArray : SpriteArray
 				switch (assignType)
 				{
 					case ASSIGN_TYPE_UNIT:
-						unit.move_to_unit_surround(destX, destY, unit.sprite_info.loc_width,
+						unit.MoveToUnitSurround(destX, destY, unit.sprite_info.loc_width,
 							unit.sprite_info.loc_height, miscNo);
 						break; // is a unit
 
 					case ASSIGN_TYPE_FIRM:
-						unit.move_to_firm_surround(destX, destY, unit.sprite_info.loc_width,
+						unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
 							unit.sprite_info.loc_height, miscNo);
 						break; // is a firm
 
 					case ASSIGN_TYPE_TOWN:
-						unit.move_to_town_surround(destX, destY, unit.sprite_info.loc_width,
+						unit.MoveToTownSurround(destX, destY, unit.sprite_info.loc_width,
 							unit.sprite_info.loc_height);
 						break; // is a town
 

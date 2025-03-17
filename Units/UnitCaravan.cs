@@ -193,7 +193,7 @@ public class UnitCaravan : Unit
 			if ((newStopFirmRecno = stop_array[dest_stop_id - 1].firm_recno) != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, stop_array[dest_stop_id - 1].firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, stop_array[dest_stop_id - 1].firm_id);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -578,7 +578,7 @@ public class UnitCaravan : Unit
 		firm = FirmArray[stop_array[dest_stop_id - 1].firm_recno];
 
 		action_para = 0; // since action_para is used to store the current market recno, reset before searching
-		move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+		MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 	}
@@ -595,7 +595,7 @@ public class UnitCaravan : Unit
 			if (!FirmArray.IsDeleted(stop.firm_recno))
 			{
 				firm = FirmArray[stop.firm_recno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 				nextXLoc = next_x_loc();
 				nextYLoc = next_y_loc();
 
@@ -623,7 +623,7 @@ public class UnitCaravan : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 			}
 
 			return;
@@ -680,7 +680,7 @@ public class UnitCaravan : Unit
 			stop_y_loc = move_to_y_loc;
 			wait_count = GameConstants.MAX_CARAVAN_WAIT_TERM; // set waiting term
 
-			reset_path();
+			ResetPath();
 			deinit_sprite(true); // the caravan enters the market now. 1-keep it selected if it is currently selected
 
 			cur_x--; // set cur_x to -2, such that invisible but still process pre_process()
@@ -695,7 +695,7 @@ public class UnitCaravan : Unit
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -772,7 +772,7 @@ public class UnitCaravan : Unit
 			if (curXLoc < firmXLoc1 - 1 || curXLoc > firmXLoc2 + 1 || curYLoc < firmYLoc1 - 1 || curYLoc > firmYLoc2 + 1)
 			{
 				if (cur_action == SPRITE_IDLE)
-					move_to_firm_surround(firmXLoc1, firmYLoc1, sprite_info.loc_width, sprite_info.loc_height, firmId);
+					MoveToFirmSurround(firmXLoc1, firmYLoc1, sprite_info.loc_width, sprite_info.loc_height, firmId);
 				else
 					journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}

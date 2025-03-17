@@ -593,7 +593,7 @@ public partial class Unit : Sprite
 
 		//-------- reset seek path ----------//
 
-		reset_path();
+		ResetPath();
 
 		//----- if cur_x == -1, the unit has not yet been hired -----//
 
@@ -2056,7 +2056,7 @@ public partial class Unit : Sprite
 					if (Config.ai_aggressiveness > Config.OPTION_LOW)
 						force_move_flag = true;
 
-					move_to(bestCamp.loc_x1, bestCamp.loc_y1);
+					MoveTo(bestCamp.loc_x1, bestCamp.loc_y1);
 				}
 				else
 				{
@@ -2181,7 +2181,7 @@ public partial class Unit : Sprite
 		}
 
 		if (bestTown != null)
-			move_to_town_surround(bestTown.LocX1, bestTown.LocY1, sprite_info.loc_width, sprite_info.loc_height);
+			MoveToTownSurround(bestTown.LocX1, bestTown.LocY1, sprite_info.loc_width, sprite_info.loc_height);
 	}
 
 	public bool ai_escape_fire()
@@ -2221,7 +2221,7 @@ public partial class Unit : Sprite
 
 			if (location.fire_str() == 0) // move to a safe place now
 			{
-				move_to(checkXLoc, checkYLoc);
+				MoveTo(checkXLoc, checkYLoc);
 				return true;
 			}
 		}
@@ -2558,7 +2558,7 @@ public partial class Unit : Sprite
 
 		else if (original_action_mode == UnitConstants.ACTION_MOVE)
 		{
-			UnitArray.move_to(original_action_x_loc, original_action_y_loc, false,
+			UnitArray.MoveTo(original_action_x_loc, original_action_y_loc, false,
 				selectedArray, InternalConstants.COMMAND_AUTO);
 		}
 
@@ -2935,7 +2935,7 @@ public partial class Unit : Sprite
 				else if (destY >= GameConstants.MapSize)
 					destY = GameConstants.MapSize - 1;
 
-				move_to(destX, destY);
+				MoveTo(destX, destY);
 			}
 		}
 	}
@@ -2951,7 +2951,7 @@ public partial class Unit : Sprite
 
 		if (cur_x == go_x && cur_y == go_y)
 		{
-			next_move();
+			NextMove();
 			if (cur_action != SPRITE_MOVE) // if next_move() is not successful, the movement has been stopped
 				return;
 
@@ -2971,7 +2971,7 @@ public partial class Unit : Sprite
 			// the go_?.
 			//---------------------------------------------------------------------------//
 			if (cur_action == SPRITE_MOVE && cur_x == go_x && cur_y == go_y)
-				next_move();
+				NextMove();
 		}
 
 		//--------- process the move, update sprite position ---------//
@@ -3028,7 +3028,7 @@ public partial class Unit : Sprite
 
 		if (next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc && swapping == 0)
 		{
-			terminate_move();
+			TerminateMove();
 			return; // terminate since already in destination
 		}
 
@@ -3074,7 +3074,7 @@ public partial class Unit : Sprite
 		{
 			//------- blocked, call handle_blocked_move() ------//
 			//loc = world.get_loc(blockedX, blockedY);
-			handle_blocked_move(location);
+			HandleBlockedMove(location);
 		}
 	}
 
@@ -3222,7 +3222,7 @@ public partial class Unit : Sprite
 				else
 				{
 					Location location = World.get_loc(x, y);
-					handle_blocked_move(location);
+					HandleBlockedMove(location);
 				}
 			}
 			else
@@ -3316,7 +3316,7 @@ public partial class Unit : Sprite
 		if (action_mode2 != UnitConstants.ACTION_MOVE)
 			ResetWayPoints();
 
-		reset_path();
+		ResetPath();
 
 		//-------------- keep action or not --------------//
 		switch (preserveAction)
@@ -3738,7 +3738,7 @@ public partial class Unit : Sprite
 		int curYLoc = next_y_loc();
 		if ((curXLoc != destX || curYLoc != destY) &&
 		    (Math.Abs(shipXLoc - curXLoc) > 1 || Math.Abs(shipYLoc - curYLoc) > 1))
-			search(resultXLoc, resultYLoc, 1);
+			Search(resultXLoc, resultYLoc, 1);
 
 		//-------- set action parameters ----------//
 		action_mode = UnitConstants.ACTION_ASSIGN_TO_SHIP;
@@ -3754,7 +3754,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
 		{
-			move_to(destX, destY, 1);
+			MoveTo(destX, destY, 1);
 			finalDestX = finalDestY = -1;
 			return;
 		}
@@ -3764,7 +3764,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		if (UnitRes[unit_id].carry_unit_capacity <= 0)
 		{
-			move_to(destX, destY, 1);
+			MoveTo(destX, destY, 1);
 			finalDestX = finalDestY = -1;
 			return;
 		}
@@ -3820,7 +3820,7 @@ public partial class Unit : Sprite
 			// find the path from the ship location in the ocean to the reference location
 			// in the territory
 			//------------------------------------------------------------------------------//
-			if (!ship_to_beach_path_edit(ref resultXLoc, ref resultYLoc, regionId))
+			if (!ShipToBeachPathEdit(ref resultXLoc, ref resultYLoc, regionId))
 			{
 				finalDestX = finalDestY = -1;
 				return; // calling move_to() instead
@@ -3864,7 +3864,7 @@ public partial class Unit : Sprite
 		if (World.can_build_firm(buildXLoc, buildYLoc, firmId, sprite_recno) == 0)
 		{
 			//reset_action_para2();
-			move_to(buildXLoc, buildYLoc);
+			MoveTo(buildXLoc, buildYLoc);
 			return;
 		}
 
@@ -3893,13 +3893,13 @@ public partial class Unit : Sprite
 					goY += 1;
 					break;
 				default:
-					move_to(buildXLoc, buildYLoc);
+					MoveTo(buildXLoc, buildYLoc);
 					return;
 			}
 
 			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(goX, goY).region_id)
 			{
-				move_to(buildXLoc, buildYLoc);
+				MoveTo(buildXLoc, buildYLoc);
 				return;
 			}
 		}
@@ -3907,7 +3907,7 @@ public partial class Unit : Sprite
 		{
 			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(buildXLoc, buildYLoc).region_id)
 			{
-				move_to(buildXLoc, buildYLoc);
+				MoveTo(buildXLoc, buildYLoc);
 				return;
 			}
 		}
@@ -3944,7 +3944,7 @@ public partial class Unit : Sprite
 			    buildXLoc, buildYLoc, firmWidth, firmHeight))
 		{
 			//----------- not in the firm surrounding ---------//
-			set_move_to_surround(buildXLoc, buildYLoc, firmWidth, firmHeight, UnitConstants.BUILDING_TYPE_FIRM_BUILD, firmId);
+			SetMoveToSurround(buildXLoc, buildYLoc, firmWidth, firmHeight, UnitConstants.BUILDING_TYPE_FIRM_BUILD, firmId);
 		}
 		else
 		{
@@ -3986,7 +3986,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(burnXLoc, burnYLoc).region_id)
 		{
-			move_to(burnXLoc, burnYLoc);
+			MoveTo(burnXLoc, burnYLoc);
 			return;
 		}
 
@@ -4015,7 +4015,7 @@ public partial class Unit : Sprite
 		if (Math.Abs(burnXLoc - next_x_loc()) > 1 || Math.Abs(burnYLoc - next_y_loc()) > 1)
 		{
 			//--- if the unit is not in the burning surrounding location, move there first ---//
-			search(burnXLoc, burnYLoc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
+			Search(burnXLoc, burnYLoc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
 
 			if (move_to_x_loc != burnXLoc || move_to_y_loc != burnYLoc) // cannot reach the destination
 			{
@@ -4124,7 +4124,7 @@ public partial class Unit : Sprite
 			if (loc.is_town() && TownArray[loc.town_recno()].NationId == nation_recno)
 				assign(settleXLoc, settleYLoc);
 			else
-				move_to(settleXLoc, settleYLoc);
+				MoveTo(settleXLoc, settleYLoc);
 			return;
 		}
 
@@ -4133,7 +4133,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(settleXLoc, settleYLoc).region_id)
 		{
-			move_to(settleXLoc, settleYLoc);
+			MoveTo(settleXLoc, settleYLoc);
 			return;
 		}
 
@@ -4163,7 +4163,7 @@ public partial class Unit : Sprite
 			    settleXLoc, settleYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 		{
 			//------------ not in the town surrounding ------------//
-			set_move_to_surround(settleXLoc, settleYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+			SetMoveToSurround(settleXLoc, settleYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 				UnitConstants.BUILDING_TYPE_SETTLE, 0, 0, curSettleUnitNum);
 		}
 		else
@@ -4233,7 +4233,7 @@ public partial class Unit : Sprite
 
 			if (quit)
 			{
-				move_to_firm_surround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height,
+				MoveToFirmSurround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height,
 					firm.firm_id);
 				return;
 			}
@@ -4241,7 +4241,7 @@ public partial class Unit : Sprite
 		else if (unitRegionId != loc.region_id)
 		{
 			if (loc.is_town())
-				move_to_town_surround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
+				MoveToTownSurround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
 			/*else if(loc.has_unit(UnitRes.UNIT_LAND))
 			{
 				Unit *unit = UnitArray[loc.unit_recno(UnitRes.UNIT_LAND)];
@@ -4290,7 +4290,7 @@ public partial class Unit : Sprite
 			if (firm_can_assign(recno) == 0)
 			{
 				//firmNeedUnit = 0; // move to the surrounding of the firm
-				move_to_firm_surround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height,
+				MoveToFirmSurround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height,
 					firm.firm_id);
 				return;
 			}
@@ -4332,7 +4332,7 @@ public partial class Unit : Sprite
 			Town targetTown = TownArray[recno];
 			if (TownArray[recno].NationId != nation_recno)
 			{
-				move_to_town_surround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
+				MoveToTownSurround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
 				return;
 			}
 
@@ -4385,7 +4385,7 @@ public partial class Unit : Sprite
 		// order the sprite to stop as soon as possible (new order)
 		//-----------------------------------------------------------------//
 		stop();
-		set_move_to_surround(assignXLoc, assignYLoc, width, height, buildingType, 0, 0, curAssignUnitNum);
+		SetMoveToSurround(assignXLoc, assignYLoc, width, height, buildingType, 0, 0, curAssignUnitNum);
 
 		//-----------------------------------------------------------------//
 		// able to reach building surrounding, set action parameters
@@ -4475,7 +4475,7 @@ public partial class Unit : Sprite
 
 		//------------- do searching if neccessary -------------//
 		if (Misc.points_distance(next_x_loc(), next_y_loc(), castXLoc, castYLoc) > UnitConstants.DO_CAST_POWER_RANGE)
-			search(castXLoc, castYLoc, 1);
+			Search(castXLoc, castYLoc, 1);
 
 		//----------- set action to build the firm -----------//
 		action_mode = UnitConstants.ACTION_GO_CAST_POWER;
@@ -5644,7 +5644,7 @@ public partial class Unit : Sprite
 				if (move_to_x_loc != action_x_loc2 || move_to_y_loc != action_y_loc2)
 				{
 					//------- move since the unit has not reached its destination --------//
-					move_to(action_x_loc2, action_y_loc2, 1);
+					MoveTo(action_x_loc2, action_y_loc2, 1);
 					hasSearch = true;
 					returnFlag = true;
 					break;
@@ -6742,7 +6742,7 @@ public partial class Unit : Sprite
 					{
 						//------------ not in the surrounding -----------//
 						if (action_mode != action_mode2) // for defense mode
-							set_move_to_surround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
+							SetMoveToSurround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
 								UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 						return;
 					}
@@ -6908,7 +6908,7 @@ public partial class Unit : Sprite
 	{
 		if (cur_action == SPRITE_IDLE) // the unit is at the build location now
 		{
-			reset_path();
+			ResetPath();
 
 			if (cur_x_loc() == move_to_x_loc && cur_y_loc() == move_to_y_loc)
 			{

@@ -226,7 +226,7 @@ public partial class Unit
 						    attackInfo.bullet_sprite_id))
 					{
 						//------- no suitable location, so move to target again ---------//
-						set_move_to_surround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
+						SetMoveToSurround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
 							UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 						return;
 					}
@@ -305,7 +305,7 @@ public partial class Unit
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count  == 0) // no step for continue moving
-							set_move_to_surround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
+							SetMoveToSurround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
 								UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 
 						return; // unable to attack, continue to move
@@ -324,7 +324,7 @@ public partial class Unit
 				{
 					//---------- attack now ---------//
 					set_cur(next_x, next_y);
-					terminate_move();
+					TerminateMove();
 
 					if (targetFirm.firm_id != Firm.FIRM_RESEARCH)
 						set_attack_dir(curXLoc, curYLoc, targetFirm.center_x, targetFirm.center_y);
@@ -446,7 +446,7 @@ public partial class Unit
 						    attackInfo.bullet_sprite_id))
 					{
 						//----- no suitable location, move to target --------//
-						set_move_to_surround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+						SetMoveToSurround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 							UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 						return;
 					}
@@ -524,7 +524,7 @@ public partial class Unit
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count  == 0) // no step for continuing moving
-							set_move_to_surround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+							SetMoveToSurround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 								UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 
 						return; // unable to attack, continue to move
@@ -543,7 +543,7 @@ public partial class Unit
 				{
 					//---------- attack now ---------//
 					set_cur(next_x, next_y);
-					terminate_move();
+					TerminateMove();
 					set_dir(next_x_loc(), next_y_loc(), targetTown.LocCenterX, targetTown.LocCenterY);
 
 					if (is_dir_correct())
@@ -606,7 +606,7 @@ public partial class Unit
 						    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 					{
 						//--------- no suitable location, move to target ----------//
-						set_move_to_surround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+						SetMoveToSurround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 						return;
 					}
 				}
@@ -681,7 +681,7 @@ public partial class Unit
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count == 0) // no step for continuing moving
-							set_move_to_surround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+							SetMoveToSurround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 
 						return; // unable to attack, continue to move
 					}
@@ -699,7 +699,7 @@ public partial class Unit
 				{
 					//---------- attack now ---------//
 					set_cur(next_x, next_y);
-					terminate_move();
+					TerminateMove();
 					set_attack_dir(next_x_loc(), next_y_loc(), action_x_loc, action_y_loc);
 
 					if (is_dir_correct())
@@ -847,7 +847,7 @@ public partial class Unit
 					if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 					    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
 					    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-						move_to(targetXLoc, targetYLoc);
+						MoveTo(targetXLoc, targetYLoc);
 					else // in defend mode, but unable to attack target
 						general_defend_mode_detect_target(1);
 
@@ -943,7 +943,7 @@ public partial class Unit
 				else if (yLoc >= GameConstants.MapSize)
 					yLoc = GameConstants.MapSize - 1;
 
-				search(xLoc, yLoc, 1); // offset location is given, so move there directly
+				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
 			else
 			{
@@ -954,7 +954,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory from this
 					//		unit. But able to attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					move_to_range_attack(targetXLoc, targetYLoc, targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE,
+					MoveToRangeAttack(targetXLoc, targetYLoc, targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE,
 						maxRange);
 				}
 				else
@@ -965,7 +965,7 @@ public partial class Unit
 					// 3) different type from target, but target located in the same territory of this
 					//		unit.
 					//--------------------------------------------------------------------------------//
-					searchResult = search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, targetUnit.sprite_recno);
+					searchResult = Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, targetUnit.sprite_recno);
 				}
 			}
 
@@ -1085,7 +1085,7 @@ public partial class Unit
 				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
 				    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
-					move_to(firmXLoc, firmYLoc);
+					MoveTo(firmXLoc, firmYLoc);
 				}
 
 				return;
@@ -1150,7 +1150,7 @@ public partial class Unit
 				else if (yLoc >= GameConstants.MapSize)
 					yLoc = GameConstants.MapSize - 1;
 
-				search(xLoc, yLoc, 1); // offset location is given, so move there directly
+				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
 			else // without offset given, so call set_move_to_surround()
 			{
@@ -1160,7 +1160,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory from this
 					//		unit. But able to attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					move_to_range_attack(firmXLoc, firmYLoc, firm.firm_id, SeekPath.SEARCH_MODE_ATTACK_FIRM_BY_RANGE, maxRange);
+					MoveToRangeAttack(firmXLoc, firmYLoc, firm.firm_id, SeekPath.SEARCH_MODE_ATTACK_FIRM_BY_RANGE, maxRange);
 				}
 				else
 				{
@@ -1170,7 +1170,7 @@ public partial class Unit
 					// 3) different type from target, but target located in the same territory of this
 					//		unit.
 					//--------------------------------------------------------------------------------//
-					searchResult = set_move_to_surround(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height,
+					searchResult = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height,
 						UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, 0, 0);
 				}
 			}
@@ -1297,7 +1297,7 @@ public partial class Unit
 				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
 				    action_mode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
-					move_to(townXLoc, townYLoc);
+					MoveTo(townXLoc, townYLoc);
 				}
 
 				return;
@@ -1364,7 +1364,7 @@ public partial class Unit
 				else if (yLoc >= GameConstants.MapSize)
 					yLoc = GameConstants.MapSize - 1;
 
-				search(xLoc, yLoc, 1); // offset location is given, so move there directly
+				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
 			else // without offset given, so call set_move_to_surround()
 			{
@@ -1374,7 +1374,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory but able to
 					//		attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					move_to_range_attack(townXLoc, townYLoc, 0, SeekPath.SEARCH_MODE_ATTACK_TOWN_BY_RANGE, maxRange);
+					MoveToRangeAttack(townXLoc, townYLoc, 0, SeekPath.SEARCH_MODE_ATTACK_TOWN_BY_RANGE, maxRange);
 				}
 				else
 				{
@@ -1383,7 +1383,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					searchResult = set_move_to_surround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+					searchResult = SetMoveToSurround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO, 0, 0);
 				}
 			}
@@ -1486,7 +1486,7 @@ public partial class Unit
 				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
 				    action_mode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
-					move_to(wallXLoc, wallYLoc);
+					MoveTo(wallXLoc, wallYLoc);
 				}
 
 				return;
@@ -1553,7 +1553,7 @@ public partial class Unit
 				else if (yLoc >= GameConstants.MapSize)
 					yLoc = GameConstants.MapSize - 1;
 
-				search(xLoc, yLoc, 1); // offset location is given, so move there directly
+				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
 			else
 			{
@@ -1563,7 +1563,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory but able to
 					//		attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					move_to_range_attack(wallXLoc, wallYLoc, 0, SeekPath.SEARCH_MODE_ATTACK_WALL_BY_RANGE, maxRange);
+					MoveToRangeAttack(wallXLoc, wallYLoc, 0, SeekPath.SEARCH_MODE_ATTACK_WALL_BY_RANGE, maxRange);
 				}
 				else
 				{
@@ -1572,7 +1572,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					searchResult = set_move_to_surround(wallXLoc, wallYLoc, 1, 1,
+					searchResult = SetMoveToSurround(wallXLoc, wallYLoc, 1, 1,
 						UnitConstants.BUILDING_TYPE_WALL, 0, 0);
 				}
 			}
@@ -2282,7 +2282,7 @@ public partial class Unit
 			{
 				//---------- attack now ---------//
 				set_cur(next_x, next_y);
-				terminate_move();
+				TerminateMove();
 				set_attack_dir(next_x_loc(), next_y_loc(), targetXLoc, targetYLoc);
 
 				if (is_dir_correct())
@@ -2398,7 +2398,7 @@ public partial class Unit
 		if (World.get_loc(curXLoc, curYLoc).region_id == World.get_loc(targetXLoc, targetYLoc).region_id)
 		{
 			//------------ for same region id, search now ---------------//
-			if (search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
+			if (Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
 				return 1;
 			else // search failure,
 			{
@@ -2418,7 +2418,7 @@ public partial class Unit
 				//---------------------------------------------------------------------------------//
 				// space is found, attack target now
 				//---------------------------------------------------------------------------------//
-				if (move_to_range_attack(targetXLoc, targetYLoc,
+				if (MoveToRangeAttack(targetXLoc, targetYLoc,
 					    targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE, maxRange) != 0)
 					return 1;
 				else
@@ -2437,7 +2437,7 @@ public partial class Unit
 				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
 				    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-					move_to(targetXLoc, targetYLoc, 1); // abort attacking, just call move_to() instead
+					MoveTo(targetXLoc, targetYLoc, 1); // abort attacking, just call move_to() instead
 				else
 					stop2(UnitConstants.KEEP_DEFENSE_MODE);
 				return 0;

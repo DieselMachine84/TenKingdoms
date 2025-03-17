@@ -384,7 +384,7 @@ public class UnitMarine : Unit
 					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 					journey_status = ON_WAY_TO_FIRM;*/
 					if (cur_action == SPRITE_IDLE)
-						move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 					else
 						journey_status = InternalConstants.ON_WAY_TO_FIRM;
 					//#### end alex 6/10 ####//
@@ -575,7 +575,7 @@ public class UnitMarine : Unit
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 
 		if (autoMode != 0) // move to next firm only if autoMode is on
-			move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
 	}
 
 	public void ship_on_way()
@@ -591,7 +591,7 @@ public class UnitMarine : Unit
 			if (!FirmArray.IsDeleted(shipStop.firm_recno))
 			{
 				firm = FirmArray[shipStop.firm_recno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
 				nextXLoc = next_x_loc();
 				nextYLoc = next_y_loc();
 				moveStep = move_step_magn();
@@ -613,7 +613,7 @@ public class UnitMarine : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 			}
 
 			return;
@@ -655,7 +655,7 @@ public class UnitMarine : Unit
 			stop_y_loc = move_to_y_loc;
 			wait_count = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
 
-			reset_path();
+			ResetPath();
 			deinit_sprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
 
 			cur_x--; // set cur_x to -2, such that invisible but still process pre_process()
@@ -670,7 +670,7 @@ public class UnitMarine : Unit
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -1743,7 +1743,7 @@ public class UnitMarine : Unit
 			else
 			{
 				cur_action = SPRITE_MOVE;
-				next_move();
+				NextMove();
 			}
 
 			if (in_beach)
@@ -1888,7 +1888,7 @@ public class UnitMarine : Unit
 			if (newStopFirmRecno != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}

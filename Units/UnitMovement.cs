@@ -4,7 +4,7 @@ namespace TenKingdoms;
 
 public partial class Unit
 {
-	public void move_to(int destX, int destY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
+	public void MoveTo(int destX, int destY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
 		//---------- reset way point array since new action is assigned --------//
 		if (wayPoints.Count > 0)
@@ -25,7 +25,7 @@ public partial class Unit
 		int destYLoc = destY;
 
 		if (loc.region_id != destLoc.region_id && mobile_type != UnitConstants.UNIT_AIR) // different territory
-			different_territory_destination(ref destXLoc, ref destYLoc);
+			DifferentTerritoryDestination(ref destXLoc, ref destYLoc);
 
 		if (is_unit_dead())
 			return;
@@ -85,7 +85,7 @@ public partial class Unit
 		action_mode2 = UnitConstants.ACTION_MOVE;
 		action_para2 = 0;
 
-		search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
+		Search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
 		move_action_call_flag = false;
 
 		//----------------------------------------------------------------//
@@ -97,7 +97,7 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 	
-	public void move_to_unit_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToUnitSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -105,7 +105,7 @@ public partial class Unit
 		Location loc = World.get_loc(destXLoc, destYLoc);
 		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
 		{
-			move_to(destXLoc, destYLoc);
+			MoveTo(destXLoc, destYLoc);
 			return;
 		}
 
@@ -146,7 +146,7 @@ public partial class Unit
 		Unit unit = UnitArray[miscNo];
 		SpriteInfo spriteInfo = unit.sprite_info;
 		stop();
-		set_move_to_surround(destX, destY, spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.BUILDING_TYPE_VEHICLE);
+		SetMoveToSurround(destX, destY, spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.BUILDING_TYPE_VEHICLE);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -157,7 +157,7 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 	
-	public void move_to_firm_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToFirmSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -169,7 +169,7 @@ public partial class Unit
 			FirmHarbor harbor = (FirmHarbor)firm;
 			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != harbor.sea_region_id)
 			{
-				move_to(destXLoc, destYLoc);
+				MoveTo(destXLoc, destYLoc);
 				return;
 			}
 		}
@@ -177,7 +177,7 @@ public partial class Unit
 		{
 			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
 			{
-				move_to(destXLoc, destYLoc);
+				MoveTo(destXLoc, destYLoc);
 				return;
 			}
 		}
@@ -218,7 +218,7 @@ public partial class Unit
 
 		FirmInfo firmInfo = FirmRes[miscNo];
 		stop();
-		set_move_to_surround(destX, destY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
+		SetMoveToSurround(destX, destY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -229,7 +229,7 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_town_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToTownSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -237,7 +237,7 @@ public partial class Unit
 		Location loc = World.get_loc(destXLoc, destYLoc);
 		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
 		{
-			move_to(destXLoc, destYLoc);
+			MoveTo(destXLoc, destYLoc);
 			return;
 		}
 
@@ -276,7 +276,7 @@ public partial class Unit
 		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
 
 		stop();
-		set_move_to_surround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
+		SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -287,7 +287,7 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 
-	public void move_to_wall_surround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToWallSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -295,7 +295,7 @@ public partial class Unit
 		Location loc = World.get_loc(destXLoc, destYLoc);
 		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
 		{
-			move_to(destXLoc, destYLoc);
+			MoveTo(destXLoc, destYLoc);
 			return;
 		}
 
@@ -334,7 +334,7 @@ public partial class Unit
 		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
 
 		stop();
-		set_move_to_surround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+		SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -345,7 +345,7 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 	
-	private int set_move_to_surround(int buildXLoc, int buildYLoc, int width, int height, int buildingType,
+	private int SetMoveToSurround(int buildXLoc, int buildYLoc, int width, int height, int buildingType,
 		int miscNo = 0, int readyDist = 0, int curProcessUnitNum = 1)
 	{
 		//--------------------------------------------------------------//
@@ -360,7 +360,7 @@ public partial class Unit
 		//--------------------------------------------------------------//
 		if (distance == 0)
 		{
-			reset_path();
+			ResetPath();
 			if (cur_x == next_x && cur_y == next_y)
 				set_idle();
 
@@ -396,17 +396,17 @@ public partial class Unit
 			{
 				case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
 					firm = FirmArray[loc.firm_recno()];
-					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, firm.firm_id,
+					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, firm.firm_id,
 						curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_FIRM_BUILD: // (build firm) no firm on the location
-					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
+					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
 					targetTown = TownArray[loc.town_recno()];
-					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN,
+					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN,
 						targetTown.TownId, curProcessUnitNum);
 					break;
 
@@ -418,16 +418,16 @@ public partial class Unit
 					// town.  Thus, passing -1 as the recno. to show that "settle" is
 					// processed
 					//---------------------------------------------------------------------//
-					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
+					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_VEHICLE:
-					searchResult = search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_VEHICLE,
+					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_VEHICLE,
 						World.get_loc(buildXLoc, buildYLoc).cargo_recno);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
-					searchResult = search(buildXLoc, buildYLoc, 1,
+					searchResult = Search(buildXLoc, buildYLoc, 1,
 						miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
 					break;
 
@@ -441,12 +441,12 @@ public partial class Unit
 			//====================================================================//
 			// part 2
 			//====================================================================//
-			return PathNodes.Count > 0 ? edit_path_to_surround(buildXLoc, buildYLoc,
+			return PathNodes.Count > 0 ? EditPathToSurround(buildXLoc, buildYLoc,
 					buildXLoc + width - 1, buildYLoc + height - 1, readyDist) : 0;
 		}
 		else // in the surrounding, no need to move
 		{
-			reset_path();
+			ResetPath();
 
 			if (cur_x == next_x && cur_y == next_y)
 			{
@@ -462,7 +462,7 @@ public partial class Unit
 		}
 	}
 	
-	private int edit_path_to_surround(int objectXLoc1, int objectYLoc1, int objectXLoc2, int objectYLoc2, int readyDist)
+	private int EditPathToSurround(int objectXLoc1, int objectYLoc1, int objectXLoc2, int objectYLoc2, int readyDist)
 	{
 		if (PathNodes.Count < 2)
 			return 0;
@@ -605,7 +605,7 @@ public partial class Unit
 		return found;
 	}
 
-	protected void next_move()
+	protected void NextMove()
 	{
 		if (PathNodes.Count == 0)
 			return;
@@ -614,7 +614,7 @@ public partial class Unit
 		if (PathNodeIndex == PathNodes.Count)
 		{
 			//------------ all nodes are visited --------------//
-			reset_path();
+			ResetPath();
 			set_idle();
 
 			if (action_mode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
@@ -638,7 +638,7 @@ public partial class Unit
 		sprite_move(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
 	}
 
-	protected void terminate_move()
+	protected void TerminateMove()
 	{
 		go_x = next_x;
 		go_y = next_y;
@@ -648,11 +648,11 @@ public partial class Unit
 
 		cur_frame = 1;
 
-		reset_path();
+		ResetPath();
 		set_idle();
 	}
 
-	private void move_to_my_loc(Unit unit)
+	private void MoveToMyLoc(Unit unit)
 	{
 		int unitDestX, unitDestY;
 		if (unit.action_mode2 == UnitConstants.ACTION_MOVE)
@@ -680,7 +680,7 @@ public partial class Unit
 		//------------------------------------------------------------------//
 		if (PathNodes.Count == 0) //************BUGHERE
 		{
-			unit.move_to(destX, destY, 1); // unit pointed by unit is idle before calling searching
+			unit.MoveTo(destX, destY, 1); // unit pointed by unit is idle before calling searching
 		}
 		else
 		{
@@ -720,7 +720,7 @@ public partial class Unit
 			unit._pathNodeDistance = _pathNodeDistance - moveScale;
 			unit.move_to_x_loc = move_to_x_loc;
 			unit.move_to_y_loc = move_to_y_loc;
-			unit.next_move();
+			unit.NextMove();
 		}
 
 		//------------------------------------------------------------------//
@@ -729,12 +729,12 @@ public partial class Unit
 		int shouldWait = 0;
 		if (next_x == unit.cur_x && next_y == unit.cur_y)
 		{
-			reset_path();
+			ResetPath();
 			_pathNodeDistance = 0;
 		}
 		else
 		{
-			terminate_move();
+			TerminateMove();
 			shouldWait++;
 			_pathNodeDistance = moveScale;
 		}
@@ -760,13 +760,13 @@ public partial class Unit
 			set_wait(); // wait for the blocking unit to move first
 	}
 	
-	private int move_to_range_attack(int targetXLoc, int targetYLoc, int miscNo, int searchMode, int maxRange)
+	private int MoveToRangeAttack(int targetXLoc, int targetYLoc, int miscNo, int searchMode, int maxRange)
 	{
 		//---------------------------------------------------------------------------------//
 		// part 1, searching
 		//---------------------------------------------------------------------------------//
 		SeekPath.SetAttackRange(maxRange);
-		search(targetXLoc, targetYLoc, 1, searchMode, miscNo);
+		Search(targetXLoc, targetYLoc, 1, searchMode, miscNo);
 		SeekPath.ResetAttackRange();
 		//search(targetXLoc, targetYLoc, 1, searchMode, maxRange);
 
@@ -888,7 +888,7 @@ public partial class Unit
 		return found;
 	}
 
-	public void different_territory_destination(ref int destX, ref int destY)
+	public void DifferentTerritoryDestination(ref int destX, ref int destY)
 	{
 		int curXLoc = next_x_loc();
 		int curYLoc = next_y_loc();
@@ -929,7 +929,7 @@ public partial class Unit
 		}
 	}
 
-	private void handle_blocked_move(Location blockedLoc)
+	private void HandleBlockedMove(Location blockedLoc)
 	{
 		//--- check if the tile we are moving at is blocked by a building ---//
 		if (blockedLoc.is_firm() || blockedLoc.is_town() || blockedLoc.is_wall())
@@ -937,21 +937,21 @@ public partial class Unit
 			//------------------------------------------------//
 			// firm/town/wall is on the blocked location
 			//------------------------------------------------//
-			reset_path();
-			search_or_stop(move_to_x_loc, move_to_y_loc, 1);
+			ResetPath();
+			SearchOrStop(move_to_x_loc, move_to_y_loc, 1);
 			//search(move_to_x_loc, move_to_y_loc, 1);
 			return;
 		}
 
 		if (next_x_loc() == move_to_x_loc && next_y_loc() == move_to_y_loc && swapping == 0)
 		{
-			terminate_move(); // terminate since already reaching destination
+			TerminateMove(); // terminate since already reaching destination
 			return;
 		}
 
 		if (!blockedLoc.is_accessible(mobile_type))
 		{
-			terminate_move(); // the location is not accessible
+			TerminateMove(); // the location is not accessible
 			return;
 		}
 
@@ -967,12 +967,12 @@ public partial class Unit
 		//	return;
 		//}
 		//else
-		handle_blocked_move_s11(unit); //------ both units size 1x1
+		HandleBlockedMoveS11(unit); //------ both units size 1x1
 
 		return;
 	}
 
-	private void handle_blocked_move_s11(Unit unit)
+	private void HandleBlockedMoveS11(Unit unit)
 	{
 		int waitTerm;
 		int moveStep = move_step_magn();
@@ -986,10 +986,10 @@ public partial class Unit
 			case SPRITE_WAIT: // the blocking unit is waiting
 			case SPRITE_TURN:
 				if (unit.nation_recno == nation_recno)
-					handle_blocked_wait(unit); // check for cycle wait for our nation
+					HandleBlockedWait(unit); // check for cycle wait for our nation
 				else if (waiting_term >= UnitConstants.MAX_WAITING_TERM_DIFF)
 				{
-					search_or_stop(move_to_x_loc, move_to_y_loc, 1); // recall searching
+					SearchOrStop(move_to_x_loc, move_to_y_loc, 1); // recall searching
 					waiting_term = 0;
 				}
 				else // wait
@@ -1007,14 +1007,14 @@ public partial class Unit
 				// don't wait for caravans, and caravans don't wait for other units
 				if (unit_id != UnitConstants.UNIT_CARAVAN && unit.unit_id == UnitConstants.UNIT_CARAVAN)
 				{
-					search(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
+					Search(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
 				}
 				else
 				{
 					waitTerm = (nation_recno == unit.nation_recno) ? UnitConstants.MAX_WAITING_TERM_SAME : UnitConstants.MAX_WAITING_TERM_DIFF;
 					if (waiting_term >= waitTerm)
 					{
-						search_or_wait();
+						SearchOrWait();
 						waiting_term = 0;
 					}
 					else
@@ -1075,29 +1075,29 @@ public partial class Unit
 						else if ((unit.next_x_loc() != move_to_x_loc || unit.next_y_loc() != move_to_y_loc) &&
 						         (unit.cur_action == SPRITE_IDLE && unit.action_mode2 == UnitConstants.ACTION_STOP))
 							if (ConfigAdv.fix_path_blocked_by_team)
-								handle_blocked_by_idle_unit(unit);
+								HandleBlockedByIdleUnit(unit);
 							else
-								move_to_my_loc(unit); // push the blocking unit and exchange their destination
+								MoveToMyLoc(unit); // push the blocking unit and exchange their destination
 						else if (unit.action_mode == UnitConstants.ACTION_SETTLE)
 							set_wait(); // wait for the settler
 						else if (waiting_term > UnitConstants.MAX_WAITING_TERM_SAME)
 						{
 							//---------- stop if wait too long ----------//
-							terminate_move();
+							TerminateMove();
 							waiting_term = 0;
 						}
 						else
 							set_wait();
 					}
 					else if (unit.action_mode2 == UnitConstants.ACTION_STOP)
-						handle_blocked_by_idle_unit(unit);
+						HandleBlockedByIdleUnit(unit);
 					else if (wayPoints.Count != 0 && unit.wayPoints.Count == 0)
 					{
 						stop2();
 						ResetWayPoints();
 					}
 					else
-						search_or_stop(move_to_x_loc, move_to_y_loc, 1); // recall A* algorithm by default mode
+						SearchOrStop(move_to_x_loc, move_to_y_loc, 1); // recall A* algorithm by default mode
 				}
 				else // different nation
 				{
@@ -1106,7 +1106,7 @@ public partial class Unit
 					//------------------------------------------------------------------------------------//
 					if (unit.next_x_loc() == move_to_x_loc && unit.next_y_loc() == move_to_y_loc)
 					{
-						terminate_move(); // destination occupied by other unit
+						TerminateMove(); // destination occupied by other unit
 
 						if (action_mode == UnitConstants.ACTION_ATTACK_UNIT &&
 						    unit.nation_recno != nation_recno && unit.sprite_recno == action_para)
@@ -1120,7 +1120,7 @@ public partial class Unit
 						}
 					}
 					else
-						search_or_stop(move_to_x_loc, move_to_y_loc, 1); // recall A* algorithm by default mode
+						SearchOrStop(move_to_x_loc, move_to_y_loc, 1); // recall A* algorithm by default mode
 				}
 
 				return;
@@ -1134,7 +1134,7 @@ public partial class Unit
 				//----------------------------------------------------------------//
 				if (nation_recno != unit.nation_recno)
 				{
-					search_or_stop(move_to_x_loc, move_to_y_loc, 1);
+					SearchOrStop(move_to_x_loc, move_to_y_loc, 1);
 					return;
 				}
 
@@ -1147,10 +1147,10 @@ public partial class Unit
 						if (action_para != 0 && !UnitArray.IsDeleted(action_para))
 						{
 							Unit target = UnitArray[action_para];
-							handle_blocked_attack_unit(unit, target);
+							HandleBlockedAttackUnit(unit, target);
 						}
 						else
-							search_or_stop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
+							SearchOrStop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP);
 
 						break;
 
@@ -1158,21 +1158,21 @@ public partial class Unit
 						if (unit.action_para == 0 || FirmArray.IsDeleted(unit.action_para))
 							set_wait();
 						else
-							handle_blocked_attack_firm(unit);
+							HandleBlockedAttackFirm(unit);
 						break;
 
 					case UnitConstants.ACTION_ATTACK_TOWN:
 						if (unit.action_para == 0 || TownArray.IsDeleted(unit.action_para))
 							set_wait();
 						else
-							handle_blocked_attack_town(unit);
+							HandleBlockedAttackTown(unit);
 						break;
 
 					case UnitConstants.ACTION_ATTACK_WALL:
 						if (unit.action_para != 0)
 							set_wait();
 						else
-							handle_blocked_attack_wall(unit);
+							HandleBlockedAttackWall(unit);
 						break;
 
 					case UnitConstants.ACTION_GO_CAST_POWER:
@@ -1197,7 +1197,7 @@ public partial class Unit
 		}
 	}
 
-	private void handle_blocked_by_idle_unit(Unit unit)
+	private void HandleBlockedByIdleUnit(Unit unit)
 	{
 		const int TEST_DIMENSION = 10;
 		const int TEST_LIMIT = TEST_DIMENSION * TEST_DIMENSION;
@@ -1235,10 +1235,10 @@ public partial class Unit
 			if (!loc.can_move(unit.mobile_type))
 				continue;
 
-			if (on_my_path(checkXLoc, checkYLoc))
+			if (OnMyPath(checkXLoc, checkYLoc))
 				continue;
 
-			unit.move_to(checkXLoc, checkYLoc);
+			unit.MoveTo(checkXLoc, checkYLoc);
 			set_wait();
 			return;
 		}
@@ -1319,7 +1319,7 @@ public partial class Unit
 			stop(UnitConstants.KEEP_DEFENSE_MODE);*/
 	}
 
-	private bool on_my_path(int checkXLoc, int checkYLoc)
+	private bool OnMyPath(int checkXLoc, int checkYLoc)
 	{
 		for (int i = PathNodeIndex; i < PathNodes.Count; i++)
 		{
@@ -1334,7 +1334,7 @@ public partial class Unit
 		return false;
 	}
 
-	private void handle_blocked_wait(Unit unit)
+	private void HandleBlockedWait(Unit unit)
 	{
 		int stepMagn = move_step_magn();
 		int cycleWait = 0;
@@ -1442,7 +1442,7 @@ public partial class Unit
 			//----------------------------------------------------------------------//
 			int backupSpriteRecno;
 			World.set_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type, 0); // empty the firt node in the cycle
-			cycle_wait_shift_recno(this, unit); // shift all the unit in the cycle
+			CycleWaitShiftRecno(this, unit); // shift all the unit in the cycle
 			backupSpriteRecno = World.get_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type);
 			World.set_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type, sprite_recno);
 			set_next(unit.cur_x, unit.cur_y, -stepMagn, 1);
@@ -1465,14 +1465,14 @@ public partial class Unit
 				if (!loc.can_move(mobile_type) && action_mode2 != UnitConstants.ACTION_MOVE)
 					stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 				else
-					search_or_wait();
+					SearchOrWait();
 
 				waiting_term = 0;
 			}
 		}
 	}
 
-	private void cycle_wait_shift_recno(Unit curUnit, Unit nextUnit)
+	private void CycleWaitShiftRecno(Unit curUnit, Unit nextUnit)
 	{
 		int stepMagn = move_step_magn();
 		Unit blockedUnit;
@@ -1497,7 +1497,7 @@ public partial class Unit
 
 		if (blockedUnit != this)
 		{
-			cycle_wait_shift_recno(nextUnit, blockedUnit);
+			CycleWaitShiftRecno(nextUnit, blockedUnit);
 			nextUnit.set_next(blockedUnit.cur_x, blockedUnit.cur_y, -stepMagn, 1);
 			nextUnit.set_move();
 			World.set_unit_recno(blockedUnit.cur_x_loc(), blockedUnit.cur_y_loc(),
@@ -1516,22 +1516,22 @@ public partial class Unit
 		}
 	}
 
-	private void handle_blocked_attack_unit(Unit unit, Unit target)
+	private void HandleBlockedAttackUnit(Unit unit, Unit target)
 	{
 		if (action_para == target.sprite_recno && unit.action_para == target.sprite_recno &&
 		    action_mode == unit.action_mode)
 		{
 			//----------------- both attack the same target --------------------//
-			handle_blocked_same_target_attack(unit, target);
+			HandleBlockedSameTargetAttack(unit, target);
 		}
 		else
 		{
-			search_or_stop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP); // recall A* algorithm
+			SearchOrStop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_A_UNIT_IN_GROUP); // recall A* algorithm
 		}
 		//search(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_A_UNIT_IN_GROUP); // recall A* algorithm
 	}
 
-	private void handle_blocked_attack_firm(Unit unit)
+	private void HandleBlockedAttackFirm(Unit unit)
 	{
 		if (action_x_loc == unit.action_x_loc && action_y_loc == unit.action_y_loc &&
 		    action_para == unit.action_para && action_mode == unit.action_mode)
@@ -1550,7 +1550,7 @@ public partial class Unit
 				{
 					//------------ found surrounding place to attack the firm -------------//
 					if (mobile_type == UnitConstants.UNIT_LAND)
-						set_move_to_surround(firm.loc_x1, firm.loc_y1,
+						SetMoveToSurround(firm.loc_x1, firm.loc_y1,
 							firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 					else
 						attack_firm(firm.loc_x1, firm.loc_y1);
@@ -1563,7 +1563,7 @@ public partial class Unit
 			stop();
 	}
 
-	private void handle_blocked_attack_town(Unit unit)
+	private void HandleBlockedAttackTown(Unit unit)
 	{
 		if (action_x_loc == unit.action_x_loc && action_y_loc == unit.action_y_loc &&
 		    action_para == unit.action_para && action_mode == unit.action_mode)
@@ -1579,7 +1579,7 @@ public partial class Unit
 				Town town = TownArray[action_para];
 				{
 					if (mobile_type == UnitConstants.UNIT_LAND)
-						set_move_to_surround(town.LocX1, town.LocY1,
+						SetMoveToSurround(town.LocX1, town.LocY1,
 							InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 					else
 						attack_town(town.LocX1, town.LocY1);
@@ -1592,7 +1592,7 @@ public partial class Unit
 			stop();
 	}
 
-	private void handle_blocked_attack_wall(Unit unit)
+	private void HandleBlockedAttackWall(Unit unit)
 	{
 		if (action_x_loc == unit.action_x_loc && action_y_loc == unit.action_y_loc && action_mode == unit.action_mode)
 		{
@@ -1605,7 +1605,7 @@ public partial class Unit
 				//------------ found surrounding place to attack the wall -------------//
 				// search for a unit only, not for a group
 				if (mobile_type == UnitConstants.UNIT_LAND)
-					set_move_to_surround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+					SetMoveToSurround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 				else
 					attack_wall(action_x_loc, action_y_loc);
 			}
@@ -1621,7 +1621,7 @@ public partial class Unit
 		}
 	}
 
-	private void handle_blocked_same_target_attack(Unit unit, Unit target)
+	private void HandleBlockedSameTargetAttack(Unit unit, Unit target)
 	{
 		//----------------------------------------------------------//
 		// this unit is now waiting and the unit pointed by unit
@@ -1630,7 +1630,7 @@ public partial class Unit
 		if (space_for_attack(action_x_loc, action_y_loc, target.mobile_type,
 			    target.sprite_info.loc_width, target.sprite_info.loc_height))
 		{
-			search_or_stop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, target.sprite_recno);
+			SearchOrStop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, target.sprite_recno);
 			//search(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_TO_ATTACK, target.sprite_recno);
 		}
 		else if (in_any_defense_mode())
@@ -1651,7 +1651,7 @@ public partial class Unit
 			set_wait(); // set wait to stop the movement
 	}
 
-	private bool ship_to_beach_path_edit(ref int resultXLoc, ref int resultYLoc, int regionId)
+	private bool ShipToBeachPathEdit(ref int resultXLoc, ref int resultYLoc, int regionId)
 	{
 		int curXLoc = next_x_loc();
 		int curYLoc = next_y_loc();
@@ -1660,7 +1660,7 @@ public partial class Unit
 
 		//--------------- find a path to land area -------------------//
 		UnitMarine ship = (UnitMarine)this;
-		int result = search(resultXLoc, resultYLoc, 1, SeekPath.SEARCH_MODE_TO_LAND_FOR_SHIP, regionId);
+		int result = Search(resultXLoc, resultYLoc, 1, SeekPath.SEARCH_MODE_TO_LAND_FOR_SHIP, regionId);
 		if (result == 0)
 			return true;
 
@@ -1798,7 +1798,7 @@ public partial class Unit
 				World.GetLocXAndLocY(PathNodes[^1], out int endNodeLocX, out int endNodeLocY);
 				if (Math.Abs(endNodeLocX - resultXLoc) > 1 || Math.Abs(endNodeLocY - resultYLoc) > 1)
 				{
-					move_to(resultXLoc, resultYLoc, -1);
+					MoveTo(resultXLoc, resultYLoc, -1);
 					return false;
 				}
 			}
@@ -1834,7 +1834,7 @@ public partial class Unit
 		return true;
 	}
 
-	private void ship_leave_beach(int shipOldXLoc, int shipOldYLoc)
+	private void ShipLeaveBeach(int shipOldXLoc, int shipOldYLoc)
 	{
 		//--------------------------------------------------------------------------------//
 		// scan for location to leave the beach
@@ -1874,7 +1874,7 @@ public partial class Unit
 		go_y = checkYLoc * InternalConstants.CellHeight;
 	}
 	
-	public void select_search_sub_mode(int sx, int sy, int dx, int dy, int nationRecno, int searchMode)
+	public void SelectSearchSubMode(int sx, int sy, int dx, int dy, int nationRecno, int searchMode)
 	{
 		if (!ConfigAdv.unit_allow_path_power_mode)
 		{
@@ -1913,7 +1913,7 @@ public partial class Unit
 		}
 	}
 
-	private int search(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPaths = 1)
+	private int Search(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPaths = 1)
 	{
 		if (destLocX < 0 || destLocX >= GameConstants.MapSize || destLocY < 0 || destLocY >= GameConstants.MapSize ||
 		    hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
@@ -1938,7 +1938,7 @@ public partial class Unit
 					return 0;
 
 				case UnitMarine.EXTRA_MOVE_FINISH:
-					ship_leave_beach(next_x_loc(), next_y_loc());
+					ShipLeaveBeach(next_x_loc(), next_y_loc());
 					break;
 			}
 		}
@@ -1984,12 +1984,12 @@ public partial class Unit
 		// i.e. sprite_info.loc_width == sprite_info.loc_height
 		//--------------------------------------------------------------------------//
 
-		reset_path();
+		ResetPath();
 
 		SeekPath.SetNationId(nation_recno);
 
 		if (mobile_type == UnitConstants.UNIT_LAND)
-			select_search_sub_mode(startLocX, startLocY, destLocX, destLocY, nation_recno, searchMode);
+			SelectSearchSubMode(startLocX, startLocY, destLocX, destLocY, nation_recno, searchMode);
 		int seekResult = SeekPath.Seek(startLocX, startLocY, destLocX, destLocY, unit_group_id,
 			mobile_type, searchMode, miscNo, numOfPaths);
 
@@ -1997,7 +1997,7 @@ public partial class Unit
 		SeekPath.SetSubMode(); // reset sub_mode searching
 
 		if (seekResult == SeekPath.PATH_IMPOSSIBLE)
-			reset_path();
+			ResetPath();
 
 		//-----------------------------------------------------------------------//
 		// update ignore_power_nation
@@ -2044,7 +2044,7 @@ public partial class Unit
 				int nextNode = PathNodes[1];
 				World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
 				set_dir(startLocX, startLocY, nextNodeLocX, nextNodeLocY);
-				next_move();
+				NextMove();
 			}
 		}
 		else // stay in the current location
@@ -2068,7 +2068,7 @@ public partial class Unit
 		return 1;
 	}
 
-	private void search_or_stop(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
+	private void SearchOrStop(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
 	{
 		Location loc = World.get_loc(destX, destY);
 		if (!loc.can_move(mobile_type))
@@ -2078,7 +2078,7 @@ public partial class Unit
 		}
 		else
 		{
-			search(destX, destY, preserveAction, searchMode, miscNo);
+			Search(destX, destY, preserveAction, searchMode, miscNo);
 			/*if(mobile_type==UnitRes.UNIT_LAND)
 				search(destX, destY, preserveAction, searchMode, miscNo);
 			else
@@ -2086,7 +2086,7 @@ public partial class Unit
 		}
 	}
 
-	private void search_or_wait()
+	private void SearchOrWait()
 	{
 		const int SQUARE1 = 9;
 		const int SQUARE2 = 25;
@@ -2145,7 +2145,7 @@ public partial class Unit
 
 		//------------------- call searching if should not wait --------------------//
 		if (shouldWait == 0)
-			search(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_IN_A_GROUP);
+			Search(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_IN_A_GROUP);
 		//search_or_stop(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_IN_A_GROUP);
 
 		for (i = 0; i < SQUARE3; i++)
@@ -2161,7 +2161,7 @@ public partial class Unit
 			set_wait();
 	}
 	
-	protected void reset_path()
+	protected void ResetPath()
 	{
 		PathNodes.Clear();
 		PathNodeIndex = -1;
@@ -2186,7 +2186,7 @@ public partial class Unit
 		wayPoints.Add(World.GetMatrixIndex(locX, locY));
 
 		if (wayPoints.Count == 1)
-			move_to(locX, locY);
+			MoveTo(locX, locY);
 	}
 
 	public void ResetWayPoints()
@@ -2216,6 +2216,6 @@ public partial class Unit
 			destY = wayPointLocY;
 		}
 
-		move_to(destX, destY);
+		MoveTo(destX, destY);
 	}
 }
