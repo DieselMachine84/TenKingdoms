@@ -14,9 +14,9 @@ public partial class Renderer
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         
-        for (int locX = _topLeftX; (locX < _topLeftX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
+        for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
         {
-            for (int locY = _topLeftY; (locY < _topLeftY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
+            for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
                 Location location = World.get_loc(locX, locY);
                 if (!location.explored())
@@ -24,14 +24,14 @@ public partial class Renderer
 
                 //Draw terrain
                 //TODO terrain animation
-                int drawX = MainViewX + (locX - _topLeftX) * CellTextureWidth;
-                int drawY = MainViewY + (locY - _topLeftY) * CellTextureHeight;
+                int screenX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
+                int screenY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
                 TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
-                Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), drawX, drawY, Scale(terrainInfo.bitmapWidth), Scale(terrainInfo.bitmapHeight));
+                Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.bitmapWidth), Scale(terrainInfo.bitmapHeight));
 
                 if (location.has_dirt())
                 {
-                    DrawDirt(location, locX, locY, drawX, drawY);
+                    DrawDirt(location, locX, locY, screenX, screenY);
                 }
 
                 //TODO draw snow
@@ -39,8 +39,8 @@ public partial class Renderer
                 if (location.has_hill())
                 {
                     if (location.hill_id2() != 0)
-                        DrawHill(HillRes[location.hill_id2()], drawX, drawY, 1);
-                    DrawHill(HillRes[location.hill_id1()], drawX, drawY, 1);
+                        DrawHill(HillRes[location.hill_id2()], screenX, screenY, 1);
+                    DrawHill(HillRes[location.hill_id1()], screenX, screenY, 1);
                 }
 
                 //TODO draw power
@@ -48,7 +48,7 @@ public partial class Renderer
                 // don't display if a building/object has already been built on the location
                 if (location.has_site() && location.walkable(3))
                 {
-                    DrawSite(location, drawX, drawY);
+                    DrawSite(location, screenX, screenY);
                 }
             }
         }
@@ -96,7 +96,7 @@ public partial class Renderer
         //DispText();
     }
 
-    private void DrawDirt(Location location, int locX, int locY, int drawX, int drawY)
+    private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
     {
         int dirtId = location.dirt_recno();
         Rock dirt = DirtArray[dirtId];
@@ -107,39 +107,39 @@ public partial class Renderer
             if (dirtBitmapId != 0)
             {
                 RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
-                Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), drawX, drawY,
+                Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), screenX, screenY,
                     Scale(dirtBitmapInfo.bitmapWidth), Scale(dirtBitmapInfo.bitmapHeight));
             }
         }
     }
 
-    private void DrawHill(HillBlockInfo hillBlockInfo, int drawX, int drawY, int layerMask)
+    private void DrawHill(HillBlockInfo hillBlockInfo, int screenX, int screenY, int layerMask)
     {
         //TODO check this
         //if((layerMask & hillBlockInfo.layer) == 0)
             //return;
 
-        int hillX = drawX + Scale(hillBlockInfo.offset_x);
-        int hillY = drawY + Scale(hillBlockInfo.offset_y);
+        int hillX = screenX + Scale(hillBlockInfo.offset_x);
+        int hillY = screenY + Scale(hillBlockInfo.offset_y);
 		
         Graphics.DrawBitmap(hillBlockInfo.GetTexture(Graphics), hillX, hillY, Scale(hillBlockInfo.bitmapWidth), Scale(hillBlockInfo.bitmapHeight));
     }
 
-    private void DrawSite(Location location, int drawX, int drawY)
+    private void DrawSite(Location location, int screenX, int screenY)
     {
         Site site = SiteArray[location.site_recno()];
         switch (site.SiteType)
         {
             case Site.SITE_RAW:
                 RawInfo rawInfo = RawRes[site.ObjectId];
-                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), drawX, drawY, Scale(rawInfo.largeRawIconWidth), Scale(rawInfo.largeRawIconHeight));
+                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), screenX, screenY, Scale(rawInfo.largeRawIconWidth), Scale(rawInfo.largeRawIconHeight));
                 break;
             case Site.SITE_SCROLL:
                 RaceInfo raceInfo = RaceRes[site.ObjectId];
-                Graphics.DrawBitmap(raceInfo.GetScrollTexture(Graphics), drawX, drawY, Scale(raceInfo.scrollBitmapWidth), Scale(raceInfo.scrollBitmapHeight));
+                Graphics.DrawBitmap(raceInfo.GetScrollTexture(Graphics), screenX, screenY, Scale(raceInfo.scrollBitmapWidth), Scale(raceInfo.scrollBitmapHeight));
                 break;
             case Site.SITE_GOLD_COIN:
-                Graphics.DrawBitmap(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), drawX, drawY,
+                Graphics.DrawBitmap(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), screenX, screenY,
                     Scale(MonsterRes.goldCoinWidth), Scale(MonsterRes.goldCoinHeight));
                 break;
         }
@@ -149,16 +149,16 @@ public partial class Renderer
 
     private void DrawPlants()
     {
-        for (int xLoc = _topLeftX; (xLoc < _topLeftX + MainViewWidthInCells) && xLoc < GameConstants.MapSize; xLoc++)
+        for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
         {
-            for (int yLoc = _topLeftY; (yLoc < _topLeftY + MainViewHeightInCells) && yLoc < GameConstants.MapSize; yLoc++)
+            for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
-                Location location = World.get_loc(xLoc, yLoc);
+                Location location = World.get_loc(locX, locY);
                 if (location.explored() && location.is_plant())
                 {
                     PlantBitmap plantBitmap = PlantRes.get_bitmap(location.plant_id());
-                    int drawX = MainViewX + (xLoc - _topLeftX) * CellTextureWidth + Scale(plantBitmap.offset_x);
-                    int drawY = MainViewY + (yLoc - _topLeftY) * CellTextureHeight + Scale(plantBitmap.offset_y);
+                    int drawX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth + Scale(plantBitmap.offset_x);
+                    int drawY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight + Scale(plantBitmap.offset_y);
                     Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.bitmapWidth), Scale(plantBitmap.bitmapHeight));
                 }
             }
@@ -169,14 +169,14 @@ public partial class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.LocX2 < _topLeftX || town.LocX1 > _topLeftX + MainViewWidthInCells)
+            if (town.LocX2 < _topLeftLocX || town.LocX1 > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (town.LocY2 < _topLeftY || town.LocY1 > _topLeftY + MainViewHeightInCells)
+            if (town.LocY2 < _topLeftLocY || town.LocY1 > _topLeftLocY + MainViewHeightInCells)
                 continue;
             
             TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
-            int townX = MainViewX + (town.LocX1 - _topLeftX) * CellTextureWidth;
-            int townY = MainViewY + (town.LocY1 - _topLeftY) * CellTextureHeight;
+            int townX = MainViewX + (town.LocX1 - _topLeftLocX) * CellTextureWidth;
+            int townY = MainViewY + (town.LocY1 - _topLeftLocY) * CellTextureHeight;
             int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.groundBitmapWidth)) / 2;
             int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.groundBitmapHeight)) / 2;
             Graphics.DrawBitmap(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, Scale(townLayout.groundBitmapWidth), Scale(townLayout.groundBitmapHeight));
@@ -187,13 +187,13 @@ public partial class Renderer
     {
         foreach (Town town in TownArray)
         {
-            if (town.LocX2 < _topLeftX || town.LocX1 > _topLeftX + MainViewWidthInCells)
+            if (town.LocX2 < _topLeftLocX || town.LocX1 > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (town.LocY2 < _topLeftY || town.LocY1 > _topLeftY + MainViewHeightInCells)
+            if (town.LocY2 < _topLeftLocY || town.LocY1 > _topLeftLocY + MainViewHeightInCells)
                 continue;
             
-            int townX = MainViewX + (town.LocX1 - _topLeftX) * CellTextureWidth;
-            int townY = MainViewY + (town.LocY1 - _topLeftY) * CellTextureHeight;
+            int townX = MainViewX + (town.LocX1 - _topLeftLocX) * CellTextureWidth;
+            int townY = MainViewY + (town.LocY1 - _topLeftLocY) * CellTextureHeight;
             bool isSelected = (town.TownId == _selectedTownId);
 
             TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
@@ -252,13 +252,13 @@ public partial class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.loc_x2 < _topLeftX || firm.loc_x1 > _topLeftX + MainViewWidthInCells)
+            if (firm.loc_x2 < _topLeftLocX || firm.loc_x1 > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (firm.loc_y2 < _topLeftY || firm.loc_y1 > _topLeftY + MainViewHeightInCells)
+            if (firm.loc_y2 < _topLeftLocY || firm.loc_y1 > _topLeftLocY + MainViewHeightInCells)
                 continue;
 
-            int firmX = MainViewX + (firm.loc_x1 - _topLeftX) * CellTextureWidth;
-            int firmY = MainViewY + (firm.loc_y1 - _topLeftY) * CellTextureHeight;
+            int firmX = MainViewX + (firm.loc_x1 - _topLeftLocX) * CellTextureWidth;
+            int firmY = MainViewY + (firm.loc_y1 - _topLeftLocY) * CellTextureHeight;
 
             FirmBuild firmBuild = FirmRes.get_build(firm.firm_build_id);
             // if in construction, don't draw ground unless the last construction frame
@@ -361,14 +361,14 @@ public partial class Renderer
         foreach (Unit unit in UnitArray)
         {
             //TODO check conditions for big units
-            if (unit.cur_x_loc() < _topLeftX || unit.cur_x_loc() > _topLeftX + MainViewWidthInCells)
+            if (unit.cur_x_loc() < _topLeftLocX || unit.cur_x_loc() > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (unit.cur_y_loc() < _topLeftY || unit.cur_y_loc() > _topLeftY + MainViewHeightInCells)
+            if (unit.cur_y_loc() < _topLeftLocY || unit.cur_y_loc() > _topLeftLocY + MainViewHeightInCells)
                 continue;
 
             SpriteFrame spriteFrame = unit.cur_sprite_frame(out bool needMirror);
-            int unitX = MainViewX + Scale(unit.cur_x) - _topLeftX * CellTextureWidth + spriteFrame.offset_x;
-            int unitY = MainViewY + Scale(unit.cur_y) - _topLeftY * CellTextureHeight + spriteFrame.offset_y;
+            int unitX = MainViewX + Scale(unit.cur_x) - _topLeftLocX * CellTextureWidth + spriteFrame.offset_x;
+            int unitY = MainViewY + Scale(unit.cur_y) - _topLeftLocY * CellTextureHeight + spriteFrame.offset_y;
 
             SpriteInfo spriteInfo = SpriteRes[unit.sprite_id];
             //TODO select only under cursor?
@@ -407,16 +407,16 @@ public partial class Renderer
                     World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
                     int resultNode2 = unit.PathNodes[i];
                     World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
-                    if (resultNode1LocX >= _topLeftX - 1 && resultNode1LocX <= _topLeftX + MainViewWidthInCells &&
-                        resultNode2LocX >= _topLeftX - 1 && resultNode2LocX <= _topLeftX + MainViewWidthInCells &&
-                        resultNode1LocY >= _topLeftY - 1 && resultNode1LocY <= _topLeftY + MainViewHeightInCells &&
-                        resultNode2LocY >= _topLeftY - 1 && resultNode2LocY <= _topLeftY + MainViewHeightInCells)
+                    if (resultNode1LocX >= _topLeftLocX - 1 && resultNode1LocX <= _topLeftLocX + MainViewWidthInCells &&
+                        resultNode2LocX >= _topLeftLocX - 1 && resultNode2LocX <= _topLeftLocX + MainViewWidthInCells &&
+                        resultNode1LocY >= _topLeftLocY - 1 && resultNode1LocY <= _topLeftLocY + MainViewHeightInCells &&
+                        resultNode2LocY >= _topLeftLocY - 1 && resultNode2LocY <= _topLeftLocY + MainViewHeightInCells)
                     {
-                        int drawX1 = MainViewX + (resultNode1LocX - _topLeftX) * CellTextureWidth + CellTextureWidth / 2;
-                        int drawX2 = MainViewX + (resultNode2LocX - _topLeftX) * CellTextureWidth + CellTextureWidth / 2;
-                        int drawY1 = MainViewY + (resultNode1LocY - _topLeftY) * CellTextureHeight + CellTextureHeight / 2;
-                        int drawY2 = MainViewY + (resultNode2LocY - _topLeftY) * CellTextureHeight + CellTextureHeight / 2;
-                        DrawAnimatedLine(drawX1, drawY1, drawX2, drawY2);
+                        int screenX1 = MainViewX + (resultNode1LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
+                        int screenX2 = MainViewX + (resultNode2LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
+                        int screenY1 = MainViewY + (resultNode1LocY - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;
+                        int screenY2 = MainViewY + (resultNode2LocY - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;
+                        DrawAnimatedLine(screenX1, screenY1, screenX2, screenY2);
                     }
                 }
             }
@@ -463,32 +463,32 @@ public partial class Renderer
         }
     }
 
-    private void DrawAnimatedLine(int x1, int y1, int x2, int y2)
+    private void DrawAnimatedLine(int screenX1, int screenY1, int screenX2, int screenY2)
     {
-        if (x1 == x2) // vertical line
+        if (screenX1 == screenX2) // vertical line
         {
-            FlipMode flip = (y1 < y2) ? FlipMode.Vertical : FlipMode.None;
+            FlipMode flip = (screenY1 < screenY2) ? FlipMode.Vertical : FlipMode.None;
             Graphics.DrawBitmap(_verticalLineTextures[(int)(Sys.Instance.FrameNumber % _verticalLineTextures.Count)],
-                x1 - 1, (y1 < y2) ? y1 : y2, 2, CellTextureHeight, flip);
+                screenX1 - 1, (screenY1 < screenY2) ? screenY1 : screenY2, 2, CellTextureHeight, flip);
             return;
         }
         
-        if (y1 == y2) // horizontal line
+        if (screenY1 == screenY2) // horizontal line
         {
-            FlipMode flip = (x1 < x2) ? FlipMode.Horizontal : FlipMode.None;
+            FlipMode flip = (screenX1 < screenX2) ? FlipMode.Horizontal : FlipMode.None;
             Graphics.DrawBitmap(_horizontalLineTextures[(int)(Sys.Instance.FrameNumber % _horizontalLineTextures.Count)],
-                (x1 < x2) ? x1 : x2, y1 - 1, CellTextureWidth, 2, flip);
+                (screenX1 < screenX2) ? screenX1 : screenX2, screenY1 - 1, CellTextureWidth, 2, flip);
             return;
         }
         
         // diagonal line
         FlipMode diagonalFlip = FlipMode.None;
-        if (y1 < y2)
+        if (screenY1 < screenY2)
             diagonalFlip |= FlipMode.Vertical;
-        if (x1 < x2)
+        if (screenX1 < screenX2)
             diagonalFlip |= FlipMode.Horizontal;
 
         Graphics.DrawBitmap(_diagonalLineTextures[(int)(Sys.Instance.FrameNumber % _diagonalLineTextures.Count)],
-            (x1 < x2) ? x1 : x2, (y1 < y2) ? y1 : y2, CellTextureWidth, CellTextureHeight, diagonalFlip);
+            (screenX1 < screenX2) ? screenX1 : screenX2, (screenY1 < screenY2) ? screenY1 : screenY2, CellTextureWidth, CellTextureHeight, diagonalFlip);
     }
 }

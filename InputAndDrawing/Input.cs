@@ -8,8 +8,8 @@ public partial class Renderer
         {
             if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
             {
-                int locX = _topLeftX + (x - MainViewX) / CellTextureWidth;
-                int locY = _topLeftY + (y - MainViewY) / CellTextureHeight;
+                int locX = _topLeftLocX + (x - MainViewX) / CellTextureWidth;
+                int locY = _topLeftLocY + (y - MainViewY) / CellTextureHeight;
 
                 Location location = World.get_loc(locX, locY);
                 if (location.is_town())
@@ -40,30 +40,30 @@ public partial class Renderer
 
             if (x >= MiniMapX && x < MiniMapX + MiniMapSize && y >= MiniMapY && y < MiniMapY + MiniMapSize)
             {
-                int xLoc = x - MiniMapX;
-                int yLoc = y - MiniMapY;
+                int locX = x - MiniMapX;
+                int locY = y - MiniMapY;
                 if (MiniMapSize > GameConstants.MapSize)
                 {
-                    xLoc /= MiniMapScale;
-                    yLoc /= MiniMapScale;
+                    locX /= MiniMapScale;
+                    locY /= MiniMapScale;
                 }
                 if (MiniMapSize < GameConstants.MapSize)
                 {
-                    xLoc *= MiniMapScale;
-                    yLoc *= MiniMapScale;
+                    locX *= MiniMapScale;
+                    locY *= MiniMapScale;
                 }
                 
-                _topLeftX = xLoc - MainViewWidthInCells / 2;
-                if (_topLeftX < 0)
-                    _topLeftX = 0;
-                if (_topLeftX > GameConstants.MapSize - MainViewWidthInCells)
-                    _topLeftX = GameConstants.MapSize - MainViewWidthInCells;
+                _topLeftLocX = locX - MainViewWidthInCells / 2;
+                if (_topLeftLocX < 0)
+                    _topLeftLocX = 0;
+                if (_topLeftLocX > GameConstants.MapSize - MainViewWidthInCells)
+                    _topLeftLocX = GameConstants.MapSize - MainViewWidthInCells;
 
-                _topLeftY = yLoc - MainViewHeightInCells / 2;
-                if (_topLeftY < 0)
-                    _topLeftY = 0;
-                if (_topLeftY > GameConstants.MapSize - MainViewHeightInCells)
-                    _topLeftY = GameConstants.MapSize - MainViewHeightInCells;
+                _topLeftLocY = locY - MainViewHeightInCells / 2;
+                if (_topLeftLocY < 0)
+                    _topLeftLocY = 0;
+                if (_topLeftLocY > GameConstants.MapSize - MainViewHeightInCells)
+                    _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
             }
         }
 
@@ -71,8 +71,8 @@ public partial class Renderer
         {
             if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
             {
-                int locX = _topLeftX + (x - MainViewX) / CellTextureWidth;
-                int locY = _topLeftY + (y - MainViewY) / CellTextureHeight;
+                int locX = _topLeftLocX + (x - MainViewX) / CellTextureWidth;
+                int locY = _topLeftLocY + (y - MainViewY) / CellTextureHeight;
 
                 foreach (Unit unit in UnitArray)
                 {

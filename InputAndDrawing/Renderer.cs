@@ -38,8 +38,8 @@ public partial class Renderer
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
 
-    private int _topLeftX;
-    private int _topLeftY;
+    private int _topLeftLocX;
+    private int _topLeftLocY;
     private long _lastFrame;
     public bool NeedFullRedraw { get; set; }
     private int _screenSquareFrameCount = 0;
@@ -169,16 +169,16 @@ public partial class Renderer
             Scale(_bottomBorder2TextureWidth), Scale(_bottomBorder2TextureHeight));
     }
 
-    private bool IsExplored(int x1Loc, int x2Loc, int y1Loc, int y2Loc)
+    private bool IsExplored(int locX1, int locX2, int locY1, int locY2)
     {
         if (Config.explore_whole_map)
             return true;
         
-        for (int xLoc = x1Loc; xLoc <= x2Loc; xLoc++)
+        for (int locX = locX1; locX <= locX2; locX++)
         {
-            for (int yLoc = y1Loc; yLoc <= y2Loc; yLoc++)
+            for (int locY = locY1; locY <= locY2; locY++)
             {
-                Location location = World.get_loc(xLoc, yLoc);
+                Location location = World.get_loc(locX, locY);
                 if (location.explored())
                 {
                     return true;
