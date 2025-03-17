@@ -234,7 +234,7 @@ public class Config
 	{
 		// -------- GLOBAL GAME SETTING -------- //
 
-		ai_nation_count = GameConstants.MAX_NATION;
+		ai_nation_count = GameConstants.MAX_NATION - 1;
 		start_up_cash = OPTION_MODERATE;
 		ai_start_up_cash = OPTION_MODERATE;
 		//start_up_food = MEDIUM_STARTUP_RESOURCE;

@@ -1,7 +1,15 @@
+using System;
+using System.Collections.Generic;
+
 namespace TenKingdoms;
 
 public partial class Renderer
 {
+    private readonly byte[] _animatedLineSegment = { 0x90, 0x93, 0x98, 0x9c, 0x9f, 0x9c, 0x98, 0x93 };
+    private readonly List<IntPtr> _horizontalLineTextures = new List<nint>();
+    private readonly List<IntPtr> _verticalLineTextures = new List<nint>();
+    private readonly List<IntPtr> _diagonalLineTextures = new List<nint>();
+
     private void DrawMainView()
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
@@ -366,12 +374,121 @@ public partial class Renderer
             //TODO select only under cursor?
             bool isSelected = (unit.sprite_recno == _selectedUnitId);
             Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, isSelected), unitX, unitY,
-                Scale(spriteFrame.width), Scale(spriteFrame.height), needMirror);
+                Scale(spriteFrame.width), Scale(spriteFrame.height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
     }
 
     private void DrawUnitPaths()
     {
-        //
+        if ((Config.show_unit_path & 1) == 0)
+            return;
+
+        foreach (Unit unit in UnitArray)
+        {
+            if (!unit.is_visible() || !unit.selected_flag)
+                continue;
+
+            if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.is_nation(NationArray.player_recno))
+                continue;
+            
+            //TODO draw paths of air units on top of land units
+
+            if (unit.PathNodes.Count > 0)
+            {
+                if (unit.cur_x != unit.go_x || unit.cur_y != unit.go_y)
+                {
+                    //TODO draw part of animated line
+                }
+
+                //TODO optimize drawing lines - join them
+                for (int i = unit.PathNodeIndex + 1; i < unit.PathNodes.Count; i++)
+                {
+                    int resultNode1 = unit.PathNodes[i - 1];
+                    World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
+                    int resultNode2 = unit.PathNodes[i];
+                    World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
+                    if (resultNode1LocX >= _topLeftX - 1 && resultNode1LocX <= _topLeftX + MainViewWidthInCells &&
+                        resultNode2LocX >= _topLeftX - 1 && resultNode2LocX <= _topLeftX + MainViewWidthInCells &&
+                        resultNode1LocY >= _topLeftY - 1 && resultNode1LocY <= _topLeftY + MainViewHeightInCells &&
+                        resultNode2LocY >= _topLeftY - 1 && resultNode2LocY <= _topLeftY + MainViewHeightInCells)
+                    {
+                        int drawX1 = MainViewX + (resultNode1LocX - _topLeftX) * CellTextureWidth + CellTextureWidth / 2;
+                        int drawX2 = MainViewX + (resultNode2LocX - _topLeftX) * CellTextureWidth + CellTextureWidth / 2;
+                        int drawY1 = MainViewY + (resultNode1LocY - _topLeftY) * CellTextureHeight + CellTextureHeight / 2;
+                        int drawY2 = MainViewY + (resultNode2LocY - _topLeftY) * CellTextureHeight + CellTextureHeight / 2;
+                        DrawAnimatedLine(drawX1, drawY1, drawX2, drawY2);
+                    }
+                }
+            }
+        }
+    }
+
+    private void CreateAnimatedSegments()
+    {
+        for (int i = 0; i < _animatedLineSegment.Length; i++)
+        {
+            byte[] horizontalSegment = new byte[CellTextureWidth * 2];
+            for (int j = 0; j < CellTextureWidth; j++)
+            {
+                horizontalSegment[j] = horizontalSegment[j + CellTextureWidth] = _animatedLineSegment[(i + j) % _animatedLineSegment.Length];
+            }
+
+            _horizontalLineTextures.Add(Graphics.CreateTextureFromBmp(horizontalSegment, CellTextureWidth, 2));
+
+            byte[] verticalSegment = new byte[2 * CellTextureHeight];
+            for (int j = 0; j < CellTextureHeight; j++)
+            {
+                verticalSegment[j * 2] = verticalSegment[j * 2 + 1] = _animatedLineSegment[(i + j) % _animatedLineSegment.Length];
+            }
+            
+            _verticalLineTextures.Add(Graphics.CreateTextureFromBmp(verticalSegment, 2, CellTextureHeight));
+
+            byte[] diagonalSegment = new byte[CellTextureWidth * CellTextureHeight];
+            for (int j = 0; j < diagonalSegment.Length; j++)
+            {
+                diagonalSegment[j] = Colors.TRANSPARENT_CODE;
+            }
+
+            for (int j = 0; j < CellTextureWidth; j++)
+            {
+                byte segmentColor = _animatedLineSegment[(i + j) % _animatedLineSegment.Length];
+                diagonalSegment[j * CellTextureWidth + j] = segmentColor;
+                if (j != 0)
+                    diagonalSegment[j * CellTextureWidth + j - 1] = segmentColor;
+                if (j != CellTextureWidth - 1)
+                    diagonalSegment[j * CellTextureWidth + j + 1] = segmentColor;
+            }
+            
+            _diagonalLineTextures.Add(Graphics.CreateTextureFromBmp(diagonalSegment, CellTextureWidth, CellTextureHeight));
+        }
+    }
+
+    private void DrawAnimatedLine(int x1, int y1, int x2, int y2)
+    {
+        if (x1 == x2) // vertical line
+        {
+            FlipMode flip = (y1 < y2) ? FlipMode.Vertical : FlipMode.None;
+            Graphics.DrawBitmap(_verticalLineTextures[(int)(Sys.Instance.FrameNumber % _verticalLineTextures.Count)],
+                x1 - 1, (y1 < y2) ? y1 : y2, 2, CellTextureHeight, flip);
+            return;
+        }
+        
+        if (y1 == y2) // horizontal line
+        {
+            FlipMode flip = (x1 < x2) ? FlipMode.Horizontal : FlipMode.None;
+            Graphics.DrawBitmap(_horizontalLineTextures[(int)(Sys.Instance.FrameNumber % _horizontalLineTextures.Count)],
+                (x1 < x2) ? x1 : x2, y1 - 1, CellTextureWidth, 2, flip);
+            return;
+        }
+        
+        // diagonal line
+        FlipMode diagonalFlip = FlipMode.None;
+        if (y1 < y2)
+            diagonalFlip |= FlipMode.Vertical;
+        if (x1 < x2)
+            diagonalFlip |= FlipMode.Horizontal;
+
+        Graphics.DrawBitmap(_diagonalLineTextures[(int)(Sys.Instance.FrameNumber % _diagonalLineTextures.Count)],
+            (x1 < x2) ? x1 : x2, (y1 < y2) ? y1 : y2, CellTextureWidth, CellTextureHeight, diagonalFlip);
     }
 }

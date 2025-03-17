@@ -8,10 +8,10 @@ public partial class Renderer
         {
             if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
             {
-                int xLoc = _topLeftX + (x - MainViewX) / CellTextureWidth;
-                int yLoc = _topLeftY + (y - MainViewY) / CellTextureHeight;
+                int locX = _topLeftX + (x - MainViewX) / CellTextureWidth;
+                int locY = _topLeftY + (y - MainViewY) / CellTextureHeight;
 
-                Location location = World.get_loc(xLoc, yLoc);
+                Location location = World.get_loc(locX, locY);
                 if (location.is_town())
                 {
                     _selectedFirmId = _selectedUnitId = _selectedSiteId = 0;
@@ -28,6 +28,7 @@ public partial class Renderer
                 {
                     _selectedTownId = _selectedFirmId = _selectedSiteId = 0;
                     _selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
+                    UnitArray[_selectedUnitId].selected_flag = true;
                 }
 
                 if (location.has_site())
@@ -63,6 +64,28 @@ public partial class Renderer
                     _topLeftY = 0;
                 if (_topLeftY > GameConstants.MapSize - MainViewHeightInCells)
                     _topLeftY = GameConstants.MapSize - MainViewHeightInCells;
+            }
+        }
+
+        if (eventType == InputConstants.RightMousePressed)
+        {
+            if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
+            {
+                int locX = _topLeftX + (x - MainViewX) / CellTextureWidth;
+                int locY = _topLeftY + (y - MainViewY) / CellTextureHeight;
+
+                foreach (Unit unit in UnitArray)
+                {
+                    if (unit.selected_flag)
+                    {
+                        if (unit.nation_recno == 1)
+                        {
+                            Nation nation = NationArray[unit.nation_recno];
+                            if (nation.nation_type == NationBase.NATION_OWN)
+                                unit.move_to(locX, locY);
+                        }
+                    }
+                }
             }
         }
     }

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+[Flags]
+public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
+
 public partial class Renderer
 {
     public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
@@ -84,6 +87,7 @@ public partial class Renderer
         FontStd = new Font("STD", 2, 0);
         
         CreateUITextures();
+        CreateAnimatedSegments();
     }
 
     private int Scale(int size)

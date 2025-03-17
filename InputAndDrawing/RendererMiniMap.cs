@@ -253,7 +253,7 @@ public partial class Renderer
                 DrawRectOnMiniMap(site.LocX - 1, site.LocY - 1, 3, 3, Colors.SITE_COLOR);
             }
         }
-        
+
         foreach (Unit unit in UnitArray)
         {
             if (!unit.is_visible() || unit.is_shealth())
@@ -264,18 +264,12 @@ public partial class Renderer
                 lineColor = Colors.V_WHITE;
 
             //TODO replace with unit.selected_flag
-            if (unit.sprite_recno == _selectedUnitId && (Config.show_unit_path & 2) != 0)
+            if (unit.selected_flag && (Config.show_unit_path & 2) != 0)
             {
                 if (Config.show_ai_info || NationArray.player_recno == 0 || unit.is_nation(NationArray.player_recno))
                 {
                     if (unit.PathNodes.Count > 0)
                     {
-                        if (unit.cur_x_loc() != unit.go_x_loc() || unit.cur_y_loc() != unit.go_y_loc())
-                        {
-                            //TODO is this code executed?
-                            DrawLineOnMiniMap(unit.go_x_loc(), unit.go_y_loc(), unit.next_x_loc(), unit.next_y_loc(), lineColor);
-                        }
-
                         //TODO optimize drawing lines - join them
                         for (int i = unit.PathNodeIndex + 1; i < unit.PathNodes.Count; i++)
                         {

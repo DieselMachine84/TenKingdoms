@@ -196,4 +196,5 @@ public static class InternalConstants
 public static class InputConstants
 {
     public const int LeftMousePressed = 1;
+    public const int RightMousePressed = 2;
 }

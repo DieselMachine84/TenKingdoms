@@ -155,6 +155,8 @@ public class MapGenerator
 
 		World.init_fire();
 
+		CreatePlayerNation();
+
 		CreateAINation(Config.ai_nation_count);
 		
 		CreatePregameObjects();
@@ -1542,17 +1544,21 @@ public class MapGenerator
 			}
 		}
 	}
+
+	private void CreatePlayerNation()
+	{
+		// if Config.race_id == 0, select a random race, but don't call misc.random
+		Nation nation = NationArray.new_nation(NationBase.NATION_OWN,
+			Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1, Config.player_nation_color);
+
+		NationArray.set_human_name(nation.nation_recno, Config.player_name);
+	}
 	
 	private void CreateAINation(int aiNationCount)
 	{
 		for (int i = 0; i < aiNationCount; i++)
 		{
-			int raceId;
-			if (Config.random_start_up)
-				raceId = ConfigAdv.GetRandomRace();
-			else
-				raceId = NationArray.random_unused_race();
-
+			int raceId = Config.random_start_up ? ConfigAdv.GetRandomRace() : NationArray.random_unused_race();
 			NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
 		}
 	}
