@@ -19,9 +19,9 @@ public class UnitArray : SpriteArray
 
     public int visible_unit_count;
 
-    public List<int> selected_land_units = new List<int>();
-    public List<int> selected_sea_units = new List<int>();
-    public List<int> selected_air_units = new List<int>();
+    private readonly List<int> _selectedLandUnits = new List<int>();
+    private readonly List<int> _selectedSeaUnits = new List<int>();
+    private readonly List<int> _selectedAirUnits = new List<int>();
 
     public override Unit this[int recNo] => (Unit)base[recNo];
 
@@ -505,99 +505,135 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    public void MoveTo(int destXLoc, int destYLoc, bool divided, List<int> selectedUnitArray, int remoteAction)
+    public void MoveTo(int destLocX, int destLocY, bool divided, List<int> selectedUnits, int remoteAction)
     {
 	    //-------- if it's a multiplayer game --------//
 	    /*if (!remoteAction && remote.is_enable())
 	    {
-		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_MOVE,
-			    sizeof(short) * (4 + selectedCount));
+		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_MOVE, sizeof(short) * (4 + selectedCount));
 
-		    shortPtr[0] = destXLoc;
-		    shortPtr[1] = destYLoc;
-		    shortPtr[2] = selectedCount;
+		    shortPtr[0] = destLocX;
+		    shortPtr[1] = destLocY;
+		    shortPtr[2] = selectedUnits.Count;
 		    shortPtr[3] = divided;
 
-		    memcpy(shortPtr + 4, selectedUnitArray, sizeof(short) * selectedCount);
+		    memcpy(shortPtr + 4, selectedUnits, sizeof(int) * selectedUnits.Count);
+		    return;
 	    }*/
-	    //else
-	    //{
-		    if (!divided)
+	    
+	    if (!divided)
+	    {
+		    divide_array(destLocX, destLocY, selectedUnits);
+
+		    if (_selectedLandUnits.Count > 0)
+			    MoveTo(destLocX, destLocY, true, _selectedLandUnits, InternalConstants.COMMAND_AUTO);
+
+		    if (_selectedSeaUnits.Count > 0)
 		    {
-			    //----------- divide units ------------//
-			    divide_array(destXLoc, destYLoc, selectedUnitArray);
+			    Location location = World.get_loc(destLocX, destLocY);
+			    if (TerrainRes[location.terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN)
+				    MoveTo(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
+			    else
+				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
+		    }
 
-			    //---------- process group move --------------//
-			    if (selected_land_units.Count > 0)
-				    MoveTo(destXLoc, destYLoc, true, selected_land_units, InternalConstants.COMMAND_AUTO);
+		    if (_selectedAirUnits.Count > 0)
+			    MoveTo(destLocX, destLocY, true, _selectedAirUnits, InternalConstants.COMMAND_AUTO);
+	    }
+	    else
+	    {
+		    int curGroupId = cur_group_id++;
 
-			    if (selected_sea_units.Count > 0)
+		    foreach (var index in selectedUnits)
+		    {
+			    Unit unit = this[index];
+			    unit.unit_group_id = curGroupId;
+			    unit.action_mode = UnitConstants.ACTION_MOVE;
+			    unit.action_para = 0;
+
+			    if (unit.action_mode2 != UnitConstants.ACTION_MOVE)
 			    {
-				    Location location = World.get_loc(destXLoc, destYLoc);
-				    if (TerrainRes[location.terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN)
-					    MoveTo(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
-				    else
-					    ShipToBeach(destXLoc, destYLoc, true, selected_sea_units, InternalConstants.COMMAND_AUTO);
-			    }
+				    unit.action_mode2 = UnitConstants.ACTION_MOVE;
+				    unit.action_para2 = 0;
+				    unit.action_x_loc2 = unit.action_y_loc2 = -1;
+			    } // else keep the data to check whether same action mode is ordered
+		    }
 
-			    if (selected_air_units.Count > 0)
-				    MoveTo(destXLoc, destYLoc, true, selected_air_units, InternalConstants.COMMAND_AUTO);
-
-			    //---------------- deinit static parameters ------------------//
-			    selected_land_units.Clear();
-			    selected_sea_units.Clear();
-			    selected_air_units.Clear();
-			    return;
+		    //--------------------------------------------------------------//
+		    // if only the leader unit is moving, no need to use formation movement although the button is pushed
+		    //--------------------------------------------------------------//
+		    if (selectedUnits.Count == 1)
+		    {
+			    Unit unit = this[selectedUnits[0]];
+			    unit.MoveTo(destLocX, destLocY, 1);
 		    }
 		    else
 		    {
-			    //---------------------------------------------------------//
-			    // set the unit_group_id
-			    //---------------------------------------------------------//
-			    int curGroupId = cur_group_id++;
-
-			    for (int k = 0; k < selectedUnitArray.Count; k++)
-			    {
-				    Unit unit = this[selectedUnitArray[k]];
-
-				    unit.unit_group_id = curGroupId;
-				    unit.action_mode = UnitConstants.ACTION_MOVE;
-				    unit.action_para = 0;
-
-				    if (unit.action_mode2 != UnitConstants.ACTION_MOVE)
-				    {
-					    unit.action_mode2 = UnitConstants.ACTION_MOVE;
-					    unit.action_para2 = 0;
-					    unit.action_x_loc2 = unit.action_y_loc2 = -1;
-				    } // else keep the data to check whether same action mode is ordered
-			    }
-
-			    //--------------------------------------------------------------//
-			    // if only the leader unit is moving, no need to use formation
-			    // movement although the button is pushed
-			    //--------------------------------------------------------------//
-			    if (selectedUnitArray.Count == 1)
-			    {
-				    Unit unit = this[selectedUnitArray[0]];
-				    unit.MoveTo(destXLoc, destYLoc, 1);
-			    }
-			    else
-			    {
-				    Unit firstUnit = this[selectedUnitArray[0]];
-
-				    if (firstUnit.mobile_type == UnitConstants.UNIT_LAND)
-				    {
-					    MoveToNowWithFilter(destXLoc, destYLoc, selectedUnitArray);
-					    SeekPath.SetSubMode(); // reset sub_mode searching
-				    }
-				    else
-				    {
-					    MoveToNowWithFilter(destXLoc, destYLoc, selectedUnitArray);
-				    }
-			    }
+			    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
+			    //TODO why reset sub mode?
+			    Unit firstUnit = this[selectedUnits[0]];
+			    if (firstUnit.mobile_type == UnitConstants.UNIT_LAND)
+				    SeekPath.SetSubMode();
 		    }
-	    //}
+	    }
     }
+
+	private void MoveToNowWithFilter(int destLocX, int destLocY, List<int> selectedUnits)
+	{
+		//-------------- no filtering for unit air --------------------------//
+		Unit unit = this[selectedUnits[0]];
+		if (unit.mobile_type == UnitConstants.UNIT_AIR)
+		{
+			MoveToNow(destLocX, destLocY, selectedUnits);
+			return;
+		}
+
+		//----------------- init data structure --------------//
+		List<int> filtered_unit_array = new List<int>();
+		List<int> filtering_unit_array = new List<int>();
+		filtering_unit_array.AddRange(selectedUnits);
+		int filtering_unit_count = selectedUnits.Count;
+
+		int unprocessCount = selectedUnits.Count;
+		int filterRegionId = World.get_loc(destLocX, destLocY).region_id;
+		int filterDestX = destLocX, filterDestY = destLocY;
+		int loopCount, i;
+
+		//-------------------------------------------------------------------------------//
+		// group the unit by their region id and process group searching for each group
+		//-------------------------------------------------------------------------------//
+		// checking for unprocessCount+1, plus one for the case that unit not on the same territory of destination
+		for (loopCount = 0; loopCount <= unprocessCount; loopCount++)
+		{
+			filtered_unit_array.Clear();
+			int filteringCount = filtering_unit_array.Count;
+			filtering_unit_count = 0;
+
+			//-------------- filter for filterRegionId --------------//
+			for (i = 0; i < filteringCount; i++)
+			{
+				unit = this[filtering_unit_array[i]];
+				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == filterRegionId)
+					filtered_unit_array.Add(filtering_unit_array[i]);
+				else
+					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
+			}
+
+			//---- process for filtered_unit_array and prepare for looping ----//
+			if (filtered_unit_array.Count > 0)
+				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
+
+			if (filtering_unit_count == 0)
+				break;
+
+			//---------------- update parameters for next checking ------------------//
+			unit = this[filtering_unit_array[0]];
+			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
+			filterDestX = destLocX;
+			filterDestY = destLocY;
+			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
+		}
+	}
 
 	private void MoveToNow(int destXLoc, int destYLoc, List<int> selectedUnits)
 	{
@@ -609,7 +645,6 @@ public class UnitArray : SpriteArray
 		Unit firstUnit = this[selectedUnits[0]];
 		int curGroupId = firstUnit.unit_group_id;
 		int mobileType = firstUnit.mobile_type;
-		//int		sizeOneSelectedCount=0, sizeTwoSelectedCount=0;
 		int sizeOneSelectedCount = selectedUnits.Count;
 
 		//---------- set Unit::unit_group_id and count the unit by size ----------//
@@ -622,18 +657,6 @@ public class UnitArray : SpriteArray
 
 			if (unit.cur_action == Sprite.SPRITE_IDLE)
 				unit.set_ready();
-
-			/*switch(unit.sprite_info.loc_width)
-			{
-				case 1:	sizeOneSelectedCount++;
-							break;
-	
-				case 2:	sizeTwoSelectedCount++;
-							break;
-	
-				default:	err_here();
-							break;
-			}*/
 		}
 
 		unprocessCount = sizeOneSelectedCount;
@@ -675,8 +698,6 @@ public class UnitArray : SpriteArray
 		int[] sorted_distance = new int[sizeOneSelectedCount];
 		int[] sorted_member = new int[sizeOneSelectedCount];
 		int[] done_flag = new int[sizeOneSelectedCount];
-		//if(sizeOneSelectedCount)
-		//{
 		//----- initialize parameters and construct data structure -----//
 		oddCount = 1;
 		evenCount = 3;
@@ -897,381 +918,6 @@ public class UnitArray : SpriteArray
 				}
 				//-******************* auto correct ***********************-//
 			}
-		}
-		//}// end if (sizeOneSelectedCount)
-		/*
-		//=============================================================================//
-		//----- order sprite with size two to move to a specified position ------------//
-		//=============================================================================//
-	
-		int sizeTwoUnprocessCount = sizeTwoSelectedCount;
-		int surX, surY, suaCount=0;
-		char w, h, blocked=0;
-	
-		if(sizeOneSelectedCount)	// mix, size one units have processed
-		{	
-			if(rec_width>square_size)
-				square_size = rec_width;
-			if(rec_height>square_size)
-				square_size = rec_height;
-			square_size = ((square_size+1)/2)<<1;	// change to multiply of two
-			rec_width = rec_height = square_size;
-	
-			x = destX-rec_width/2+1;
-			y = destY-rec_height/2;
-		}
-		else	// all are size 2 units
-		{
-			//-***************** testing ********************-//
-			err_here();
-			//-***************** testing ********************-//
-	
-			square_size = rec_width = rec_height = 2;
-			x = destX;
-			y = destY;
-	
-			if(x<0)
-				x = 0;
-			else if(x>=MAX_WORLD_X_LOC-1)
-				x = MAX_WORLD_X_LOC-2;
-	
-			if(y<0)
-				y = 0;
-			else if(y>=MAX_WORLD_Y_LOC-1)
-				y = MAX_WORLD_Y_LOC-2;
-			
-			blocked = 0;
-			for(h=0, surY=y; h<2 && !blocked; h++, surY++)
-			{
-				for(w=0, surX=x; w<2 && !blocked; w++, surX++)
-				{	
-					loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-					blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-				}
-			}
-	
-			if(!blocked)
-			{
-				do
-				{
-					unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-				}while(unit.sprite_info.loc_width<2);
-	
-				if(sizeTwoSelectedCount>1)
-				{
-					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-				}
-				else
-					unit.move_to(x, y, 1);
-				sizeTwoUnprocessCount--;
-			}
-		}
-	
-		while(sizeTwoUnprocessCount)
-		{
-			//-***************** testing ********************-//
-			err_here();
-			//-***************** testing ********************-//
-	
-			int moveToX, moveToY;
-			int boundedX, boundedY;
-			
-			//------------- upper edge --------------//
-			moveToY = y-2;
-			moveToX = x;
-			if(moveToY>=0)
-			{
-				if(x+rec_width+2 > MAX_WORLD_X_LOC-2)
-					boundedX = MAX_WORLD_X_LOC-1;
-				else
-					boundedX = x+rec_width+2;
-				
-				while(moveToX<boundedX && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{	
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToX+=2;
-				}	
-			}
-	
-			//------------- right edge --------------//
-			moveToX = x+rec_width;
-			moveToY = y;
-			if(moveToX<MAX_WORLD_X_LOC-1)
-			{
-				if(y+rec_height+2 > MAX_WORLD_Y_LOC-2)
-					boundedY = MAX_WORLD_Y_LOC-1;
-				else
-					boundedY = y+rec_height+2;
-				
-				while(moveToY<boundedY && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToY+=2;
-				}
-			}
-	
-			//------------- lower edge ----------------//
-			moveToX = x+rec_width-2;
-			moveToY = y+rec_height;
-			if(moveToY<MAX_WORLD_Y_LOC-1)
-			{
-				if(x-3 < 0)
-					boundedX = -1;
-				else
-					boundedX = x-3;
-				
-				while(moveToX>boundedX && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToX-=2;
-				}
-			}
-	
-			//------------- left edge ---------------//
-			moveToX = x-2;
-			moveToY = y+rec_height-2;
-			if(moveToX>=0)
-			{
-				if(y-3 < 0)
-					boundedY = -1;
-				else
-					boundedY = y-3;
-				
-				while(moveToY>boundedY && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToY-=2;
-				}
-			}
-	
-			//------- reset square_size, rec_width, rec_height -----------//
-			rec_width+=4;
-			rec_height+=4;
-			x-=2;
-			y-=2;
-		}*/
-	}
-
-	private void MoveToNowWithFilter(int destX, int destY, List<int> selectedUnits)
-	{
-		int destRegionId = World.get_loc(destX, destY).region_id;
-		Unit unit = this[selectedUnits[0]];
-
-		//-------------- no filtering for unit air --------------------------//
-		if (unit.mobile_type == UnitConstants.UNIT_AIR)
-		{
-			MoveToNow(destX, destY, selectedUnits);
-			return;
-		}
-
-		//----------------- init data structure --------------//
-		List<int> filtered_unit_array = new List<int>();
-		List<int> filtering_unit_array = new List<int>();
-		filtering_unit_array.AddRange(selectedUnits);
-		int filtering_unit_count = selectedUnits.Count;
-
-		int unprocessCount = selectedUnits.Count;
-		int filterRegionId = destRegionId;
-		int filterDestX = destX, filterDestY = destY;
-		int loopCount, i;
-
-		//-------------------------------------------------------------------------------//
-		// group the unit by their region id and process group searching for each group
-		//-------------------------------------------------------------------------------//
-		// checking for unprocessCount+1, plus one for the case that unit not on the same territory of destination
-		for (loopCount = 0; loopCount <= unprocessCount; loopCount++)
-		{
-			filtered_unit_array.Clear();
-			int filteringCount = filtering_unit_array.Count;
-			filtering_unit_count = 0;
-
-			//-------------- filter for filterRegionId --------------//
-			for (i = 0; i < filteringCount; i++)
-			{
-				unit = this[filtering_unit_array[i]];
-				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == filterRegionId)
-					filtered_unit_array.Add(filtering_unit_array[i]);
-				else
-					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
-			}
-
-			//---- process for filtered_unit_array and prepare for looping ----//
-			if (filtered_unit_array.Count > 0)
-				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
-
-			if (filtering_unit_count == 0)
-				break;
-
-			//---------------- update parameters for next checking ------------------//
-			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
-			filterDestX = destX;
-			filterDestY = destY;
-			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
 		}
 	}
 
@@ -1874,21 +1520,21 @@ public class UnitArray : SpriteArray
 			    Location location = World.get_loc(targetXLoc, targetYLoc);
 			    int targetMobileType = location.has_any_unit();
 
-			    if (selected_land_units.Count > 0)
+			    if (_selectedLandUnits.Count > 0)
 				    attack_call(targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, targetMobileType, true,
-					    selected_land_units, targetUnitRecno);
+					    _selectedLandUnits, targetUnitRecno);
 
-			    if (selected_sea_units.Count > 0)
+			    if (_selectedSeaUnits.Count > 0)
 				    attack_call(targetXLoc, targetYLoc, UnitConstants.UNIT_SEA, targetMobileType, true,
-					    selected_sea_units, targetUnitRecno);
+					    _selectedSeaUnits, targetUnitRecno);
 
-			    if (selected_air_units.Count > 0)
+			    if (_selectedAirUnits.Count > 0)
 				    attack_call(targetXLoc, targetYLoc, UnitConstants.UNIT_AIR, targetMobileType, true,
-					    selected_air_units, targetUnitRecno);
+					    _selectedAirUnits, targetUnitRecno);
 
-			    selected_land_units.Clear();
-			    selected_sea_units.Clear();
-			    selected_air_units.Clear();
+			    _selectedLandUnits.Clear();
+			    _selectedSeaUnits.Clear();
+			    _selectedAirUnits.Clear();
 		    }
 	    //}
     }
@@ -2780,34 +2426,34 @@ public class UnitArray : SpriteArray
 			    //--------- divide the unit by their mobile_type ------------//
 			    divide_array(destX, destY, selectedUnits);
 
-			    if (selected_land_units.Count > 0)
-				    assign(destX, destY, true, remoteAction, selected_land_units);
+			    if (_selectedLandUnits.Count > 0)
+				    assign(destX, destY, true, remoteAction, _selectedLandUnits);
 
-			    if (selected_sea_units.Count > 0)
+			    if (_selectedSeaUnits.Count > 0)
 			    {
 				    Location loc = World.get_loc(destX, destY);
 				    if (loc.is_firm())
 				    {
 					    Firm firm = FirmArray[loc.firm_recno()];
 					    if (firm.firm_id == Firm.FIRM_HARBOR) // recursive call
-						    assign(destX, destY, true, remoteAction, selected_sea_units);
+						    assign(destX, destY, true, remoteAction, _selectedSeaUnits);
 					    else
-						    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
+						    ShipToBeach(destX, destY, true, _selectedSeaUnits, remoteAction);
 				    }
 				    //else if(loc.is_town())
 				    else
 				    {
-					    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
+					    ShipToBeach(destX, destY, true, _selectedSeaUnits, remoteAction);
 				    }
 			    }
 
-			    if (selected_air_units.Count > 0) // no assign for air units
-				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
+			    if (_selectedAirUnits.Count > 0) // no assign for air units
+				    MoveTo(destX, destY, true, _selectedAirUnits, remoteAction);
 
 			    //------------ deinit static variables ------------//
-			    selected_land_units.Clear();
-			    selected_sea_units.Clear();
-			    selected_air_units.Clear();
+			    _selectedLandUnits.Clear();
+			    _selectedSeaUnits.Clear();
+			    _selectedAirUnits.Clear();
 		    }
 		    else
 		    {
@@ -2848,7 +2494,7 @@ public class UnitArray : SpriteArray
     {
 	    divide_array(destX, destY, selectedUnits);
 
-	    if (selected_land_units.Count > 0)
+	    if (_selectedLandUnits.Count > 0)
 	    {
 		    List<int> assignArray = new List<int>();
 		    List<int> moveArray = new List<int>();
@@ -2873,16 +2519,16 @@ public class UnitArray : SpriteArray
 			    MoveTo(destX, destY, true, moveArray, remoteAction);
 	    }
 
-	    if (selected_sea_units.Count > 0)
-		    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
+	    if (_selectedSeaUnits.Count > 0)
+		    ShipToBeach(destX, destY, true, _selectedSeaUnits, remoteAction);
 
-	    if (selected_air_units.Count > 0)
-		    MoveTo(destX, destY, true, selected_air_units, remoteAction);
+	    if (_selectedAirUnits.Count > 0)
+		    MoveTo(destX, destY, true, _selectedAirUnits, remoteAction);
 
 	    //---------------- deinit static parameters ---------------//
-	    selected_land_units.Clear();
-	    selected_sea_units.Clear();
-	    selected_air_units.Clear();
+	    _selectedLandUnits.Clear();
+	    _selectedSeaUnits.Clear();
+	    _selectedAirUnits.Clear();
     }
 
     public void assign_to_ship(int shipXLoc, int shipYLoc, bool divided, List<int> selectedUnits,
@@ -2907,19 +2553,19 @@ public class UnitArray : SpriteArray
 	    {
 		    divide_array(shipXLoc, shipYLoc, selectedUnits);
 
-		    if (selected_sea_units.Count > 0) // Note: the order to call ship unit first
-			    MoveTo(shipXLoc, shipYLoc, true, selected_sea_units, remoteAction);
+		    if (_selectedSeaUnits.Count > 0) // Note: the order to call ship unit first
+			    MoveTo(shipXLoc, shipYLoc, true, _selectedSeaUnits, remoteAction);
 
-		    if (selected_land_units.Count > 0)
-			    assign_to_ship(shipXLoc, shipYLoc, true, selected_land_units, remoteAction, shipRecno);
+		    if (_selectedLandUnits.Count > 0)
+			    assign_to_ship(shipXLoc, shipYLoc, true, _selectedLandUnits, remoteAction, shipRecno);
 
-		    if (selected_air_units.Count > 0)
-			    MoveTo(shipXLoc, shipYLoc, true, selected_air_units, remoteAction);
+		    if (_selectedAirUnits.Count > 0)
+			    MoveTo(shipXLoc, shipYLoc, true, _selectedAirUnits, remoteAction);
 
 		    //---------------- deinit static parameters -----------------//
-		    selected_sea_units.Clear();
-		    selected_land_units.Clear();
-		    selected_air_units.Clear();
+		    _selectedSeaUnits.Clear();
+		    _selectedLandUnits.Clear();
+		    _selectedAirUnits.Clear();
 		    return;
 	    }
 	    else
@@ -3079,19 +2725,19 @@ public class UnitArray : SpriteArray
 
 			    divide_array(destX, destY, selectedUnits);
 
-			    if (selected_land_units.Count > 0)
-				    settle(destX, destY, true, remoteAction, selected_land_units);
+			    if (_selectedLandUnits.Count > 0)
+				    settle(destX, destY, true, remoteAction, _selectedLandUnits);
 
-			    if (selected_sea_units.Count > 0)
-				    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
+			    if (_selectedSeaUnits.Count > 0)
+				    ShipToBeach(destX, destY, true, _selectedSeaUnits, remoteAction);
 
-			    if (selected_air_units.Count > 0)
-				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
+			    if (_selectedAirUnits.Count > 0)
+				    MoveTo(destX, destY, true, _selectedAirUnits, remoteAction);
 
 			    //-------------- deinit static parameters --------------//
-			    selected_land_units.Clear();
-			    selected_sea_units.Clear();
-			    selected_air_units.Clear();
+			    _selectedLandUnits.Clear();
+			    _selectedSeaUnits.Clear();
+			    _selectedAirUnits.Clear();
 		    }
 		    else
 		    {
@@ -3215,9 +2861,9 @@ public class UnitArray : SpriteArray
 
     private void divide_array(int locX, int locY, List<int> selectedUnits, int excludeSelectedLocUnit = 0)
 	{
-		selected_land_units.Clear();
-		selected_sea_units.Clear();
-		selected_air_units.Clear();
+		_selectedLandUnits.Clear();
+		_selectedSeaUnits.Clear();
+		_selectedAirUnits.Clear();
 
 		int excludeUnitRecno = 0;
 		if (excludeSelectedLocUnit != 0)
@@ -3237,15 +2883,15 @@ public class UnitArray : SpriteArray
 			switch (unit.mobile_type)
 			{
 				case UnitConstants.UNIT_LAND:
-					selected_land_units.Add(selectedUnitRecno);
+					_selectedLandUnits.Add(selectedUnitRecno);
 					break;
 
 				case UnitConstants.UNIT_SEA:
-					selected_sea_units.Add(selectedUnitRecno);
+					_selectedSeaUnits.Add(selectedUnitRecno);
 					break;
 
 				case UnitConstants.UNIT_AIR:
-					selected_air_units.Add(selectedUnitRecno);
+					_selectedAirUnits.Add(selectedUnitRecno);
 					break;
 			}
 		}
