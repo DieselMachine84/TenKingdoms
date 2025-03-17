@@ -94,33 +94,6 @@ public class UnitArray : SpriteArray
 	    DeleteSprite(unit);
     }
 
-    public void DisappearInTown(Unit unit, Town town)
-    {
-	    if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
-		    RebelArray.SettleTown(unit, town);
-
-	    DeleteUnit(unit);
-    }
-
-    public void disappear_in_firm(int unitRecno)
-    {
-	    Unit unit = this[unitRecno];
-
-	    DeleteUnit(unit);
-    }
-
-    public override void die(int unitRecno)
-    {
-	    Unit unit = this[unitRecno];
-
-	    if( unit.unit_mode == UnitConstants.UNIT_MODE_REBEL )
-		    RebelArray.drop_rebel_identity(unitRecno);
-
-	    unit.die();
-
-	    DeleteUnit(unit);
-    }
-
     public override bool IsDeleted(int recNo)
     {
 	    if (base.IsDeleted(recNo))
@@ -129,12 +102,6 @@ public class UnitArray : SpriteArray
 	    Unit unit = this[recNo];
 	    return unit.hit_points <= 0 || unit.cur_action == Sprite.SPRITE_DIE || unit.action_mode == UnitConstants.ACTION_DIE;
     }
-    
-    //public override IEnumerator<Unit> GetEnumerator()
-    //{
-	    //var baseEnumerator = base.GetEnumerator();
-	    //return (IEnumerator<Unit>)baseEnumerator;
-    //}
 
     public override void Process()
     {
@@ -174,6 +141,33 @@ public class UnitArray : SpriteArray
 	    //------- process Sprite ---------//
 
 	    base.Process();
+    }
+    
+    public void DisappearInTown(Unit unit, Town town)
+    {
+	    if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
+		    RebelArray.SettleTown(unit, town);
+
+	    DeleteUnit(unit);
+    }
+
+    public void disappear_in_firm(int unitRecno)
+    {
+	    Unit unit = this[unitRecno];
+
+	    DeleteUnit(unit);
+    }
+
+    public override void die(int unitRecno)
+    {
+	    Unit unit = this[unitRecno];
+
+	    if( unit.unit_mode == UnitConstants.UNIT_MODE_REBEL )
+		    RebelArray.drop_rebel_identity(unitRecno);
+
+	    unit.die();
+
+	    DeleteUnit(unit);
     }
 
     public void return_camp(int remoteAction, List<int> selectedUnitArray = null)
@@ -511,7 +505,6 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    //---------- move main functions -------------//
     public void MoveTo(int destXLoc, int destYLoc, bool divided, List<int> selectedUnitArray, int remoteAction)
     {
 	    //-------- if it's a multiplayer game --------//
@@ -606,7 +599,1178 @@ public class UnitArray : SpriteArray
 	    //}
     }
 
-    //------------- attack main functions ----------//
+	private void MoveToNow(int destXLoc, int destYLoc, List<int> selectedUnits)
+	{
+		//------------ define vars -----------------------//
+		int unprocessCount; // = selectedCount;		// num. of unprocessed sprite
+		int k; // for counting
+		int vecX, vecY; // used to reset x, y
+		int oddCount, evenCount;
+		Unit firstUnit = this[selectedUnits[0]];
+		int curGroupId = firstUnit.unit_group_id;
+		int mobileType = firstUnit.mobile_type;
+		//int		sizeOneSelectedCount=0, sizeTwoSelectedCount=0;
+		int sizeOneSelectedCount = selectedUnits.Count;
+
+		//---------- set Unit::unit_group_id and count the unit by size ----------//
+		for (int i = 0; i < selectedUnits.Count; i++)
+		{
+			Unit unit = this[selectedUnits[i]];
+
+			if (unit.cur_action == Sprite.SPRITE_ATTACK)
+				unit.stop();
+
+			if (unit.cur_action == Sprite.SPRITE_IDLE)
+				unit.set_ready();
+
+			/*switch(unit.sprite_info.loc_width)
+			{
+				case 1:	sizeOneSelectedCount++;
+							break;
+	
+				case 2:	sizeTwoSelectedCount++;
+							break;
+	
+				default:	err_here();
+							break;
+			}*/
+		}
+
+		unprocessCount = sizeOneSelectedCount;
+
+		//---- construct array to store size one selected unit ----//
+		List<int> selectedSizeOneUnitArray = new List<int>();
+		if (sizeOneSelectedCount > 0)
+		{
+			for (int i = 0; i < selectedUnits.Count && unprocessCount > 0; i++)
+			{
+				Unit unit = this[selectedUnits[i]];
+				if (unit.sprite_info.loc_width == 1)
+				{
+					selectedSizeOneUnitArray.Add(selectedUnits[i]);
+					unprocessCount--;
+				}
+			}
+		}
+
+		unprocessCount = sizeOneSelectedCount;
+
+		//----------- variables initialization ---------------//
+		int destX, destY, x, y, move_scale;
+		if (mobileType == UnitConstants.UNIT_LAND)
+		{
+			x = destX = destXLoc;
+			y = destY = destYLoc;
+			move_scale = 1;
+		}
+		else // UnitConstants.UNIT_AIR, UnitConstants.UNIT_SEA
+		{
+			x = destX = (destXLoc / 2) * 2;
+			y = destY = (destYLoc / 2) * 2;
+			move_scale = 2;
+		}
+
+		int square_size, not_tested_loc, lower_right_case, upper_left_case;
+		int[] distance = new int[sizeOneSelectedCount];
+		int[] sorted_distance = new int[sizeOneSelectedCount];
+		int[] sorted_member = new int[sizeOneSelectedCount];
+		int[] done_flag = new int[sizeOneSelectedCount];
+		//if(sizeOneSelectedCount)
+		//{
+		//----- initialize parameters and construct data structure -----//
+		oddCount = 1;
+		evenCount = 3;
+		square_size = not_tested_loc = lower_right_case = upper_left_case = 0;
+
+		//--- calculate the rectangle size used to allocate space for the sprites----//
+		unprocessCount = sizeOneSelectedCount;
+		while (unprocessCount > 0)
+		{
+			//=============================
+			// process odd size square
+			//=============================
+			vecX = (oddCount / 4) * move_scale;
+			vecY = vecX;
+			k = 0;
+
+			int j;
+			for (j = 0; j < oddCount && unprocessCount > 0; j++)
+			{
+				x = destX + vecX;
+				y = destY + vecY;
+
+				if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
+				{
+					Location location = World.get_loc(x, y);
+					if (location.is_unit_group_accessible(mobileType, curGroupId))
+						unprocessCount--;
+				}
+
+				if (k++ < oddCount / 2) // reset vecX, vecY
+					vecX -= move_scale;
+				else
+					vecY -= move_scale;
+			}
+
+			square_size += move_scale;
+			if (j < oddCount)
+				not_tested_loc = oddCount - j;
+			oddCount += 4;
+
+			if (unprocessCount > 0)
+			{
+				//=============================
+				// process even size square
+				//=============================
+				vecY = (-(evenCount / 4) - 1) * move_scale;
+				vecX = vecY + move_scale;
+				k = 0;
+
+				for (j = 0; j < evenCount && unprocessCount > 0; j++)
+				{
+					x = destX + vecX;
+					y = destY + vecY;
+
+					if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
+					{
+						Location location = World.get_loc(x, y);
+						if (location.is_unit_group_accessible(mobileType, curGroupId))
+							unprocessCount--;
+					}
+
+					if (k++ < evenCount / 2) // reset vecX, vecY
+						vecX += move_scale;
+					else
+						vecY += move_scale;
+				}
+
+				square_size += move_scale;
+				if (j < evenCount)
+					not_tested_loc = evenCount - j;
+				evenCount += 4;
+			}
+		}
+
+		int rec_height = square_size; // get the height and width of the rectangle
+		int rec_width = square_size;
+		if (not_tested_loc >= (square_size / move_scale))
+			rec_width -= move_scale;
+
+		//--- decide to use upper_left_case or lower_right_case, however, it maybe changed for boundary improvement----//
+		x = cal_rectangle_lower_right_x(destX, move_scale, rec_width);
+		y = cal_rectangle_lower_right_y(destY, move_scale, rec_height);
+
+		for (int i = 0; i < sizeOneSelectedCount; i++)
+		{
+			Unit unit = this[selectedSizeOneUnitArray[i]];
+
+			if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
+				lower_right_case++;
+			else if (unit.next_y_loc() > y)
+				upper_left_case++;
+		}
+
+		if (lower_right_case == upper_left_case) // in case both values are equal, check by upper_left_case
+		{
+			x = cal_rectangle_upper_left_x(destX, move_scale, rec_width);
+			y = cal_rectangle_upper_left_y(destY, move_scale, rec_height);
+
+			lower_right_case = upper_left_case = 0;
+			for (int i = 0; i < sizeOneSelectedCount; i++)
+			{
+				Unit unit = this[selectedSizeOneUnitArray[i]];
+
+				if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
+					lower_right_case++;
+				else if (unit.next_y_loc() > y)
+					upper_left_case++;
+			}
+		}
+
+		//------------ determine x, y and lower_right_case/upper_left_case-----------//
+		determine_position_to_construct_table(selectedUnits.Count, destX, destY, mobileType,
+			ref x, ref y, move_scale, ref rec_width, ref rec_height,
+			ref lower_right_case, ref upper_left_case, not_tested_loc, square_size);
+
+		//------------ construct a table to store distance -------//
+		// distance and sorted_member should be initialized first
+		construct_sorted_array(selectedSizeOneUnitArray, sizeOneSelectedCount, x, y,
+			lower_right_case, upper_left_case, distance, sorted_distance, sorted_member, done_flag);
+
+		//------------ process the movement -----------//
+		unprocessCount = sizeOneSelectedCount; //selectedCount;
+		k = 0;
+
+		//-******************* auto correct ***********************-//
+		int autoCorrectStartX = x;
+		int autoCorrectStartY = y;
+		//-******************* auto correct ***********************-//
+
+		if (lower_right_case >= upper_left_case)
+		{
+			while (unprocessCount > 0)
+			{
+				for (int i = x; i > x - rec_width && unprocessCount > 0; i -= move_scale)
+				{
+					Location location = World.get_loc(i, y);
+					if (location.is_unit_group_accessible(mobileType, curGroupId))
+					{
+						Unit unit;
+						do
+						{
+							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
+						} while (unit.sprite_info.loc_width > 1);
+
+						if (sizeOneSelectedCount > 1)
+						{
+							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
+							{
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+							}
+							else
+							{
+								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+							}
+						}
+						else
+							unit.MoveTo(i, y, 1);
+
+						unprocessCount--;
+					}
+				}
+
+				y -= move_scale;
+			}
+		}
+		else // upper_left_case
+		{
+			while (unprocessCount > 0)
+			{
+				for (int i = x; i < x + rec_width && unprocessCount > 0; i += move_scale)
+				{
+					Location location = World.get_loc(i, y);
+					if (location.is_unit_group_accessible(mobileType, curGroupId))
+					{
+						Unit unit;
+						do
+						{
+							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
+						} while (unit.sprite_info.loc_width > 1);
+
+						if (sizeOneSelectedCount > 1)
+						{
+							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
+							{
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+							}
+							else
+							{
+								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
+							}
+						}
+						else
+							unit.MoveTo(i, y, 1);
+
+						unprocessCount--;
+					}
+				}
+
+				y += move_scale;
+				//-******************* auto correct ***********************-//
+				if (unprocessCount > 0 && y >= GameConstants.MapSize)
+				{
+					y = autoCorrectStartY;
+				}
+				//-******************* auto correct ***********************-//
+			}
+		}
+		//}// end if (sizeOneSelectedCount)
+		/*
+		//=============================================================================//
+		//----- order sprite with size two to move to a specified position ------------//
+		//=============================================================================//
+	
+		int sizeTwoUnprocessCount = sizeTwoSelectedCount;
+		int surX, surY, suaCount=0;
+		char w, h, blocked=0;
+	
+		if(sizeOneSelectedCount)	// mix, size one units have processed
+		{	
+			if(rec_width>square_size)
+				square_size = rec_width;
+			if(rec_height>square_size)
+				square_size = rec_height;
+			square_size = ((square_size+1)/2)<<1;	// change to multiply of two
+			rec_width = rec_height = square_size;
+	
+			x = destX-rec_width/2+1;
+			y = destY-rec_height/2;
+		}
+		else	// all are size 2 units
+		{
+			//-***************** testing ********************-//
+			err_here();
+			//-***************** testing ********************-//
+	
+			square_size = rec_width = rec_height = 2;
+			x = destX;
+			y = destY;
+	
+			if(x<0)
+				x = 0;
+			else if(x>=MAX_WORLD_X_LOC-1)
+				x = MAX_WORLD_X_LOC-2;
+	
+			if(y<0)
+				y = 0;
+			else if(y>=MAX_WORLD_Y_LOC-1)
+				y = MAX_WORLD_Y_LOC-2;
+			
+			blocked = 0;
+			for(h=0, surY=y; h<2 && !blocked; h++, surY++)
+			{
+				for(w=0, surX=x; w<2 && !blocked; w++, surX++)
+				{	
+					loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
+					blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
+				}
+			}
+	
+			if(!blocked)
+			{
+				do
+				{
+					unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
+				}while(unit.sprite_info.loc_width<2);
+	
+				if(sizeTwoSelectedCount>1)
+				{
+					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
+					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
+				}
+				else
+					unit.move_to(x, y, 1);
+				sizeTwoUnprocessCount--;
+			}
+		}
+	
+		while(sizeTwoUnprocessCount)
+		{
+			//-***************** testing ********************-//
+			err_here();
+			//-***************** testing ********************-//
+	
+			int moveToX, moveToY;
+			int boundedX, boundedY;
+			
+			//------------- upper edge --------------//
+			moveToY = y-2;
+			moveToX = x;
+			if(moveToY>=0)
+			{
+				if(x+rec_width+2 > MAX_WORLD_X_LOC-2)
+					boundedX = MAX_WORLD_X_LOC-1;
+				else
+					boundedX = x+rec_width+2;
+				
+				while(moveToX<boundedX && sizeTwoUnprocessCount)
+				{
+					//--------------- is the position blocked? ----------//
+					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
+						blocked = 1;
+					else
+					{
+						blocked = 0;
+						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
+						{
+							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
+							{	
+								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
+								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
+							}
+						}
+					}
+	
+					if(!blocked)
+					{
+						do
+						{
+							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
+						}while(unit.sprite_info.loc_width<2);
+	
+						if(sizeTwoSelectedCount>1)
+						{
+							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
+							{	
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
+							}
+							else
+							{
+								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
+									err_here();
+								
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
+							}
+						}
+						else
+							unit.move_to(moveToX, moveToY, 1);
+						sizeTwoUnprocessCount--;
+					}
+					moveToX+=2;
+				}	
+			}
+	
+			//------------- right edge --------------//
+			moveToX = x+rec_width;
+			moveToY = y;
+			if(moveToX<MAX_WORLD_X_LOC-1)
+			{
+				if(y+rec_height+2 > MAX_WORLD_Y_LOC-2)
+					boundedY = MAX_WORLD_Y_LOC-1;
+				else
+					boundedY = y+rec_height+2;
+				
+				while(moveToY<boundedY && sizeTwoUnprocessCount)
+				{
+					//--------------- is the position blocked? ----------//
+					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
+						blocked = 1;
+					else
+					{
+						blocked = 0;
+						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
+						{
+							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
+							{
+								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
+								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
+							}
+						}
+					}
+	
+					if(!blocked)
+					{
+						do
+						{
+							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
+						}while(unit.sprite_info.loc_width<2);
+	
+						if(sizeTwoSelectedCount>1)
+						{
+							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
+							{	
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
+							}
+							else
+							{
+								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
+									err_here();
+								
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
+							}
+						}
+						else
+							unit.move_to(moveToX, moveToY, 1);
+						sizeTwoUnprocessCount--;
+					}
+					moveToY+=2;
+				}
+			}
+	
+			//------------- lower edge ----------------//
+			moveToX = x+rec_width-2;
+			moveToY = y+rec_height;
+			if(moveToY<MAX_WORLD_Y_LOC-1)
+			{
+				if(x-3 < 0)
+					boundedX = -1;
+				else
+					boundedX = x-3;
+				
+				while(moveToX>boundedX && sizeTwoUnprocessCount)
+				{
+					//--------------- is the position blocked? ----------//
+					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
+						blocked = 1;
+					else
+					{
+						blocked = 0;
+						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
+						{
+							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
+							{
+								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
+								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
+							}
+						}
+					}
+	
+					if(!blocked)
+					{
+						do
+						{
+							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
+						}while(unit.sprite_info.loc_width<2);
+						if(sizeTwoSelectedCount>1)
+						{
+							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
+							{	
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
+							}
+							else
+							{
+								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
+									err_here();
+								
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
+							}
+						}
+						else
+							unit.move_to(moveToX, moveToY, 1);
+						sizeTwoUnprocessCount--;
+					}
+					moveToX-=2;
+				}
+			}
+	
+			//------------- left edge ---------------//
+			moveToX = x-2;
+			moveToY = y+rec_height-2;
+			if(moveToX>=0)
+			{
+				if(y-3 < 0)
+					boundedY = -1;
+				else
+					boundedY = y-3;
+				
+				while(moveToY>boundedY && sizeTwoUnprocessCount)
+				{
+					//--------------- is the position blocked? ----------//
+					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
+						blocked = 1;
+					else
+					{
+						blocked = 0;
+						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
+						{
+							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
+							{
+								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
+								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
+							}
+						}
+					}
+	
+					if(!blocked)
+					{
+						do
+						{
+							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
+						}while(unit.sprite_info.loc_width<2);
+	
+						if(sizeTwoSelectedCount>1)
+						{
+							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
+							{	
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
+							}
+							else
+							{
+								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
+									err_here();
+								
+								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
+							}
+						}
+						else
+							unit.move_to(moveToX, moveToY, 1);
+						sizeTwoUnprocessCount--;
+					}
+					moveToY-=2;
+				}
+			}
+	
+			//------- reset square_size, rec_width, rec_height -----------//
+			rec_width+=4;
+			rec_height+=4;
+			x-=2;
+			y-=2;
+		}*/
+	}
+
+	private void MoveToNowWithFilter(int destX, int destY, List<int> selectedUnits)
+	{
+		int destRegionId = World.get_loc(destX, destY).region_id;
+		Unit unit = this[selectedUnits[0]];
+
+		//-------------- no filtering for unit air --------------------------//
+		if (unit.mobile_type == UnitConstants.UNIT_AIR)
+		{
+			MoveToNow(destX, destY, selectedUnits);
+			return;
+		}
+
+		//----------------- init data structure --------------//
+		List<int> filtered_unit_array = new List<int>();
+		List<int> filtering_unit_array = new List<int>();
+		filtering_unit_array.AddRange(selectedUnits);
+		int filtering_unit_count = selectedUnits.Count;
+
+		int unprocessCount = selectedUnits.Count;
+		int filterRegionId = destRegionId;
+		int filterDestX = destX, filterDestY = destY;
+		int loopCount, i;
+
+		//-------------------------------------------------------------------------------//
+		// group the unit by their region id and process group searching for each group
+		//-------------------------------------------------------------------------------//
+		// checking for unprocessCount+1, plus one for the case that unit not on the same territory of destination
+		for (loopCount = 0; loopCount <= unprocessCount; loopCount++)
+		{
+			filtered_unit_array.Clear();
+			int filteringCount = filtering_unit_array.Count;
+			filtering_unit_count = 0;
+
+			//-------------- filter for filterRegionId --------------//
+			for (i = 0; i < filteringCount; i++)
+			{
+				unit = this[filtering_unit_array[i]];
+				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == filterRegionId)
+					filtered_unit_array.Add(filtering_unit_array[i]);
+				else
+					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
+			}
+
+			//---- process for filtered_unit_array and prepare for looping ----//
+			if (filtered_unit_array.Count > 0)
+				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
+
+			if (filtering_unit_count == 0)
+				break;
+
+			//---------------- update parameters for next checking ------------------//
+			unit = this[filtering_unit_array[0]];
+			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
+			filterDestX = destX;
+			filterDestY = destY;
+			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
+		}
+	}
+
+	private int cal_rectangle_lower_right_x(int refXLoc, int move_scale, int rec_width)
+	{
+		// the rule:	refXLoc + (rec_width/(move_scale*2))*move_scale
+		if (move_scale == 1)
+			return refXLoc + rec_width / 2;
+		else // move_scale == 2
+			return refXLoc + (rec_width / 4) * 2;
+	}
+
+	private int cal_rectangle_lower_right_y(int refYLoc, int move_scale, int rec_height)
+	{
+		// the rule:	refYLoc + ((rec_height-move_scale)/(move_scale*2))*move_scale
+		if (move_scale == 1)
+			return refYLoc + (rec_height - 1) / 2;
+		else // move_scale == 2
+			return refYLoc + ((rec_height - 2) / 4) * 2;
+	}
+
+	private int cal_rectangle_upper_left_x(int refXLoc, int move_scale, int rec_width)
+	{
+		// the rule:	refXLoc - ((rec_width-move_scale)/(move_scale*2))*move_scale
+		if (move_scale == 1)
+			return refXLoc - (rec_width - 1) / 2;
+		else // move_scale == 2
+			return refXLoc - ((rec_width - 2) / 4) * 2;
+	}
+
+	private int cal_rectangle_upper_left_y(int refYLoc, int move_scale, int rec_height)
+	{
+		// the rule:	refYLoc - (rec_height/(move_scale*2))*move_scale
+		if (move_scale == 1)
+			return refYLoc - rec_height / 2;
+		else // move_scale == 2
+			return refYLoc - (rec_height / 4) * 2;
+	}
+
+	private void construct_sorted_array(List<int> selectedUnitArray, int selectedCount, int x, int y,
+		int lower_right_case, int upper_left_case, int[] distance, int[] sorted_distance,
+		int[] sorted_member, int[] done_flag)
+	{
+		int min, dist; // for comparison
+		int i, j, k = 0;
+		const int c = 1000; // c value for the d(x,y) function
+
+		if (lower_right_case >= upper_left_case)
+		{
+			for (i = 0; i < selectedCount; i++)
+			{
+				Unit unit = this[selectedUnitArray[i]];
+				// d(x,y)=x+c*|y|
+				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
+				// plus/minus x coord difference
+				distance[i] += (x - unit.cur_x_loc() + c * Math.Abs(unit.cur_y_loc() - y));
+			}
+		}
+		else // upper_left_case
+		{
+			for (i = 0; i < selectedCount; i++)
+			{
+				Unit unit = this[selectedUnitArray[i]];
+				// d(x,y)=x+c*|y|
+				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
+				// plus/minus x coord difference
+				distance[i] += (unit.cur_x_loc() - x + c * Math.Abs(unit.cur_y_loc() - y));
+			}
+		}
+
+		//---------------------------------------------------------------//
+		// this part of code using a technique to adjust the distance value
+		// such that the selected group can change from lower right form
+		// to upper left form or upper left form to lower right form in a
+		// better way.
+		//---------------------------------------------------------------//
+		//------ sorting the distance and store in sortedDistance Array -------//
+		for (j = 0; j < selectedCount; j++)
+		{
+			min = Int32.MaxValue;
+			for (i = 0; i < selectedCount; i++)
+			{
+				if (done_flag[i] == 0 && (dist = distance[i]) < min)
+				{
+					min = dist;
+					k = i;
+				}
+			}
+
+			sorted_distance[j] = k;
+			done_flag[k] = 1;
+		}
+
+		//----------------- find the minimum value --------------//
+		min = distance[sorted_distance[0]];
+
+		int defArraySize = 5; //****** BUGHERE, 5 is chosen arbitrary
+		int[] leftQuotZ = new int[defArraySize];
+		int[] rightQuotZ = new int[defArraySize];
+		int remainder = min % c;
+		int index;
+
+		//-- adjust the value to allow changing form between upper left and lower right shape --//
+
+		for (j = 0; j < defArraySize; j++)
+			leftQuotZ[j] = rightQuotZ[j] = min - remainder;
+
+		for (j = 0; j < selectedCount; j++)
+		{
+			if ((dist = distance[sorted_distance[j]] % c) < remainder)
+			{
+				if ((index = remainder - dist) <= defArraySize) // the case can be handled by this array size
+				{
+					distance[sorted_distance[j]] = leftQuotZ[index - 1] + dist;
+					leftQuotZ[index - 1] += c;
+				}
+			}
+			else
+			{
+				if (dist >= remainder)
+				{
+					if ((index = dist - remainder) < defArraySize) // the case can be handled by this array size
+					{
+						distance[sorted_distance[j]] = rightQuotZ[index] + dist;
+						rightQuotZ[index] += c;
+					}
+				}
+			}
+		}
+
+		//---------- sorting -------------//
+		for (j = 0; j < selectedCount; j++)
+		{
+			min = Int32.MaxValue;
+			for (i = 0; i < selectedCount; i++)
+			{
+				if ((dist = distance[i]) < min)
+				{
+					min = dist;
+					k = i;
+				}
+			}
+
+			sorted_member[j] = k;
+			distance[k] = Int32.MaxValue;
+		}
+	}
+
+	private void determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, int mobileType,
+		ref int x, ref int y, int move_scale, ref int rec_width, ref int rec_height,
+		ref int lower_right_case, ref int upper_left_case, int not_tested_loc, int square_size)
+	{
+		//======================================================================//
+		// boundary, corner improvement
+		//======================================================================//
+		int sqrtValue;
+
+		//======================================================================//
+		// lower right case
+		//======================================================================//
+		if (lower_right_case >= upper_left_case)
+		{
+			//--------- calculate x, y location for lower right case ---------//
+			x = cal_rectangle_lower_right_x(destXLoc, move_scale, rec_width);
+			y = cal_rectangle_lower_right_y(destYLoc, move_scale, rec_height);
+
+			if (x < rec_width)
+			{
+				//================== left edge =================//
+				sqrtValue = (int)Math.Sqrt(selectedCount);
+				if (sqrtValue * sqrtValue != selectedCount)
+					sqrtValue++;
+				if (mobileType != UnitConstants.UNIT_LAND)
+					sqrtValue = sqrtValue << 1; // change to scale 2
+				rec_width = rec_height = sqrtValue;
+
+				//------------- top left corner --------------//
+				if (y < rec_height)
+				{
+					upper_left_case = lower_right_case + 1;
+					x = y = 0;
+				}
+				//------------ bottom left corner ---------------//
+				else if (y >= GameConstants.MapSize - move_scale)
+				{
+					if (not_tested_loc >= square_size / move_scale)
+						rec_width -= move_scale;
+
+					x = rec_width - move_scale;
+					y = GameConstants.MapSize - move_scale;
+				}
+				//------------- just left edge -------------//
+				else
+					x = rec_width - move_scale;
+			}
+			else if (x >= GameConstants.MapSize - move_scale)
+			{
+				//============== right edge ==============//
+
+				//----------- top right corner -----------//
+				if (y < rec_height)
+				{
+					sqrtValue = (int)Math.Sqrt(selectedCount);
+					if (sqrtValue * sqrtValue != selectedCount)
+						sqrtValue++;
+					if (mobileType != UnitConstants.UNIT_LAND)
+						sqrtValue = sqrtValue << 1; // change to scale 2
+					rec_width = rec_height = sqrtValue;
+
+					upper_left_case = lower_right_case + 1;
+					x = GameConstants.MapSize - rec_width;
+					y = 0;
+				}
+				//---------- bottom right corner ------------//
+				else if (y >= GameConstants.MapSize - move_scale)
+				{
+					y = GameConstants.MapSize - move_scale;
+					x = GameConstants.MapSize - move_scale;
+				}
+				//---------- just right edge ---------------//
+				else
+				{
+					int squareSize = square_size / move_scale;
+					if (squareSize * (squareSize - 1) >= selectedCount)
+						rec_width -= move_scale;
+					x = GameConstants.MapSize - move_scale;
+				}
+			}
+			else if (y < rec_height)
+			{
+				//================= top edge ===============//
+				sqrtValue = (int)Math.Sqrt(selectedCount);
+				if (sqrtValue * sqrtValue != selectedCount)
+					sqrtValue++;
+				if (mobileType != UnitConstants.UNIT_LAND)
+					sqrtValue = sqrtValue << 1; // change to scale 2
+				rec_width = rec_height = sqrtValue;
+
+				upper_left_case = lower_right_case + 1;
+				//if(mobileType==UnitConstants.UNIT_LAND)
+				//	x = destXLoc-((rec_width-1)/2);
+				//else
+				//	x = destXLoc-(rec_width/4)*2;
+				x = cal_rectangle_upper_left_x(destXLoc, move_scale, rec_width);
+				y = 0;
+			}
+			else if (y >= GameConstants.MapSize - move_scale)
+			{
+				//================== bottom edge ====================//
+				if (not_tested_loc >= square_size / move_scale)
+					rec_width += move_scale;
+
+				//if(mobileType==UnitConstants.UNIT_LAND)
+				//	x = destXLoc+(rec_width/2);
+				//else
+				//	x = destXLoc+(rec_width/4)*2;
+				x = cal_rectangle_lower_right_x(destXLoc, move_scale, rec_width);
+				y = GameConstants.MapSize - move_scale;
+			}
+		}
+		//======================================================================//
+		// upper left case
+		//======================================================================//
+		else
+		{
+			//--------- calculate x, y location for upper left case ---------//
+			x = cal_rectangle_upper_left_x(destXLoc, move_scale, rec_width);
+			y = cal_rectangle_upper_left_y(destYLoc, move_scale, rec_height);
+
+			if (x < 0)
+			{
+				//================= left edge ==================//
+
+				//------------- top left corner --------------//
+				if (y < 0)
+				{
+					sqrtValue = (int)Math.Sqrt(selectedCount);
+					if (sqrtValue * sqrtValue != selectedCount)
+						sqrtValue++;
+					if (mobileType != UnitConstants.UNIT_LAND)
+						sqrtValue = sqrtValue << 1; // change to scale 2
+					rec_width = rec_height = sqrtValue;
+					x = y = 0;
+				}
+				//------------- bottom left corner --------------//
+				else if (y + rec_height >= GameConstants.MapSize - move_scale)
+				{
+					lower_right_case = upper_left_case + 1;
+					x = rec_width - move_scale;
+					y = GameConstants.MapSize - move_scale;
+				}
+				//------------- just left edge ------------------//
+				else
+				{
+					sqrtValue = (int)Math.Sqrt(selectedCount);
+					if (sqrtValue * sqrtValue != selectedCount)
+						sqrtValue++;
+					if (mobileType != UnitConstants.UNIT_LAND)
+						sqrtValue = sqrtValue << 1; // change to scale 2
+					rec_width = rec_height = sqrtValue;
+					x = 0;
+				}
+			}
+			//================ right edge ================//
+			else if (x + rec_width >= GameConstants.MapSize - move_scale)
+			{
+				//------------- top right corner ------------------//
+				if (y < 0)
+				{
+					sqrtValue = (int)Math.Sqrt(selectedCount);
+					if (sqrtValue * sqrtValue != selectedCount)
+						sqrtValue++;
+					if (mobileType != UnitConstants.UNIT_LAND)
+						sqrtValue = sqrtValue << 1; // change to scale 2
+					rec_width = rec_height = sqrtValue;
+					x = GameConstants.MapSize - rec_width;
+					y = 0;
+				}
+				//------------- bottom right corner ------------------//
+				else if (y + rec_height >= GameConstants.MapSize - move_scale)
+				{
+					lower_right_case = upper_left_case + 1;
+					x = GameConstants.MapSize - move_scale;
+					y = GameConstants.MapSize - move_scale;
+				}
+				//------------- just right edge ------------------//
+				else
+				{
+					sqrtValue = (int)Math.Sqrt(selectedCount);
+					if (sqrtValue * sqrtValue != selectedCount)
+						sqrtValue++;
+					if (mobileType != UnitConstants.UNIT_LAND)
+						sqrtValue = sqrtValue << 1; // change to scale 2
+					rec_width = rec_height = sqrtValue;
+
+					int squareSize = square_size / move_scale;
+					if (squareSize * (squareSize - 1) >= selectedCount)
+						rec_width -= move_scale;
+					lower_right_case = upper_left_case + 1;
+					x = GameConstants.MapSize - move_scale;
+					//if(mobileType==UNIT_LAND)
+					//	y = destYLoc+((rec_height-1)/2);
+					//else
+					//	y = destYLoc+((rec_height-2)/4)*2;
+					y = cal_rectangle_lower_right_y(destYLoc, move_scale, rec_height);
+				}
+			}
+			//================= top edge ================//
+			else if (y < 0)
+			{
+				sqrtValue = (int)Math.Sqrt(selectedCount);
+				if (sqrtValue * sqrtValue != selectedCount)
+					sqrtValue++;
+
+				rec_width = rec_height = sqrtValue;
+				y = 0;
+			}
+			//================= bottom edge ================//
+			else if (y + rec_height >= GameConstants.MapSize - move_scale)
+			{
+				if (not_tested_loc >= square_size)
+					rec_width += move_scale;
+				y = GameConstants.MapSize - move_scale;
+			}
+		}
+
+		/*if(lower_right_case>=upper_left_case)
+		{
+			x = cal_rectangle_lower_right_x(destXLoc);
+			y = cal_rectangle_lower_right_y(destYLoc);
+	
+			rec_x1 = x - rec_width + move_scale;
+			rec_y1 = y - rec_height + move_scale;
+			rec_x2 = x;
+			rec_y2 = y;
+		}
+		else
+		{
+			x = cal_rectangle_upper_left_x(destXLoc);
+			y = cal_rectangle_upper_left_y(destYLoc);
+		}*/
+	}
+
+	public void ShipToBeach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
+    {
+	    /*if (!remoteAction && remote.is_enable())
+	    {
+		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
+		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SHIP_TO_BEACH,
+			    sizeof(short) * (4 + selectedCount));
+		    shortPtr[0] = destX;
+		    shortPtr[1] = destY;
+		    shortPtr[2] = selectedCount;
+		    shortPtr[3] = divided;
+		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
+
+		    return;
+	    }*/
+
+	    set_group_id(selectedUnits);
+
+	    //--------------------------------------------------------------------//
+	    //--------------------------------------------------------------------//
+	    const int CHECK_SEA_DIMENSION = 50;
+	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
+	    Location loc = World.get_loc(destX, destY);
+	    int regionId = loc.region_id;
+	    int xShift, yShift, checkXLoc, checkYLoc;
+	    int landX = -1, landY = -1, tempX, tempY;
+
+	    int i = 0, j = 1, k, found;
+
+	    //--------------------------------------------------------------------//
+	    // find a unit that can carrying units.  Let it to do the first searching.
+	    // Use the returned reference parameters (landX, landY) for the other
+	    // ships to calculate their final location to move to
+	    //--------------------------------------------------------------------//
+	    for (; i < selectedUnits.Count; i++) // for first unit
+	    {
+		    Unit unit = this[selectedUnits[i]];
+		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0)
+		    {
+			    // landX=landY=-1 if calling move_to() instead
+			    unit.ship_to_beach(destX, destY, out landX, out landY);
+			    i++;
+			    break;
+		    }
+		    else
+		    {
+			    unit.MoveTo(destX, destY, 1);
+		    }
+	    }
+
+	    int totalCheck = 0;
+	    for (; i < selectedUnits.Count; i++) // for the rest units
+	    {
+		    Unit unit = this[selectedUnits[i]];
+		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0 && landX != -1 && landY != -1)
+		    {
+			    for (found = 0; j <= CHECK_SEA_SIZE; j++, totalCheck++)
+			    {
+				    Misc.cal_move_around_a_point(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION,
+					    out xShift, out yShift);
+
+				    if (j >= CHECK_SEA_SIZE)
+					    j = 1;
+
+				    if (totalCheck == CHECK_SEA_SIZE)
+				    {
+					    //--------------------------------------------------------------------//
+					    // can't handle this case
+					    //--------------------------------------------------------------------//
+					    unit.ship_to_beach(landX, landY, out tempX, out tempY);
+					    totalCheck = 0;
+					    break;
+				    }
+
+				    int seaX = landX + xShift;
+				    int seaY = landY + yShift;
+				    if (seaX < 0 || seaX >= GameConstants.MapSize || seaY < 0 || seaY >= GameConstants.MapSize)
+					    continue;
+
+				    loc = World.get_loc(seaX, seaY);
+				    if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					    continue;
+
+				    //--------------------------------------------------------------------//
+				    // if it is able to find a location around the surrounding location with
+				    // same region id we prefer, order the unit to move there.
+				    //--------------------------------------------------------------------//
+				    for (k = 2; k <= 9; k++)
+				    {
+					    Misc.cal_move_around_a_point(k, 3, 3, out xShift, out yShift);
+					    checkXLoc = seaX + xShift;
+					    checkYLoc = seaY + yShift;
+					    if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+						    continue;
+
+					    loc = World.get_loc(checkXLoc, checkYLoc);
+					    if (loc.region_id != regionId)
+						    continue;
+
+					    unit.ship_to_beach(checkXLoc, checkYLoc, out tempX, out tempY);
+					    found++;
+					    break;
+				    }
+
+				    if (found != 0)
+				    {
+					    totalCheck = 0;
+					    break;
+				    }
+			    }
+		    }
+		    else // cannot carry units
+			    unit.MoveTo(destX, destY, 1);
+	    }
+    }
+
     public void attack(int targetXLoc, int targetYLoc, bool divided, List<int> selectedUnitArray,
 	    int remoteAction, int targetUnitRecno)
     {
@@ -1541,7 +2705,6 @@ public class UnitArray : SpriteArray
 	    //-************** codes here ***************-//
     }
 
-    //---------- other actions functions -----------//
     public void assign(int destX, int destY, bool divided, int remoteAction, List<int> selectedUnits)
     {
 	    //--- set the destination to the top left position of the town/firm ---//
@@ -1722,85 +2885,6 @@ public class UnitArray : SpriteArray
 	    selected_air_units.Clear();
     }
 
-    public void settle(int destX, int destY, bool divided, int remoteAction, List<int> selectedUnits)
-    {
-	    //TODO remove null value
-	    if (selectedUnits == null)
-	    {
-		    selectedUnits = new List<int>();
-
-		    // find myself
-		    foreach (Unit unit in this)
-		    {
-			    if (!unit.is_visible())
-				    continue;
-
-			    if (unit.selected_flag && unit.is_own())
-			    {
-				    selectedUnits.Add(unit.sprite_recno);
-			    }
-		    }
-	    }
-
-	    /*if (!remoteAction && remote.is_enable())
-	    {
-		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
-		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SETTLE, sizeof(short) * (4 + selectedCount));
-		    shortPtr[0] = destX;
-		    shortPtr[1] = destY;
-		    shortPtr[2] = selectedCount;
-		    shortPtr[3] = divided;
-		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
-	    }*/
-	    //else
-	    //{
-		    if (!divided)
-		    {
-			    for (int j = 0; j < selectedUnits.Count; ++j)
-			    {
-				    int unitRecNo = selectedUnits[j];
-
-				    if (IsDeleted(unitRecNo))
-					    continue;
-
-				    Unit unit = this[unitRecNo]; //unit_array[i];
-				    unit.stop2();
-			    }
-
-			    divide_array(destX, destY, selectedUnits);
-
-			    if (selected_land_units.Count > 0)
-				    settle(destX, destY, true, remoteAction, selected_land_units);
-
-			    if (selected_sea_units.Count > 0)
-				    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
-
-			    if (selected_air_units.Count > 0)
-				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
-
-			    //-------------- deinit static parameters --------------//
-			    selected_land_units.Clear();
-			    selected_sea_units.Clear();
-			    selected_air_units.Clear();
-		    }
-		    else
-		    {
-			    //---------- set unit to settle -----------//
-			    if (selectedUnits.Count == 1)
-			    {
-				    Unit unit = this[selectedUnits[0]];
-				    unit.unit_group_id = cur_group_id++;
-				    unit.settle(destX, destY);
-			    }
-			    else
-			    {
-				    set_group_id(selectedUnits);
-				    group_settle(destX, destY, selectedUnits);
-			    }
-		    }
-	    //}
-    }
-
     public void assign_to_ship(int shipXLoc, int shipYLoc, bool divided, List<int> selectedUnits,
 	    int remoteAction, int shipRecno)
     {
@@ -1948,120 +3032,83 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    public void ShipToBeach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
+    public void settle(int destX, int destY, bool divided, int remoteAction, List<int> selectedUnits)
     {
+	    //TODO remove null value
+	    if (selectedUnits == null)
+	    {
+		    selectedUnits = new List<int>();
+
+		    // find myself
+		    foreach (Unit unit in this)
+		    {
+			    if (!unit.is_visible())
+				    continue;
+
+			    if (unit.selected_flag && unit.is_own())
+			    {
+				    selectedUnits.Add(unit.sprite_recno);
+			    }
+		    }
+	    }
+
 	    /*if (!remoteAction && remote.is_enable())
 	    {
 		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
-		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SHIP_TO_BEACH,
-			    sizeof(short) * (4 + selectedCount));
+		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SETTLE, sizeof(short) * (4 + selectedCount));
 		    shortPtr[0] = destX;
 		    shortPtr[1] = destY;
 		    shortPtr[2] = selectedCount;
 		    shortPtr[3] = divided;
 		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
-
-		    return;
 	    }*/
-
-	    set_group_id(selectedUnits);
-
-	    //--------------------------------------------------------------------//
-	    //--------------------------------------------------------------------//
-	    const int CHECK_SEA_DIMENSION = 50;
-	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
-	    Location loc = World.get_loc(destX, destY);
-	    int regionId = loc.region_id;
-	    int xShift, yShift, checkXLoc, checkYLoc;
-	    int landX = -1, landY = -1, tempX, tempY;
-
-	    int i = 0, j = 1, k, found;
-
-	    //--------------------------------------------------------------------//
-	    // find a unit that can carrying units.  Let it to do the first searching.
-	    // Use the returned reference parameters (landX, landY) for the other
-	    // ships to calculate their final location to move to
-	    //--------------------------------------------------------------------//
-	    for (; i < selectedUnits.Count; i++) // for first unit
-	    {
-		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0)
+	    //else
+	    //{
+		    if (!divided)
 		    {
-			    // landX=landY=-1 if calling move_to() instead
-			    unit.ship_to_beach(destX, destY, out landX, out landY);
-			    i++;
-			    break;
+			    for (int j = 0; j < selectedUnits.Count; ++j)
+			    {
+				    int unitRecNo = selectedUnits[j];
+
+				    if (IsDeleted(unitRecNo))
+					    continue;
+
+				    Unit unit = this[unitRecNo]; //unit_array[i];
+				    unit.stop2();
+			    }
+
+			    divide_array(destX, destY, selectedUnits);
+
+			    if (selected_land_units.Count > 0)
+				    settle(destX, destY, true, remoteAction, selected_land_units);
+
+			    if (selected_sea_units.Count > 0)
+				    ShipToBeach(destX, destY, true, selected_sea_units, remoteAction);
+
+			    if (selected_air_units.Count > 0)
+				    MoveTo(destX, destY, true, selected_air_units, remoteAction);
+
+			    //-------------- deinit static parameters --------------//
+			    selected_land_units.Clear();
+			    selected_sea_units.Clear();
+			    selected_air_units.Clear();
 		    }
 		    else
 		    {
-			    unit.MoveTo(destX, destY, 1);
-		    }
-	    }
-
-	    int totalCheck = 0;
-	    for (; i < selectedUnits.Count; i++) // for the rest units
-	    {
-		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0 && landX != -1 && landY != -1)
-		    {
-			    for (found = 0; j <= CHECK_SEA_SIZE; j++, totalCheck++)
+			    //---------- set unit to settle -----------//
+			    if (selectedUnits.Count == 1)
 			    {
-				    Misc.cal_move_around_a_point(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION,
-					    out xShift, out yShift);
-
-				    if (j >= CHECK_SEA_SIZE)
-					    j = 1;
-
-				    if (totalCheck == CHECK_SEA_SIZE)
-				    {
-					    //--------------------------------------------------------------------//
-					    // can't handle this case
-					    //--------------------------------------------------------------------//
-					    unit.ship_to_beach(landX, landY, out tempX, out tempY);
-					    totalCheck = 0;
-					    break;
-				    }
-
-				    int seaX = landX + xShift;
-				    int seaY = landY + yShift;
-				    if (seaX < 0 || seaX >= GameConstants.MapSize || seaY < 0 || seaY >= GameConstants.MapSize)
-					    continue;
-
-				    loc = World.get_loc(seaX, seaY);
-				    if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN)
-					    continue;
-
-				    //--------------------------------------------------------------------//
-				    // if it is able to find a location around the surrounding location with
-				    // same region id we prefer, order the unit to move there.
-				    //--------------------------------------------------------------------//
-				    for (k = 2; k <= 9; k++)
-				    {
-					    Misc.cal_move_around_a_point(k, 3, 3, out xShift, out yShift);
-					    checkXLoc = seaX + xShift;
-					    checkYLoc = seaY + yShift;
-					    if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
-						    continue;
-
-					    loc = World.get_loc(checkXLoc, checkYLoc);
-					    if (loc.region_id != regionId)
-						    continue;
-
-					    unit.ship_to_beach(checkXLoc, checkYLoc, out tempX, out tempY);
-					    found++;
-					    break;
-				    }
-
-				    if (found != 0)
-				    {
-					    totalCheck = 0;
-					    break;
-				    }
+				    Unit unit = this[selectedUnits[0]];
+				    unit.unit_group_id = cur_group_id++;
+				    unit.settle(destX, destY);
+			    }
+			    else
+			    {
+				    set_group_id(selectedUnits);
+				    group_settle(destX, destY, selectedUnits);
 			    }
 		    }
-		    else // cannot carry units
-			    unit.MoveTo(destX, destY, 1);
-	    }
+	    //}
     }
 
     public void AddWayPoint(int pointX, int pointY, List<int> selectedUnits, int remoteAction)
@@ -2220,1063 +3267,6 @@ public class UnitArray : SpriteArray
 			if (unit.cur_action == Sprite.SPRITE_IDLE) //**maybe need to include SPRITE_ATTACK as well
 				unit.set_ready();
 		}
-	}
-
-	//------------ move sub-functions --------------//
-	private void MoveToNowWithFilter(int destX, int destY, List<int> selectedUnits)
-	{
-		int destRegionId = World.get_loc(destX, destY).region_id;
-		Unit unit = this[selectedUnits[0]];
-
-		//-------------- no filtering for unit air --------------------------//
-		if (unit.mobile_type == UnitConstants.UNIT_AIR)
-		{
-			MoveToNow(destX, destY, selectedUnits);
-			return;
-		}
-
-		//----------------- init data structure --------------//
-		List<int> filtered_unit_array = new List<int>();
-		List<int> filtering_unit_array = new List<int>();
-		filtering_unit_array.AddRange(selectedUnits);
-		int filtering_unit_count = selectedUnits.Count;
-
-		int unprocessCount = selectedUnits.Count;
-		int filterRegionId = destRegionId;
-		int filterDestX = destX, filterDestY = destY;
-		int loopCount, i;
-
-		//-------------------------------------------------------------------------------//
-		// group the unit by their region id and process group searching for each group
-		//-------------------------------------------------------------------------------//
-		// checking for unprocessCount+1, plus one for the case that unit not on the same territory of destination
-		for (loopCount = 0; loopCount <= unprocessCount; loopCount++)
-		{
-			filtered_unit_array.Clear();
-			int filteringCount = filtering_unit_array.Count;
-			filtering_unit_count = 0;
-
-			//-------------- filter for filterRegionId --------------//
-			for (i = 0; i < filteringCount; i++)
-			{
-				unit = this[filtering_unit_array[i]];
-				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == filterRegionId)
-					filtered_unit_array.Add(filtering_unit_array[i]);
-				else
-					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
-			}
-
-			//---- process for filtered_unit_array and prepare for looping ----//
-			if (filtered_unit_array.Count > 0)
-				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
-
-			if (filtering_unit_count == 0)
-				break;
-
-			//---------------- update parameters for next checking ------------------//
-			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
-			filterDestX = destX;
-			filterDestY = destY;
-			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
-		}
-	}
-
-	private void MoveToNow(int destXLoc, int destYLoc, List<int> selectedUnits)
-	{
-		//------------ define vars -----------------------//
-		int unprocessCount; // = selectedCount;		// num. of unprocessed sprite
-		int k; // for counting
-		int vecX, vecY; // used to reset x, y
-		int oddCount, evenCount;
-		Unit firstUnit = this[selectedUnits[0]];
-		int curGroupId = firstUnit.unit_group_id;
-		int mobileType = firstUnit.mobile_type;
-		//int		sizeOneSelectedCount=0, sizeTwoSelectedCount=0;
-		int sizeOneSelectedCount = selectedUnits.Count;
-
-		//---------- set Unit::unit_group_id and count the unit by size ----------//
-		for (int i = 0; i < selectedUnits.Count; i++)
-		{
-			Unit unit = this[selectedUnits[i]];
-
-			if (unit.cur_action == Sprite.SPRITE_ATTACK)
-				unit.stop();
-
-			if (unit.cur_action == Sprite.SPRITE_IDLE)
-				unit.set_ready();
-
-			/*switch(unit.sprite_info.loc_width)
-			{
-				case 1:	sizeOneSelectedCount++;
-							break;
-	
-				case 2:	sizeTwoSelectedCount++;
-							break;
-	
-				default:	err_here();
-							break;
-			}*/
-		}
-
-		unprocessCount = sizeOneSelectedCount;
-
-		//---- construct array to store size one selected unit ----//
-		List<int> selectedSizeOneUnitArray = new List<int>();
-		if (sizeOneSelectedCount > 0)
-		{
-			for (int i = 0; i < selectedUnits.Count && unprocessCount > 0; i++)
-			{
-				Unit unit = this[selectedUnits[i]];
-				if (unit.sprite_info.loc_width == 1)
-				{
-					selectedSizeOneUnitArray.Add(selectedUnits[i]);
-					unprocessCount--;
-				}
-			}
-		}
-
-		unprocessCount = sizeOneSelectedCount;
-
-		//----------- variables initialization ---------------//
-		int destX, destY, x, y, move_scale;
-		if (mobileType == UnitConstants.UNIT_LAND)
-		{
-			x = destX = destXLoc;
-			y = destY = destYLoc;
-			move_scale = 1;
-		}
-		else // UnitConstants.UNIT_AIR, UnitConstants.UNIT_SEA
-		{
-			x = destX = (destXLoc / 2) * 2;
-			y = destY = (destYLoc / 2) * 2;
-			move_scale = 2;
-		}
-
-		int square_size, not_tested_loc, lower_right_case, upper_left_case;
-		int[] distance = new int[sizeOneSelectedCount];
-		int[] sorted_distance = new int[sizeOneSelectedCount];
-		int[] sorted_member = new int[sizeOneSelectedCount];
-		int[] done_flag = new int[sizeOneSelectedCount];
-		//if(sizeOneSelectedCount)
-		//{
-		//----- initialize parameters and construct data structure -----//
-		oddCount = 1;
-		evenCount = 3;
-		square_size = not_tested_loc = lower_right_case = upper_left_case = 0;
-
-		//--- calculate the rectangle size used to allocate space for the sprites----//
-		unprocessCount = sizeOneSelectedCount;
-		while (unprocessCount > 0)
-		{
-			//=============================
-			// process odd size square
-			//=============================
-			vecX = (oddCount / 4) * move_scale;
-			vecY = vecX;
-			k = 0;
-
-			int j;
-			for (j = 0; j < oddCount && unprocessCount > 0; j++)
-			{
-				x = destX + vecX;
-				y = destY + vecY;
-
-				if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
-				{
-					Location location = World.get_loc(x, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
-						unprocessCount--;
-				}
-
-				if (k++ < oddCount / 2) // reset vecX, vecY
-					vecX -= move_scale;
-				else
-					vecY -= move_scale;
-			}
-
-			square_size += move_scale;
-			if (j < oddCount)
-				not_tested_loc = oddCount - j;
-			oddCount += 4;
-
-			if (unprocessCount > 0)
-			{
-				//=============================
-				// process even size square
-				//=============================
-				vecY = (-(evenCount / 4) - 1) * move_scale;
-				vecX = vecY + move_scale;
-				k = 0;
-
-				for (j = 0; j < evenCount && unprocessCount > 0; j++)
-				{
-					x = destX + vecX;
-					y = destY + vecY;
-
-					if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
-					{
-						Location location = World.get_loc(x, y);
-						if (location.is_unit_group_accessible(mobileType, curGroupId))
-							unprocessCount--;
-					}
-
-					if (k++ < evenCount / 2) // reset vecX, vecY
-						vecX += move_scale;
-					else
-						vecY += move_scale;
-				}
-
-				square_size += move_scale;
-				if (j < evenCount)
-					not_tested_loc = evenCount - j;
-				evenCount += 4;
-			}
-		}
-
-		int rec_height = square_size; // get the height and width of the rectangle
-		int rec_width = square_size;
-		if (not_tested_loc >= (square_size / move_scale))
-			rec_width -= move_scale;
-
-		//--- decide to use upper_left_case or lower_right_case, however, it maybe changed for boundary improvement----//
-		x = cal_rectangle_lower_right_x(destX, move_scale, rec_width);
-		y = cal_rectangle_lower_right_y(destY, move_scale, rec_height);
-
-		for (int i = 0; i < sizeOneSelectedCount; i++)
-		{
-			Unit unit = this[selectedSizeOneUnitArray[i]];
-
-			if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
-				lower_right_case++;
-			else if (unit.next_y_loc() > y)
-				upper_left_case++;
-		}
-
-		if (lower_right_case == upper_left_case) // in case both values are equal, check by upper_left_case
-		{
-			x = cal_rectangle_upper_left_x(destX, move_scale, rec_width);
-			y = cal_rectangle_upper_left_y(destY, move_scale, rec_height);
-
-			lower_right_case = upper_left_case = 0;
-			for (int i = 0; i < sizeOneSelectedCount; i++)
-			{
-				Unit unit = this[selectedSizeOneUnitArray[i]];
-
-				if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
-					lower_right_case++;
-				else if (unit.next_y_loc() > y)
-					upper_left_case++;
-			}
-		}
-
-		//------------ determine x, y and lower_right_case/upper_left_case-----------//
-		determine_position_to_construct_table(selectedUnits.Count, destX, destY, mobileType,
-			ref x, ref y, move_scale, ref rec_width, ref rec_height,
-			ref lower_right_case, ref upper_left_case, not_tested_loc, square_size);
-
-		//------------ construct a table to store distance -------//
-		// distance and sorted_member should be initialized first
-		construct_sorted_array(selectedSizeOneUnitArray, sizeOneSelectedCount, x, y,
-			lower_right_case, upper_left_case, distance, sorted_distance, sorted_member, done_flag);
-
-		//------------ process the movement -----------//
-		unprocessCount = sizeOneSelectedCount; //selectedCount;
-		k = 0;
-
-		//-******************* auto correct ***********************-//
-		int autoCorrectStartX = x;
-		int autoCorrectStartY = y;
-		//-******************* auto correct ***********************-//
-
-		if (lower_right_case >= upper_left_case)
-		{
-			while (unprocessCount > 0)
-			{
-				for (int i = x; i > x - rec_width && unprocessCount > 0; i -= move_scale)
-				{
-					Location location = World.get_loc(i, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
-					{
-						Unit unit;
-						do
-						{
-							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.sprite_info.loc_width > 1);
-
-						if (sizeOneSelectedCount > 1)
-						{
-							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
-							{
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-							else
-							{
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-						}
-						else
-							unit.MoveTo(i, y, 1);
-
-						unprocessCount--;
-					}
-				}
-
-				y -= move_scale;
-			}
-		}
-		else // upper_left_case
-		{
-			while (unprocessCount > 0)
-			{
-				for (int i = x; i < x + rec_width && unprocessCount > 0; i += move_scale)
-				{
-					Location location = World.get_loc(i, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
-					{
-						Unit unit;
-						do
-						{
-							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.sprite_info.loc_width > 1);
-
-						if (sizeOneSelectedCount > 1)
-						{
-							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
-							{
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-							else
-							{
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-						}
-						else
-							unit.MoveTo(i, y, 1);
-
-						unprocessCount--;
-					}
-				}
-
-				y += move_scale;
-				//-******************* auto correct ***********************-//
-				if (unprocessCount > 0 && y >= GameConstants.MapSize)
-				{
-					y = autoCorrectStartY;
-				}
-				//-******************* auto correct ***********************-//
-			}
-		}
-		//}// end if (sizeOneSelectedCount)
-		/*
-		//=============================================================================//
-		//----- order sprite with size two to move to a specified position ------------//
-		//=============================================================================//
-	
-		int sizeTwoUnprocessCount = sizeTwoSelectedCount;
-		int surX, surY, suaCount=0;
-		char w, h, blocked=0;
-	
-		if(sizeOneSelectedCount)	// mix, size one units have processed
-		{	
-			if(rec_width>square_size)
-				square_size = rec_width;
-			if(rec_height>square_size)
-				square_size = rec_height;
-			square_size = ((square_size+1)/2)<<1;	// change to multiply of two
-			rec_width = rec_height = square_size;
-	
-			x = destX-rec_width/2+1;
-			y = destY-rec_height/2;
-		}
-		else	// all are size 2 units
-		{
-			//-***************** testing ********************-//
-			err_here();
-			//-***************** testing ********************-//
-	
-			square_size = rec_width = rec_height = 2;
-			x = destX;
-			y = destY;
-	
-			if(x<0)
-				x = 0;
-			else if(x>=MAX_WORLD_X_LOC-1)
-				x = MAX_WORLD_X_LOC-2;
-	
-			if(y<0)
-				y = 0;
-			else if(y>=MAX_WORLD_Y_LOC-1)
-				y = MAX_WORLD_Y_LOC-2;
-			
-			blocked = 0;
-			for(h=0, surY=y; h<2 && !blocked; h++, surY++)
-			{
-				for(w=0, surX=x; w<2 && !blocked; w++, surX++)
-				{	
-					loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-					blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-				}
-			}
-	
-			if(!blocked)
-			{
-				do
-				{
-					unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-				}while(unit.sprite_info.loc_width<2);
-	
-				if(sizeTwoSelectedCount>1)
-				{
-					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-					unit.move_to(x, y, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-				}
-				else
-					unit.move_to(x, y, 1);
-				sizeTwoUnprocessCount--;
-			}
-		}
-	
-		while(sizeTwoUnprocessCount)
-		{
-			//-***************** testing ********************-//
-			err_here();
-			//-***************** testing ********************-//
-	
-			int moveToX, moveToY;
-			int boundedX, boundedY;
-			
-			//------------- upper edge --------------//
-			moveToY = y-2;
-			moveToX = x;
-			if(moveToY>=0)
-			{
-				if(x+rec_width+2 > MAX_WORLD_X_LOC-2)
-					boundedX = MAX_WORLD_X_LOC-1;
-				else
-					boundedX = x+rec_width+2;
-				
-				while(moveToX<boundedX && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{	
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToX+=2;
-				}	
-			}
-	
-			//------------- right edge --------------//
-			moveToX = x+rec_width;
-			moveToY = y;
-			if(moveToX<MAX_WORLD_X_LOC-1)
-			{
-				if(y+rec_height+2 > MAX_WORLD_Y_LOC-2)
-					boundedY = MAX_WORLD_Y_LOC-1;
-				else
-					boundedY = y+rec_height+2;
-				
-				while(moveToY<boundedY && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToY+=2;
-				}
-			}
-	
-			//------------- lower edge ----------------//
-			moveToX = x+rec_width-2;
-			moveToY = y+rec_height;
-			if(moveToY<MAX_WORLD_Y_LOC-1)
-			{
-				if(x-3 < 0)
-					boundedX = -1;
-				else
-					boundedX = x-3;
-				
-				while(moveToX>boundedX && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToX-=2;
-				}
-			}
-	
-			//------------- left edge ---------------//
-			moveToX = x-2;
-			moveToY = y+rec_height-2;
-			if(moveToX>=0)
-			{
-				if(y-3 < 0)
-					boundedY = -1;
-				else
-					boundedY = y-3;
-				
-				while(moveToY>boundedY && sizeTwoUnprocessCount)
-				{
-					//--------------- is the position blocked? ----------//
-					if(moveToX>=MAX_WORLD_X_LOC-1 || moveToY>=MAX_WORLD_Y_LOC-1)
-						blocked = 1;
-					else
-					{
-						blocked = 0;
-						for(h=0, surY=moveToY; h<2 && !blocked; h++, surY++)
-						{
-							for(w=0, surX=moveToX; w<2 && !blocked; w++, surX++)
-							{
-								loc = worldLocMatrix+surY*MAX_WORLD_X_LOC+surX;
-								blocked = !loc.is_unit_group_accessible(mobileType, curGroupId);
-							}
-						}
-					}
-	
-					if(!blocked)
-					{
-						do
-						{
-							unit = (Unit*) get_ptr(selectedUnitArray[suaCount++]);
-						}while(unit.sprite_info.loc_width<2);
-	
-						if(sizeTwoSelectedCount>1)
-						{
-							if(sizeTwoUnprocessCount==sizeTwoSelectedCount) // the first unit to move
-							{	
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_INITIAL);
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_FIRST_SEEK);
-							}
-							else
-							{
-								err_if(sizeTwoUnprocessCount==sizeTwoSelectedCount)
-									err_here();
-								
-								unit.move_to(moveToX, moveToY, 1, 4, 0, sizeTwoSelectedCount, GENERAL_GROUP_MOVEMENT, REUSE_PATH_SEARCH);
-							}
-						}
-						else
-							unit.move_to(moveToX, moveToY, 1);
-						sizeTwoUnprocessCount--;
-					}
-					moveToY-=2;
-				}
-			}
-	
-			//------- reset square_size, rec_width, rec_height -----------//
-			rec_width+=4;
-			rec_height+=4;
-			x-=2;
-			y-=2;
-		}*/
-	}
-
-	private int cal_rectangle_lower_right_x(int refXLoc, int move_scale, int rec_width)
-	{
-		// the rule:	refXLoc + (rec_width/(move_scale*2))*move_scale
-		if (move_scale == 1)
-			return refXLoc + rec_width / 2;
-		else // move_scale == 2
-			return refXLoc + (rec_width / 4) * 2;
-	}
-
-	private int cal_rectangle_lower_right_y(int refYLoc, int move_scale, int rec_height)
-	{
-		// the rule:	refYLoc + ((rec_height-move_scale)/(move_scale*2))*move_scale
-		if (move_scale == 1)
-			return refYLoc + (rec_height - 1) / 2;
-		else // move_scale == 2
-			return refYLoc + ((rec_height - 2) / 4) * 2;
-	}
-
-	private int cal_rectangle_upper_left_x(int refXLoc, int move_scale, int rec_width)
-	{
-		// the rule:	refXLoc - ((rec_width-move_scale)/(move_scale*2))*move_scale
-		if (move_scale == 1)
-			return refXLoc - (rec_width - 1) / 2;
-		else // move_scale == 2
-			return refXLoc - ((rec_width - 2) / 4) * 2;
-	}
-
-	private int cal_rectangle_upper_left_y(int refYLoc, int move_scale, int rec_height)
-	{
-		// the rule:	refYLoc - (rec_height/(move_scale*2))*move_scale
-		if (move_scale == 1)
-			return refYLoc - rec_height / 2;
-		else // move_scale == 2
-			return refYLoc - (rec_height / 4) * 2;
-	}
-
-	private void construct_sorted_array(List<int> selectedUnitArray, int selectedCount, int x, int y,
-		int lower_right_case, int upper_left_case, int[] distance, int[] sorted_distance,
-		int[] sorted_member, int[] done_flag)
-	{
-		int min, dist; // for comparison
-		int i, j, k = 0;
-		const int c = 1000; // c value for the d(x,y) function
-
-		if (lower_right_case >= upper_left_case)
-		{
-			for (i = 0; i < selectedCount; i++)
-			{
-				Unit unit = this[selectedUnitArray[i]];
-				// d(x,y)=x+c*|y|
-				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
-				// plus/minus x coord difference
-				distance[i] += (x - unit.cur_x_loc() + c * Math.Abs(unit.cur_y_loc() - y));
-			}
-		}
-		else // upper_left_case
-		{
-			for (i = 0; i < selectedCount; i++)
-			{
-				Unit unit = this[selectedUnitArray[i]];
-				// d(x,y)=x+c*|y|
-				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
-				// plus/minus x coord difference
-				distance[i] += (unit.cur_x_loc() - x + c * Math.Abs(unit.cur_y_loc() - y));
-			}
-		}
-
-		//---------------------------------------------------------------//
-		// this part of code using a technique to adjust the distance value
-		// such that the selected group can change from lower right form
-		// to upper left form or upper left form to lower right form in a
-		// better way.
-		//---------------------------------------------------------------//
-		//------ sorting the distance and store in sortedDistance Array -------//
-		for (j = 0; j < selectedCount; j++)
-		{
-			min = Int32.MaxValue;
-			for (i = 0; i < selectedCount; i++)
-			{
-				if (done_flag[i] == 0 && (dist = distance[i]) < min)
-				{
-					min = dist;
-					k = i;
-				}
-			}
-
-			sorted_distance[j] = k;
-			done_flag[k] = 1;
-		}
-
-		//----------------- find the minimum value --------------//
-		min = distance[sorted_distance[0]];
-
-		int defArraySize = 5; //****** BUGHERE, 5 is chosen arbitrary
-		int[] leftQuotZ = new int[defArraySize];
-		int[] rightQuotZ = new int[defArraySize];
-		int remainder = min % c;
-		int index;
-
-		//-- adjust the value to allow changing form between upper left and lower right shape --//
-
-		for (j = 0; j < defArraySize; j++)
-			leftQuotZ[j] = rightQuotZ[j] = min - remainder;
-
-		for (j = 0; j < selectedCount; j++)
-		{
-			if ((dist = distance[sorted_distance[j]] % c) < remainder)
-			{
-				if ((index = remainder - dist) <= defArraySize) // the case can be handled by this array size
-				{
-					distance[sorted_distance[j]] = leftQuotZ[index - 1] + dist;
-					leftQuotZ[index - 1] += c;
-				}
-			}
-			else
-			{
-				if (dist >= remainder)
-				{
-					if ((index = dist - remainder) < defArraySize) // the case can be handled by this array size
-					{
-						distance[sorted_distance[j]] = rightQuotZ[index] + dist;
-						rightQuotZ[index] += c;
-					}
-				}
-			}
-		}
-
-		//---------- sorting -------------//
-		for (j = 0; j < selectedCount; j++)
-		{
-			min = Int32.MaxValue;
-			for (i = 0; i < selectedCount; i++)
-			{
-				if ((dist = distance[i]) < min)
-				{
-					min = dist;
-					k = i;
-				}
-			}
-
-			sorted_member[j] = k;
-			distance[k] = Int32.MaxValue;
-		}
-	}
-
-	private void determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, int mobileType,
-		ref int x, ref int y, int move_scale, ref int rec_width, ref int rec_height,
-		ref int lower_right_case, ref int upper_left_case, int not_tested_loc, int square_size)
-	{
-		//======================================================================//
-		// boundary, corner improvement
-		//======================================================================//
-		int sqrtValue;
-
-		//======================================================================//
-		// lower right case
-		//======================================================================//
-		if (lower_right_case >= upper_left_case)
-		{
-			//--------- calculate x, y location for lower right case ---------//
-			x = cal_rectangle_lower_right_x(destXLoc, move_scale, rec_width);
-			y = cal_rectangle_lower_right_y(destYLoc, move_scale, rec_height);
-
-			if (x < rec_width)
-			{
-				//================== left edge =================//
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-				if (mobileType != UnitConstants.UNIT_LAND)
-					sqrtValue = sqrtValue << 1; // change to scale 2
-				rec_width = rec_height = sqrtValue;
-
-				//------------- top left corner --------------//
-				if (y < rec_height)
-				{
-					upper_left_case = lower_right_case + 1;
-					x = y = 0;
-				}
-				//------------ bottom left corner ---------------//
-				else if (y >= GameConstants.MapSize - move_scale)
-				{
-					if (not_tested_loc >= square_size / move_scale)
-						rec_width -= move_scale;
-
-					x = rec_width - move_scale;
-					y = GameConstants.MapSize - move_scale;
-				}
-				//------------- just left edge -------------//
-				else
-					x = rec_width - move_scale;
-			}
-			else if (x >= GameConstants.MapSize - move_scale)
-			{
-				//============== right edge ==============//
-
-				//----------- top right corner -----------//
-				if (y < rec_height)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					rec_width = rec_height = sqrtValue;
-
-					upper_left_case = lower_right_case + 1;
-					x = GameConstants.MapSize - rec_width;
-					y = 0;
-				}
-				//---------- bottom right corner ------------//
-				else if (y >= GameConstants.MapSize - move_scale)
-				{
-					y = GameConstants.MapSize - move_scale;
-					x = GameConstants.MapSize - move_scale;
-				}
-				//---------- just right edge ---------------//
-				else
-				{
-					int squareSize = square_size / move_scale;
-					if (squareSize * (squareSize - 1) >= selectedCount)
-						rec_width -= move_scale;
-					x = GameConstants.MapSize - move_scale;
-				}
-			}
-			else if (y < rec_height)
-			{
-				//================= top edge ===============//
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-				if (mobileType != UnitConstants.UNIT_LAND)
-					sqrtValue = sqrtValue << 1; // change to scale 2
-				rec_width = rec_height = sqrtValue;
-
-				upper_left_case = lower_right_case + 1;
-				//if(mobileType==UnitConstants.UNIT_LAND)
-				//	x = destXLoc-((rec_width-1)/2);
-				//else
-				//	x = destXLoc-(rec_width/4)*2;
-				x = cal_rectangle_upper_left_x(destXLoc, move_scale, rec_width);
-				y = 0;
-			}
-			else if (y >= GameConstants.MapSize - move_scale)
-			{
-				//================== bottom edge ====================//
-				if (not_tested_loc >= square_size / move_scale)
-					rec_width += move_scale;
-
-				//if(mobileType==UnitConstants.UNIT_LAND)
-				//	x = destXLoc+(rec_width/2);
-				//else
-				//	x = destXLoc+(rec_width/4)*2;
-				x = cal_rectangle_lower_right_x(destXLoc, move_scale, rec_width);
-				y = GameConstants.MapSize - move_scale;
-			}
-		}
-		//======================================================================//
-		// upper left case
-		//======================================================================//
-		else
-		{
-			//--------- calculate x, y location for upper left case ---------//
-			x = cal_rectangle_upper_left_x(destXLoc, move_scale, rec_width);
-			y = cal_rectangle_upper_left_y(destYLoc, move_scale, rec_height);
-
-			if (x < 0)
-			{
-				//================= left edge ==================//
-
-				//------------- top left corner --------------//
-				if (y < 0)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					rec_width = rec_height = sqrtValue;
-					x = y = 0;
-				}
-				//------------- bottom left corner --------------//
-				else if (y + rec_height >= GameConstants.MapSize - move_scale)
-				{
-					lower_right_case = upper_left_case + 1;
-					x = rec_width - move_scale;
-					y = GameConstants.MapSize - move_scale;
-				}
-				//------------- just left edge ------------------//
-				else
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					rec_width = rec_height = sqrtValue;
-					x = 0;
-				}
-			}
-			//================ right edge ================//
-			else if (x + rec_width >= GameConstants.MapSize - move_scale)
-			{
-				//------------- top right corner ------------------//
-				if (y < 0)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					rec_width = rec_height = sqrtValue;
-					x = GameConstants.MapSize - rec_width;
-					y = 0;
-				}
-				//------------- bottom right corner ------------------//
-				else if (y + rec_height >= GameConstants.MapSize - move_scale)
-				{
-					lower_right_case = upper_left_case + 1;
-					x = GameConstants.MapSize - move_scale;
-					y = GameConstants.MapSize - move_scale;
-				}
-				//------------- just right edge ------------------//
-				else
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					rec_width = rec_height = sqrtValue;
-
-					int squareSize = square_size / move_scale;
-					if (squareSize * (squareSize - 1) >= selectedCount)
-						rec_width -= move_scale;
-					lower_right_case = upper_left_case + 1;
-					x = GameConstants.MapSize - move_scale;
-					//if(mobileType==UNIT_LAND)
-					//	y = destYLoc+((rec_height-1)/2);
-					//else
-					//	y = destYLoc+((rec_height-2)/4)*2;
-					y = cal_rectangle_lower_right_y(destYLoc, move_scale, rec_height);
-				}
-			}
-			//================= top edge ================//
-			else if (y < 0)
-			{
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-
-				rec_width = rec_height = sqrtValue;
-				y = 0;
-			}
-			//================= bottom edge ================//
-			else if (y + rec_height >= GameConstants.MapSize - move_scale)
-			{
-				if (not_tested_loc >= square_size)
-					rec_width += move_scale;
-				y = GameConstants.MapSize - move_scale;
-			}
-		}
-
-		/*if(lower_right_case>=upper_left_case)
-		{
-			x = cal_rectangle_lower_right_x(destXLoc);
-			y = cal_rectangle_lower_right_y(destYLoc);
-	
-			rec_x1 = x - rec_width + move_scale;
-			rec_y1 = y - rec_height + move_scale;
-			rec_x2 = x;
-			rec_y2 = y;
-		}
-		else
-		{
-			x = cal_rectangle_upper_left_x(destXLoc);
-			y = cal_rectangle_upper_left_y(destYLoc);
-		}*/
 	}
 
 	//-------------- attack sub-functions -----------//
