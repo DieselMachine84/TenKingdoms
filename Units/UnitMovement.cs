@@ -4,31 +4,27 @@ namespace TenKingdoms;
 
 public partial class Unit
 {
-	public void MoveTo(int destX, int destY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
+	public void MoveTo(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
 		//---------- reset way point array since new action is assigned --------//
 		if (wayPoints.Count > 0)
 		{
 			World.GetLocXAndLocY(wayPoints[0], out var locX, out var locY);
-			if (locX != destX || locY != destY)
+			if (locX != destLocX || locY != destLocY)
 				ResetWayPoints();
 		}
+
+		if (is_unit_dead())
+			return;
 
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
-		Location loc = World.get_loc(curXLoc, curYLoc);
-		Location destLoc = World.get_loc(destX, destY);
-		int destXLoc = destX;
-		int destYLoc = destY;
+		Location curLocation = World.get_loc(next_x_loc(), next_y_loc());
+		Location destLocation = World.get_loc(destLocX, destLocY);
 
-		if (loc.region_id != destLoc.region_id && mobile_type != UnitConstants.UNIT_AIR) // different territory
-			DifferentTerritoryDestination(ref destXLoc, ref destYLoc);
-
-		if (is_unit_dead())
-			return;
+		if (curLocation.region_id != destLocation.region_id && mobile_type != UnitConstants.UNIT_AIR) // different territory
+			DifferentTerritoryDestination(ref destLocX, ref destLocY);
 
 		//-----------------------------------------------------------------------------------//
 		// The codes here is used to check for equal action in movement.
@@ -36,7 +32,7 @@ public partial class Unit
 		// mainly checked by action_mode2. If previous action is ACTION_MOVE, action_mode2,
 		// action_para2, action_x_loc2 and action_x_loc2 need to be kept for this checking.
 		//
-		// If calling from UnitArray.move_to(), action_mode is set to ACTION_MOVE, action_para
+		// If calling from UnitArray.MoveTo(), action_mode is set to ACTION_MOVE, action_para
 		// is set to 0 while action_x_loc and action_y_loc are kept as original value for checking.
 		// Meanwhile, action_mode2, action_para2, action_x_loc2 and action_y_loc2 are kept if
 		// the condition is fulfilled (action_mode2==ACTION_MOVE)
@@ -44,7 +40,7 @@ public partial class Unit
 		if (action_mode2 == UnitConstants.ACTION_MOVE && action_mode == UnitConstants.ACTION_MOVE)
 		{
 			//------ previous action is ACTION_MOVE -------//
-			if (action_x_loc2 == destXLoc && action_y_loc2 == destYLoc)
+			if (action_x_loc2 == destLocX && action_y_loc2 == destLocY)
 			{
 				//-------- equal order --------//
 				action_x_loc = action_x_loc2;
@@ -85,7 +81,7 @@ public partial class Unit
 		action_mode2 = UnitConstants.ACTION_MOVE;
 		action_para2 = 0;
 
-		Search(destXLoc, destYLoc, preserveAction, searchMode, miscNo, numOfPath);
+		Search(destLocX, destLocY, preserveAction, searchMode, miscNo, numOfPath);
 		move_action_call_flag = false;
 
 		//----------------------------------------------------------------//
@@ -330,8 +326,8 @@ public partial class Unit
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destXLoc : destXLoc - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
+		int destX = Math.Max(0, (width > 1) ? destXLoc : destXLoc - width + 1);
+		int destY = Math.Max(0, (height > 1) ? destYLoc : destYLoc - height + 1);
 
 		stop();
 		SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
@@ -345,15 +341,14 @@ public partial class Unit
 		action_y_loc = action_y_loc2 = move_to_y_loc;
 	}
 	
-	private int SetMoveToSurround(int buildXLoc, int buildYLoc, int width, int height, int buildingType,
+	private int SetMoveToSurround(int buildLocX, int buildLocY, int width, int height, int buildingType,
 		int miscNo = 0, int readyDist = 0, int curProcessUnitNum = 1)
 	{
 		//--------------------------------------------------------------//
 		// calculate the distance from the object
 		//--------------------------------------------------------------//
-		int found = 0, foundAgain = 0;
 		// 0 for inside, 1 for surrounding, >1 for the rest
-		int distance = cal_distance(buildXLoc, buildYLoc, width, height);
+		int distance = cal_distance(buildLocX, buildLocY, width, height);
 
 		//--------------------------------------------------------------//
 		// inside the building
@@ -375,11 +370,11 @@ public partial class Unit
 			// part 1 using the firm_type and firm_id to find a shortest path.
 			// 
 			// part 2
-			//	if the width and height is the actual width and height of the
-			// firm, the unit move to the surrounding of the firm.
+			// if the width and height is the actual width and height of the
+			// firm, the unit moves to the surrounding of the firm.
 			//
 			// if the width and height > the actual width and height of the
-			// firm, the unit move to a location far away from the surrounding
+			// firm, the unit moves to a location far away from the surrounding
 			// of the firm.
 			//--------------------------------------------------------------//
 
@@ -387,51 +382,42 @@ public partial class Unit
 			// part 1
 			//====================================================================//
 
-			Location loc = World.get_loc(buildXLoc, buildYLoc);
-			Firm firm = null;
-			Town targetTown = null;
+			Location location = World.get_loc(buildLocX, buildLocY);
 			int searchResult = 0;
 
 			switch (buildingType)
 			{
 				case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
-					firm = FirmArray[loc.firm_recno()];
-					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, firm.firm_id,
-						curProcessUnitNum);
+					Firm targetFirm = FirmArray[location.firm_recno()];
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.firm_id, curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_FIRM_BUILD: // (build firm) no firm on the location
-					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
-					targetTown = TownArray[loc.town_recno()];
-					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN,
-						targetTown.TownId, curProcessUnitNum);
+					Town targetTown = TownArray[location.town_recno()];
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, targetTown.TownId, curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_SETTLE: // (settle, first unit) no town on the location
 					//---------------------------------------------------------------------//
 					// the record number sent to the searching algorithm is used to determine
-					// the width and the height of the building.  However, the standard
+					// the width and the height of the building. However, the standard
 					// dimension for settling is used and the building built is a type of
-					// town.  Thus, passing -1 as the recno. to show that "settle" is
-					// processed
+					// town. Thus, passing -1 as the miscNo to show that "settle" is processed
 					//---------------------------------------------------------------------//
-					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_VEHICLE:
-					searchResult = Search(buildXLoc, buildYLoc, 1, SeekPath.SEARCH_MODE_TO_VEHICLE,
-						World.get_loc(buildXLoc, buildYLoc).cargo_recno);
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.cargo_recno);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
-					searchResult = Search(buildXLoc, buildYLoc, 1,
+					searchResult = Search(buildLocX, buildLocY, 1,
 						miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
-					break;
-
-				default:
 					break;
 			}
 
@@ -441,8 +427,8 @@ public partial class Unit
 			//====================================================================//
 			// part 2
 			//====================================================================//
-			return PathNodes.Count > 0 ? EditPathToSurround(buildXLoc, buildYLoc,
-					buildXLoc + width - 1, buildYLoc + height - 1, readyDist) : 0;
+			return PathNodes.Count > 0 ? EditPathToSurround(buildLocX, buildLocY,
+					buildLocX + width - 1, buildLocY + height - 1, readyDist) : 0;
 		}
 		else // in the surrounding, no need to move
 		{
@@ -455,7 +441,7 @@ public partial class Unit
 				go_x = cur_x;
 				go_y = cur_y;
 				set_idle();
-				set_dir(move_to_x_loc, move_to_y_loc, buildXLoc + width / 2, buildYLoc + height / 2);
+				set_dir(move_to_x_loc, move_to_y_loc, buildLocX + width / 2, buildLocY + height / 2);
 			}
 
 			return 1;
@@ -638,7 +624,7 @@ public partial class Unit
 		sprite_move(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
 	}
 
-	protected void TerminateMove()
+	private void TerminateMove()
 	{
 		go_x = next_x;
 		go_y = next_y;
@@ -888,6 +874,64 @@ public partial class Unit
 		return found;
 	}
 
+	private int TryMoveToRangeAttack(Unit targetUnit)
+	{
+		int curXLoc = next_x_loc();
+		int curYLoc = next_y_loc();
+		int targetXLoc = targetUnit.next_x_loc();
+		int targetYLoc = targetUnit.next_y_loc();
+
+		if (World.get_loc(curXLoc, curYLoc).region_id == World.get_loc(targetXLoc, targetYLoc).region_id)
+		{
+			//------------ for same region id, search now ---------------//
+			if (Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
+				return 1;
+			else // search failure,
+			{
+				stop2(UnitConstants.KEEP_DEFENSE_MODE);
+				return 0;
+			}
+		}
+		else
+		{
+			//--------------- different territory ------------------//
+			int targetWidth = targetUnit.sprite_info.loc_width;
+			int targetHeight = targetUnit.sprite_info.loc_height;
+			int maxRange = max_attack_range();
+
+			if (possible_place_for_range_attack(targetXLoc, targetYLoc, targetWidth, targetHeight, maxRange))
+			{
+				//---------------------------------------------------------------------------------//
+				// space is found, attack target now
+				//---------------------------------------------------------------------------------//
+				if (MoveToRangeAttack(targetXLoc, targetYLoc, targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE, maxRange) != 0)
+					return 1;
+				else
+				{
+					stop2(UnitConstants.KEEP_DEFENSE_MODE);
+					return 0;
+				}
+
+				return 1;
+			}
+			else
+			{
+				//---------------------------------------------------------------------------------//
+				// unable to find location to attack the target, stop or move to the target
+				//---------------------------------------------------------------------------------//
+				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+				    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+					MoveTo(targetXLoc, targetYLoc, 1); // abort attacking, just call move_to() instead
+				else
+					stop2(UnitConstants.KEEP_DEFENSE_MODE);
+				return 0;
+			}
+		}
+
+		return 0;
+	}
+	
 	public void DifferentTerritoryDestination(ref int destX, ref int destY)
 	{
 		int curXLoc = next_x_loc();

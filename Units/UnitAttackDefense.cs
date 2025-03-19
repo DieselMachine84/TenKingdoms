@@ -2076,7 +2076,7 @@ public partial class Unit
 					return;
 			}
 
-			if (move_try_to_range_attack(targetUnit) != 0)
+			if (TryMoveToRangeAttack(targetUnit) != 0)
 			{
 				//-----------------------------------------------------------------------//
 				// reset attack parameters
@@ -2130,7 +2130,7 @@ public partial class Unit
 						return;
 					}
 
-					if (move_try_to_range_attack(targetUnit) == 1)
+					if (TryMoveToRangeAttack(targetUnit) == 1)
 					{
 						//range_attack_x_loc = range_attack_y_loc = -1;
 						choose_best_attack_mode(attackDistance, targetUnit.mobile_type);
@@ -2180,7 +2180,7 @@ public partial class Unit
 				{
 					//------ no suitable location to attack target by bullet, move to target --------//
 					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
-						if (move_try_to_range_attack(targetUnit) == 0)
+						if (TryMoveToRangeAttack(targetUnit) == 0)
 							return; // can't reach a location to attack target
 				}
 			}
@@ -2263,7 +2263,7 @@ public partial class Unit
 				{
 					//------- no suitable location, move to target ---------//
 					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
-						if (move_try_to_range_attack(targetUnit) == 0)
+						if (TryMoveToRangeAttack(targetUnit) == 0)
 							return false; // can't reach a location to attack target
 
 					return false;
@@ -2386,65 +2386,6 @@ public partial class Unit
 			attack_dir = targetDir;
 			set_dir(targetDir);
 		}
-	}
-
-	private int move_try_to_range_attack(Unit targetUnit)
-	{
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
-
-		if (World.get_loc(curXLoc, curYLoc).region_id == World.get_loc(targetXLoc, targetYLoc).region_id)
-		{
-			//------------ for same region id, search now ---------------//
-			if (Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
-				return 1;
-			else // search failure,
-			{
-				stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				return 0;
-			}
-		}
-		else
-		{
-			//--------------- different territory ------------------//
-			int targetWidth = targetUnit.sprite_info.loc_width;
-			int targetHeight = targetUnit.sprite_info.loc_height;
-			int maxRange = max_attack_range();
-
-			if (possible_place_for_range_attack(targetXLoc, targetYLoc, targetWidth, targetHeight, maxRange))
-			{
-				//---------------------------------------------------------------------------------//
-				// space is found, attack target now
-				//---------------------------------------------------------------------------------//
-				if (MoveToRangeAttack(targetXLoc, targetYLoc,
-					    targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE, maxRange) != 0)
-					return 1;
-				else
-				{
-					stop2(UnitConstants.KEEP_DEFENSE_MODE);
-					return 0;
-				}
-
-				return 1;
-			}
-			else
-			{
-				//---------------------------------------------------------------------------------//
-				// unable to find location to attack the target, stop or move to the target
-				//---------------------------------------------------------------------------------//
-				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-					MoveTo(targetXLoc, targetYLoc, 1); // abort attacking, just call move_to() instead
-				else
-					stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				return 0;
-			}
-		}
-
-		return 0;
 	}
 
 	private bool can_attack_different_target_type()
