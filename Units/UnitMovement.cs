@@ -2040,9 +2040,6 @@ public partial class Unit
 		PathNodes.AddRange(SeekPath.GetResult(out _pathNodeDistance));
 		SeekPath.SetSubMode(); // reset sub_mode searching
 
-		if (seekResult == SeekPath.PATH_IMPOSSIBLE)
-			ResetPath();
-
 		//-----------------------------------------------------------------------//
 		// update ignore_power_nation
 		//-----------------------------------------------------------------------//

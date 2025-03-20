@@ -25,7 +25,6 @@ public class SeekPath
 	public const int SEARCH_MODE_ATTACK_WALL_BY_RANGE = 14;
 	public const int SEARCH_MODE_TO_LAND_FOR_SHIP = 15;
 	public const int SEARCH_MODE_LAST = 16;
-	public const int MAX_SEARCH_MODE_TYPE = SEARCH_MODE_LAST - 1;
 
 	public const int SEARCH_SUB_MODE_NORMAL = 0;
 	public const int SEARCH_SUB_MODE_PASSABLE = 1;
@@ -436,8 +435,10 @@ public class SeekPath
 		oldChangedNodesX.Add(sx);
 		oldChangedNodesY.Add(sy);
 
+		int loopCount = 0;
 		while (oldChangedNodesX.Count > 0)
 		{
+			loopCount++;
 			newChangedNodesX.Clear();
 			newChangedNodesY.Clear();
 			for (int changedNodesIndex = 0; changedNodesIndex < oldChangedNodesX.Count; changedNodesIndex++)
@@ -454,9 +455,7 @@ public class SeekPath
 						int nearY = y + j;
 						if (nearX == x && nearY == y)
 							continue;
-						if (nearX < 0 || nearX >= GameConstants.MapSize)
-							continue;
-						if (nearY < 0 || nearY >= GameConstants.MapSize)
+						if (nearX < 0 || nearX >= GameConstants.MapSize || nearY < 0 || nearY >= GameConstants.MapSize)
 							continue;
 
 						int nearIndex = nearY * GameConstants.MapSize + nearX;
@@ -490,6 +489,9 @@ public class SeekPath
 					}
 				}
 			}
+			
+			if (loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 && CheckTargetInaccessable(loopCount / 2))
+				break;
 
 			oldChangedNodesX.Clear();
 			oldChangedNodesX.AddRange(newChangedNodesX);
@@ -499,6 +501,71 @@ public class SeekPath
 
 		PathStatus = PATH_IMPOSSIBLE;
 		return PathStatus;
+	}
+
+	private bool CheckTargetInaccessable(int size)
+	{
+		if (size % 2 == 0)
+			size++;
+		int[,] matrix = new int[size, size];
+		int targetLocXIndex = (size - 1) / 2;
+		int targetLocYIndex = (size - 1) / 2;
+		matrix[targetLocXIndex, targetLocYIndex] = 1;
+
+		bool hasChanges = true;
+		while (hasChanges)
+		{
+			hasChanges = false;
+			for (int indexX = 0; indexX < size; indexX++)
+			{
+				for (int indexY = 0; indexY < size; indexY++)
+				{
+					if (matrix[indexX, indexY] == 1)
+					{
+						for (int i = -1; i <= 1; i++)
+						{
+							for (int j = -1; j <= 1; j++)
+							{
+								int indexNearX = indexX + i;
+								int indexNearY = indexY + j;
+								if (indexNearX < 0 || indexNearX >= size || indexNearY < 0 || indexNearY >= size ||
+								    (indexNearX == indexX && indexNearY == indexY))
+									continue;
+
+								int nearLocX = _finalDestX + (indexNearX - targetLocXIndex);
+								int nearLocY = _finalDestY + (indexNearY - targetLocYIndex);
+								if (nearLocX < 0 || nearLocX >= GameConstants.MapSize || nearLocY < 0 || nearLocY >= GameConstants.MapSize)
+									continue;
+
+								if (matrix[indexNearX, indexNearY] == -1)
+									continue;
+
+								if (matrix[indexNearX, indexNearY] == 0)
+								{
+									if (CanMoveTo(nearLocX, nearLocY))
+									{
+										matrix[indexNearX, indexNearY] = 1;
+										hasChanges = true;
+									}
+									else
+									{
+										matrix[indexNearX, indexNearY] = -1;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < size; i++)
+		{
+			if (matrix[0, i] == 1 || matrix[size - 1, i] == 1 || matrix[i, 0] == 1 || matrix[i, size - 1] == 1)
+				return false;
+		}
+
+		return true;
 	}
 
 	public List<int> GetResult(out int pathDist)
@@ -518,31 +585,38 @@ public class SeekPath
 
 			case PATH_IMPOSSIBLE:
 				int regionSize = 0;
+				int minDistance = Int32.MaxValue;
+
+				void UpdateFunc(int x, int y)
+				{
+					if (x < 0 || x >= GameConstants.MapSize || y < 0 || y >= GameConstants.MapSize) return;
+
+					int currentIndex = y * GameConstants.MapSize + x;
+					if (_nodeMatrix[currentIndex] > 0 && _nodeMatrix[currentIndex] < minDistance)
+					{
+						minDistance = _nodeMatrix[currentIndex];
+						resultIndex = currentIndex;
+						resultX = x;
+						resultY = y;
+					}
+				}
+
 				while (true)
 				{
 					regionSize++;
-					int minDistance = GameConstants.MapSize * GameConstants.MapSize;
-					//TODO move bounds
-					//TODO scan only borders
-					for (int x = Math.Max(_finalDestX - regionSize, 0); x < Math.Min(_finalDestX + regionSize, GameConstants.MapSize - 1); x++)
+					for (int x = _finalDestX - regionSize; x <= _finalDestX + regionSize; x++)
 					{
-						for (int y = Math.Max(_finalDestY - regionSize, 0); y < Math.Min(_finalDestY + regionSize, GameConstants.MapSize - 1); y++)
-						{
-							int currentIndex = y * GameConstants.MapSize + x;
-							if (_nodeMatrix[currentIndex] > 0)
-							{
-								if (_nodeMatrix[currentIndex] < minDistance)
-								{
-									minDistance = _nodeMatrix[currentIndex];
-									resultIndex = currentIndex;
-									resultX = x;
-									resultY = y;
-								}
-							}
-						}
+						UpdateFunc(x, _finalDestY - regionSize);
+						UpdateFunc(x, _finalDestY + regionSize);
 					}
 
-					if (resultIndex >= 0 || regionSize > GameConstants.MapSize)
+					for (int y = _finalDestY - regionSize; y <= _finalDestY + regionSize; y++)
+					{
+						UpdateFunc(_finalDestX - regionSize, y);
+						UpdateFunc(_finalDestX + regionSize, y);
+					}
+
+					if (resultIndex >= 0 || regionSize >= GameConstants.MapSize)
 						break;
 				}
 
@@ -550,16 +624,15 @@ public class SeekPath
 		}
 
 		if (resultIndex == -1)
-			return null;
+			return new List<int>();
 
 		int pathX = resultX;
 		int pathY = resultY;
 		int pathValue = _nodeMatrix[resultIndex];
+		pathDist = pathValue / 2;
 
 		List<int> reversedPath = new List<int>(pathValue);
 		reversedPath.Add(resultIndex);
-
-		pathDist = pathValue / 2;
 		while (true)
 		{
 			int pathXCopy = pathX;
