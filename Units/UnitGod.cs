@@ -147,7 +147,7 @@ public class UnitGod : Unit
 
 	private void cast_on_loc(int castXLoc, int castYLoc)
 	{
-		Location location = World.get_loc(castXLoc, castYLoc);
+		Location location = World.GetLoc(castXLoc, castYLoc);
 
 		//--- if there is any unit on the location ---//
 
@@ -805,7 +805,7 @@ public class UnitGod : Unit
 		{
 			for (xLoc = leftLocX; xLoc <= rightLocX; ++xLoc)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 				int unitRecno;
 				Unit unit;
 				if (location.HasUnit(UnitConstants.UNIT_LAND)

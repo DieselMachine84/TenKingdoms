@@ -134,7 +134,7 @@ public partial class Renderer
             {
                 for (int locX = 0; locX < GameConstants.MapSize; locX++)
                 {
-                    Location location = World.get_loc(locX, locY);
+                    Location location = World.GetLoc(locX, locY);
                     byte color = Colors.UNEXPLORED_COLOR;
                     if (location.IsExplored())
                     {

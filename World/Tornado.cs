@@ -61,7 +61,7 @@ public class Tornado : Sprite
         if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
             return;
 
-        Location location = World.get_loc(damageXLoc, damageYLoc);
+        Location location = World.GetLoc(damageXLoc, damageYLoc);
 
         Unit targetUnit;
         if (location.HasUnit(UnitConstants.UNIT_AIR))
@@ -102,7 +102,7 @@ public class Tornado : Sprite
         if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
             return;
 
-        Location location = World.get_loc(damageXLoc, damageYLoc);
+        Location location = World.GetLoc(damageXLoc, damageYLoc);
 
         if (location.IsFirm())
         {
@@ -133,7 +133,7 @@ public class Tornado : Sprite
         if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
             return;
 
-        Location location = World.get_loc(damageXLoc, damageYLoc);
+        Location location = World.GetLoc(damageXLoc, damageYLoc);
         if (location.IsPlant())
         {
             location.RemovePlant();
@@ -148,7 +148,7 @@ public class Tornado : Sprite
         if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
             return;
 
-        Location location = World.get_loc(damageXLoc, damageYLoc);
+        Location location = World.GetLoc(damageXLoc, damageYLoc);
         if (location.FireStrength() > 0)
         {
             location.SetFireStrength(1);

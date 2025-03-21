@@ -35,7 +35,7 @@ public class UnitExpCart : Unit
 			{
 				for (int x = x1; x <= x2; ++x)
 				{
-					Location location = World.get_loc(x, y);
+					Location location = World.GetLoc(x, y);
 					if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
 						Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
@@ -72,7 +72,7 @@ public class UnitExpCart : Unit
 				{
 					for (int x = x1; x <= x2; ++x)
 					{
-						Location location = World.get_loc(x, y);
+						Location location = World.GetLoc(x, y);
 						if (location.HasUnit(UnitConstants.UNIT_LAND))
 						{
 							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
@@ -105,7 +105,7 @@ public class UnitExpCart : Unit
 				{
 					for (int x = x1; x <= x2; ++x)
 					{
-						Location location = World.get_loc(x, y);
+						Location location = World.GetLoc(x, y);
 						int fl = (Math.Abs(x - next_x_loc()) + Math.Abs(y - next_y_loc())) * -30 + 80;
 						if (location.CanSetFire() && location.FireStrength() < fl)
 							location.SetFireStrength(fl);

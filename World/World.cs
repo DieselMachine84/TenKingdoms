@@ -50,7 +50,7 @@ public class World
 		ClearLocation();
 	}
 	
-	public Location get_loc(int locX, int locY)
+	public Location GetLoc(int locX, int locY)
 	{
 		return loc_matrix[GetMatrixIndex(locX, locY)];
 	}
@@ -115,17 +115,17 @@ public class World
 	public int get_unit_recno(int xLoc, int yLoc, int mobileType)
 	{
 		if (mobileType == UnitConstants.UNIT_AIR)
-			return get_loc(xLoc, yLoc).AirCargoId;
+			return GetLoc(xLoc, yLoc).AirCargoId;
 		else
-			return get_loc(xLoc, yLoc).CargoId;
+			return GetLoc(xLoc, yLoc).CargoId;
 	}
 
 	public void set_unit_recno(int xLoc, int yLoc, int mobileType, int newCargoRecno)
 	{
 		if (mobileType == UnitConstants.UNIT_AIR)
-			get_loc(xLoc, yLoc).AirCargoId = newCargoRecno;
+			GetLoc(xLoc, yLoc).AirCargoId = newCargoRecno;
 		else
-			get_loc(xLoc, yLoc).CargoId = newCargoRecno;
+			GetLoc(xLoc, yLoc).CargoId = newCargoRecno;
 	}
 
 	public int distance_rating(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
@@ -166,7 +166,7 @@ public class World
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = get_loc(xLoc, yLoc);
+				Location location = GetLoc(xLoc, yLoc);
 				if (!location.IsExplored())
 				{
 					location.ExploredOn();
@@ -321,7 +321,7 @@ public class World
 			{
 				for (int xLoc = left; xLoc <= right; xLoc++)
 				{
-					Location location = get_loc(xLoc, yLoc);
+					Location location = GetLoc(xLoc, yLoc);
 					location.SetVisited();
 				}
 			}
@@ -360,7 +360,7 @@ public class World
 		{
 			for (int x = left; x <= right; ++x)
 			{
-				get_loc(x, yLoc1).SetVisited(visitLevel);
+				GetLoc(x, yLoc1).SetVisited(visitLevel);
 			}
 		}
 
@@ -369,7 +369,7 @@ public class World
 		{
 			for (int x = left; x <= right; ++x)
 			{
-				get_loc(x, yLoc2).SetVisited(visitLevel);
+				GetLoc(x, yLoc2).SetVisited(visitLevel);
 			}
 		}
 
@@ -378,7 +378,7 @@ public class World
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				get_loc(xLoc1, y).SetVisited(visitLevel);
+				GetLoc(xLoc1, y).SetVisited(visitLevel);
 			}
 		}
 
@@ -387,7 +387,7 @@ public class World
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				get_loc(xLoc2, y).SetVisited(visitLevel);
+				GetLoc(xLoc2, y).SetVisited(visitLevel);
 			}
 		}
 	}
@@ -417,7 +417,7 @@ public class World
 				{
 					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 					{
-						Location location = get_loc(xLoc, yLoc);
+						Location location = GetLoc(xLoc, yLoc);
 						if (!location.CanBuildFirm(teraMask) && (!location.HasUnit(UnitConstants.UNIT_LAND) ||
 						                                           location.UnitId(UnitConstants.UNIT_LAND) !=
 						                                           unitRecno))
@@ -449,7 +449,7 @@ public class World
 				{
 					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 					{
-						Location location = get_loc(xLoc, yLoc);
+						Location location = GetLoc(xLoc, yLoc);
 						// don't allow building any buildings other than mines on a location with a site
 						if (location.HasSite())
 							return 0;
@@ -487,7 +487,7 @@ public class World
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = get_loc(xLoc, yLoc);
+				Location location = GetLoc(xLoc, yLoc);
 				// allow the building unit to stand in the area
 				if (!location.CanBuildTown() &&
 				    (!location.HasUnit(UnitConstants.UNIT_LAND) ||
@@ -504,9 +504,9 @@ public class World
 		bool buildFlag = false)
 	{
 		if (regionId == 0)
-			regionId = get_loc(xLoc1, yLoc1).RegionId;
+			regionId = GetLoc(xLoc1, yLoc1).RegionId;
 
-		bool isPlateau = get_loc(xLoc1, yLoc1).IsPlateau();
+		bool isPlateau = GetLoc(xLoc1, yLoc1).IsPlateau();
 
 		//-----------------------------------------------------------//
 		// xLoc, yLoc is the adjusted upper left corner location of
@@ -541,7 +541,7 @@ public class World
 			{
 				if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
 				{
-					Location location = get_loc(x, y);
+					Location location = GetLoc(x, y);
 
 					if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 					    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
@@ -571,7 +571,7 @@ public class World
 				{
 					if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
 					{
-						Location location = get_loc(x, y);
+						Location location = GetLoc(x, y);
 
 						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
@@ -610,7 +610,7 @@ public class World
 					{
 						if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
 						{
-							Location location = get_loc(x, y);
+							Location location = GetLoc(x, y);
 
 							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
@@ -635,7 +635,7 @@ public class World
 					{
 						if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
 						{
-							Location location = get_loc(x, y);
+							Location location = GetLoc(x, y);
 
 							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
@@ -667,7 +667,7 @@ public class World
 				{
 					if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
 					{
-						Location location = get_loc(x, y);
+						Location location = GetLoc(x, y);
 
 						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
@@ -734,7 +734,7 @@ public class World
 		{
 			for (int x = xLoc1; x <= xLoc2; x++)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				// if build a firm/town, there must not be any sites in the area
 				if (!location.CanMove(mobileType) || (buildFlag && (location.IsPowerOff() || location.HasSite())))
 				{
@@ -770,7 +770,7 @@ public class World
 			{
 				for (int x = xLoc + spaceLocWidth - 1; x >= xLoc; x--)
 				{
-					location = get_loc(x, y);
+					location = GetLoc(x, y);
 					if ((buildSite ? !location.CanBuildSite(teraMask) : !location.CanBuildFirm(teraMask)) ||
 					    location.IsPowerOff())
 					{
@@ -788,7 +788,7 @@ public class World
 
 			//------ check region id. ------------//
 
-			location = get_loc(xLoc, yLoc);
+			location = GetLoc(xLoc, yLoc);
 
 			if (regionId != 0 && location.RegionId != regionId)
 				continue;
@@ -917,7 +917,7 @@ public class World
 	{
 		//------- reset power_nation_recno first ------//
 
-		bool plateauResult = get_loc((xLoc1 + xLoc2) / 2, (yLoc1 + yLoc2) / 2).IsPlateau();
+		bool plateauResult = GetLoc((xLoc1 + xLoc2) / 2, (yLoc1 + yLoc2) / 2).IsPlateau();
 
 		xLoc1 = Math.Max(0, xLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
 		yLoc1 = Math.Max(0, yLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
@@ -932,7 +932,7 @@ public class World
 
 			for (int xLoc = xLoc1 + t; xLoc <= xLoc2 - t; xLoc++)
 			{
-				Location location = get_loc(xLoc, yLoc);
+				Location location = GetLoc(xLoc, yLoc);
 
 				if (location.Sailable()) //if(!locPtr.walkable())
 					continue;
@@ -984,7 +984,7 @@ public class World
 
 			for (int xLoc = xLoc1 + t; xLoc <= xLoc2 - t; xLoc++)
 			{
-				Location location = get_loc(xLoc, yLoc);
+				Location location = GetLoc(xLoc, yLoc);
 
 				if (location.PowerNationId == nationRecno)
 				{
@@ -1065,7 +1065,7 @@ public class World
 			{
 				for (int x = 0; x < GameConstants.MapSize; ++x)
 				{
-					get_loc(x, y).DecVisibility();
+					GetLoc(x, y).DecVisibility();
 				}
 			}
 		}
@@ -1129,7 +1129,7 @@ public class World
 		{
 			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				int bitmapId;
 				int basePlantId;
 
@@ -1162,7 +1162,7 @@ public class World
 		{
 			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				int bitmapId, basePlantId, plantGrade;
 				// is a plant and grade > 3
 				if (location.IsPlant() && (basePlantId = PlantRes.plant_recno(bitmapId = location.PlantId())) != 0 &&
@@ -1186,35 +1186,35 @@ public class World
 							{
 								case 0: // north square
 									if (y > 0)
-										newl = get_loc(x, y - 1);
+										newl = GetLoc(x, y - 1);
 									break;
 								case 1: // east square
 									if (x < GameConstants.MapSize - 1)
-										newl = get_loc(x + 1, y);
+										newl = GetLoc(x + 1, y);
 									break;
 								case 2: // south square
 									if (y < GameConstants.MapSize - 1)
-										newl = get_loc(x, y + 1);
+										newl = GetLoc(x, y + 1);
 									break;
 								case 3: // west square
 									if (x > 0)
-										newl = get_loc(x - 1, y);
+										newl = GetLoc(x - 1, y);
 									break;
 								case 4: // north west square
 									if (y > 0 && x > 0)
-										newl = get_loc(x - 1, y - 1);
+										newl = GetLoc(x - 1, y - 1);
 									break;
 								case 5: // north east square
 									if (y > 0 && x < GameConstants.MapSize - 1)
-										newl = get_loc(x + 1, y - 1);
+										newl = GetLoc(x + 1, y - 1);
 									break;
 								case 6: // south east square
 									if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
-										newl = get_loc(x + 1, y + 1);
+										newl = GetLoc(x + 1, y + 1);
 									break;
 								case 7: // south west square
 									if (y < GameConstants.MapSize - 1 && x > 0)
-										newl = get_loc(x - 1, y + 1);
+										newl = GetLoc(x - 1, y + 1);
 									break;
 							}
 
@@ -1252,7 +1252,7 @@ public class World
 		{
 			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				if (location.IsPlant())
 				{
 					int neighbour = 0;
@@ -1262,7 +1262,7 @@ public class World
 					if (x > 0)
 					{
 						totalSpace++;
-						if (get_loc(x - 1, y).IsPlant())
+						if (GetLoc(x - 1, y).IsPlant())
 							neighbour++;
 					}
 
@@ -1270,13 +1270,13 @@ public class World
 					if (x < GameConstants.MapSize - 1)
 					{
 						totalSpace++;
-						if (get_loc(x + 1, y).IsPlant())
+						if (GetLoc(x + 1, y).IsPlant())
 							neighbour++;
 					}
 
 					if (y > 0)
 					{
-						location = get_loc(x, y - 1);
+						location = GetLoc(x, y - 1);
 
 						// north square
 						totalSpace++;
@@ -1287,7 +1287,7 @@ public class World
 						if (x > 0)
 						{
 							totalSpace++;
-							if (get_loc(x - 1, y).IsPlant())
+							if (GetLoc(x - 1, y).IsPlant())
 								neighbour++;
 						}
 
@@ -1295,14 +1295,14 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (get_loc(x + 1, y).IsPlant())
+							if (GetLoc(x + 1, y).IsPlant())
 								neighbour++;
 						}
 					}
 
 					if (y < GameConstants.MapSize - 1)
 					{
-						location = get_loc(x, y + 1);
+						location = GetLoc(x, y + 1);
 
 						// south square
 						totalSpace++;
@@ -1313,7 +1313,7 @@ public class World
 						if (x > 0)
 						{
 							totalSpace++;
-							if (get_loc(x - 1, y).IsPlant())
+							if (GetLoc(x - 1, y).IsPlant())
 								neighbour++;
 						}
 
@@ -1321,7 +1321,7 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (get_loc(x + 1, y).IsPlant())
+							if (GetLoc(x + 1, y).IsPlant())
 								neighbour++;
 						}
 					}
@@ -1329,8 +1329,8 @@ public class World
 					// may remove plant if more than two third of the space is occupied
 					if (Misc.Random(totalSpace) + 2 * totalSpace / 3 <= neighbour)
 					{
-						location = get_loc(x, y);
-						get_loc(x, y).RemovePlant();
+						location = GetLoc(x, y);
+						GetLoc(x, y).RemovePlant();
 						if (location.Flammability() > 50)
 							location.SetFlammability(50);
 						plant_count--;
@@ -1362,7 +1362,7 @@ public class World
 		int y = 1 + Misc.Random(GameConstants.MapSize - 2);
 		int x = 1 + Misc.Random(GameConstants.MapSize - 2);
 
-		Location l = get_loc(x, y);
+		Location l = GetLoc(x, y);
 		bool build_flag = true;
 		int teraType = TerrainRes[l.TerrainId].average_type;
 
@@ -1371,7 +1371,7 @@ public class World
 		{
 			for (int x1 = x - 1; x1 <= x + 1; ++x1)
 			{
-				l = get_loc(x1, y1);
+				l = GetLoc(x1, y1);
 				if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
 					build_flag = false;
 			}
@@ -1390,7 +1390,7 @@ public class World
 						int plantBitmap = PlantRes.scan(climateZone, teraType, 0);
 						if (plantBitmap != 0)
 						{
-							l = get_loc(x, y);
+							l = GetLoc(x, y);
 							l.SetPlant(plantBitmap, rand_inner_x(), rand_inner_y());
 							l.SetFlammability(100);
 							plant_count++;
@@ -1421,7 +1421,7 @@ public class World
 			int y = 1 + Misc.Random(GameConstants.MapSize - 2);
 			int x = 1 + Misc.Random(GameConstants.MapSize - 2);
 
-			Location l = get_loc(x, y);
+			Location l = GetLoc(x, y);
 			bool build_flag = true;
 			int teraType = TerrainRes[l.TerrainId].average_type;
 
@@ -1430,7 +1430,7 @@ public class World
 			{
 				for (int x1 = x - 1; x1 <= x + 1; ++x1)
 				{
-					l = get_loc(x1, y1);
+					l = GetLoc(x1, y1);
 					if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
 						build_flag = false;
 				}
@@ -1467,7 +1467,7 @@ public class World
 			return;
 
 		//---------- if the space is empty put a plant on it ----------//
-		Location newl = get_loc(x, y);
+		Location newl = GetLoc(x, y);
 		int basePlantId = plantArray[Misc.Random(plantArray.Length)];
 		PlantInfo plantInfo = PlantRes[basePlantId];
 		int plantSize = Misc.Random(plantInfo.bitmap_count);
@@ -1565,7 +1565,7 @@ public class World
 		{
 			for (int x = 0; x < GameConstants.MapSize; x++)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				if (location.HasHill())
 				{
 					location.SetFlammability(-100);
@@ -1622,7 +1622,7 @@ public class World
 		{
 			for (int x = scan_fire_x; x < GameConstants.MapSize; x += SCAN_FIRE_DIST)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 
 				int fireValue = location.FireStrength();
 				int oldFireValue = fireValue;
@@ -1675,25 +1675,25 @@ public class World
 					{
 						Location sidePtr;
 						// spread of north square
-						if (y > 0 && (sidePtr = get_loc(x, y - 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (y > 0 && (sidePtr = GetLoc(x, y - 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
 							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windCos, 0));
 						}
 
 						// spread of south square
-						if (y < GameConstants.MapSize - 1 && (sidePtr = get_loc(x, y + 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (y < GameConstants.MapSize - 1 && (sidePtr = GetLoc(x, y + 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
 							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windCos, 0));
 						}
 
 						// spread of east square
-						if (x < GameConstants.MapSize - 1 && (sidePtr = get_loc(x + 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (x < GameConstants.MapSize - 1 && (sidePtr = GetLoc(x + 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
 							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windSin, 0));
 						}
 
 						// spread of west square
-						if (x > 0 && (sidePtr = get_loc(x - 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (x > 0 && (sidePtr = GetLoc(x - 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
 							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windSin, 0));
 						}
@@ -1775,7 +1775,7 @@ public class World
 
 	public void setup_fire(int x, int y, int fireStrength = 30)
 	{
-		Location location = get_loc(x, y);
+		Location location = GetLoc(x, y);
 		if (location.FireStrength() < fireStrength)
 		{
 			location.SetFireStrength(fireStrength);
@@ -1789,7 +1789,7 @@ public class World
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				if (location.IsWall())
 				{
 					location.AttackWall(Weather.quake_rate(x, y) / 2);
@@ -1892,7 +1892,7 @@ public class World
 				if (x < 0 || x >= GameConstants.MapSize)
 					continue;
 
-				Location location = get_loc(x, y);
+				Location location = GetLoc(x, y);
 				if (location.IsPlant())
 				{
 					// ---- add a fire on it ------//
@@ -1944,7 +1944,7 @@ public class World
 						News.NEWS_LOC_FIRM, firm.firm_recno, firm.hit_points <= 0.0 ? 1 : 0);
 
 				// ---- add a fire on it ------//
-				Location location = get_loc(firm.center_x, firm.center_y);
+				Location location = GetLoc(firm.center_x, firm.center_y);
 				if (location.CanSetFire() && location.FireStrength() < 5)
 					location.SetFireStrength(5);
 
@@ -1973,7 +1973,7 @@ public class World
 						News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//
-				Location location = get_loc(town.LocCenterX, town.LocCenterY);
+				Location location = GetLoc(town.LocCenterX, town.LocCenterY);
 				if (location.CanSetFire() && location.FireStrength() < 5)
 					location.SetFireStrength(5);
 

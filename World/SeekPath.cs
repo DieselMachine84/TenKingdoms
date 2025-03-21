@@ -86,7 +86,7 @@ public class SeekPath
 
 	private bool CanMoveTo(int locX, int locY)
 	{
-		Location location = Sys.Instance.World.get_loc(locX, locY);
+		Location location = Sys.Instance.World.GetLoc(locX, locY);
 		Unit unit;
 		int cargoId;
 		int powerNationId = location.PowerNationId;
@@ -329,7 +329,7 @@ public class SeekPath
 				_buildingY1 = dy;
 				if (miscNo != -1)
 				{
-					Location location = Sys.Instance.World.get_loc(dx, dy);
+					Location location = Sys.Instance.World.GetLoc(dx, dy);
 					Town targetTown = Sys.Instance.TownArray[location.TownId()];
 					_buildingX2 = targetTown.LocX2;
 					_buildingY2 = targetTown.LocY2;

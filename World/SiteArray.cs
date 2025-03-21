@@ -90,7 +90,7 @@ public class SiteArray : DynArray<Site>
 			{
 				if (site.SiteType == Site.SITE_SCROLL || site.SiteType == Site.SITE_GOLD_COIN)
 				{
-					Location location = World.get_loc(site.LocX, site.LocY);
+					Location location = World.GetLoc(site.LocX, site.LocY);
 
 					//---- if the unit is standing on a scroll site -----//
 
@@ -256,7 +256,7 @@ public class SiteArray : DynArray<Site>
 
 			//--- check if the location of this site has been explored ---//
 
-			if (!World.get_loc(site.LocX, site.LocY).IsExplored())
+			if (!World.GetLoc(site.LocX, site.LocY).IsExplored())
 				continue;
 
 			if (site.SiteType == siteType && !site.HasMine)

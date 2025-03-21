@@ -384,7 +384,7 @@ public class Town
 		{
 			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 
 				if (location.CargoId == 0) // skip the location where the settle unit is standing
 					location.SetTown(TownId);
@@ -415,7 +415,7 @@ public class Town
 		{
 			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).RemoveTown();
+				World.GetLoc(xLoc, yLoc).RemoveTown();
 			}
 		}
 
@@ -436,7 +436,7 @@ public class Town
 		{
 			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 
 				if (location.IsExplored() && NationArray.player_recno != 0)
 				{
@@ -2577,7 +2577,7 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(firm.center_x, firm.center_y).IsPlateau() != World.get_loc(LocCenterX, LocCenterY).IsPlateau())
+			if (World.GetLoc(firm.center_x, firm.center_y).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
 			{
 				continue;
 			}
@@ -2628,7 +2628,7 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.get_loc(LocCenterX, LocCenterY).IsPlateau())
+			if (World.GetLoc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
 			{
 				continue;
 			}
@@ -4884,7 +4884,7 @@ public class Town
 
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 				//--- if there is an enemy unit here ---// 
 
 				if (location.HasUnit(UnitConstants.UNIT_LAND))

@@ -90,7 +90,7 @@ public class UnitMonster : Unit
         int xLoc = cur_x_loc();
         int yLoc = cur_y_loc();
 
-        if (!World.get_loc(xLoc, yLoc).CanBuildSite())
+        if (!World.GetLoc(xLoc, yLoc).CanBuildSite())
         {
             int txLoc, tyLoc;
             bool found = false;
@@ -101,7 +101,7 @@ public class UnitMonster : Unit
             {
                 for (txLoc = Math.Max(xLoc - 1, 0); txLoc <= Math.Min(xLoc + 1, GameConstants.MapSize - 1); txLoc++)
                 {
-                    if (World.get_loc(txLoc, tyLoc).CanBuildSite())
+                    if (World.GetLoc(txLoc, tyLoc).CanBuildSite())
                     {
                         xLoc = txLoc;
                         yLoc = tyLoc;
@@ -164,7 +164,7 @@ public class UnitMonster : Unit
             yLoc = Math.Max(0, yLoc);
             yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-            Location location = World.get_loc(xLoc, yLoc);
+            Location location = World.GetLoc(xLoc, yLoc);
 
             if (location.RegionId != regionId)
                 continue;
@@ -268,7 +268,7 @@ public class UnitMonster : Unit
             yLoc = Math.Max(0, yLoc);
             yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-            Location location = World.get_loc(xLoc, yLoc);
+            Location location = World.GetLoc(xLoc, yLoc);
 
             if (!location.HasUnit(UnitConstants.UNIT_LAND))
                 continue;
@@ -325,7 +325,7 @@ public class UnitMonster : Unit
             yLoc = Math.Max(0, yLoc);
             yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-            Location location = World.get_loc(xLoc, yLoc);
+            Location location = World.GetLoc(xLoc, yLoc);
 
             //----- if there is a unit on the location ------//
 
@@ -373,7 +373,7 @@ public class UnitMonster : Unit
             yLoc = Math.Max(0, yLoc);
             yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-            Location location = World.get_loc(xLoc, yLoc);
+            Location location = World.GetLoc(xLoc, yLoc);
 
             if (location.CanBuildSite() && location.RegionId == regionId)
             {

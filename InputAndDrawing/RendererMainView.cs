@@ -18,7 +18,7 @@ public partial class Renderer
         {
             for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
-                Location location = World.get_loc(locX, locY);
+                Location location = World.GetLoc(locX, locY);
                 if (!location.IsExplored())
                     continue;
 
@@ -153,7 +153,7 @@ public partial class Renderer
         {
             for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
-                Location location = World.get_loc(locX, locY);
+                Location location = World.GetLoc(locX, locY);
                 if (location.IsExplored() && location.IsPlant())
                 {
                     PlantBitmap plantBitmap = PlantRes.get_bitmap(location.PlantId());

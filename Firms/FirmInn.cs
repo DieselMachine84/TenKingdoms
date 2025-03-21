@@ -215,7 +215,7 @@ public class FirmInn : Firm
 					j = yLoc2;
 				}
 
-				Location location = World.get_loc(i, j);
+				Location location = World.GetLoc(i, j);
 				if (!location.IsTown())
 					continue;
 

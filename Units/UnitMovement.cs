@@ -20,8 +20,8 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location curLocation = World.get_loc(next_x_loc(), next_y_loc());
-		Location destLocation = World.get_loc(destLocX, destLocY);
+		Location curLocation = World.GetLoc(next_x_loc(), next_y_loc());
+		Location destLocation = World.GetLoc(destLocX, destLocY);
 
 		if (curLocation.RegionId != destLocation.RegionId && mobile_type != UnitConstants.UNIT_AIR) // different territory
 			DifferentTerritoryDestination(ref destLocX, ref destLocY);
@@ -98,8 +98,8 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		Location loc = World.GetLoc(destXLoc, destYLoc);
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -158,12 +158,12 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.get_loc(destXLoc, destYLoc);
+		Location loc = World.GetLoc(destXLoc, destYLoc);
 		if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
 		{
 			Firm firm = FirmArray[loc.FirmId()];
 			FirmHarbor harbor = (FirmHarbor)firm;
-			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
+			if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
 			{
 				MoveTo(destXLoc, destYLoc);
 				return;
@@ -171,7 +171,7 @@ public partial class Unit
 		}
 		else
 		{
-			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+			if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 			{
 				MoveTo(destXLoc, destYLoc);
 				return;
@@ -230,8 +230,8 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		Location loc = World.GetLoc(destXLoc, destYLoc);
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -288,8 +288,8 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		Location loc = World.GetLoc(destXLoc, destYLoc);
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -382,7 +382,7 @@ public partial class Unit
 			// part 1
 			//====================================================================//
 
-			Location location = World.get_loc(buildLocX, buildLocY);
+			Location location = World.GetLoc(buildLocX, buildLocY);
 			int searchResult = 0;
 
 			switch (buildingType)
@@ -762,7 +762,7 @@ public partial class Unit
 		//---------------------------------------------------------------------------------//
 		// part 2, editing result path
 		//---------------------------------------------------------------------------------//
-		Location loc = World.get_loc(next_x_loc(), next_y_loc());
+		Location loc = World.GetLoc(next_x_loc(), next_y_loc());
 
 		int regionId = loc.RegionId; // the region_id this unit in
 
@@ -789,7 +789,7 @@ public partial class Unit
 		{
 			while (x != editNode2LocX || y != editNode2LocY)
 			{
-				loc = World.get_loc(x, y);
+				loc = World.GetLoc(x, y);
 				if (loc.RegionId == regionId)
 				{
 					found = i;
@@ -881,7 +881,7 @@ public partial class Unit
 		int targetXLoc = targetUnit.next_x_loc();
 		int targetYLoc = targetUnit.next_y_loc();
 
-		if (World.get_loc(curXLoc, curYLoc).RegionId == World.get_loc(targetXLoc, targetYLoc).RegionId)
+		if (World.GetLoc(curXLoc, curYLoc).RegionId == World.GetLoc(targetXLoc, targetYLoc).RegionId)
 		{
 			//------------ for same region id, search now ---------------//
 			if (Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
@@ -937,7 +937,7 @@ public partial class Unit
 		int curXLoc = next_x_loc();
 		int curYLoc = next_y_loc();
 
-		Location loc = World.get_loc(curXLoc, curYLoc);
+		Location loc = World.GetLoc(curXLoc, curYLoc);
 		int regionId = loc.RegionId;
 		int xStep = destX - curXLoc;
 		int yStep = destY - curYLoc;
@@ -956,7 +956,7 @@ public partial class Unit
 			int x = curXLoc + (i * xStep) / count;
 			int y = curYLoc + (i * yStep) / count;
 
-			loc = World.get_loc(x, y);
+			loc = World.GetLoc(x, y);
 			if (loc.RegionId == regionId)
 				sameTerr = i;
 		}
@@ -1079,7 +1079,7 @@ public partial class Unit
 					//----------------------------------------------------------------------//
 					if (Math.Abs(unit.next_x_loc() - unit.action_x_loc2) <= moveStep &&
 					    Math.Abs(unit.next_y_loc() - unit.action_y_loc2) <= moveStep &&
-					    TerrainRes[World.get_loc(unit.action_x_loc2, unit.action_y_loc2).TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					    TerrainRes[World.GetLoc(unit.action_x_loc2, unit.action_y_loc2).TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						if (action_mode2 == UnitConstants.ACTION_SHIP_TO_BEACH &&
 						    action_x_loc2 == unit.action_x_loc2 && action_y_loc2 == unit.action_y_loc2)
@@ -1275,7 +1275,7 @@ public partial class Unit
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			Location loc = World.get_loc(checkXLoc, checkYLoc);
+			Location loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (!loc.CanMove(unit.mobile_type))
 				continue;
 
@@ -1422,7 +1422,7 @@ public partial class Unit
 				nextX >>= InternalConstants.CellWidthShift;
 				nextY >>= InternalConstants.CellHeightShift;
 
-				loc = World.get_loc(nextX, nextY);
+				loc = World.GetLoc(nextX, nextY);
 				bool blocked = loc.HasUnit(mobile_type);
 
 				//---------------- the unit is also waiting ---------------//
@@ -1465,7 +1465,7 @@ public partial class Unit
 						{
 							//-------- store recno of next blocked unit ----------//
 							cycle_wait_unit_array[cycle_wait_unit_index++] = blockedUnit.sprite_recno;
-							loc = World.get_loc(nextX, nextY);
+							loc = World.GetLoc(nextX, nextY);
 							blockedUnit = UnitArray[loc.UnitId(mobile_type)];
 							unitSpriteInfo = blockedUnit.sprite_info;
 						}
@@ -1505,7 +1505,7 @@ public partial class Unit
 				//-----------------------------------------------------------------//
 				// codes used to speed up frame rate
 				//-----------------------------------------------------------------//
-				loc = World.get_loc(move_to_x_loc, move_to_y_loc);
+				loc = World.GetLoc(move_to_x_loc, move_to_y_loc);
 				if (!loc.CanMove(mobile_type) && action_mode2 != UnitConstants.ACTION_MOVE)
 					stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 				else
@@ -1531,7 +1531,7 @@ public partial class Unit
 
 		if (nextX != cur_x_loc() || nextY != cur_y_loc())
 		{
-			loc = World.get_loc(nextX, nextY);
+			loc = World.GetLoc(nextX, nextY);
 			blockedUnit = UnitArray[loc.UnitId(nextUnit.mobile_type)];
 		}
 		else
@@ -1581,7 +1581,7 @@ public partial class Unit
 		    action_para == unit.action_para && action_mode == unit.action_mode)
 		{
 			//------------- both attacks the same firm ------------//
-			Location loc = World.get_loc(action_x_loc, action_y_loc);
+			Location loc = World.GetLoc(action_x_loc, action_y_loc);
 			if (!loc.IsFirm())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since firm is deleted
 			else
@@ -1613,7 +1613,7 @@ public partial class Unit
 		    action_para == unit.action_para && action_mode == unit.action_mode)
 		{
 			//---------------- both attacks the same town ----------------------//
-			Location loc = World.get_loc(action_x_loc, action_y_loc);
+			Location loc = World.GetLoc(action_x_loc, action_y_loc);
 			if (!loc.IsTown())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since town is deleted
 			else if (space_for_attack(action_x_loc, action_y_loc, UnitConstants.UNIT_LAND,
@@ -1641,7 +1641,7 @@ public partial class Unit
 		if (action_x_loc == unit.action_x_loc && action_y_loc == unit.action_y_loc && action_mode == unit.action_mode)
 		{
 			//------------- both attacks the same wall ------------//
-			Location loc = World.get_loc(action_x_loc, action_y_loc);
+			Location loc = World.GetLoc(action_x_loc, action_y_loc);
 			if (!loc.IsWall())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since wall is deleted
 			else if (space_for_attack(action_x_loc, action_y_loc, UnitConstants.UNIT_LAND, 1, 1))
@@ -1774,7 +1774,7 @@ public partial class Unit
 					checkXLoc += vecX;
 					checkYLoc += vecY;
 
-					loc = World.get_loc(checkXLoc, checkYLoc);
+					loc = World.GetLoc(checkXLoc, checkYLoc);
 					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN) // found
 					{
 						found++;
@@ -1819,7 +1819,7 @@ public partial class Unit
 
 					move_to_x_loc = preXLoc;
 					move_to_y_loc = preYLoc;
-					loc = World.get_loc((preXLoc + checkXLoc) / 2, (preYLoc + checkYLoc) / 2);
+					loc = World.GetLoc((preXLoc + checkXLoc) / 2, (preYLoc + checkYLoc) / 2);
 					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						resultXLoc = (preXLoc + checkXLoc) / 2;
@@ -1859,7 +1859,7 @@ public partial class Unit
 				if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 					continue;
 
-				Location loc = World.get_loc(checkXLoc, checkYLoc);
+				Location loc = World.GetLoc(checkXLoc, checkYLoc);
 				if (loc.RegionId != regionId)
 					continue;
 
@@ -1900,7 +1900,7 @@ public partial class Unit
 			if (checkXLoc % 2 != 0 || checkYLoc % 2 != 0)
 				continue;
 
-			Location loc = World.get_loc(checkXLoc, checkYLoc);
+			Location loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (TerrainRes[loc.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(mobile_type))
 			{
 				found++;
@@ -1939,8 +1939,8 @@ public partial class Unit
 		// 1) N . N, using normal mode
 		// 2) N . H, H . N, H . H, using sub_mode SEARCH_SUB_MODE_PASSABLE
 		//--------------------------------------------------------------------------------//
-		Location startLoc = World.get_loc(sx, sy);
-		Location destLoc = World.get_loc(dx, dy);
+		Location startLoc = World.GetLoc(sx, sy);
+		Location destLoc = World.GetLoc(dx, dy);
 		Nation nation = NationArray[nationRecno];
 
 		bool subModeOn = (startLoc.PowerNationId == 0 || nation.get_relation_passable(startLoc.PowerNationId)) &&
@@ -2111,7 +2111,7 @@ public partial class Unit
 
 	private void SearchOrStop(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
 	{
-		Location loc = World.get_loc(destX, destY);
+		Location loc = World.GetLoc(destX, destY);
 		if (!loc.CanMove(mobile_type))
 		{
 			stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
@@ -2163,7 +2163,7 @@ public partial class Unit
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			loc = World.get_loc(checkXLoc, checkYLoc);
+			loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (!loc.HasUnit(mobile_type))
 			{
 				hasFree++;

@@ -377,7 +377,7 @@ public class UnitArray : SpriteArray
 					    break;
 
 				    case UnitConstants.ACTION_ATTACK_WALL:
-					    Location targetLoc = World.get_loc(targetXLoc, targetYLoc);
+					    Location targetLoc = World.GetLoc(targetXLoc, targetYLoc);
 					    if (targetLoc.WallNationId() == oldNationRecno)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
@@ -447,7 +447,7 @@ public class UnitArray : SpriteArray
 					    break;
 
 				    case UnitConstants.ACTION_ATTACK_WALL:
-					    Location targetLoc = World.get_loc(targetXLoc, targetYLoc);
+					    Location targetLoc = World.GetLoc(targetXLoc, targetYLoc);
 					    if (targetLoc.WallNationId() == nationRecno1 ||
 					        targetLoc.WallNationId() == nationRecno2)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
@@ -530,7 +530,7 @@ public class UnitArray : SpriteArray
 
 		    if (_selectedSeaUnits.Count > 0)
 		    {
-			    Location location = World.get_loc(destLocX, destLocY);
+			    Location location = World.GetLoc(destLocX, destLocY);
 			    if (TerrainRes[location.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN)
 				    MoveTo(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
 			    else
@@ -595,7 +595,7 @@ public class UnitArray : SpriteArray
 		int filtering_unit_count = selectedUnits.Count;
 
 		int unprocessCount = selectedUnits.Count;
-		int filterRegionId = World.get_loc(destLocX, destLocY).RegionId;
+		int filterRegionId = World.GetLoc(destLocX, destLocY).RegionId;
 		int filterDestX = destLocX, filterDestY = destLocY;
 		int loopCount, i;
 
@@ -613,7 +613,7 @@ public class UnitArray : SpriteArray
 			for (i = 0; i < filteringCount; i++)
 			{
 				unit = this[filtering_unit_array[i]];
-				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId == filterRegionId)
+				if (World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId == filterRegionId)
 					filtered_unit_array.Add(filtering_unit_array[i]);
 				else
 					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
@@ -628,7 +628,7 @@ public class UnitArray : SpriteArray
 
 			//---------------- update parameters for next checking ------------------//
 			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId;
+			filterRegionId = World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId;
 			filterDestX = destLocX;
 			filterDestY = destLocY;
 			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
@@ -722,7 +722,7 @@ public class UnitArray : SpriteArray
 
 				if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
 				{
-					Location location = World.get_loc(x, y);
+					Location location = World.GetLoc(x, y);
 					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 						unprocessCount--;
 				}
@@ -754,7 +754,7 @@ public class UnitArray : SpriteArray
 
 					if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
 					{
-						Location location = World.get_loc(x, y);
+						Location location = World.GetLoc(x, y);
 						if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 							unprocessCount--;
 					}
@@ -833,7 +833,7 @@ public class UnitArray : SpriteArray
 			{
 				for (int i = x; i > x - rec_width && unprocessCount > 0; i -= move_scale)
 				{
-					Location location = World.get_loc(i, y);
+					Location location = World.GetLoc(i, y);
 					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 					{
 						Unit unit;
@@ -876,7 +876,7 @@ public class UnitArray : SpriteArray
 			{
 				for (int i = x; i < x + rec_width && unprocessCount > 0; i += move_scale)
 				{
-					Location location = World.get_loc(i, y);
+					Location location = World.GetLoc(i, y);
 					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 					{
 						Unit unit;
@@ -1323,7 +1323,7 @@ public class UnitArray : SpriteArray
 	    //--------------------------------------------------------------------//
 	    const int CHECK_SEA_DIMENSION = 50;
 	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
-	    Location loc = World.get_loc(destX, destY);
+	    Location loc = World.GetLoc(destX, destY);
 	    int regionId = loc.RegionId;
 	    int xShift, yShift, checkXLoc, checkYLoc;
 	    int landX = -1, landY = -1, tempX, tempY;
@@ -1380,7 +1380,7 @@ public class UnitArray : SpriteArray
 				    if (seaX < 0 || seaX >= GameConstants.MapSize || seaY < 0 || seaY >= GameConstants.MapSize)
 					    continue;
 
-				    loc = World.get_loc(seaX, seaY);
+				    loc = World.GetLoc(seaX, seaY);
 				    if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					    continue;
 
@@ -1396,7 +1396,7 @@ public class UnitArray : SpriteArray
 					    if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 						    continue;
 
-					    loc = World.get_loc(checkXLoc, checkYLoc);
+					    loc = World.GetLoc(checkXLoc, checkYLoc);
 					    if (loc.RegionId != regionId)
 						    continue;
 
@@ -1426,7 +1426,7 @@ public class UnitArray : SpriteArray
 	    {
 		    // unit determined from the location
 
-		    Location location = World.get_loc(targetXLoc, targetYLoc);
+		    Location location = World.GetLoc(targetXLoc, targetYLoc);
 		    targetUnitRecno = location.GetAnyUnit();
 	    }
 	    else
@@ -1457,7 +1457,7 @@ public class UnitArray : SpriteArray
 	    {
 		    //--- set the target coordination to the top left position of the town/firm ---//
 
-		    Location location = World.get_loc(targetXLoc, targetYLoc);
+		    Location location = World.GetLoc(targetXLoc, targetYLoc);
 
 		    //---- if there is a firm on this location -----//
 
@@ -1517,7 +1517,7 @@ public class UnitArray : SpriteArray
 			    // 1 for excluding the recno in target location
 			    divide_array(targetXLoc, targetYLoc, selectedUnitArray, 1);
 
-			    Location location = World.get_loc(targetXLoc, targetYLoc);
+			    Location location = World.GetLoc(targetXLoc, targetYLoc);
 			    int targetMobileType = location.HasAnyUnit();
 
 			    if (_selectedLandUnits.Count > 0)
@@ -1556,8 +1556,8 @@ public class UnitArray : SpriteArray
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
 	    Unit targetUnit = this[targetUnitRecno];
-	    if ((World.get_loc(targetXLoc, targetYLoc).RegionId !=
-	         World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId) ||
+	    if ((World.GetLoc(targetXLoc, targetYLoc).RegionId !=
+	         World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId) ||
 	        (targetUnit.mobile_type != firstUnit.mobile_type))
 	    {
 		    set_group_id(selectedUnits);
@@ -1767,8 +1767,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
+	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -1970,8 +1970,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
+	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2172,8 +2172,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
+	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2355,7 +2355,7 @@ public class UnitArray : SpriteArray
     {
 	    //--- set the destination to the top left position of the town/firm ---//
 
-	    Location location = World.get_loc(destX, destY);
+	    Location location = World.GetLoc(destX, destY);
 
 	    //---- if there is a firm on this location -----//
 
@@ -2431,7 +2431,7 @@ public class UnitArray : SpriteArray
 
 			    if (_selectedSeaUnits.Count > 0)
 			    {
-				    Location loc = World.get_loc(destX, destY);
+				    Location loc = World.GetLoc(destX, destY);
 				    if (loc.IsFirm())
 				    {
 					    Firm firm = FirmArray[loc.FirmId()];
@@ -2469,7 +2469,7 @@ public class UnitArray : SpriteArray
 				    }
 				    else // move to object surrounding
 				    {
-					    Location loc = World.get_loc(destX, destY);
+					    Location loc = World.GetLoc(destX, destY);
 					    if (loc.IsFirm())
 						    unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
 							    unit.sprite_info.loc_height, loc.FirmId());
@@ -2609,7 +2609,7 @@ public class UnitArray : SpriteArray
 		    Unit closestUnit = this[selectedUnits[closestUnitRecno]];
 		    int closestUnitXLoc = closestUnit.next_x_loc();
 		    int closestUnitYLoc = closestUnit.next_y_loc();
-		    int defaultRegionId = World.get_loc(closestUnitXLoc, closestUnitYLoc).RegionId;
+		    int defaultRegionId = World.GetLoc(closestUnitXLoc, closestUnitYLoc).RegionId;
 		    List<int> newSelectedArray = new List<int>();
 
 		    if (selectedUnits.Count > 1)
@@ -2617,7 +2617,7 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < selectedUnits.Count; i++)
 			    {
 				    Unit unit = this[selectedUnits[i]];
-				    if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId == defaultRegionId)
+				    if (World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId == defaultRegionId)
 				    {
 					    newSelectedArray.Add(selectedUnits[i]); // on the same territory
 					    unit.unit_group_id = curGroupId;
@@ -2650,7 +2650,7 @@ public class UnitArray : SpriteArray
 			    //-------------- ordering the units ---------------//
 			    const int TRY_SIZE = 5;
 			    int countLimit = TRY_SIZE * TRY_SIZE;
-			    int regionId = World.get_loc(landX, landY).RegionId;
+			    int regionId = World.GetLoc(landX, landY).RegionId;
 			    for (int i = 0, k = 0; i < newSelectedArray.Count; i++)
 			    {
 				    for (int j = 1; j < countLimit; j++)
@@ -2665,7 +2665,7 @@ public class UnitArray : SpriteArray
 					    if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 						    continue;
 
-					    Location loc = World.get_loc(checkXLoc, checkYLoc);
+					    Location loc = World.GetLoc(checkXLoc, checkYLoc);
 					    if (loc.RegionId != regionId || !loc.Walkable())
 						    continue;
 
@@ -2836,7 +2836,7 @@ public class UnitArray : SpriteArray
 
 		    //--- check if the location of the unit has been explored ---//
 
-		    if (!World.get_loc(unit.next_x_loc(), unit.next_y_loc()).IsExplored())
+		    if (!World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).IsExplored())
 			    continue;
 
 		    //-------- if are of the same nation --------//
@@ -2868,7 +2868,7 @@ public class UnitArray : SpriteArray
 		int excludeUnitRecno = 0;
 		if (excludeSelectedLocUnit != 0)
 		{
-			Location location = World.get_loc(locX, locY);
+			Location location = World.GetLoc(locX, locY);
 			int targetMobileType = location.HasAnyUnit();
 			excludeUnitRecno = targetMobileType != 0 ? location.UnitId(targetMobileType) : 0;
 		}
@@ -2920,7 +2920,7 @@ public class UnitArray : SpriteArray
 		List<int> selectedUnits, int targetUnitRecno)
 	{
 		//------------- attack now -------------//
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		//if(targetMobileType)
 		if (targetUnitRecno != 0 && !IsDeleted(targetUnitRecno))
@@ -2984,7 +2984,7 @@ public class UnitArray : SpriteArray
 		for (yLoc2 = yLoc1 - targetYLoc + SHIFT_ADJUST; i > 0; i--, yLoc1++, yLoc2++)
 		{
 			//---- left edge ----//
-			if (xLoc1 >= 0 && !unreachable_table[0, yLoc2] && !World.get_loc(xLoc1, yLoc1).CanMove(mobileType))
+			if (xLoc1 >= 0 && !unreachable_table[0, yLoc2] && !World.GetLoc(xLoc1, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[0, yLoc2] = true;
 				analyseResult--;
@@ -2992,7 +2992,7 @@ public class UnitArray : SpriteArray
 
 			//----- right edge -----//
 			if (xLoc2 < GameConstants.MapSize && !unreachable_table[targetWidth + 1, yLoc2] &&
-			    !World.get_loc(xLoc2, yLoc1).CanMove(mobileType))
+			    !World.GetLoc(xLoc2, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[targetWidth + 1, yLoc2] = true;
 				analyseResult--;
@@ -3012,7 +3012,7 @@ public class UnitArray : SpriteArray
 		     i++, xLoc1++, xLoc2++)
 		{
 			//---- top edge ----//
-			if (yLoc1 >= 0 && !unreachable_table[xLoc2, 0] && !World.get_loc(xLoc1, yLoc1).CanMove(mobileType))
+			if (yLoc1 >= 0 && !unreachable_table[xLoc2, 0] && !World.GetLoc(xLoc1, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[xLoc2, 0] = true;
 				analyseResult--;
@@ -3020,7 +3020,7 @@ public class UnitArray : SpriteArray
 
 			//----- bottom edge -----//
 			if (yLoc2 < GameConstants.MapSize && !unreachable_table[xLoc2, targetHeight + 1] &&
-			    !World.get_loc(xLoc1, yLoc2).CanMove(mobileType))
+			    !World.GetLoc(xLoc1, yLoc2).CanMove(mobileType))
 			{
 				unreachable_table[xLoc2, targetHeight + 1] = true;
 				analyseResult--;
@@ -3128,7 +3128,7 @@ public class UnitArray : SpriteArray
 				unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 			else
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 				if (!location.CanMove(mobileType))
 					unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 				else
@@ -3309,7 +3309,7 @@ public class UnitArray : SpriteArray
 						canReach = 1;
 					else
 					{
-						Location location = World.get_loc(leftXLoc, leftYLoc);
+						Location location = World.GetLoc(leftXLoc, leftYLoc);
 						if (location.CanMove(targetMobileType))
 							canReach = 1;
 					}
@@ -3355,7 +3355,7 @@ public class UnitArray : SpriteArray
 						canReach = 1; // concept incorrect, but it is used to terminate this part of checking
 					else
 					{
-						Location location = World.get_loc(rightXLoc, rightYLoc);
+						Location location = World.GetLoc(rightXLoc, rightYLoc);
 						if (location.CanMove(targetMobileType))
 							canReach = 1;
 					}
@@ -3521,7 +3521,7 @@ public class UnitArray : SpriteArray
 		const int ASSIGN_TYPE_FIRM = 2;
 		const int ASSIGN_TYPE_TOWN = 3;
 
-		Location loc = World.get_loc(destX, destY);
+		Location loc = World.GetLoc(destX, destY);
 
 		int assignType = 0; // 1 for unit, 2 for firm, 3 for town
 		int miscNo = 0; // usedd to store the recno of the object

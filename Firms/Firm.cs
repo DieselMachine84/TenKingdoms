@@ -1058,7 +1058,7 @@ public abstract class Firm
 		{
 			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).SetFirm(firm_recno);
+				World.GetLoc(xLoc, yLoc).SetFirm(firm_recno);
 			}
 		}
 
@@ -1097,7 +1097,7 @@ public abstract class Firm
 		{
 			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).RemoveFirm();
+				World.GetLoc(xLoc, yLoc).RemoveFirm();
 			}
 		}
 
@@ -1153,7 +1153,7 @@ public abstract class Firm
 		{
 			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 
 				location.SetFirm(firm_recno);
 
@@ -1362,8 +1362,8 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(firm.center_x, firm.center_y).IsPlateau()
-			    != World.get_loc(center_x, center_y).IsPlateau())
+			if (World.GetLoc(firm.center_x, firm.center_y).IsPlateau()
+			    != World.GetLoc(center_x, center_y).IsPlateau())
 			{
 				continue;
 			}
@@ -1427,8 +1427,8 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.LocCenterX, town.LocCenterY).IsPlateau()
-			    != World.get_loc(center_x, center_y).IsPlateau())
+			if (World.GetLoc(town.LocCenterX, town.LocCenterY).IsPlateau()
+			    != World.GetLoc(center_x, center_y).IsPlateau())
 			{
 				continue;
 			}
@@ -2136,7 +2136,7 @@ public abstract class Firm
 			{
 				for (checkXLoc = loc_x1; checkXLoc <= loc_x2; checkXLoc++)
 				{
-					if (World.get_loc(checkXLoc, checkYLoc).CanMove(mType))
+					if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mType))
 					{
 						xLoc = checkXLoc;
 						yLoc = checkYLoc;

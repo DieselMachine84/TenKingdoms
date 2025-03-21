@@ -238,7 +238,7 @@ public class News
 					{
 						if (unit.get_cur_loc(out loc_x, out loc_y))
 						{
-							Location location = World.get_loc(loc_x, loc_y);
+							Location location = World.GetLoc(loc_x, loc_y);
 
 							rc = location.VisitLevel > 0;
 						}

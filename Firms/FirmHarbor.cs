@@ -35,33 +35,33 @@ public class FirmHarbor : Firm
 	{
 		// ignore raceId and find north, south, west or east harbor
 
-		if (World.get_loc(xLoc + 1, yLoc + 2).CanBuildHarbor(1))
+		if (World.GetLoc(xLoc + 1, yLoc + 2).CanBuildHarbor(1))
 		{
 			// check north harbour
 			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
-			land_region_id = World.get_loc(xLoc + 1, yLoc + 2).RegionId;
-			sea_region_id = World.get_loc(xLoc + 1, yLoc).RegionId;
+			land_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
+			sea_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
 		}
-		else if (World.get_loc(xLoc + 1, yLoc).CanBuildHarbor(1))
+		else if (World.GetLoc(xLoc + 1, yLoc).CanBuildHarbor(1))
 		{
 			// check south harbour
 			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
-			land_region_id = World.get_loc(xLoc + 1, yLoc).RegionId;
-			sea_region_id = World.get_loc(xLoc + 1, yLoc + 2).RegionId;
+			land_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
+			sea_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
 		}
-		else if (World.get_loc(xLoc + 2, yLoc + 1).CanBuildHarbor(1))
+		else if (World.GetLoc(xLoc + 2, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check west harbour
 			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
-			land_region_id = World.get_loc(xLoc + 2, yLoc + 1).RegionId;
-			sea_region_id = World.get_loc(xLoc, yLoc + 1).RegionId;
+			land_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
+			sea_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
 		}
-		else if (World.get_loc(xLoc, yLoc + 1).CanBuildHarbor(1))
+		else if (World.GetLoc(xLoc, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check east harbour
 			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
-			land_region_id = World.get_loc(xLoc, yLoc + 1).RegionId;
-			sea_region_id = World.get_loc(xLoc + 2, yLoc + 1).RegionId;
+			land_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
+			sea_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
 		}
 
 		region_id = land_region_id; // set region_id to land_region_id

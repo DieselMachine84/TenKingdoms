@@ -51,7 +51,7 @@ public class BulletHoming : Bullet
 		go_y += spriteFrame.offset_y + spriteFrame.height / 2;
 
 		// ------- find the target_type and target_recno ------//
-		Location location = World.get_loc(targetXLoc, targetYLoc);
+		Location location = World.GetLoc(targetXLoc, targetYLoc);
 		//### begin alex 16/5 ###//
 		//if( locPtr->has_unit(mobile_type) )
 		if (location.HasUnit(targetMobileType))

@@ -270,7 +270,7 @@ public class TownArray : DynArray<Town>
 			{
 				for (int x = xLoc; x < xLoc + BUILD_TOWN_LOC_WIDTH; x++)
 				{
-					Location location = World.get_loc(x, y);
+					Location location = World.GetLoc(x, y);
 					if (!location.CanBuildTown())
 					{
 						canBuildFlag = false;
@@ -340,7 +340,7 @@ public class TownArray : DynArray<Town>
 
 		int unitLocX = unit.next_x_loc();
 		int unitLocY = unit.next_y_loc();
-		Location location = World.get_loc(unitLocX, unitLocY);
+		Location location = World.GetLoc(unitLocX, unitLocY);
 
 		town.AssignUnit(unit);
 
@@ -375,7 +375,7 @@ public class TownArray : DynArray<Town>
 			if (sameNation && town.NationId != nationId)
 				continue;
 
-			if (!World.get_loc(town.LocCenterX, town.LocCenterY).IsExplored())
+			if (!World.GetLoc(town.LocCenterX, town.LocCenterY).IsExplored())
 				continue;
 
 			Power.reset_selection();

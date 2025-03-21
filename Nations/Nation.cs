@@ -414,7 +414,7 @@ public class Nation : NationBase
 		if (!check_firm_ready(actionNode.action_x_loc, actionNode.action_y_loc, firmId))
 			return -1; // -1 means remove the current action immediately
 
-		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
+		Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
 
 		Firm firm = FirmArray[location.FirmId()];
 
@@ -464,7 +464,7 @@ public class Nation : NationBase
 
 		//-------- get the poisnter to the firm -------//
 
-		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
+		Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
 
 		Firm firm = FirmArray[location.FirmId()];
 
@@ -504,7 +504,7 @@ public class Nation : NationBase
 		// cancel this action if the firm already has enough workers
 		//---------------------------------------------------------------------------//
 
-		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
+		Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
 
 		Firm firm = FirmArray[location.FirmId()];
 		if (firm.firm_id == Firm.FIRM_CAMP)
@@ -576,7 +576,7 @@ public class Nation : NationBase
 
 		//---------------------------------------------------------------------------//
 
-		if (!World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc).IsFirm()) // firm exists, so assign
+		if (!World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc).IsFirm()) // firm exists, so assign
 			return -1;
 
 		unit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
@@ -596,7 +596,7 @@ public class Nation : NationBase
 		// stop if no jobless population
 		//----------------------------------------------------//
 
-		Location location = World.get_loc(actionNode.ref_x_loc, actionNode.ref_y_loc);
+		Location location = World.GetLoc(actionNode.ref_x_loc, actionNode.ref_y_loc);
 
 		Town town = TownArray[location.TownId()]; // point to the old town
 
@@ -651,7 +651,7 @@ public class Nation : NationBase
 		// stop if no jobless population
 		//----------------------------------------------------//
 
-		Location location = World.get_loc(actionNode.ref_x_loc, actionNode.ref_y_loc);
+		Location location = World.GetLoc(actionNode.ref_x_loc, actionNode.ref_y_loc);
 
 		Town town = TownArray[location.TownId()]; // point to the old town
 
@@ -735,7 +735,7 @@ public class Nation : NationBase
 				x = Math.Min(GameConstants.MapSize - 1, x);
 				y = Math.Max(0, y);
 				y = Math.Min(GameConstants.MapSize - 1, y);
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				if (location.IsTown())
 				{
 					nearbyTown = TownArray[location.TownId()];
@@ -748,7 +748,7 @@ public class Nation : NationBase
 		spy.notify_cloaked_nation_flag = 0;
 		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.cloaked_nation_recno == 0)
 		{
-			Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
+			Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
 			if (location.IsTown())
 			{
 				Town targetTown = TownArray[location.TownId()];
@@ -1105,7 +1105,7 @@ public class Nation : NationBase
 
 			//----- if there is a unit standing on this site -----//
 
-			Location location = World.get_loc(site.LocX, site.LocY);
+			Location location = World.GetLoc(site.LocX, site.LocY);
 
 			if (!location.HasUnit(UnitConstants.UNIT_LAND))
 				continue;
@@ -1280,7 +1280,7 @@ public class Nation : NationBase
 			if (site.SiteType != Site.SITE_RAW)
 				continue;
 
-			Location siteLoc = World.get_loc(site.LocX, site.LocY);
+			Location siteLoc = World.GetLoc(site.LocX, site.LocY);
 
 			if (!siteLoc.CanBuildFirm())
 				continue;
@@ -1301,7 +1301,7 @@ public class Nation : NationBase
 			for (int j = 0; j < ai_town_array.Count; j++)
 			{
 				Town town = TownArray[ai_town_array[j]];
-				Location location = World.get_loc(town.LocX1, town.LocY1);
+				Location location = World.GetLoc(town.LocX1, town.LocY1);
 
 				//-********* codes to move to other territory ***********-//
 				if (siteLoc.RegionId != location.RegionId)
@@ -1527,7 +1527,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < height; i++)
 			{
-				if (World.get_loc(x, y1 + i).CanBuildFirm())
+				if (World.GetLoc(x, y1 + i).CanBuildFirm())
 					count++;
 			}
 
@@ -1540,7 +1540,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < width; i++)
 			{
-				if (World.get_loc(x1 + i, y).CanBuildFirm())
+				if (World.GetLoc(x1 + i, y).CanBuildFirm())
 					count++;
 			}
 
@@ -1553,7 +1553,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < height; i++)
 			{
-				if (World.get_loc(x, y1 + i).CanBuildFirm())
+				if (World.GetLoc(x, y1 + i).CanBuildFirm())
 					count++;
 			}
 
@@ -1567,7 +1567,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < width; i++)
 			{
-				if (World.get_loc(x1 + i, y).CanBuildFirm())
+				if (World.GetLoc(x1 + i, y).CanBuildFirm())
 					count++;
 			}
 
@@ -1579,25 +1579,25 @@ public class Nation : NationBase
 		//------------------------------------------//
 
 		//------- upper left corner -------//
-		if (x1 > 0 && y1 > 0 && World.get_loc(x1 - 1, y1 - 1).CanBuildFirm())
+		if (x1 > 0 && y1 > 0 && World.GetLoc(x1 - 1, y1 - 1).CanBuildFirm())
 			score += 50;
 
 		//------- upper right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 > 0 && World.get_loc(x1 + 1, y1 - 1).CanBuildFirm())
+		if (x1 < GameConstants.MapSize - 1 && y1 > 0 && World.GetLoc(x1 + 1, y1 - 1).CanBuildFirm())
 			score += 50;
 
 		//----------- lower left corner ----------//
-		if (x1 > 0 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 - 1, y1 + 1).CanBuildFirm())
+		if (x1 > 0 && y1 < GameConstants.MapSize - 1 && World.GetLoc(x1 - 1, y1 + 1).CanBuildFirm())
 			score += 50;
 
 		//------- lower right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 + 1, y1 + 1).CanBuildFirm())
+		if (x1 < GameConstants.MapSize - 1 && y1 < GameConstants.MapSize - 1 && World.GetLoc(x1 + 1, y1 + 1).CanBuildFirm())
 			score += 50;
 	}
 
 	public bool find_best_firm_loc(int buildFirmId, int refXLoc, int refYLoc, out int resultXLoc, out int resultYLoc)
 	{
-		Location location = World.get_loc(refXLoc, refYLoc);
+		Location location = World.GetLoc(refXLoc, refYLoc);
 		int centerX = -1, centerY = -1;
 		int refX1 = -1, refY1 = -1, refX2 = -1, refY2 = -1;
 		int xLoc, yLoc;
@@ -1679,7 +1679,7 @@ public class Nation : NationBase
 
 			for (xLoc = refX1; xLoc <= refX2; xLoc++, refMatrixIndex++)
 			{
-				location = World.get_loc(xLoc, yLoc);
+				location = World.GetLoc(xLoc, yLoc);
 				int t1 = Math.Abs(xLoc - centerX);
 				int t2 = Math.Abs(yLoc - centerY);
 
@@ -1705,7 +1705,7 @@ public class Nation : NationBase
 
 			for (xLoc = refX1; xLoc <= refX2; xLoc++)
 			{
-				location = World.get_loc(refX1, yLoc);
+				location = World.GetLoc(refX1, yLoc);
 				if (location.RegionId != buildRegionId || location.IsPlateau() != buildIsPlateau ||
 				    location.IsPowerOff())
 				{
@@ -2441,7 +2441,7 @@ public class Nation : NationBase
 	// check whether firm exists and belongs to our nation
 	public bool check_firm_ready(int xLoc, int yLoc, int firmId = 0)
 	{
-		Location location = World.get_loc(xLoc, yLoc);
+		Location location = World.GetLoc(xLoc, yLoc);
 
 		if (!location.IsFirm())
 			return false; // no firm there
@@ -2464,7 +2464,7 @@ public class Nation : NationBase
 
 	public bool check_town_ready(int xLoc, int yLoc) // check whether town exists and belongs to our nation
 	{
-		Location location = World.get_loc(xLoc, yLoc);
+		Location location = World.GetLoc(xLoc, yLoc);
 
 		if (!location.IsTown())
 			return false; // no town there
@@ -2742,7 +2742,7 @@ public class Nation : NationBase
 		//----- locate the best town for training the unit -----//
 
 		int bestRating = 0;
-		int destRegionId = World.get_loc(destX, destY).RegionId;
+		int destRegionId = World.GetLoc(destX, destY).RegionId;
 
 		for (int i = 0; i < ai_town_array.Count; i++)
 		{
@@ -3382,7 +3382,7 @@ public class Nation : NationBase
 		if (attack_camps.Count > 0)
 			return false;
 
-		int targetRegionId = World.get_loc(targetXLoc, targetYLoc).RegionId;
+		int targetRegionId = World.GetLoc(targetXLoc, targetYLoc).RegionId;
 		ai_attack_target_x_loc = targetXLoc;
 		ai_attack_target_y_loc = targetYLoc;
 		ai_attack_target_nation_recno = get_target_nation_recno(targetXLoc, targetYLoc);
@@ -3668,7 +3668,7 @@ public class Nation : NationBase
 			yLoc = Math.Max(0, yLoc);
 			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-			Location location = World.get_loc(xLoc, yLoc);
+			Location location = World.GetLoc(xLoc, yLoc);
 
 			if (location.RegionId != targetRegionId)
 				continue;
@@ -3747,7 +3747,7 @@ public class Nation : NationBase
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 				if (location.IsTown())
 				{
 					int townRecno = location.TownId();
@@ -3934,7 +3934,7 @@ public class Nation : NationBase
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 
 				if (!location.HasUnit(UnitConstants.UNIT_LAND))
 					continue;
@@ -3999,7 +3999,7 @@ public class Nation : NationBase
 
 		int attackerXLoc = attackerUnit.next_x_loc();
 		int attackerYLoc = attackerUnit.next_y_loc();
-		int targetRegionId = World.get_loc(attackerXLoc, attackerYLoc).RegionId;
+		int targetRegionId = World.GetLoc(attackerXLoc, attackerYLoc).RegionId;
 
 		int enemyCombatLevel = ai_evaluate_target_combat_level(attackerXLoc, attackerYLoc, attackerUnit.nation_recno);
 
@@ -5453,7 +5453,7 @@ public class Nation : NationBase
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 				if (!location.HasUnit(UnitConstants.UNIT_LAND))
 					continue;
 
@@ -6126,7 +6126,7 @@ public class Nation : NationBase
 			yLoc = Math.Max(0, yLoc);
 			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-			Location location = World.get_loc(xLoc, yLoc);
+			Location location = World.GetLoc(xLoc, yLoc);
 
 			if (!location.CanBuildWholeHarbor())
 				continue;
@@ -6283,7 +6283,7 @@ public class Nation : NationBase
 
 		int destXLoc = actionNode.action_x_loc;
 		int destYLoc = actionNode.action_y_loc;
-		Location location = World.get_loc(destXLoc, destYLoc);
+		Location location = World.GetLoc(destXLoc, destYLoc);
 
 		switch (actionNode.action_para)
 		{
@@ -6574,7 +6574,7 @@ public class Nation : NationBase
 				x = Math.Min(GameConstants.MapSize - 1, x);
 				y = Math.Max(0, y);
 				y = Math.Min(GameConstants.MapSize - 1, y);
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				if (location.IsTown())
 				{
 					nearbyTown = TownArray[location.TownId()];
@@ -9368,7 +9368,7 @@ public class Nation : NationBase
 
 	private int get_target_nation_recno(int targetXLoc, int targetYLoc)
 	{
-		Location location = World.get_loc(targetXLoc, targetYLoc);
+		Location location = World.GetLoc(targetXLoc, targetYLoc);
 
 		if (location.IsFirm())
 			return FirmArray[location.FirmId()].nation_recno;

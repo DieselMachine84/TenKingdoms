@@ -714,7 +714,7 @@ public class FirmMonster : Firm
 			yLoc = Math.Max(0, yLoc);
 			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-			Location location = World.get_loc(xLoc, yLoc);
+			Location location = World.GetLoc(xLoc, yLoc);
 
 			if (location.IsFirm())
 			{

@@ -79,7 +79,7 @@ public class BuildCampTask : AITask
         if (!_generalSent)
         {
             FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
-            Location townLocation = World.get_loc(town.LocX1, town.LocY1);
+            Location townLocation = World.GetLoc(town.LocX1, town.LocY1);
             int minRating = Int32.MaxValue;
             int bestBuildLocX = -1;
             int bestBuildLocY = -1;
@@ -107,7 +107,7 @@ public class BuildCampTask : AITask
                         continue;
                     }
 
-                    Location buildLocation = World.get_loc(buildLocX, buildLocY);
+                    Location buildLocation = World.GetLoc(buildLocX, buildLocY);
                     if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
                         continue;
 
@@ -118,7 +118,7 @@ public class BuildCampTask : AITask
                         town.LocX1, town.LocY1, town.LocX2, town.LocY2);
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2, 1))
                     {
-                        Location nearLocation = World.get_loc(locXlocY.Item1, locXlocY.Item2);
+                        Location nearLocation = World.GetLoc(locXlocY.Item1, locXlocY.Item2);
                         if (nearLocation.IsFirm() || nearLocation.IsTown())
                             rating++;
                     }

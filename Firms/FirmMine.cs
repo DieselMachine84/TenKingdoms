@@ -241,7 +241,7 @@ public class FirmMine : Firm
         {
             for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
             {
-                Location location = World.get_loc(xLoc, yLoc);
+                Location location = World.GetLoc(xLoc, yLoc);
 
                 if (location.HasSite() && SiteArray[location.SiteId()].SiteType == Site.SITE_RAW)
                 {

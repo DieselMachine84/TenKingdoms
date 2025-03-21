@@ -178,7 +178,7 @@ public partial class Renderer
         {
             for (int locY = locY1; locY <= locY2; locY++)
             {
-                Location location = World.get_loc(locX, locY);
+                Location location = World.GetLoc(locX, locY);
                 if (location.IsExplored())
                 {
                     return true;

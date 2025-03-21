@@ -312,7 +312,7 @@ public class MapGenerator
 				swType = TerrainRes.terrain_height(plasma.get_pix(x, y + 1), out swSubType);
 				seType = TerrainRes.terrain_height(plasma.get_pix(x + 1, y + 1), out seSubType);
 
-				if ((World.get_loc(x, y).TerrainId = TerrainRes.scan(nwType, nwSubType,
+				if ((World.GetLoc(x, y).TerrainId = TerrainRes.scan(nwType, nwSubType,
 					    neType, neSubType, swType, swSubType, seType, seSubType, 0, 1, 0)) == 0)
 				{
 					//err.run("Error World::set_tera_id, Cannot find terrain type %d:%d, %d:%d, %d:%d, %d:%d",
@@ -331,7 +331,7 @@ public class MapGenerator
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				int terrainId = World.get_loc(x, y).TerrainId;
+				int terrainId = World.GetLoc(x, y).TerrainId;
 				int SubFound = TerrainRes.search_pattern(TerrainRes[terrainId].pattern_id,
 					candSub, resultArraySize);
 				for (int i = 0; i < SubFound; ++i)
@@ -344,7 +344,7 @@ public class MapGenerator
 					for (terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.next_step)
 					{
 						if (tx < 0 || tx >= GameConstants.MapSize || ty < 0 || ty >= GameConstants.MapSize ||
-						    TerrainRes[World.get_loc(tx, ty).TerrainId].pattern_id !=
+						    TerrainRes[World.GetLoc(tx, ty).TerrainId].pattern_id !=
 						    terrainSubInfo.old_pattern_id)
 						{
 							flag = false;
@@ -394,11 +394,11 @@ public class MapGenerator
 						     terrainSubInfo != null;
 						     terrainSubInfo = terrainSubInfo.next_step)
 						{
-							TerrainInfo oldTerrain = TerrainRes[World.get_loc(tx, ty).TerrainId];
+							TerrainInfo oldTerrain = TerrainRes[World.GetLoc(tx, ty).TerrainId];
 							int terrain_id = TerrainRes.scan(oldTerrain.average_type,
 								oldTerrain.secondary_type + terrainSubInfo.sec_adj,
 								terrainSubInfo.new_pattern_id, 0, 1, 0);
-							World.get_loc(tx, ty).TerrainId = terrain_id;
+							World.GetLoc(tx, ty).TerrainId = terrain_id;
 							if (terrain_id == 0)
 							{
 								//err_here();		// cannot find terrain_id
@@ -451,14 +451,14 @@ public class MapGenerator
 
 		for (int locX = 0; locX < GameConstants.MapSize; locX++) // set the top and bottom edges
 		{
-			World.get_loc(locX, 0).SetPowerOff();
-			World.get_loc(locX, GameConstants.MapSize - 1).SetPowerOff();
+			World.GetLoc(locX, 0).SetPowerOff();
+			World.GetLoc(locX, GameConstants.MapSize - 1).SetPowerOff();
 		}
 
 		for (int locY = 0; locY < GameConstants.MapSize; locY++) // set the left and right edges
 		{
-			World.get_loc(0, locY).SetPowerOff();
-			World.get_loc(GameConstants.MapSize - 1, locY).SetPowerOff();
+			World.GetLoc(0, locY).SetPowerOff();
+			World.GetLoc(GameConstants.MapSize - 1, locY).SetPowerOff();
 		}
 
 		//-----------------------------------------//
@@ -467,7 +467,7 @@ public class MapGenerator
 		{
 			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
-				Location location = World.get_loc(locX, locY);
+				Location location = World.GetLoc(locX, locY);
 				if (Config.explore_whole_map)
 					location.ExploredOn();
 				else
@@ -491,16 +491,16 @@ public class MapGenerator
 	private void SetSurroundPowerOff(int locX, int locY)
 	{
 		if (locX > 0) // west
-			World.get_loc(locX - 1, locY).SetPowerOff();
+			World.GetLoc(locX - 1, locY).SetPowerOff();
 
 		if (locX < GameConstants.MapSize - 1) // east
-			World.get_loc(locX + 1, locY).SetPowerOff();
+			World.GetLoc(locX + 1, locY).SetPowerOff();
 
 		if (locY > 0) // north
-			World.get_loc(locX, locY - 1).SetPowerOff();
+			World.GetLoc(locX, locY - 1).SetPowerOff();
 
 		if (locY < GameConstants.MapSize - 1) // south
-			World.get_loc(locX, locY + 1).SetPowerOff();
+			World.GetLoc(locX, locY + 1).SetPowerOff();
 	}
 
 	private void GenerateHills(int terrainType)
@@ -516,8 +516,8 @@ public class MapGenerator
 		{
 			for (x = 0; x < GameConstants.MapSize; ++x)
 			{
-				Location location = World.get_loc(x, y);
-				aboveLoc = y > 0 ? World.get_loc(x, y - 1) : null;
+				Location location = World.GetLoc(x, y);
+				aboveLoc = y > 0 ? World.GetLoc(x, y - 1) : null;
 				terrainInfo = TerrainRes[location.TerrainId];
 				priTerrain = terrainInfo.average_type;
 				secTerrain = terrainInfo.secondary_type;
@@ -595,26 +595,26 @@ public class MapGenerator
 			lastExit = 0;
 			for (x = 0; x < GameConstants.MapSize - 2; ++x, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 11,15,19 or 23,
 				// block above the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.get_loc(x, y).HasHill() && World.get_loc(x + 1, y).HasHill() &&
-					    World.get_loc(x + 2, y).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() &&
+					    World.GetLoc(x + 2, y).HasHill())
 					{
-						HillBlockInfo h1 = HillRes[World.get_loc(x, y).HillId1()];
+						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.pattern_id;
-						HillBlockInfo h2 = HillRes[World.get_loc(x + 1, y).HillId1()];
+						HillBlockInfo h2 = HillRes[World.GetLoc(x + 1, y).HillId1()];
 						int h2p = h2.pattern_id;
-						HillBlockInfo h3 = HillRes[World.get_loc(x + 2, y).HillId1()];
+						HillBlockInfo h3 = HillRes[World.GetLoc(x + 2, y).HillId1()];
 						int h3p = h3.pattern_id;
 						if (h1.special_flag == 0 &&
 						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsSouthExitPattern(h1p) &&
 						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsSouthExitPattern(h2p) &&
 						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsSouthExitPattern(h3p))
 						{
-							if (World.get_loc(x + 1, y - 1).Walkable())
+							if (World.GetLoc(x + 1, y - 1).Walkable())
 							{
 								int hillId, terrainId;
 
@@ -632,7 +632,7 @@ public class MapGenerator
 									location.TerrainId = terrainId;
 
 								// next row
-								Location loc2 = World.get_loc(x, y + 1);
+								Location loc2 = World.GetLoc(x, y + 1);
 								hillId = HillRes.locate(h1p,
 									HillRes[hillId].sub_pattern_id,
 									HillRes.LOW_HILL_PRIORITY, SOUTH_LEFT_SPECIAL);
@@ -651,7 +651,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// second square
-								loc2 = World.get_loc(x + 1, y);
+								loc2 = World.GetLoc(x + 1, y);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
 								//if((terrainId = terrain_res.scan(terrainType, terrainType,
@@ -663,7 +663,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// next row
-								loc2 = World.get_loc(x + 1, y + 1);
+								loc2 = World.GetLoc(x + 1, y + 1);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
 								if ((terrainId = TerrainRes.scan(terrainType, terrainType - 1,
@@ -677,7 +677,7 @@ public class MapGenerator
 								//	loc2->terrain_id = terrainId;
 
 								// third square
-								loc2 = World.get_loc(x + 2, y);
+								loc2 = World.GetLoc(x + 2, y);
 								if (h3p == SOUTH_PATTERN4)
 									h3p = SOUTH_PATTERN1;
 								if (h3p == SOUTH_PATTERN3)
@@ -693,7 +693,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// next row
-								loc2 = World.get_loc(x + 2, y + 1);
+								loc2 = World.GetLoc(x + 2, y + 1);
 								hillId = HillRes.locate(h3p,
 									HillRes[hillId].sub_pattern_id,
 									HillRes.LOW_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL);
@@ -740,26 +740,26 @@ public class MapGenerator
 			lastExit = 0;
 			for (x = GameConstants.MapSize - 3; x >= 0; --x, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 12,16,20 or 24,
 				// block below the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.get_loc(x, y).HasHill() && World.get_loc(x + 1, y).HasHill() &&
-					    World.get_loc(x + 2, y).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() &&
+					    World.GetLoc(x + 2, y).HasHill())
 					{
-						HillBlockInfo h1 = HillRes[World.get_loc(x, y).HillId1()];
+						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.pattern_id;
-						HillBlockInfo h2 = HillRes[World.get_loc(x + 1, y).HillId1()];
+						HillBlockInfo h2 = HillRes[World.GetLoc(x + 1, y).HillId1()];
 						int h2p = h2.pattern_id;
-						HillBlockInfo h3 = HillRes[World.get_loc(x + 2, y).HillId1()];
+						HillBlockInfo h3 = HillRes[World.GetLoc(x + 2, y).HillId1()];
 						int h3p = h3.pattern_id;
 						if (h1.special_flag == 0 &&
 						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsNorthExitPattern(h1p) &&
 						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsNorthExitPattern(h2p) &&
 						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsNorthExitPattern(h3p))
 						{
-							if (World.get_loc(x + 1, y + 1).Walkable())
+							if (World.GetLoc(x + 1, y + 1).Walkable())
 							{
 								int hillId, terrainId;
 
@@ -778,7 +778,7 @@ public class MapGenerator
 									location.TerrainId = terrainId;
 
 								// second square
-								Location loc2 = World.get_loc(x + 1, y);
+								Location loc2 = World.GetLoc(x + 1, y);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
@@ -795,7 +795,7 @@ public class MapGenerator
 								//	loc2->terrain_id = terrainId;
 
 								// third square
-								loc2 = World.get_loc(x + 2, y);
+								loc2 = World.GetLoc(x + 2, y);
 								if (h3p == NORTH_PATTERN3)
 									h3p = NORTH_PATTERN1;
 								if (h3p == NORTH_PATTERN4)
@@ -838,19 +838,19 @@ public class MapGenerator
 			lastExit = 0;
 			for (y = 0; y < GameConstants.MapSize - 4; ++y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 9, 13, 17, 21
 				// block above the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.get_loc(x, y).HasHill() && World.get_loc(x, y + 1).HasHill() &&
-					    World.get_loc(x, y + 2).HasHill() && World.get_loc(x, y + 3).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x, y + 1).HasHill() &&
+					    World.GetLoc(x, y + 2).HasHill() && World.GetLoc(x, y + 3).HasHill())
 					{
-						HillBlockInfo h1 = HillRes[World.get_loc(x, y).HillId1()];
+						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.pattern_id;
-						HillBlockInfo h2 = HillRes[World.get_loc(x, y + 2).HillId1()];
+						HillBlockInfo h2 = HillRes[World.GetLoc(x, y + 2).HillId1()];
 						int h2p = h2.pattern_id;
-						HillBlockInfo h3 = HillRes[World.get_loc(x, y + 3).HillId1()];
+						HillBlockInfo h3 = HillRes[World.GetLoc(x, y + 3).HillId1()];
 						int h3p = h3.pattern_id;
 						if (h1.special_flag == 0 &&
 						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsWestExitPattern(h1p) &&
@@ -858,7 +858,7 @@ public class MapGenerator
 						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsWestExitPattern(h3p))
 						{
 							if ((h3p == WEST_PATTERN1 || h3p == WEST_PATTERN4) &&
-							    World.get_loc(x + 1, y + 2).Walkable())
+							    World.GetLoc(x + 1, y + 2).Walkable())
 							{
 								int hillId, terrainId, hill2;
 
@@ -877,7 +877,7 @@ public class MapGenerator
 									location.SetHill(hill2);
 
 								// next row
-								Location loc2 = World.get_loc(x, y + 1);
+								Location loc2 = World.GetLoc(x, y + 1);
 								hillId = HillRes.locate(h1p,
 									HillRes[hillId].sub_pattern_id,
 									HillRes.LOW_HILL_PRIORITY, WEST_TOP_SPECIAL);
@@ -889,7 +889,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// third row
-								loc2 = World.get_loc(x, y + 2);
+								loc2 = World.GetLoc(x, y + 2);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
@@ -906,7 +906,7 @@ public class MapGenerator
 								//	loc2->terrain_id = terrainId;
 
 								// fourth row
-								loc2 = World.get_loc(x, y + 3);
+								loc2 = World.GetLoc(x, y + 3);
 								if (h3p == WEST_PATTERN4)
 									h3p = WEST_PATTERN1;
 								if (h3p == WEST_PATTERN3)
@@ -920,7 +920,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// next row
-								loc2 = World.get_loc(x, y + 4);
+								loc2 = World.GetLoc(x, y + 4);
 								hillId = HillRes.locate(h3p,
 									HillRes[hillId].sub_pattern_id,
 									HillRes.LOW_HILL_PRIORITY, WEST_BOTTOM_SPECIAL);
@@ -958,19 +958,19 @@ public class MapGenerator
 			lastExit = 0;
 			for (y = GameConstants.MapSize - 5; y >= 0; --y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 9, 13, 17, 21
 				// block above the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.get_loc(x, y).HasHill() && World.get_loc(x, y + 1).HasHill() &&
-					    World.get_loc(x, y + 2).HasHill() && World.get_loc(x, y + 3).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x, y + 1).HasHill() &&
+					    World.GetLoc(x, y + 2).HasHill() && World.GetLoc(x, y + 3).HasHill())
 					{
-						HillBlockInfo h1 = HillRes[World.get_loc(x, y).HillId1()];
+						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.pattern_id;
-						HillBlockInfo h2 = HillRes[World.get_loc(x, y + 2).HillId1()];
+						HillBlockInfo h2 = HillRes[World.GetLoc(x, y + 2).HillId1()];
 						int h2p = h2.pattern_id;
-						HillBlockInfo h3 = HillRes[World.get_loc(x, y + 3).HillId1()];
+						HillBlockInfo h3 = HillRes[World.GetLoc(x, y + 3).HillId1()];
 						int h3p = h3.pattern_id;
 						if (h1.special_flag == 0 &&
 						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsEastExitPattern(h1p) &&
@@ -978,7 +978,7 @@ public class MapGenerator
 						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsEastExitPattern(h3p))
 						{
 							if ((h3p == EAST_PATTERN1 || h3p == EAST_PATTERN4) &&
-							    World.get_loc(x - 1, y + 2).Walkable())
+							    World.GetLoc(x - 1, y + 2).Walkable())
 							{
 								int hillId, terrainId, hill2;
 
@@ -997,7 +997,7 @@ public class MapGenerator
 								SetSurroundPowerOff(x, y);
 
 								// next row
-								Location loc2 = World.get_loc(x, y + 1);
+								Location loc2 = World.GetLoc(x, y + 1);
 								hillId = HillRes.locate(h1p,
 									HillRes[hillId].sub_pattern_id, HillRes.LOW_HILL_PRIORITY,
 									EAST_TOP_SPECIAL);
@@ -1009,7 +1009,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// third row
-								loc2 = World.get_loc(x, y + 2);
+								loc2 = World.GetLoc(x, y + 2);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
@@ -1026,7 +1026,7 @@ public class MapGenerator
 								//	loc2->terrain_id = terrainId;
 
 								// fourth row
-								loc2 = World.get_loc(x, y + 3);
+								loc2 = World.GetLoc(x, y + 3);
 								if (h3p == EAST_PATTERN4)
 									h3p = EAST_PATTERN1;
 								if (h3p == EAST_PATTERN3)
@@ -1040,7 +1040,7 @@ public class MapGenerator
 									loc2.TerrainId = terrainId;
 
 								// next row
-								loc2 = World.get_loc(x, y + 4);
+								loc2 = World.GetLoc(x, y + 4);
 								hillId = HillRes.locate(h3p,
 									HillRes[hillId].sub_pattern_id, HillRes.LOW_HILL_PRIORITY,
 									EAST_BOTTOM_SPECIAL);
@@ -1064,7 +1064,7 @@ public class MapGenerator
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				World.get_loc(x, y).RegionId = 0;
+				World.GetLoc(x, y).RegionId = 0;
 			}
 		}
 
@@ -1073,7 +1073,7 @@ public class MapGenerator
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				if (location.RegionId == 0 && location.RegionType() != RegionType.REGION_INPASSABLE)
 				{
 					regionId++;
@@ -1091,7 +1091,7 @@ public class MapGenerator
 		{
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				int thisRegionId = location.RegionId;
 				if (thisRegionId > 0)
 				{
@@ -1108,26 +1108,26 @@ public class MapGenerator
 				int adjRegionId;
 				if (y > 0)
 				{
-					if (x > 0 && (adjRegionId = World.get_loc(x - 1, y - 1).RegionId) < thisRegionId)
+					if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y - 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if ((adjRegionId = World.get_loc(x, y - 1).RegionId) < thisRegionId)
+					if ((adjRegionId = World.GetLoc(x, y - 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.get_loc(x + 1, y - 1).RegionId) < thisRegionId)
+					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y - 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
 				}
 
-				if (x > 0 && (adjRegionId = World.get_loc(x - 1, y).RegionId) < thisRegionId)
+				if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y).RegionId) < thisRegionId)
 					RegionArray.set_adjacent(thisRegionId, adjRegionId);
-				if (x < GameConstants.MapSize - 1 && (adjRegionId = World.get_loc(x + 1, y).RegionId) < thisRegionId)
+				if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y).RegionId) < thisRegionId)
 					RegionArray.set_adjacent(thisRegionId, adjRegionId);
 
 				if (y < GameConstants.MapSize - 1)
 				{
-					if (x > 0 && (adjRegionId = World.get_loc(x - 1, y + 1).RegionId) < thisRegionId)
+					if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y + 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if ((adjRegionId = World.get_loc(x, y + 1).RegionId) < thisRegionId)
+					if ((adjRegionId = World.GetLoc(x, y + 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.get_loc(x + 1, y + 1).RegionId) < thisRegionId)
+					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y + 1).RegionId) < thisRegionId)
 						RegionArray.set_adjacent(thisRegionId, adjRegionId);
 				}
 			}
@@ -1143,20 +1143,20 @@ public class MapGenerator
 
 		// extent x to left and right
 		for (left = x;
-		     left >= 0 && World.get_loc(left, y).RegionId == 0 && World.get_loc(left, y).RegionType() == regionType;
+		     left >= 0 && World.GetLoc(left, y).RegionId == 0 && World.GetLoc(left, y).RegionType() == regionType;
 		     --left)
 		{
-			World.get_loc(left, y).RegionId = regionId;
+			World.GetLoc(left, y).RegionId = regionId;
 		}
 
 		++left;
 
 		for (right = x + 1;
-		     right < GameConstants.MapSize && World.get_loc(right, y).RegionId == 0 &&
-		     World.get_loc(right, y).RegionType() == regionType;
+		     right < GameConstants.MapSize && World.GetLoc(right, y).RegionId == 0 &&
+		     World.GetLoc(right, y).RegionType() == regionType;
 		     ++right)
 		{
-			World.get_loc(right, y).RegionId = regionId;
+			World.GetLoc(right, y).RegionId = regionId;
 		}
 
 		--right;
@@ -1167,7 +1167,7 @@ public class MapGenerator
 		{
 			for (x = left > 0 ? left - 1 : 0; x <= right + 1 && x < GameConstants.MapSize; ++x)
 			{
-				if (World.get_loc(x, y).RegionId == 0 && World.get_loc(x, y).RegionType() == regionType)
+				if (World.GetLoc(x, y).RegionId == 0 && World.GetLoc(x, y).RegionType() == regionType)
 				{
 					FillRegion(x, y, regionId, regionType);
 				}
@@ -1180,7 +1180,7 @@ public class MapGenerator
 		{
 			for (x = left > 0 ? left - 1 : 0; x <= right + 1 && x < GameConstants.MapSize; ++x)
 			{
-				if (World.get_loc(x, y).RegionId == 0 && World.get_loc(x, y).RegionType() == regionType)
+				if (World.GetLoc(x, y).RegionId == 0 && World.GetLoc(x, y).RegionType() == regionType)
 				{
 					FillRegion(x, y, regionId, regionType);
 				}
@@ -1214,16 +1214,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddDirt(rockId, x, y);
 
@@ -1240,16 +1240,16 @@ public class MapGenerator
 							{
 								int rock2Id = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.get_loc(sx, sy).TerrainId].average_type);
+									TerrainRes[World.GetLoc(sx, sy).TerrainId].average_type);
 								if (rock2Id == 0)
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
 								sx2 = sx + rock2Info.locWidth - 1;
 								sy2 = sy + rock2Info.locHeight - 1;
-								if (rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx, sy2).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy2).TerrainId].average_type))
+								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].average_type))
 								{
 									AddDirt(rock2Id, sx, sy);
 								}
@@ -1273,16 +1273,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
 						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddDirt(rockId, x, y);
 						nLarge--;
@@ -1302,16 +1302,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddDirt(rockId, x, y);
 						nSmall--;
@@ -1327,7 +1327,7 @@ public class MapGenerator
 		{
 			for (int x = x1; x <= x2; x++)
 			{
-				if (!World.get_loc(x, y).CanAddDirt())
+				if (!World.GetLoc(x, y).CanAddDirt())
 					return false;
 			}
 		}
@@ -1349,7 +1349,7 @@ public class MapGenerator
 				int dirtBlockId = RockRes.LocateBlock(dirtId, dx, dy);
 				if (dirtBlockId != 0)
 				{
-					Location location = World.get_loc(x1 + dx, y1 + dy);
+					Location location = World.GetLoc(x1 + dx, y1 + dy);
 					location.SetDirt(dirtArrayId, dirtInfo.rockType == RockInfo.DIRT_BLOCKING_TYPE);
 				}
 			}
@@ -1382,16 +1382,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddRock(rockId, x, y);
 
@@ -1408,16 +1408,16 @@ public class MapGenerator
 							{
 								int rock2Id = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.get_loc(sx, sy).TerrainId].average_type);
+									TerrainRes[World.GetLoc(sx, sy).TerrainId].average_type);
 								if (rock2Id == 0)
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
 								sx2 = sx + rock2Info.locWidth - 1;
 								sy2 = sy + rock2Info.locHeight - 1;
-								if (rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx, sy2).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.get_loc(sx2, sy2).TerrainId].average_type))
+								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].average_type) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].average_type))
 								{
 									AddRock(rock2Id, sx, sy);
 								}
@@ -1441,16 +1441,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
 						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddRock(rockId, x, y);
 						nLarge--;
@@ -1470,16 +1470,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.get_loc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.get_loc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
 					{
 						AddRock(rockId, x, y);
 						nSmall--;
@@ -1495,7 +1495,7 @@ public class MapGenerator
 		{
 			for (int x = x1; x <= x2; x++)
 			{
-				if (!World.get_loc(x, y).CanAddRock(3))
+				if (!World.GetLoc(x, y).CanAddRock(3))
 					return false;
 			}
 		}
@@ -1517,7 +1517,7 @@ public class MapGenerator
 				int rockBlockId = RockRes.LocateBlock(rockId, dx, dy);
 				if (rockBlockId != 0)
 				{
-					Location location = World.get_loc(x1 + dx, y1 + dy);
+					Location location = World.GetLoc(x1 + dx, y1 + dy);
 					location.SetRock(rockArrayId);
 					location.SetPowerOff();
 					SetSurroundPowerOff(x1, y1);
@@ -1536,7 +1536,7 @@ public class MapGenerator
 			{
 				if (World.can_build_firm(x, y, Firm.FIRM_HARBOR) != 0)
 				{
-					World.get_loc(x, y).SetHarborBit();
+					World.GetLoc(x, y).SetHarborBit();
 				}
 			}
 		}

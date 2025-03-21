@@ -92,7 +92,7 @@ public class SettleTask : AITask
         
         if (!_settlerSent)
         {
-            Location firmLocation = World.get_loc(firm.loc_x1, firm.loc_y1);
+            Location firmLocation = World.GetLoc(firm.loc_x1, firm.loc_y1);
             int minRating = Int32.MaxValue;
             int bestSettleLocX = -1;
             int bestSettleLocY = -1;
@@ -120,7 +120,7 @@ public class SettleTask : AITask
                         continue;
                     }
 
-                    Location settleLocation = World.get_loc(settleLocX, settleLocY);
+                    Location settleLocation = World.GetLoc(settleLocX, settleLocY);
                     if (settleLocation.RegionId != firmLocation.RegionId || settleLocation.IsPlateau() != firmLocation.IsPlateau())
                         continue;
 
@@ -131,7 +131,7 @@ public class SettleTask : AITask
                         firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(settleLocX, settleLocY, settleLocX2, settleLocY2, 1))
                     {
-                        Location nearLocation = World.get_loc(locXlocY.Item1, locXlocY.Item2);
+                        Location nearLocation = World.GetLoc(locXlocY.Item1, locXlocY.Item2);
                         if (nearLocation.IsFirm() || nearLocation.IsTown())
                             rating++;
                     }

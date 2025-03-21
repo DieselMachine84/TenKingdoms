@@ -537,7 +537,7 @@ public class UnitMarine : Unit
 		ShipStop shipStop = stop_array[dest_stop_id - 1];
 		int xLoc = stop_x_loc;
 		int yLoc = stop_y_loc;
-		Location loc = World.get_loc(xLoc, yLoc);
+		Location loc = World.GetLoc(xLoc, yLoc);
 		Firm firm;
 
 		//TODO change %2 == 0
@@ -704,7 +704,7 @@ public class UnitMarine : Unit
 				continue;
 			}
 
-			Location location = World.get_loc(checkXLoc, checkYLoc);
+			Location location = World.GetLoc(checkXLoc, checkYLoc);
 			if (location.CanMove(mobile_type))
 			{
 				found = true;
@@ -1530,7 +1530,7 @@ public class UnitMarine : Unit
 			//-------------------------------------------------------------------------//
 			// check for space to unload the unit
 			//-------------------------------------------------------------------------//
-			Location loc = World.get_loc(checkXLoc, checkYLoc);
+			Location loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (regionId == 0 || loc.RegionId == regionId)
 			{
 				if (loc.Walkable())
@@ -1647,7 +1647,7 @@ public class UnitMarine : Unit
 				if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 					continue;
 
-				if (World.get_loc(checkXLoc, checkYLoc).CanMove(mobile_type))
+				if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mobile_type))
 				{
 					found = true;
 					break;
@@ -1661,7 +1661,7 @@ public class UnitMarine : Unit
 			checkXLoc = curXLoc + vecX;
 			checkYLoc = curYLoc + vecY;
 
-			if (World.get_loc(checkXLoc, checkYLoc).CanMove(mobile_type))
+			if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mobile_type))
 				found = true;
 		}
 
@@ -1692,7 +1692,7 @@ public class UnitMarine : Unit
 			{
 				int goXLoc = go_x >> InternalConstants.CellWidthShift;
 				int goYLoc = go_y >> InternalConstants.CellHeightShift;
-				if (!World.get_loc(goXLoc, goYLoc).CanMove(mobile_type))
+				if (!World.GetLoc(goXLoc, goYLoc).CanMove(mobile_type))
 				{
 					go_x = next_x;
 					go_y = next_y;
@@ -1763,7 +1763,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		// check if there is a station in the given location
 		//-------------------------------------------------------//
-		Location loc = World.get_loc(stopXLoc, stopYLoc);
+		Location loc = World.GetLoc(stopXLoc, stopYLoc);
 		if (!loc.IsFirm())
 			return;
 
@@ -1776,7 +1776,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		FirmHarbor harbor = (FirmHarbor)firm;
 
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
 			return;
 
 		//-----------------------------------------//
@@ -2242,7 +2242,7 @@ public class UnitMarine : Unit
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			Location location = World.get_loc(checkXLoc, checkYLoc);
+			Location location = World.GetLoc(checkXLoc, checkYLoc);
 
 			if (TerrainRes[location.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
 			{

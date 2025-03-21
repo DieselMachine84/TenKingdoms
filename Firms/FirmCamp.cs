@@ -1404,7 +1404,7 @@ public class FirmCamp : Firm
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location location = World.get_loc(xLoc, yLoc);
+				Location location = World.GetLoc(xLoc, yLoc);
 
 				//--- if there is an enemy unit here ---//
 
@@ -1444,7 +1444,7 @@ public class FirmCamp : Firm
 			if (patrol_unit_array.Count > 0)
 			{
 				UnitArray.attack(enemyXLoc, enemyYLoc, false, patrol_unit_array, InternalConstants.COMMAND_AI,
-					World.get_loc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND));
+					World.GetLoc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND));
 				return true;
 			}
 		}

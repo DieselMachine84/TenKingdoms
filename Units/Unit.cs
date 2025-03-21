@@ -921,7 +921,7 @@ public partial class Unit : Sprite
 
 	public override bool is_shealth()
 	{
-		return Config.fog_of_war && World.get_loc(next_x_loc(), next_y_loc()).Visibility() < UnitRes[unit_id].shealth;
+		return Config.fog_of_war && World.GetLoc(next_x_loc(), next_y_loc()).Visibility() < UnitRes[unit_id].shealth;
 	}
 
 	public bool is_civilian()
@@ -2192,7 +2192,7 @@ public partial class Unit : Sprite
 		if (mobile_type != UnitConstants.UNIT_LAND)
 			return false;
 
-		Location location = World.get_loc(next_x_loc(), next_y_loc());
+		Location location = World.GetLoc(next_x_loc(), next_y_loc());
 
 		if (location.FireStrength() == 0)
 			return false;
@@ -2217,7 +2217,7 @@ public partial class Unit : Sprite
 			if (!location.CanMove(mobile_type))
 				continue;
 
-			location = World.get_loc(checkXLoc, checkYLoc);
+			location = World.GetLoc(checkXLoc, checkYLoc);
 
 			if (location.FireStrength() == 0) // move to a safe place now
 			{
@@ -2385,7 +2385,7 @@ public partial class Unit : Sprite
 			yLoc = Math.Max(0, yLoc);
 			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
 
-			Location location = World.get_loc(xLoc, yLoc);
+			Location location = World.GetLoc(xLoc, yLoc);
 
 			if (location.RegionId != regionId)
 				continue;
@@ -2505,7 +2505,7 @@ public partial class Unit : Sprite
 		List<int> selectedArray = new List<int>();
 		selectedArray.Add(sprite_recno);
 
-		Location location = World.get_loc(original_action_x_loc, original_action_y_loc);
+		Location location = World.GetLoc(original_action_x_loc, original_action_y_loc);
 
 		//--------- resume assign to town -----------//
 
@@ -2580,7 +2580,7 @@ public partial class Unit : Sprite
 
 		//--------------------------------------------//
 
-		Location location = World.get_loc(original_action_x_loc, original_action_y_loc);
+		Location location = World.GetLoc(original_action_x_loc, original_action_y_loc);
 		int targetNationRecno = -1;
 
 		if (original_action_mode == UnitConstants.ACTION_ATTACK_UNIT && location.HasUnit(UnitConstants.UNIT_LAND))
@@ -3058,7 +3058,7 @@ public partial class Unit : Sprite
 		}*/
 		int x = nextX >> InternalConstants.CellWidthShift;
 		int y = nextY >> InternalConstants.CellHeightShift;
-		Location location = World.get_loc(x, y);
+		Location location = World.GetLoc(x, y);
 		bool blocked = !location.IsAccessible(mobile_type) ||
 		               (location.HasUnit(mobile_type) && location.UnitId(mobile_type) != sprite_recno);
 
@@ -3202,7 +3202,7 @@ public partial class Unit : Sprite
 				}*/
 				x = newNextXLoc;
 				y = newNextYLoc;
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				blocked = !location.IsAccessible(mobile_type) ||
 				          (location.HasUnit(mobile_type) && location.UnitId(mobile_type) != sprite_recno);
 			} //else, then blockedChecked = 0
@@ -3221,7 +3221,7 @@ public partial class Unit : Sprite
 				}
 				else
 				{
-					Location location = World.get_loc(x, y);
+					Location location = World.GetLoc(x, y);
 					HandleBlockedMove(location);
 				}
 			}
@@ -3695,7 +3695,7 @@ public partial class Unit : Sprite
 			//-------- find a suitable location since no offset location is given ---------//
 			if (Math.Abs(shipXLoc - action_x_loc2) <= 1 && Math.Abs(shipYLoc - action_y_loc2) <= 1)
 			{
-				Location loc = World.get_loc(next_x_loc(), next_y_loc());
+				Location loc = World.GetLoc(next_x_loc(), next_y_loc());
 				int regionId = loc.RegionId;
 				for (int i = 2; i <= 9; i++)
 				{
@@ -3706,7 +3706,7 @@ public partial class Unit : Sprite
 					if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 						continue;
 
-					loc = World.get_loc(checkXLoc, checkYLoc);
+					loc = World.GetLoc(checkXLoc, checkYLoc);
 					if (loc.RegionId != regionId)
 						continue;
 
@@ -3783,7 +3783,7 @@ public partial class Unit : Sprite
 			//-----------------------------------------------------------------------------//
 			// get a suitable location in the territory as a reference location
 			//-----------------------------------------------------------------------------//
-			Location loc = World.get_loc(destX, destY);
+			Location loc = World.GetLoc(destX, destY);
 			int regionId = loc.RegionId;
 			int xStep = curXLoc - destX;
 			int yStep = curYLoc - destY;
@@ -3797,7 +3797,7 @@ public partial class Unit : Sprite
 				int x = destX + (i * xStep) / count;
 				int y = destY + (i * yStep) / count;
 
-				loc = World.get_loc(x, y);
+				loc = World.GetLoc(x, y);
 				if (loc.RegionId == regionId)
 				{
 					if (loc.Walkable())
@@ -3897,7 +3897,7 @@ public partial class Unit : Sprite
 					return;
 			}
 
-			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(goX, goY).RegionId)
+			if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != World.GetLoc(goX, goY).RegionId)
 			{
 				MoveTo(buildXLoc, buildYLoc);
 				return;
@@ -3905,7 +3905,7 @@ public partial class Unit : Sprite
 		}
 		else
 		{
-			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(buildXLoc, buildYLoc).RegionId)
+			if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != World.GetLoc(buildXLoc, buildYLoc).RegionId)
 			{
 				MoveTo(buildXLoc, buildYLoc);
 				return;
@@ -3984,7 +3984,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there instead if ordering to different territory
 		//----------------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(burnXLoc, burnYLoc).RegionId)
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != World.GetLoc(burnXLoc, burnYLoc).RegionId)
 		{
 			MoveTo(burnXLoc, burnYLoc);
 			return;
@@ -4120,7 +4120,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		if (!World.can_build_town(settleXLoc, settleYLoc, sprite_recno))
 		{
-			Location loc = World.get_loc(settleXLoc, settleYLoc);
+			Location loc = World.GetLoc(settleXLoc, settleYLoc);
 			if (loc.IsTown() && TownArray[loc.TownId()].NationId == nation_recno)
 				assign(settleXLoc, settleYLoc);
 			else
@@ -4131,7 +4131,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there if location is in different territory
 		//----------------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(settleXLoc, settleYLoc).RegionId)
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != World.GetLoc(settleXLoc, settleYLoc).RegionId)
 		{
 			MoveTo(settleXLoc, settleYLoc);
 			return;
@@ -4200,8 +4200,8 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there if the destination in other territory
 		//----------------------------------------------------------------//
-		Location loc = World.get_loc(assignXLoc, assignYLoc);
-		int unitRegionId = World.get_loc(next_x_loc(), next_y_loc()).RegionId;
+		Location loc = World.GetLoc(assignXLoc, assignYLoc);
+		int unitRegionId = World.GetLoc(next_x_loc(), next_y_loc()).RegionId;
 		if (loc.IsFirm())
 		{
 			Firm firm = FirmArray[loc.FirmId()];
@@ -5105,7 +5105,7 @@ public partial class Unit : Sprite
 		{
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
-				Location loc = World.get_loc(xLoc, yLoc);
+				Location loc = World.GetLoc(xLoc, yLoc);
 
 				int unitRecno;
 
@@ -5544,7 +5544,7 @@ public partial class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_FIRM:
-				location = World.get_loc(action_x_loc2, action_y_loc2);
+				location = World.GetLoc(action_x_loc2, action_y_loc2);
 				if (action_para2 == 0 || !location.IsFirm())
 					stop2(); // stop since target is already destroyed
 				else
@@ -5564,7 +5564,7 @@ public partial class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_TOWN:
-				location = World.get_loc(action_x_loc2, action_y_loc2);
+				location = World.GetLoc(action_x_loc2, action_y_loc2);
 				if (action_para2 == 0 || !location.IsTown())
 					stop2(); // stop since target is deleted
 				else
@@ -5582,7 +5582,7 @@ public partial class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_ATTACK_WALL:
-				location = World.get_loc(action_x_loc2, action_y_loc2);
+				location = World.GetLoc(action_x_loc2, action_y_loc2);
 				if (!location.IsWall())
 					stop2(); // stop since target doesn't exist
 				else
@@ -5821,7 +5821,7 @@ public partial class Unit : Sprite
 				continue;
 
 			//------------------ verify location ---------------//
-			loc = World.get_loc(checkXLoc, checkYLoc);
+			loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (defenseMode != 0 && action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET)
 			{
 				if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET)
@@ -6267,7 +6267,7 @@ public partial class Unit : Sprite
 
 	private int idle_detect_wall_checking(int targetXLoc, int targetYLoc)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 		Nation nation = nation_recno != 0 ? NationArray[nation_recno] : null;
 		int targetNationRecno = loc.WallNationId();
 
@@ -6728,7 +6728,7 @@ public partial class Unit : Sprite
 			if (cur_x_loc() == move_to_x_loc && cur_y_loc() == move_to_y_loc)
 			{
 				//----- first check if there is firm in the given location ------//
-				Location loc = World.get_loc(action_x_loc, action_y_loc);
+				Location loc = World.GetLoc(action_x_loc, action_y_loc);
 
 				if (loc.IsFirm() && loc.FirmId() == action_para)
 				{
@@ -6916,7 +6916,7 @@ public partial class Unit : Sprite
 					    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					return;
 
-				Location loc = World.get_loc(action_x_loc, action_y_loc);
+				Location loc = World.GetLoc(action_x_loc, action_y_loc);
 				if (!loc.IsTown())
 				{
 					int unitRecno = sprite_recno;
@@ -7001,8 +7001,8 @@ public partial class Unit : Sprite
 		{
 			if (shipActionXLoc != action_x_loc2 || shipActionYLoc != action_y_loc2)
 			{
-				Location unitLoc = World.get_loc(curXLoc, curYLoc);
-				Location shipActionLoc = World.get_loc(shipActionXLoc, shipActionYLoc);
+				Location unitLoc = World.GetLoc(curXLoc, curYLoc);
+				Location shipActionLoc = World.GetLoc(shipActionXLoc, shipActionYLoc);
 				if (unitLoc.RegionId != shipActionLoc.RegionId)
 				{
 					stop2();
@@ -7089,7 +7089,7 @@ public partial class Unit : Sprite
 			case Rebel.REBEL_SETTLE_NEW:
 				if (!World.can_build_town(rebel.action_para, rebel.action_para2, sprite_recno))
 				{
-					Location loc = World.get_loc(rebel.action_para, rebel.action_para2);
+					Location loc = World.GetLoc(rebel.action_para, rebel.action_para2);
 
 					if (loc.IsTown() && TownArray[loc.TownId()].RebelId == rebel.rebel_recno)
 					{

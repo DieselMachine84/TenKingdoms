@@ -566,7 +566,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// if the targeted wall has been destroyed
 		//------------------------------------------------------------//
-		Location loc = World.get_loc(action_x_loc, action_y_loc);
+		Location loc = World.GetLoc(action_x_loc, action_y_loc);
 		if (!loc.IsWall())
 		{
 			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
@@ -714,7 +714,7 @@ public partial class Unit
 
 	public void attack_unit(int targetXLoc, int targetYLoc, int xOffset, int yOffset, bool resetBlockedEdge)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		//--- AI attacking a nation which its NationRelation::should_attack is 0 ---//
 
@@ -755,7 +755,7 @@ public partial class Unit
 			return;
 		}
 
-		loc = World.get_loc(targetXLoc, targetYLoc);
+		loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		int targetMobileType = (next_x_loc() == targetXLoc && next_y_loc() == targetYLoc)
 			? loc.HasAnyUnit(mobile_type) : loc.HasAnyUnit();
@@ -814,7 +814,7 @@ public partial class Unit
 		int targetYLoc = targetUnit.next_y_loc();
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
-		Location loc = World.get_loc(targetUnit.next_x_loc(), targetUnit.next_y_loc());
+		Location loc = World.GetLoc(targetUnit.next_x_loc(), targetUnit.next_y_loc());
 
 		if (targetMobileType != 0 && mobile_type != UnitConstants.UNIT_AIR) // air unit can move to anywhere
 		{
@@ -837,7 +837,7 @@ public partial class Unit
 			//------------------------------------------------------------------------//
 			// handle the case the unit and the target are in different territory
 			//------------------------------------------------------------------------//
-			if (World.get_loc(curXLoc, curYLoc).RegionId != loc.RegionId)
+			if (World.GetLoc(curXLoc, curYLoc).RegionId != loc.RegionId)
 			{
 				maxRange = max_attack_range();
 				Unit unit = UnitArray[loc.UnitId(targetMobileType)];
@@ -1041,7 +1041,7 @@ public partial class Unit
 			return;
 		}
 
-		Location loc = World.get_loc(firmXLoc, firmYLoc);
+		Location loc = World.GetLoc(firmXLoc, firmYLoc);
 
 		//------------------------------------------------------------//
 		// no firm there
@@ -1075,7 +1075,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			//Firm		*firm = FirmArray[loc.firm_recno()];
@@ -1255,7 +1255,7 @@ public partial class Unit
 			return;
 		}
 
-		Location loc = World.get_loc(townXLoc, townYLoc);
+		Location loc = World.GetLoc(townXLoc, townYLoc);
 
 		//------------------------------------------------------------//
 		// no town there
@@ -1288,7 +1288,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, maxRange))
@@ -1445,7 +1445,7 @@ public partial class Unit
 			return;
 		}
 
-		Location loc = World.get_loc(wallXLoc, wallYLoc);
+		Location loc = World.GetLoc(wallXLoc, wallYLoc);
 
 		//------------------------------------------------------------//
 		// no wall there
@@ -1477,7 +1477,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(wallXLoc, wallYLoc, 1, 1, maxRange))
@@ -1854,7 +1854,7 @@ public partial class Unit
 	
 	public void hit_building(Unit attackUnit, int targetXLoc, int targetYLoc, double attackDamage, int attackNationRecno)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		if (loc.IsFirm())
 			hit_firm(attackUnit, targetXLoc, targetYLoc, attackDamage, attackNationRecno);
@@ -1864,7 +1864,7 @@ public partial class Unit
 	
 	public void hit_firm(Unit attackUnit, int targetXLoc, int targetYLoc, double attackDamage, int attackNationRecno)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 		if (!loc.IsFirm())
 			return; // do nothing if no firm there
 
@@ -1944,7 +1944,7 @@ public partial class Unit
 	
 	public void hit_town(Unit attackUnit, int targetXLoc, int targetYLoc, double attackDamage, int attackNationRecno)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		if (!loc.IsTown())
 			return; // do nothing if no town there
@@ -2014,7 +2014,7 @@ public partial class Unit
 	
 	public void hit_wall(Unit attackUnit, int targetXLoc, int targetYLoc, double attackDamage, int attackNationRecno)
 	{
-		Location loc = World.get_loc(targetXLoc, targetYLoc);
+		Location loc = World.GetLoc(targetXLoc, targetYLoc);
 
 		/*
 		if(attackUnit!=NULL)
@@ -2314,7 +2314,7 @@ public partial class Unit
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			Location loc = World.get_loc(checkXLoc, checkYLoc);
+			Location loc = World.GetLoc(checkXLoc, checkYLoc);
 
 			if (loc.HasUnit(UnitConstants.UNIT_LAND))
 			{
@@ -2413,7 +2413,7 @@ public partial class Unit
 			return true;
 
 		//----------------- init parameters -----------------//
-		Location loc = World.get_loc(curXLoc, curYLoc);
+		Location loc = World.GetLoc(curXLoc, curYLoc);
 		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
@@ -2440,22 +2440,22 @@ public partial class Unit
 			case UnitConstants.UNIT_LAND:
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
-					loc = World.get_loc(checkXLoc, yLoc1);
+					loc = World.GetLoc(checkXLoc, yLoc1);
 					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 
-					loc = World.get_loc(checkXLoc, yLoc2);
+					loc = World.GetLoc(checkXLoc, yLoc2);
 					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
-					loc = World.get_loc(xLoc1, checkYLoc);
+					loc = World.GetLoc(xLoc1, checkYLoc);
 					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 
-					loc = World.get_loc(xLoc2, checkYLoc);
+					loc = World.GetLoc(xLoc2, checkYLoc);
 					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 				}
@@ -2467,14 +2467,14 @@ public partial class Unit
 				{
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc1);
+						loc = World.GetLoc(checkXLoc, yLoc1);
 						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc2);
+						loc = World.GetLoc(checkXLoc, yLoc2);
 						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
@@ -2484,14 +2484,14 @@ public partial class Unit
 				{
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc1, checkYLoc);
+						loc = World.GetLoc(xLoc1, checkYLoc);
 						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc2, checkYLoc);
+						loc = World.GetLoc(xLoc2, checkYLoc);
 						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
@@ -2504,14 +2504,14 @@ public partial class Unit
 				{
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc1);
+						loc = World.GetLoc(checkXLoc, yLoc1);
 						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc2);
+						loc = World.GetLoc(checkXLoc, yLoc2);
 						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
@@ -2521,14 +2521,14 @@ public partial class Unit
 				{
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc1, checkYLoc);
+						loc = World.GetLoc(xLoc1, checkYLoc);
 						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc2, checkYLoc);
+						loc = World.GetLoc(xLoc2, checkYLoc);
 						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
@@ -2555,7 +2555,7 @@ public partial class Unit
 		//-------------------------------------------------------------------------//
 		// mobile_type is differet from that of target unit
 		//-------------------------------------------------------------------------//
-		Location loc = World.get_loc(next_x_loc(), next_y_loc());
+		Location loc = World.GetLoc(next_x_loc(), next_y_loc());
 		if (mobile_type == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_SEA &&
 		    !can_attack_different_target_type() && ship_surr_has_free_land(targetXLoc, targetYLoc, loc.RegionId))
 			return true;
@@ -2600,7 +2600,7 @@ public partial class Unit
 
 			for (; i < width; i++, locWeight <<= 1)
 			{
-				loc = World.get_loc(squareXLoc + i, testYLoc);
+				loc = World.GetLoc(squareXLoc + i, testYLoc);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2635,7 +2635,7 @@ public partial class Unit
 
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
-				loc = World.get_loc(testXLoc, squareYLoc + i);
+				loc = World.GetLoc(testXLoc, squareYLoc + i);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2670,7 +2670,7 @@ public partial class Unit
 
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
-				loc = World.get_loc(squareXLoc + i, testYLoc);
+				loc = World.GetLoc(squareXLoc + i, testYLoc);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2705,7 +2705,7 @@ public partial class Unit
 
 			for (; i < height; i++, locWeight <<= 1)
 			{
-				loc = World.get_loc(testXLoc, squareYLoc + i);
+				loc = World.GetLoc(testXLoc, squareYLoc + i);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2757,7 +2757,7 @@ public partial class Unit
 
 			for (; i <= xLoc2; i += 2, locWeight <<= 1)
 			{
-				loc = World.get_loc(i, yLoc1);
+				loc = World.GetLoc(i, yLoc1);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2792,7 +2792,7 @@ public partial class Unit
 
 			for (; i > yLoc1; i -= 2, locWeight <<= 1)
 			{
-				loc = World.get_loc(xLoc1, i);
+				loc = World.GetLoc(xLoc1, i);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2827,7 +2827,7 @@ public partial class Unit
 
 			for (; i > xLoc1; i -= 2, locWeight <<= 1)
 			{
-				loc = World.get_loc(i, yLoc2);
+				loc = World.GetLoc(i, yLoc2);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2862,7 +2862,7 @@ public partial class Unit
 
 			for (; i < yLoc2; i += 2, locWeight <<= 1)
 			{
-				loc = World.get_loc(xLoc2, i);
+				loc = World.GetLoc(xLoc2, i);
 				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
 				else if (loc.HasUnit(mobile_type))
@@ -2897,7 +2897,7 @@ public partial class Unit
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			loc = World.get_loc(checkXLoc, checkYLoc);
+			loc = World.GetLoc(checkXLoc, checkYLoc);
 			if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 				return true;
 		}
@@ -2917,7 +2917,7 @@ public partial class Unit
 		    Math.Abs(curYLoc - targetYLoc) <= maxRange) // inside the attack range
 			return true;
 
-		Location loc = World.get_loc(curXLoc, curYLoc);
+		Location loc = World.GetLoc(curXLoc, curYLoc);
 		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
@@ -2944,22 +2944,22 @@ public partial class Unit
 			case UnitConstants.UNIT_LAND:
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
-					loc = World.get_loc(checkXLoc, yLoc1);
+					loc = World.GetLoc(checkXLoc, yLoc1);
 					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 
-					loc = World.get_loc(checkXLoc, yLoc2);
+					loc = World.GetLoc(checkXLoc, yLoc2);
 					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
-					loc = World.get_loc(xLoc1, checkYLoc);
+					loc = World.GetLoc(xLoc1, checkYLoc);
 					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 
-					loc = World.get_loc(xLoc2, checkYLoc);
+					loc = World.GetLoc(xLoc2, checkYLoc);
 					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 				}
@@ -2971,14 +2971,14 @@ public partial class Unit
 				{
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc1);
+						loc = World.GetLoc(checkXLoc, yLoc1);
 						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc2);
+						loc = World.GetLoc(checkXLoc, yLoc2);
 						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
@@ -2988,14 +2988,14 @@ public partial class Unit
 				{
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc1, checkYLoc);
+						loc = World.GetLoc(xLoc1, checkYLoc);
 						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc2, checkYLoc);
+						loc = World.GetLoc(xLoc2, checkYLoc);
 						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
@@ -3008,14 +3008,14 @@ public partial class Unit
 				{
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc1);
+						loc = World.GetLoc(checkXLoc, yLoc1);
 						if (loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
-						loc = World.get_loc(checkXLoc, yLoc2);
+						loc = World.GetLoc(checkXLoc, yLoc2);
 						if (loc.CanMove(mobile_type))
 							return true;
 					}
@@ -3025,14 +3025,14 @@ public partial class Unit
 				{
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc1, checkYLoc);
+						loc = World.GetLoc(xLoc1, checkYLoc);
 						if (loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
-						loc = World.get_loc(xLoc2, checkYLoc);
+						loc = World.GetLoc(xLoc2, checkYLoc);
 						if (loc.CanMove(mobile_type))
 							return true;
 					}
@@ -3430,7 +3430,7 @@ public partial class Unit
 				break;
 
 			case UnitConstants.ACTION_ATTACK_WALL:
-				loc = World.get_loc(action_x_loc2, action_y_loc2);
+				loc = World.GetLoc(action_x_loc2, action_y_loc2);
 
 				if (!loc.IsWall() || !nation_can_attack(loc.PowerNationId))
 					clearToDetect++;
@@ -3660,7 +3660,7 @@ public partial class Unit
 			return true;
 
 		Unit target = UnitArray[action_para];
-		Location loc = World.get_loc(action_x_loc, action_y_loc);
+		Location loc = World.GetLoc(action_x_loc, action_y_loc);
 		if (!loc.HasUnit(target.mobile_type))
 			return true; // the target may be dead or invisible
 

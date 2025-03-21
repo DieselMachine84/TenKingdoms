@@ -11,7 +11,7 @@ public partial class Renderer
                 int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
                 int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
 
-                Location location = World.get_loc(locX, locY);
+                Location location = World.GetLoc(locX, locY);
                 if (location.IsTown())
                 {
                     _selectedFirmId = _selectedUnitId = _selectedSiteId = 0;

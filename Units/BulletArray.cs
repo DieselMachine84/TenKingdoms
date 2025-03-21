@@ -73,7 +73,7 @@ public class BulletArray : SpriteArray
 		int targetXLoc = xLoc;
 		int targetYLoc = yLoc;
 		int width = 0, height = 0;
-		Location location = World.get_loc(xLoc, yLoc);
+		Location location = World.GetLoc(xLoc, yLoc);
 
 		if (location.IsFirm())
 		{
@@ -303,7 +303,7 @@ public class BulletArray : SpriteArray
 			if (curXLoc == destXLoc && curYLoc == destYLoc)
 				break; // is destination
 
-			Location location = World.get_loc(curXLoc, curYLoc);
+			Location location = World.GetLoc(curXLoc, curYLoc);
 
 			//if(!locPtr->walkable(3) || locPtr->has_unit(UNIT_LAND) || locPtr->has_unit(UNIT_SEA))
 			if (!location.Walkable(Location.LOCATE_WALK_LAND | Location.LOCATE_WALK_SEA))

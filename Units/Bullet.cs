@@ -147,7 +147,7 @@ public class Bullet : Sprite
 				{
 					if (fire_radius == 1)
 					{
-						Location location = World.get_loc(target_x_loc, target_y_loc);
+						Location location = World.GetLoc(target_x_loc, target_y_loc);
 						if (location.CanSetFire() && location.FireStrength() < 30)
 							location.SetFireStrength(30);
 						if (location.Flammability() > 0)
@@ -172,7 +172,7 @@ public class Bullet : Sprite
 						{
 							for (int x = x1; x <= x2; ++x)
 							{
-								Location location = World.get_loc(x, y);
+								Location location = World.GetLoc(x, y);
 								// ##### begin Gilbert 30/10 ######//
 								int dist = Math.Abs(x - target_x_loc) + Math.Abs(y - target_y_loc);
 								if (dist > fire_radius)
@@ -201,7 +201,7 @@ public class Bullet : Sprite
 	{
 		//---- check if there is any unit in the target location ----//
 
-		Location location = World.get_loc(x, y);
+		Location location = World.GetLoc(x, y);
 		int targetUnitRecno = location.UnitId(target_mobile_type);
 		if (UnitArray.IsDeleted(targetUnitRecno))
 			return; // the target unit is deleted
@@ -266,7 +266,7 @@ public class Bullet : Sprite
 
 	public void hit_building(int x, int y)
 	{
-		Location location = World.get_loc(x, y);
+		Location location = World.GetLoc(x, y);
 
 		if (location.IsFirm())
 		{
@@ -315,7 +315,7 @@ public class Bullet : Sprite
 
 	public void hit_wall(int x, int y)
 	{
-		Location location = World.get_loc(x, y);
+		Location location = World.GetLoc(x, y);
 
 		if (!location.IsWall())
 			return;
@@ -376,7 +376,7 @@ public class Bullet : Sprite
 			int y = target_y_loc + spiral_y[c];
 			if (x >= 0 && x < GameConstants.MapSize && y >= 0 && y < GameConstants.MapSize)
 			{
-				Location location = World.get_loc(x, y);
+				Location location = World.GetLoc(x, y);
 				if (target_mobile_type == UnitConstants.UNIT_AIR)
 				{
 					if (location.HasUnit(UnitConstants.UNIT_AIR))
@@ -457,7 +457,7 @@ public class Bullet : Sprite
 			int y = target_y_loc + spiral_y[c];
 			if (x >= 0 && x < GameConstants.MapSize && y >= 0 && y < GameConstants.MapSize)
 			{
-				Location locPtr = World.get_loc(x, y);
+				Location locPtr = World.GetLoc(x, y);
 				//char targetMobileType;
 				//if( (targetMobileType = locPtr.has_any_unit()) != 0)
 				//{

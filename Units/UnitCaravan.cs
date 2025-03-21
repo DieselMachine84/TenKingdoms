@@ -69,7 +69,7 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// check if there is a station in the given location
 		//-------------------------------------------------------//
-		Location loc = World.get_loc(stopXLoc, stopYLoc);
+		Location loc = World.GetLoc(stopXLoc, stopYLoc);
 		if (!loc.IsFirm())
 			return;
 
@@ -81,7 +81,7 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// return if the market stop is in another territory
 		//-------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 			return;
 
 		//-------------------------------------------//
@@ -543,7 +543,7 @@ public class UnitCaravan : Unit
 		CaravanStop caravanStop = stop_array[dest_stop_id - 1];
 		int xLoc = stop_x_loc;
 		int yLoc = stop_y_loc;
-		Location loc = World.get_loc(xLoc, yLoc);
+		Location loc = World.GetLoc(xLoc, yLoc);
 		Firm firm;
 
 		if (loc.CanMove(mobile_type))
@@ -1657,7 +1657,7 @@ public class UnitCaravan : Unit
 				if (testXLoc < upperLeftBoundX || testXLoc > lowerRightBoundX || testYLoc < upperLeftBoundY || testYLoc > lowerRightBoundY)
 					continue;
 
-				Location location = World.get_loc(testXLoc, testYLoc);
+				Location location = World.GetLoc(testXLoc, testYLoc);
 				if (location.CanMove(mobile_type))
 				{
 					found = true;
@@ -1683,7 +1683,7 @@ public class UnitCaravan : Unit
 				if (testXLoc < upperLeftBoundX || testXLoc > lowerRightBoundX || testYLoc < upperLeftBoundY || testYLoc > lowerRightBoundY)
 					continue;
 
-				Location location = World.get_loc(testXLoc, testYLoc);
+				Location location = World.GetLoc(testXLoc, testYLoc);
 				if (location.CanMove(mobile_type))
 				{
 					found = true;
@@ -1709,7 +1709,7 @@ public class UnitCaravan : Unit
 				if (testXLoc < upperLeftBoundX || testXLoc > lowerRightBoundX || testYLoc < upperLeftBoundY || testYLoc > lowerRightBoundY)
 					continue;
 
-				Location location = World.get_loc(testXLoc, testYLoc);
+				Location location = World.GetLoc(testXLoc, testYLoc);
 				if (location.CanMove(mobile_type))
 				{
 					found = true;
@@ -1735,7 +1735,7 @@ public class UnitCaravan : Unit
 				if (testXLoc < upperLeftBoundX || testXLoc > lowerRightBoundX || testYLoc < upperLeftBoundY || testYLoc > lowerRightBoundY)
 					continue;
 
-				Location location = World.get_loc(testXLoc, testYLoc);
+				Location location = World.GetLoc(testXLoc, testYLoc);
 				if (location.CanMove(mobile_type))
 				{
 					found = true;
