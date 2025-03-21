@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
@@ -72,6 +73,42 @@ public class Misc
     public static int GetTime()
     {
         return (int)((DateTime.Now.Ticks - StartTicks) / TimeSpan.TicksPerMillisecond);
+    }
+
+    public static bool IsLocationValid(int locX, int locY)
+    {
+        return (locX >= 0 && locX < GameConstants.MapSize && locY >= 0 && locY < GameConstants.MapSize);
+    }
+
+    public static IEnumerable<(int, int)> EnumerateNearLocations(int locX1, int locY1, int locX2, int locY2, int distance)
+    {
+        for (int locX = locX1 - distance; locX <= locX2 + distance; locX++)
+        {
+            if (IsLocationValid(locX, locY1 - distance))
+                yield return (locX, locY1 - distance);
+            if (IsLocationValid(locX, locY2 + distance))
+                yield return (locX, locY2 + distance);
+        }
+
+        for (int locY = locY1 - distance; locY <= locY2 + distance; locY++)
+        {
+            if (IsLocationValid(locX1 - distance, locY))
+                yield return (locX1 - distance, locY);
+            if (IsLocationValid(locX2 + distance, locY))
+                yield return (locX2 + distance, locY);
+        }
+    }
+
+    public static bool AreTownAndFirmLinked(Town town, Firm firm)
+    {
+        return rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+            firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+    }
+
+    public static bool AreFirmsLinked(Firm firm1, Firm firm2)
+    {
+        return rects_distance(firm1.loc_x1, firm1.loc_y1, firm1.loc_x2, firm2.loc_y2,
+            firm2.loc_x1, firm2.loc_y1, firm2.loc_x2, firm2.loc_y2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
     }
 
     // Given two lengths in x and y coordination, then find the diagonal
@@ -149,35 +186,28 @@ public class Misc
     // when a rectangle size is evenly divisible, the center four coordinates are
     // equally considered the center. If it is odd, there will only be one center
     // coordinate to the shape.
-    public static int rects_distance(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2,
-        int edgeA = 0, int edgeB = 0)
+    public static int rects_distance(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
     {
-        if (edgeA == 0)
-        {
-            int dx = (ax2 - ax1) / 2;
-            int dy = (ay2 - ay1) / 2;
-            ax1 += dx;
-            ax2 -= dx;
-            ay1 += dy;
-            ay2 -= dy;
-        }
+        int dax = (ax2 - ax1) / 2;
+        int day = (ay2 - ay1) / 2;
+        ax1 += dax;
+        ax2 -= dax;
+        ay1 += day;
+        ay2 -= day;
 
-        if (edgeB == 0)
-        {
-            int dx = (bx2 - bx1) / 2;
-            int dy = (by2 - by1) / 2;
-            bx1 += dx;
-            bx2 -= dx;
-            by1 += dy;
-            by2 -= dy;
-        }
+        int dbx = (bx2 - bx1) / 2;
+        int dby = (by2 - by1) / 2;
+        bx1 += dbx;
+        bx2 -= dbx;
+        by1 += dby;
+        by2 -= dby;
 
         int x = Math.Min(Math.Abs(ax1 - bx2), Math.Abs(ax2 - bx1));
         int y = Math.Min(Math.Abs(ay1 - by2), Math.Abs(ay2 - by1));
 
         return Math.Max(x, y);
     }
-    
+
     public static bool is_touch(int x1, int y1, int x2, int y2, int a1, int b1, int a2, int b2)
     {
         return ((b1 <= y1 && b2 >= y1) || (y1 <= b1 && y2 >= b1)) &&

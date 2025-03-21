@@ -1698,11 +1698,9 @@ public class Town
 	}
 
 
-	private bool CanTrain(int raceId)
+	public bool CanTrain(int raceId)
 	{
-		int recruitableCount = RacesJoblessPopulation[raceId - 1];
-
-		return HasLinkedOwnCamp && recruitableCount > 0 && NationArray[NationId].cash > GameConstants.TRAIN_SKILL_COST;
+		return HasLinkedOwnCamp && RecruitableRacePopulation(raceId, true) > 0 && NationArray[NationId].cash > GameConstants.TRAIN_SKILL_COST;
 	}
 
 	private void ProcessTrain()
@@ -1900,11 +1898,8 @@ public class Town
 
 				//---- if the target town is within the effective range of this firm ----//
 
-				if (Misc.rects_distance(destTown.LocX1, destTown.LocY1, destTown.LocX2, destTown.LocY2,
-					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-				{
+				if (!Misc.AreTownAndFirmLinked(this, firm))
 					continue;
-				}
 
 				//------- scan for workers -----------//
 
@@ -2229,6 +2224,9 @@ public class Town
 
 	public int Recruit(int trainSkillId, int raceId, byte remoteAction)
 	{
+		if (trainSkillId >= 1 && !CanTrain(raceId))
+			return 0;
+		
 		//---- we can't train a new one when there is one currently under training ---//
 
 		if (trainSkillId >= 1 && TrainUnitId != 0)
@@ -2251,14 +2249,7 @@ public class Town
 		//return 0;
 		//}
 
-		//---- check if there are units of the race ready for training ----//
-
 		int recruitableCount = RecruitableRacePopulation(raceId, true);
-
-		if (recruitableCount == 0)
-			return 0;
-
-		//-------- create an unit ------//
 
 		//--- if there are spies in this town, chances are that they will be mobilized ---//
 
@@ -2290,8 +2281,6 @@ public class Town
 				return 0;
 			}
 		}
-
-		//------- if we should train a spy --------//
 
 		Unit unit = null;
 
@@ -2583,11 +2572,8 @@ public class Town
 
 			//---------- check if the firm is close enough to this firm -------//
 
-			if (Misc.rects_distance(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
-				    LocX1, LocY1, LocX2, LocY2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-			{
+			if (!Misc.AreTownAndFirmLinked(this, firm))
 				continue;
-			}
 
 			//------ check if both are on the same terrain type ------//
 
