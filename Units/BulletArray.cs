@@ -75,20 +75,20 @@ public class BulletArray : SpriteArray
 		int width = 0, height = 0;
 		Location location = World.get_loc(xLoc, yLoc);
 
-		if (location.is_firm())
+		if (location.IsFirm())
 		{
-			Firm targetFirm = FirmArray[location.firm_recno()];
+			Firm targetFirm = FirmArray[location.FirmId()];
 			FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
 			width = firmInfo.loc_width;
 			height = firmInfo.loc_height;
 		}
-		else if (location.is_town())
+		else if (location.IsTown())
 		{
-			Town targetTown = TownArray[location.town_recno()];
+			Town targetTown = TownArray[location.TownId()];
 			width = targetTown.LocWidth();
 			height = targetTown.LocHeight();
 		}
-		else if (location.is_wall())
+		else if (location.IsWall())
 			width = height = 1;
 
 		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + width &&
@@ -306,7 +306,7 @@ public class BulletArray : SpriteArray
 			Location location = World.get_loc(curXLoc, curYLoc);
 
 			//if(!locPtr->walkable(3) || locPtr->has_unit(UNIT_LAND) || locPtr->has_unit(UNIT_SEA))
-			if (!location.walkable(3))
+			if (!location.Walkable(Location.LOCATE_WALK_LAND | Location.LOCATE_WALK_SEA))
 				return false;
 		}
 

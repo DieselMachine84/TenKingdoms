@@ -148,10 +148,10 @@ public class Bullet : Sprite
 					if (fire_radius == 1)
 					{
 						Location location = World.get_loc(target_x_loc, target_y_loc);
-						if (location.can_set_fire() && location.fire_str() < 30)
-							location.set_fire_str(30);
-						if (location.fire_src() > 0)
-							location.set_fire_src(1); // such that the fire will be put out quickly
+						if (location.CanSetFire() && location.FireStrength() < 30)
+							location.SetFireStrength(30);
+						if (location.Flammability() > 0)
+							location.SetFlammability(1); // such that the fire will be put out quickly
 					}
 					else
 					{
@@ -180,10 +180,10 @@ public class Bullet : Sprite
 								int fl = 30 - dist * 7;
 								if (fl < 10)
 									fl = 10;
-								if (location.can_set_fire() && location.fire_str() < fl)
-									location.set_fire_str(fl);
-								if (location.fire_src() > 0)
-									location.set_fire_src(1); // such that the fire will be put out quickly
+								if (location.CanSetFire() && location.FireStrength() < fl)
+									location.SetFireStrength(fl);
+								if (location.Flammability() > 0)
+									location.SetFlammability(1); // such that the fire will be put out quickly
 								// ##### begin Gilbert 30/10 ######//
 							}
 						}
@@ -202,7 +202,7 @@ public class Bullet : Sprite
 		//---- check if there is any unit in the target location ----//
 
 		Location location = World.get_loc(x, y);
-		int targetUnitRecno = location.unit_recno(target_mobile_type);
+		int targetUnitRecno = location.UnitId(target_mobile_type);
 		if (UnitArray.IsDeleted(targetUnitRecno))
 			return; // the target unit is deleted
 
@@ -268,15 +268,15 @@ public class Bullet : Sprite
 	{
 		Location location = World.get_loc(x, y);
 
-		if (location.is_firm())
+		if (location.IsFirm())
 		{
-			Firm firm = FirmArray[location.firm_recno()];
+			Firm firm = FirmArray[location.FirmId()];
 			if (!NationArray.should_attack(nation_recno, firm.nation_recno))
 				return;
 		}
-		else if (location.is_town())
+		else if (location.IsTown())
 		{
-			Town town = TownArray[location.town_recno()];
+			Town town = TownArray[location.TownId()];
 			if (!NationArray.should_attack(nation_recno, town.NationId))
 				return;
 		}
@@ -317,7 +317,7 @@ public class Bullet : Sprite
 	{
 		Location location = World.get_loc(x, y);
 
-		if (!location.is_wall())
+		if (!location.IsWall())
 			return;
 
 		double attackDamage = attenuated_damage(x * InternalConstants.CellWidth, y * InternalConstants.CellHeight);
@@ -379,7 +379,7 @@ public class Bullet : Sprite
 				Location location = World.get_loc(x, y);
 				if (target_mobile_type == UnitConstants.UNIT_AIR)
 				{
-					if (location.has_unit(UnitConstants.UNIT_AIR))
+					if (location.HasUnit(UnitConstants.UNIT_AIR))
 					{
 						hit_target(x, y);
 						hitCount++;
@@ -387,9 +387,9 @@ public class Bullet : Sprite
 				}
 				else
 				{
-					if (location.is_firm())
+					if (location.IsFirm())
 					{
-						int firmRecno = location.firm_recno();
+						int firmRecno = location.FirmId();
 						// check this firm has not been attacked
 						bool found = false;
 						for (int i = firmHitCount - 1; i >= 0; i--)
@@ -408,9 +408,9 @@ public class Bullet : Sprite
 							hitCount++;
 						}
 					}
-					else if (location.is_town())
+					else if (location.IsTown())
 					{
-						int townRecno = location.town_recno();
+						int townRecno = location.TownId();
 						// check this town has not been attacked
 						bool found = false;
 						for (int i = townHitCount - 1; i >= 0; i--)
@@ -429,7 +429,7 @@ public class Bullet : Sprite
 							hitCount++;
 						}
 					}
-					else if (location.is_wall())
+					else if (location.IsWall())
 					{
 						hit_wall(x, y);
 						hitCount++;
@@ -462,7 +462,7 @@ public class Bullet : Sprite
 				//if( (targetMobileType = locPtr.has_any_unit()) != 0)
 				//{
 				//	short unitRecno = locPtr.unit_recno(UnitConstants.UNIT_LAND);
-				int unitRecno = locPtr.unit_recno(target_mobile_type);
+				int unitRecno = locPtr.UnitId(target_mobile_type);
 				if (!UnitArray.IsDeleted(unitRecno))
 				{
 					Unit unit = UnitArray[unitRecno];

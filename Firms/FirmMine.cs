@@ -33,7 +33,7 @@ public class FirmMine : Firm
 
         if (location != null)
         {
-            site_recno = location.site_recno();
+            site_recno = location.SiteId();
             raw_id = SiteArray[site_recno].ObjectId;
             reserve_qty = SiteArray[site_recno].ReserveQty;
 
@@ -243,7 +243,7 @@ public class FirmMine : Firm
             {
                 Location location = World.get_loc(xLoc, yLoc);
 
-                if (location.has_site() && SiteArray[location.site_recno()].SiteType == Site.SITE_RAW)
+                if (location.HasSite() && SiteArray[location.SiteId()].SiteType == Site.SITE_RAW)
                 {
                     return location;
                 }

@@ -416,7 +416,7 @@ public class Nation : NationBase
 
 		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
 
-		Firm firm = FirmArray[location.firm_recno()];
+		Firm firm = FirmArray[location.FirmId()];
 
 		//-------- get a skilled unit --------//
 
@@ -466,7 +466,7 @@ public class Nation : NationBase
 
 		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
 
-		Firm firm = FirmArray[location.firm_recno()];
+		Firm firm = FirmArray[location.FirmId()];
 
 		if (firm.builder_recno != 0) // if the firm already has a construction worker
 			return -1;
@@ -506,7 +506,7 @@ public class Nation : NationBase
 
 		Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
 
-		Firm firm = FirmArray[location.firm_recno()];
+		Firm firm = FirmArray[location.FirmId()];
 		if (firm.firm_id == Firm.FIRM_CAMP)
 		{
 			//DieselMachine
@@ -576,7 +576,7 @@ public class Nation : NationBase
 
 		//---------------------------------------------------------------------------//
 
-		if (!World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc).is_firm()) // firm exists, so assign
+		if (!World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc).IsFirm()) // firm exists, so assign
 			return -1;
 
 		unit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
@@ -598,7 +598,7 @@ public class Nation : NationBase
 
 		Location location = World.get_loc(actionNode.ref_x_loc, actionNode.ref_y_loc);
 
-		Town town = TownArray[location.town_recno()]; // point to the old town
+		Town town = TownArray[location.TownId()]; // point to the old town
 
 		int raceId = town.PickRandomRace(false, true); // 0-don't pick has job unit, 1-pick spies
 
@@ -653,7 +653,7 @@ public class Nation : NationBase
 
 		Location location = World.get_loc(actionNode.ref_x_loc, actionNode.ref_y_loc);
 
-		Town town = TownArray[location.town_recno()]; // point to the old town
+		Town town = TownArray[location.TownId()]; // point to the old town
 
 		int raceId = town.PickRandomRace(false, true); // 0-don't pick has job unit, 1-pick spies
 
@@ -736,9 +736,9 @@ public class Nation : NationBase
 				y = Math.Max(0, y);
 				y = Math.Min(GameConstants.MapSize - 1, y);
 				Location location = World.get_loc(x, y);
-				if (location.is_town())
+				if (location.IsTown())
 				{
-					nearbyTown = TownArray[location.town_recno()];
+					nearbyTown = TownArray[location.TownId()];
 					goto doublebreak;
 				}
 			}
@@ -749,9 +749,9 @@ public class Nation : NationBase
 		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.cloaked_nation_recno == 0)
 		{
 			Location location = World.get_loc(actionNode.action_x_loc, actionNode.action_y_loc);
-			if (location.is_town())
+			if (location.IsTown())
 			{
-				Town targetTown = TownArray[location.town_recno()];
+				Town targetTown = TownArray[location.TownId()];
 				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.true_nation_recno())
 				{
 					spy.notify_cloaked_nation_flag = 1;
@@ -1107,10 +1107,10 @@ public class Nation : NationBase
 
 			Location location = World.get_loc(site.LocX, site.LocY);
 
-			if (!location.has_unit(UnitConstants.UNIT_LAND))
+			if (!location.HasUnit(UnitConstants.UNIT_LAND))
 				continue;
 
-			Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+			Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
 			if (unit.cur_action != Sprite.SPRITE_IDLE) // only attack if this unit is idle
 				continue;
@@ -1282,7 +1282,7 @@ public class Nation : NationBase
 
 			Location siteLoc = World.get_loc(site.LocX, site.LocY);
 
-			if (!siteLoc.can_build_firm())
+			if (!siteLoc.CanBuildFirm())
 				continue;
 
 			int siteId = site.ObjectId - 1;
@@ -1304,7 +1304,7 @@ public class Nation : NationBase
 				Location location = World.get_loc(town.LocX1, town.LocY1);
 
 				//-********* codes to move to other territory ***********-//
-				if (siteLoc.region_id != location.region_id)
+				if (siteLoc.RegionId != location.RegionId)
 					continue; // not on the same territory
 
 				int dist = Misc.rects_distance(site.LocX, site.LocY, site.LocX, site.LocY,
@@ -1527,7 +1527,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < height; i++)
 			{
-				if (World.get_loc(x, y1 + i).can_build_firm())
+				if (World.get_loc(x, y1 + i).CanBuildFirm())
 					count++;
 			}
 
@@ -1540,7 +1540,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < width; i++)
 			{
-				if (World.get_loc(x1 + i, y).can_build_firm())
+				if (World.get_loc(x1 + i, y).CanBuildFirm())
 					count++;
 			}
 
@@ -1553,7 +1553,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < height; i++)
 			{
-				if (World.get_loc(x, y1 + i).can_build_firm())
+				if (World.get_loc(x, y1 + i).CanBuildFirm())
 					count++;
 			}
 
@@ -1567,7 +1567,7 @@ public class Nation : NationBase
 			int count = 0;
 			for (int i = 0; i < width; i++)
 			{
-				if (World.get_loc(x1 + i, y).can_build_firm())
+				if (World.get_loc(x1 + i, y).CanBuildFirm())
 					count++;
 			}
 
@@ -1579,19 +1579,19 @@ public class Nation : NationBase
 		//------------------------------------------//
 
 		//------- upper left corner -------//
-		if (x1 > 0 && y1 > 0 && World.get_loc(x1 - 1, y1 - 1).can_build_firm())
+		if (x1 > 0 && y1 > 0 && World.get_loc(x1 - 1, y1 - 1).CanBuildFirm())
 			score += 50;
 
 		//------- upper right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 > 0 && World.get_loc(x1 + 1, y1 - 1).can_build_firm())
+		if (x1 < GameConstants.MapSize - 1 && y1 > 0 && World.get_loc(x1 + 1, y1 - 1).CanBuildFirm())
 			score += 50;
 
 		//----------- lower left corner ----------//
-		if (x1 > 0 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 - 1, y1 + 1).can_build_firm())
+		if (x1 > 0 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 - 1, y1 + 1).CanBuildFirm())
 			score += 50;
 
 		//------- lower right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 + 1, y1 + 1).can_build_firm())
+		if (x1 < GameConstants.MapSize - 1 && y1 < GameConstants.MapSize - 1 && World.get_loc(x1 + 1, y1 + 1).CanBuildFirm())
 			score += 50;
 	}
 
@@ -1604,12 +1604,12 @@ public class Nation : NationBase
 
 		//-------- get the refective area ---------//
 
-		int buildRegionId = location.region_id;
-		bool buildIsPlateau = location.is_plateau();
+		int buildRegionId = location.RegionId;
+		bool buildIsPlateau = location.IsPlateau();
 
-		if (location.is_firm())
+		if (location.IsFirm())
 		{
-			int originFirmRecno = location.firm_recno();
+			int originFirmRecno = location.FirmId();
 
 			Firm firm = FirmArray[originFirmRecno];
 
@@ -1627,9 +1627,9 @@ public class Nation : NationBase
 				buildIsPlateau = false;
 			}
 		}
-		else if (location.is_town())
+		else if (location.IsTown())
 		{
-			int originTownRecno = location.town_recno();
+			int originTownRecno = location.TownId();
 
 			Town town = TownArray[originTownRecno];
 
@@ -1683,8 +1683,8 @@ public class Nation : NationBase
 				int t1 = Math.Abs(xLoc - centerX);
 				int t2 = Math.Abs(yLoc - centerY);
 
-				if (location.region_id != buildRegionId || location.is_plateau() != buildIsPlateau ||
-				    location.is_power_off())
+				if (location.RegionId != buildRegionId || location.IsPlateau() != buildIsPlateau ||
+				    location.IsPowerOff())
 				{
 					refMatrix[refMatrixIndex] = -1000;
 				}
@@ -1706,8 +1706,8 @@ public class Nation : NationBase
 			for (xLoc = refX1; xLoc <= refX2; xLoc++)
 			{
 				location = World.get_loc(refX1, yLoc);
-				if (location.region_id != buildRegionId || location.is_plateau() != buildIsPlateau ||
-				    location.is_power_off())
+				if (location.RegionId != buildRegionId || location.IsPlateau() != buildIsPlateau ||
+				    location.IsPowerOff())
 				{
 					continue;
 				}
@@ -1719,9 +1719,9 @@ public class Nation : NationBase
 
 				int refBX1 = -1, refBY1 = -1, refBX2 = -1, refBY2 = -1;
 				int refCX1 = -1, refCY1 = -1, refCX2 = -1, refCY2 = -1;
-				if (location.is_firm())
+				if (location.IsFirm())
 				{
-					Firm firm = FirmArray[location.firm_recno()];
+					Firm firm = FirmArray[location.FirmId()];
 
 					// only factories & market places need building close to other firms
 					if (buildFirmId == Firm.FIRM_MARKET || buildFirmId == Firm.FIRM_FACTORY)
@@ -1767,9 +1767,9 @@ public class Nation : NationBase
 
 				//------- if there is a town on the location ------//
 
-				else if (location.is_town())
+				else if (location.IsTown())
 				{
-					Town town = TownArray[location.town_recno()];
+					Town town = TownArray[location.TownId()];
 
 					refBX1 = town.LocCenterX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 					refBY1 = town.LocCenterY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
@@ -2443,10 +2443,10 @@ public class Nation : NationBase
 	{
 		Location location = World.get_loc(xLoc, yLoc);
 
-		if (!location.is_firm())
+		if (!location.IsFirm())
 			return false; // no firm there
 
-		int firmRecno = location.firm_recno();
+		int firmRecno = location.FirmId();
 
 		if (FirmArray.IsDeleted(firmRecno))
 			return false; // firm deleted
@@ -2466,10 +2466,10 @@ public class Nation : NationBase
 	{
 		Location location = World.get_loc(xLoc, yLoc);
 
-		if (!location.is_town())
+		if (!location.IsTown())
 			return false; // no town there
 
-		int townRecno = location.town_recno();
+		int townRecno = location.TownId();
 
 		if (TownArray.IsDeleted(townRecno))
 			return false; // town deleted
@@ -2742,7 +2742,7 @@ public class Nation : NationBase
 		//----- locate the best town for training the unit -----//
 
 		int bestRating = 0;
-		int destRegionId = World.get_loc(destX, destY).region_id;
+		int destRegionId = World.get_loc(destX, destY).RegionId;
 
 		for (int i = 0; i < ai_town_array.Count; i++)
 		{
@@ -3382,7 +3382,7 @@ public class Nation : NationBase
 		if (attack_camps.Count > 0)
 			return false;
 
-		int targetRegionId = World.get_loc(targetXLoc, targetYLoc).region_id;
+		int targetRegionId = World.get_loc(targetXLoc, targetYLoc).RegionId;
 		ai_attack_target_x_loc = targetXLoc;
 		ai_attack_target_y_loc = targetYLoc;
 		ai_attack_target_nation_recno = get_target_nation_recno(targetXLoc, targetYLoc);
@@ -3670,15 +3670,15 @@ public class Nation : NationBase
 
 			Location location = World.get_loc(xLoc, yLoc);
 
-			if (location.region_id != targetRegionId)
+			if (location.RegionId != targetRegionId)
 				continue;
 
-			if (!location.has_unit(UnitConstants.UNIT_LAND))
+			if (!location.HasUnit(UnitConstants.UNIT_LAND))
 				continue;
 
 			//----- if there is a unit on the location ------//
 
-			int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+			int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 
 			if (UnitArray.IsDeleted(unitRecno)) // the unit is dying
 				continue;
@@ -3748,9 +3748,9 @@ public class Nation : NationBase
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
 				Location location = World.get_loc(xLoc, yLoc);
-				if (location.is_town())
+				if (location.IsTown())
 				{
-					int townRecno = location.town_recno();
+					int townRecno = location.TownId();
 					Town town = TownArray[townRecno];
 					if (town.NationId == targetRecno)
 					{
@@ -3771,9 +3771,9 @@ public class Nation : NationBase
 					}
 				}
 
-				if (location.is_firm())
+				if (location.IsFirm())
 				{
-					int firmRecno = location.firm_recno();
+					int firmRecno = location.FirmId();
 					Firm firm = FirmArray[firmRecno];
 					if (firm.nation_recno == targetRecno && firm.firm_id == Firm.FIRM_CAMP)
 					{
@@ -3794,9 +3794,9 @@ public class Nation : NationBase
 					}
 				}
 
-				if (location.has_unit(UnitConstants.UNIT_LAND))
+				if (location.HasUnit(UnitConstants.UNIT_LAND))
 				{
-					int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+					int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 					Unit unit = UnitArray[unitRecno];
 					if (unit.nation_recno == targetRecno)
 					{
@@ -3936,10 +3936,10 @@ public class Nation : NationBase
 			{
 				Location location = World.get_loc(xLoc, yLoc);
 
-				if (!location.has_unit(UnitConstants.UNIT_LAND))
+				if (!location.HasUnit(UnitConstants.UNIT_LAND))
 					continue;
 
-				Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+				Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
 				//--- if there is an idle unit on the mine building site ---//
 
@@ -3999,7 +3999,7 @@ public class Nation : NationBase
 
 		int attackerXLoc = attackerUnit.next_x_loc();
 		int attackerYLoc = attackerUnit.next_y_loc();
-		int targetRegionId = World.get_loc(attackerXLoc, attackerYLoc).region_id;
+		int targetRegionId = World.get_loc(attackerXLoc, attackerYLoc).RegionId;
 
 		int enemyCombatLevel = ai_evaluate_target_combat_level(attackerXLoc, attackerYLoc, attackerUnit.nation_recno);
 
@@ -5454,10 +5454,10 @@ public class Nation : NationBase
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
 				Location location = World.get_loc(xLoc, yLoc);
-				if (!location.has_unit(UnitConstants.UNIT_LAND))
+				if (!location.HasUnit(UnitConstants.UNIT_LAND))
 					continue;
 
-				Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+				Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 				if (unit.cur_action == Sprite.SPRITE_ATTACK)
 				{
 					if (unit.nation_recno == nation_recno)
@@ -6128,7 +6128,7 @@ public class Nation : NationBase
 
 			Location location = World.get_loc(xLoc, yLoc);
 
-			if (!location.can_build_whole_harbor())
+			if (!location.CanBuildWholeHarbor())
 				continue;
 
 			if (!World.is_harbor_region(xLoc, yLoc, landRegionId, seaRegionId))
@@ -6288,9 +6288,9 @@ public class Nation : NationBase
 		switch (actionNode.action_para)
 		{
 			case SEA_ACTION_SETTLE:
-				if (location.is_town() && TownArray[location.town_recno()].NationId == nation_recno)
+				if (location.IsTown() && TownArray[location.TownId()].NationId == nation_recno)
 				{
-					Town town = TownArray[location.town_recno()];
+					Town town = TownArray[location.TownId()];
 					UnitArray.assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
@@ -6575,9 +6575,9 @@ public class Nation : NationBase
 				y = Math.Max(0, y);
 				y = Math.Min(GameConstants.MapSize - 1, y);
 				Location location = World.get_loc(x, y);
-				if (location.is_town())
+				if (location.IsTown())
 				{
-					nearbyTown = TownArray[location.town_recno()];
+					nearbyTown = TownArray[location.TownId()];
 					goto doublebreak;
 				}
 			}
@@ -9370,14 +9370,14 @@ public class Nation : NationBase
 	{
 		Location location = World.get_loc(targetXLoc, targetYLoc);
 
-		if (location.is_firm())
-			return FirmArray[location.firm_recno()].nation_recno;
+		if (location.IsFirm())
+			return FirmArray[location.FirmId()].nation_recno;
 
-		if (location.is_town())
-			return TownArray[location.town_recno()].NationId;
+		if (location.IsTown())
+			return TownArray[location.TownId()].NationId;
 
-		if (location.has_unit(UnitConstants.UNIT_LAND))
-			return UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)].nation_recno;
+		if (location.HasUnit(UnitConstants.UNIT_LAND))
+			return UnitArray[location.UnitId(UnitConstants.UNIT_LAND)].nation_recno;
 
 		return 0;
 	}

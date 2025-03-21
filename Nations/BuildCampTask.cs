@@ -108,7 +108,7 @@ public class BuildCampTask : AITask
                     }
 
                     Location buildLocation = World.get_loc(buildLocX, buildLocY);
-                    if (buildLocation.region_id != townLocation.region_id || buildLocation.is_plateau() != townLocation.is_plateau())
+                    if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
                         continue;
 
                     if (World.can_build_firm(buildLocX, buildLocY, Firm.FIRM_CAMP, _generalId) == 0)
@@ -119,7 +119,7 @@ public class BuildCampTask : AITask
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2, 1))
                     {
                         Location nearLocation = World.get_loc(locXlocY.Item1, locXlocY.Item2);
-                        if (nearLocation.is_firm() || nearLocation.is_town())
+                        if (nearLocation.IsFirm() || nearLocation.IsTown())
                             rating++;
                     }
                     

@@ -19,34 +19,34 @@ public partial class Renderer
             for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
                 Location location = World.get_loc(locX, locY);
-                if (!location.explored())
+                if (!location.IsExplored())
                     continue;
 
                 //Draw terrain
                 //TODO terrain animation
                 int screenX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
                 int screenY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
-                TerrainInfo terrainInfo = TerrainRes[location.terrain_id];
+                TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
                 Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.bitmapWidth), Scale(terrainInfo.bitmapHeight));
 
-                if (location.has_dirt())
+                if (location.HasDirt())
                 {
                     DrawDirt(location, locX, locY, screenX, screenY);
                 }
 
                 //TODO draw snow
 
-                if (location.has_hill())
+                if (location.HasHill())
                 {
-                    if (location.hill_id2() != 0)
-                        DrawHill(HillRes[location.hill_id2()], screenX, screenY, 1);
-                    DrawHill(HillRes[location.hill_id1()], screenX, screenY, 1);
+                    if (location.HillId2() != 0)
+                        DrawHill(HillRes[location.HillId2()], screenX, screenY, 1);
+                    DrawHill(HillRes[location.HillId1()], screenX, screenY, 1);
                 }
 
                 //TODO draw power
 
                 // don't display if a building/object has already been built on the location
-                if (location.has_site() && location.walkable(3))
+                if (location.HasSite() && location.Walkable())
                 {
                     DrawSite(location, screenX, screenY);
                 }
@@ -98,8 +98,8 @@ public partial class Renderer
 
     private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
     {
-        int dirtId = location.dirt_recno();
-        Rock dirt = DirtArray[dirtId];
+        int dirtArrayId = location.DirtArrayId();
+        Rock dirt = DirtArray[dirtArrayId];
         int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
         if (dirtBlockId != 0)
         {
@@ -127,7 +127,7 @@ public partial class Renderer
 
     private void DrawSite(Location location, int screenX, int screenY)
     {
-        Site site = SiteArray[location.site_recno()];
+        Site site = SiteArray[location.SiteId()];
         switch (site.SiteType)
         {
             case Site.SITE_RAW:
@@ -154,9 +154,9 @@ public partial class Renderer
             for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
             {
                 Location location = World.get_loc(locX, locY);
-                if (location.explored() && location.is_plant())
+                if (location.IsExplored() && location.IsPlant())
                 {
-                    PlantBitmap plantBitmap = PlantRes.get_bitmap(location.plant_id());
+                    PlantBitmap plantBitmap = PlantRes.get_bitmap(location.PlantId());
                     int drawX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth + Scale(plantBitmap.offset_x);
                     int drawY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight + Scale(plantBitmap.offset_y);
                     Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.bitmapWidth), Scale(plantBitmap.bitmapHeight));

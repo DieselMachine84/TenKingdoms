@@ -1058,7 +1058,7 @@ public abstract class Firm
 		{
 			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).set_firm(firm_recno);
+				World.get_loc(xLoc, yLoc).SetFirm(firm_recno);
 			}
 		}
 
@@ -1097,7 +1097,7 @@ public abstract class Firm
 		{
 			for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).remove_firm();
+				World.get_loc(xLoc, yLoc).RemoveFirm();
 			}
 		}
 
@@ -1155,9 +1155,9 @@ public abstract class Firm
 			{
 				Location location = World.get_loc(xLoc, yLoc);
 
-				location.set_firm(firm_recno);
+				location.SetFirm(firm_recno);
 
-				if (location.explored() && NationArray.player_recno != 0)
+				if (location.IsExplored() && NationArray.player_recno != 0)
 				{
 					NationRelation relation = NationArray.player.get_relation(nation_recno);
 
@@ -1362,8 +1362,8 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(firm.center_x, firm.center_y).is_plateau()
-			    != World.get_loc(center_x, center_y).is_plateau())
+			if (World.get_loc(firm.center_x, firm.center_y).IsPlateau()
+			    != World.get_loc(center_x, center_y).IsPlateau())
 			{
 				continue;
 			}
@@ -1427,8 +1427,8 @@ public abstract class Firm
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau()
-			    != World.get_loc(center_x, center_y).is_plateau())
+			if (World.get_loc(town.LocCenterX, town.LocCenterY).IsPlateau()
+			    != World.get_loc(center_x, center_y).IsPlateau())
 			{
 				continue;
 			}
@@ -2136,7 +2136,7 @@ public abstract class Firm
 			{
 				for (checkXLoc = loc_x1; checkXLoc <= loc_x2; checkXLoc++)
 				{
-					if (World.get_loc(checkXLoc, checkYLoc).can_move(mType))
+					if (World.get_loc(checkXLoc, checkYLoc).CanMove(mType))
 					{
 						xLoc = checkXLoc;
 						yLoc = checkYLoc;

@@ -386,8 +386,8 @@ public class Town
 			{
 				Location location = World.get_loc(xLoc, yLoc);
 
-				if (location.cargo_recno == 0) // skip the location where the settle unit is standing
-					location.set_town(TownId);
+				if (location.CargoId == 0) // skip the location where the settle unit is standing
+					location.SetTown(TownId);
 			}
 		}
 
@@ -415,7 +415,7 @@ public class Town
 		{
 			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
 			{
-				World.get_loc(xLoc, yLoc).remove_town();
+				World.get_loc(xLoc, yLoc).RemoveTown();
 			}
 		}
 
@@ -438,7 +438,7 @@ public class Town
 			{
 				Location location = World.get_loc(xLoc, yLoc);
 
-				if (location.explored() && NationArray.player_recno != 0)
+				if (location.IsExplored() && NationArray.player_recno != 0)
 				{
 					NationRelation relation = NationArray.player.get_relation(NationId);
 
@@ -2577,7 +2577,7 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(firm.center_x, firm.center_y).is_plateau() != World.get_loc(LocCenterX, LocCenterY).is_plateau())
+			if (World.get_loc(firm.center_x, firm.center_y).IsPlateau() != World.get_loc(LocCenterX, LocCenterY).IsPlateau())
 			{
 				continue;
 			}
@@ -2628,7 +2628,7 @@ public class Town
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.get_loc(town.LocCenterX, town.LocCenterY).is_plateau() != World.get_loc(LocCenterX, LocCenterY).is_plateau())
+			if (World.get_loc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.get_loc(LocCenterX, LocCenterY).IsPlateau())
 			{
 				continue;
 			}
@@ -4887,9 +4887,9 @@ public class Town
 				Location location = World.get_loc(xLoc, yLoc);
 				//--- if there is an enemy unit here ---// 
 
-				if (location.has_unit(UnitConstants.UNIT_LAND))
+				if (location.HasUnit(UnitConstants.UNIT_LAND))
 				{
-					Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+					Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
 					if (unit.nation_recno == 0)
 						continue;
@@ -4911,9 +4911,9 @@ public class Town
 
 				//--- if there is an enemy firm here ---//
 
-				else if (location.is_firm())
+				else if (location.IsFirm())
 				{
-					Firm firm = FirmArray[location.firm_recno()];
+					Firm firm = FirmArray[location.FirmId()];
 
 					//------- if this is a monster firm ------//
 

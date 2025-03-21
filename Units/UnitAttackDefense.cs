@@ -567,7 +567,7 @@ public partial class Unit
 		// if the targeted wall has been destroyed
 		//------------------------------------------------------------//
 		Location loc = World.get_loc(action_x_loc, action_y_loc);
-		if (!loc.is_wall())
+		if (!loc.IsWall())
 		{
 			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
 			{
@@ -720,20 +720,20 @@ public partial class Unit
 
 		int targetNationRecno = 0;
 
-		if (loc.has_unit(UnitConstants.UNIT_LAND))
+		if (loc.HasUnit(UnitConstants.UNIT_LAND))
 		{
-			Unit unit = UnitArray[loc.unit_recno(UnitConstants.UNIT_LAND)];
+			Unit unit = UnitArray[loc.UnitId(UnitConstants.UNIT_LAND)];
 
 			if (unit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
 				targetNationRecno = unit.nation_recno;
 		}
-		else if (loc.is_firm())
+		else if (loc.IsFirm())
 		{
-			targetNationRecno = FirmArray[loc.firm_recno()].nation_recno;
+			targetNationRecno = FirmArray[loc.FirmId()].nation_recno;
 		}
-		else if (loc.is_town())
+		else if (loc.IsTown())
 		{
-			targetNationRecno = TownArray[loc.town_recno()].NationId;
+			targetNationRecno = TownArray[loc.TownId()].NationId;
 		}
 
 		if (nation_recno != 0 && targetNationRecno != 0)
@@ -758,11 +758,11 @@ public partial class Unit
 		loc = World.get_loc(targetXLoc, targetYLoc);
 
 		int targetMobileType = (next_x_loc() == targetXLoc && next_y_loc() == targetYLoc)
-			? loc.has_any_unit(mobile_type) : loc.has_any_unit();
+			? loc.HasAnyUnit(mobile_type) : loc.HasAnyUnit();
 
 		if (targetMobileType != 0)
 		{
-			Unit targetUnit = UnitArray[loc.unit_recno(targetMobileType)];
+			Unit targetUnit = UnitArray[loc.UnitId(targetMobileType)];
 			attack_unit(targetUnit.sprite_recno, xOffset, yOffset, resetBlockedEdge);
 		}
 
@@ -837,10 +837,10 @@ public partial class Unit
 			//------------------------------------------------------------------------//
 			// handle the case the unit and the target are in different territory
 			//------------------------------------------------------------------------//
-			if (World.get_loc(curXLoc, curYLoc).region_id != loc.region_id)
+			if (World.get_loc(curXLoc, curYLoc).RegionId != loc.RegionId)
 			{
 				maxRange = max_attack_range();
-				Unit unit = UnitArray[loc.unit_recno(targetMobileType)];
+				Unit unit = UnitArray[loc.UnitId(targetMobileType)];
 				if (!possible_place_for_range_attack(targetXLoc, targetYLoc,
 					    unit.sprite_info.loc_width, unit.sprite_info.loc_height, maxRange))
 				{
@@ -1046,7 +1046,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// no firm there
 		//------------------------------------------------------------//
-		if (!loc.is_firm())
+		if (!loc.IsFirm())
 		{
 			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
@@ -1061,7 +1061,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// cannot attack this nation
 		//------------------------------------------------------------//
-		Firm firm = FirmArray[loc.firm_recno()];
+		Firm firm = FirmArray[loc.FirmId()];
 		if (!nation_can_attack(firm.nation_recno))
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
@@ -1075,7 +1075,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			//Firm		*firm = FirmArray[loc.firm_recno()];
@@ -1260,7 +1260,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// no town there
 		//------------------------------------------------------------//
-		if (!loc.is_town())
+		if (!loc.IsTown())
 		{
 			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
@@ -1275,7 +1275,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// cannot attack this nation
 		//------------------------------------------------------------//
-		Town town = TownArray[loc.town_recno()];
+		Town town = TownArray[loc.TownId()];
 		if (!nation_can_attack(town.NationId))
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
@@ -1288,7 +1288,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, maxRange))
@@ -1450,7 +1450,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// no wall there
 		//------------------------------------------------------------//
-		if (!loc.is_wall())
+		if (!loc.IsWall())
 		{
 			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
@@ -1465,7 +1465,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// cannot attack this nation
 		//------------------------------------------------------------//
-		if (!nation_can_attack(loc.wall_nation_recno()))
+		if (!nation_can_attack(loc.WallNationId()))
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			return;
@@ -1477,7 +1477,7 @@ public partial class Unit
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		    World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(wallXLoc, wallYLoc, 1, 1, maxRange))
@@ -1856,20 +1856,20 @@ public partial class Unit
 	{
 		Location loc = World.get_loc(targetXLoc, targetYLoc);
 
-		if (loc.is_firm())
+		if (loc.IsFirm())
 			hit_firm(attackUnit, targetXLoc, targetYLoc, attackDamage, attackNationRecno);
-		else if (loc.is_town())
+		else if (loc.IsTown())
 			hit_town(attackUnit, targetXLoc, targetYLoc, attackDamage, attackNationRecno);
 	}
 	
 	public void hit_firm(Unit attackUnit, int targetXLoc, int targetYLoc, double attackDamage, int attackNationRecno)
 	{
 		Location loc = World.get_loc(targetXLoc, targetYLoc);
-		if (!loc.is_firm())
+		if (!loc.IsFirm())
 			return; // do nothing if no firm there
 
 		//----------- attack firm ------------//
-		Firm targetFirm = FirmArray[loc.firm_recno()];
+		Firm targetFirm = FirmArray[loc.FirmId()];
 
 		Nation attackNation = NationArray.IsDeleted(attackNationRecno) ? null : NationArray[attackNationRecno];
 
@@ -1946,12 +1946,12 @@ public partial class Unit
 	{
 		Location loc = World.get_loc(targetXLoc, targetYLoc);
 
-		if (!loc.is_town())
+		if (!loc.IsTown())
 			return; // do nothing if no town there
 
 		//----------- attack town ----------//
 
-		Town targetTown = TownArray[loc.town_recno()];
+		Town targetTown = TownArray[loc.TownId()];
 		int targetTownRecno = targetTown.TownId;
 		int targetTownNameId = targetTown.TownNameId;
 		int targetTownXLoc = targetTown.LocCenterX;
@@ -2316,9 +2316,9 @@ public partial class Unit
 
 			Location loc = World.get_loc(checkXLoc, checkYLoc);
 
-			if (loc.has_unit(UnitConstants.UNIT_LAND))
+			if (loc.HasUnit(UnitConstants.UNIT_LAND))
 			{
-				targetRecno = loc.unit_recno(UnitConstants.UNIT_LAND);
+				targetRecno = loc.UnitId(UnitConstants.UNIT_LAND);
 				if (UnitArray.IsDeleted(targetRecno))
 					continue;
 
@@ -2414,7 +2414,7 @@ public partial class Unit
 
 		//----------------- init parameters -----------------//
 		Location loc = World.get_loc(curXLoc, curYLoc);
-		int regionId = loc.region_id;
+		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
 		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, GameConstants.MapSize - 1);
@@ -2441,22 +2441,22 @@ public partial class Unit
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
 					loc = World.get_loc(checkXLoc, yLoc1);
-					if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 
 					loc = World.get_loc(checkXLoc, yLoc2);
-					if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
 					loc = World.get_loc(xLoc1, checkYLoc);
-					if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 
 					loc = World.get_loc(xLoc2, checkYLoc);
-					if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 						return true;
 				}
 
@@ -2468,14 +2468,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc1);
-						if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc2);
-						if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 				}
@@ -2485,14 +2485,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc1, checkYLoc);
-						if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc2, checkYLoc);
-						if (loc.region_id == regionId && loc.is_accessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
 							return true;
 					}
 				}
@@ -2505,14 +2505,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc1);
-						if (loc.is_accessible(mobile_type))
+						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc2);
-						if (loc.is_accessible(mobile_type))
+						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 				}
@@ -2522,14 +2522,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc1, checkYLoc);
-						if (loc.is_accessible(mobile_type))
+						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc2, checkYLoc);
-						if (loc.is_accessible(mobile_type))
+						if (loc.IsAccessible(mobile_type))
 							return true;
 					}
 				}
@@ -2557,7 +2557,7 @@ public partial class Unit
 		//-------------------------------------------------------------------------//
 		Location loc = World.get_loc(next_x_loc(), next_y_loc());
 		if (mobile_type == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_SEA &&
-		    !can_attack_different_target_type() && ship_surr_has_free_land(targetXLoc, targetYLoc, loc.region_id))
+		    !can_attack_different_target_type() && ship_surr_has_free_land(targetXLoc, targetYLoc, loc.RegionId))
 			return true;
 
 		int maxRange = max_attack_range();
@@ -2601,11 +2601,11 @@ public partial class Unit
 			for (; i < width; i++, locWeight <<= 1)
 			{
 				loc = World.get_loc(squareXLoc + i, testYLoc);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2636,11 +2636,11 @@ public partial class Unit
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
 				loc = World.get_loc(testXLoc, squareYLoc + i);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2671,11 +2671,11 @@ public partial class Unit
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
 				loc = World.get_loc(squareXLoc + i, testYLoc);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2706,11 +2706,11 @@ public partial class Unit
 			for (; i < height; i++, locWeight <<= 1)
 			{
 				loc = World.get_loc(testXLoc, squareYLoc + i);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2758,11 +2758,11 @@ public partial class Unit
 			for (; i <= xLoc2; i += 2, locWeight <<= 1)
 			{
 				loc = World.get_loc(i, yLoc1);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2793,11 +2793,11 @@ public partial class Unit
 			for (; i > yLoc1; i -= 2, locWeight <<= 1)
 			{
 				loc = World.get_loc(xLoc1, i);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2828,11 +2828,11 @@ public partial class Unit
 			for (; i > xLoc1; i -= 2, locWeight <<= 1)
 			{
 				loc = World.get_loc(i, yLoc2);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2863,11 +2863,11 @@ public partial class Unit
 			for (; i < yLoc2; i += 2, locWeight <<= 1)
 			{
 				loc = World.get_loc(xLoc2, i);
-				if (loc.can_move(mobile_type))
+				if (loc.CanMove(mobile_type))
 					sum ^= locWeight;
-				else if (loc.has_unit(mobile_type))
+				else if (loc.HasUnit(mobile_type))
 				{
-					unit = UnitArray[loc.unit_recno(mobile_type)];
+					unit = UnitArray[loc.UnitId(mobile_type)];
 					if (unit.cur_action != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
@@ -2898,7 +2898,7 @@ public partial class Unit
 				continue;
 
 			loc = World.get_loc(checkXLoc, checkYLoc);
-			if (loc.region_id == regionId && loc.can_move(mobile_type))
+			if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 				return true;
 		}
 
@@ -2918,7 +2918,7 @@ public partial class Unit
 			return true;
 
 		Location loc = World.get_loc(curXLoc, curYLoc);
-		int regionId = loc.region_id;
+		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
 		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, GameConstants.MapSize - 1);
@@ -2945,22 +2945,22 @@ public partial class Unit
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
 					loc = World.get_loc(checkXLoc, yLoc1);
-					if (loc.region_id == regionId && loc.can_move(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 
 					loc = World.get_loc(checkXLoc, yLoc2);
-					if (loc.region_id == regionId && loc.can_move(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
 					loc = World.get_loc(xLoc1, checkYLoc);
-					if (loc.region_id == regionId && loc.can_move(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 
 					loc = World.get_loc(xLoc2, checkYLoc);
-					if (loc.region_id == regionId && loc.can_move(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 						return true;
 				}
 
@@ -2972,14 +2972,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc1);
-						if (loc.region_id == regionId && loc.can_move(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc2);
-						if (loc.region_id == regionId && loc.can_move(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 				}
@@ -2989,14 +2989,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc1, checkYLoc);
-						if (loc.region_id == regionId && loc.can_move(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc2, checkYLoc);
-						if (loc.region_id == regionId && loc.can_move(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
 							return true;
 					}
 				}
@@ -3009,14 +3009,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc1);
-						if (loc.can_move(mobile_type))
+						if (loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.get_loc(checkXLoc, yLoc2);
-						if (loc.can_move(mobile_type))
+						if (loc.CanMove(mobile_type))
 							return true;
 					}
 				}
@@ -3026,14 +3026,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc1, checkYLoc);
-						if (loc.can_move(mobile_type))
+						if (loc.CanMove(mobile_type))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.get_loc(xLoc2, checkYLoc);
-						if (loc.can_move(mobile_type))
+						if (loc.CanMove(mobile_type))
 							return true;
 					}
 				}
@@ -3432,7 +3432,7 @@ public partial class Unit
 			case UnitConstants.ACTION_ATTACK_WALL:
 				loc = World.get_loc(action_x_loc2, action_y_loc2);
 
-				if (!loc.is_wall() || !nation_can_attack(loc.power_nation_recno))
+				if (!loc.IsWall() || !nation_can_attack(loc.PowerNationId))
 					clearToDetect++;
 				break;
 
@@ -3661,7 +3661,7 @@ public partial class Unit
 
 		Unit target = UnitArray[action_para];
 		Location loc = World.get_loc(action_x_loc, action_y_loc);
-		if (!loc.has_unit(target.mobile_type))
+		if (!loc.HasUnit(target.mobile_type))
 			return true; // the target may be dead or invisible
 
 		int returnFactor;
@@ -3670,13 +3670,13 @@ public partial class Unit
 		// calculate the chance to go back to military camp in following the
 		// target
 		//-----------------------------------------------------------------//
-		if (loc.power_nation_recno == nation_recno)
+		if (loc.PowerNationId == nation_recno)
 			return true; // target within our nation
-		else if (loc.power_nation_recno == 0) // is neutral
+		else if (loc.PowerNationId == 0) // is neutral
 			returnFactor = PROB_NEUTRAL_RETURN;
 		else
 		{
-			Nation locNation = NationArray[loc.power_nation_recno];
+			Nation locNation = NationArray[loc.PowerNationId];
 			if (locNation.get_relation_status(nation_recno) == NationBase.NATION_HOSTILE)
 				returnFactor = PROB_HOSTILE_RETURN;
 			else

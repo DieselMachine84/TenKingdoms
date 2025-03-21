@@ -8,7 +8,7 @@ public class Location
 	public const int LOCATE_WALK_SEA = 0x02;
 	public const int LOCATE_COAST = 0x08;
 
-	// ----- govern the usage of extra_para ---------//
+	// ----- govern the usage of ExtraPara ---------//
 	public const int LOCATE_SITE_MASK = 0xf0;
 	public const int LOCATE_HAS_SITE = 0x10;
 	public const int LOCATE_HAD_WALL = 0x20;
@@ -17,7 +17,7 @@ public class Location
 	public const int LOCATE_SITE_RESERVED = 0xf0;
 	//	occupied by other block such as hill, plant
 
-	// ----- govern the usage of cargo_recno -------//
+	// ----- govern the usage of CargoId -------//
 	public const int LOCATE_BLOCK_MASK = 0xf00;
 	public const int LOCATE_IS_HILL = 0x100;
 	public const int LOCATE_IS_PLANT = 0x200;
@@ -38,14 +38,20 @@ public class Location
 	public const int EXPLORED_VISIBILITY = 30; // don't see this to multiple of 8
 	public const int MAX_VISIT_LEVEL = FULL_VISIBILITY;
 
-	public int loc_flag;
-	public int terrain_id;
+	private int _locFlag;
+	public int TerrainId { get; set; }
+	public int RegionId { get; set; }
+	public int CargoId { get; set; }
+	public int AirCargoId { get; set; }
 
-	public int cargo_recno;
-	public int air_cargo_recno;
+	private int _extraPara;
 
-	public int extra_para;
+	private int _fireLevel; // -100 to 100, current fire level
+	private int _flammability; // -100 to 100, likelihood of fire
 
+	public int PowerNationId { get; set; } // 0-no nation has power over this location
+	public int VisitLevel { get; set; } // drop from FULL_VISIBILITY to 0
+	
 	//------------------------------------------------//
 	// when (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_SITE
 	// > extra_para = raw recno
@@ -81,15 +87,8 @@ public class Location
 	// > carge_recno = unit id
 	//------------------------------------------------//
 
-	public int fire_level; // -100 to 100, current fire level
-	public int flammability; // -100 to 100, likelihood of fire
-
-	public int power_nation_recno; // 0-no nation has power over this location
-	public int region_id;
-	public int visit_level; // drop from FULL_VISIBILITY to 0
-
-	public TerrainRes TerrainRes { get; }
-	public HillRes HillRes { get; }
+	private TerrainRes TerrainRes { get; }
+	private HillRes HillRes { get; }
 
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 
@@ -99,409 +98,393 @@ public class Location
 		HillRes = hillRes;
 	}
 
-	public bool walkable()
+	public bool Walkable()
 	{
-		return (loc_flag & LOCATE_WALK_LAND) != 0;
+		return (_locFlag & LOCATE_WALK_LAND) != 0;
 	}
 
-	public bool sailable()
+	public bool Sailable()
 	{
-		return (loc_flag & LOCATE_WALK_SEA) != 0;
+		return (_locFlag & LOCATE_WALK_SEA) != 0;
 	}
 
-	public bool walkable(int teraMask)
+	public bool Walkable(int teraMask)
 	{
-		return (loc_flag & teraMask) != 0;
+		return (_locFlag & teraMask) != 0;
 	}
 
-	public void walkable_reset()
+	public void ResetWalkable()
 	{
-		if ((loc_flag & LOCATE_BLOCK_MASK) != 0)
+		if ((_locFlag & LOCATE_BLOCK_MASK) != 0)
 		{
-			walkable_off();
+			WalkableOff();
 		}
 		else
 		{
-			if (TerrainRes[terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN)
+			if (TerrainRes[TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN)
 			{
-				loc_flag |= LOCATE_WALK_SEA;
+				_locFlag |= LOCATE_WALK_SEA;
 			}
 			else
 			{
-				loc_flag |= LOCATE_WALK_LAND;
+				_locFlag |= LOCATE_WALK_LAND;
 			}
 		}
 	}
 
-	// void	walkable_on()		{ loc_flag |= LOCATE_WALK_LAND; }
-	public void walkable_off()
+	private void WalkableOn(int teraMask)
 	{
-		loc_flag &= ~(LOCATE_WALK_LAND | LOCATE_WALK_SEA);
+		_locFlag |= teraMask;
 	}
 
-	public void walkable_on(int teraMask)
+	private void WalkableOff(int teraMask)
 	{
-		loc_flag |= teraMask;
+		_locFlag &= ~teraMask;
 	}
 
-	public void walkable_off(int teraMask)
+	private void WalkableOff()
 	{
-		loc_flag &= ~teraMask;
+		_locFlag &= ~(LOCATE_WALK_LAND | LOCATE_WALK_SEA);
 	}
 
-	public int is_coast()
+
+	public void SetCoast()
 	{
-		return loc_flag & LOCATE_COAST;
+		_locFlag |= LOCATE_COAST;
 	}
 
-	//	int	explored()        { return loc_flag & LOCATE_EXPLORED; }
-	//	void	explored_on()		{ loc_flag |= LOCATE_EXPLORED; }
-	//	void	explored_off()		{ loc_flag &= (~LOCATE_EXPLORED); }
-	public bool explored()
+	public bool IsCoast()
 	{
-		return visit_level > 0;
+		return (_locFlag & LOCATE_COAST) != 0;
 	}
 
-	public void explored_on()
+	public bool IsExplored()
 	{
-		if (visit_level < EXPLORED_VISIBILITY * 2) visit_level = EXPLORED_VISIBILITY * 2;
+		return VisitLevel > 0;
 	}
 
-	public void explored_off()
+	public void ExploredOn()
 	{
-		visit_level = 0;
+		if (VisitLevel < EXPLORED_VISIBILITY * 2)
+			VisitLevel = EXPLORED_VISIBILITY * 2;
+	}
+
+	public void ExploredOff()
+	{
+		VisitLevel = 0;
 	}
 
 	// ---------- visibility --------//
-	public int visibility()
+	public int Visibility()
 	{
-		return visit_level / 2;
+		return VisitLevel / 2;
 	}
 
-	public void dec_visibility()
+	public void DecVisibility()
 	{
-		if (visit_level > EXPLORED_VISIBILITY * 2) --visit_level;
+		if (VisitLevel > EXPLORED_VISIBILITY * 2)
+			VisitLevel--;
 	}
 
-	public void set_visited()
+	public void SetVisited()
 	{
-		visit_level = MAX_VISIT_LEVEL * 2;
+		VisitLevel = MAX_VISIT_LEVEL * 2;
 	}
 
-	public void set_visited(int v)
+	public void SetVisited(int level)
 	{
-		if (visit_level < v * 2)
-			visit_level = v * 2;
+		if (VisitLevel < level * 2)
+			VisitLevel = level * 2;
 	}
 
-	public bool is_plateau()
+	public bool IsPlateau()
 	{
 		//**BUGHERE, to be changed to TERRAIN_HILL when the no. of terrain type has been reduced to 4 from 7
-		return TerrainRes[terrain_id].average_type == TerrainTypeCode.TERRAIN_DARK_DIRT; 
+		return TerrainRes[TerrainId].average_type == TerrainTypeCode.TERRAIN_DARK_DIRT; 
 	}
 
 	// ----------- site -------------//
-	public bool can_build_site(int teraMask = LOCATE_WALK_LAND)
+	public bool CanBuildSite(int teraMask = LOCATE_WALK_LAND)
 	{
-		return ((loc_flag & teraMask) != 0) && ((loc_flag & LOCATE_SITE_MASK) == 0) && !has_site();
+		return ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_SITE_MASK) == 0) && !HasSite();
 	}
 
-	public void set_site(int siteRecno)
+	public void SetSite(int siteId)
 	{
-		loc_flag = loc_flag & ~LOCATE_SITE_MASK | LOCATE_HAS_SITE;
-		// loc_flag |= LOCATION_HAS_SITE;
-
-		extra_para = siteRecno;
+		_locFlag = _locFlag & ~LOCATE_SITE_MASK | LOCATE_HAS_SITE;
+		_extraPara = siteId;
 	}
 
-	public bool has_site()
+	public void RemoveSite()
 	{
-		return (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_SITE;
+		_locFlag &= ~LOCATE_SITE_MASK;
+		_extraPara = 0;
+	}
+	
+	public bool HasSite()
+	{
+		return (_locFlag & LOCATE_SITE_MASK) == LOCATE_HAS_SITE;
 	}
 
-	public int site_recno()
+	public int SiteId()
 	{
-		return has_site() ? extra_para : 0;
-	}
-
-	public void remove_site()
-	{
-		loc_flag &= ~LOCATE_SITE_MASK;
-
-		extra_para = 0;
+		return HasSite() ? _extraPara : 0;
 	}
 
 	// ------------ wall timeout ----------//
 	public bool had_wall()
 	{
-		return (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAD_WALL;
+		return (_locFlag & LOCATE_SITE_MASK) == LOCATE_HAD_WALL;
 	}
 
 	// after wall destructed, cannot build wall again for some time
 	// the decrease time
 	// (LOCATE_HAD_WALL)
-	public void set_wall_timeout(int initTimeout)
+	private void SetWallTimeout(int initTimeout)
 	{
-		loc_flag = (loc_flag & ~LOCATE_SITE_MASK) | LOCATE_HAD_WALL;
-		extra_para = initTimeout;
+		_locFlag = (_locFlag & ~LOCATE_SITE_MASK) | LOCATE_HAD_WALL;
+		_extraPara = initTimeout;
 	}
 
-	public int wall_timeout()
+	private void RemoveWallTimeout()
 	{
-		return extra_para;
+		_locFlag &= ~LOCATE_SITE_MASK;
+		_extraPara = 0;
 	}
-
-	public int dec_wall_timeout(int t = 1)
+	
+	public bool DecWallTimeout(int timeout = 1)
 	{
-		if ((extra_para -= t) <= 0)
+		_extraPara -= timeout;
+		if (_extraPara <= 0)
 		{
-			remove_wall_timeout();
-			return 1;
+			RemoveWallTimeout();
+			return true;
 		}
 
-		return 0;
+		return false;
 	}
 
-	public void remove_wall_timeout()
+	public int WallTimeout()
 	{
-		loc_flag &= ~LOCATE_SITE_MASK;
-		extra_para = 0;
+		return _extraPara;
 	}
-
+	
 	// ----------- dirt -------------//
-	public bool can_add_dirt()
+	public bool CanAddDirt()
 	{
-		return (loc_flag & LOCATE_SITE_MASK) == 0;
+		return (_locFlag & LOCATE_SITE_MASK) == 0;
 	}
 
-	public void set_dirt(int dirtRecno)
+	public void SetDirt(int dirtArrayId, bool isBlocking)
 	{
-		loc_flag = loc_flag & ~LOCATE_SITE_MASK | LOCATE_HAS_DIRT;
-
-		extra_para = dirtRecno;
+		_locFlag = _locFlag & ~LOCATE_SITE_MASK | LOCATE_HAS_DIRT;
+		_extraPara = dirtArrayId;
+		
+		if (isBlocking)
+			WalkableOff();
 	}
 
-	public bool has_dirt()
+	public void RemoveDirt()
 	{
-		return (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_DIRT;
+		_locFlag &= ~LOCATE_SITE_MASK;
+		_extraPara = 0;
+		ResetWalkable();
+	}
+	
+	public bool HasDirt()
+	{
+		return (_locFlag & LOCATE_SITE_MASK) == LOCATE_HAS_DIRT;
 	}
 
-	public int dirt_recno()
+	public int DirtArrayId()
 	{
-		return has_dirt() ? extra_para : 0;
+		return HasDirt() ? _extraPara : 0;
 	}
 
-	public void remove_dirt()
+	// ---------- rock ------------//
+	public void SetRock(int rockArrayId)
 	{
-		loc_flag &= ~LOCATE_SITE_MASK;
-
-		extra_para = 0;
+		_locFlag = _locFlag & ~LOCATE_BLOCK_MASK | LOCATE_IS_ROCK;
+		CargoId = rockArrayId;
+		WalkableOff();
 	}
 
-	// ---------- firm ----------//
-	public bool is_firm()
+	public void RemoveRock()
 	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_FIRM;
+		_locFlag &= ~LOCATE_BLOCK_MASK;
+		CargoId = 0;
+		ResetWalkable();
+	}
+	
+	public bool IsRock()
+	{
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_ROCK;
 	}
 
-	public bool can_build_firm(int teraMask = LOCATE_WALK_LAND)
+	public int RockArrayId()
 	{
-		return (cargo_recno == 0) && ((loc_flag & teraMask) != 0) && ((loc_flag & LOCATE_BLOCK_MASK) == 0) && !is_power_off();
+		return IsRock() ? CargoId : 0;
 	}
-
-	public bool can_build_harbor(int teraMask = LOCATE_WALK_LAND)
+	
+	public bool CanAddRock(int teraMask = LOCATE_WALK_LAND)
 	{
-		return (cargo_recno == 0) && ((loc_flag & teraMask) != 0) && ((loc_flag & LOCATE_BLOCK_MASK) == 0);
-	}
-
-	public void set_firm(int firmRecno)
-	{
-		// can't check the terrain type here
-
-		walkable_off();
-		loc_flag = (loc_flag & ~LOCATE_BLOCK_MASK) | LOCATE_IS_FIRM;
-
-		cargo_recno = firmRecno;
-	}
-
-	public int firm_recno()
-	{
-		return is_firm() ? cargo_recno : 0;
-	}
-
-	public void remove_firm()
-	{
-		loc_flag &= ~LOCATE_BLOCK_MASK;
-		cargo_recno = 0;
-		walkable_reset();
-	}
-
-	// ---------- town ------------//
-	public bool is_town()
-	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_TOWN;
-	}
-
-	public void set_town(int townRecno)
-	{
-		walkable_off();
-		loc_flag = loc_flag & ~LOCATE_BLOCK_MASK | LOCATE_IS_TOWN;
-
-		cargo_recno = townRecno;
-	}
-
-	public bool can_build_town()
-	{
-		return (cargo_recno == 0) && ((loc_flag & LOCATE_WALK_LAND) != 0) && ((loc_flag & LOCATE_BLOCK_MASK) == 0)
-		       && !has_site() && !is_power_off();
-	}
-
-	public int town_recno()
-	{
-		return is_town() ? cargo_recno : 0;
-	}
-
-	public void remove_town()
-	{
-		loc_flag &= ~LOCATE_BLOCK_MASK;
-		cargo_recno = 0;
-		walkable_reset();
+		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0);
 	}
 
 	// ---------- hill -------------//
-	public bool has_hill()
+	public bool HasHill()
 	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_HILL;
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_HILL;
 	}
 
-	public bool can_add_hill() // exception : it has already a hill
+	public bool CanAddHill() // exception : it has already a hill
 	{
-		return has_hill() || // (loc_flag & LOCATE_WALK_LAND) &&
-		       (cargo_recno == 0) && ((loc_flag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0);
+		return HasHill() || (CargoId == 0) && ((_locFlag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0);
 	}
 
-	public void set_hill(int hillId)
+	public void SetHill(int hillId)
 	{
 		// clear LOCATE_WALK_LAND and LOCATE_WALK_SEA bits
-		walkable_off();
+		WalkableOff();
 
-		if (has_hill())
+		if (HasHill())
 		{
 			// already has a hill block
 			// compare which is on the top, swap if necessary
-			if (HillRes[cargo_recno].priority <= HillRes[hillId].priority)
+			if (HillRes[CargoId].priority <= HillRes[hillId].priority)
 			{
-				extra_para = cargo_recno;
-				cargo_recno = hillId;
+				_extraPara = CargoId;
+				CargoId = hillId;
 			}
 			else
 			{
 				// if two hill blocks there, the lower one get replaced
-				extra_para = hillId;
+				_extraPara = hillId;
 			}
 		}
 		else
 		{
 			// no existing hill block
-			loc_flag = loc_flag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_HILL | LOCATE_SITE_RESERVED);
-			cargo_recno = hillId;
-			extra_para = 0;
+			_locFlag = _locFlag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_HILL | LOCATE_SITE_RESERVED);
+			CargoId = hillId;
+			_extraPara = 0;
 		}
 	}
 
-	public int hill_id1()
+	public void RemoveHill()
 	{
-		return cargo_recno;
+		_locFlag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
+		_extraPara = 0;
+		CargoId = 0;
+		// BUGHERE : need to call ResetWalkable();
 	}
 
-	public int hill_id2()
+	public int HillId1()
 	{
-		return extra_para;
+		return CargoId;
 	}
 
-	public void remove_hill()
+	public int HillId2()
 	{
-		loc_flag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
-
-		extra_para = 0;
-		cargo_recno = 0;
-		// BUGHERE : need to call walkable_reset();
+		return _extraPara;
 	}
 
 	// ---------- wall ------------//
-	public bool is_wall()
+	public bool IsWall()
 	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_WALL;
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_WALL;
 	}
 
-	public bool can_build_wall()
+	public bool CanBuildWall()
 	{
-		return (cargo_recno == 0) && ((loc_flag & LOCATE_WALK_LAND) != 0) &&
-		       ((loc_flag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0) && !has_site();
+		return (CargoId == 0) && ((_locFlag & LOCATE_WALK_LAND) != 0) && ((_locFlag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0) && !HasSite();
 	}
 
-	public void set_wall(int wallId, int townRecno, int hitPoints)
+	public void SetWall(int wallId, int townId, int hitPoints)
 	{
-		walkable_off();
-		loc_flag = loc_flag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_WALL | LOCATE_SITE_RESERVED);
-
-		extra_para = wallId;
-		cargo_recno = (hitPoints << 8) + townRecno;
+		_locFlag = _locFlag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_WALL | LOCATE_SITE_RESERVED);
+		_extraPara = wallId;
+		CargoId = (hitPoints << 16) + townId;
+		WalkableOff();
 	}
 
-	public void set_wall_creating()
+	public void RemoveWall(int setTimeOut = -1)
 	{
-		int hp = wall_hit_point();
+		const int DEFAULT_WALL_TIMEOUT = 10;
+
+		_locFlag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
+		_extraPara = 0;
+		CargoId = 0;
+		ResetWalkable();
+
+		if (setTimeOut < 0)
+		{
+			SetWallTimeout(DEFAULT_WALL_TIMEOUT);
+		}
+		else if (setTimeOut > 0)
+		{
+			SetWallTimeout(setTimeOut);
+		}
+	}
+	
+	public void SetWallCreating()
+	{
+		int hp = WallHitPoints();
 		if (hp < 0)
 			hp = -hp;
-		cargo_recno = (hp << 8) | wall_town_recno();
+		CargoId = (hp << 16) | WallTownId();
 	}
 
-	public void set_wall_destructing()
+	public void SetWallDestructing()
 	{
-		int hp = wall_hit_point();
+		int hp = WallHitPoints();
 		if (hp > 0)
 			hp = -hp;
-		cargo_recno = (hp << 8) | wall_town_recno();
+		CargoId = (hp << 16) | WallTownId();
 	}
 
-	public void chg_wall_id(int wallId)
+	public bool IsWallCreating()
 	{
-		extra_para = wallId;
+		return WallHitPoints() > 0;
 	}
 
-	public int wall_id()
+	public bool IsWallDestructing()
 	{
-		return is_wall() ? extra_para : 0;
+		return WallHitPoints() < 0;
+	}
+	
+	public void ChangeWallId(int wallId)
+	{
+		_extraPara = wallId;
 	}
 
-	public int wall_nation_recno()
+	public int WallId()
 	{
-		return power_nation_recno;
+		return IsWall() ? _extraPara : 0;
 	}
 
-	public int wall_hit_point()
+	public int WallNationId()
 	{
-		return cargo_recno >> 8;
+		return PowerNationId;
 	}
 
-	public int wall_town_recno()
+	public int WallHitPoints()
 	{
-		return cargo_recno | 0xFF;
+		return CargoId >> 16;
+	}
+
+	public int WallTownId()
+	{
+		return CargoId | 0xFFFF;
 	}
 
 	//---------------------------------------------------//
 	// initial 0, 1 to 100:creating, -1 to -100: destructing
 	// except 0 or 100, hit point slowly increase by 1
 	//---------------------------------------------------//
-	public int wall_abs_hit_point()
+	public int IncWallHitPoints(int grow = 1)
 	{
-		return wall_hit_point() >= 0 ? wall_hit_point() : -wall_hit_point();
-	}
-
-	public int inc_wall_hit_point(int grow = 1)
-	{
-		int hp = wall_hit_point();
+		int hp = WallHitPoints();
 		if (hp < 0 && hp > -grow)
 		{
 			hp = 0;
@@ -513,11 +496,11 @@ public class Location
 		else
 			hp += grow;
 
-		cargo_recno = (hp << 8) | wall_town_recno();
+		CargoId = (hp << 16) | WallTownId();
 		return hp;
 	}
 
-	public int attack_wall(int damage = 1)
+	public int AttackWall(int damage = 1)
 	{
 		const int WALL_DEFENCE = 5;
 		const int MIN_WALL_DAMAGE = 3;
@@ -527,16 +510,15 @@ public class Location
 		else if (damage >= MIN_WALL_DAMAGE) // 3 <= damage < 8, damage = 3
 			damage = MIN_WALL_DAMAGE;
 		else if (damage <= 0) // 0 < damage < 3, no change to
-			return wall_hit_point(); // no change to hit point to damage
+			return WallHitPoints(); // no change to hit point to damage
 
-		int hp = wall_hit_point();
+		int hp = WallHitPoints();
 		if (hp > 0)
 		{
 			hp -= damage;
 			if (hp <= 0)
 			{
-				hp = 0;
-				remove_wall();
+				RemoveWall();
 				return 0;
 			}
 		}
@@ -545,311 +527,277 @@ public class Location
 			hp += damage;
 			if (hp >= 0)
 			{
-				hp = 0;
-				remove_wall();
+				RemoveWall();
 				return 0;
 			}
 		}
 
-		cargo_recno = (hp << 8) | wall_town_recno();
+		CargoId = (hp << 16) | WallTownId();
 		return hp;
 	}
 
-	public int wall_grade()
+	public int WallGrade()
 	{
-		return wall_hit_point() >= 0 ? (wall_hit_point() + 24) / 25 : (wall_hit_point() - 24) / 25;
-	}
-
-	public bool is_wall_creating()
-	{
-		return wall_hit_point() > 0;
-	}
-
-	public bool is_wall_destructing()
-	{
-		return wall_hit_point() < 0;
-	}
-
-	public void remove_wall(int setTimeOut = -1)
-	{
-		const int DEFAULT_WALL_TIMEOUT = 10;
-
-		loc_flag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
-		extra_para = 0;
-		cargo_recno = 0;
-		walkable_reset();
-
-		if (setTimeOut < 0)
-			set_wall_timeout(DEFAULT_WALL_TIMEOUT);
-		else if (setTimeOut > 0)
-		{
-			set_wall_timeout(setTimeOut);
-		}
+		return WallHitPoints() >= 0 ? (WallHitPoints() + 24) / 25 : (WallHitPoints() - 24) / 25;
 	}
 
 	// ---------- plant -----------//
-	public bool is_plant()
+	public bool IsPlant()
 	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_PLANT;
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_PLANT;
 	}
 
-	public bool can_add_plant(int teraMask = LOCATE_WALK_LAND)
+	public bool CanAddPlant(int teraMask = LOCATE_WALK_LAND)
 	{
-		return (cargo_recno == 0) && ((loc_flag & teraMask) != 0) &&
-		       ((loc_flag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0) && !has_site();
+		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & (LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)) == 0) && !HasSite();
 	}
 
-	public void set_plant(int plantId, int offsetX, int offsetY)
+	public void SetPlant(int plantId, int offsetX, int offsetY)
 	{
-		walkable_off();
-		loc_flag = loc_flag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK)
-		           | (LOCATE_IS_PLANT | LOCATE_SITE_RESERVED);
-
-		extra_para = plantId;
-		cargo_recno = (offsetY << 8) + offsetX;
+		_locFlag = _locFlag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_PLANT | LOCATE_SITE_RESERVED);
+		_extraPara = plantId;
+		CargoId = (offsetY << 16) + offsetX;
+		WalkableOff();
 	}
 
-	public int plant_id()
+	public void RemovePlant()
 	{
-		return is_plant() ? extra_para : 0;
+		_locFlag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
+		_extraPara = 0;
+		CargoId = 0;
+		ResetWalkable();
+	}
+	
+	public int PlantId()
+	{
+		return IsPlant() ? _extraPara : 0;
 	}
 
-	public int plant_inner_x()
+	public void PlantGrow()
 	{
-		return cargo_recno & 0xFF;
-	}
-
-	public int plant_inner_y()
-	{
-		return cargo_recno >> 8;
-	}
-
-	public void grow_plant()
-	{
-		extra_para++;
-	}
-
-	public void remove_plant()
-	{
-		loc_flag &= ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK);
-		extra_para = 0;
-		cargo_recno = 0;
-		walkable_reset();
-	}
-
-	// ---------- rock ------------//
-	public bool is_rock()
-	{
-		return (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_ROCK;
-	}
-
-	public bool can_add_rock(int teraMask = LOCATE_WALK_LAND)
-	{
-		return (cargo_recno == 0) && ((loc_flag & teraMask) != 0) && ((loc_flag & LOCATE_BLOCK_MASK) == 0);
-	}
-
-	public void set_rock(int rockArrayRecno)
-	{
-		walkable_off();
-		loc_flag = loc_flag & ~LOCATE_BLOCK_MASK | LOCATE_IS_ROCK;
-
-		cargo_recno = rockArrayRecno;
-	}
-
-	public int rock_array_recno()
-	{
-		return is_rock() ? cargo_recno : 0;
-	}
-
-	public void remove_rock()
-	{
-		loc_flag &= ~LOCATE_BLOCK_MASK;
-		cargo_recno = 0;
-		walkable_reset();
+		_extraPara++;
 	}
 
 	// call region_type only when generating region number
-	public RegionType region_type()
+	public RegionType RegionType()
 	{
-		return walkable() ? RegionType.REGION_LAND : (sailable() ? RegionType.REGION_SEA : RegionType.REGION_INPASSABLE);
+		return Walkable() ? TenKingdoms.RegionType.REGION_LAND : (Sailable() ? TenKingdoms.RegionType.REGION_SEA : TenKingdoms.RegionType.REGION_INPASSABLE);
 	}
 
 	// --------- functions on fire ---------//
-	public int fire_str()
+	public int FireStrength()
 	{
-		return fire_level;
+		return _fireLevel;
 	}
 
-	public int fire_src()
+	public void SetFireStrength(int str)
 	{
-		return flammability;
+		_fireLevel = str;
 	}
 
-	public void set_fire_str(int str)
+	public void AddFireStrength(int str)
 	{
-		fire_level = str;
+		_fireLevel += str;
 	}
 
-	public void set_fire_src(int src)
+	public int Flammability()
 	{
-		flammability = src;
+		return _flammability;
 	}
 
-	public void add_fire_str(int str)
+	public void SetFlammability(int src)
 	{
-		fire_level += str;
+		_flammability = src;
 	}
 
-	public void add_fire_src(int src)
+	public void AddFlammability(int src)
 	{
-		flammability += src;
+		_flammability += src;
 	}
 
-	public bool can_set_fire()
+	public bool CanSetFire()
 	{
-		return flammability >= -50;
+		return _flammability >= -50;
 	}
 
-	//----- functions whose results affected by mobile_type -----//
-
-	//int   is_blocked(int mobileType)    { return mobileType==UnitConstants.UNIT_AIR ? air_cargo_recno : cargo_recno; }     // return 1 or 0 (although both are the same)
-	public int unit_recno(int mobileType)
+	// ---------- firm ----------//
+	public bool IsFirm()
 	{
-		return mobileType == UnitConstants.UNIT_AIR ? air_cargo_recno : cargo_recno;
-	} // return the exact cargo recno
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_FIRM;
+	}
 
-	public bool has_unit(int mobileType)
+	public bool CanBuildFirm(int teraMask = LOCATE_WALK_LAND)
 	{
-		switch (mobileType)
+		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0) && !IsPowerOff();
+	}
+
+	public bool CanBuildHarbor(int teraMask = LOCATE_WALK_LAND)
+	{
+		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0);
+	}
+
+	public void SetFirm(int firmId)
+	{
+		// can't check the terrain type here
+		_locFlag = (_locFlag & ~LOCATE_BLOCK_MASK) | LOCATE_IS_FIRM;
+		CargoId = firmId;
+		WalkableOff();
+	}
+
+	public void RemoveFirm()
+	{
+		_locFlag &= ~LOCATE_BLOCK_MASK;
+		CargoId = 0;
+		ResetWalkable();
+	}
+
+	public int FirmId()
+	{
+		return IsFirm() ? CargoId : 0;
+	}
+
+	// ---------- town ------------//
+	public bool IsTown()
+	{
+		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_TOWN;
+	}
+
+	public bool CanBuildTown()
+	{
+		return (CargoId == 0) && ((_locFlag & LOCATE_WALK_LAND) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0) && !IsPowerOff() && !HasSite();
+	}
+
+	public void SetTown(int townId)
+	{
+		_locFlag = _locFlag & ~LOCATE_BLOCK_MASK | LOCATE_IS_TOWN;
+		CargoId = townId;
+		WalkableOff();
+	}
+
+	public void RemoveTown()
+	{
+		_locFlag &= ~LOCATE_BLOCK_MASK;
+		CargoId = 0;
+		ResetWalkable();
+	}
+
+	public int TownId()
+	{
+		return IsTown() ? CargoId : 0;
+	}
+
+	// ---------- unit ------------//
+	public bool HasUnit(int mobileType)
+	{
+		return mobileType switch
 		{
-			case UnitConstants.UNIT_LAND:
-				if (walkable())
-					return cargo_recno != 0;
-				break;
-
-			case UnitConstants.UNIT_SEA:
-				if (sailable())
-					return cargo_recno != 0;
-				break;
-
-			case UnitConstants.UNIT_AIR:
-				return air_cargo_recno != 0;
-		}
-
-		return false;
+			UnitConstants.UNIT_LAND => Walkable() && CargoId != 0,
+			UnitConstants.UNIT_SEA => Sailable() && CargoId != 0,
+			UnitConstants.UNIT_AIR => AirCargoId != 0,
+			_ => false
+		};
 	}
 
-	public int has_any_unit(int mobileType = UnitConstants.UNIT_LAND)
+	public int HasAnyUnit(int mobileType = UnitConstants.UNIT_LAND)
 	{
 		if (mobileType == UnitConstants.UNIT_LAND)
 		{
-			if (air_cargo_recno != 0)
+			if (AirCargoId != 0)
 				return UnitConstants.UNIT_AIR;
-			else if (walkable() && cargo_recno != 0)
+			if (Walkable() && CargoId != 0)
 				return UnitConstants.UNIT_LAND;
-			else if (sailable() && cargo_recno != 0)
+			if (Sailable() && CargoId != 0)
 				return UnitConstants.UNIT_SEA;
 		}
 		else
 		{
-			if (walkable() && cargo_recno != 0)
+			if (Walkable() && CargoId != 0)
 				return UnitConstants.UNIT_LAND;
-			else if (sailable() && cargo_recno != 0)
+			if (Sailable() && CargoId != 0)
 				return UnitConstants.UNIT_SEA;
-			else if (air_cargo_recno != 0)
+			if (AirCargoId != 0)
 				return UnitConstants.UNIT_AIR;
 		}
 
 		return UnitConstants.UNIT_NONE;
 	}
 
-	public int get_any_unit(out int mobileType)
+	public int GetAnyUnit()
 	{
-		if (air_cargo_recno != 0)
+		if (AirCargoId != 0)
 		{
-			mobileType = UnitConstants.UNIT_AIR;
-			return air_cargo_recno;
+			return AirCargoId;
 		}
-		else if (walkable() && cargo_recno != 0)
+		if ((Walkable() || Sailable()) && CargoId != 0)
 		{
-			mobileType = UnitConstants.UNIT_LAND;
-			return cargo_recno;
-		}
-		else if (sailable() && cargo_recno != 0)
-		{
-			mobileType = UnitConstants.UNIT_SEA;
-			return cargo_recno;
+			return CargoId;
 		}
 
-		mobileType = UnitConstants.UNIT_NONE;
 		return 0;
 	}
 
+	public int UnitId(int mobileType)
+	{
+		return mobileType == UnitConstants.UNIT_AIR ? AirCargoId : CargoId;
+	}
+	
 	// whether the location is accessible to the unit of the specific mobile type
-	public bool is_accessible(int mobileType)
+	public bool IsAccessible(int mobileType)
 	{
-		switch (mobileType)
+		return mobileType switch
 		{
-			case UnitConstants.UNIT_LAND:
-				return walkable();
+			UnitConstants.UNIT_LAND => Walkable(),
+			UnitConstants.UNIT_SEA => Sailable(),
+			UnitConstants.UNIT_AIR => true,
+			_ => false
+		};
+	}
 
-			case UnitConstants.UNIT_SEA:
-				return sailable();
-
-			case UnitConstants.UNIT_AIR:
-				return true;
+	public bool IsUnitGroupAccessible(int mobileType, int curGroupId)
+	{
+		if (IsAccessible(mobileType))
+		{
+			int unitId = UnitId(mobileType);
+			return unitId == 0 || UnitArray[unitId].unit_group_id == curGroupId;
 		}
 
 		return false;
 	}
 
-	public bool is_unit_group_accessible(int mobileType, int curGroupId)
+	public bool CanMove(int mobileType)
 	{
-		if (is_accessible(mobileType))
-		{
-			int unitRecno = unit_recno(mobileType);
-
-			return unitRecno == 0 || UnitArray[unitRecno].unit_group_id == curGroupId;
-		}
-
-		return false;
-	}
-
-	//int   can_move(int mobileType)      { return is_accessible(mobileType) && cargo_recno==0; }
-	public bool can_move(int mobileType)
-	{
-		return is_accessible(mobileType) && (mobileType == UnitConstants.UNIT_AIR ? air_cargo_recno == 0 : cargo_recno == 0);
+		return IsAccessible(mobileType) && (mobileType == UnitConstants.UNIT_AIR ? AirCargoId == 0 : CargoId == 0);
 	}
 
 	//------------ power --------------//
-	public void set_power_on()
+	public void SetPowerOn()
 	{
-		loc_flag &= ~LOCATE_POWER_OFF;
+		_locFlag &= ~LOCATE_POWER_OFF;
 	}
 
-	public void set_power_off()
+	public void SetPowerOff()
 	{
-		loc_flag |= LOCATE_POWER_OFF;
+		_locFlag |= LOCATE_POWER_OFF;
 	}
 
-	public bool is_power_off()
+	public bool IsPowerOff()
 	{
-		return (loc_flag & LOCATE_POWER_OFF) != 0;
+		return (_locFlag & LOCATE_POWER_OFF) != 0;
 	}
 
 	//----------- harbor bit -----------//
-	public void set_harbor_bit()
+	public void SetHarborBit()
 	{
-		loc_flag |= LOCATE_HARBOR_BIT;
+		_locFlag |= LOCATE_HARBOR_BIT;
 	}
 
-	public void clear_harbor_bit()
+	public void ClearHarborBit()
 	{
-		loc_flag &= ~LOCATE_HARBOR_BIT;
+		_locFlag &= ~LOCATE_HARBOR_BIT;
 	}
 
-	public bool can_build_whole_harbor()
+	public bool CanBuildWholeHarbor()
 	{
-		return (loc_flag & LOCATE_HARBOR_BIT) != 0;
+		return (_locFlag & LOCATE_HARBOR_BIT) != 0;
 	}
 }

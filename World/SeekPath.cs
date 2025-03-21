@@ -89,7 +89,7 @@ public class SeekPath
 		Location location = Sys.Instance.World.get_loc(locX, locY);
 		Unit unit;
 		int cargoId;
-		int powerNationId = location.power_nation_recno;
+		int powerNationId = location.PowerNationId;
 		int unitCurrentAction;
 
 		switch (_mobileType)
@@ -100,10 +100,10 @@ public class SeekPath
 
 				if (_searchMode < SEARCH_MODE_TO_FIRM) //------ be careful for the checking for search_mode>=SEARCH_MODE_TO_FIRM
 				{
-					if (!location.walkable())
+					if (!location.Walkable())
 						return false;
 
-					cargoId = location.cargo_recno;
+					cargoId = location.CargoId;
 					if (cargoId == 0)
 						return true;
 
@@ -140,28 +140,28 @@ public class SeekPath
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
 						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
-							if (!location.walkable())
+							if (!location.Walkable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
 						case SEARCH_MODE_TO_WALL_FOR_GROUP: // move to wall for a group, (location may be not walkable)
-							if (!location.walkable())
+							if (!location.Walkable())
 								return (locX == _finalDestX && locY == _finalDestY);
 							break;
 
 						case SEARCH_MODE_TO_WALL_FOR_UNIT: // move to wall for a unit only, (location may be not walkable)
-							return (location.walkable() && location.cargo_recno == 0) || (locX == _finalDestX && locY == _finalDestY);
+							return (location.Walkable() && location.CargoId == 0) || (locX == _finalDestX && locY == _finalDestY);
 
 						case SEARCH_MODE_ATTACK_UNIT_BY_RANGE: // same as that used in SEARCH_MODE_TO_FIRM
 						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-							if (!location.walkable())
+							if (!location.Walkable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 					}
 
-					cargoId = location.cargo_recno;
+					cargoId = location.CargoId;
 					if (cargoId == 0)
 						return true;
 				}
@@ -178,10 +178,10 @@ public class SeekPath
 			case UnitConstants.UNIT_SEA:
 				if (_searchMode < SEARCH_MODE_TO_FIRM) //--------- be careful for the search_mode >= SEARCH_MODE_TO_FIRM
 				{
-					if (!location.sailable())
+					if (!location.Sailable())
 						return false;
 
-					cargoId = location.cargo_recno;
+					cargoId = location.CargoId;
 					if (cargoId == 0)
 						return true;
 
@@ -209,7 +209,7 @@ public class SeekPath
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
 						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
-							if (!location.sailable())
+							if (!location.Sailable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
@@ -220,14 +220,14 @@ public class SeekPath
 						case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 						case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 						case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
-							if (!location.sailable())
+							if (!location.Sailable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
 
 						case SEARCH_MODE_TO_LAND_FOR_SHIP:
-							if (location.sailable())
+							if (location.Sailable())
 							{
-								cargoId = location.cargo_recno;
+								cargoId = location.CargoId;
 								if (cargoId == 0)
 									return true;
 
@@ -239,11 +239,11 @@ public class SeekPath
 							}
 							else
 							{
-								return location.walkable() && location.region_id == _regionId;
+								return location.Walkable() && location.RegionId == _regionId;
 							}
 					}
 
-					cargoId = location.cargo_recno;
+					cargoId = location.CargoId;
 					if (cargoId == 0)
 						return true;
 				}
@@ -257,7 +257,7 @@ public class SeekPath
 				       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 			case UnitConstants.UNIT_AIR:
-				cargoId = location.air_cargo_recno;
+				cargoId = location.AirCargoId;
 				if (cargoId == 0)
 					return true;
 
@@ -330,7 +330,7 @@ public class SeekPath
 				if (miscNo != -1)
 				{
 					Location location = Sys.Instance.World.get_loc(dx, dy);
-					Town targetTown = Sys.Instance.TownArray[location.town_recno()];
+					Town targetTown = Sys.Instance.TownArray[location.TownId()];
 					_buildingX2 = targetTown.LocX2;
 					_buildingY2 = targetTown.LocY2;
 				}

@@ -54,24 +54,24 @@ public class BulletHoming : Bullet
 		Location location = World.get_loc(targetXLoc, targetYLoc);
 		//### begin alex 16/5 ###//
 		//if( locPtr->has_unit(mobile_type) )
-		if (location.has_unit(targetMobileType))
+		if (location.HasUnit(targetMobileType))
 		{
 			target_type = BULLET_TARGET_UNIT;
 			//target_recno = locPtr->unit_recno(mobile_type);
-			target_recno = location.unit_recno(targetMobileType);
+			target_recno = location.UnitId(targetMobileType);
 		}
 		//#### end alex 16/5 ####//
-		else if (location.is_town())
+		else if (location.IsTown())
 		{
 			target_type = BULLET_TARGET_TOWN;
-			target_recno = location.town_recno();
+			target_recno = location.TownId();
 		}
-		else if (location.is_firm())
+		else if (location.IsFirm())
 		{
 			target_type = BULLET_TARGET_FIRM;
-			target_recno = location.firm_recno();
+			target_recno = location.FirmId();
 		}
-		else if (location.is_wall())
+		else if (location.IsWall())
 		{
 			target_type = BULLET_TARGET_WALL;
 		}

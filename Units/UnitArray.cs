@@ -378,7 +378,7 @@ public class UnitArray : SpriteArray
 
 				    case UnitConstants.ACTION_ATTACK_WALL:
 					    Location targetLoc = World.get_loc(targetXLoc, targetYLoc);
-					    if (targetLoc.wall_nation_recno() == oldNationRecno)
+					    if (targetLoc.WallNationId() == oldNationRecno)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 			    }
@@ -448,8 +448,8 @@ public class UnitArray : SpriteArray
 
 				    case UnitConstants.ACTION_ATTACK_WALL:
 					    Location targetLoc = World.get_loc(targetXLoc, targetYLoc);
-					    if (targetLoc.wall_nation_recno() == nationRecno1 ||
-					        targetLoc.wall_nation_recno() == nationRecno2)
+					    if (targetLoc.WallNationId() == nationRecno1 ||
+					        targetLoc.WallNationId() == nationRecno2)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 			    }
@@ -531,7 +531,7 @@ public class UnitArray : SpriteArray
 		    if (_selectedSeaUnits.Count > 0)
 		    {
 			    Location location = World.get_loc(destLocX, destLocY);
-			    if (TerrainRes[location.terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN)
+			    if (TerrainRes[location.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN)
 				    MoveTo(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
 			    else
 				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
@@ -595,7 +595,7 @@ public class UnitArray : SpriteArray
 		int filtering_unit_count = selectedUnits.Count;
 
 		int unprocessCount = selectedUnits.Count;
-		int filterRegionId = World.get_loc(destLocX, destLocY).region_id;
+		int filterRegionId = World.get_loc(destLocX, destLocY).RegionId;
 		int filterDestX = destLocX, filterDestY = destLocY;
 		int loopCount, i;
 
@@ -613,7 +613,7 @@ public class UnitArray : SpriteArray
 			for (i = 0; i < filteringCount; i++)
 			{
 				unit = this[filtering_unit_array[i]];
-				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == filterRegionId)
+				if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId == filterRegionId)
 					filtered_unit_array.Add(filtering_unit_array[i]);
 				else
 					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
@@ -628,7 +628,7 @@ public class UnitArray : SpriteArray
 
 			//---------------- update parameters for next checking ------------------//
 			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id;
+			filterRegionId = World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId;
 			filterDestX = destLocX;
 			filterDestY = destLocY;
 			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
@@ -723,7 +723,7 @@ public class UnitArray : SpriteArray
 				if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
 				{
 					Location location = World.get_loc(x, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
+					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 						unprocessCount--;
 				}
 
@@ -755,7 +755,7 @@ public class UnitArray : SpriteArray
 					if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
 					{
 						Location location = World.get_loc(x, y);
-						if (location.is_unit_group_accessible(mobileType, curGroupId))
+						if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 							unprocessCount--;
 					}
 
@@ -834,7 +834,7 @@ public class UnitArray : SpriteArray
 				for (int i = x; i > x - rec_width && unprocessCount > 0; i -= move_scale)
 				{
 					Location location = World.get_loc(i, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
+					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 					{
 						Unit unit;
 						do
@@ -877,7 +877,7 @@ public class UnitArray : SpriteArray
 				for (int i = x; i < x + rec_width && unprocessCount > 0; i += move_scale)
 				{
 					Location location = World.get_loc(i, y);
-					if (location.is_unit_group_accessible(mobileType, curGroupId))
+					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
 					{
 						Unit unit;
 						do
@@ -1324,7 +1324,7 @@ public class UnitArray : SpriteArray
 	    const int CHECK_SEA_DIMENSION = 50;
 	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
 	    Location loc = World.get_loc(destX, destY);
-	    int regionId = loc.region_id;
+	    int regionId = loc.RegionId;
 	    int xShift, yShift, checkXLoc, checkYLoc;
 	    int landX = -1, landY = -1, tempX, tempY;
 
@@ -1381,7 +1381,7 @@ public class UnitArray : SpriteArray
 					    continue;
 
 				    loc = World.get_loc(seaX, seaY);
-				    if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+				    if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					    continue;
 
 				    //--------------------------------------------------------------------//
@@ -1397,7 +1397,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    loc = World.get_loc(checkXLoc, checkYLoc);
-					    if (loc.region_id != regionId)
+					    if (loc.RegionId != regionId)
 						    continue;
 
 					    unit.ship_to_beach(checkXLoc, checkYLoc, out tempX, out tempY);
@@ -1427,7 +1427,7 @@ public class UnitArray : SpriteArray
 		    // unit determined from the location
 
 		    Location location = World.get_loc(targetXLoc, targetYLoc);
-		    targetUnitRecno = location.get_any_unit(out _);
+		    targetUnitRecno = location.GetAnyUnit();
 	    }
 	    else
 	    {
@@ -1461,9 +1461,9 @@ public class UnitArray : SpriteArray
 
 		    //---- if there is a firm on this location -----//
 
-		    if (location.is_firm())
+		    if (location.IsFirm())
 		    {
-			    Firm firm = FirmArray[location.firm_recno()];
+			    Firm firm = FirmArray[location.FirmId()];
 
 			    targetXLoc = firm.loc_x1;
 			    targetYLoc = firm.loc_y1;
@@ -1472,9 +1472,9 @@ public class UnitArray : SpriteArray
 
 		    //---- if there is a town on this location -----//
 
-		    else if (location.is_town())
+		    else if (location.IsTown())
 		    {
-			    Town town = TownArray[location.town_recno()];
+			    Town town = TownArray[location.TownId()];
 
 			    targetXLoc = town.LocX1;
 			    targetYLoc = town.LocY1;
@@ -1518,7 +1518,7 @@ public class UnitArray : SpriteArray
 			    divide_array(targetXLoc, targetYLoc, selectedUnitArray, 1);
 
 			    Location location = World.get_loc(targetXLoc, targetYLoc);
-			    int targetMobileType = location.has_any_unit();
+			    int targetMobileType = location.HasAnyUnit();
 
 			    if (_selectedLandUnits.Count > 0)
 				    attack_call(targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, targetMobileType, true,
@@ -1556,8 +1556,8 @@ public class UnitArray : SpriteArray
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
 	    Unit targetUnit = this[targetUnitRecno];
-	    if ((World.get_loc(targetXLoc, targetYLoc).region_id !=
-	         World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).region_id) ||
+	    if ((World.get_loc(targetXLoc, targetYLoc).RegionId !=
+	         World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId) ||
 	        (targetUnit.mobile_type != firstUnit.mobile_type))
 	    {
 		    set_group_id(selectedUnits);
@@ -1767,8 +1767,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).region_id !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).region_id)
+	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
+	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -1970,8 +1970,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).region_id !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).region_id)
+	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
+	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2172,8 +2172,8 @@ public class UnitArray : SpriteArray
 	    // be added in the future.
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
-	    if (World.get_loc(targetXLoc, targetYLoc).region_id !=
-	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).region_id)
+	    if (World.get_loc(targetXLoc, targetYLoc).RegionId !=
+	        World.get_loc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2359,9 +2359,9 @@ public class UnitArray : SpriteArray
 
 	    //---- if there is a firm on this location -----//
 
-	    if (location.is_firm())
+	    if (location.IsFirm())
 	    {
-		    Firm firm = FirmArray[location.firm_recno()];
+		    Firm firm = FirmArray[location.FirmId()];
 
 		    destX = firm.loc_x1;
 		    destY = firm.loc_y1;
@@ -2369,9 +2369,9 @@ public class UnitArray : SpriteArray
 
 	    //---- if there is a town on this location -----//
 
-	    else if (location.is_town())
+	    else if (location.IsTown())
 	    {
-		    Town town = TownArray[location.town_recno()];
+		    Town town = TownArray[location.TownId()];
 
 		    destX = town.LocX1;
 		    destY = town.LocY1;
@@ -2432,9 +2432,9 @@ public class UnitArray : SpriteArray
 			    if (_selectedSeaUnits.Count > 0)
 			    {
 				    Location loc = World.get_loc(destX, destY);
-				    if (loc.is_firm())
+				    if (loc.IsFirm())
 				    {
-					    Firm firm = FirmArray[loc.firm_recno()];
+					    Firm firm = FirmArray[loc.FirmId()];
 					    if (firm.firm_id == Firm.FIRM_HARBOR) // recursive call
 						    assign(destX, destY, true, remoteAction, _selectedSeaUnits);
 					    else
@@ -2470,15 +2470,15 @@ public class UnitArray : SpriteArray
 				    else // move to object surrounding
 				    {
 					    Location loc = World.get_loc(destX, destY);
-					    if (loc.is_firm())
+					    if (loc.IsFirm())
 						    unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
-							    unit.sprite_info.loc_height, loc.firm_recno());
-					    else if (loc.is_town())
+							    unit.sprite_info.loc_height, loc.FirmId());
+					    else if (loc.IsTown())
 						    unit.MoveToTownSurround(destX, destY, unit.sprite_info.loc_width,
 							    unit.sprite_info.loc_height);
-					    else if (loc.has_unit(UnitConstants.UNIT_LAND))
+					    else if (loc.HasUnit(UnitConstants.UNIT_LAND))
 						    unit.MoveToUnitSurround(destX, destY, unit.sprite_info.loc_width,
-							    unit.sprite_info.loc_height, loc.unit_recno(UnitConstants.UNIT_LAND));
+							    unit.sprite_info.loc_height, loc.UnitId(UnitConstants.UNIT_LAND));
 				    }
 			    }
 			    else // for more than one unit selecting, call group_assign() to take care of it
@@ -2609,7 +2609,7 @@ public class UnitArray : SpriteArray
 		    Unit closestUnit = this[selectedUnits[closestUnitRecno]];
 		    int closestUnitXLoc = closestUnit.next_x_loc();
 		    int closestUnitYLoc = closestUnit.next_y_loc();
-		    int defaultRegionId = World.get_loc(closestUnitXLoc, closestUnitYLoc).region_id;
+		    int defaultRegionId = World.get_loc(closestUnitXLoc, closestUnitYLoc).RegionId;
 		    List<int> newSelectedArray = new List<int>();
 
 		    if (selectedUnits.Count > 1)
@@ -2617,7 +2617,7 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < selectedUnits.Count; i++)
 			    {
 				    Unit unit = this[selectedUnits[i]];
-				    if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).region_id == defaultRegionId)
+				    if (World.get_loc(unit.next_x_loc(), unit.next_y_loc()).RegionId == defaultRegionId)
 				    {
 					    newSelectedArray.Add(selectedUnits[i]); // on the same territory
 					    unit.unit_group_id = curGroupId;
@@ -2650,7 +2650,7 @@ public class UnitArray : SpriteArray
 			    //-------------- ordering the units ---------------//
 			    const int TRY_SIZE = 5;
 			    int countLimit = TRY_SIZE * TRY_SIZE;
-			    int regionId = World.get_loc(landX, landY).region_id;
+			    int regionId = World.get_loc(landX, landY).RegionId;
 			    for (int i = 0, k = 0; i < newSelectedArray.Count; i++)
 			    {
 				    for (int j = 1; j < countLimit; j++)
@@ -2666,7 +2666,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Location loc = World.get_loc(checkXLoc, checkYLoc);
-					    if (loc.region_id != regionId || !loc.walkable())
+					    if (loc.RegionId != regionId || !loc.Walkable())
 						    continue;
 
 					    Unit unit = this[newSelectedArray[i]];
@@ -2836,7 +2836,7 @@ public class UnitArray : SpriteArray
 
 		    //--- check if the location of the unit has been explored ---//
 
-		    if (!World.get_loc(unit.next_x_loc(), unit.next_y_loc()).explored())
+		    if (!World.get_loc(unit.next_x_loc(), unit.next_y_loc()).IsExplored())
 			    continue;
 
 		    //-------- if are of the same nation --------//
@@ -2869,8 +2869,8 @@ public class UnitArray : SpriteArray
 		if (excludeSelectedLocUnit != 0)
 		{
 			Location location = World.get_loc(locX, locY);
-			int targetMobileType = location.has_any_unit();
-			excludeUnitRecno = targetMobileType != 0 ? location.unit_recno(targetMobileType) : 0;
+			int targetMobileType = location.HasAnyUnit();
+			excludeUnitRecno = targetMobileType != 0 ? location.UnitId(targetMobileType) : 0;
 		}
 
 		for (int i = 0; i < selectedUnits.Count; i++)
@@ -2934,22 +2934,22 @@ public class UnitArray : SpriteArray
 			// short targetUnitRecno = targetUnit.sprite_recno;
 			attack_unit(targetXLoc, targetYLoc, targetUnitRecno, selectedUnits);
 		}
-		else if (loc.is_firm())
+		else if (loc.IsFirm())
 		{
 			//------------------ attack firm -------------------//
-			Firm firm = FirmArray[loc.firm_recno()];
+			Firm firm = FirmArray[loc.FirmId()];
 			if (firm.hit_points <= 0.0)
 				return;
 
 			attack_firm(targetXLoc, targetYLoc, firm.firm_recno, selectedUnits);
 		}
-		else if (loc.is_town())
+		else if (loc.IsTown())
 		{
 			//-------------------- attack town -------------------//
-			Town town = TownArray[loc.town_recno()];
+			Town town = TownArray[loc.TownId()];
 			attack_town(targetXLoc, targetYLoc, town.TownId, selectedUnits);
 		}
-		else if (loc.is_wall())
+		else if (loc.IsWall())
 		{
 			//------------------ attack wall ---------------------//
 			attack_wall(targetXLoc, targetYLoc, selectedUnits);
@@ -2984,7 +2984,7 @@ public class UnitArray : SpriteArray
 		for (yLoc2 = yLoc1 - targetYLoc + SHIFT_ADJUST; i > 0; i--, yLoc1++, yLoc2++)
 		{
 			//---- left edge ----//
-			if (xLoc1 >= 0 && !unreachable_table[0, yLoc2] && !World.get_loc(xLoc1, yLoc1).can_move(mobileType))
+			if (xLoc1 >= 0 && !unreachable_table[0, yLoc2] && !World.get_loc(xLoc1, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[0, yLoc2] = true;
 				analyseResult--;
@@ -2992,7 +2992,7 @@ public class UnitArray : SpriteArray
 
 			//----- right edge -----//
 			if (xLoc2 < GameConstants.MapSize && !unreachable_table[targetWidth + 1, yLoc2] &&
-			    !World.get_loc(xLoc2, yLoc1).can_move(mobileType))
+			    !World.get_loc(xLoc2, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[targetWidth + 1, yLoc2] = true;
 				analyseResult--;
@@ -3012,7 +3012,7 @@ public class UnitArray : SpriteArray
 		     i++, xLoc1++, xLoc2++)
 		{
 			//---- top edge ----//
-			if (yLoc1 >= 0 && !unreachable_table[xLoc2, 0] && !World.get_loc(xLoc1, yLoc1).can_move(mobileType))
+			if (yLoc1 >= 0 && !unreachable_table[xLoc2, 0] && !World.get_loc(xLoc1, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[xLoc2, 0] = true;
 				analyseResult--;
@@ -3020,7 +3020,7 @@ public class UnitArray : SpriteArray
 
 			//----- bottom edge -----//
 			if (yLoc2 < GameConstants.MapSize && !unreachable_table[xLoc2, targetHeight + 1] &&
-			    !World.get_loc(xLoc1, yLoc2).can_move(mobileType))
+			    !World.get_loc(xLoc1, yLoc2).CanMove(mobileType))
 			{
 				unreachable_table[xLoc2, targetHeight + 1] = true;
 				analyseResult--;
@@ -3129,7 +3129,7 @@ public class UnitArray : SpriteArray
 			else
 			{
 				Location location = World.get_loc(xLoc, yLoc);
-				if (!location.can_move(mobileType))
+				if (!location.CanMove(mobileType))
 					unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 				else
 					found++;
@@ -3310,7 +3310,7 @@ public class UnitArray : SpriteArray
 					else
 					{
 						Location location = World.get_loc(leftXLoc, leftYLoc);
-						if (location.can_move(targetMobileType))
+						if (location.CanMove(targetMobileType))
 							canReach = 1;
 					}
 				}
@@ -3356,7 +3356,7 @@ public class UnitArray : SpriteArray
 					else
 					{
 						Location location = World.get_loc(rightXLoc, rightYLoc);
-						if (location.can_move(targetMobileType))
+						if (location.CanMove(targetMobileType))
 							canReach = 1;
 					}
 				}
@@ -3525,17 +3525,17 @@ public class UnitArray : SpriteArray
 
 		int assignType = 0; // 1 for unit, 2 for firm, 3 for town
 		int miscNo = 0; // usedd to store the recno of the object
-		if (loc.has_unit(UnitConstants.UNIT_LAND))
+		if (loc.HasUnit(UnitConstants.UNIT_LAND))
 		{
 			assignType = ASSIGN_TYPE_UNIT;
-			miscNo = loc.unit_recno(UnitConstants.UNIT_LAND);
+			miscNo = loc.UnitId(UnitConstants.UNIT_LAND);
 		}
-		else if (loc.is_firm())
+		else if (loc.IsFirm())
 		{
 			assignType = ASSIGN_TYPE_FIRM;
-			miscNo = FirmArray[loc.firm_recno()].firm_id;
+			miscNo = FirmArray[loc.FirmId()].firm_id;
 		}
-		else if (loc.is_town())
+		else if (loc.IsTown())
 		{
 			assignType = ASSIGN_TYPE_TOWN;
 			miscNo = 0;

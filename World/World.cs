@@ -68,7 +68,7 @@ public class World
 
 	public int get_region_id(int xLoc, int yLoc)
 	{
-		return loc_matrix[GameConstants.MapSize * yLoc + xLoc].region_id;
+		return loc_matrix[GameConstants.MapSize * yLoc + xLoc].RegionId;
 	}
 
 	public void load_map(byte[] para)
@@ -115,17 +115,17 @@ public class World
 	public int get_unit_recno(int xLoc, int yLoc, int mobileType)
 	{
 		if (mobileType == UnitConstants.UNIT_AIR)
-			return get_loc(xLoc, yLoc).air_cargo_recno;
+			return get_loc(xLoc, yLoc).AirCargoId;
 		else
-			return get_loc(xLoc, yLoc).cargo_recno;
+			return get_loc(xLoc, yLoc).CargoId;
 	}
 
 	public void set_unit_recno(int xLoc, int yLoc, int mobileType, int newCargoRecno)
 	{
 		if (mobileType == UnitConstants.UNIT_AIR)
-			get_loc(xLoc, yLoc).air_cargo_recno = newCargoRecno;
+			get_loc(xLoc, yLoc).AirCargoId = newCargoRecno;
 		else
-			get_loc(xLoc, yLoc).cargo_recno = newCargoRecno;
+			get_loc(xLoc, yLoc).CargoId = newCargoRecno;
 	}
 
 	public int distance_rating(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
@@ -167,9 +167,9 @@ public class World
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
 				Location location = get_loc(xLoc, yLoc);
-				if (!location.explored())
+				if (!location.IsExplored())
 				{
-					location.explored_on();
+					location.ExploredOn();
 
 					//TODO rewrite drawing
 					//-------- draw pixel ----------//
@@ -243,9 +243,9 @@ public class World
 
 					//---- if the command base of the opponent revealed, establish contact ----//
 
-					if (location.is_firm())
+					if (location.IsFirm())
 					{
-						Firm firm = FirmArray[location.firm_recno()];
+						Firm firm = FirmArray[location.FirmId()];
 
 						if (firm.nation_recno > 0 && NationArray.player_recno != 0)
 						{
@@ -273,9 +273,9 @@ public class World
 						}
 					}
 
-					if (location.is_town())
+					if (location.IsTown())
 					{
-						Town town = TownArray[location.town_recno()];
+						Town town = TownArray[location.TownId()];
 
 						if (town.NationId > 0 && NationArray.player_recno != 0)
 						{
@@ -322,7 +322,7 @@ public class World
 				for (int xLoc = left; xLoc <= right; xLoc++)
 				{
 					Location location = get_loc(xLoc, yLoc);
-					location.set_visited();
+					location.SetVisited();
 				}
 			}
 
@@ -360,7 +360,7 @@ public class World
 		{
 			for (int x = left; x <= right; ++x)
 			{
-				get_loc(x, yLoc1).set_visited(visitLevel);
+				get_loc(x, yLoc1).SetVisited(visitLevel);
 			}
 		}
 
@@ -369,7 +369,7 @@ public class World
 		{
 			for (int x = left; x <= right; ++x)
 			{
-				get_loc(x, yLoc2).set_visited(visitLevel);
+				get_loc(x, yLoc2).SetVisited(visitLevel);
 			}
 		}
 
@@ -378,7 +378,7 @@ public class World
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				get_loc(xLoc1, y).set_visited(visitLevel);
+				get_loc(xLoc1, y).SetVisited(visitLevel);
 			}
 		}
 
@@ -387,7 +387,7 @@ public class World
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				get_loc(xLoc2, y).set_visited(visitLevel);
+				get_loc(xLoc2, y).SetVisited(visitLevel);
 			}
 		}
 	}
@@ -418,13 +418,13 @@ public class World
 					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 					{
 						Location location = get_loc(xLoc, yLoc);
-						if (!location.can_build_firm(teraMask) && (!location.has_unit(UnitConstants.UNIT_LAND) ||
-						                                           location.unit_recno(UnitConstants.UNIT_LAND) !=
+						if (!location.CanBuildFirm(teraMask) && (!location.HasUnit(UnitConstants.UNIT_LAND) ||
+						                                           location.UnitId(UnitConstants.UNIT_LAND) !=
 						                                           unitRecno))
 							return 0;
 
 						// don't allow building any buildings other than mines on a location with a site
-						if (firmId != Firm.FIRM_MINE && location.has_site())
+						if (firmId != Firm.FIRM_MINE && location.HasSite())
 							return 0;
 					}
 				}
@@ -451,18 +451,18 @@ public class World
 					{
 						Location location = get_loc(xLoc, yLoc);
 						// don't allow building any buildings other than mines on a location with a site
-						if (location.has_site())
+						if (location.HasSite())
 							return 0;
 
 						int x = xLoc - xLoc1;
 						int y = yLoc - yLoc1;
-						if (!location.can_build_harbor(northPierTera[y, x]))
+						if (!location.CanBuildHarbor(northPierTera[y, x]))
 							pierFlag &= ~1;
-						if (!location.can_build_harbor(southPierTera[y, x]))
+						if (!location.CanBuildHarbor(southPierTera[y, x]))
 							pierFlag &= ~2;
-						if (!location.can_build_harbor(westPierTera[y, x]))
+						if (!location.CanBuildHarbor(westPierTera[y, x]))
 							pierFlag &= ~4;
-						if (!location.can_build_harbor(eastPierTera[y, x]))
+						if (!location.CanBuildHarbor(eastPierTera[y, x]))
 							pierFlag &= ~8;
 					}
 				}
@@ -489,9 +489,9 @@ public class World
 			{
 				Location location = get_loc(xLoc, yLoc);
 				// allow the building unit to stand in the area
-				if (!location.can_build_town() &&
-				    (!location.has_unit(UnitConstants.UNIT_LAND) ||
-				     location.unit_recno(UnitConstants.UNIT_LAND) != unitRecno))
+				if (!location.CanBuildTown() &&
+				    (!location.HasUnit(UnitConstants.UNIT_LAND) ||
+				     location.UnitId(UnitConstants.UNIT_LAND) != unitRecno))
 					return false;
 			}
 		}
@@ -504,9 +504,9 @@ public class World
 		bool buildFlag = false)
 	{
 		if (regionId == 0)
-			regionId = get_loc(xLoc1, yLoc1).region_id;
+			regionId = get_loc(xLoc1, yLoc1).RegionId;
 
-		bool isPlateau = get_loc(xLoc1, yLoc1).is_plateau();
+		bool isPlateau = get_loc(xLoc1, yLoc1).IsPlateau();
 
 		//-----------------------------------------------------------//
 		// xLoc, yLoc is the adjusted upper left corner location of
@@ -543,7 +543,7 @@ public class World
 				{
 					Location location = get_loc(x, y);
 
-					if (location.region_id == regionId && location.is_plateau() == isPlateau &&
+					if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 					    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
 						    mobileType, buildFlag))
 					{
@@ -573,7 +573,7 @@ public class World
 					{
 						Location location = get_loc(x, y);
 
-						if (location.region_id == regionId && location.is_plateau() == isPlateau &&
+						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
 							    mobileType, buildFlag))
 						{
@@ -612,7 +612,7 @@ public class World
 						{
 							Location location = get_loc(x, y);
 
-							if (location.region_id == regionId && location.is_plateau() == isPlateau &&
+							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
 								    mobileType, buildFlag))
 							{
@@ -637,7 +637,7 @@ public class World
 						{
 							Location location = get_loc(x, y);
 
-							if (location.region_id == regionId && location.is_plateau() == isPlateau &&
+							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
 								    mobileType, buildFlag))
 							{
@@ -669,7 +669,7 @@ public class World
 					{
 						Location location = get_loc(x, y);
 
-						if (location.region_id == regionId && location.is_plateau() == isPlateau &&
+						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
 						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
 							    mobileType, buildFlag))
 						{
@@ -736,7 +736,7 @@ public class World
 			{
 				Location location = get_loc(x, y);
 				// if build a firm/town, there must not be any sites in the area
-				if (!location.can_move(mobileType) || (buildFlag && (location.is_power_off() || location.has_site())))
+				if (!location.CanMove(mobileType) || (buildFlag && (location.IsPowerOff() || location.HasSite())))
 				{
 					canBuildFlag = false;
 					break;
@@ -771,8 +771,8 @@ public class World
 				for (int x = xLoc + spaceLocWidth - 1; x >= xLoc; x--)
 				{
 					location = get_loc(x, y);
-					if ((buildSite ? !location.can_build_site(teraMask) : !location.can_build_firm(teraMask)) ||
-					    location.is_power_off())
+					if ((buildSite ? !location.CanBuildSite(teraMask) : !location.CanBuildFirm(teraMask)) ||
+					    location.IsPowerOff())
 					{
 						canBuildFlag = false;
 						break;
@@ -790,7 +790,7 @@ public class World
 
 			location = get_loc(xLoc, yLoc);
 
-			if (regionId != 0 && location.region_id != regionId)
+			if (regionId != 0 && location.RegionId != regionId)
 				continue;
 
 			//------------------------------------//
@@ -917,7 +917,7 @@ public class World
 	{
 		//------- reset power_nation_recno first ------//
 
-		bool plateauResult = get_loc((xLoc1 + xLoc2) / 2, (yLoc1 + yLoc2) / 2).is_plateau();
+		bool plateauResult = get_loc((xLoc1 + xLoc2) / 2, (yLoc1 + yLoc2) / 2).IsPlateau();
 
 		xLoc1 = Math.Max(0, xLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
 		yLoc1 = Math.Max(0, yLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
@@ -934,18 +934,18 @@ public class World
 			{
 				Location location = get_loc(xLoc, yLoc);
 
-				if (location.sailable()) //if(!locPtr.walkable())
+				if (location.Sailable()) //if(!locPtr.walkable())
 					continue;
 
-				if (location.is_power_off())
+				if (location.IsPowerOff())
 					continue;
 
-				if (location.is_plateau() != plateauResult)
+				if (location.IsPlateau() != plateauResult)
 					continue;
 
-				if (location.power_nation_recno == 0)
+				if (location.PowerNationId == 0)
 				{
-					location.power_nation_recno = nationRecno;
+					location.PowerNationId = nationRecno;
 					//sys.map_need_redraw = 1;						// request redrawing the map next time
 				}
 			}
@@ -986,9 +986,9 @@ public class World
 			{
 				Location location = get_loc(xLoc, yLoc);
 
-				if (location.power_nation_recno == nationRecno)
+				if (location.PowerNationId == nationRecno)
 				{
-					location.power_nation_recno = 0;
+					location.PowerNationId = 0;
 					//sys.map_need_redraw = 1;						// request redrawing the map next time
 				}
 			}
@@ -1065,7 +1065,7 @@ public class World
 			{
 				for (int x = 0; x < GameConstants.MapSize; ++x)
 				{
-					get_loc(x, y).dec_visibility();
+					get_loc(x, y).DecVisibility();
 				}
 			}
 		}
@@ -1134,12 +1134,12 @@ public class World
 				int basePlantId;
 
 				// is a plant and is not at maximum grade
-				if (location.is_plant() && Misc.Random(100) < pGrow &&
-				    (basePlantId = PlantRes.plant_recno(bitmapId = location.plant_id())) != 0 &&
+				if (location.IsPlant() && Misc.Random(100) < pGrow &&
+				    (basePlantId = PlantRes.plant_recno(bitmapId = location.PlantId())) != 0 &&
 				    bitmapId - PlantRes[basePlantId].first_bitmap < PlantRes[basePlantId].bitmap_count - 1)
 				{
 					// increase the grade of plant
-					location.grow_plant();
+					location.PlantGrow();
 				}
 			}
 		}
@@ -1165,7 +1165,7 @@ public class World
 				Location location = get_loc(x, y);
 				int bitmapId, basePlantId, plantGrade;
 				// is a plant and grade > 3
-				if (location.is_plant() && (basePlantId = PlantRes.plant_recno(bitmapId = location.plant_id())) != 0 &&
+				if (location.IsPlant() && (basePlantId = PlantRes.plant_recno(bitmapId = location.PlantId())) != 0 &&
 				    ((plantGrade = bitmapId - PlantRes[basePlantId].first_bitmap) >= 3 ||
 				     plantGrade == PlantRes[basePlantId].bitmap_count - 1))
 				{
@@ -1220,15 +1220,15 @@ public class World
 
 							int teraType;
 							PlantInfo plantInfo = PlantRes[basePlantId];
-							if (newl != null && newl.can_add_plant() &&
+							if (newl != null && newl.CanAddPlant() &&
 							    (plantInfo.tera_type[0] ==
-							     (teraType = TerrainRes[newl.terrain_id].average_type) ||
+							     (teraType = TerrainRes[newl.TerrainId].average_type) ||
 							     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
 							{
-								newl.set_plant(plantInfo.first_bitmap, rand_inner_x(), rand_inner_y());
+								newl.SetPlant(plantInfo.first_bitmap, rand_inner_x(), rand_inner_y());
 
 								// ------- set flammability ---------
-								newl.set_fire_src(100);
+								newl.SetFlammability(100);
 								plant_count++;
 								//### begin alex 24/6 ###//
 								//newl.set_power_off();
@@ -1253,7 +1253,7 @@ public class World
 			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
 			{
 				Location location = get_loc(x, y);
-				if (location.is_plant())
+				if (location.IsPlant())
 				{
 					int neighbour = 0;
 					int totalSpace = 0;
@@ -1262,7 +1262,7 @@ public class World
 					if (x > 0)
 					{
 						totalSpace++;
-						if (get_loc(x - 1, y).is_plant())
+						if (get_loc(x - 1, y).IsPlant())
 							neighbour++;
 					}
 
@@ -1270,7 +1270,7 @@ public class World
 					if (x < GameConstants.MapSize - 1)
 					{
 						totalSpace++;
-						if (get_loc(x + 1, y).is_plant())
+						if (get_loc(x + 1, y).IsPlant())
 							neighbour++;
 					}
 
@@ -1280,14 +1280,14 @@ public class World
 
 						// north square
 						totalSpace++;
-						if (location.is_plant())
+						if (location.IsPlant())
 							neighbour++;
 
 						// north west
 						if (x > 0)
 						{
 							totalSpace++;
-							if (get_loc(x - 1, y).is_plant())
+							if (get_loc(x - 1, y).IsPlant())
 								neighbour++;
 						}
 
@@ -1295,7 +1295,7 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (get_loc(x + 1, y).is_plant())
+							if (get_loc(x + 1, y).IsPlant())
 								neighbour++;
 						}
 					}
@@ -1306,14 +1306,14 @@ public class World
 
 						// south square
 						totalSpace++;
-						if (location.is_plant())
+						if (location.IsPlant())
 							neighbour++;
 
 						// south west
 						if (x > 0)
 						{
 							totalSpace++;
-							if (get_loc(x - 1, y).is_plant())
+							if (get_loc(x - 1, y).IsPlant())
 								neighbour++;
 						}
 
@@ -1321,7 +1321,7 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (get_loc(x + 1, y).is_plant())
+							if (get_loc(x + 1, y).IsPlant())
 								neighbour++;
 						}
 					}
@@ -1330,9 +1330,9 @@ public class World
 					if (Misc.Random(totalSpace) + 2 * totalSpace / 3 <= neighbour)
 					{
 						location = get_loc(x, y);
-						get_loc(x, y).remove_plant();
-						if (location.fire_src() > 50)
-							location.set_fire_src(50);
+						get_loc(x, y).RemovePlant();
+						if (location.Flammability() > 50)
+							location.SetFlammability(50);
 						plant_count--;
 						//### begin alex 24/6 ###//
 						//newl.set_power_off();
@@ -1364,7 +1364,7 @@ public class World
 
 		Location l = get_loc(x, y);
 		bool build_flag = true;
-		int teraType = TerrainRes[l.terrain_id].average_type;
+		int teraType = TerrainRes[l.TerrainId].average_type;
 
 		// ------- all square around are the same terrain type and empty
 		for (int y1 = y - 1; y1 <= y + 1; ++y1)
@@ -1372,7 +1372,7 @@ public class World
 			for (int x1 = x - 1; x1 <= x + 1; ++x1)
 			{
 				l = get_loc(x1, y1);
-				if (!l.can_add_plant() || TerrainRes[l.terrain_id].average_type != teraType)
+				if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
 					build_flag = false;
 			}
 		}
@@ -1391,8 +1391,8 @@ public class World
 						if (plantBitmap != 0)
 						{
 							l = get_loc(x, y);
-							l.set_plant(plantBitmap, rand_inner_x(), rand_inner_y());
-							l.set_fire_src(100);
+							l.SetPlant(plantBitmap, rand_inner_x(), rand_inner_y());
+							l.SetFlammability(100);
 							plant_count++;
 							//### begin alex 24/6 ###//
 							//l.set_power_off();
@@ -1423,7 +1423,7 @@ public class World
 
 			Location l = get_loc(x, y);
 			bool build_flag = true;
-			int teraType = TerrainRes[l.terrain_id].average_type;
+			int teraType = TerrainRes[l.TerrainId].average_type;
 
 			// ------- all square around are the same terrain type and empty
 			for (int y1 = y - 1; y1 <= y + 1; ++y1)
@@ -1431,7 +1431,7 @@ public class World
 				for (int x1 = x - 1; x1 <= x + 1; ++x1)
 				{
 					l = get_loc(x1, y1);
-					if (!l.can_add_plant() || TerrainRes[l.terrain_id].average_type != teraType)
+					if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
 						build_flag = false;
 				}
 			}
@@ -1475,12 +1475,12 @@ public class World
 			plantSize = strength;
 
 		int teraType;
-		if (newl != null && newl.can_add_plant() &&
-		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newl.terrain_id].average_type) ||
+		if (newl != null && newl.CanAddPlant() &&
+		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newl.TerrainId].average_type) ||
 		     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
 		{
-			newl.set_plant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
-			newl.set_fire_src(100);
+			newl.SetPlant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
+			newl.SetFlammability(100);
 			plant_count++;
 			//### begin alex 24/6 ###//
 			//newl.set_power_off();
@@ -1488,7 +1488,7 @@ public class World
 			//set_surr_power_off(x, y);
 			//#### end alex 24/6 ####//
 		}
-		else if (newl != null && newl.is_plant() &&
+		else if (newl != null && newl.IsPlant() &&
 		         // 1. same type, large override small
 		         // newl.plant_id() >= plant_res[basePlantId].first_bitmap &&
 		         // newl.plant_id() < plant_res[basePlantId].first_bitmap + plantSize)
@@ -1496,12 +1496,12 @@ public class World
 		         // newl.plant_id() > plant_res[basePlantId].first_bitmap + plantSize &&
 		         // newl.plant_id() < plant_res[basePlantId].first_bitmap + plant_res[basePlantId].bitmap_count)
 		         // 3. all types, small override large
-		         (newl.plant_id() - PlantRes[PlantRes.plant_recno(newl.plant_id())].first_bitmap) > plantSize)
+		         (newl.PlantId() - PlantRes[PlantRes.plant_recno(newl.PlantId())].first_bitmap) > plantSize)
 		{
 			// same kind of plant, but smaller, override by a smaller one
-			newl.remove_plant();
-			newl.set_plant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
-			newl.set_fire_src(100);
+			newl.RemovePlant();
+			newl.SetPlant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
+			newl.SetFlammability(100);
 			//### begin alex 24/6 ###//
 			//newl.set_power_off();
 			//newl.power_nation_recno = 0;
@@ -1566,39 +1566,39 @@ public class World
 			for (int x = 0; x < GameConstants.MapSize; x++)
 			{
 				Location location = get_loc(x, y);
-				if (location.has_hill())
+				if (location.HasHill())
 				{
-					location.set_fire_src(-100);
+					location.SetFlammability(-100);
 				}
-				else if (location.is_wall())
+				else if (location.IsWall())
 				{
-					location.set_fire_src(-50);
+					location.SetFlammability(-50);
 				}
-				else if (location.is_firm() || location.is_plant() || location.is_town())
+				else if (location.IsFirm() || location.IsPlant() || location.IsTown())
 				{
-					location.set_fire_src(100);
+					location.SetFlammability(100);
 				}
 				else
 				{
-					switch (TerrainRes[location.terrain_id].average_type)
+					switch (TerrainRes[location.TerrainId].average_type)
 					{
 						case TerrainTypeCode.TERRAIN_OCEAN:
-							location.set_fire_src(-100);
+							location.SetFlammability(-100);
 							break;
 						case TerrainTypeCode.TERRAIN_DARK_GRASS:
-							location.set_fire_src(100);
+							location.SetFlammability(100);
 							break;
 						case TerrainTypeCode.TERRAIN_LIGHT_GRASS:
-							location.set_fire_src(50);
+							location.SetFlammability(50);
 							break;
 						case TerrainTypeCode.TERRAIN_DARK_DIRT:
-							location.set_fire_src(-50);
+							location.SetFlammability(-50);
 							break;
 					}
 				}
 
 				// --------- put off fire on the map ----------//
-				location.set_fire_str(-100);
+				location.SetFireStrength(-100);
 			}
 		}
 	}
@@ -1624,9 +1624,9 @@ public class World
 			{
 				Location location = get_loc(x, y);
 
-				int fireValue = location.fire_str();
+				int fireValue = location.FireStrength();
 				int oldFireValue = fireValue;
-				int flammability = location.fire_src();
+				int flammability = location.Flammability();
 
 				// ------- reduce fire_level on raining or snow
 				fireValue -= rainSnowReduction;
@@ -1638,29 +1638,29 @@ public class World
 					Unit targetUnit;
 
 					// ------- burn wall -------- //
-					if (location.is_wall())
+					if (location.IsWall())
 					{
 						//if (location.attack_wall((int)(4.0 * flameDamage)) != 0)
 							//correct_wall(x, y, 2);
 					}
 					// ------- burn units ---------//
-					else if (location.has_unit(UnitConstants.UNIT_LAND))
+					else if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
-						targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+						targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 						targetUnit.hit_points -= 2.0 * flameDamage;
 						if (targetUnit.hit_points <= 0.0)
 							targetUnit.hit_points = 0.0;
 					}
-					else if (location.has_unit(UnitConstants.UNIT_SEA))
+					else if (location.HasUnit(UnitConstants.UNIT_SEA))
 					{
-						targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_SEA)];
+						targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
 						targetUnit.hit_points -= 2.0 * flameDamage;
 						if (targetUnit.hit_points <= 0.0)
 							targetUnit.hit_points = 0.0;
 					}
-					else if (location.is_firm() && FirmRes[FirmArray[location.firm_recno()].firm_id].buildable)
+					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].firm_id].buildable)
 					{
-						Firm targetFirm = FirmArray[location.firm_recno()];
+						Firm targetFirm = FirmArray[location.FirmId()];
 						targetFirm.hit_points -= flameDamage;
 						if (targetFirm.hit_points <= 0.0)
 						{
@@ -1675,27 +1675,27 @@ public class World
 					{
 						Location sidePtr;
 						// spread of north square
-						if (y > 0 && (sidePtr = get_loc(x, y - 1)).fire_src() > 0 && sidePtr.fire_str() <= 0)
+						if (y > 0 && (sidePtr = get_loc(x, y - 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
-							sidePtr.add_fire_str(Math.Max(Config.fire_spread_rate + windCos, 0));
+							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windCos, 0));
 						}
 
 						// spread of south square
-						if (y < GameConstants.MapSize - 1 && (sidePtr = get_loc(x, y + 1)).fire_src() > 0 && sidePtr.fire_str() <= 0)
+						if (y < GameConstants.MapSize - 1 && (sidePtr = get_loc(x, y + 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
-							sidePtr.add_fire_str(Math.Max(Config.fire_spread_rate - windCos, 0));
+							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windCos, 0));
 						}
 
 						// spread of east square
-						if (x < GameConstants.MapSize - 1 && (sidePtr = get_loc(x + 1, y)).fire_src() > 0 && sidePtr.fire_str() <= 0)
+						if (x < GameConstants.MapSize - 1 && (sidePtr = get_loc(x + 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
-							sidePtr.add_fire_str(Math.Max(Config.fire_spread_rate + windSin, 0));
+							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windSin, 0));
 						}
 
 						// spread of west square
-						if (x > 0 && (sidePtr = get_loc(x - 1, y)).fire_src() > 0 && sidePtr.fire_str() <= 0)
+						if (x > 0 && (sidePtr = get_loc(x - 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
 						{
-							sidePtr.add_fire_str(Math.Max(Config.fire_spread_rate - windSin, 0));
+							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windSin, 0));
 						}
 					}
 
@@ -1707,9 +1707,9 @@ public class World
 
 						flammability -= Config.fire_fade_rate;
 						// if a plant on it then remove the plant, if flammability <= 0
-						if (location.is_plant() && flammability <= 0)
+						if (location.IsPlant() && flammability <= 0)
 						{
-							location.remove_plant();
+							location.RemovePlant();
 							plant_count--;
 						}
 					}
@@ -1740,9 +1740,9 @@ public class World
 						}
 
 						// if a plant on it then remove the plant, if flammability <= 0
-						if (location.is_plant() && flammability <= 0)
+						if (location.IsPlant() && flammability <= 0)
 						{
-							location.remove_plant();
+							location.RemovePlant();
 							plant_count--;
 						}
 					}
@@ -1767,8 +1767,8 @@ public class World
 					fireValue -= 50;
 				}
 
-				location.set_fire_str(fireValue);
-				location.set_fire_src(flammability);
+				location.SetFireStrength(fireValue);
+				location.SetFlammability(flammability);
 			}
 		}
 	}
@@ -1776,9 +1776,9 @@ public class World
 	public void setup_fire(int x, int y, int fireStrength = 30)
 	{
 		Location location = get_loc(x, y);
-		if (location.fire_str() < fireStrength)
+		if (location.FireStrength() < fireStrength)
 		{
-			location.set_fire_str(fireStrength);
+			location.SetFireStrength(fireStrength);
 		}
 	}
 
@@ -1790,9 +1790,9 @@ public class World
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
 				Location location = get_loc(x, y);
-				if (location.is_wall())
+				if (location.IsWall())
 				{
-					location.attack_wall(Weather.quake_rate(x, y) / 2);
+					location.AttackWall(Weather.quake_rate(x, y) / 2);
 				}
 			}
 		}
@@ -1893,12 +1893,12 @@ public class World
 					continue;
 
 				Location location = get_loc(x, y);
-				if (location.is_plant())
+				if (location.IsPlant())
 				{
 					// ---- add a fire on it ------//
-					location.set_fire_str(80);
-					if (location.can_set_fire() && location.fire_str() < 5)
-						location.set_fire_str(5);
+					location.SetFireStrength(80);
+					if (location.CanSetFire() && location.FireStrength() < 5)
+						location.SetFireStrength(5);
 				}
 			}
 		}
@@ -1945,8 +1945,8 @@ public class World
 
 				// ---- add a fire on it ------//
 				Location location = get_loc(firm.center_x, firm.center_y);
-				if (location.can_set_fire() && location.fire_str() < 5)
-					location.set_fire_str(5);
+				if (location.CanSetFire() && location.FireStrength() < 5)
+					location.SetFireStrength(5);
 
 				if (firm.hit_points <= 0.0)
 				{
@@ -1974,8 +1974,8 @@ public class World
 
 				// ---- add a fire on it ------//
 				Location location = get_loc(town.LocCenterX, town.LocCenterY);
-				if (location.can_set_fire() && location.fire_str() < 5)
-					location.set_fire_str(5);
+				if (location.CanSetFire() && location.FireStrength() < 5)
+					location.SetFireStrength(5);
 
 				town.KillTownPeople(0);
 			}

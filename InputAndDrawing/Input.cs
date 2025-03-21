@@ -2,46 +2,46 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-    public void ProcessInput(int eventType, int x, int y)
+    public void ProcessInput(int eventType, int screenX, int screenY)
     {
         if (eventType == InputConstants.LeftMousePressed)
         {
-            if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
+            if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
             {
-                int locX = _topLeftLocX + (x - MainViewX) / CellTextureWidth;
-                int locY = _topLeftLocY + (y - MainViewY) / CellTextureHeight;
+                int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
+                int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
 
                 Location location = World.get_loc(locX, locY);
-                if (location.is_town())
+                if (location.IsTown())
                 {
                     _selectedFirmId = _selectedUnitId = _selectedSiteId = 0;
-                    _selectedTownId = location.town_recno();
+                    _selectedTownId = location.TownId();
                 }
 
-                if (location.is_firm())
+                if (location.IsFirm())
                 {
                     _selectedTownId = _selectedUnitId = _selectedSiteId = 0;
-                    _selectedFirmId = location.firm_recno();
+                    _selectedFirmId = location.FirmId();
                 }
 
-                if (location.has_unit(UnitConstants.UNIT_LAND))
+                if (location.HasUnit(UnitConstants.UNIT_LAND))
                 {
                     _selectedTownId = _selectedFirmId = _selectedSiteId = 0;
-                    _selectedUnitId = location.unit_recno(UnitConstants.UNIT_LAND);
+                    _selectedUnitId = location.UnitId(UnitConstants.UNIT_LAND);
                     UnitArray[_selectedUnitId].selected_flag = true;
                 }
 
-                if (location.has_site())
+                if (location.HasSite())
                 {
                     _selectedTownId = _selectedFirmId = _selectedUnitId = 0;
-                    _selectedSiteId = location.site_recno();
+                    _selectedSiteId = location.SiteId();
                 }
             }
 
-            if (x >= MiniMapX && x < MiniMapX + MiniMapSize && y >= MiniMapY && y < MiniMapY + MiniMapSize)
+            if (screenX >= MiniMapX && screenX < MiniMapX + MiniMapSize && screenY >= MiniMapY && screenY < MiniMapY + MiniMapSize)
             {
-                int locX = x - MiniMapX;
-                int locY = y - MiniMapY;
+                int locX = screenX - MiniMapX;
+                int locY = screenY - MiniMapY;
                 if (MiniMapSize > GameConstants.MapSize)
                 {
                     locX /= MiniMapScale;
@@ -69,10 +69,10 @@ public partial class Renderer
 
         if (eventType == InputConstants.RightMousePressed)
         {
-            if (x >= MainViewX && x < MainViewX + MainViewWidth && y >= MainViewY && y < MainViewY + MainViewHeight)
+            if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
             {
-                int locX = _topLeftLocX + (x - MainViewX) / CellTextureWidth;
-                int locY = _topLeftLocY + (y - MainViewY) / CellTextureHeight;
+                int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
+                int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
 
                 foreach (Unit unit in UnitArray)
                 {
@@ -82,7 +82,7 @@ public partial class Renderer
                         {
                             Nation nation = NationArray[unit.nation_recno];
                             if (nation.nation_type == NationBase.NATION_OWN)
-                                unit.move_to(locX, locY);
+                                unit.MoveTo(locX, locY);
                         }
                     }
                 }

@@ -210,7 +210,7 @@ public class FirmArray : DynArray<Firm>
 
 			//--- check if the location of this town has been explored ---//
 
-			if (!World.get_loc(firm.center_x, firm.center_y).explored())
+			if (!World.get_loc(firm.center_x, firm.center_y).IsExplored())
 				continue;
 
 			//---------------------------------//

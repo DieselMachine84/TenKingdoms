@@ -716,9 +716,9 @@ public class FirmMonster : Firm
 
 			Location location = World.get_loc(xLoc, yLoc);
 
-			if (location.is_firm())
+			if (location.IsFirm())
 			{
-				Firm firm = FirmArray[location.firm_recno()];
+				Firm firm = FirmArray[location.FirmId()];
 				if (firm.nation_recno != 0)
 				{
 					targetNation = firm.nation_recno;
@@ -728,9 +728,9 @@ public class FirmMonster : Firm
 					break;
 				}
 			}
-			else if (location.is_town())
+			else if (location.IsTown())
 			{
-				Town town = TownArray[location.town_recno()];
+				Town town = TownArray[location.TownId()];
 				if (town.NationId != 0)
 				{
 					targetNation = town.NationId;

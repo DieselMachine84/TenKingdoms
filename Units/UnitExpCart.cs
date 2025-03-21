@@ -36,9 +36,9 @@ public class UnitExpCart : Unit
 				for (int x = x1; x <= x2; ++x)
 				{
 					Location location = World.get_loc(x, y);
-					if (location.has_unit(UnitConstants.UNIT_LAND))
+					if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
-						Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+						Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 						if (unit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART)
 							((UnitExpCart)unit).trigger_explode();
 					}
@@ -73,23 +73,23 @@ public class UnitExpCart : Unit
 					for (int x = x1; x <= x2; ++x)
 					{
 						Location location = World.get_loc(x, y);
-						if (location.has_unit(UnitConstants.UNIT_LAND))
+						if (location.HasUnit(UnitConstants.UNIT_LAND))
 						{
-							hit_target(this, UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)],
+							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
 								GameConstants.EXPLODE_DAMAGE, nation_recno);
 						}
-						else if (location.has_unit(UnitConstants.UNIT_SEA))
+						else if (location.HasUnit(UnitConstants.UNIT_SEA))
 						{
-							hit_target(this, UnitArray[location.unit_recno(UnitConstants.UNIT_SEA)],
+							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_SEA)],
 								GameConstants.EXPLODE_DAMAGE, nation_recno);
 						}
-						else if (location.is_wall())
+						else if (location.IsWall())
 						{
 							hit_wall(this, x, y, GameConstants.EXPLODE_DAMAGE, nation_recno);
 						}
-						else if (location.is_plant())
+						else if (location.IsPlant())
 						{
-							location.remove_plant();
+							location.RemovePlant();
 							World.plant_count--;
 						}
 						else
@@ -107,10 +107,10 @@ public class UnitExpCart : Unit
 					{
 						Location location = World.get_loc(x, y);
 						int fl = (Math.Abs(x - next_x_loc()) + Math.Abs(y - next_y_loc())) * -30 + 80;
-						if (location.can_set_fire() && location.fire_str() < fl)
-							location.set_fire_str(fl);
-						if (location.fire_src() > 0)
-							location.set_fire_src(1); // such that the fire will be put out quickly
+						if (location.CanSetFire() && location.FireStrength() < fl)
+							location.SetFireStrength(fl);
+						if (location.Flammability() > 0)
+							location.SetFlammability(1); // such that the fire will be put out quickly
 					}
 				}
 			}

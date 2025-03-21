@@ -90,7 +90,7 @@ public class UnitMonster : Unit
         int xLoc = cur_x_loc();
         int yLoc = cur_y_loc();
 
-        if (!World.get_loc(xLoc, yLoc).can_build_site())
+        if (!World.get_loc(xLoc, yLoc).CanBuildSite())
         {
             int txLoc, tyLoc;
             bool found = false;
@@ -101,7 +101,7 @@ public class UnitMonster : Unit
             {
                 for (txLoc = Math.Max(xLoc - 1, 0); txLoc <= Math.Min(xLoc + 1, GameConstants.MapSize - 1); txLoc++)
                 {
-                    if (World.get_loc(txLoc, tyLoc).can_build_site())
+                    if (World.get_loc(txLoc, tyLoc).CanBuildSite())
                     {
                         xLoc = txLoc;
                         yLoc = tyLoc;
@@ -166,16 +166,16 @@ public class UnitMonster : Unit
 
             Location location = World.get_loc(xLoc, yLoc);
 
-            if (location.region_id != regionId)
+            if (location.RegionId != regionId)
                 continue;
 
             bool rc = false;
 
             //----- if there is a unit on the location ------//
 
-            if (location.has_unit(UnitConstants.UNIT_LAND))
+            if (location.HasUnit(UnitConstants.UNIT_LAND))
             {
-                int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+                int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 
                 if (UnitArray.IsDeleted(unitRecno))
                     continue;
@@ -185,9 +185,9 @@ public class UnitMonster : Unit
 
             //----- if there is a firm on the location ------//
 
-            if (!rc && location.is_firm())
+            if (!rc && location.IsFirm())
             {
-                int firmRecno = location.firm_recno();
+                int firmRecno = location.FirmId();
 
                 if (FirmArray.IsDeleted(firmRecno))
                     continue;
@@ -197,9 +197,9 @@ public class UnitMonster : Unit
 
             //----- if there is a town on the location ------//
 
-            if (!rc && location.is_town())
+            if (!rc && location.IsTown())
             {
-                int townRecno = location.town_recno();
+                int townRecno = location.TownId();
 
                 if (TownArray.IsDeleted(townRecno))
                     continue;
@@ -270,12 +270,12 @@ public class UnitMonster : Unit
 
             Location location = World.get_loc(xLoc, yLoc);
 
-            if (!location.has_unit(UnitConstants.UNIT_LAND))
+            if (!location.HasUnit(UnitConstants.UNIT_LAND))
                 continue;
 
             //------------------------------//
 
-            int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+            int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 
             if (UnitArray.IsDeleted(unitRecno))
                 continue;
@@ -329,9 +329,9 @@ public class UnitMonster : Unit
 
             //----- if there is a unit on the location ------//
 
-            if (location.has_unit(UnitConstants.UNIT_LAND))
+            if (location.HasUnit(UnitConstants.UNIT_LAND))
             {
-                Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+                Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
                 if (unit.race_id > 0)
                 {
                     raceCountArray[unit.race_id - 1]++;
@@ -375,7 +375,7 @@ public class UnitMonster : Unit
 
             Location location = World.get_loc(xLoc, yLoc);
 
-            if (location.can_build_site() && location.region_id == regionId)
+            if (location.CanBuildSite() && location.RegionId == regionId)
             {
                 int scrollGodId = bestRaceId;
 

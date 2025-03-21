@@ -39,13 +39,13 @@ public class Site
         ReserveQty = reserveQty;
 
         Location location = World.get_loc(locX, locY);
-        location.set_site(siteId);
-        RegionId = location.region_id;
+        location.SetSite(siteId);
+        RegionId = location.RegionId;
     }
 
     public void Deinit()
     {
-        World.get_loc(LocX, LocY).remove_site();
+        World.get_loc(LocX, LocY).RemoveSite();
     }
 
     public bool GetByUnit(int unitId)
@@ -106,10 +106,10 @@ public class Site
             locY = Math.Min(GameConstants.MapSize - 1, locY);
 
             Location location = Sys.Instance.World.get_loc(locX, locY);
-            if (!location.has_unit(UnitConstants.UNIT_LAND))
+            if (!location.HasUnit(UnitConstants.UNIT_LAND))
                 continue;
 
-            int unitId = location.unit_recno(UnitConstants.UNIT_LAND);
+            int unitId = location.UnitId(UnitConstants.UNIT_LAND);
 
             if (UnitArray.IsDeleted(unitId))
                 continue;

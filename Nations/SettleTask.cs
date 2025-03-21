@@ -121,7 +121,7 @@ public class SettleTask : AITask
                     }
 
                     Location settleLocation = World.get_loc(settleLocX, settleLocY);
-                    if (settleLocation.region_id != firmLocation.region_id || settleLocation.is_plateau() != firmLocation.is_plateau())
+                    if (settleLocation.RegionId != firmLocation.RegionId || settleLocation.IsPlateau() != firmLocation.IsPlateau())
                         continue;
 
                     if (!World.can_build_town(settleLocX, settleLocY, _settlerId))
@@ -132,7 +132,7 @@ public class SettleTask : AITask
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(settleLocX, settleLocY, settleLocX2, settleLocY2, 1))
                     {
                         Location nearLocation = World.get_loc(locXlocY.Item1, locXlocY.Item2);
-                        if (nearLocation.is_firm() || nearLocation.is_town())
+                        if (nearLocation.IsFirm() || nearLocation.IsTown())
                             rating++;
                     }
                     

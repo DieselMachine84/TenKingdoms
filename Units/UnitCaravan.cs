@@ -70,10 +70,10 @@ public class UnitCaravan : Unit
 		// check if there is a station in the given location
 		//-------------------------------------------------------//
 		Location loc = World.get_loc(stopXLoc, stopYLoc);
-		if (!loc.is_firm())
+		if (!loc.IsFirm())
 			return;
 
-		Firm firm = FirmArray[loc.firm_recno()];
+		Firm firm = FirmArray[loc.FirmId()];
 
 		if (!can_set_stop(firm.firm_recno))
 			return;
@@ -81,7 +81,7 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// return if the market stop is in another territory
 		//-------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 			return;
 
 		//-------------------------------------------//
@@ -546,7 +546,7 @@ public class UnitCaravan : Unit
 		Location loc = World.get_loc(xLoc, yLoc);
 		Firm firm;
 
-		if (loc.can_move(mobile_type))
+		if (loc.CanMove(mobile_type))
 			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
@@ -1658,7 +1658,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.get_loc(testXLoc, testYLoc);
-				if (location.can_move(mobile_type))
+				if (location.CanMove(mobile_type))
 				{
 					found = true;
 					break;
@@ -1684,7 +1684,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.get_loc(testXLoc, testYLoc);
-				if (location.can_move(mobile_type))
+				if (location.CanMove(mobile_type))
 				{
 					found = true;
 					break;
@@ -1710,7 +1710,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.get_loc(testXLoc, testYLoc);
-				if (location.can_move(mobile_type))
+				if (location.CanMove(mobile_type))
 				{
 					found = true;
 					break;
@@ -1736,7 +1736,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.get_loc(testXLoc, testYLoc);
-				if (location.can_move(mobile_type))
+				if (location.CanMove(mobile_type))
 				{
 					found = true;
 					break;

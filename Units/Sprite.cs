@@ -645,6 +645,6 @@ public class Sprite
 	public virtual bool is_shealth()
 	{
 		// if the visibility of location is just explored, consider shealth
-		return Config.fog_of_war && World.get_loc(cur_x_loc(), cur_y_loc()).visibility() <= Location.EXPLORED_VISIBILITY;
+		return Config.fog_of_war && World.get_loc(cur_x_loc(), cur_y_loc()).Visibility() <= Location.EXPLORED_VISIBILITY;
 	}
 }

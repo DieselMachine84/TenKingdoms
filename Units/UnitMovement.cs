@@ -23,7 +23,7 @@ public partial class Unit
 		Location curLocation = World.get_loc(next_x_loc(), next_y_loc());
 		Location destLocation = World.get_loc(destLocX, destLocY);
 
-		if (curLocation.region_id != destLocation.region_id && mobile_type != UnitConstants.UNIT_AIR) // different territory
+		if (curLocation.RegionId != destLocation.RegionId && mobile_type != UnitConstants.UNIT_AIR) // different territory
 			DifferentTerritoryDestination(ref destLocX, ref destLocY);
 
 		//-----------------------------------------------------------------------------------//
@@ -99,7 +99,7 @@ public partial class Unit
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
 		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -161,9 +161,9 @@ public partial class Unit
 		Location loc = World.get_loc(destXLoc, destYLoc);
 		if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
 		{
-			Firm firm = FirmArray[loc.firm_recno()];
+			Firm firm = FirmArray[loc.FirmId()];
 			FirmHarbor harbor = (FirmHarbor)firm;
-			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != harbor.sea_region_id)
+			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
 			{
 				MoveTo(destXLoc, destYLoc);
 				return;
@@ -171,7 +171,7 @@ public partial class Unit
 		}
 		else
 		{
-			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 			{
 				MoveTo(destXLoc, destYLoc);
 				return;
@@ -231,7 +231,7 @@ public partial class Unit
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
 		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -289,7 +289,7 @@ public partial class Unit
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
 		Location loc = World.get_loc(destXLoc, destYLoc);
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != loc.region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
 		{
 			MoveTo(destXLoc, destYLoc);
 			return;
@@ -388,7 +388,7 @@ public partial class Unit
 			switch (buildingType)
 			{
 				case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
-					Firm targetFirm = FirmArray[location.firm_recno()];
+					Firm targetFirm = FirmArray[location.FirmId()];
 					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.firm_id, curProcessUnitNum);
 					break;
 
@@ -397,7 +397,7 @@ public partial class Unit
 					break;
 
 				case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
-					Town targetTown = TownArray[location.town_recno()];
+					Town targetTown = TownArray[location.TownId()];
 					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, targetTown.TownId, curProcessUnitNum);
 					break;
 
@@ -412,7 +412,7 @@ public partial class Unit
 					break;
 
 				case UnitConstants.BUILDING_TYPE_VEHICLE:
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.cargo_recno);
+					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.CargoId);
 					break;
 
 				case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
@@ -764,7 +764,7 @@ public partial class Unit
 		//---------------------------------------------------------------------------------//
 		Location loc = World.get_loc(next_x_loc(), next_y_loc());
 
-		int regionId = loc.region_id; // the region_id this unit in
+		int regionId = loc.RegionId; // the region_id this unit in
 
 		//----------------------------------------------------//
 		int editNode1Index = PathNodes.Count - 1;
@@ -790,7 +790,7 @@ public partial class Unit
 			while (x != editNode2LocX || y != editNode2LocY)
 			{
 				loc = World.get_loc(x, y);
-				if (loc.region_id == regionId)
+				if (loc.RegionId == regionId)
 				{
 					found = i;
 					preX = x;
@@ -881,7 +881,7 @@ public partial class Unit
 		int targetXLoc = targetUnit.next_x_loc();
 		int targetYLoc = targetUnit.next_y_loc();
 
-		if (World.get_loc(curXLoc, curYLoc).region_id == World.get_loc(targetXLoc, targetYLoc).region_id)
+		if (World.get_loc(curXLoc, curYLoc).RegionId == World.get_loc(targetXLoc, targetYLoc).RegionId)
 		{
 			//------------ for same region id, search now ---------------//
 			if (Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, action_para) != 0)
@@ -938,7 +938,7 @@ public partial class Unit
 		int curYLoc = next_y_loc();
 
 		Location loc = World.get_loc(curXLoc, curYLoc);
-		int regionId = loc.region_id;
+		int regionId = loc.RegionId;
 		int xStep = destX - curXLoc;
 		int yStep = destY - curYLoc;
 		int absXStep = Math.Abs(xStep);
@@ -957,7 +957,7 @@ public partial class Unit
 			int y = curYLoc + (i * yStep) / count;
 
 			loc = World.get_loc(x, y);
-			if (loc.region_id == regionId)
+			if (loc.RegionId == regionId)
 				sameTerr = i;
 		}
 
@@ -976,7 +976,7 @@ public partial class Unit
 	private void HandleBlockedMove(Location blockedLoc)
 	{
 		//--- check if the tile we are moving at is blocked by a building ---//
-		if (blockedLoc.is_firm() || blockedLoc.is_town() || blockedLoc.is_wall())
+		if (blockedLoc.IsFirm() || blockedLoc.IsTown() || blockedLoc.IsWall())
 		{
 			//------------------------------------------------//
 			// firm/town/wall is on the blocked location
@@ -993,7 +993,7 @@ public partial class Unit
 			return;
 		}
 
-		if (!blockedLoc.is_accessible(mobile_type))
+		if (!blockedLoc.IsAccessible(mobile_type))
 		{
 			TerminateMove(); // the location is not accessible
 			return;
@@ -1004,7 +1004,7 @@ public partial class Unit
 		//-----------------------------------------------------------------------------------//
 		blocked_by_member = 1;
 
-		Unit unit = UnitArray[blockedLoc.unit_recno(mobile_type)];
+		Unit unit = UnitArray[blockedLoc.UnitId(mobile_type)];
 		//if(unit.sprite_info.loc_width>1 || sprite_info.loc_width>1)
 		//{
 		//	set_wait();
@@ -1079,7 +1079,7 @@ public partial class Unit
 					//----------------------------------------------------------------------//
 					if (Math.Abs(unit.next_x_loc() - unit.action_x_loc2) <= moveStep &&
 					    Math.Abs(unit.next_y_loc() - unit.action_y_loc2) <= moveStep &&
-					    TerrainRes[World.get_loc(unit.action_x_loc2, unit.action_y_loc2).terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					    TerrainRes[World.get_loc(unit.action_x_loc2, unit.action_y_loc2).TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						if (action_mode2 == UnitConstants.ACTION_SHIP_TO_BEACH &&
 						    action_x_loc2 == unit.action_x_loc2 && action_y_loc2 == unit.action_y_loc2)
@@ -1276,7 +1276,7 @@ public partial class Unit
 				continue;
 
 			Location loc = World.get_loc(checkXLoc, checkYLoc);
-			if (!loc.can_move(unit.mobile_type))
+			if (!loc.CanMove(unit.mobile_type))
 				continue;
 
 			if (OnMyPath(checkXLoc, checkYLoc))
@@ -1423,13 +1423,13 @@ public partial class Unit
 				nextY >>= InternalConstants.CellHeightShift;
 
 				loc = World.get_loc(nextX, nextY);
-				bool blocked = loc.has_unit(mobile_type);
+				bool blocked = loc.HasUnit(mobile_type);
 
 				//---------------- the unit is also waiting ---------------//
 				if (blocked && (blockedUnit.move_to_x_loc != blockedUnit.cur_x_loc() ||
 				                blockedUnit.move_to_y_loc != blockedUnit.cur_y_loc()))
 				{
-					if (loc.unit_recno(mobile_type) == sprite_recno)
+					if (loc.UnitId(mobile_type) == sprite_recno)
 						cycleWait = 1;
 					else
 					{
@@ -1466,7 +1466,7 @@ public partial class Unit
 							//-------- store recno of next blocked unit ----------//
 							cycle_wait_unit_array[cycle_wait_unit_index++] = blockedUnit.sprite_recno;
 							loc = World.get_loc(nextX, nextY);
-							blockedUnit = UnitArray[loc.unit_recno(mobile_type)];
+							blockedUnit = UnitArray[loc.UnitId(mobile_type)];
 							unitSpriteInfo = blockedUnit.sprite_info;
 						}
 					}
@@ -1506,7 +1506,7 @@ public partial class Unit
 				// codes used to speed up frame rate
 				//-----------------------------------------------------------------//
 				loc = World.get_loc(move_to_x_loc, move_to_y_loc);
-				if (!loc.can_move(mobile_type) && action_mode2 != UnitConstants.ACTION_MOVE)
+				if (!loc.CanMove(mobile_type) && action_mode2 != UnitConstants.ACTION_MOVE)
 					stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 				else
 					SearchOrWait();
@@ -1532,7 +1532,7 @@ public partial class Unit
 		if (nextX != cur_x_loc() || nextY != cur_y_loc())
 		{
 			loc = World.get_loc(nextX, nextY);
-			blockedUnit = UnitArray[loc.unit_recno(nextUnit.mobile_type)];
+			blockedUnit = UnitArray[loc.UnitId(nextUnit.mobile_type)];
 		}
 		else
 		{
@@ -1582,7 +1582,7 @@ public partial class Unit
 		{
 			//------------- both attacks the same firm ------------//
 			Location loc = World.get_loc(action_x_loc, action_y_loc);
-			if (!loc.is_firm())
+			if (!loc.IsFirm())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since firm is deleted
 			else
 			{
@@ -1614,7 +1614,7 @@ public partial class Unit
 		{
 			//---------------- both attacks the same town ----------------------//
 			Location loc = World.get_loc(action_x_loc, action_y_loc);
-			if (!loc.is_town())
+			if (!loc.IsTown())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since town is deleted
 			else if (space_for_attack(action_x_loc, action_y_loc, UnitConstants.UNIT_LAND,
 				         InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
@@ -1642,7 +1642,7 @@ public partial class Unit
 		{
 			//------------- both attacks the same wall ------------//
 			Location loc = World.get_loc(action_x_loc, action_y_loc);
-			if (!loc.is_wall())
+			if (!loc.IsWall())
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since wall is deleted
 			else if (space_for_attack(action_x_loc, action_y_loc, UnitConstants.UNIT_LAND, 1, 1))
 			{
@@ -1775,7 +1775,7 @@ public partial class Unit
 					checkYLoc += vecY;
 
 					loc = World.get_loc(checkXLoc, checkYLoc);
-					if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN) // found
+					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN) // found
 					{
 						found++;
 						break;
@@ -1820,7 +1820,7 @@ public partial class Unit
 					move_to_x_loc = preXLoc;
 					move_to_y_loc = preYLoc;
 					loc = World.get_loc((preXLoc + checkXLoc) / 2, (preYLoc + checkYLoc) / 2);
-					if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						resultXLoc = (preXLoc + checkXLoc) / 2;
 						resultYLoc = (preYLoc + checkYLoc) / 2;
@@ -1860,11 +1860,11 @@ public partial class Unit
 					continue;
 
 				Location loc = World.get_loc(checkXLoc, checkYLoc);
-				if (loc.region_id != regionId)
+				if (loc.RegionId != regionId)
 					continue;
 
-				if (TerrainRes[loc.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN &&
-				    loc.can_move(UnitConstants.UNIT_LAND))
+				if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN &&
+				    loc.CanMove(UnitConstants.UNIT_LAND))
 				{
 					resultXLoc = checkXLoc;
 					resultYLoc = checkYLoc;
@@ -1901,7 +1901,7 @@ public partial class Unit
 				continue;
 
 			Location loc = World.get_loc(checkXLoc, checkYLoc);
-			if (TerrainRes[loc.terrain_id].average_type == TerrainTypeCode.TERRAIN_OCEAN && loc.can_move(mobile_type))
+			if (TerrainRes[loc.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(mobile_type))
 			{
 				found++;
 				break;
@@ -1943,8 +1943,8 @@ public partial class Unit
 		Location destLoc = World.get_loc(dx, dy);
 		Nation nation = NationArray[nationRecno];
 
-		bool subModeOn = (startLoc.power_nation_recno == 0 || nation.get_relation_passable(startLoc.power_nation_recno)) &&
-		                 (destLoc.power_nation_recno == 0 || nation.get_relation_passable(destLoc.power_nation_recno));
+		bool subModeOn = (startLoc.PowerNationId == 0 || nation.get_relation_passable(startLoc.PowerNationId)) &&
+		                 (destLoc.PowerNationId == 0 || nation.get_relation_passable(destLoc.PowerNationId));
 
 		if (subModeOn) // true only when both start and end locations are passable for this nation
 		{
@@ -2112,7 +2112,7 @@ public partial class Unit
 	private void SearchOrStop(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
 	{
 		Location loc = World.get_loc(destX, destY);
-		if (!loc.can_move(mobile_type))
+		if (!loc.CanMove(mobile_type))
 		{
 			stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 			//waiting_term = MAX_SEARCH_OT_STOP_WAIT_TERM;
@@ -2164,13 +2164,13 @@ public partial class Unit
 				continue;
 
 			loc = World.get_loc(checkXLoc, checkYLoc);
-			if (!loc.has_unit(mobile_type))
+			if (!loc.HasUnit(mobile_type))
 			{
 				hasFree++;
 				continue;
 			}
 
-			unitRecno = loc.unit_recno(mobile_type);
+			unitRecno = loc.UnitId(mobile_type);
 			if (UnitArray.IsDeleted(unitRecno))
 				continue;
 

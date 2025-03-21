@@ -151,13 +151,13 @@ public class UnitGod : Unit
 
 		//--- if there is any unit on the location ---//
 
-		if (location.has_unit(UnitConstants.UNIT_LAND))
+		if (location.HasUnit(UnitConstants.UNIT_LAND))
 		{
-			cast_on_unit(location.unit_recno(UnitConstants.UNIT_LAND), 1);
+			cast_on_unit(location.UnitId(UnitConstants.UNIT_LAND), 1);
 		}
-		else if (location.has_unit(UnitConstants.UNIT_SEA))
+		else if (location.HasUnit(UnitConstants.UNIT_SEA))
 		{
-			Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_SEA)];
+			Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
 
 			//-- only heal human units belonging to our nation in ships --//
 
@@ -177,9 +177,9 @@ public class UnitGod : Unit
 
 		//--------- on firms ---------//
 
-		else if (location.is_firm())
+		else if (location.IsFirm())
 		{
-			Firm firm = FirmArray[location.firm_recno()];
+			Firm firm = FirmArray[location.FirmId()];
 			int divider = (firm.loc_x2 - firm.loc_x1 + 1) * (firm.loc_y2 - firm.loc_y1 + 1);
 			if (god_id == GodRes.GOD_ZULU)
 				divider = 1; // range of zulu god is 1, no need to divide
@@ -201,9 +201,9 @@ public class UnitGod : Unit
 
 		//--------- on towns ----------//
 
-		else if (location.is_town())
+		else if (location.IsTown())
 		{
-			Town town = TownArray[location.town_recno()];
+			Town town = TownArray[location.TownId()];
 
 			if (god_id == GodRes.GOD_JAPANESE && town.NationId != nation_recno)
 			{
@@ -808,8 +808,8 @@ public class UnitGod : Unit
 				Location location = World.get_loc(xLoc, yLoc);
 				int unitRecno;
 				Unit unit;
-				if (location.has_unit(UnitConstants.UNIT_LAND)
-				    && (unitRecno = location.unit_recno(UnitConstants.UNIT_LAND)) != 0
+				if (location.HasUnit(UnitConstants.UNIT_LAND)
+				    && (unitRecno = location.UnitId(UnitConstants.UNIT_LAND)) != 0
 				    && !UnitArray.IsDeleted(unitRecno)
 				    && (unit = UnitArray[unitRecno]) != null
 

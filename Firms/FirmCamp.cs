@@ -1408,9 +1408,9 @@ public class FirmCamp : Firm
 
 				//--- if there is an enemy unit here ---//
 
-				if (location.has_unit(UnitConstants.UNIT_LAND))
+				if (location.HasUnit(UnitConstants.UNIT_LAND))
 				{
-					Unit unit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+					Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
 					if (unit.nation_recno == 0)
 						continue;
@@ -1444,7 +1444,7 @@ public class FirmCamp : Firm
 			if (patrol_unit_array.Count > 0)
 			{
 				UnitArray.attack(enemyXLoc, enemyYLoc, false, patrol_unit_array, InternalConstants.COMMAND_AI,
-					World.get_loc(enemyXLoc, enemyYLoc).unit_recno(UnitConstants.UNIT_LAND));
+					World.get_loc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND));
 				return true;
 			}
 		}

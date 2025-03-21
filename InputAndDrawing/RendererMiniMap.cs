@@ -136,15 +136,15 @@ public partial class Renderer
                 {
                     Location location = World.get_loc(locX, locY);
                     byte color = Colors.UNEXPLORED_COLOR;
-                    if (location.explored())
+                    if (location.IsExplored())
                     {
-                        if (location.sailable())
+                        if (location.Sailable())
                             color = Colors.WATER_COLOR;
 
-                        else if (location.has_hill())
+                        else if (location.HasHill())
                             color = Colors.V_BROWN;
 
-                        else if (location.is_plant())
+                        else if (location.IsPlant())
                             color = Colors.V_DARK_GREEN;
 
                         else

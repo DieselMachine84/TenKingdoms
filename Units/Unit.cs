@@ -921,7 +921,7 @@ public partial class Unit : Sprite
 
 	public override bool is_shealth()
 	{
-		return Config.fog_of_war && World.get_loc(next_x_loc(), next_y_loc()).visibility() < UnitRes[unit_id].shealth;
+		return Config.fog_of_war && World.get_loc(next_x_loc(), next_y_loc()).Visibility() < UnitRes[unit_id].shealth;
 	}
 
 	public bool is_civilian()
@@ -2194,7 +2194,7 @@ public partial class Unit : Sprite
 
 		Location location = World.get_loc(next_x_loc(), next_y_loc());
 
-		if (location.fire_str() == 0)
+		if (location.FireStrength() == 0)
 			return false;
 
 		//--------------------------------------------//
@@ -2214,12 +2214,12 @@ public partial class Unit : Sprite
 			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 				continue;
 
-			if (!location.can_move(mobile_type))
+			if (!location.CanMove(mobile_type))
 				continue;
 
 			location = World.get_loc(checkXLoc, checkYLoc);
 
-			if (location.fire_str() == 0) // move to a safe place now
+			if (location.FireStrength() == 0) // move to a safe place now
 			{
 				MoveTo(checkXLoc, checkYLoc);
 				return true;
@@ -2387,14 +2387,14 @@ public partial class Unit : Sprite
 
 			Location location = World.get_loc(xLoc, yLoc);
 
-			if (location.region_id != regionId)
+			if (location.RegionId != regionId)
 				continue;
 
 			//----- if there is a unit on the location ------//
 
-			if (location.has_unit(UnitConstants.UNIT_LAND))
+			if (location.HasUnit(UnitConstants.UNIT_LAND))
 			{
-				int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+				int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 
 				if (UnitArray.IsDeleted(unitRecno))
 					continue;
@@ -2509,9 +2509,9 @@ public partial class Unit : Sprite
 
 		//--------- resume assign to town -----------//
 
-		if (original_action_mode == UnitConstants.ACTION_ASSIGN_TO_TOWN && location.is_town())
+		if (original_action_mode == UnitConstants.ACTION_ASSIGN_TO_TOWN && location.IsTown())
 		{
-			if (location.town_recno() == original_action_para &&
+			if (location.TownId() == original_action_para &&
 			    TownArray[original_action_para].NationId == nation_recno)
 			{
 				UnitArray.assign(original_action_x_loc, original_action_y_loc, false,
@@ -2521,9 +2521,9 @@ public partial class Unit : Sprite
 
 		//--------- resume assign to firm ----------//
 
-		else if (original_action_mode == UnitConstants.ACTION_ASSIGN_TO_FIRM && location.is_firm())
+		else if (original_action_mode == UnitConstants.ACTION_ASSIGN_TO_FIRM && location.IsFirm())
 		{
-			if (location.firm_recno() == original_action_para &&
+			if (location.FirmId() == original_action_para &&
 			    FirmArray[original_action_para].nation_recno == nation_recno)
 			{
 				UnitArray.assign(original_action_x_loc, original_action_y_loc, false,
@@ -2583,23 +2583,23 @@ public partial class Unit : Sprite
 		Location location = World.get_loc(original_action_x_loc, original_action_y_loc);
 		int targetNationRecno = -1;
 
-		if (original_action_mode == UnitConstants.ACTION_ATTACK_UNIT && location.has_unit(UnitConstants.UNIT_LAND))
+		if (original_action_mode == UnitConstants.ACTION_ATTACK_UNIT && location.HasUnit(UnitConstants.UNIT_LAND))
 		{
-			int unitRecno = location.unit_recno(UnitConstants.UNIT_LAND);
+			int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
 
 			if (unitRecno == original_action_para)
 				targetNationRecno = UnitArray[unitRecno].nation_recno;
 		}
-		else if (original_action_mode == UnitConstants.ACTION_ATTACK_FIRM && location.is_firm())
+		else if (original_action_mode == UnitConstants.ACTION_ATTACK_FIRM && location.IsFirm())
 		{
-			int firmRecno = location.firm_recno();
+			int firmRecno = location.FirmId();
 
 			if (firmRecno == original_action_para)
 				targetNationRecno = FirmArray[firmRecno].nation_recno;
 		}
-		else if (original_action_mode == UnitConstants.ACTION_ATTACK_TOWN && location.is_town())
+		else if (original_action_mode == UnitConstants.ACTION_ATTACK_TOWN && location.IsTown())
 		{
-			int townRecno = location.town_recno();
+			int townRecno = location.TownId();
 
 			if (townRecno == original_action_para)
 				targetNationRecno = TownArray[townRecno].NationId;
@@ -3059,8 +3059,8 @@ public partial class Unit : Sprite
 		int x = nextX >> InternalConstants.CellWidthShift;
 		int y = nextY >> InternalConstants.CellHeightShift;
 		Location location = World.get_loc(x, y);
-		bool blocked = !location.is_accessible(mobile_type) ||
-		               (location.has_unit(mobile_type) && location.unit_recno(mobile_type) != sprite_recno);
+		bool blocked = !location.IsAccessible(mobile_type) ||
+		               (location.HasUnit(mobile_type) && location.UnitId(mobile_type) != sprite_recno);
 
 		if (!blocked || move_action_call_flag)
 		{
@@ -3203,8 +3203,8 @@ public partial class Unit : Sprite
 				x = newNextXLoc;
 				y = newNextYLoc;
 				Location location = World.get_loc(x, y);
-				blocked = !location.is_accessible(mobile_type) ||
-				          (location.has_unit(mobile_type) && location.unit_recno(mobile_type) != sprite_recno);
+				blocked = !location.IsAccessible(mobile_type) ||
+				          (location.HasUnit(mobile_type) && location.UnitId(mobile_type) != sprite_recno);
 			} //else, then blockedChecked = 0
 
 			//--- no change to next_x & next_y if the new next location is blocked ---//
@@ -3696,7 +3696,7 @@ public partial class Unit : Sprite
 			if (Math.Abs(shipXLoc - action_x_loc2) <= 1 && Math.Abs(shipYLoc - action_y_loc2) <= 1)
 			{
 				Location loc = World.get_loc(next_x_loc(), next_y_loc());
-				int regionId = loc.region_id;
+				int regionId = loc.RegionId;
 				for (int i = 2; i <= 9; i++)
 				{
 					int xShift, yShift;
@@ -3707,7 +3707,7 @@ public partial class Unit : Sprite
 						continue;
 
 					loc = World.get_loc(checkXLoc, checkYLoc);
-					if (loc.region_id != regionId)
+					if (loc.RegionId != regionId)
 						continue;
 
 					resultXYLocWritten = true;
@@ -3784,7 +3784,7 @@ public partial class Unit : Sprite
 			// get a suitable location in the territory as a reference location
 			//-----------------------------------------------------------------------------//
 			Location loc = World.get_loc(destX, destY);
-			int regionId = loc.region_id;
+			int regionId = loc.RegionId;
 			int xStep = curXLoc - destX;
 			int yStep = curYLoc - destY;
 			int absXStep = Math.Abs(xStep);
@@ -3798,9 +3798,9 @@ public partial class Unit : Sprite
 				int y = destY + (i * yStep) / count;
 
 				loc = World.get_loc(x, y);
-				if (loc.region_id == regionId)
+				if (loc.RegionId == regionId)
 				{
-					if (loc.walkable())
+					if (loc.Walkable())
 						sameTerr = i;
 				}
 			}
@@ -3897,7 +3897,7 @@ public partial class Unit : Sprite
 					return;
 			}
 
-			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(goX, goY).region_id)
+			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(goX, goY).RegionId)
 			{
 				MoveTo(buildXLoc, buildYLoc);
 				return;
@@ -3905,7 +3905,7 @@ public partial class Unit : Sprite
 		}
 		else
 		{
-			if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(buildXLoc, buildYLoc).region_id)
+			if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(buildXLoc, buildYLoc).RegionId)
 			{
 				MoveTo(buildXLoc, buildYLoc);
 				return;
@@ -3984,7 +3984,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there instead if ordering to different territory
 		//----------------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(burnXLoc, burnYLoc).region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(burnXLoc, burnYLoc).RegionId)
 		{
 			MoveTo(burnXLoc, burnYLoc);
 			return;
@@ -4121,7 +4121,7 @@ public partial class Unit : Sprite
 		if (!World.can_build_town(settleXLoc, settleYLoc, sprite_recno))
 		{
 			Location loc = World.get_loc(settleXLoc, settleYLoc);
-			if (loc.is_town() && TownArray[loc.town_recno()].NationId == nation_recno)
+			if (loc.IsTown() && TownArray[loc.TownId()].NationId == nation_recno)
 				assign(settleXLoc, settleYLoc);
 			else
 				MoveTo(settleXLoc, settleYLoc);
@@ -4131,7 +4131,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there if location is in different territory
 		//----------------------------------------------------------------//
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != World.get_loc(settleXLoc, settleYLoc).region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != World.get_loc(settleXLoc, settleYLoc).RegionId)
 		{
 			MoveTo(settleXLoc, settleYLoc);
 			return;
@@ -4201,10 +4201,10 @@ public partial class Unit : Sprite
 		// move there if the destination in other territory
 		//----------------------------------------------------------------//
 		Location loc = World.get_loc(assignXLoc, assignYLoc);
-		int unitRegionId = World.get_loc(next_x_loc(), next_y_loc()).region_id;
-		if (loc.is_firm())
+		int unitRegionId = World.get_loc(next_x_loc(), next_y_loc()).RegionId;
+		if (loc.IsFirm())
 		{
-			Firm firm = FirmArray[loc.firm_recno()];
+			Firm firm = FirmArray[loc.FirmId()];
 			bool quit = false;
 
 			if (firm.firm_id == Firm.FIRM_HARBOR)
@@ -4226,7 +4226,7 @@ public partial class Unit : Sprite
 						break;
 				}
 			}
-			else if (unitRegionId != loc.region_id)
+			else if (unitRegionId != loc.RegionId)
 			{
 				quit = true;
 			}
@@ -4238,9 +4238,9 @@ public partial class Unit : Sprite
 				return;
 			}
 		}
-		else if (unitRegionId != loc.region_id)
+		else if (unitRegionId != loc.RegionId)
 		{
-			if (loc.is_town())
+			if (loc.IsTown())
 				MoveToTownSurround(assignXLoc, assignYLoc, sprite_info.loc_width, sprite_info.loc_height);
 			/*else if(loc.has_unit(UnitRes.UNIT_LAND))
 			{
@@ -4257,12 +4257,12 @@ public partial class Unit : Sprite
 		int recno;
 		int firmNeedUnit = 1;
 
-		if (loc.is_firm())
+		if (loc.IsFirm())
 		{
 			//-------------------------------------------------------//
 			// the location is firm
 			//-------------------------------------------------------//
-			recno = loc.firm_recno();
+			recno = loc.FirmId();
 
 			//----------------------------------------------------------------//
 			// action_mode2: checking for equal action or idle action
@@ -4299,7 +4299,7 @@ public partial class Unit : Sprite
 			height = firmInfo.loc_height;
 			buildingType = UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO;
 		}
-		else if (loc.is_town()) // there is town
+		else if (loc.IsTown()) // there is town
 		{
 			if (UnitRes[unit_id].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
 				return;
@@ -4307,7 +4307,7 @@ public partial class Unit : Sprite
 			//-------------------------------------------------------//
 			// the location is town
 			//-------------------------------------------------------//
-			recno = loc.town_recno();
+			recno = loc.TownId();
 
 			//----------------------------------------------------------------//
 			// action_mode2: checking for equal action or idle action
@@ -5109,14 +5109,14 @@ public partial class Unit : Sprite
 
 				int unitRecno;
 
-				if (loc.has_unit(UnitConstants.UNIT_LAND))
-					unitRecno = loc.unit_recno(UnitConstants.UNIT_LAND);
+				if (loc.HasUnit(UnitConstants.UNIT_LAND))
+					unitRecno = loc.UnitId(UnitConstants.UNIT_LAND);
 
-				else if (loc.has_unit(UnitConstants.UNIT_SEA))
-					unitRecno = loc.unit_recno(UnitConstants.UNIT_SEA);
+				else if (loc.HasUnit(UnitConstants.UNIT_SEA))
+					unitRecno = loc.UnitId(UnitConstants.UNIT_SEA);
 
-				else if (loc.has_unit(UnitConstants.UNIT_AIR))
-					unitRecno = loc.unit_recno(UnitConstants.UNIT_AIR);
+				else if (loc.HasUnit(UnitConstants.UNIT_AIR))
+					unitRecno = loc.UnitId(UnitConstants.UNIT_AIR);
 
 				else
 					continue;
@@ -5545,7 +5545,7 @@ public partial class Unit : Sprite
 
 			case UnitConstants.ACTION_ATTACK_FIRM:
 				location = World.get_loc(action_x_loc2, action_y_loc2);
-				if (action_para2 == 0 || !location.is_firm())
+				if (action_para2 == 0 || !location.IsFirm())
 					stop2(); // stop since target is already destroyed
 				else
 				{
@@ -5565,7 +5565,7 @@ public partial class Unit : Sprite
 
 			case UnitConstants.ACTION_ATTACK_TOWN:
 				location = World.get_loc(action_x_loc2, action_y_loc2);
-				if (action_para2 == 0 || !location.is_town())
+				if (action_para2 == 0 || !location.IsTown())
 					stop2(); // stop since target is deleted
 				else
 				{
@@ -5583,7 +5583,7 @@ public partial class Unit : Sprite
 
 			case UnitConstants.ACTION_ATTACK_WALL:
 				location = World.get_loc(action_x_loc2, action_y_loc2);
-				if (!location.is_wall())
+				if (!location.IsWall())
 					stop2(); // stop since target doesn't exist
 				else
 				{
@@ -5825,15 +5825,15 @@ public partial class Unit : Sprite
 			if (defenseMode != 0 && action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET)
 			{
 				if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET)
-					if (loc.power_nation_recno != nation_recno && loc.power_nation_recno != 0)
+					if (loc.PowerNationId != nation_recno && loc.PowerNationId != 0)
 						continue; // skip this location because it is not neutral nation or our nation
 			}
 
 			//----------------------------------------------------------------------------//
 			// checking the target type
 			//----------------------------------------------------------------------------//
-			if ((targetMobileType = loc.has_any_unit(i == 1 ? mobile_type : UnitConstants.UNIT_LAND)) != 0 &&
-			    (targetRecno = loc.unit_recno(targetMobileType)) != 0 && !UnitArray.IsDeleted(targetRecno))
+			if ((targetMobileType = loc.HasAnyUnit(i == 1 ? mobile_type : UnitConstants.UNIT_LAND)) != 0 &&
+			    (targetRecno = loc.UnitId(targetMobileType)) != 0 && !UnitArray.IsDeleted(targetRecno))
 			{
 				//=================== is unit ======================//
 				if (idle_detect_has_unit || (action_para == targetRecno &&
@@ -5852,7 +5852,7 @@ public partial class Unit : Sprite
 					break; // break with highest priority
 				}
 			}
-			else if (loc.is_firm() && (targetRecno = loc.firm_recno()) != 0)
+			else if (loc.IsFirm() && (targetRecno = loc.FirmId()) != 0)
 			{
 				//=============== is firm ===============//
 				if (idle_detect_has_firm || (action_para == targetRecno &&
@@ -6269,7 +6269,7 @@ public partial class Unit : Sprite
 	{
 		Location loc = World.get_loc(targetXLoc, targetYLoc);
 		Nation nation = nation_recno != 0 ? NationArray[nation_recno] : null;
-		int targetNationRecno = loc.wall_nation_recno();
+		int targetNationRecno = loc.WallNationId();
 
 		//-------------------------------------------------------------------------------//
 		// checking nation relationship
@@ -6730,7 +6730,7 @@ public partial class Unit : Sprite
 				//----- first check if there is firm in the given location ------//
 				Location loc = World.get_loc(action_x_loc, action_y_loc);
 
-				if (loc.is_firm() && loc.firm_recno() == action_para)
+				if (loc.IsFirm() && loc.FirmId() == action_para)
 				{
 					//---------------- a firm on the location -----------------//
 					Firm firm = FirmArray[action_para];
@@ -6807,7 +6807,7 @@ public partial class Unit : Sprite
 						UnitArray.selected_count--;
 					}
 				}
-				else if (loc.is_town() && loc.town_recno() == action_para)
+				else if (loc.IsTown() && loc.TownId() == action_para)
 				{
 					//---------------- a town on the location -----------------//
 					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, sprite_info.loc_width, action_x_loc,
@@ -6858,7 +6858,7 @@ public partial class Unit : Sprite
 
 				//------ embarking a sea vehicle/animal ------//
 
-				else if (loc.has_unit(UnitConstants.UNIT_SEA) && loc.unit_recno(UnitConstants.UNIT_SEA) == action_para)
+				else if (loc.HasUnit(UnitConstants.UNIT_SEA) && loc.UnitId(UnitConstants.UNIT_SEA) == action_para)
 				{
 					//------------ update UnitArray's selected parameters ------------//
 					reset_action_para2();
@@ -6917,7 +6917,7 @@ public partial class Unit : Sprite
 					return;
 
 				Location loc = World.get_loc(action_x_loc, action_y_loc);
-				if (!loc.is_town())
+				if (!loc.IsTown())
 				{
 					int unitRecno = sprite_recno;
 
@@ -6930,7 +6930,7 @@ public partial class Unit : Sprite
 
 					reset_action_para();
 				}
-				else if (TownArray[loc.town_recno()].NationId == nation_recno)
+				else if (TownArray[loc.TownId()].NationId == nation_recno)
 				{
 					//---------- a town zone already exists ---------//
 					assign(action_x_loc, action_y_loc);
@@ -7003,7 +7003,7 @@ public partial class Unit : Sprite
 			{
 				Location unitLoc = World.get_loc(curXLoc, curYLoc);
 				Location shipActionLoc = World.get_loc(shipActionXLoc, shipActionYLoc);
-				if (unitLoc.region_id != shipActionLoc.region_id)
+				if (unitLoc.RegionId != shipActionLoc.RegionId)
 				{
 					stop2();
 					return;
@@ -7091,7 +7091,7 @@ public partial class Unit : Sprite
 				{
 					Location loc = World.get_loc(rebel.action_para, rebel.action_para2);
 
-					if (loc.is_town() && TownArray[loc.town_recno()].RebelId == rebel.rebel_recno)
+					if (loc.IsTown() && TownArray[loc.TownId()].RebelId == rebel.rebel_recno)
 					{
 						rebel.action_mode = Rebel.REBEL_SETTLE_TO;
 					}

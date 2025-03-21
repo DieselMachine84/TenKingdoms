@@ -240,7 +240,7 @@ public class News
 						{
 							Location location = World.get_loc(loc_x, loc_y);
 
-							rc = location.visit_level > 0;
+							rc = location.VisitLevel > 0;
 						}
 					}
 				}

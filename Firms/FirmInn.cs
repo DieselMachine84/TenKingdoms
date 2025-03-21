@@ -216,10 +216,10 @@ public class FirmInn : Firm
 				}
 
 				Location location = World.get_loc(i, j);
-				if (!location.is_town())
+				if (!location.IsTown())
 					continue;
 
-				Town town = TownArray[location.town_recno()];
+				Town town = TownArray[location.TownId()];
 
 				if (town.NationId != nation_recno)
 					continue;

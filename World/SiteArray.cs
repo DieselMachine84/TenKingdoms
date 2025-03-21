@@ -94,9 +94,9 @@ public class SiteArray : DynArray<Site>
 
 					//---- if the unit is standing on a scroll site -----//
 
-					if (location.has_unit(UnitConstants.UNIT_LAND))
+					if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
-						site.GetByUnit(location.unit_recno(UnitConstants.UNIT_LAND));
+						site.GetByUnit(location.UnitId(UnitConstants.UNIT_LAND));
 					}
 					else if (Info.TotalDays % 5 == 0)
 					{
@@ -256,7 +256,7 @@ public class SiteArray : DynArray<Site>
 
 			//--- check if the location of this site has been explored ---//
 
-			if (!World.get_loc(site.LocX, site.LocY).explored())
+			if (!World.get_loc(site.LocX, site.LocY).IsExplored())
 				continue;
 
 			if (site.SiteType == siteType && !site.HasMine)

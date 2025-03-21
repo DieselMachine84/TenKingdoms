@@ -541,7 +541,7 @@ public class UnitMarine : Unit
 		Firm firm;
 
 		//TODO change %2 == 0
-		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.can_move(mobile_type))
+		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(mobile_type))
 			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
@@ -705,7 +705,7 @@ public class UnitMarine : Unit
 			}
 
 			Location location = World.get_loc(checkXLoc, checkYLoc);
-			if (location.can_move(mobile_type))
+			if (location.CanMove(mobile_type))
 			{
 				found = true;
 				break;
@@ -1531,14 +1531,14 @@ public class UnitMarine : Unit
 			// check for space to unload the unit
 			//-------------------------------------------------------------------------//
 			Location loc = World.get_loc(checkXLoc, checkYLoc);
-			if (regionId == 0 || loc.region_id == regionId)
+			if (regionId == 0 || loc.RegionId == regionId)
 			{
-				if (loc.walkable())
+				if (loc.Walkable())
 					found = true;
 
-				if (loc.can_move(UnitConstants.UNIT_LAND))
+				if (loc.CanMove(UnitConstants.UNIT_LAND))
 				{
-					regionId = loc.region_id;
+					regionId = loc.RegionId;
 
 					unit.init_sprite(checkXLoc, checkYLoc);
 					unit.set_mode(0);
@@ -1647,7 +1647,7 @@ public class UnitMarine : Unit
 				if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 					continue;
 
-				if (World.get_loc(checkXLoc, checkYLoc).can_move(mobile_type))
+				if (World.get_loc(checkXLoc, checkYLoc).CanMove(mobile_type))
 				{
 					found = true;
 					break;
@@ -1661,7 +1661,7 @@ public class UnitMarine : Unit
 			checkXLoc = curXLoc + vecX;
 			checkYLoc = curYLoc + vecY;
 
-			if (World.get_loc(checkXLoc, checkYLoc).can_move(mobile_type))
+			if (World.get_loc(checkXLoc, checkYLoc).CanMove(mobile_type))
 				found = true;
 		}
 
@@ -1692,7 +1692,7 @@ public class UnitMarine : Unit
 			{
 				int goXLoc = go_x >> InternalConstants.CellWidthShift;
 				int goYLoc = go_y >> InternalConstants.CellHeightShift;
-				if (!World.get_loc(goXLoc, goYLoc).can_move(mobile_type))
+				if (!World.get_loc(goXLoc, goYLoc).CanMove(mobile_type))
 				{
 					go_x = next_x;
 					go_y = next_y;
@@ -1764,10 +1764,10 @@ public class UnitMarine : Unit
 		// check if there is a station in the given location
 		//-------------------------------------------------------//
 		Location loc = World.get_loc(stopXLoc, stopYLoc);
-		if (!loc.is_firm())
+		if (!loc.IsFirm())
 			return;
 
-		Firm firm = FirmArray[loc.firm_recno()];
+		Firm firm = FirmArray[loc.FirmId()];
 		if (!can_set_stop(firm.firm_recno))
 			return;
 
@@ -1776,7 +1776,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		FirmHarbor harbor = (FirmHarbor)firm;
 
-		if (World.get_loc(next_x_loc(), next_y_loc()).region_id != harbor.sea_region_id)
+		if (World.get_loc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
 			return;
 
 		//-----------------------------------------//
@@ -2244,7 +2244,7 @@ public class UnitMarine : Unit
 
 			Location location = World.get_loc(checkXLoc, checkYLoc);
 
-			if (TerrainRes[location.terrain_id].average_type != TerrainTypeCode.TERRAIN_OCEAN && location.walkable())
+			if (TerrainRes[location.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
 			{
 				return true;
 			}

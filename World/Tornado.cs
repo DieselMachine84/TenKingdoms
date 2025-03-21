@@ -64,24 +64,24 @@ public class Tornado : Sprite
         Location location = World.get_loc(damageXLoc, damageYLoc);
 
         Unit targetUnit;
-        if (location.has_unit(UnitConstants.UNIT_AIR))
+        if (location.HasUnit(UnitConstants.UNIT_AIR))
         {
-            targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_AIR)];
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
             targetUnit.hit_points -= 2 * (int)attack_damage;
             if (targetUnit.hit_points <= 0)
                 targetUnit.hit_points = 0;
         }
 
-        if (location.has_unit(UnitConstants.UNIT_LAND))
+        if (location.HasUnit(UnitConstants.UNIT_LAND))
         {
-            targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_LAND)];
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
             targetUnit.hit_points -= (int)attack_damage;
             if (targetUnit.hit_points <= 0)
                 targetUnit.hit_points = 0;
         }
-        else if (location.has_unit(UnitConstants.UNIT_SEA))
+        else if (location.HasUnit(UnitConstants.UNIT_SEA))
         {
-            targetUnit = UnitArray[location.unit_recno(UnitConstants.UNIT_SEA)];
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
             targetUnit.hit_points -= (int)attack_damage;
             if (targetUnit.hit_points <= 0)
                 targetUnit.hit_points = 0;
@@ -104,9 +104,9 @@ public class Tornado : Sprite
 
         Location location = World.get_loc(damageXLoc, damageYLoc);
 
-        if (location.is_firm())
+        if (location.IsFirm())
         {
-            Firm firm = FirmArray[location.firm_recno()];
+            Firm firm = FirmArray[location.FirmId()];
             firm.hit_points -= attack_damage * 2;
             if (firm.hit_points <= 0)
             {
@@ -114,13 +114,13 @@ public class Tornado : Sprite
 
                 SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DIE");
 
-                FirmArray.DeleteFirm(location.firm_recno());
+                FirmArray.DeleteFirm(location.FirmId());
             }
         }
 
-        if (location.is_town())
+        if (location.IsTown())
         {
-            Town town = TownArray[location.town_recno()];
+            Town town = TownArray[location.TownId()];
             if (life_time % 30 == 0)
                 town.KillTownPeople(0);
         }
@@ -134,9 +134,9 @@ public class Tornado : Sprite
             return;
 
         Location location = World.get_loc(damageXLoc, damageYLoc);
-        if (location.is_plant())
+        if (location.IsPlant())
         {
-            location.remove_plant();
+            location.RemovePlant();
             World.plant_count--;
         }
     }
@@ -149,9 +149,9 @@ public class Tornado : Sprite
             return;
 
         Location location = World.get_loc(damageXLoc, damageYLoc);
-        if (location.fire_str() > 0)
+        if (location.FireStrength() > 0)
         {
-            location.set_fire_str(1);
+            location.SetFireStrength(1);
         }
     }
 
