@@ -15,7 +15,8 @@ public class UnitMarine : Unit
 	public const int SHIP_MENU_UNIT = 1;
 	public const int SHIP_MENU_GOODS = 2;
 
-	public Sprite splash;
+	//TODO make it work
+	//public Sprite splash;
 
 	public int menu_mode; // goods menu or units menu
 	public int extra_move_in_beach;
@@ -81,8 +82,8 @@ public class UnitMarine : Unit
 		extra_move_in_beach = NO_EXTRA_MOVE;
 
 		int spriteId = sprite_info.get_sub_sprite_info(1).sprite_id;
-		splash.init(spriteId, cur_x_loc(), cur_y_loc());
-		splash.cur_frame = 1;
+		//splash.init(spriteId, cur_x_loc(), cur_y_loc());
+		//splash.cur_frame = 1;
 
 		UnitInfo unitInfo = UnitRes[unitId];
 		carry_goods_capacity = unitInfo.carry_goods_capacity;

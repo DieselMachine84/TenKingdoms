@@ -60,6 +60,8 @@ public class BuildMineTask : AITask
             
             int minTownDistance = Int32.MaxValue;
             Town bestTown = null;
+            int bestRace = 0;
+
             foreach (Town town in TownArray)
             {
                 if (town.NationId != Nation.nation_recno)
@@ -69,15 +71,18 @@ public class BuildMineTask : AITask
                 if (town.RegionId != site.RegionId)
                     continue;
 
-                if (town.JoblessPopulation == 0)
+                int race = town.PickRandomRace(false, true);
+                // TODO do not train if population is low
+                if (race == 0 || !town.CanTrain(race))
                     continue;
-
+                
                 int townDistance = Misc.points_distance(town.LocX1, town.LocY1, site.LocX, site.LocY);
                 if (townDistance < minTownDistance)
                 {
                     //TODO prefer towns at the same region
                     minTownDistance = townDistance;
                     bestTown = town;
+                    bestRace = race;
                 }
             }
 
@@ -110,7 +115,7 @@ public class BuildMineTask : AITask
 
             if (bestTown != null)
             {
-                _builderId = bestTown.Recruit(Skill.SKILL_CONSTRUCTION, bestTown.PickRandomRace(false, true), InternalConstants.COMMAND_AI);
+                _builderId = bestTown.Recruit(Skill.SKILL_CONSTRUCTION, bestRace, InternalConstants.COMMAND_AI);
             }
             
             //TODO hire builder from inn

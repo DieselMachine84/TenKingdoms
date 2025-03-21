@@ -647,6 +647,15 @@ public class NationNew : NationBase
     public void ai_end_treaty(int nationRecno)
     {
     }
+
+    public bool ai_is_sea_travel_safe()
+    {
+        return false;
+    }
+
+    public void ai_sea_attack_target(int locX, int locY)
+    {
+    }
     
     #endregion
 }

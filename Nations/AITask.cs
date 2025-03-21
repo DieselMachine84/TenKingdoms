@@ -4,6 +4,7 @@ public abstract class AITask
 {
     public NationBase Nation { get; }
 
+    protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected World World => Sys.Instance.World;
     
     protected FirmArray FirmArray => Sys.Instance.FirmArray;
