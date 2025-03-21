@@ -587,17 +587,18 @@ public class SeekPath
 				int regionSize = 0;
 				int minDistance = Int32.MaxValue;
 
-				void UpdateFunc(int x, int y)
+				void UpdateFunc(int locX, int locY)
 				{
-					if (x < 0 || x >= GameConstants.MapSize || y < 0 || y >= GameConstants.MapSize) return;
+					if (!Misc.IsLocationValid(locX, locY))
+						return;
 
-					int currentIndex = y * GameConstants.MapSize + x;
+					int currentIndex = locY * GameConstants.MapSize + locX;
 					if (_nodeMatrix[currentIndex] > 0 && _nodeMatrix[currentIndex] < minDistance)
 					{
 						minDistance = _nodeMatrix[currentIndex];
 						resultIndex = currentIndex;
-						resultX = x;
-						resultY = y;
+						resultX = locX;
+						resultY = locY;
 					}
 				}
 
