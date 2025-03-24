@@ -97,7 +97,7 @@ public class GodInfo
 
         SpriteInfo spriteInfo = SpriteRes[UnitRes[unit_id].sprite_id];
 
-        if (!World.locate_space(ref xLoc, ref yLoc, xLoc, yLoc,
+        if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
                 spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_AIR))
             return 0;
 

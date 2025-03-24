@@ -153,12 +153,12 @@ public class Spy
 			if (spy_place == SPY_TOWN)
 			{
 				Town town = TownArray[spy_place_para];
-				World.visit(town.LocX1, town.LocY1, town.LocX2, town.LocY2, GameConstants.EXPLORE_RANGE - 1);
+				World.Visit(town.LocX1, town.LocY1, town.LocX2, town.LocY2, GameConstants.EXPLORE_RANGE - 1);
 			}
 			else if (spy_place == SPY_FIRM)
 			{
 				Firm firm = FirmArray[spy_place_para];
-				World.visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+				World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
 			}
 			else if (spy_place == SPY_MOBILE)
 			{
@@ -166,7 +166,7 @@ public class Spy
 				if (unit.unit_mode == UnitConstants.UNIT_MODE_CONSTRUCT)
 				{
 					Firm firm = FirmArray[unit.unit_mode_para];
-					World.visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+					World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
 				}
 				else if (unit.unit_mode == UnitConstants.UNIT_MODE_ON_SHIP)
 				{
@@ -174,7 +174,7 @@ public class Spy
 					if (ship.unit_mode == UnitConstants.UNIT_MODE_IN_HARBOR)
 					{
 						Firm firm = FirmArray[ship.unit_mode_para];
-						World.visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
+						World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
 							GameConstants.EXPLORE_RANGE - 1);
 					}
 					else
@@ -185,8 +185,8 @@ public class Spy
 						int yLoc2 = yLoc1 + ship.sprite_info.loc_height - 1;
 						int range = UnitRes[ship.unit_id].visual_range;
 
-						World.unveil(xLoc1, yLoc1, xLoc2, yLoc2);
-						World.visit(xLoc1, yLoc1, xLoc2, yLoc2, range);
+						World.Unveil(xLoc1, yLoc1, xLoc2, yLoc2);
+						World.Visit(xLoc1, yLoc1, xLoc2, yLoc2, range);
 					}
 				}
 			}

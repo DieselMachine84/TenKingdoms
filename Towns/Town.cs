@@ -139,7 +139,7 @@ public class Town
 		LocCenterX = (LocX1 + LocX2) / 2;
 		LocCenterY = (LocY1 + LocY2) / 2;
 
-		RegionId = World.get_region_id(LocCenterX, LocCenterY);
+		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
 
 		AITown = (NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI);
 		AILinkChecked = true; // check the linked towns and firms connected only if AILinkChecked is false
@@ -338,7 +338,7 @@ public class Town
 
 		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
-			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
+			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
 
 		//--- recheck NoNeighborSpace after a period, there may be new space available now ---//
@@ -398,14 +398,14 @@ public class Town
 		//---- set this town's influence on the map ----//
 
 		if (NationId != 0)
-			World.set_power(LocX1, LocY1, LocX2, LocY2, NationId);
+			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
 
 		//------------ reveal new land ----------//
 
 		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
 		{
-			World.unveil(LocX1, LocY1, LocX2, LocY2);
-			World.visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
+			World.Unveil(LocX1, LocY1, LocX2, LocY2);
+			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
 	}
 
@@ -422,7 +422,7 @@ public class Town
 		//---- restore this town's influence on the map ----//
 
 		if (NationId != 0)
-			World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0);
+			World.RestorePower(LocX1, LocY1, LocX2, LocY2, TownId, 0);
 	}
 
 	private void EstablishContactWithPlayer()
@@ -1752,7 +1752,7 @@ public class Town
 		int locX = LocX1; // xLoc & yLoc are used for returning results
 		int locY = LocY1;
 
-		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return;
 
 		unit.init_sprite(locX, locY);
@@ -2434,7 +2434,7 @@ public class Town
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 		int locX = LocX1, locY = LocY1; // locX & locY are used for returning results
 
-		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return null;
 
 		//---------- add the unit now -----------//
@@ -3015,8 +3015,8 @@ public class Town
 
 		//----- set power region of the new nation ------//
 
-		World.restore_power(LocX1, LocY1, LocX2, LocY2, TownId, 0); // restore power of the old nation
-		World.set_power(LocX1, LocY1, LocX2, LocY2, newNationId); // set power of the new nation
+		World.RestorePower(LocX1, LocY1, LocX2, LocY2, TownId, 0); // restore power of the old nation
+		World.SetPower(LocX1, LocY1, LocX2, LocY2, newNationId); // set power of the new nation
 
 		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, TownId, NationId, newNationId);
 
@@ -3684,7 +3684,7 @@ public class Town
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 		int locX = LocX1, locY = LocY1; // xLoc & yLoc are used for returning results
 
-		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return null;
 
 		//---------- add the unit now -----------//
@@ -3739,7 +3739,7 @@ public class Town
 		int locX = LocX1, locY = LocY1;
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 
-		if (!World.locate_space(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
 			return;
 
 		//--------- create a new nation ---------//
@@ -4731,7 +4731,7 @@ public class Town
 			// *1000 so that this will have a much bigger weight than the distance rating
 			int curRating = 1000 * town.RacesPopulation[majorityRace - 1] / town.Population;
 
-			curRating += World.distance_rating(LocCenterX, LocCenterY, town.LocCenterX, town.LocCenterY);
+			curRating += World.DistanceRating(LocCenterX, LocCenterY, town.LocCenterX, town.LocCenterY);
 
 			if (curRating > bestRating)
 			{
@@ -5556,7 +5556,7 @@ public class Town
 		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
 		// InternalConstants.TOWN_WIDTH + 2 for space around the town
-		if (!World.locate_space(ref xLoc, ref yLoc, LocX2, LocY2,
+		if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
 			    InternalConstants.TOWN_WIDTH + 2, InternalConstants.TOWN_HEIGHT + 2,
 			    UnitConstants.UNIT_LAND, RegionId, true))
 		{

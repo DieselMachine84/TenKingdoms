@@ -372,7 +372,7 @@ public class Nation : NationBase
 		//---- if there are camps that should be closed available now, transfer soldiers there to the new camp,
 		//ask a construction worker to build the camp so we can transfer the whole troop to the new camp ---//
 		if (firmId == Firm.FIRM_CAMP &&
-		    ai_has_should_close_camp(World.get_region_id(actionNode.action_x_loc, actionNode.action_y_loc)))
+		    ai_has_should_close_camp(World.GetRegionId(actionNode.action_x_loc, actionNode.action_y_loc)))
 		{
 			skillId = Skill.SKILL_CONSTRUCTION;
 		}
@@ -1343,7 +1343,7 @@ public class Nation : NationBase
 							if (iy < 0 || iy >= GameConstants.MapSize)
 								continue;
 
-							if (World.can_build_firm(ix, iy, Firm.FIRM_MINE) != 0)
+							if (World.CanBuildFirm(ix, iy, Firm.FIRM_MINE) != 0)
 							{
 								canBuild = true;
 								buildXLoc[siteId] = ix;
@@ -1477,7 +1477,7 @@ public class Nation : NationBase
 				if (ix < xLoc && iy < yLoc)
 					continue;
 
-				if (World.can_build_firm(ix, iy, Firm.FIRM_MINE) != 0)
+				if (World.CanBuildFirm(ix, iy, Firm.FIRM_MINE) != 0)
 				{
 					//----------------------------------------//
 					// calculate weight
@@ -1856,8 +1856,8 @@ public class Nation : NationBase
 		{
 			for (int xCounter = 0; xCounter < refX2 - refX1 + 1; xCounter++)
 			{
-				if (World.get_region_id(xLoc, yLoc) != buildRegionId ||
-				    World.can_build_firm(xLoc, yLoc, buildFirmId) == 0)
+				if (World.GetRegionId(xLoc, yLoc) != buildRegionId ||
+				    World.CanBuildFirm(xLoc, yLoc, buildFirmId) == 0)
 				{
 					continue;
 				}
@@ -2057,7 +2057,7 @@ public class Nation : NationBase
 				if (regionId == 0)
 					return true;
 
-				if (World.get_region_id(actionNode.action_x_loc, actionNode.action_y_loc) == regionId)
+				if (World.GetRegionId(actionNode.action_x_loc, actionNode.action_y_loc) == regionId)
 					return true;
 			}
 		}
@@ -2510,7 +2510,7 @@ public class Nation : NationBase
 				{
 					for (xLoc = actionNode.action_x_loc; xLoc < actionNode.action_x_loc + 3; xLoc++)
 					{
-						if (RegionArray.GetRegionInfo(World.get_region_id(xLoc, yLoc)).region_type == RegionType.REGION_LAND)
+						if (RegionArray.GetRegionInfo(World.GetRegionId(xLoc, yLoc)).region_type == RegionType.REGION_LAND)
 						{
 							rc = true;
 							break;
@@ -2555,7 +2555,7 @@ public class Nation : NationBase
 
 		Unit skilledUnit = null;
 		int minDist = Int32.MaxValue;
-		int destRegionId = World.get_region_id(destX, destY);
+		int destRegionId = World.GetRegionId(destX, destY);
 
 		foreach (Unit unit in UnitArray)
 		{
@@ -2668,7 +2668,7 @@ public class Nation : NationBase
 		//-------------------------------------------//
 
 		int bestRating = 0, bestInnRecno = 0, bestInnUnitId = 0;
-		int destRegionId = World.get_region_id(destX, destY);
+		int destRegionId = World.GetRegionId(destX, destY);
 
 		for (int i = 0; i < ai_inn_array.Count; i++)
 		{
@@ -3653,7 +3653,7 @@ public class Nation : NationBase
 	{
 		int scanRange = 15 + pref_military_development / 20; // 15 to 20
 		int xOffset, yOffset;
-		int targetRegionId = World.get_region_id(targetXLoc, targetYLoc);
+		int targetRegionId = World.GetRegionId(targetXLoc, targetYLoc);
 
 		for (int i = 2; i < scanRange * scanRange; i++)
 		{
@@ -3883,7 +3883,7 @@ public class Nation : NationBase
 
 	public bool ai_sea_attack_target(int targetXLoc, int targetYLoc)
 	{
-		int targetRegionId = World.get_region_id(targetXLoc, targetYLoc);
+		int targetRegionId = World.GetRegionId(targetXLoc, targetYLoc);
 		bool result = false;
 
 		for (int i = 0; i < ai_ship_array.Count; i++)
@@ -4977,7 +4977,7 @@ public class Nation : NationBase
 
 		int bestRating = 70, bestInnRecno = 0, bestInnUnitId = 0;
 		Town town = TownArray[townRecno];
-		int destRegionId = World.get_region_id(town.LocX1, town.LocY1);
+		int destRegionId = World.GetRegionId(town.LocX1, town.LocY1);
 
 		targetResistance = 100;
 
@@ -5413,7 +5413,7 @@ public class Nation : NationBase
 
 			curRating += town.LinkedFirms.Count * 5;
 
-			curRating = curRating * World.distance_rating(capturerTown.LocCenterX, capturerTown.LocCenterY,
+			curRating = curRating * World.DistanceRating(capturerTown.LocCenterX, capturerTown.LocCenterY,
 				town.LocCenterX, town.LocCenterY) / 100;
 
 			//-------- compare with the current best rating ---------//
@@ -5667,7 +5667,7 @@ public class Nation : NationBase
 		int xLoc = 0, yLoc = 0;
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
 
-		if (World.locate_space_random(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
 			    firmInfo.loc_width, firmInfo.loc_height, GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
 		{
 			return ai_patrol_to_region(xLoc, yLoc, SEA_ACTION_BUILD_CAMP);
@@ -5744,7 +5744,7 @@ public class Nation : NationBase
 
 		int xLoc = 0, yLoc = 0;
 
-		if (World.locate_space_random(ref xLoc, ref yLoc,
+		if (World.LocateSpaceRandom(ref xLoc, ref yLoc,
 			    GameConstants.MapSize - 1, GameConstants.MapSize - 1,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 			    GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
@@ -5847,7 +5847,7 @@ public class Nation : NationBase
 	{
 		//---- first see if we already have a camp in the region ---//
 
-		int regionId = World.get_region_id(xLoc1, yLoc1);
+		int regionId = World.GetRegionId(xLoc1, yLoc1);
 
 		if (RegionArray.GetRegionInfo(regionId).region_stat_id == 0)
 			return false;
@@ -5856,13 +5856,13 @@ public class Nation : NationBase
 		{
 			//--- if we don't have one yet, build one next to the destination ---//
 
-			if (!World.locate_space(ref xLoc1, ref yLoc1, xLoc2, yLoc2, 3, 3,
+			if (!World.LocateSpace(ref xLoc1, ref yLoc1, xLoc2, yLoc2, 3, 3,
 				    UnitConstants.UNIT_LAND, regionId, true))
 			{
 				return false;
 			}
 
-			if (World.can_build_firm(xLoc1, yLoc1, Firm.FIRM_CAMP) == 0)
+			if (World.CanBuildFirm(xLoc1, yLoc1, Firm.FIRM_CAMP) == 0)
 				return false;
 
 			return ai_patrol_to_region(xLoc1, yLoc1, SEA_ACTION_BUILD_CAMP);
@@ -5881,10 +5881,10 @@ public class Nation : NationBase
 				xLoc2 = firmCamp.loc_x2;
 				yLoc2 = firmCamp.loc_y2;
 
-				if (World.locate_space(ref xLoc1, ref yLoc1, xLoc2, yLoc2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+				if (World.LocateSpace(ref xLoc1, ref yLoc1, xLoc2, yLoc2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 					    UnitConstants.UNIT_LAND, regionId, true))
 				{
-					if (World.can_build_town(xLoc1, yLoc1))
+					if (World.CanBuildTown(xLoc1, yLoc1))
 						return ai_settle_to_region(xLoc1, yLoc1, SEA_ACTION_SETTLE);
 				}
 			}
@@ -5899,7 +5899,7 @@ public class Nation : NationBase
 
 		//---- think about which town to recruit the people -----//
 
-		int destRegionId = World.get_region_id(destXLoc, destYLoc);
+		int destRegionId = World.GetRegionId(destXLoc, destYLoc);
 		int bestRating = 0;
 		Town bestTown = null;
 
@@ -5925,7 +5925,7 @@ public class Nation : NationBase
 				continue;
 			}
 
-			int curRating = World.distance_rating(destXLoc, destYLoc, town.LocCenterX, town.LocCenterY);
+			int curRating = World.DistanceRating(destXLoc, destYLoc, town.LocCenterX, town.LocCenterY);
 
 			curRating += town.JoblessPopulation;
 
@@ -5994,7 +5994,7 @@ public class Nation : NationBase
 	{
 		//---- think about which town to recruit the people -----//
 
-		int destRegionId = World.get_region_id(destXLoc, destYLoc);
+		int destRegionId = World.GetRegionId(destXLoc, destYLoc);
 		int bestRating = 0;
 		int kingRecno = NationArray[nation_recno].king_unit_recno;
 		FirmCamp bestCamp = null;
@@ -6024,7 +6024,7 @@ public class Nation : NationBase
 				continue;
 			}
 
-			int curRating = World.distance_rating(destXLoc, destYLoc, firmCamp.center_x, firmCamp.center_y);
+			int curRating = World.DistanceRating(destXLoc, destYLoc, firmCamp.center_x, firmCamp.center_y);
 
 			if (curRating <= bestRating)
 				continue;
@@ -6131,10 +6131,10 @@ public class Nation : NationBase
 			if (!location.CanBuildWholeHarbor())
 				continue;
 
-			if (!World.is_harbor_region(xLoc, yLoc, landRegionId, seaRegionId))
+			if (!World.IsHarborRegion(xLoc, yLoc, landRegionId, seaRegionId))
 				continue;
 
-			if (World.can_build_firm(xLoc, yLoc, Firm.FIRM_HARBOR) == 0)
+			if (World.CanBuildFirm(xLoc, yLoc, Firm.FIRM_HARBOR) == 0)
 				continue;
 
 			//--------------------------------------//
@@ -6169,8 +6169,8 @@ public class Nation : NationBase
 
 		//---- figure out the sea region id which the ship should appear ----//
 
-		int unitRegionId = World.get_region_id(unit.next_x_loc(), unit.next_y_loc());
-		int destRegionId = World.get_region_id(actionNode.action_x_loc, actionNode.action_y_loc);
+		int unitRegionId = World.GetRegionId(unit.next_x_loc(), unit.next_y_loc());
+		int destRegionId = World.GetRegionId(actionNode.action_x_loc, actionNode.action_y_loc);
 
 		int seaRegionId = RegionArray.get_sea_path_region_id(unitRegionId, destRegionId);
 
@@ -6386,7 +6386,7 @@ public class Nation : NationBase
 			if (!findBest) // return immediately when a suitable one is found
 				return unitMarine.sprite_recno;
 
-			int curRating = World.distance_rating(unitXLoc, unitYLoc, unitMarine.next_x_loc(), unitMarine.next_y_loc());
+			int curRating = World.DistanceRating(unitXLoc, unitYLoc, unitMarine.next_x_loc(), unitMarine.next_y_loc());
 
 			// damage + ship class
 			curRating += (int)(unitMarine.hit_points / 10.0 + unitMarine.max_hit_points / 10.0);
@@ -6418,7 +6418,7 @@ public class Nation : NationBase
 			if (firmHarbor.sea_region_id != seaRegionId)
 				continue;
 
-			int curRating = World.distance_rating(preferXLoc, preferYLoc, firmHarbor.center_x, firmHarbor.center_y);
+			int curRating = World.DistanceRating(preferXLoc, preferYLoc, firmHarbor.center_x, firmHarbor.center_y);
 
 			if (curRating > bestRating)
 			{

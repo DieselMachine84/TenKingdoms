@@ -2853,7 +2853,7 @@ public class UnitArray : SpriteArray
 			    selected_recno = unit.sprite_recno;
 			    selected_count++;
 
-			    World.go_loc(unit.cur_x_loc(), unit.cur_y_loc());
+			    World.GoToLocation(unit.cur_x_loc(), unit.cur_y_loc());
 			    return;
 		    }
 	    }

@@ -222,10 +222,9 @@ public class SiteArray : DynArray<Site>
 		//TODO do not place sites too close to each other
 
 		// 5,5 are the size of the raw site, it must be large enough for a mine to build and 1 location for the edges
-		if (World.locate_space_random(ref locX1, ref locY1, locX2, locY2,
-			    5, 5, maxTries, regionId, true))
+		if (World.LocateSpaceRandom(ref locX1, ref locY1, locX2, locY2, 5, 5, maxTries, regionId, true))
 		{
-			RegionInfo regionInfo = RegionArray.GetRegionInfo(World.get_region_id(locX1, locY1));
+			RegionInfo regionInfo = RegionArray.GetRegionInfo(World.GetRegionId(locX1, locY1));
 			if (regionInfo.region_size < GameConstants.SMALLEST_RAW_REGION)
 				return false;
 			
@@ -264,7 +263,7 @@ public class SiteArray : DynArray<Site>
 				Power.reset_selection();
 				SelectedSiteId = site.SiteId;
 
-				World.go_loc(site.LocX, site.LocY);
+				World.GoToLocation(site.LocX, site.LocY);
 				return;
 			}
 		}

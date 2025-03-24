@@ -628,7 +628,7 @@ public class FirmMonster : Firm
 		int xLoc = center_x, yLoc = center_y;
 		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
 
-		if (!World.locate_space(ref xLoc, ref yLoc, xLoc, yLoc,
+		if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
 			    spriteInfo.loc_width, spriteInfo.loc_height, unitInfo.mobile_type))
 		{
 			return 0;
@@ -927,7 +927,7 @@ public class FirmMonster : Firm
 		int xLoc2 = Math.Min(GameConstants.MapSize - 1, loc_x2 + GameConstants.EXPAND_FIRM_DISTANCE);
 		int yLoc2 = Math.Min(GameConstants.MapSize - 1, loc_y2 + GameConstants.EXPAND_FIRM_DISTANCE);
 
-		if (!World.locate_space_random(ref xLoc1, ref yLoc1, xLoc2, yLoc2,
+		if (!World.LocateSpaceRandom(ref xLoc1, ref yLoc1, xLoc2, yLoc2,
 			    firmInfo.loc_width + GameConstants.FREE_SPACE_DISTANCE * 2,
 			    firmInfo.loc_height + GameConstants.FREE_SPACE_DISTANCE * 2, // leave at least 3 location space around the building
 			    (xLoc2 - xLoc1 + 1) * (yLoc2 - yLoc1 + 1), 0, true, teraMask))

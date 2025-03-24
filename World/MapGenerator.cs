@@ -151,7 +151,7 @@ public class MapGenerator
 
 		SetHarborBit();
 
-		World.plant_init();
+		World.PlantInit();
 
 		World.init_fire();
 
@@ -1534,7 +1534,7 @@ public class MapGenerator
 		{
 			for (int x = 0; x < GameConstants.MapSize - 2; ++x)
 			{
-				if (World.can_build_firm(x, y, Firm.FIRM_HARBOR) != 0)
+				if (World.CanBuildFirm(x, y, Firm.FIRM_HARBOR) != 0)
 				{
 					World.GetLoc(x, y).SetHarborBit();
 				}
@@ -1631,7 +1631,7 @@ public class MapGenerator
 		int xLoc = town.LocX1;
 		int yLoc = town.LocY1;
 
-		if (!World.locate_space(ref xLoc, ref yLoc,
+		if (!World.LocateSpace(ref xLoc, ref yLoc,
 			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
 			    spriteInfo.loc_width, spriteInfo.loc_height))
 		{

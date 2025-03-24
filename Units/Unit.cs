@@ -329,7 +329,7 @@ public partial class Unit : Sprite
 	{
 		if (is_visible())
 		{
-			return World.get_region_id(next_x_loc(), next_y_loc());
+			return World.GetRegionId(next_x_loc(), next_y_loc());
 		}
 		else
 		{
@@ -684,16 +684,16 @@ public partial class Unit : Sprite
 		{
 			for (int w = 0, x = startXLoc; w < sprite_info.loc_width; w++, x++)
 			{
-				World.set_unit_recno(x, y, mobile_type, sprite_recno);
+				World.SetUnitId(x, y, mobile_type, sprite_recno);
 			}
 		}
 
 		if (is_own() || (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
 		{
-			World.unveil(startXLoc, startYLoc, startXLoc + sprite_info.loc_width - 1,
+			World.Unveil(startXLoc, startYLoc, startXLoc + sprite_info.loc_width - 1,
 				startYLoc + sprite_info.loc_height - 1);
 
-			World.visit(startXLoc, startYLoc, startXLoc + sprite_info.loc_width - 1,
+			World.Visit(startXLoc, startYLoc, startXLoc + sprite_info.loc_width - 1,
 				startYLoc + sprite_info.loc_height - 1, UnitRes[unit_id].visual_range,
 				UnitRes[unit_id].visual_extend);
 		}
@@ -721,7 +721,7 @@ public partial class Unit : Sprite
 		{
 			for (int w = 0, x = next_x_loc(); w < sprite_info.loc_width; w++, x++)
 			{
-				World.set_unit_recno(x, y, mobile_type, 0);
+				World.SetUnitId(x, y, mobile_type, 0);
 			}
 		}
 
@@ -1276,7 +1276,7 @@ public partial class Unit : Sprite
 		int bestRating = 10;
 		ActionNode delActionNode = null;
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-		int curRegionId = World.get_region_id(curXLoc, curYLoc);
+		int curRegionId = World.GetRegionId(curXLoc, curYLoc);
 
 		// if this unit is the king, always assign it to a camp regardless of whether the king is a better commander than the existing one
 		if (rank_id == RANK_KING)
@@ -1377,7 +1377,7 @@ public partial class Unit : Sprite
 
 		Nation ownNation = NationArray[nation_recno];
 		Firm bestFirm = null;
-		int regionId = World.get_region_id(next_x_loc(), next_y_loc());
+		int regionId = World.GetRegionId(next_x_loc(), next_y_loc());
 		int skillId = skill.skill_id;
 		int skillLevel = skill.skill_level;
 		int bestRating = 0;
@@ -1481,7 +1481,7 @@ public partial class Unit : Sprite
 
 				//-------- calculate the rating ---------//
 
-				curRating += World.distance_rating(curXLoc, curYLoc, firm.center_x, firm.center_y);
+				curRating += World.DistanceRating(curXLoc, curYLoc, firm.center_x, firm.center_y);
 
 				if (firm.majority_race() == race_id)
 					curRating += 70;
@@ -1582,7 +1582,7 @@ public partial class Unit : Sprite
 
 			//-------- calculate the rating ---------//
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 
 			curRating += 300 * town.RacesPopulation[race_id - 1] / town.Population; // racial homogenous bonus
 
@@ -1662,7 +1662,7 @@ public partial class Unit : Sprite
 		Nation nation = NationArray[nation_recno];
 		FirmCamp bestCamp = null;
 		int bestRating = 0;
-		int regionId = World.get_region_id(next_x_loc(), next_y_loc());
+		int regionId = World.GetRegionId(next_x_loc(), next_y_loc());
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
 
 		for (int i = 0; i < nation.ai_camp_array.Count; i++)
@@ -1674,7 +1674,7 @@ public partial class Unit : Sprite
 
 			//-------- calculate the rating ---------//
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
 
 			curRating += (Firm.MAX_WORKER - firmCamp.workers.Count) * 10;
 
@@ -1705,7 +1705,7 @@ public partial class Unit : Sprite
 		Nation ownNation = NationArray[nation_recno];
 		Town bestTown = null;
 		int bestRating = 0;
-		int regionId = World.get_region_id(next_x_loc(), next_y_loc());
+		int regionId = World.GetRegionId(next_x_loc(), next_y_loc());
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
 
 		for (int i = ownNation.ai_town_array.Count - 1; i >= 0; i--)
@@ -1718,7 +1718,7 @@ public partial class Unit : Sprite
 			if (!town.IsBaseTown || town.NoNeighborSpace)
 				continue;
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 
 			if (curRating > bestRating)
 			{
@@ -1864,7 +1864,7 @@ public partial class Unit : Sprite
 		//---- look for towns to assign to -----//
 
 		Town bestTown = null;
-		int regionId = World.get_region_id(next_x_loc(), next_y_loc());
+		int regionId = World.GetRegionId(next_x_loc(), next_y_loc());
 		int bestRating = 0;
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
 
@@ -1876,7 +1876,7 @@ public partial class Unit : Sprite
 				continue;
 			}
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, town.LocCenterX, town.LocCenterY);
 			curRating += 100 * town.RacesPopulation[race_id - 1] / town.Population;
 
 			if (curRating > bestRating)
@@ -1935,7 +1935,7 @@ public partial class Unit : Sprite
 			FirmCamp bestCamp = null;
 			int bestRating = 0;
 			int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-			int curRegionId = World.get_region_id(curXLoc, curYLoc);
+			int curRegionId = World.GetRegionId(curXLoc, curYLoc);
 
 			if (cur_action == SPRITE_ATTACK)
 			{
@@ -1953,7 +1953,7 @@ public partial class Unit : Sprite
 					if (firmCamp.ai_is_capturing_independent_village())
 						continue;
 
-					int curRating = World.distance_rating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
+					int curRating = World.DistanceRating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
 
 					if (curRating > bestRating)
 					{
@@ -2017,7 +2017,7 @@ public partial class Unit : Sprite
 			FirmCamp bestCamp = null;
 			int bestRating = 0;
 			int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-			int curRegionId = World.get_region_id(curXLoc, curYLoc);
+			int curRegionId = World.GetRegionId(curXLoc, curYLoc);
 
 			if (cur_action == SPRITE_ATTACK)
 			{
@@ -2031,7 +2031,7 @@ public partial class Unit : Sprite
 					if (firmCamp.ai_is_capturing_independent_village())
 						continue;
 
-					int curRating = World.distance_rating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
+					int curRating = World.DistanceRating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
 
 					if (curRating > bestRating)
 					{
@@ -2147,7 +2147,7 @@ public partial class Unit : Sprite
 
 		Nation ownNation = NationArray[nation_recno];
 		Town bestTown = null;
-		int regionId = World.get_region_id(next_x_loc(), next_y_loc());
+		int regionId = World.GetRegionId(next_x_loc(), next_y_loc());
 		int bestRating = 0;
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
 
@@ -2278,7 +2278,7 @@ public partial class Unit : Sprite
 		int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
 
 		// leave at least one location space around the building
-		if (World.locate_space_random(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
 			    firmInfo.loc_width + 2, firmInfo.loc_height + 2,
 			    GameConstants.MapSize * GameConstants.MapSize, curRegionId, true, teraMask))
 		{
@@ -2322,7 +2322,7 @@ public partial class Unit : Sprite
 		int xLoc = bestCamp.loc_x1;
 		int yLoc = bestCamp.loc_y1;
 
-		if (World.locate_space(ref xLoc, ref yLoc, bestCamp.loc_x2, bestCamp.loc_y2,
+		if (World.LocateSpace(ref xLoc, ref yLoc, bestCamp.loc_x2, bestCamp.loc_y2,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, curRegionId, true))
 		{
 			settle(xLoc, yLoc);
@@ -2370,7 +2370,7 @@ public partial class Unit : Sprite
 
 		int xOffset, yOffset;
 		int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-		int regionId = World.get_region_id(curXLoc, curYLoc);
+		int regionId = World.GetRegionId(curXLoc, curYLoc);
 
 		for (int i = 2; i < attackScanRange * attackScanRange; i++)
 		{
@@ -2535,7 +2535,7 @@ public partial class Unit : Sprite
 
 		else if (original_action_mode == UnitConstants.ACTION_BUILD_FIRM)
 		{
-			if (World.can_build_firm(original_action_x_loc, original_action_y_loc,
+			if (World.CanBuildFirm(original_action_x_loc, original_action_y_loc,
 				    original_action_para, sprite_recno) != 0)
 			{
 				build_firm(original_action_x_loc, original_action_y_loc,
@@ -2547,7 +2547,7 @@ public partial class Unit : Sprite
 
 		else if (original_action_mode == UnitConstants.ACTION_SETTLE)
 		{
-			if (World.can_build_town(original_action_x_loc, original_action_y_loc, sprite_recno))
+			if (World.CanBuildTown(original_action_x_loc, original_action_y_loc, sprite_recno))
 			{
 				UnitArray.settle(original_action_x_loc, original_action_y_loc, false,
 					InternalConstants.COMMAND_AUTO, selectedArray);
@@ -2699,7 +2699,7 @@ public partial class Unit : Sprite
 		{
 			if (is_own() || (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
 			{
-				World.visit(next_x_loc(), next_y_loc(),
+				World.Visit(next_x_loc(), next_y_loc(),
 					next_x_loc() + sprite_info.loc_width - 1, next_y_loc() + sprite_info.loc_height - 1,
 					UnitRes[unit_id].visual_range, UnitRes[unit_id].visual_extend);
 			}
@@ -3248,7 +3248,7 @@ public partial class Unit : Sprite
 					x = curNextXLoc;
 					for (int w = 0; w < sprite_info.loc_width; w++, x++)
 					{
-						World.set_unit_recno(x, y, mobile_type, 0);
+						World.SetUnitId(x, y, mobile_type, 0);
 					}
 				}
 
@@ -3258,7 +3258,7 @@ public partial class Unit : Sprite
 					x = next_x_loc();
 					for (int w = 0; w < sprite_info.loc_width; w++, x++)
 					{
-						World.set_unit_recno(x, y, mobile_type, sprite_recno);
+						World.SetUnitId(x, y, mobile_type, sprite_recno);
 					}
 				}
 
@@ -3273,16 +3273,16 @@ public partial class Unit : Sprite
 					int exploreWidth = move_step_magn() - 1;
 
 					if (newNextYLoc < curNextYLoc) // if move upwards, explore upper area
-						World.explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth);
+						World.Explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth);
 
 					else if (newNextYLoc > curNextYLoc) // if move downwards, explore lower area
-						World.explore(xLoc1, yLoc2 - exploreWidth, xLoc2, yLoc2);
+						World.Explore(xLoc1, yLoc2 - exploreWidth, xLoc2, yLoc2);
 
 					if (newNextXLoc < curNextXLoc) // if move towards left, explore left area
-						World.explore(xLoc1, yLoc1, xLoc1 + exploreWidth, yLoc2);
+						World.Explore(xLoc1, yLoc1, xLoc1 + exploreWidth, yLoc2);
 
 					else if (newNextXLoc > curNextXLoc) // if move towards right, explore right area
-						World.explore(xLoc2 - exploreWidth, yLoc1, xLoc2, yLoc2);
+						World.Explore(xLoc2 - exploreWidth, yLoc1, xLoc2, yLoc2);
 				}
 			}
 		}
@@ -3861,7 +3861,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// location is blocked, cannot build. so move there instead
 		//----------------------------------------------------------------//
-		if (World.can_build_firm(buildXLoc, buildYLoc, firmId, sprite_recno) == 0)
+		if (World.CanBuildFirm(buildXLoc, buildYLoc, firmId, sprite_recno) == 0)
 		{
 			//reset_action_para2();
 			MoveTo(buildXLoc, buildYLoc);
@@ -3872,7 +3872,7 @@ public partial class Unit : Sprite
 		// different territory
 		//----------------------------------------------------------------//
 
-		int harborDir = World.can_build_firm(buildXLoc, buildYLoc, firmId, sprite_recno);
+		int harborDir = World.CanBuildFirm(buildXLoc, buildYLoc, firmId, sprite_recno);
 		int goX = buildXLoc, goY = buildYLoc;
 		if (FirmRes[firmId].tera_type == 4)
 		{
@@ -4118,7 +4118,7 @@ public partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// move there if cannot settle
 		//----------------------------------------------------------------//
-		if (!World.can_build_town(settleXLoc, settleYLoc, sprite_recno))
+		if (!World.CanBuildTown(settleXLoc, settleYLoc, sprite_recno))
 		{
 			Location loc = World.GetLoc(settleXLoc, settleYLoc);
 			if (loc.IsTown() && TownArray[loc.TownId()].NationId == nation_recno)
@@ -6616,7 +6616,7 @@ public partial class Unit : Sprite
 				//---------------------------------------------------------//
 				// check whether the firm can be built in the specified location
 				//---------------------------------------------------------//
-				if (shouldProceed && World.can_build_firm(action_x_loc, action_y_loc, action_para, sprite_recno) != 0 &&
+				if (shouldProceed && World.CanBuildFirm(action_x_loc, action_y_loc, action_para, sprite_recno) != 0 &&
 				    FirmRes[action_para].can_build(sprite_recno))
 				{
 					bool aiUnit = ai_unit;
@@ -7087,7 +7087,7 @@ public partial class Unit : Sprite
 				break;
 
 			case Rebel.REBEL_SETTLE_NEW:
-				if (!World.can_build_town(rebel.action_para, rebel.action_para2, sprite_recno))
+				if (!World.CanBuildTown(rebel.action_para, rebel.action_para2, sprite_recno))
 				{
 					Location loc = World.GetLoc(rebel.action_para, rebel.action_para2);
 

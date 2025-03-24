@@ -80,6 +80,14 @@ public class Misc
         return (locX >= 0 && locX < GameConstants.MapSize && locY >= 0 && locY < GameConstants.MapSize);
     }
 
+    public static void BoundLocation(ref int locX, ref int locY)
+    {
+        locX = Math.Max(locX, 0);
+        locY = Math.Max(locY, 0);
+        locX = Math.Min(locX, GameConstants.MapSize - 1);
+        locY = Math.Min(locY, GameConstants.MapSize - 1);
+    }
+
     public static IEnumerable<(int, int)> EnumerateNearLocations(int locX1, int locY1, int locX2, int locY2, int distance)
     {
         for (int locX = locX1 - distance; locX <= locX2 + distance; locX++)

@@ -137,7 +137,7 @@ public class Tornado : Sprite
         if (location.IsPlant())
         {
             location.RemovePlant();
-            World.plant_count--;
+            World.PlantCount--;
         }
     }
 

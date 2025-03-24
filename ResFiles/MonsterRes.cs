@@ -65,7 +65,7 @@ public class MonsterInfo
         int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
 
         // leave at least one location space around the building
-        if (!World.locate_space_random(ref xLoc, ref yLoc, GameConstants.MapSize - 1,
+        if (!World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1,
                 GameConstants.MapSize - 1, firmInfo.loc_width + 2, firmInfo.loc_height + 2,
                 GameConstants.MapSize * GameConstants.MapSize, 0, true, teraMask))
         {

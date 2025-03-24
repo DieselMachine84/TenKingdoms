@@ -40,7 +40,7 @@ public class UnitVehicle : Unit
         int xLoc = next_x_loc();
         int yLoc = next_y_loc();
 
-        if (!World.locate_space(ref xLoc, ref yLoc,
+        if (!World.LocateSpace(ref xLoc, ref yLoc,
                 xLoc + sprite_info.loc_width - 1, yLoc + sprite_info.loc_height - 1,
                 soliderSpriteInfo.loc_width, soliderSpriteInfo.loc_height))
         {

@@ -321,7 +321,7 @@ public class TownArray : DynArray<Town>
 
 	public bool Settle(int unitId, int xLoc, int yLoc)
 	{
-		if (!World.can_build_town(xLoc, yLoc, unitId))
+		if (!World.CanBuildTown(xLoc, yLoc, unitId))
 			return false;
 
 		Unit unit = UnitArray[unitId];
@@ -381,7 +381,7 @@ public class TownArray : DynArray<Town>
 			Power.reset_selection();
 			SelectedTownId = town.TownId;
 
-			World.go_loc(town.LocCenterX, town.LocCenterY);
+			World.GoToLocation(town.LocCenterX, town.LocCenterY);
 			return;
 		}
 	}

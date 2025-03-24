@@ -191,7 +191,7 @@ public class FirmWar : Firm
             int xLoc = loc_x1; // xLoc & yLoc are used for returning results
             int yLoc = loc_y1;
 
-            if (!World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2,
+            if (!World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
                     spriteInfo.loc_width, spriteInfo.loc_height, unitInfo.mobile_type))
             {
                 build_progress_days = totalBuildDays + 1;

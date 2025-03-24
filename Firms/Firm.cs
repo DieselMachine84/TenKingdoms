@@ -172,7 +172,7 @@ public abstract class Firm
 		center_x = (loc_x1 + loc_x2) / 2;
 		center_y = (loc_y1 + loc_y2) / 2;
 
-		region_id = World.get_region_id(center_x, center_y);
+		region_id = World.GetRegionId(center_x, center_y);
 
 		//--------- set animation frame vars ---------//
 
@@ -1071,8 +1071,8 @@ public abstract class Firm
 		if (nation_recno == NationArray.player_recno ||
 		    (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
 		{
-			World.unveil(loc_x1, loc_y1, loc_x2, loc_y2);
-			World.visit(loc_x1, loc_y1, loc_x2, loc_y2, GameConstants.EXPLORE_RANGE - 1);
+			World.Unveil(loc_x1, loc_y1, loc_x2, loc_y2);
+			World.Visit(loc_x1, loc_y1, loc_x2, loc_y2, GameConstants.EXPLORE_RANGE - 1);
 		}
 
 		//-------- set should_set_power --------//
@@ -1082,7 +1082,7 @@ public abstract class Firm
 		//---- set this town's influence on the map ----//
 
 		if (should_set_power)
-			World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
+			World.SetPower(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
 
 		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
 
@@ -1104,7 +1104,7 @@ public abstract class Firm
 		//---- restore this town's influence on the map ----//
 
 		if (should_set_power) // no power region for harbor as it build on coast which cannot be set with power region
-			World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
+			World.RestorePower(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
 
 		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
 
@@ -1288,13 +1288,13 @@ public abstract class Firm
 		//------ update power nation recno ----------//
 
 		if (should_set_power)
-			World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
+			World.RestorePower(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
 
 		should_set_power = get_should_set_power();
 
 		// set power of the new nation
 		if (should_set_power)
-			World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, newNationRecno);
+			World.SetPower(loc_x1, loc_y1, loc_x2, loc_y2, newNationRecno);
 
 		//------------ update link --------------//
 
@@ -1639,7 +1639,7 @@ public abstract class Firm
 			//#### end alex 18/10 ####//
 			if (unit.is_visible()) // is visible if the unit is not inside the firm location
 			{
-				builder_region_id = World.get_region_id(unit.cur_x_loc(), unit.cur_y_loc());
+				builder_region_id = World.GetRegionId(unit.cur_x_loc(), unit.cur_y_loc());
 				unit.deinit_sprite();
 
 				if (unit.selected_flag)
@@ -2149,7 +2149,7 @@ public abstract class Firm
 		{
 			checkXLoc = loc_x1;
 			checkYLoc = loc_y1;
-			if (!World.locate_space(ref checkXLoc, ref checkYLoc, xLoc2, yLoc2, width, height, mobileType, regionId))
+			if (!World.LocateSpace(ref checkXLoc, ref checkYLoc, xLoc2, yLoc2, width, height, mobileType, regionId))
 			{
 				return false;
 			}
@@ -2453,12 +2453,12 @@ public abstract class Firm
 			return;
 
 		if (should_set_power)
-			World.restore_power(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
+			World.RestorePower(loc_x1, loc_y1, loc_x2, loc_y2, 0, firm_recno);
 
 		should_set_power = newShouldSetPower;
 
 		if (should_set_power)
-			World.set_power(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
+			World.SetPower(loc_x1, loc_y1, loc_x2, loc_y2, nation_recno);
 	}
 
 	public virtual void next_year()
@@ -2738,7 +2738,7 @@ public abstract class Firm
 
 		if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
 			    spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_LAND, builder_region_id) &&
-		    !World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2,
+		    !World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
 			    spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_LAND, builder_region_id))
 		{
 			kill_builder(recno);
@@ -3273,7 +3273,7 @@ public abstract class Firm
 				//
 				//-------------------------------------------//
 
-				curRating = World.distance_rating(center_x, center_y,
+				curRating = World.DistanceRating(center_x, center_y,
 					firmInn.center_x, firmInn.center_y);
 
 				curRating += innUnit.skill.skill_level;
@@ -3472,7 +3472,7 @@ public abstract class Firm
 		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
 
 		// the town must be in the same region as this firm.
-		if (World.locate_space(ref xLoc, ref yLoc, loc_x2, loc_y2,
+		if (World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, region_id, true))
 		{
 			if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,

@@ -135,6 +135,7 @@ public static class InternalConstants
     public const int MAX_ROCK_HEIGHT = 4;
     public const int GET_SITE_RANGE = 30; // only notify units within this range
     public const int MAX_UNIT_TO_GET_SITE = 5;
+    public const int SCAN_FIRE_DIST = 4;
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;
@@ -197,4 +198,7 @@ public static class InputConstants
 {
     public const int LeftMousePressed = 1;
     public const int RightMousePressed = 2;
+    public const int KeyBPressed = 98;
+    public const int KeySPressed = 115;
+    public const int KeyTPressed = 116;
 }

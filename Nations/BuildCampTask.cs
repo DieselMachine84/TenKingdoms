@@ -111,7 +111,7 @@ public class BuildCampTask : AITask
                     if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
                         continue;
 
-                    if (World.can_build_firm(buildLocX, buildLocY, Firm.FIRM_CAMP, _generalId) == 0)
+                    if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _generalId) == 0)
                         continue;
 
                     int rating = Misc.PointsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,

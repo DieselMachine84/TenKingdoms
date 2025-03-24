@@ -267,9 +267,9 @@ public class Rebel
             leaderYLoc = yLoc2 - InternalConstants.TOWN_HEIGHT + 1;
         }
 
-        int regionId = World.get_region_id(leaderXLoc, leaderYLoc);
+        int regionId = World.GetRegionId(leaderXLoc, leaderYLoc);
 
-        if (World.locate_space(ref leaderXLoc, ref leaderYLoc, xLoc2, yLoc2,
+        if (World.LocateSpace(ref leaderXLoc, ref leaderYLoc, xLoc2, yLoc2,
                 InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, regionId, true))
         {
             action_mode = REBEL_SETTLE_NEW;
@@ -285,14 +285,14 @@ public class Rebel
     public bool think_settle_to()
     {
         Unit leaderUnit = UnitArray[leader_unit_recno];
-        int curRegionId = World.get_region_id(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
             if (town.RebelId == 0)
                 continue;
 
-            if (World.get_region_id(town.LocX1, town.LocY1) != curRegionId)
+            if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
             if (leaderUnit.race_id == town.MajorityRace())
@@ -314,7 +314,7 @@ public class Rebel
         Unit leaderUnit = UnitArray[leader_unit_recno];
         int leaderXLoc = leaderUnit.cur_x_loc();
         int leaderYLoc = leaderUnit.cur_y_loc();
-        int curRegionId = World.get_region_id(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
 
         //----------------------------------------------//
 
@@ -328,7 +328,7 @@ public class Rebel
             if (!is_hostile_nation(town.NationId))
                 continue;
 
-            if (World.get_region_id(town.LocX1, town.LocY1) != curRegionId)
+            if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
             int townDistance = Misc.rects_distance(leaderXLoc, leaderYLoc, leaderXLoc, leaderYLoc,
@@ -358,7 +358,7 @@ public class Rebel
         Unit leaderUnit = UnitArray[leader_unit_recno];
         int leaderXLoc = leaderUnit.cur_x_loc();
         int leaderYLoc = leaderUnit.cur_y_loc();
-        int curRegionId = World.get_region_id(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
 
         //----------------------------------------------//
 
@@ -370,7 +370,7 @@ public class Rebel
             if (!is_hostile_nation(firm.nation_recno))
                 continue;
 
-            if (World.get_region_id(firm.loc_x1, firm.loc_y1) != curRegionId)
+            if (World.GetRegionId(firm.loc_x1, firm.loc_y1) != curRegionId)
                 continue;
 
             int firmDistance = Misc.points_distance(leaderXLoc, leaderYLoc, firm.center_x, firm.center_y);

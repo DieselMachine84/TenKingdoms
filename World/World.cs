@@ -5,22 +5,14 @@ namespace TenKingdoms;
 
 public class World
 {
-	public const int SCAN_FIRE_DIST = 4;
-	public const int MIN_LAND_COST = 500000;
-	public const int MIN_GRASS_HEIGHT = 100;
-	public const int MIN_HILL_HEIGHT = 230;
-	public const int MIN_MOUNTAIN_HEIGHT = 242;
-	public const int MIN_ICE_HEIGHT = 252;
+	private Location[] _locMatrix = new Location[GameConstants.MapSize * GameConstants.MapSize];
 
-	private Location[] loc_matrix = new Location[GameConstants.MapSize * GameConstants.MapSize];
-
-	public ulong next_scroll_time; // next scroll time
-	public int scan_fire_x; // cycle from 0 to SCAN_FIRE_DIST-1
-	public int scan_fire_y;
-	public int lightning_signal;
-	public int plant_count;
-	public int plant_limit;
-	public int[] opt_temp = { 32, 25, 28 };
+	private int _scanFireX; // cycle from 0 to SCAN_FIRE_DIST-1
+	private int _scanFireY;
+	private int _lightningSignal;
+	private int _plantLimit;
+	public int PlantCount { get; set; }
+	private readonly int[] _optTemp = { 32, 25, 28 };
 
 	private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
 	private HillRes HillRes => Sys.Instance.HillRes;
@@ -29,11 +21,12 @@ public class World
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private SECtrl SECtrl => Sys.Instance.SECtrl;
+
 	private Config Config => Sys.Instance.Config;
-	private Info Info => Sys.Instance.Info;
 	private Weather Weather => Sys.Instance.Weather;
 	private Weather[] WeatherForecast => Sys.Instance.WeatherForecast;
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
+
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -44,15 +37,15 @@ public class World
 
 	public World()
 	{
-		scan_fire_x = 0;
-		scan_fire_y = 0;
-		lightning_signal = 0;
-		ClearLocation();
+		for (int i = 0; i < _locMatrix.Length; i++)
+		{
+			_locMatrix[i] = new Location(TerrainRes, HillRes);
+		}
 	}
 	
 	public Location GetLoc(int locX, int locY)
 	{
-		return loc_matrix[GetMatrixIndex(locX, locY)];
+		return _locMatrix[GetMatrixIndex(locX, locY)];
 	}
 
 	public int GetMatrixIndex(int locX, int locY)
@@ -66,22 +59,98 @@ public class World
 		locY = matrixIndex / GameConstants.MapSize;
 	}
 
-	public int get_region_id(int xLoc, int yLoc)
+	public int GetRegionId(int locX, int locY)
 	{
-		return loc_matrix[GameConstants.MapSize * yLoc + xLoc].RegionId;
+		return GetLoc(locX, locY).RegionId;
 	}
 
-	public void load_map(byte[] para)
+	public void Process()
 	{
-		throw new NotImplementedException();
+		//-------- process fire -----------//
+
+		// BUGHERE : set Location::flammability for every change in cargo
+
+		spread_fire(Weather);
+
+		// ------- process visibility --------//
+		ProcessVisibility();
+
+		//-------- process lightning ------//
+		if (_lightningSignal == 0 && Weather.is_lightning())
+		{
+			// ------- create new lightning ----------//
+			_lightningSignal = 110;
+		}
+
+		if (_lightningSignal == 106 && Config.weather_effect != 0)
+		{
+			lightning_strike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
+		}
+
+		if (_lightningSignal == 100)
+			_lightningSignal = 5 + Misc.Random(10);
+		else if (_lightningSignal > 0)
+			_lightningSignal--;
+
+		//---------- process ambient sound ---------//
+
+		if (Sys.Instance.FrameNumber % 10 == 0) // process once per ten frames
+			process_ambient_sound();
+
+		// --------- update scan fire x y ----------//
+		if (++_scanFireX >= InternalConstants.SCAN_FIRE_DIST)
+			_scanFireX = 0;
+		if (++_scanFireY >= InternalConstants.SCAN_FIRE_DIST)
+			_scanFireY = 0;
 	}
 
-	public void go_loc(int xLoc, int yLoc, bool selectFlag = false)
+	private void ProcessVisibility()
+	{
+		if (!Config.fog_of_war)
+			return;
+
+		//TODO performance
+		for (int i = 0; i < _locMatrix.Length; i++)
+		{
+			_locMatrix[i].DecVisibility();
+		}
+	}
+	
+	public void NextDay()
+	{
+		PlantActions();
+
+		Sys.Instance.Weather = WeatherForecast[0];
+
+		for (int foreDay = 0; foreDay < GameConstants.MAX_WEATHER_FORECAST - 1; foreDay++)
+		{
+			WeatherForecast[foreDay] = WeatherForecast[foreDay + 1];
+		}
+
+		int lastIndex = GameConstants.MAX_WEATHER_FORECAST - 1;
+		WeatherForecast[lastIndex] = new Weather(WeatherForecast[lastIndex]);
+		WeatherForecast[lastIndex].next_day();
+
+		MagicWeather.next_day();
+
+		if (Weather.has_tornado() && Config.weather_effect != 0)
+		{
+			TornadoArray.AddTornado(Weather.tornado_x_loc(GameConstants.MapSize, GameConstants.MapSize),
+				Weather.tornado_y_loc(GameConstants.MapSize, GameConstants.MapSize), 600);
+		}
+
+		if (Weather.is_quake() && Config.random_event_frequency != Config.OPTION_NONE)
+		{
+			earth_quake();
+		}
+	}
+	
+	public void GoToLocation(int locX, int locY, bool select = false)
 	{
 		//TODO implement
 	}
 
-	public void disp_next(int seekDir, bool sameNation)
+	public void DisplayNext(int seekDir, bool sameNation)
 	{
 		//--- if the selected one is a town ----//
 
@@ -112,315 +181,209 @@ public class World
 		}
 	}
 
-	public int get_unit_recno(int xLoc, int yLoc, int mobileType)
+	public int GetUnitId(int locX, int locY, int mobileType)
 	{
-		if (mobileType == UnitConstants.UNIT_AIR)
-			return GetLoc(xLoc, yLoc).AirCargoId;
-		else
-			return GetLoc(xLoc, yLoc).CargoId;
+		Location location = GetLoc(locX, locY);
+		return mobileType == UnitConstants.UNIT_AIR ? location.AirCargoId : location.CargoId;
 	}
 
-	public void set_unit_recno(int xLoc, int yLoc, int mobileType, int newCargoRecno)
+	public void SetUnitId(int locX, int locY, int mobileType, int unitId)
 	{
+		Location location = GetLoc(locX, locY);
 		if (mobileType == UnitConstants.UNIT_AIR)
-			GetLoc(xLoc, yLoc).AirCargoId = newCargoRecno;
+			location.AirCargoId = unitId;
 		else
-			GetLoc(xLoc, yLoc).CargoId = newCargoRecno;
+			location.CargoId = unitId;
 	}
 
-	public int distance_rating(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
+	// TODO remove
+	public int DistanceRating(int locX1, int locY1, int locX2, int locY2)
 	{
-		int curDistance = Misc.points_distance(xLoc1, yLoc1, xLoc2, yLoc2);
-
+		int curDistance = Misc.points_distance(locX1, locY1, locX2, locY2);
 		return 100 - 100 * curDistance / GameConstants.MapSize;
 	}
 
-	public void unveil(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
+	public void Unveil(int locX1, int locY1, int locX2, int locY2)
 	{
 		if (Config.explore_whole_map)
 			return;
 
-		xLoc1 = Math.Max(0, xLoc1 - GameConstants.EXPLORE_RANGE);
-		yLoc1 = Math.Max(0, yLoc1 - GameConstants.EXPLORE_RANGE);
-		xLoc2 = Math.Min(GameConstants.MapSize - 1, xLoc2 + GameConstants.EXPLORE_RANGE);
-		yLoc2 = Math.Min(GameConstants.MapSize - 1, yLoc2 + GameConstants.EXPLORE_RANGE);
+		Misc.BoundLocation(ref locX1, ref locY1);
+		Misc.BoundLocation(ref locX2, ref locY2);
 
-		explore(xLoc1, yLoc1, xLoc2, yLoc2);
+		Explore(locX1, locY1, locX2, locY2);
 	}
 
-	public void explore(int xLoc1, int yLoc1, int xLoc2, int yLoc2)
+	public void Explore(int locX1, int locY1, int locX2, int locY2)
 	{
 		if (Config.explore_whole_map)
 			return;
 
-		//char* 	 imageBuf = map_matrix.save_image_buf + sizeof(short)*2;
-		byte[] nationColorArray = NationArray.nation_power_color_array;
-		//char* 	 writePtr;
-
-		int shadowMapDist = GameConstants.MapSize + 1;
-		int tileYOffset;
-		//Location* northWestPtr;
-		int tilePixel;
-
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		for (int locY = locY1; locY <= locY2; locY++)
 		{
-			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
+			for (int locX = locX1; locX <= locX2; locX++)
 			{
-				Location location = GetLoc(xLoc, yLoc);
-				if (!location.IsExplored())
+				Location location = GetLoc(locX, locY);
+				if (location.IsExplored())
+					continue;
+
+				location.ExploredOn();
+
+				//---- if the command base of the opponent revealed, establish contact ----//
+				NationRelation relation = null;
+				int nationId = 0;
+
+				if (location.IsFirm())
 				{
-					location.ExploredOn();
-
-					//TODO rewrite drawing
-					//-------- draw pixel ----------//
-
-					//writePtr = imageBuf+MAP_WIDTH*yLoc+xLoc;
-
-					//switch( world.map_matrix.map_mode )
-					//{
-					//case MAP_MODE_TERRAIN:
-					//if( locPtr.fire_str() > 0)
-					//*writePtr = (char) FIRE_COLOR;
-
-					//else if( locPtr.is_plant() )
-					//*writePtr = plant_res.plant_map_color;
-
-					//else
-					//{
-					//tileYOffset = (yLoc & TERRAIN_TILE_Y_MASK) * TERRAIN_TILE_WIDTH;
-
-					//tilePixel = terrain_res.get_map_tile(locPtr.terrain_id)[tileYOffset + (xLoc & TERRAIN_TILE_X_MASK)];
-
-					//if( xLoc == 0 || yLoc == 0)
-					//{
-					//*writePtr = tilePixel;
-					//}
-					//else
-					//{
-					//northWestPtr = locPtr - shadowMapDist;
-					//if( (terrain_res[locPtr.terrain_id].average_type >=
-					//terrain_res[northWestPtr.terrain_id].average_type) )
-					//{
-					//*writePtr = tilePixel;
-					//}
-					//else
-					//{
-					//*writePtr = (char) VGA_GRAY;
-					//}
-					//}
-					//break;
-					//}
-					//break;
-
-					//case MAP_MODE_SPOT:
-					//if( locPtr.sailable() )
-					//*writePtr = (char) 0x32;
-
-					//else if( locPtr.has_hill() )
-					//*writePtr = (char) V_BROWN;
-
-					//else if( locPtr.is_plant() )
-					//*writePtr = (char) V_DARK_GREEN;
-
-					//else
-					//*writePtr = (char) VGA_GRAY+10;
-					//break;
-
-					//case MAP_MODE_POWER:
-					//if( locPtr.sailable() )
-					//*writePtr = (char) 0x32;
-
-					//else if( locPtr.has_hill() )
-					//*writePtr = (char) V_BROWN;
-
-					//else if( locPtr.is_plant() )
-					//*writePtr = (char) V_DARK_GREEN;
-
-					//else
-					//*writePtr = nationColorArray[locPtr.power_nation_recno];
-					//break;
-					//}
-
-					//---- if the command base of the opponent revealed, establish contact ----//
-
-					if (location.IsFirm())
+					Firm firm = FirmArray[location.FirmId()];
+					if (firm.nation_recno != 0 && NationArray.player_recno != 0)
 					{
-						Firm firm = FirmArray[location.FirmId()];
-
-						if (firm.nation_recno > 0 && NationArray.player_recno != 0)
-						{
-							NationRelation relation = NationArray.player.get_relation(firm.nation_recno);
-
-							if (!relation.has_contact)
-							{
-								//TODO remote
-								//if( !remote.is_enable() )
-								//{
-								NationArray.player.establish_contact(firm.nation_recno);
-								//}
-								//else
-								//{
-								//if( !relation.contact_msg_flag )
-								//{
-								// packet structure : <player nation> <explored nation>
-								//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-								//*shortPtr = nation_array.player_recno;
-								//shortPtr[1] = firmPtr.nation_recno;
-								//relation.contact_msg_flag = 1;
-								//}
-								//}
-							}
-						}
+						relation = NationArray.player.get_relation(firm.nation_recno);
+						nationId = firm.nation_recno;
 					}
+				}
 
-					if (location.IsTown())
+				if (location.IsTown())
+				{
+					Town town = TownArray[location.TownId()];
+					if (town.NationId != 0 && NationArray.player_recno != 0)
 					{
-						Town town = TownArray[location.TownId()];
-
-						if (town.NationId > 0 && NationArray.player_recno != 0)
-						{
-							NationRelation relation = NationArray.player.get_relation(town.NationId);
-
-							if (!relation.has_contact)
-							{
-								//if( !remote.is_enable() )
-								//{
-								NationArray.player.establish_contact(town.NationId);
-								//}
-								//else
-								//{
-								//if( !relation.contact_msg_flag )
-								//{
-								// packet structure : <player nation> <explored nation>
-								//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-								//*shortPtr = nation_array.player_recno;
-								//shortPtr[1] = townPtr.nation_recno;
-								//relation.contact_msg_flag = 1;
-								//}
-								//}
-							}
-						}
+						relation = NationArray.player.get_relation(town.NationId);
+						nationId = town.NationId;
 					}
+				}
+
+				if (relation != null && !relation.has_contact)
+				{
+					//if( !remote.is_enable() )
+					//{
+						NationArray.player.establish_contact(nationId);
+					//}
+					//else
+					//{
+					//if( !relation.contact_msg_flag )
+					//{
+					// packet structure : <player nation> <explored nation>
+					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
+					//*shortPtr = nation_array.player_recno;
+					//shortPtr[1] = nationId;
+					//relation.contact_msg_flag = 1;
+					//}
+					//}
 				}
 			}
 		}
 	}
 
 	// always call unveil before visit //
-	public void visit(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int range, int extend = 0)
+	public void Visit(int locX1, int locY1, int locX2, int locY2, int range, int extend = 0)
 	{
-		if (Config.fog_of_war)
+		if (!Config.fog_of_war)
+			return;
+		
+		int left = Math.Max(0, locX1 - range);
+		int top = Math.Max(0, locY1 - range);
+		int right = Math.Min(GameConstants.MapSize - 1, locX2 + range);
+		int bottom = Math.Min(GameConstants.MapSize - 1, locY2 + range);
+
+		// ----- mark the visit_level of the square around the unit ------//
+		for (int locY = top; locY <= bottom; locY++)
 		{
-			int left = Math.Max(0, xLoc1 - range);
-			int top = Math.Max(0, yLoc1 - range);
-			int right = Math.Min(GameConstants.MapSize - 1, xLoc2 + range);
-			int bottom = Math.Min(GameConstants.MapSize - 1, yLoc2 + range);
-
-			// ----- mark the visit_level of the square around the unit ------//
-			for (int yLoc = top; yLoc <= bottom; yLoc++)
+			for (int locX = left; locX <= right; locX++)
 			{
-				for (int xLoc = left; xLoc <= right; xLoc++)
-				{
-					Location location = GetLoc(xLoc, yLoc);
-					location.SetVisited();
-				}
+				GetLoc(locX, locY).SetVisited();
 			}
+		}
 
-			// ----- visit_level decreasing outside the visible range ------//
-			if (extend > 0)
+		// ----- visit_level decreasing outside the visible range ------//
+		if (extend > 0)
+		{
+			int visitLevel = Location.FULL_VISIBILITY;
+			int levelDrop = (Location.FULL_VISIBILITY - Location.EXPLORED_VISIBILITY) / (extend + 1);
+			locX1 -= range;
+			locY1 -= range;
+			locX2 += range;
+			locY2 += range;
+			for (++range; extend > 0; --extend, ++range)
 			{
-				int visitLevel = Location.FULL_VISIBILITY;
-				int levelDrop = (Location.FULL_VISIBILITY - Location.EXPLORED_VISIBILITY) / (extend + 1);
-				xLoc1 -= range;
-				xLoc2 += range;
-				yLoc1 -= range;
-				yLoc2 += range;
-				for (++range; extend > 0; --extend, ++range)
-				{
-					xLoc1--;
-					xLoc2++;
-					yLoc1--;
-					yLoc2++;
-					visitLevel -= levelDrop;
-					visit_shell(xLoc1, yLoc1, xLoc2, yLoc2, visitLevel);
-				}
+				locX1--;
+				locY1--;
+				locX2++;
+				locY2++;
+				visitLevel -= levelDrop;
+				VisitShell(locX1, locY1, locX2, locY2, visitLevel);
 			}
 		}
 	}
 
-	public void visit_shell(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int visitLevel)
+	private void VisitShell(int locX1, int locY1, int locX2, int locY2, int visitLevel)
 	{
-		int left = Math.Max(0, xLoc1);
-		int top = Math.Max(0, yLoc1);
-		int right = Math.Min(GameConstants.MapSize - 1, xLoc2);
-		int bottom = Math.Max(GameConstants.MapSize - 1, yLoc2);
-
-		// ------- top side ---------//
-		if (yLoc1 >= 0)
-		{
-			for (int x = left; x <= right; ++x)
-			{
-				GetLoc(x, yLoc1).SetVisited(visitLevel);
-			}
-		}
-
-		// ------- bottom side ---------//
-		if (yLoc2 < GameConstants.MapSize)
-		{
-			for (int x = left; x <= right; ++x)
-			{
-				GetLoc(x, yLoc2).SetVisited(visitLevel);
-			}
-		}
+		int left = Math.Max(0, locX1);
+		int top = Math.Max(0, locY1);
+		int right = Math.Min(GameConstants.MapSize - 1, locX2);
+		int bottom = Math.Max(GameConstants.MapSize - 1, locY2);
 
 		// ------- left side -----------//
-		if (xLoc1 >= 0)
+		if (locX1 >= 0)
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				GetLoc(xLoc1, y).SetVisited(visitLevel);
+				GetLoc(locX1, y).SetVisited(visitLevel);
+			}
+		}
+
+		// ------- top side ---------//
+		if (locY1 >= 0)
+		{
+			for (int x = left; x <= right; ++x)
+			{
+				GetLoc(x, locY1).SetVisited(visitLevel);
 			}
 		}
 
 		// ------- right side -----------//
-		if (xLoc2 < GameConstants.MapSize)
+		if (locX2 < GameConstants.MapSize)
 		{
 			for (int y = top; y <= bottom; ++y)
 			{
-				GetLoc(xLoc2, y).SetVisited(visitLevel);
+				GetLoc(locX2, y).SetVisited(visitLevel);
+			}
+		}
+
+		// ------- bottom side ---------//
+		if (locY2 < GameConstants.MapSize)
+		{
+			for (int x = left; x <= right; ++x)
+			{
+				GetLoc(x, locY2).SetVisited(visitLevel);
 			}
 		}
 	}
 
-	public int can_build_firm(int xLoc1, int yLoc1, int firmId, int unitRecno = -1)
+	public int CanBuildFirm(int locX1, int locY1, int firmId, int unitId = -1)
 	{
-		if (xLoc1 < 0 || yLoc1 < 0 || xLoc1 > GameConstants.MapSize || yLoc1 > GameConstants.MapSize)
+		if (!Misc.IsLocationValid(locX1, locY1))
 			return 0;
 
-		//------------------------------------------//
-
 		FirmInfo firmInfo = FirmRes[firmId];
-
-		int xLoc, yLoc;
-		int xLoc2 = xLoc1 + firmInfo.loc_width - 1;
-		int yLoc2 = yLoc1 + firmInfo.loc_height - 1;
-		if (xLoc2 >= GameConstants.MapSize || yLoc2 > GameConstants.MapSize)
+		int locX2 = locX1 + firmInfo.loc_width - 1;
+		int locY2 = locY1 + firmInfo.loc_height - 1;
+		if (!Misc.IsLocationValid(locX2, locY2))
 			return 0;
 
 		switch (firmInfo.tera_type)
 		{
-			case 1: // default : land firm
-			case 2: // sea firm
-			case 3: // land or sea firm
+			case Location.LOCATE_WALK_LAND: // default : land firm
+			case Location.LOCATE_WALK_SEA: // sea firm
+			case Location.LOCATE_WALK_LAND | Location.LOCATE_WALK_SEA: // land or sea firm
 				int teraMask = firmInfo.tera_type;
-				for (yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+				for (int locY = locY1; locY <= locY2; locY++)
 				{
-					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
+					for (int locX = locX1; locX <= locX2; locX++)
 					{
-						Location location = GetLoc(xLoc, yLoc);
-						if (!location.CanBuildFirm(teraMask) && (!location.HasUnit(UnitConstants.UNIT_LAND) ||
-						                                           location.UnitId(UnitConstants.UNIT_LAND) !=
-						                                           unitRecno))
+						Location location = GetLoc(locX, locY);
+						if (!location.CanBuildFirm(teraMask) &&
+						    (!location.HasUnit(UnitConstants.UNIT_LAND) || location.UnitId(UnitConstants.UNIT_LAND) != unitId))
 							return 0;
 
 						// don't allow building any buildings other than mines on a location with a site
@@ -431,11 +394,10 @@ public class World
 
 				return 1;
 
-			case 4: // special firm, such as harbor
-				// must be 3x3,
-				// centre square of one side is land (teraMask=1),
-				// two squares on that side can be land or sea (teraMask=3)
-				// and other (6 squares) are sea (teraMask=2)
+			case 4: // special firm, such as harbor must be 3x3,
+				// center square of one side is land (teraMask == 1),
+				// two squares on that side can be land or sea (teraMask == 3)
+				// and other (6 squares) are sea (teraMask == 2)
 				if (firmInfo.loc_width != 3 || firmInfo.loc_height != 3)
 					return 0;
 
@@ -445,17 +407,17 @@ public class World
 				int[,] eastPierTera = { { 3, 2, 2 }, { 1, 2, 2 }, { 3, 2, 2 } };
 
 				int pierFlag = 1 | 2 | 4 | 8; // bit0=north, bit1=south, bit2=west, bit3=east
-				for (yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+				for (int locY = locY1; locY <= locY2; locY++)
 				{
-					for (xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
+					for (int locX = locX1; locX <= locX2; locX++)
 					{
-						Location location = GetLoc(xLoc, yLoc);
+						Location location = GetLoc(locX, locY);
 						// don't allow building any buildings other than mines on a location with a site
 						if (location.HasSite())
 							return 0;
 
-						int x = xLoc - xLoc1;
-						int y = yLoc - yLoc1;
+						int x = locX - locX1;
+						int y = locY - locY1;
 						if (!location.CanBuildHarbor(northPierTera[y, x]))
 							pierFlag &= ~1;
 						if (!location.CanBuildHarbor(southPierTera[y, x]))
@@ -475,23 +437,25 @@ public class World
 		}
 	}
 
-	public bool can_build_town(int xLoc1, int yLoc1, int unitRecno = -1)
+	public bool CanBuildTown(int locX1, int locY1, int unitId = -1)
 	{
-		int xLoc2 = xLoc1 + InternalConstants.TOWN_WIDTH - 1;
-		int yLoc2 = yLoc1 + InternalConstants.TOWN_HEIGHT - 1;
-
-		if (xLoc2 >= GameConstants.MapSize || yLoc2 >= GameConstants.MapSize)
+		if (!Misc.IsLocationValid(locX1, locY1))
 			return false;
 
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		int locX2 = locX1 + InternalConstants.TOWN_WIDTH - 1;
+		int locY2 = locY1 + InternalConstants.TOWN_HEIGHT - 1;
+
+		if (!Misc.IsLocationValid(locX2, locY2))
+			return false;
+
+		for (int locY = locY1; locY <= locY2; locY++)
 		{
-			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
+			for (int locX = locX1; locX <= locX2; locX++)
 			{
-				Location location = GetLoc(xLoc, yLoc);
+				Location location = GetLoc(locX, locY);
 				// allow the building unit to stand in the area
 				if (!location.CanBuildTown() &&
-				    (!location.HasUnit(UnitConstants.UNIT_LAND) ||
-				     location.UnitId(UnitConstants.UNIT_LAND) != unitRecno))
+				    (!location.HasUnit(UnitConstants.UNIT_LAND) || location.UnitId(UnitConstants.UNIT_LAND) != unitId))
 					return false;
 			}
 		}
@@ -499,32 +463,70 @@ public class World
 		return true;
 	}
 
-	public bool locate_space(ref int xLoc1, ref int yLoc1, int xLoc2, int yLoc2,
-		int spaceLocWidth, int spaceLocHeight, int mobileType = UnitConstants.UNIT_LAND, int regionId = 0,
-		bool buildFlag = false)
+	public bool LocateSpace(ref int locX1, ref int locY1, int locX2, int locY2,
+		int spaceLocWidth, int spaceLocHeight, int mobileType = UnitConstants.UNIT_LAND, int regionId = 0, bool buildFlag = false)
 	{
+		Location location1 = GetLoc(locX1, locY1);
+		
 		if (regionId == 0)
-			regionId = GetLoc(xLoc1, yLoc1).RegionId;
+			regionId = location1.RegionId;
 
-		bool isPlateau = GetLoc(xLoc1, yLoc1).IsPlateau();
+		bool isPlateau = location1.IsPlateau();
 
 		//-----------------------------------------------------------//
-		// xLoc, yLoc is the adjusted upper left corner location of
-		// the firm. with the adjustment, it is easier to do the following
-		// checking.
+		// locX, locY is the adjusted upper left corner location of the firm.
+		// With the adjustment, it is easier to do the following checking.
 		//-----------------------------------------------------------//
 
-		int xLoc = xLoc1 - spaceLocWidth + 1;
-		int yLoc = yLoc1 - spaceLocHeight + 1;
+		int locX = locX1 - spaceLocWidth + 1;
+		int locY = locY1 - spaceLocHeight + 1;
+		Misc.BoundLocation(ref locX, ref locY);
 
-		if (xLoc < 0)
-			xLoc = 0;
-		if (yLoc < 0)
-			yLoc = 0;
+		int width = locX2 - locX + 1;
+		int height = locY2 - locY + 1;
 
-		int width = xLoc2 - xLoc + 1;
-		int height = yLoc2 - yLoc + 1;
+		bool CheckLocation(int x, int y, ref int locX1, ref int locY1)
+		{
+			if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
+			{
+				// TODO remove % 2 == 0
+				if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
+				{
+					Location location = GetLoc(x, y);
+					if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
+					    CheckUnitSpace(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1))
+					{
+						locX1 = x;
+						locY1 = y;
+						return true;
+					}
+				}
+			}
 
+			return false;
+		}
+
+		bool CheckUnitSpace(int x1, int y1, int x2, int y2)
+		{
+			if (!Misc.IsLocationValid(x1, y1) || !Misc.IsLocationValid(x2, y2))
+				return false;
+
+			for (int y = y1; y <= y2; y++)
+			{
+				for (int x = x1; x <= x2; x++)
+				{
+					Location location = GetLoc(x, y);
+					// if build a firm/town, there must not be any sites in the area
+					if (!location.CanMove(mobileType) || (buildFlag && (location.IsPowerOff() || location.HasSite())))
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+		
 		while (true)
 		{
 			//-----------------------------------------------------------//
@@ -532,57 +534,27 @@ public class World
 			//-----------------------------------------------------------//
 			int xOffset = width / 2;
 			int yOffset = height;
-			int x, y;
+			int x = locX + xOffset;
+			int y = locY + yOffset;
 
-			x = xLoc + xOffset;
-			y = yLoc + yOffset;
-
-			if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
-			{
-				if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
-				{
-					Location location = GetLoc(x, y);
-
-					if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
-					    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
-						    mobileType, buildFlag))
-					{
-						xLoc1 = x;
-						yLoc1 = y;
-						return true;
-					}
-				}
-			}
-
-			int sign = -1;
-			int i, j, k, limit;
+			if (CheckLocation(x, y, ref locX1, ref locY1))
+				return true;
 
 			//-----------------------------------------------------------//
 			// step 2
 			//-----------------------------------------------------------//
+			int sign = -1;
+			int i;
 			//y = yLoc + yOffset;
-			limit = width + 2;
+			int limit = width + 2;
+			
 			for (i = 1; i < limit; i++)
 			{
 				xOffset += sign * i;
-				x = xLoc + xOffset;
+				x = locX + xOffset;
 
-				if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
-				{
-					if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
-					{
-						Location location = GetLoc(x, y);
-
-						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
-						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
-							    mobileType, buildFlag))
-						{
-							xLoc1 = x;
-							yLoc1 = y;
-							return true;
-						}
-					}
-				}
+				if (CheckLocation(x, y, ref locX1, ref locY1))
+					return true;
 
 				sign *= -1;
 			}
@@ -591,122 +563,80 @@ public class World
 			// step 3
 			//-----------------------------------------------------------//
 			i = limit - 1;
-
 			limit = (height + 1) * 2;
 			int r = sign * i;
 			int lastX = xOffset;
 			//int lastY = yOffset;
 
-			for (j = 0; j < limit; j++)
+			for (int j = 0; j < limit; j++)
 			{
+				// TODO remove % 2 == 0
 				if (j % 2 != 0)
 				{
 					//x = xLoc + lastX;
 					xOffset = lastX;
-					x = xLoc + xOffset;
+					x = locX + xOffset;
 					//y = yLoc + yOffset;
 
-					if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
-					{
-						if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
-						{
-							Location location = GetLoc(x, y);
-
-							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
-							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
-								    mobileType, buildFlag))
-							{
-								xLoc1 = x;
-								yLoc1 = y;
-								return true;
-							}
-						}
-					}
+					if (CheckLocation(x, y, ref locX1, ref locY1))
+						return true;
 				}
 				else
 				{
 					xOffset = lastX + r;
 					yOffset--;
 
-					x = xLoc + xOffset;
-					y = yLoc + yOffset;
+					x = locX + xOffset;
+					y = locY + yOffset;
 
-					if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
-					{
-						if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
-						{
-							Location location = GetLoc(x, y);
-
-							if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
-							    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
-								    mobileType, buildFlag))
-							{
-								xLoc1 = x;
-								yLoc1 = y;
-								return true;
-							}
-						}
-					}
+					if (CheckLocation(x, y, ref locX1, ref locY1))
+						return true;
 				}
 			}
 
 			//-----------------------------------------------------------//
 			// step 4
 			//-----------------------------------------------------------//
-			y = yLoc + yOffset;
-			for (k = 0; k <= width; k++)
+			y = locY + yOffset;
+			
+			for (int k = 0; k <= width; k++)
 			{
 				sign *= -1;
 				i--;
 				r = sign * i;
 				xOffset -= r;
+				x = locX + xOffset;
 
-				x = xLoc + xOffset;
-
-				if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
-				{
-					if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
-					{
-						Location location = GetLoc(x, y);
-
-						if (location.RegionId == regionId && location.IsPlateau() == isPlateau &&
-						    check_unit_space(x, y, x + spaceLocWidth - 1, y + spaceLocHeight - 1,
-							    mobileType, buildFlag))
-						{
-							xLoc1 = x;
-							yLoc1 = y;
-							return true;
-						}
-					}
-				}
+				if (CheckLocation(x, y, ref locX1, ref locY1))
+					return true;
 			}
 
 			//-----------------------------------------------------------//
 			// re-init the parameters
 			//-----------------------------------------------------------//
-			if (xLoc <= 0 && yLoc <= 0 && width >= GameConstants.MapSize && height >= GameConstants.MapSize)
+			if (locX <= 0 && locY <= 0 && locX + width >= GameConstants.MapSize && locY + height >= GameConstants.MapSize)
 				break; // the whole map has been checked
 
 			width += 2;
 			height += 2;
 
-			xLoc -= 1;
-			yLoc -= 1;
-			if (xLoc < 0)
+			locX -= 1;
+			locY -= 1;
+			if (locX < 0)
 			{
-				xLoc = 0;
+				locX = 0;
 				width--;
 			}
 
-			if (yLoc < 0)
+			if (locY < 0)
 			{
-				yLoc = 0;
+				locY = 0;
 				height--;
 			}
 
-			if (xLoc + width > GameConstants.MapSize)
+			if (locX + width > GameConstants.MapSize)
 				width--;
-			if (yLoc + height > GameConstants.MapSize)
+			if (locY + height > GameConstants.MapSize)
 				height--;
 
 			//if(width==xLoc2-xLoc1+spaceLocWidth && height==yLoc2-yLoc1+spaceLocHeight) // terminate the checking
@@ -716,63 +646,29 @@ public class World
 		return false;
 	}
 
-	public bool check_unit_space(int xLoc1, int yLoc1, int xLoc2, int yLoc2,
-		int mobileType = UnitConstants.UNIT_LAND, bool buildFlag = false)
-	{
-		if (xLoc1 < 0 || xLoc1 >= GameConstants.MapSize)
-			return false;
-		if (yLoc1 < 0 || yLoc1 >= GameConstants.MapSize)
-			return false;
-		if (xLoc2 < 0 || xLoc2 >= GameConstants.MapSize)
-			return false;
-		if (yLoc2 < 0 || yLoc2 >= GameConstants.MapSize)
-			return false;
-
-		bool canBuildFlag = true;
-
-		for (int y = yLoc1; y <= yLoc2; y++)
-		{
-			for (int x = xLoc1; x <= xLoc2; x++)
-			{
-				Location location = GetLoc(x, y);
-				// if build a firm/town, there must not be any sites in the area
-				if (!location.CanMove(mobileType) || (buildFlag && (location.IsPowerOff() || location.HasSite())))
-				{
-					canBuildFlag = false;
-					break;
-				}
-			}
-
-			if (!canBuildFlag)
-				break;
-		}
-
-		return canBuildFlag;
-	}
-
-	public bool locate_space_random(ref int xLoc1, ref int yLoc1, int xLoc2, int yLoc2,
+	// TODO rewrite
+	public bool LocateSpaceRandom(ref int locX1, ref int locY1, int locX2, int locY2,
 		int spaceLocWidth, int spaceLocHeight, int maxTries, int regionId = 0, bool buildSite = false, int teraMask = 1)
 	{
-		int scanWidth = xLoc2 - xLoc1 - spaceLocWidth + 2; //xLoc2-xLoc1+1-spaceLocWidth+1;
-		int scanHeight = yLoc2 - yLoc1 - spaceLocHeight + 2; //yLoc2-yLoc1+1-spaceLocHeight+1;
+		int scanWidth = locX2 - locX1 - spaceLocWidth + 2; //xLoc2-xLoc1+1-spaceLocWidth+1;
+		int scanHeight = locY2 - locY1 - spaceLocHeight + 2; //yLoc2-yLoc1+1-spaceLocHeight+1;
 
 		for (int i = 0; i < maxTries; i++)
 		{
-			int xLoc = xLoc1 + Misc.Random(scanWidth);
-			int yLoc = yLoc1 + Misc.Random(scanHeight);
+			int locX = locX1 + Misc.Random(scanWidth);
+			int locY = locY1 + Misc.Random(scanHeight);
 			var canBuildFlag = true;
 
 			//---------- check if the area is all free ----------//
 
 			Location location;
 
-			for (int y = yLoc + spaceLocHeight - 1; y >= yLoc; y--)
+			for (int y = locY + spaceLocHeight - 1; y >= locY; y--)
 			{
-				for (int x = xLoc + spaceLocWidth - 1; x >= xLoc; x--)
+				for (int x = locX + spaceLocWidth - 1; x >= locX; x--)
 				{
 					location = GetLoc(x, y);
-					if ((buildSite ? !location.CanBuildSite(teraMask) : !location.CanBuildFirm(teraMask)) ||
-					    location.IsPowerOff())
+					if ((buildSite ? !location.CanBuildSite(teraMask) : !location.CanBuildFirm(teraMask)) || location.IsPowerOff())
 					{
 						canBuildFlag = false;
 						break;
@@ -788,15 +684,15 @@ public class World
 
 			//------ check region id. ------------//
 
-			location = GetLoc(xLoc, yLoc);
+			location = GetLoc(locX, locY);
 
 			if (regionId != 0 && location.RegionId != regionId)
 				continue;
 
 			//------------------------------------//
 
-			xLoc1 = xLoc;
-			yLoc1 = yLoc;
+			locX1 = locX;
+			locY1 = locY;
 
 			return true;
 		}
@@ -804,60 +700,7 @@ public class World
 		return false;
 	}
 
-	public bool is_adjacent_region(int x, int y, int regionId)
-	{
-		if (y > 0)
-		{
-			if (x > 0)
-			{
-				if (get_region_id(x - 1, y - 1) == regionId)
-					return true;
-			}
-
-			if (get_region_id(x, y - 1) == regionId)
-				return true;
-			
-			if (x < GameConstants.MapSize - 1)
-			{
-				if (get_region_id(x + 1, y - 1) == regionId)
-					return true;
-			}
-		}
-
-		if (x > 0)
-		{
-			if (get_region_id(x - 1, y) == regionId)
-				return true;
-		}
-
-		if (x < GameConstants.MapSize - 1)
-		{
-			if (get_region_id(x + 1, y) == regionId)
-				return true;
-		}
-
-		if (y < GameConstants.MapSize - 1)
-		{
-			if (x > 0)
-			{
-				if (get_region_id(x - 1, y + 1) == regionId)
-					return true;
-			}
-
-			if (get_region_id(x, y + 1) == regionId)
-				return true;
-			
-			if (x < GameConstants.MapSize - 1)
-			{
-				if (get_region_id(x + 1, y + 1) == regionId)
-					return true;
-			}
-		}
-
-		return false;
-	}
-
-	public bool is_harbor_region(int xLoc, int yLoc, int landRegionId, int seaRegionId)
+	public bool IsHarborRegion(int xLoc, int yLoc, int landRegionId, int seaRegionId)
 	{
 		if (xLoc + 2 >= GameConstants.MapSize || yLoc + 2 >= GameConstants.MapSize)
 			return false;
@@ -866,7 +709,7 @@ public class World
 		{
 			for (int x = 0; x < 3; x++)
 			{
-				int regionId = get_region_id(xLoc + x, yLoc + y);
+				int regionId = GetRegionId(xLoc + x, yLoc + y);
 				if (regionId != landRegionId && regionId != seaRegionId)
 				{
 					return false;
@@ -877,64 +720,45 @@ public class World
 		return true;
 	}
 
-	public void draw_link_line(int srcFirmId, int srcTownRecno, int srcXLoc1, int srcYLoc1, int srcXLoc2, int srcYLoc2,
-		int giveEffectiveDis = 0)
-	{
-		throw new NotImplementedException();
-	}
-
 	public void set_all_power()
 	{
 		//--------- set town's influence -----------//
 
 		foreach (Town town in TownArray)
 		{
-			if (town.NationId == 0)
-				continue;
-
-			//------- set the influence range of this town -----//
-
-			set_power(town.LocX1, town.LocY1, town.LocX2, town.LocY2, town.NationId);
+			if (town.NationId != 0)
+				SetPower(town.LocX1, town.LocY1, town.LocX2, town.LocY2, town.NationId);
 		}
 
 		//--------- set firm's influence -----------//
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.nation_recno == 0)
-				continue;
-
-			if (!firm.should_set_power)
-				continue;
-
-			//------- set the influence range of this firm -----//
-
-			set_power(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, firm.nation_recno);
+			if (firm.nation_recno != 0 && firm.should_set_power)
+				SetPower(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, firm.nation_recno);
 		}
 	}
 
-	public void set_power(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int nationRecno)
+	public void SetPower(int locX1, int locY1, int locX2, int locY2, int nationId)
 	{
-		//------- reset power_nation_recno first ------//
+		bool plateauResult = GetLoc((locX1 + locX2) / 2, (locY1 + locY2) / 2).IsPlateau();
 
-		bool plateauResult = GetLoc((xLoc1 + xLoc2) / 2, (yLoc1 + yLoc2) / 2).IsPlateau();
+		locX1 = Math.Max(0, locX1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
+		locY1 = Math.Max(0, locY1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
+		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
 
-		xLoc1 = Math.Max(0, xLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		yLoc1 = Math.Max(0, yLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		xLoc2 = Math.Min(GameConstants.MapSize - 1, xLoc2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
-		yLoc2 = Math.Min(GameConstants.MapSize - 1, yLoc2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		int centerY = (locY1 + locY2) / 2;
 
-		int centerY = (yLoc1 + yLoc2) / 2;
-
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		for (int locY = locY1; locY <= locY2; locY++)
 		{
-			int t = Math.Abs(yLoc - centerY) / 2;
+			int t = Math.Abs(locY - centerY) / 2;
 
-			for (int xLoc = xLoc1 + t; xLoc <= xLoc2 - t; xLoc++)
+			for (int locX = locX1 + t; locX <= locX2 - t; locX++)
 			{
-				Location location = GetLoc(xLoc, yLoc);
+				Location location = GetLoc(locX, locY);
 
-				if (location.Sailable()) //if(!locPtr.walkable())
+				if (location.Sailable())
 					continue;
 
 				if (location.IsPowerOff())
@@ -944,53 +768,46 @@ public class World
 					continue;
 
 				if (location.PowerNationId == 0)
-				{
-					location.PowerNationId = nationRecno;
-					//sys.map_need_redraw = 1;						// request redrawing the map next time
-				}
+					location.PowerNationId = nationId;
 			}
 		}
 	}
 
-	public void restore_power(int xLoc1, int yLoc1, int xLoc2, int yLoc2, int townRecno, int firmRecno)
+	// TODO rewrite - works incorrectly
+	public void RestorePower(int locX1, int locY1, int locX2, int locY2, int townId, int firmId)
 	{
 		//TODO rewrite bad code
 		int nationRecno = 0;
 
-		if (townRecno != 0)
+		if (townId != 0)
 		{
-			nationRecno = TownArray[townRecno].NationId;
+			nationRecno = TownArray[townId].NationId;
 			//TownArray[townRecno].nation_recno = 0;
 		}
 
-		if (firmRecno != 0)
+		if (firmId != 0)
 		{
-			nationRecno = FirmArray[firmRecno].nation_recno;
+			nationRecno = FirmArray[firmId].nation_recno;
 			//FirmArray[firmRecno].nation_recno = 0;
 		}
 
-		//------- reset power_nation_recno first ------//
+		locX1 = Math.Max(0, locX1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
+		locY1 = Math.Max(0, locY1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
+		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
 
-		xLoc1 = Math.Max(0, xLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		yLoc1 = Math.Max(0, yLoc1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		xLoc2 = Math.Min(GameConstants.MapSize - 1, xLoc2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
-		yLoc2 = Math.Min(GameConstants.MapSize - 1, yLoc2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		int centerY = (locY1 + locY2) / 2;
 
-		int centerY = (yLoc1 + yLoc2) / 2;
-
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		for (int locY = locY1; locY <= locY2; locY++)
 		{
-			int t = Math.Abs(yLoc - centerY) / 2;
+			int t = Math.Abs(locY - centerY) / 2;
 
-			for (int xLoc = xLoc1 + t; xLoc <= xLoc2 - t; xLoc++)
+			for (int locX = locX1 + t; locX <= locX2 - t; locX++)
 			{
-				Location location = GetLoc(xLoc, yLoc);
+				Location location = GetLoc(locX, locY);
 
 				if (location.PowerNationId == nationRecno)
-				{
 					location.PowerNationId = 0;
-					//sys.map_need_redraw = 1;						// request redrawing the map next time
-				}
 			}
 		}
 
@@ -1009,118 +826,164 @@ public class World
 			//FirmArray[firmRecno].nation_recno = nationRecno;
 	}
 
-	public void Process()
-	{
-		//-------- process wall ----------//
+	//------- functions related to plants -----//
 
-		//if( ConfigAdv.wall_building_allowed )
-		//form_world_wall();
-
-		//-------- process fire -----------//
-
-		// BUGHERE : set Location::flammability for every change in cargo
-
-		spread_fire(Weather);
-
-		// ------- process visibility --------//
-		process_visibility();
-
-		//-------- process lightning ------//
-		if (lightning_signal == 0 && Weather.is_lightning())
-		{
-			// ------- create new lightning ----------//
-			lightning_signal = 110;
-		}
-
-		if (lightning_signal == 106 && Config.weather_effect != 0)
-		{
-			lightning_strike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
-		}
-
-		if (lightning_signal == 100)
-			lightning_signal = 5 + Misc.Random(10);
-		else if (lightning_signal > 0)
-			lightning_signal--;
-
-		//---------- process ambient sound ---------//
-
-		if (Sys.Instance.FrameNumber % 10 == 0) // process once per ten frames
-			process_ambient_sound();
-
-		// --------- update scan fire x y ----------//
-		if (++scan_fire_x >= SCAN_FIRE_DIST)
-		{
-			scan_fire_x = 0;
-			if (++scan_fire_y >= SCAN_FIRE_DIST)
-				scan_fire_y = 0;
-		}
-	}
-
-	public void process_visibility()
-	{
-		//TODO performance
-		if (Config.fog_of_war)
-		{
-			for (int y = 0; y < GameConstants.MapSize; ++y)
-			{
-				for (int x = 0; x < GameConstants.MapSize; ++x)
-				{
-					GetLoc(x, y).DecVisibility();
-				}
-			}
-		}
-	}
-
-	public void next_day()
-	{
-		plant_ops();
-
-		Sys.Instance.Weather = WeatherForecast[0];
-
-		for (int foreDay = 0; foreDay < GameConstants.MAX_WEATHER_FORECAST - 1; foreDay++)
-		{
-			WeatherForecast[foreDay] = WeatherForecast[foreDay + 1];
-		}
-
-		int lastIndex = GameConstants.MAX_WEATHER_FORECAST - 1;
-		WeatherForecast[lastIndex] = new Weather(WeatherForecast[lastIndex]);
-		WeatherForecast[lastIndex].next_day();
-
-		MagicWeather.next_day();
-
-		if (Weather.has_tornado() && Config.weather_effect != 0)
-		{
-			TornadoArray.AddTornado(Weather.tornado_x_loc(GameConstants.MapSize, GameConstants.MapSize),
-				Weather.tornado_y_loc(GameConstants.MapSize, GameConstants.MapSize), 600);
-		}
-
-		if (Weather.is_quake() && Config.random_event_frequency != Config.OPTION_NONE)
-		{
-			earth_quake();
-		}
-	}
-
-	//------- functions related to plant's growth, see ow_plant.cpp -----//
-
-	private int rand_inner_x()
+	private int GetRandomPlantInnerX()
 	{
 		return Renderer.CellTextureWidth / 4 + Misc.Random(Renderer.CellTextureWidth / 2);
 	}
 
-	private int rand_inner_y()
+	private int GetRandomPlantInnerY()
 	{
-		return (Renderer.CellTextureHeight * 3) / 8 + Misc.Random(Renderer.CellTextureHeight / 4);
+		return Renderer.CellTextureHeight * 3 / 8 + Misc.Random(Renderer.CellTextureHeight / 4);
 	}
 
-	public void plant_ops()
+	public void PlantInit()
 	{
-		plant_grow(40);
-		plant_reprod(10);
-		plant_death();
-		plant_spread(50);
+		const int PLANT_ARRAY_SIZE = 8;
+
+		//TODO should depend on map size
+		PlantCount = 0;
+		for (int trial = 50; trial > 0; trial--)
+		{
+			// ------- randomly select a place to seed plant
+			int y = 1 + Misc.Random(GameConstants.MapSize - 2);
+			int x = 1 + Misc.Random(GameConstants.MapSize - 2);
+
+			Location loc = GetLoc(x, y);
+			bool buildFlag = true;
+			int teraType = TerrainRes[loc.TerrainId].average_type;
+
+			// ------- all square around are the same terrain type and empty
+			for (int y1 = y - 1; y1 <= y + 1; y1++)
+			{
+				for (int x1 = x - 1; x1 <= x + 1; x1++)
+				{
+					loc = GetLoc(x1, y1);
+					if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].average_type != teraType)
+						buildFlag = false;
+				}
+			}
+
+			if (buildFlag)
+			{
+				int[] plantArray = new int[PLANT_ARRAY_SIZE];
+				for (int i = 0; i < PLANT_ARRAY_SIZE; ++i)
+				{
+					plantArray[i] = PlantRes.plant_recno(PlantRes.scan(0, teraType, 0));
+				}
+
+				if (plantArray[0] != 0)
+				{
+					PlantSpray(plantArray, 6 + Misc.Random(4), x, y);
+				}
+			}
+		}
+
+		_plantLimit = PlantCount * 3 / 2;
+
+		// ------- kill some plant ----------//
+		for (int trial = 8; trial > 0; trial--)
+		{
+			PlantDeath(2);
+		}
 	}
 
-	public void plant_grow(int pGrow = 4, int scanDensity = 8)
+	private void PlantSpray(int[] plantArray, int strength, int x, int y)
+	{
+		if (strength <= 0)
+			return;
+
+		//---------- if the space is empty put a plant on it ----------//
+		Location newLoc = GetLoc(x, y);
+		int basePlantId = plantArray[Misc.Random(plantArray.Length)];
+		PlantInfo plantInfo = PlantRes[basePlantId];
+		int plantSize = Misc.Random(plantInfo.bitmap_count);
+		if (plantSize > strength)
+			plantSize = strength;
+
+		int teraType;
+		if (newLoc != null && newLoc.CanAddPlant() &&
+		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].average_type) ||
+		     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
+		{
+			newLoc.SetPlant(plantInfo.first_bitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+			newLoc.SetFlammability(100);
+			PlantCount++;
+		}
+		else if (newLoc != null && newLoc.IsPlant() &&
+		         // 1. same type, large override small
+		         // newLoc.plant_id() >= plant_res[basePlantId].first_bitmap &&
+		         // newLoc.plant_id() < plant_res[basePlantId].first_bitmap + plantSize)
+		         // 2. same type, small override large
+		         // newLoc.plant_id() > plant_res[basePlantId].first_bitmap + plantSize &&
+		         // newLoc.plant_id() < plant_res[basePlantId].first_bitmap + plant_res[basePlantId].bitmap_count)
+		         // 3. all types, small override large
+		         (newLoc.PlantId() - PlantRes[PlantRes.plant_recno(newLoc.PlantId())].first_bitmap) > plantSize)
+		{
+			// same kind of plant, but smaller, override by a smaller one
+			newLoc.RemovePlant();
+			newLoc.SetPlant(plantInfo.first_bitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+			newLoc.SetFlammability(100);
+		}
+		else
+		{
+			plantSize = -1;
+		}
+
+		if (plantSize >= 0)
+		{
+			int trial = 3;
+			while (trial-- != 0)
+			{
+				switch (Misc.Random(8))
+				{
+					case 0: // north square
+						if (y > 0)
+							PlantSpray(plantArray, strength - 1, x, y - 1);
+						break;
+					case 1: // east square
+						if (x < GameConstants.MapSize - 1)
+							PlantSpray(plantArray, strength - 1, x + 1, y);
+						break;
+					case 2: // south square
+						if (y < GameConstants.MapSize - 1)
+							PlantSpray(plantArray, strength - 1, x, y + 1);
+						break;
+					case 3: // west square
+						if (x > 0)
+							PlantSpray(plantArray, strength - 1, x - 1, y);
+						break;
+					case 4: // north west square
+						if (y > 0 && x > 0)
+							PlantSpray(plantArray, strength - 1, x - 1, y - 1);
+						break;
+					case 5: // north east square
+						if (y > 0 && x < GameConstants.MapSize - 1)
+							PlantSpray(plantArray, strength - 1, x + 1, y - 1);
+						break;
+					case 6: // south east square
+						if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
+							PlantSpray(plantArray, strength - 1, x + 1, y + 1);
+						break;
+					case 7: // south west square
+						if (y < GameConstants.MapSize - 1 && x > 0)
+							PlantSpray(plantArray, strength - 1, x - 1, y + 1);
+						break;
+				}
+			}
+		}
+	}
+	
+	private void PlantActions()
+	{
+		PlantGrow(40);
+		PlantReprod(10);
+		PlantDeath();
+		PlantSpread(50);
+	}
+
+	private void PlantGrow(int pGrow = 4, int scanDensity = 8)
 	{
 		// scan part of the map for plant
 		int yBase = Misc.Random(scanDensity);
@@ -1145,15 +1008,16 @@ public class World
 		}
 	}
 
-	public void plant_reprod(int pReprod = 1, int scanDensity = 8)
+	private void PlantReprod(int pReprod = 1, int scanDensity = 8)
 	{
-		if (plant_count > plant_limit)
+		if (PlantCount > _plantLimit)
 			return;
-		if (5 * plant_count < 4 * plant_limit)
+
+		if (5 * PlantCount < 4 * _plantLimit)
 			pReprod++; // higher probability to grow
 
 		// determine the rainful, temperature and sunlight
-		int t = Weather.temp_c();
+		int temp = Weather.temp_c();
 
 		// scan the map for plant
 		int yBase = Misc.Random(scanDensity);
@@ -1170,71 +1034,62 @@ public class World
 				     plantGrade == PlantRes[basePlantId].bitmap_count - 1))
 				{
 					// find the optimal temperature for the plant
-					int oTemp = opt_temp[PlantRes[basePlantId].climate_zone - 1];
-					int tempEffect = 5 - Math.Abs( oTemp - t);
+					int oTemp = _optTemp[PlantRes[basePlantId].climate_zone - 1];
+					int tempEffect = 5 - Math.Abs(oTemp - temp);
 					tempEffect = tempEffect > 0 ? tempEffect : 0;
 
 					if (Misc.Random(100) < tempEffect * pReprod)
 					{
 						// produce the same plant but grade 1,
 						int trial = 2;
-						Location newl;
 						while (trial-- != 0)
 						{
-							newl = null;
+							Location newLoc = null;
 							switch (Misc.Random(8))
 							{
 								case 0: // north square
 									if (y > 0)
-										newl = GetLoc(x, y - 1);
+										newLoc = GetLoc(x, y - 1);
 									break;
 								case 1: // east square
 									if (x < GameConstants.MapSize - 1)
-										newl = GetLoc(x + 1, y);
+										newLoc = GetLoc(x + 1, y);
 									break;
 								case 2: // south square
 									if (y < GameConstants.MapSize - 1)
-										newl = GetLoc(x, y + 1);
+										newLoc = GetLoc(x, y + 1);
 									break;
 								case 3: // west square
 									if (x > 0)
-										newl = GetLoc(x - 1, y);
+										newLoc = GetLoc(x - 1, y);
 									break;
 								case 4: // north west square
 									if (y > 0 && x > 0)
-										newl = GetLoc(x - 1, y - 1);
+										newLoc = GetLoc(x - 1, y - 1);
 									break;
 								case 5: // north east square
 									if (y > 0 && x < GameConstants.MapSize - 1)
-										newl = GetLoc(x + 1, y - 1);
+										newLoc = GetLoc(x + 1, y - 1);
 									break;
 								case 6: // south east square
 									if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
-										newl = GetLoc(x + 1, y + 1);
+										newLoc = GetLoc(x + 1, y + 1);
 									break;
 								case 7: // south west square
 									if (y < GameConstants.MapSize - 1 && x > 0)
-										newl = GetLoc(x - 1, y + 1);
+										newLoc = GetLoc(x - 1, y + 1);
 									break;
 							}
 
 							int teraType;
 							PlantInfo plantInfo = PlantRes[basePlantId];
-							if (newl != null && newl.CanAddPlant() &&
-							    (plantInfo.tera_type[0] ==
-							     (teraType = TerrainRes[newl.TerrainId].average_type) ||
+							if (newLoc != null && newLoc.CanAddPlant() &&
+							    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].average_type) ||
 							     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
 							{
-								newl.SetPlant(plantInfo.first_bitmap, rand_inner_x(), rand_inner_y());
-
-								// ------- set flammability ---------
-								newl.SetFlammability(100);
-								plant_count++;
-								//### begin alex 24/6 ###//
-								//newl.set_power_off();
-								//newl.power_nation_recno = 0;
-								//set_surr_power_off(x, y);
-								//#### end alex 24/6 ####//
+								newLoc.SetPlant(plantInfo.first_bitmap, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+								newLoc.SetFlammability(100);
+								PlantCount++;
 								break;
 							}
 						}
@@ -1244,7 +1099,66 @@ public class World
 		}
 	}
 
-	public void plant_death(int scanDensity = 8)
+	private void PlantSpread(int pSpread = 5)
+	{
+		if (PlantCount > _plantLimit)
+			return;
+
+		if (5 * PlantCount < 4 * _plantLimit)
+			pSpread += pSpread;
+
+		if (Misc.Random(1000) >= pSpread)
+			return;
+
+		// ------- determine temperature
+		int temp = Weather.temp_c();
+
+		// ------- randomly select a place to seed plant
+		int y = 1 + Misc.Random(GameConstants.MapSize - 2);
+		int x = 1 + Misc.Random(GameConstants.MapSize - 2);
+
+		Location loc = GetLoc(x, y);
+		bool buildFlag = true;
+		int teraType = TerrainRes[loc.TerrainId].average_type;
+
+		// ------- all square around are the same terrain type and empty
+		for (int y1 = y - 1; y1 <= y + 1; ++y1)
+		{
+			for (int x1 = x - 1; x1 <= x + 1; ++x1)
+			{
+				loc = GetLoc(x1, y1);
+				if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].average_type != teraType)
+					buildFlag = false;
+			}
+		}
+
+		if (buildFlag)
+		{
+			int climateZone = 0;
+			for (int retry = 0; climateZone == 0 && retry < 5; ++retry)
+			{
+				for (int j = 0; j < 3; ++j)
+				{
+					if (Misc.Random(5) > Math.Abs(temp - _optTemp[j]))
+					{
+						climateZone = j + 1;
+						int plantBitmap = PlantRes.scan(climateZone, teraType, 0);
+						if (plantBitmap != 0)
+						{
+							loc = GetLoc(x, y);
+							loc.SetPlant(plantBitmap, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+							loc.SetFlammability(100);
+							PlantCount++;
+						}
+
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	private void PlantDeath(int scanDensity = 8)
 	{
 		int yBase = Misc.Random(scanDensity);
 		int xBase = Misc.Random(scanDensity);
@@ -1333,225 +1247,8 @@ public class World
 						GetLoc(x, y).RemovePlant();
 						if (location.Flammability() > 50)
 							location.SetFlammability(50);
-						plant_count--;
-						//### begin alex 24/6 ###//
-						//newl.set_power_off();
-						//newl.power_nation_recno = 0;
-						//set_surr_power_off(x, y);
-						//#### end alex 24/6 ####//
+						PlantCount--;
 					}
-				}
-			}
-		}
-	}
-
-	public void plant_spread(int pSpread = 5)
-	{
-		if (plant_count > plant_limit)
-			return;
-		if (5 * plant_count < 4 * plant_limit)
-			pSpread += pSpread;
-
-		if (Misc.Random(1000) >= pSpread)
-			return;
-
-		// ------- determine temperature
-		int t = Weather.temp_c();
-
-		// ------- randomly select a place to seed plant
-		int y = 1 + Misc.Random(GameConstants.MapSize - 2);
-		int x = 1 + Misc.Random(GameConstants.MapSize - 2);
-
-		Location l = GetLoc(x, y);
-		bool build_flag = true;
-		int teraType = TerrainRes[l.TerrainId].average_type;
-
-		// ------- all square around are the same terrain type and empty
-		for (int y1 = y - 1; y1 <= y + 1; ++y1)
-		{
-			for (int x1 = x - 1; x1 <= x + 1; ++x1)
-			{
-				l = GetLoc(x1, y1);
-				if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
-					build_flag = false;
-			}
-		}
-
-		if (build_flag)
-		{
-			int climateZone = 0;
-			for (int retry = 0; climateZone == 0 && retry < 5; ++retry)
-			{
-				for (int j = 0; j < 3; ++j)
-				{
-					if (Misc.Random(5) > Math.Abs(t - opt_temp[j]))
-					{
-						climateZone = j + 1;
-						int plantBitmap = PlantRes.scan(climateZone, teraType, 0);
-						if (plantBitmap != 0)
-						{
-							l = GetLoc(x, y);
-							l.SetPlant(plantBitmap, rand_inner_x(), rand_inner_y());
-							l.SetFlammability(100);
-							plant_count++;
-							//### begin alex 24/6 ###//
-							//l.set_power_off();
-							//l.power_nation_recno = 0;
-							//set_surr_power_off(x, y);
-							//#### end alex 24/6 ####//
-						}
-
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	public void plant_init()
-	{
-		const int PLANT_ARRAY_SIZE = 8;
-
-		//TODO should depend on map size
-		plant_count = 0;
-		int trial;
-		for (trial = 50; trial > 0; --trial)
-		{
-			// ------- randomly select a place to seed plant
-			int y = 1 + Misc.Random(GameConstants.MapSize - 2);
-			int x = 1 + Misc.Random(GameConstants.MapSize - 2);
-
-			Location l = GetLoc(x, y);
-			bool build_flag = true;
-			int teraType = TerrainRes[l.TerrainId].average_type;
-
-			// ------- all square around are the same terrain type and empty
-			for (int y1 = y - 1; y1 <= y + 1; ++y1)
-			{
-				for (int x1 = x - 1; x1 <= x + 1; ++x1)
-				{
-					l = GetLoc(x1, y1);
-					if (!l.CanAddPlant() || TerrainRes[l.TerrainId].average_type != teraType)
-						build_flag = false;
-				}
-			}
-
-			if (build_flag)
-			{
-				int plantBitmap = PlantRes.scan(0, teraType, 0);
-				int[] plantArray = new int[PLANT_ARRAY_SIZE];
-				for (int i = 0; i < PLANT_ARRAY_SIZE; ++i)
-				{
-					plantArray[i] = PlantRes.plant_recno(PlantRes.scan(0, teraType, 0));
-				}
-
-				if (plantArray[0] != 0)
-				{
-					plant_spray(plantArray, 6 + Misc.Random(4), x, y);
-				}
-			}
-		}
-
-		plant_limit = plant_count * 3 / 2;
-
-		// ------- kill some plant ----------//
-		for (trial = 8; trial > 0; --trial)
-		{
-			plant_death(2);
-		}
-	}
-
-	public void plant_spray(int[] plantArray, int strength, int x, int y)
-	{
-		if (strength <= 0)
-			return;
-
-		//---------- if the space is empty put a plant on it ----------//
-		Location newl = GetLoc(x, y);
-		int basePlantId = plantArray[Misc.Random(plantArray.Length)];
-		PlantInfo plantInfo = PlantRes[basePlantId];
-		int plantSize = Misc.Random(plantInfo.bitmap_count);
-		if (plantSize > strength)
-			plantSize = strength;
-
-		int teraType;
-		if (newl != null && newl.CanAddPlant() &&
-		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newl.TerrainId].average_type) ||
-		     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
-		{
-			newl.SetPlant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
-			newl.SetFlammability(100);
-			plant_count++;
-			//### begin alex 24/6 ###//
-			//newl.set_power_off();
-			//newl.power_nation_recno = 0;
-			//set_surr_power_off(x, y);
-			//#### end alex 24/6 ####//
-		}
-		else if (newl != null && newl.IsPlant() &&
-		         // 1. same type, large override small
-		         // newl.plant_id() >= plant_res[basePlantId].first_bitmap &&
-		         // newl.plant_id() < plant_res[basePlantId].first_bitmap + plantSize)
-		         // 2. same type, small override large
-		         // newl.plant_id() > plant_res[basePlantId].first_bitmap + plantSize &&
-		         // newl.plant_id() < plant_res[basePlantId].first_bitmap + plant_res[basePlantId].bitmap_count)
-		         // 3. all types, small override large
-		         (newl.PlantId() - PlantRes[PlantRes.plant_recno(newl.PlantId())].first_bitmap) > plantSize)
-		{
-			// same kind of plant, but smaller, override by a smaller one
-			newl.RemovePlant();
-			newl.SetPlant(plantInfo.first_bitmap + plantSize, rand_inner_x(), rand_inner_y());
-			newl.SetFlammability(100);
-			//### begin alex 24/6 ###//
-			//newl.set_power_off();
-			//newl.power_nation_recno = 0;
-			//set_surr_power_off(x, y);
-			//#### end alex 24/6 ####//
-		}
-		else
-		{
-			plantSize = -1;
-		}
-
-		if (plantSize >= 0 && strength != 0)
-		{
-			int trial = 3;
-			while (trial-- != 0)
-			{
-				switch (Misc.Random(8))
-				{
-					case 0: // north square
-						if (y > 0)
-							plant_spray(plantArray, strength - 1, x, y - 1);
-						break;
-					case 1: // east square
-						if (x < GameConstants.MapSize - 1)
-							plant_spray(plantArray, strength - 1, x + 1, y);
-						break;
-					case 2: // south square
-						if (y < GameConstants.MapSize - 1)
-							plant_spray(plantArray, strength - 1, x, y + 1);
-						break;
-					case 3: // west square
-						if (x > 0)
-							plant_spray(plantArray, strength - 1, x - 1, y);
-						break;
-					case 4: // north west square
-						if (y > 0 && x > 0)
-							plant_spray(plantArray, strength - 1, x - 1, y - 1);
-						break;
-					case 5: // north east square
-						if (y > 0 && x < GameConstants.MapSize - 1)
-							plant_spray(plantArray, strength - 1, x + 1, y - 1);
-						break;
-					case 6: // south east square
-						if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
-							plant_spray(plantArray, strength - 1, x + 1, y + 1);
-						break;
-					case 7: // south west square
-						if (y < GameConstants.MapSize - 1 && x > 0)
-							plant_spray(plantArray, strength - 1, x - 1, y + 1);
-						break;
 				}
 			}
 		}
@@ -1618,9 +1315,9 @@ public class World
 		double flameDamage = (double)Config.fire_damage / InternalConstants.ATTACK_SLOW_DOWN;
 
 		// -------------update fire_level-----------
-		for (int y = scan_fire_y; y < GameConstants.MapSize; y += SCAN_FIRE_DIST)
+		for (int y = _scanFireY; y < GameConstants.MapSize; y += InternalConstants.SCAN_FIRE_DIST)
 		{
-			for (int x = scan_fire_x; x < GameConstants.MapSize; x += SCAN_FIRE_DIST)
+			for (int x = _scanFireX; x < GameConstants.MapSize; x += InternalConstants.SCAN_FIRE_DIST)
 			{
 				Location location = GetLoc(x, y);
 
@@ -1710,7 +1407,7 @@ public class World
 						if (location.IsPlant() && flammability <= 0)
 						{
 							location.RemovePlant();
-							plant_count--;
+							PlantCount--;
 						}
 					}
 					else
@@ -1743,7 +1440,7 @@ public class World
 						if (location.IsPlant() && flammability <= 0)
 						{
 							location.RemovePlant();
-							plant_count--;
+							PlantCount--;
 						}
 					}
 				}
@@ -2003,14 +1700,6 @@ public class World
 				relVolume.rel_vol = 80;
 
 			SECtrl.request(sndFile, relVolume);
-		}
-	}
-
-	public void ClearLocation()
-	{
-		for (int i = 0; i < loc_matrix.Length; i++)
-		{
-			loc_matrix[i] = new Location(TerrainRes, HillRes);
 		}
 	}
 }

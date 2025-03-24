@@ -148,7 +148,7 @@ public class UnitMonster : Unit
         const int ATTACK_SCAN_RANGE = 100;
 
         int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-        int regionId = World.get_region_id(curXLoc, curYLoc);
+        int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         for (int i = 2; i < ATTACK_SCAN_RANGE * ATTACK_SCAN_RANGE; i++)
         {
@@ -222,7 +222,7 @@ public class UnitMonster : Unit
     private int assign_to_firm()
     {
         int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-        int regionId = World.get_region_id(curXLoc, curYLoc);
+        int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {
@@ -247,7 +247,7 @@ public class UnitMonster : Unit
         const int GROUP_ACTION_RANGE = 30; // only notify units within this range
 
         int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-        int regionId = World.get_region_id(curXLoc, curYLoc);
+        int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         List<int> unitOrderedArray = new List<int>();
         int unitOrderedCount = 0;
@@ -308,7 +308,7 @@ public class UnitMonster : Unit
         const int SCROLL_SCAN_RANGE = 10;
 
         int curXLoc = next_x_loc(), curYLoc = next_y_loc();
-        int regionId = World.get_region_id(curXLoc, curYLoc);
+        int regionId = World.GetRegionId(curXLoc, curYLoc);
         int[] raceCountArray = new int[GameConstants.MAX_RACE];
 
         for (int i = 2; i < SCROLL_SCAN_RANGE * SCROLL_SCAN_RANGE; i++)

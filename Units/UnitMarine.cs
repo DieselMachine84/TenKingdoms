@@ -1701,8 +1701,8 @@ public class UnitMarine : Unit
 
 				int curXLoc = next_x_loc();
 				int curYLoc = next_y_loc();
-				World.set_unit_recno(curXLoc, curYLoc, mobile_type, 0);
-				World.set_unit_recno(goXLoc, goYLoc, mobile_type, sprite_recno);
+				World.SetUnitId(curXLoc, curYLoc, mobile_type, 0);
+				World.SetUnitId(goXLoc, goYLoc, mobile_type, sprite_recno);
 				next_x = go_x;
 				next_y = go_y;
 
@@ -2199,7 +2199,7 @@ public class UnitMarine : Unit
 			if (firmHarbor.sea_region_id != curRegionId)
 				continue;
 
-			int curRating = World.distance_rating(curXLoc, curYLoc, firmHarbor.center_x, firmHarbor.center_y);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, firmHarbor.center_x, firmHarbor.center_y);
 
 			curRating += (GameConstants.MAX_SHIP_IN_HARBOR - firmHarbor.ship_recno_array.Count) * 100;
 

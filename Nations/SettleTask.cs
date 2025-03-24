@@ -124,7 +124,7 @@ public class SettleTask : AITask
                     if (settleLocation.RegionId != firmLocation.RegionId || settleLocation.IsPlateau() != firmLocation.IsPlateau())
                         continue;
 
-                    if (!World.can_build_town(settleLocX, settleLocY, _settlerId))
+                    if (!World.CanBuildTown(settleLocX, settleLocY, _settlerId))
                         continue;
 
                     int rating = Misc.PointsDistance(settleLocX, settleLocY, settleLocX2, settleLocY2,

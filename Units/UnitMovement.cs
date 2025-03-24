@@ -1485,14 +1485,14 @@ public partial class Unit
 			// shift the recno of all the unit in the cycle
 			//----------------------------------------------------------------------//
 			int backupSpriteRecno;
-			World.set_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type, 0); // empty the firt node in the cycle
+			World.SetUnitId(cur_x_loc(), cur_y_loc(), mobile_type, 0); // empty the firt node in the cycle
 			CycleWaitShiftRecno(this, unit); // shift all the unit in the cycle
-			backupSpriteRecno = World.get_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type);
-			World.set_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type, sprite_recno);
+			backupSpriteRecno = World.GetUnitId(cur_x_loc(), cur_y_loc(), mobile_type);
+			World.SetUnitId(cur_x_loc(), cur_y_loc(), mobile_type, sprite_recno);
 			set_next(unit.cur_x, unit.cur_y, -stepMagn, 1);
 			set_move();
-			World.set_unit_recno(unit.cur_x_loc(), unit.cur_y_loc(), mobile_type, sprite_recno);
-			World.set_unit_recno(cur_x_loc(), cur_y_loc(), mobile_type, backupSpriteRecno);
+			World.SetUnitId(unit.cur_x_loc(), unit.cur_y_loc(), mobile_type, sprite_recno);
+			World.SetUnitId(cur_x_loc(), cur_y_loc(), mobile_type, backupSpriteRecno);
 			swapping = 1;
 		}
 		else // not in a cycle
@@ -1544,17 +1544,17 @@ public partial class Unit
 			CycleWaitShiftRecno(nextUnit, blockedUnit);
 			nextUnit.set_next(blockedUnit.cur_x, blockedUnit.cur_y, -stepMagn, 1);
 			nextUnit.set_move();
-			World.set_unit_recno(blockedUnit.cur_x_loc(), blockedUnit.cur_y_loc(),
+			World.SetUnitId(blockedUnit.cur_x_loc(), blockedUnit.cur_y_loc(),
 				nextUnit.mobile_type, nextUnit.sprite_recno);
-			World.set_unit_recno(nextUnit.cur_x_loc(), nextUnit.cur_y_loc(), nextUnit.mobile_type, 0);
+			World.SetUnitId(nextUnit.cur_x_loc(), nextUnit.cur_y_loc(), nextUnit.mobile_type, 0);
 			nextUnit.swapping = 1;
 		}
 		else // the cycle shift is ended
 		{
 			nextUnit.set_next(cur_x, cur_y, -stepMagn, 1);
 			nextUnit.set_move();
-			World.set_unit_recno(cur_x_loc(), cur_y_loc(), nextUnit.mobile_type, nextUnit.sprite_recno);
-			World.set_unit_recno(nextUnit.cur_x_loc(), nextUnit.cur_y_loc(), nextUnit.mobile_type, 0);
+			World.SetUnitId(cur_x_loc(), cur_y_loc(), nextUnit.mobile_type, nextUnit.sprite_recno);
+			World.SetUnitId(nextUnit.cur_x_loc(), nextUnit.cur_y_loc(), nextUnit.mobile_type, 0);
 
 			nextUnit.swapping = 1;
 		}

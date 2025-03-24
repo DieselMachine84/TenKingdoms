@@ -58,7 +58,7 @@ public class FirmArray : DynArray<Firm>
 
 	public int BuildFirm(int xLoc, int yLoc, int nationRecno, int firmId, string buildCode = "", int builderRecno = 0)
 	{
-		if (World.can_build_firm(xLoc, yLoc, firmId) == 0)
+		if (World.CanBuildFirm(xLoc, yLoc, firmId) == 0)
 			return 0;
 
 		//--------- check if there is enough cash ----------//
@@ -113,7 +113,7 @@ public class FirmArray : DynArray<Firm>
 			if (firm.nation_recno == NationArray.player_recno ||
 			    (firm.nation_recno != 0 && NationArray[firm.nation_recno].is_allied_with_player))
 			{
-				World.visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
+				World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
 					GameConstants.EXPLORE_RANGE - 1);
 			}
 
@@ -219,7 +219,7 @@ public class FirmArray : DynArray<Firm>
 			selected_recno = firm.firm_recno;
 			firm.sort_worker();
 
-			World.go_loc(firm.center_x, firm.center_y);
+			World.GoToLocation(firm.center_x, firm.center_y);
 			return;
 		}
 	}

@@ -972,7 +972,7 @@ public class FirmMarket : Firm
 			//---- calculate the current overall rating ----//
 
 			curRating += Convert.ToInt32(stockLevel / 2.0) +
-			             World.distance_rating(center_x, center_y, firm.center_x, firm.center_y);
+			             World.DistanceRating(center_x, center_y, firm.center_x, firm.center_y);
 
 			//----------- compare ratings -------------//
 
