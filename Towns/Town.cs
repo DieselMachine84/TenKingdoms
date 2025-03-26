@@ -36,9 +36,9 @@ public class Town
 	private int[] RacesMaxPopulation { get; } = new int[GameConstants.MAX_RACE];
 
 	public double[] RacesLoyalty { get; } = new double[GameConstants.MAX_RACE];
-	private int[] RacesTargetLoyalty { get; } = new int[GameConstants.MAX_RACE];
+	public int[] RacesTargetLoyalty { get; } = new int[GameConstants.MAX_RACE];
 	public double[,] RacesResistance { get; } = new double[GameConstants.MAX_RACE, GameConstants.MAX_NATION];
-	private int[,] RacesTargetResistance { get; } = new int[GameConstants.MAX_RACE, GameConstants.MAX_NATION];
+	public int[,] RacesTargetResistance { get; } = new int[GameConstants.MAX_RACE, GameConstants.MAX_NATION];
 
 	public int[] RacesSpyCount { get; } = new int[GameConstants.MAX_RACE]; // no. of spies in each race
 
