@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class World
 {
-	private Location[] _locMatrix = new Location[GameConstants.MapSize * GameConstants.MapSize];
+	private readonly Location[] _locMatrix = new Location[GameConstants.MapSize * GameConstants.MapSize];
 
 	private int _scanFireX; // cycle from 0 to SCAN_FIRE_DIST-1
 	private int _scanFireY;
@@ -66,14 +66,19 @@ public class World
 
 	public void Process()
 	{
-		//-------- process fire -----------//
-
-		// BUGHERE : set Location::flammability for every change in cargo
-
-		spread_fire(Weather);
-
 		// ------- process visibility --------//
 		ProcessVisibility();
+
+		//-------- process fire -----------//
+		// BUGHERE : set Location::flammability for every change in cargo
+
+		FireSpread(Weather);
+
+		// --------- update scan fire x y ----------//
+		if (++_scanFireX >= InternalConstants.SCAN_FIRE_DIST)
+			_scanFireX = 0;
+		if (++_scanFireY >= InternalConstants.SCAN_FIRE_DIST)
+			_scanFireY = 0;
 
 		//-------- process lightning ------//
 		if (_lightningSignal == 0 && Weather.is_lightning())
@@ -84,7 +89,7 @@ public class World
 
 		if (_lightningSignal == 106 && Config.weather_effect != 0)
 		{
-			lightning_strike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
+			LightningStrike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
 		}
 
 		if (_lightningSignal == 100)
@@ -95,13 +100,7 @@ public class World
 		//---------- process ambient sound ---------//
 
 		if (Sys.Instance.FrameNumber % 10 == 0) // process once per ten frames
-			process_ambient_sound();
-
-		// --------- update scan fire x y ----------//
-		if (++_scanFireX >= InternalConstants.SCAN_FIRE_DIST)
-			_scanFireX = 0;
-		if (++_scanFireY >= InternalConstants.SCAN_FIRE_DIST)
-			_scanFireY = 0;
+			ProcessAmbientSound();
 	}
 
 	private void ProcessVisibility()
@@ -141,7 +140,7 @@ public class World
 
 		if (Weather.is_quake() && Config.random_event_frequency != Config.OPTION_NONE)
 		{
-			earth_quake();
+			EarthQuake();
 		}
 	}
 	
@@ -1256,70 +1255,60 @@ public class World
 
 	//------- functions related to fire's spreading ----//
 
-	public void init_fire()
+	public void FireInit()
 	{
-		for (int y = 0; y < GameConstants.MapSize; y++)
+		for (int i = 0; i < _locMatrix.Length; i++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; x++)
+			Location location = _locMatrix[i];
+			if (location.HasHill())
 			{
-				Location location = GetLoc(x, y);
-				if (location.HasHill())
-				{
-					location.SetFlammability(-100);
-				}
-				else if (location.IsWall())
-				{
-					location.SetFlammability(-50);
-				}
-				else if (location.IsFirm() || location.IsPlant() || location.IsTown())
-				{
-					location.SetFlammability(100);
-				}
-				else
-				{
-					switch (TerrainRes[location.TerrainId].average_type)
-					{
-						case TerrainTypeCode.TERRAIN_OCEAN:
-							location.SetFlammability(-100);
-							break;
-						case TerrainTypeCode.TERRAIN_DARK_GRASS:
-							location.SetFlammability(100);
-							break;
-						case TerrainTypeCode.TERRAIN_LIGHT_GRASS:
-							location.SetFlammability(50);
-							break;
-						case TerrainTypeCode.TERRAIN_DARK_DIRT:
-							location.SetFlammability(-50);
-							break;
-					}
-				}
-
-				// --------- put off fire on the map ----------//
-				location.SetFireStrength(-100);
+				location.SetFlammability(-100);
 			}
+			else if (location.IsWall())
+			{
+				location.SetFlammability(-50);
+			}
+			else if (location.IsFirm() || location.IsPlant() || location.IsTown())
+			{
+				location.SetFlammability(100);
+			}
+			else
+			{
+				switch (TerrainRes[location.TerrainId].average_type)
+				{
+					case TerrainTypeCode.TERRAIN_OCEAN:
+						location.SetFlammability(-100);
+						break;
+					case TerrainTypeCode.TERRAIN_DARK_GRASS:
+						location.SetFlammability(100);
+						break;
+					case TerrainTypeCode.TERRAIN_LIGHT_GRASS:
+						location.SetFlammability(50);
+						break;
+					case TerrainTypeCode.TERRAIN_DARK_DIRT:
+						location.SetFlammability(-50);
+						break;
+				}
+			}
+
+			// --------- put off fire on the map ----------//
+			location.SetFireStrength(-100);
 		}
 	}
 
-	public void spread_fire(Weather w)
+	private void FireSpread(Weather weather)
 	{
-		// -------- normalize wind_speed between -WIND_SPREADFIRE*SPREAD_RATE to +WIND_SPREADFIRE*SPREAD_RATE -------
-		int windCos = (int)(w.wind_speed() * Math.Cos(w.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
-		                    Config.wind_spread_fire_rate);
-		int windSin = (int)(w.wind_speed() * Math.Sin(w.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
-		                    Config.wind_spread_fire_rate);
-
-		int rainSnowReduction = (w.rain_scale() > 0 || w.snow_scale() > 0)
-			? Config.rain_reduce_fire_rate + (w.rain_scale() + w.snow_scale()) / 4
-			: 0;
+		int rainSnowReduction = (weather.rain_scale() > 0 || weather.snow_scale() > 0)
+			? Config.rain_reduce_fire_rate + (weather.rain_scale() + weather.snow_scale()) / 4 : 0;
 
 		double flameDamage = (double)Config.fire_damage / InternalConstants.ATTACK_SLOW_DOWN;
 
 		// -------------update fire_level-----------
-		for (int y = _scanFireY; y < GameConstants.MapSize; y += InternalConstants.SCAN_FIRE_DIST)
+		for (int locY = _scanFireY; locY < GameConstants.MapSize; locY += InternalConstants.SCAN_FIRE_DIST)
 		{
-			for (int x = _scanFireX; x < GameConstants.MapSize; x += InternalConstants.SCAN_FIRE_DIST)
+			for (int locX = _scanFireX; locX < GameConstants.MapSize; locX += InternalConstants.SCAN_FIRE_DIST)
 			{
-				Location location = GetLoc(x, y);
+				Location location = GetLoc(locX, locY);
 
 				int fireValue = location.FireStrength();
 				int oldFireValue = fireValue;
@@ -1362,37 +1351,42 @@ public class World
 						if (targetFirm.hit_points <= 0.0)
 						{
 							targetFirm.hit_points = 0.0;
-							SERes.sound(targetFirm.center_x, targetFirm.center_y, 1,
-								'F', targetFirm.firm_id, "DIE");
+							SERes.sound(targetFirm.center_x, targetFirm.center_y, 1, 'F', targetFirm.firm_id, "DIE");
 							FirmArray.DeleteFirm(targetFirm);
 						}
 					}
 
 					if (Config.fire_spread_rate > 0)
 					{
-						Location sidePtr;
+						// -------- normalize wind_speed between -WIND_SPREADFIRE*SPREAD_RATE to +WIND_SPREADFIRE*SPREAD_RATE -------
+						int windCos = (int)(weather.wind_speed() * Math.Cos(weather.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
+						                    Config.wind_spread_fire_rate);
+						int windSin = (int)(weather.wind_speed() * Math.Sin(weather.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
+						                    Config.wind_spread_fire_rate);
+
+						Location nearLoc;
 						// spread of north square
-						if (y > 0 && (sidePtr = GetLoc(x, y - 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (locY > 0 && (nearLoc = GetLoc(locX, locY - 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windCos, 0));
+							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate + windSin, 0));
 						}
 
 						// spread of south square
-						if (y < GameConstants.MapSize - 1 && (sidePtr = GetLoc(x, y + 1)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (locY < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX, locY + 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windCos, 0));
-						}
-
-						// spread of east square
-						if (x < GameConstants.MapSize - 1 && (sidePtr = GetLoc(x + 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
-						{
-							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate + windSin, 0));
+							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate - windSin, 0));
 						}
 
 						// spread of west square
-						if (x > 0 && (sidePtr = GetLoc(x - 1, y)).Flammability() > 0 && sidePtr.FireStrength() <= 0)
+						if (locX > 0 && (nearLoc = GetLoc(locX - 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							sidePtr.AddFireStrength(Math.Max(Config.fire_spread_rate - windSin, 0));
+							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate - windCos, 0));
+						}
+
+						// spread of east square
+						if (locX < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX + 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
+						{
+							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate + windCos, 0));
 						}
 					}
 
@@ -1444,9 +1438,8 @@ public class World
 						}
 					}
 				}
-				else
+				else // fireValue < 0
 				{
-					// fireValue < 0
 					// ---------- fire_level drop slightly ----------
 					if (fireValue > -100)
 						fireValue--;
@@ -1457,8 +1450,7 @@ public class World
 				}
 
 				// ---------- update new fire level -----------
-				//-------- when fire is put off
-				// so the fire will not light again very soon
+				// ---------- when fire is put off so the fire will not light again very soon
 				if (fireValue <= 0 && oldFireValue > 0)
 				{
 					fireValue -= 50;
@@ -1470,9 +1462,9 @@ public class World
 		}
 	}
 
-	public void setup_fire(int x, int y, int fireStrength = 30)
+	public void SetupFire(int locX, int locY, int fireStrength = 30)
 	{
-		Location location = GetLoc(x, y);
+		Location location = GetLoc(locX, locY);
 		if (location.FireStrength() < fireStrength)
 		{
 			location.SetFireStrength(fireStrength);
@@ -1480,16 +1472,16 @@ public class World
 	}
 
 	// ------ function related to weather ---------//
-	public void earth_quake()
+	private void EarthQuake()
 	{
-		for (int y = 0; y < GameConstants.MapSize; ++y)
+		for (int locY = 0; locY < GameConstants.MapSize; locY++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
+			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
-				Location location = GetLoc(x, y);
+				Location location = GetLoc(locX, locY);
 				if (location.IsWall())
 				{
-					location.AttackWall(Weather.quake_rate(x, y) / 2);
+					location.AttackWall(Weather.quake_rate(locX, locY) / 2);
 				}
 			}
 		}
@@ -1502,9 +1494,9 @@ public class World
 			if (!FirmRes[firm.firm_id].buildable)
 				continue;
 
-			int x = firm.center_x;
-			int y = firm.center_y;
-			firm.hit_points -= Weather.quake_rate(x, y);
+			int locX = firm.center_x;
+			int locY = firm.center_y;
+			firm.hit_points -= Weather.quake_rate(locX, locY);
 			if (firm.own_firm())
 				firmDamage++;
 			if (firm.hit_points <= 0.0)
@@ -1520,38 +1512,29 @@ public class World
 		int townDamage = 0;
 		foreach (Town town in TownArray)
 		{
-			int townRecno = town.TownId;
 			bool ownTown = (town.NationId == NationArray.player_recno);
 			int beforePopulation = town.Population;
-			int causalty = Weather.quake_rate(town.LocCenterX, town.LocCenterY) / 10;
-			for (; causalty > 0 && !TownArray.IsDeleted(townRecno); --causalty)
+			for (int damage = Weather.quake_rate(town.LocCenterX, town.LocCenterY) / 10; damage > 0 && !TownArray.IsDeleted(town.TownId); damage--)
 			{
 				town.KillTownPeople(0);
 			}
 
-			if (TownArray.IsDeleted(townRecno))
-				causalty = beforePopulation;
-			else
-				causalty = beforePopulation - town.Population;
-
+			int peopleDied = TownArray.IsDeleted(town.TownId) ? beforePopulation : beforePopulation - town.Population;
 			if (ownTown)
-				townDamage += causalty;
+				townDamage += peopleDied;
 		}
 
 		int unitDamage = 0;
-		int unitDie = 0;
+		int unitsDied = 0;
 		foreach (Unit unit in UnitArray)
 		{
-			// no damage to air unit , sea unit or overseer
-			if (unit.mobile_type == UnitConstants.UNIT_AIR || unit.mobile_type == UnitConstants.UNIT_SEA ||
-			    !unit.is_visible())
-			{
+			// no damage to air units, sea units and units inside camps and bases
+			if (unit.mobile_type == UnitConstants.UNIT_AIR || unit.mobile_type == UnitConstants.UNIT_SEA || !unit.is_visible())
 				continue;
-			}
 
 			double damage = Weather.quake_rate(unit.cur_x_loc(), unit.cur_y_loc()) * unit.max_hit_points / 200.0;
 			if (damage >= unit.hit_points)
-				damage = unit.hit_points - 1;
+				damage = unit.hit_points - 1.0;
 			if (damage < 5.0)
 				damage = 5.0;
 
@@ -1563,7 +1546,7 @@ public class World
 			{
 				unit.hit_points = 0.0;
 				if (unit.is_own())
-					unitDie++;
+					unitsDied++;
 			}
 			else
 			{
@@ -1574,22 +1557,19 @@ public class World
 			}
 		}
 
-		NewsArray.earthquake_damage(unitDamage - unitDie, unitDie, townDamage, firmDamage - firmDie, firmDie);
+		NewsArray.earthquake_damage(unitDamage - unitsDied, unitsDied, townDamage, firmDamage - firmDie, firmDie);
 	}
 
-	public void lightning_strike(int cx, int cy, int radius = 0)
+	private void LightningStrike(int locX, int locY, int radius = 0)
 	{
-		for (int y = cy - radius; y <= cy + radius; ++y)
+		for (int nearLocY = locY - radius; nearLocY <= locY + radius; nearLocY++)
 		{
-			if (y < 0 || y >= GameConstants.MapSize)
-				continue;
-
-			for (int x = cx - radius; x <= cx + radius; ++x)
+			for (int nearLocX = locX - radius; nearLocX <= locX + radius; nearLocX++)
 			{
-				if (x < 0 || x >= GameConstants.MapSize)
+				if (!Misc.IsLocationValid(nearLocX, nearLocY))
 					continue;
 
-				Location location = GetLoc(x, y);
+				Location location = GetLoc(nearLocX, nearLocY);
 				if (location.IsPlant())
 				{
 					// ---- add a fire on it ------//
@@ -1603,16 +1583,14 @@ public class World
 		// ------ check hitting units -------//
 		foreach (Unit unit in UnitArray)
 		{
-			// no damage to overseer
+			// no damage to units inside camps and bases
 			if (!unit.is_visible())
 				continue;
 
-			if (unit.cur_x_loc() <= cx + radius &&
-			    unit.cur_x_loc() + unit.sprite_info.loc_width > cx - radius &&
-			    unit.cur_y_loc() <= cy + radius &&
-			    unit.cur_y_loc() + unit.sprite_info.loc_height > cy - radius)
+			if (unit.cur_x_loc() <= locX + radius && unit.cur_x_loc() + unit.sprite_info.loc_width > locX - radius &&
+			    unit.cur_y_loc() <= locY + radius && unit.cur_y_loc() + unit.sprite_info.loc_height > locY - radius)
 			{
-				unit.hit_points -= unit.sprite_info.lightning_damage / InternalConstants.ATTACK_SLOW_DOWN;
+				unit.hit_points -= (double)unit.sprite_info.lightning_damage / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
 				if (unit.is_own())
@@ -1630,8 +1608,7 @@ public class World
 			if (!FirmRes[firm.firm_id].buildable)
 				continue;
 
-			if (firm.loc_x1 <= cx + radius && firm.loc_x2 >= cx - radius && firm.loc_y1 <= cy + radius &&
-			    firm.loc_y2 >= cy - radius)
+			if (firm.loc_x1 <= locX + radius && firm.loc_x2 >= locX - radius && firm.loc_y1 <= locY + radius && firm.loc_y2 >= locY - radius)
 			{
 				firm.hit_points -= 50.0 / InternalConstants.ATTACK_SLOW_DOWN;
 
@@ -1661,13 +1638,12 @@ public class World
 
 		foreach (Town town in TownArray)
 		{
-			if (town.LocX1 <= cx + radius && town.LocX2 >= cx - radius && town.LocY1 <= cy + radius &&
-			    town.LocY2 >= cy - radius)
+			if (town.LocX1 <= locX + radius && town.LocX2 >= locX - radius && town.LocY1 <= locY + radius && town.LocY2 >= locY - radius)
 			{
+				// TODO check is objectDie: 0 correct?
 				// ---- add news -------//
 				if (town.NationId == NationArray.player_recno)
-					NewsArray.lightning_damage(town.LocCenterX, town.LocCenterY,
-						News.NEWS_LOC_TOWN, town.TownId, 0);
+					NewsArray.lightning_damage(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//
 				Location location = GetLoc(town.LocCenterX, town.LocCenterY);
@@ -1679,7 +1655,7 @@ public class World
 		}
 	}
 
-	private void process_ambient_sound()
+	private void ProcessAmbientSound()
 	{
 		int temp = Weather.temp_c();
 		if (Weather.rain_scale() == 0 && temp >= 15 && Misc.Random(temp) >= 12)
@@ -1692,9 +1668,9 @@ public class World
 			//TODO rewrite
 			//int xLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_x_loc + zoom_matrix.disp_x_loc / 2);
 			//int yLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_y_loc + zoom_matrix.disp_y_loc / 2);
-			int xLoc = Misc.Random(GameConstants.MapSize);
-			int yLoc = Misc.Random(GameConstants.MapSize);
-			PosVolume p = new PosVolume(xLoc, yLoc);
+			int locX = Misc.Random(GameConstants.MapSize);
+			int locY = Misc.Random(GameConstants.MapSize);
+			PosVolume p = new PosVolume(locX, locY);
 			RelVolume relVolume = new RelVolume(p, 200, GameConstants.MapSize);
 			if (relVolume.rel_vol < 80)
 				relVolume.rel_vol = 80;

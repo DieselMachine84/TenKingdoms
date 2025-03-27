@@ -6897,7 +6897,7 @@ public partial class Unit : Sprite
 			{
 				reset_action_para2();
 				set_dir(move_to_x_loc, move_to_y_loc, action_x_loc, action_y_loc);
-				World.setup_fire(action_x_loc, action_y_loc);
+				World.SetupFire(action_x_loc, action_y_loc);
 			}
 
 			reset_action_para();
