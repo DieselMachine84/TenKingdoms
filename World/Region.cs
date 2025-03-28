@@ -4,64 +4,53 @@ namespace TenKingdoms;
 
 public enum RegionType
 {
-    REGION_INPASSABLE,
-    REGION_LAND,
-    REGION_SEA,
+    INPASSABLE, LAND, SEA
 }
 
 public class RegionInfo
 {
-    public int region_id;
-    public int region_stat_id;
-
-    public RegionType region_type;
-    public int adj_offset_bit;
-    public int region_size;
-
-    // the center location of the region
-    public int center_x;
-    public int center_y;
+    public int RegionId { get; set; }
+    public int RegionStatId { get; set; }
+    public RegionType RegionType { get; set; }
+    public int RegionSize { get; set; }
+    public int AdjOffsetBit { get; set; }
 }
 
 public class RegionPath
 {
-    public int sea_region_id; // region id. of the sea route
-    public int land_region_stat_id;
+	public int LandRegionStatId { get; }
+    public int SeaRegionId { get; }
+
+    public RegionPath(int landRegionStatId, int seaRegionId)
+    {
+	    LandRegionStatId = landRegionStatId;
+	    SeaRegionId = seaRegionId;
+    }
 }
 
 public class RegionStat
 {
-	//public const int MIN_STAT_REGION_SIZE = 100;
-	//public const int MAX_REACHABLE_REGION_PER_STAT = 10;
+	public int RegionId { get; } // sorted by region size
 
-	public int region_id; // sorted in the order of region size
+	public int NationPresenceCount { get; private set; }
 
-	public bool[] nation_is_present_array = new bool[GameConstants.MAX_NATION];
-	public int nation_presence_count;
+	private readonly int[] _firmNationCounts = new int[GameConstants.MAX_NATION];
+	public int[] CampNationCounts { get; } = new int[GameConstants.MAX_NATION];
+	public int[] MineNationCounts { get; } = new int[GameConstants.MAX_NATION];
+	public int[] HarborNationCounts { get; } = new int[GameConstants.MAX_NATION];
 
-	public int[] firm_type_count_array = new int[Firm.MAX_FIRM_TYPE];
-	public int[] firm_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int[] camp_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int[] mine_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int[] harbor_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int total_firm_count;
+	public int[] TownNationCounts { get; } = new int[GameConstants.MAX_NATION];
+	public int[] BaseTownNationCounts { get; } = new int[GameConstants.MAX_NATION];
+	public int IndependentTownCounts { get; private set; }
 
-	public int[] town_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int[] base_town_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int independent_town_count;
-	public int total_town_count;
+	public int[] NationPopulation { get; } = new int[GameConstants.MAX_NATION];
+	public int[] NationJoblessPopulation { get; } = new int[GameConstants.MAX_NATION];
 
-	public int[] nation_population_array = new int[GameConstants.MAX_NATION];
-	public int[] nation_jobless_population_array = new int[GameConstants.MAX_NATION];
+	private readonly int[] _unitNationCounts = new int[GameConstants.MAX_NATION];
 
-	public int[] unit_nation_count_array = new int[GameConstants.MAX_NATION];
-	public int independent_unit_count; // either rebels or monsters
-	public int total_unit_count;
+	public int RawResourceCount { get; private set; }
 
-	public int site_count;
-	public int raw_count;
-
-	public List<RegionPath> reachableRegions = new List<RegionPath>();
+	public List<RegionPath> ReachableRegions { get; } = new List<RegionPath>();
 
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
@@ -70,172 +59,141 @@ public class RegionStat
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private SiteArray SiteArray => Sys.Instance.SiteArray;
 
-	private void Reset()
+	public RegionStat(int regionId)
 	{
-		for (int i = 0; i < nation_is_present_array.Length; i++)
-			nation_is_present_array[i] = false;
-		nation_presence_count = 0;
-
-		for (int i = 0; i < firm_type_count_array.Length; i++)
-			firm_type_count_array[i] = 0;
-		for (int i = 0; i < firm_nation_count_array.Length; i++)
-			firm_nation_count_array[i] = 0;
-		for (int i = 0; i < camp_nation_count_array.Length; i++)
-			camp_nation_count_array[i] = 0;
-		for (int i = 0; i < mine_nation_count_array.Length; i++)
-			mine_nation_count_array[i] = 0;
-		for (int i = 0; i < harbor_nation_count_array.Length; i++)
-			harbor_nation_count_array[i] = 0;
-		total_firm_count = 0;
-
-		for (int i = 0; i < town_nation_count_array.Length; i++)
-			town_nation_count_array[i] = 0;
-		for (int i = 0; i < base_town_nation_count_array.Length; i++)
-			base_town_nation_count_array[i] = 0;
-		independent_town_count = 0;
-		total_town_count = 0;
-
-		for (int i = 0; i < nation_population_array.Length; i++)
-			nation_population_array[i] = 0;
-		for (int i = 0; i < nation_jobless_population_array.Length; i++)
-			nation_jobless_population_array[i] = 0;
-
-		for (int i = 0; i < unit_nation_count_array.Length; i++)
-			unit_nation_count_array[i] = 0;
-		independent_unit_count = 0;
-		total_unit_count = 0;
-
-		site_count = 0;
-		raw_count = 0;
+		RegionId = regionId;
 	}
 
-	public void init()
+	public void Init()
 	{
 		//------- init reachable region array ------//
 
-		for (int seaRegionId = 1; seaRegionId <= RegionArray.regionInfos.Count; seaRegionId++)
+		for (int seaRegionId = 1; seaRegionId <= RegionArray.RegionInfos.Count; seaRegionId++)
 		{
-			if (RegionArray.GetRegionInfo(seaRegionId).region_type != RegionType.REGION_SEA)
+			if (RegionArray.GetRegionInfo(seaRegionId).RegionType != RegionType.SEA)
 				continue;
 
-			if (!RegionArray.is_adjacent(region_id, seaRegionId))
+			if (!RegionArray.IsAdjacent(RegionId, seaRegionId))
 				continue;
 
-			//--- scan thru all big regions (regions in region_stat_array) ---//
+			//--- scan through all regions ---//
 
-			for (int i = 1; i <= RegionArray.regionStats.Count; i++)
+			for (int i = 0; i < RegionArray.RegionStats.Count; i++)
 			{
-				RegionStat regionStat = RegionArray.regionStats[i - 1];
-				if (regionStat.region_id == region_id)
+				RegionStat regionStat = RegionArray.RegionStats[i];
+				if (regionStat.RegionId == RegionId)
 					continue;
 
-				if (RegionArray.is_adjacent(seaRegionId, regionStat.region_id))
+				if (RegionArray.IsAdjacent(seaRegionId, regionStat.RegionId))
 				{
-					RegionPath regionPath = new RegionPath();
-					regionPath.land_region_stat_id = i;
-					regionPath.sea_region_id = seaRegionId;
-					reachableRegions.Add(regionPath);
+					ReachableRegions.Add(new RegionPath(i + 1, seaRegionId));
 				}
 			}
 		}
 	}
 
-	public void update_stat()
+	private void Reset()
+	{
+		NationPresenceCount = 0;
+
+		for (int i = 0; i < _firmNationCounts.Length; i++)
+			_firmNationCounts[i] = 0;
+		for (int i = 0; i < CampNationCounts.Length; i++)
+			CampNationCounts[i] = 0;
+		for (int i = 0; i < MineNationCounts.Length; i++)
+			MineNationCounts[i] = 0;
+		for (int i = 0; i < HarborNationCounts.Length; i++)
+			HarborNationCounts[i] = 0;
+
+		for (int i = 0; i < TownNationCounts.Length; i++)
+			TownNationCounts[i] = 0;
+		for (int i = 0; i < BaseTownNationCounts.Length; i++)
+			BaseTownNationCounts[i] = 0;
+		IndependentTownCounts = 0;
+
+		for (int i = 0; i < NationPopulation.Length; i++)
+			NationPopulation[i] = 0;
+		for (int i = 0; i < NationJoblessPopulation.Length; i++)
+			NationJoblessPopulation[i] = 0;
+
+		for (int i = 0; i < _unitNationCounts.Length; i++)
+			_unitNationCounts[i] = 0;
+		
+		RawResourceCount = 0;
+	}
+	
+	public void UpdateStat()
 	{
 		Reset();
 
-		//--------- update firm stat ---------//
-
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.region_id != region_id)
+			if (firm.region_id != RegionId)
 				continue;
 
 			if (firm.nation_recno == 0) // monster firms
 				continue;
 
-			firm_type_count_array[firm.firm_id - 1]++;
-			firm_nation_count_array[firm.nation_recno - 1]++;
-
-			total_firm_count++;
+			_firmNationCounts[firm.nation_recno - 1]++;
 
 			if (firm.firm_id == Firm.FIRM_CAMP)
-				camp_nation_count_array[firm.nation_recno - 1]++;
+				CampNationCounts[firm.nation_recno - 1]++;
 
 			if (firm.firm_id == Firm.FIRM_HARBOR)
-				harbor_nation_count_array[firm.nation_recno - 1]++;
+				HarborNationCounts[firm.nation_recno - 1]++;
 
 			if (firm.firm_id == Firm.FIRM_MINE)
-				mine_nation_count_array[firm.nation_recno - 1]++;
+				MineNationCounts[firm.nation_recno - 1]++;
 		}
-
-		//--------- update town stat ---------//
 
 		foreach (Town town in TownArray)
 		{
-			if (town.RegionId != region_id)
+			if (town.RegionId != RegionId)
 				continue;
 
 			if (town.NationId != 0)
 			{
-				town_nation_count_array[town.NationId - 1]++;
+				TownNationCounts[town.NationId - 1]++;
 
 				if (town.IsBaseTown)
-					base_town_nation_count_array[town.NationId - 1]++;
+					BaseTownNationCounts[town.NationId - 1]++;
 
-				nation_population_array[town.NationId - 1] += town.Population;
-				nation_jobless_population_array[town.NationId - 1] += town.JoblessPopulation;
+				NationPopulation[town.NationId - 1] += town.Population;
+				NationJoblessPopulation[town.NationId - 1] += town.JoblessPopulation;
 			}
 			else
 			{
-				independent_town_count++;
+				IndependentTownCounts++;
 			}
-
-			total_town_count++;
 		}
 
-		//--------- update unit stat ---------//
-
-		//TODO nation_recno cannot be used as index. Check everywhere
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.region_id() != region_id)
+			if (unit.region_id() != RegionId)
 				continue;
 
 			if (unit.nation_recno != 0)
-				unit_nation_count_array[unit.nation_recno - 1]++;
-			else
-				independent_unit_count++;
-
-			total_unit_count++;
+				_unitNationCounts[unit.nation_recno - 1]++;
 		}
-
-		//--------- update site count --------//
 
 		foreach (Site site in SiteArray)
 		{
-			if (site.RegionId != region_id)
+			if (site.RegionId != RegionId)
 				continue;
 
 			if (site.SiteType == Site.SITE_RAW)
-				raw_count++;
-
-			site_count++;
+				RawResourceCount++;
 		}
 
 		//----- update each nation's presence on the region -----//
 
-		//TODO nation_recno cannot be used as index. Check everywhere
-		int index = 0;
 		foreach (Nation nation in NationArray)
 		{
-			if (firm_nation_count_array[index] > 0 || town_nation_count_array[index] > 0 || unit_nation_count_array[index] > 0)
+			int index = nation.nation_recno - 1;
+			if (_firmNationCounts[index] > 0 || TownNationCounts[index] > 0 || _unitNationCounts[index] > 0)
 			{
-				nation_is_present_array[index] = true;
-				nation_presence_count++;
+				NationPresenceCount++;
 			}
-
-			index++;
 		}
 	}
 }

@@ -1613,12 +1613,12 @@ public partial class Unit : Sprite
 		{
 
 			// --- if region is too small don't consider this area, stay in the island forever --//
-			if (RegionArray.GetRegionInfo(regionId).region_stat_id == 0)
+			if (RegionArray.GetRegionInfo(regionId).RegionStatId == 0)
 				return false;
 
 			//-- if we also don't have any existing camps in this region --//
 
-			if (RegionArray.get_region_stat(regionId).camp_nation_count_array[nation_recno - 1] == 0)
+			if (RegionArray.GetRegionStat(regionId).CampNationCounts[nation_recno - 1] == 0)
 			{
 				//---- try to build one if this unit can ----//
 
@@ -5198,7 +5198,8 @@ public partial class Unit : Sprite
 
 			//--- only if the nation has a base town in the region where the unit stands ---//
 
-			if (!RegionArray.nation_has_base_town(unitRegionId, nation.nation_recno))
+			// TODO should not take base town into account
+			if (!RegionArray.NationHasBaseTown(unitRegionId, nation.nation_recno))
 				continue;
 
 			//------------------------------------------------//

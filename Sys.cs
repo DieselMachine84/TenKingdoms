@@ -149,10 +149,6 @@ public class Sys
         //TODO
         //for(int i = 0; i < FLAME_GROW_STEP; ++i)
             //flame[i].init(Flame::default_width(i), Flame::default_height(i), Flame::base_width(i), FLAME_WIDE);
-
-        FrameNumber = 0;
-        FrameOfDay = 0;
-        GameEnded = false;
     }
 
     private void InitGraphics()
@@ -206,14 +202,14 @@ public class Sys
         if (FrameOfDay >= InternalConstants.FRAMES_PER_DAY)
         {
             Info.next_day();
-            World.next_day();
+            World.NextDay();
             SiteArray.NextDay();
             RebelArray.next_day();
             SpyArray.NextDay();
             if (Config.weather_effect != 0)
                 SpriteRes.update_speed();
             TalkRes.next_day();
-            RegionArray.next_day();
+            RegionArray.NextDay();
 
             FrameOfDay = 0;
         }
@@ -338,6 +334,17 @@ public class Sys
         }
     }
 
+    private void Reset()
+    {
+        FrameNumber = 0;
+        FrameOfDay = 0;
+        GameEnded = false;
+        CreateObjects();
+        MapGenerator mapGenerator = new MapGenerator();
+        mapGenerator.Generate();
+        Renderer.Reset();
+    }
+
     public void Run()
     {
         Config = new Config();
@@ -346,10 +353,7 @@ public class Sys
         InitGraphics();
         LoadResources();
         Renderer = new Renderer(Graphics);
-        CreateObjects();
-        MapGenerator mapGenerator = new MapGenerator();
-        mapGenerator.Generate();
-        Renderer.NeedFullRedraw = true;
+        Reset();
 
         /*try
         {

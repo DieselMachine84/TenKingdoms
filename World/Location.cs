@@ -50,7 +50,7 @@ public class Location
 	private int _flammability; // -100 to 100, likelihood of fire
 
 	public int PowerNationId { get; set; } // 0-no nation has power over this location
-	public int VisitLevel { get; set; } // drop from FULL_VISIBILITY to 0
+	public int VisitLevel { get; private set; } // drop from FULL_VISIBILITY to 0
 	
 	//------------------------------------------------//
 	// when (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_SITE
@@ -581,7 +581,7 @@ public class Location
 	// call region_type only when generating region number
 	public RegionType RegionType()
 	{
-		return Walkable() ? TenKingdoms.RegionType.REGION_LAND : (Sailable() ? TenKingdoms.RegionType.REGION_SEA : TenKingdoms.RegionType.REGION_INPASSABLE);
+		return Walkable() ? TenKingdoms.RegionType.LAND : (Sailable() ? TenKingdoms.RegionType.SEA : TenKingdoms.RegionType.INPASSABLE);
 	}
 
 	// --------- functions on fire ---------//

@@ -2510,7 +2510,7 @@ public class Nation : NationBase
 				{
 					for (xLoc = actionNode.action_x_loc; xLoc < actionNode.action_x_loc + 3; xLoc++)
 					{
-						if (RegionArray.GetRegionInfo(World.GetRegionId(xLoc, yLoc)).region_type == RegionType.REGION_LAND)
+						if (RegionArray.GetRegionInfo(World.GetRegionId(xLoc, yLoc)).RegionType == RegionType.LAND)
 						{
 							rc = true;
 							break;
@@ -4505,10 +4505,10 @@ public class Nation : NationBase
 
 	public void optimize_town_race()
 	{
-		foreach (RegionStat regionStat in RegionArray.regionStats)
+		foreach (RegionStat regionStat in RegionArray.RegionStats)
 		{
-			if (regionStat.town_nation_count_array[nation_recno - 1] > 0)
-				optimize_town_race_region(regionStat.region_id);
+			if (regionStat.TownNationCounts[nation_recno - 1] > 0)
+				optimize_town_race_region(regionStat.RegionId);
 		}
 	}
 
@@ -5530,16 +5530,16 @@ public class Nation : NationBase
 
 		//--------------------------------------------//
 
-		for (int i = 0; i < RegionArray.regionStats.Count; i++)
+		for (int i = 0; i < RegionArray.RegionStats.Count; i++)
 		{
-			RegionStat regionStat = RegionArray.regionStats[i];
+			RegionStat regionStat = RegionArray.RegionStats[i];
 
 			//--- only build on those regions that this nation has base towns ---//
-			if (regionStat.base_town_nation_count_array[nation_recno - 1] == 0)
+			if (regionStat.BaseTownNationCounts[nation_recno - 1] == 0)
 				continue;
 
 			// if we already have a harbor in this region
-			if (regionStat.harbor_nation_count_array[nation_recno - 1] > 0)
+			if (regionStat.HarborNationCounts[nation_recno - 1] > 0)
 				continue;
 
 			//-----------------------------------------------------------------------//
@@ -5550,17 +5550,17 @@ public class Nation : NationBase
 			//
 			//-----------------------------------------------------------------------//
 
-			foreach (RegionPath regionPath in regionStat.reachableRegions)
+			foreach (RegionPath regionPath in regionStat.ReachableRegions)
 			{
 				//--------------------------------------//
 
 				// if we have already built one harbor, then we should continue to build others asa single harbor isn't useful
-				if (ai_harbor_array.Count == 0 && ai_should_sail_to_rating(regionPath.land_region_stat_id) <= 0)
+				if (ai_harbor_array.Count == 0 && ai_should_sail_to_rating(regionPath.LandRegionStatId) <= 0)
 					continue;
 
 				//--------- build a harbor now ---------//
 
-				if (ai_build_harbor(regionStat.region_id, regionPath.sea_region_id))
+				if (ai_build_harbor(regionStat.RegionId, regionPath.SeaRegionId))
 					return true;
 			}
 		}
@@ -5587,21 +5587,21 @@ public class Nation : NationBase
 		int maxRegionId = 0, minRegionId = 0;
 		int minRegionRating = 0;
 
-		for (int i = 0; i < RegionArray.regionStats.Count; i++)
+		for (int i = 0; i < RegionArray.RegionStats.Count; i++)
 		{
-			RegionStat regionStat = RegionArray.regionStats[i];
-			if (regionStat.nation_presence_count == 0 && regionStat.independent_town_count == 0 &&
-			    regionStat.raw_count == 0)
+			RegionStat regionStat = RegionArray.RegionStats[i];
+			if (regionStat.NationPresenceCount == 0 && regionStat.IndependentTownCounts == 0 &&
+			    regionStat.RawResourceCount == 0)
 			{
 				continue;
 			}
 
-			int campCount = regionStat.camp_nation_count_array[nation_recno - 1];
+			int campCount = regionStat.CampNationCounts[nation_recno - 1];
 
 			if (campCount > maxCampCount)
 			{
 				maxCampCount = campCount;
-				maxRegionId = regionStat.region_id;
+				maxRegionId = regionStat.RegionId;
 			}
 
 			if (campCount <= minCampCount)
@@ -5611,7 +5611,7 @@ public class Nation : NationBase
 				if (campCount < minCampCount || curRating >= minRegionRating)
 				{
 					minCampCount = campCount;
-					minRegionId = regionStat.region_id;
+					minRegionId = regionStat.RegionId;
 					minRegionRating = curRating;
 				}
 			}
@@ -5622,8 +5622,8 @@ public class Nation : NationBase
 
 		//----- only move if the difference is big enough ------//
 
-		int minJoblessPop = RegionArray.get_region_stat(minRegionId).nation_jobless_population_array[nation_recno - 1];
-		int maxJoblessPop = RegionArray.get_region_stat(maxRegionId).nation_jobless_population_array[nation_recno - 1];
+		int minJoblessPop = RegionArray.GetRegionStat(minRegionId).NationJoblessPopulation[nation_recno - 1];
+		int maxJoblessPop = RegionArray.GetRegionStat(maxRegionId).NationJoblessPopulation[nation_recno - 1];
 
 		if (pref_use_marine < 90) // if > 90, it will ignore all these and move anyway  
 		{
@@ -5683,27 +5683,27 @@ public class Nation : NationBase
 		int maxJoblessPop = 0, minJoblessPop = Int32.MinValue;
 		int maxRegionId = 0, minRegionId = 0;
 
-		for (int i = 0; i < RegionArray.regionStats.Count; i++)
+		for (int i = 0; i < RegionArray.RegionStats.Count; i++)
 		{
-			RegionStat regionStat = RegionArray.regionStats[i];
+			RegionStat regionStat = RegionArray.RegionStats[i];
 
 			//--- only move to regions in which we have camps ---//
 
-			if (regionStat.camp_nation_count_array[nation_recno - 1] == 0)
+			if (regionStat.CampNationCounts[nation_recno - 1] == 0)
 				continue;
 
-			int joblessPop = regionStat.nation_jobless_population_array[nation_recno - 1];
+			int joblessPop = regionStat.NationJoblessPopulation[nation_recno - 1];
 
 			if (joblessPop > maxJoblessPop)
 			{
 				maxJoblessPop = joblessPop;
-				maxRegionId = regionStat.region_id;
+				maxRegionId = regionStat.RegionId;
 			}
 
 			if (joblessPop < minJoblessPop)
 			{
 				minJoblessPop = joblessPop;
-				minRegionId = regionStat.region_id;
+				minRegionId = regionStat.RegionId;
 			}
 		}
 
@@ -5791,31 +5791,31 @@ public class Nation : NationBase
 
 		int bestRating = 0, bestRegionId = 0;
 
-		for (int i = 0; i < RegionArray.regionStats.Count; i++)
+		for (int i = 0; i < RegionArray.RegionStats.Count; i++)
 		{
-			RegionStat regionStat = RegionArray.regionStats[i];
-			if (regionStat.town_nation_count_array[nation_recno - 1] > 0) // if we already have towns there
+			RegionStat regionStat = RegionArray.RegionStats[i];
+			if (regionStat.TownNationCounts[nation_recno - 1] > 0) // if we already have towns there
 				continue;
 
-			if (regionStat.raw_count == 0)
+			if (regionStat.RawResourceCount == 0)
 				continue;
 
 			//-- if we have already build one camp there, just waiting for sending a few peasants there, then process it first --//
 
-			if (regionStat.camp_nation_count_array[nation_recno - 1] > 0)
+			if (regionStat.CampNationCounts[nation_recno - 1] > 0)
 			{
-				bestRegionId = regionStat.region_id;
+				bestRegionId = regionStat.RegionId;
 				break;
 			}
 
 			//-----------------------------------------------//
 
-			int curRating = regionStat.raw_count * 3 - regionStat.nation_presence_count;
+			int curRating = regionStat.RawResourceCount * 3 - regionStat.NationPresenceCount;
 
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				bestRegionId = regionStat.region_id;
+				bestRegionId = regionStat.RegionId;
 			}
 		}
 
@@ -5849,10 +5849,10 @@ public class Nation : NationBase
 
 		int regionId = World.GetRegionId(xLoc1, yLoc1);
 
-		if (RegionArray.GetRegionInfo(regionId).region_stat_id == 0)
+		if (RegionArray.GetRegionInfo(regionId).RegionStatId == 0)
 			return false;
 
-		if (RegionArray.get_region_stat(regionId).camp_nation_count_array[nation_recno - 1] == 0)
+		if (RegionArray.GetRegionStat(regionId).CampNationCounts[nation_recno - 1] == 0)
 		{
 			//--- if we don't have one yet, build one next to the destination ---//
 
@@ -5919,8 +5919,8 @@ public class Nation : NationBase
 
 			// region_stat_id of a region may be zero
 			if (
-				RegionArray.GetRegionInfo(town.RegionId).region_stat_id == 0 ||
-				RegionArray.get_region_stat(town.RegionId).harbor_nation_count_array[nation_recno - 1] == 0)
+				RegionArray.GetRegionInfo(town.RegionId).RegionStatId == 0 ||
+				RegionArray.GetRegionStat(town.RegionId).HarborNationCounts[nation_recno - 1] == 0)
 			{
 				continue;
 			}
@@ -5936,7 +5936,7 @@ public class Nation : NationBase
 
 			//------- see if we have ships ready currently -----//
 
-			int seaRegionId = RegionArray.get_sea_path_region_id(town.RegionId, destRegionId);
+			int seaRegionId = RegionArray.GetSeaPathRegionId(town.RegionId, destRegionId);
 
 			// 0-don't have to find the best, return immediately whenever a suitable one is found
 			if (ai_find_transport_ship(seaRegionId, town.LocCenterX, town.LocCenterY, false) == 0)
@@ -6018,8 +6018,8 @@ public class Nation : NationBase
 
 			//--- only send units from this region if we have a harbor in that region ---//
 
-			if (RegionArray.GetRegionInfo(firmCamp.region_id).region_stat_id == 0 ||
-			    RegionArray.get_region_stat(firmCamp.region_id).harbor_nation_count_array[nation_recno - 1] == 0)
+			if (RegionArray.GetRegionInfo(firmCamp.region_id).RegionStatId == 0 ||
+			    RegionArray.GetRegionStat(firmCamp.region_id).HarborNationCounts[nation_recno - 1] == 0)
 			{
 				continue;
 			}
@@ -6031,7 +6031,7 @@ public class Nation : NationBase
 
 			//------- see if we have ships ready currently -----//
 
-			int seaRegionId = RegionArray.get_sea_path_region_id(firmCamp.region_id, destRegionId);
+			int seaRegionId = RegionArray.GetSeaPathRegionId(firmCamp.region_id, destRegionId);
 
 			// 0-don't have to find the best, return immediately whenever a suitable one is found
 			if (ai_find_transport_ship(seaRegionId, firmCamp.center_x, firmCamp.center_y, false) == 0)
@@ -6064,11 +6064,11 @@ public class Nation : NationBase
 
 	public int ai_should_sail_to_rating(int regionStatId)
 	{
-		RegionStat regionStat = RegionArray.get_region_stat2(regionStatId);
+		RegionStat regionStat = RegionArray.RegionStats[regionStatId - 1];
 
-		int curRating = regionStat.raw_count * 100 +
-		                regionStat.independent_town_count * 20 +
-		                regionStat.nation_presence_count * 30;
+		int curRating = regionStat.RawResourceCount * 100 +
+		                regionStat.IndependentTownCounts * 20 +
+		                regionStat.NationPresenceCount * 30;
 		/*
 			- (regionStat.total_town_count - regionStat.town_nation_count_array[nation_recno-1] ) * 10 // towns of other nations
 			- (regionStat.total_firm_count - regionStat.firm_nation_count_array[nation_recno-1] ) * 5  // firms of other nations
@@ -6172,7 +6172,7 @@ public class Nation : NationBase
 		int unitRegionId = World.GetRegionId(unit.next_x_loc(), unit.next_y_loc());
 		int destRegionId = World.GetRegionId(actionNode.action_x_loc, actionNode.action_y_loc);
 
-		int seaRegionId = RegionArray.get_sea_path_region_id(unitRegionId, destRegionId);
+		int seaRegionId = RegionArray.GetSeaPathRegionId(unitRegionId, destRegionId);
 
 		//------- 1. try to locate a ship --------//
 
@@ -6961,19 +6961,19 @@ public class Nation : NationBase
 		int baseRegionId = TownArray[largest_town_recno].RegionId;
 
 		// no region stat (region is too small), don't care
-		if (RegionArray.GetRegionInfo(baseRegionId).region_stat_id == 0)
+		if (RegionArray.GetRegionInfo(baseRegionId).RegionStatId == 0)
 			return false;
 
-		RegionStat regionStat = RegionArray.get_region_stat(baseRegionId);
+		RegionStat regionStat = RegionArray.GetRegionStat(baseRegionId);
 
 		//---- if we already have a mine in this region ----//
 
-		if (regionStat.mine_nation_count_array[nation_recno - 1] > 0)
+		if (regionStat.MineNationCounts[nation_recno - 1] > 0)
 			return false;
 
 		//----- if there is no mine in this region -----//
 
-		if (regionStat.raw_count == 0)
+		if (regionStat.RawResourceCount == 0)
 			return false;
 
 		//----- if enemies have occupied all mines -----//
@@ -6990,7 +6990,7 @@ public class Nation : NationBase
 			//------------------------------------------//
 
 			//todo nation_recno as index
-			int mineCount = regionStat.mine_nation_count_array[nation.nation_recno - 1];
+			int mineCount = regionStat.MineNationCounts[nation.nation_recno - 1];
 
 			int curRating = mineCount * 100 - get_relation(nation.nation_recno).ai_relation_level -
 			                trade_rating(nation.nation_recno);

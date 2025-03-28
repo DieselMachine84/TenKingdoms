@@ -225,7 +225,7 @@ public class SiteArray : DynArray<Site>
 		if (World.LocateSpaceRandom(ref locX1, ref locY1, locX2, locY2, 5, 5, maxTries, regionId, true))
 		{
 			RegionInfo regionInfo = RegionArray.GetRegionInfo(World.GetRegionId(locX1, locY1));
-			if (regionInfo.region_size < GameConstants.SMALLEST_RAW_REGION)
+			if (regionInfo.RegionSize < GameConstants.SMALLEST_RAW_REGION)
 				return false;
 			
 			int reserveQty = GameConstants.MAX_RAW_RESERVE_QTY * (50 + Misc.Random(50)) / 100;

@@ -3901,10 +3901,10 @@ public class Town
 		int bestNationId = 0, bestRaceId = 0;
 		int bestRating = _independentUnitJoinNationMinRating;
 
-		if (RegionArray.GetRegionInfo(RegionId).region_stat_id == 0)
+		if (RegionArray.GetRegionInfo(RegionId).RegionStatId == 0)
 			return false;
 
-		RegionStat regionStat = RegionArray.get_region_stat(RegionId);
+		RegionStat regionStat = RegionArray.GetRegionStat(RegionId);
 
 		foreach (Nation nation in NationArray)
 		{
@@ -3920,7 +3920,7 @@ public class Town
 
 			//--- only join the nation if the nation has town in the town's region ---//
 
-			if (regionStat.town_nation_count_array[nation.nation_recno - 1] == 0)
+			if (regionStat.TownNationCounts[nation.nation_recno - 1] == 0)
 				continue;
 
 			//----- calculate the rating of the nation -----//

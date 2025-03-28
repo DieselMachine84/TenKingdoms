@@ -153,7 +153,7 @@ public class MapGenerator
 
 		World.PlantInit();
 
-		World.init_fire();
+		World.FireInit();
 
 		CreatePlayerNation();
 
@@ -1060,24 +1060,16 @@ public class MapGenerator
 
 	private void SetRegionId()
 	{
-		for (int y = 0; y < GameConstants.MapSize; ++y)
-		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
-			{
-				World.GetLoc(x, y).RegionId = 0;
-			}
-		}
-
 		int regionId = 0;
-		for (int y = 0; y < GameConstants.MapSize; ++y)
+		for (int locY = 0; locY < GameConstants.MapSize; locY++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
+			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
-				Location location = World.GetLoc(x, y);
-				if (location.RegionId == 0 && location.RegionType() != RegionType.REGION_INPASSABLE)
+				Location location = World.GetLoc(locX, locY);
+				if (location.RegionId == 0 && location.RegionType() != RegionType.INPASSABLE)
 				{
 					regionId++;
-					FillRegion(x, y, regionId, location.RegionType());
+					FillRegion(locX, locY, regionId, location.RegionType());
 				}
 			}
 		}
@@ -1087,102 +1079,101 @@ public class MapGenerator
 		// ------ update adjacency information and region area ------//
 
 		regionId = 0;
-		for (int y = 0; y < GameConstants.MapSize; ++y)
+		for (int locY = 0; locY < GameConstants.MapSize; locY++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
+			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
-				Location location = World.GetLoc(x, y);
+				Location location = World.GetLoc(locX, locY);
 				int thisRegionId = location.RegionId;
 				if (thisRegionId > 0)
 				{
-					RegionArray.inc_size(thisRegionId);
+					RegionArray.IncSize(thisRegionId);
 				}
 
 				if (thisRegionId > regionId)
 				{
 					if (thisRegionId == regionId + 1)
 						regionId++;
-					RegionArray.set_region(thisRegionId, location.RegionType());
+					RegionArray.SetRegionType(thisRegionId, location.RegionType());
 				}
 
 				int adjRegionId;
-				if (y > 0)
+				if (locY > 0)
 				{
-					if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y - 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if ((adjRegionId = World.GetLoc(x, y - 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y - 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
+					if (locX > 0 && (adjRegionId = World.GetLoc(locX - 1, locY - 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
+					if ((adjRegionId = World.GetLoc(locX, locY - 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
+					if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY - 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 				}
 
-				if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y).RegionId) < thisRegionId)
-					RegionArray.set_adjacent(thisRegionId, adjRegionId);
-				if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y).RegionId) < thisRegionId)
-					RegionArray.set_adjacent(thisRegionId, adjRegionId);
+				if (locX > 0 && (adjRegionId = World.GetLoc(locX - 1, locY).RegionId) < thisRegionId)
+					RegionArray.SetAdjacent(thisRegionId, adjRegionId);
+				if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY).RegionId) < thisRegionId)
+					RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 
-				if (y < GameConstants.MapSize - 1)
+				if (locY < GameConstants.MapSize - 1)
 				{
-					if (x > 0 && (adjRegionId = World.GetLoc(x - 1, y + 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if ((adjRegionId = World.GetLoc(x, y + 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
-					if (x < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(x + 1, y + 1).RegionId) < thisRegionId)
-						RegionArray.set_adjacent(thisRegionId, adjRegionId);
+					if (locX > 0 && (adjRegionId = World.GetLoc(locX - 1, locY + 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
+					if ((adjRegionId = World.GetLoc(locX, locY + 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
+					if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY + 1).RegionId) < thisRegionId)
+						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 				}
 			}
 		}
 
-		RegionArray.sort_region();
-		RegionArray.init_region_stat();
+		RegionArray.InitRegionStat();
 	}
 
-	private void FillRegion(int x, int y, int regionId, RegionType regionType)
+	private void FillRegion(int locX, int locY, int regionId, RegionType regionType)
 	{
 		int left, right;
 
 		// extent x to left and right
-		for (left = x;
-		     left >= 0 && World.GetLoc(left, y).RegionId == 0 && World.GetLoc(left, y).RegionType() == regionType;
-		     --left)
+		for (left = locX;
+		     left >= 0 && World.GetLoc(left, locY).RegionId == 0 && World.GetLoc(left, locY).RegionType() == regionType;
+		     left--)
 		{
-			World.GetLoc(left, y).RegionId = regionId;
+			World.GetLoc(left, locY).RegionId = regionId;
 		}
 
-		++left;
+		left++;
 
-		for (right = x + 1;
-		     right < GameConstants.MapSize && World.GetLoc(right, y).RegionId == 0 &&
-		     World.GetLoc(right, y).RegionType() == regionType;
-		     ++right)
+		for (right = locX + 1;
+		     right < GameConstants.MapSize && World.GetLoc(right, locY).RegionId == 0 &&
+		     World.GetLoc(right, locY).RegionType() == regionType;
+		     right++)
 		{
-			World.GetLoc(right, y).RegionId = regionId;
+			World.GetLoc(right, locY).RegionId = regionId;
 		}
 
-		--right;
+		right--;
 
 		// ------- scan line below ---------//
-		y++;
-		if (y < GameConstants.MapSize)
+		locY++;
+		if (locY < GameConstants.MapSize)
 		{
-			for (x = left > 0 ? left - 1 : 0; x <= right + 1 && x < GameConstants.MapSize; ++x)
+			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < GameConstants.MapSize; ++locX)
 			{
-				if (World.GetLoc(x, y).RegionId == 0 && World.GetLoc(x, y).RegionType() == regionType)
+				if (World.GetLoc(locX, locY).RegionId == 0 && World.GetLoc(locX, locY).RegionType() == regionType)
 				{
-					FillRegion(x, y, regionId, regionType);
+					FillRegion(locX, locY, regionId, regionType);
 				}
 			}
 		}
 
 		// ------- scan line above -------- //
-		y -= 2;
-		if (y >= 0)
+		locY -= 2;
+		if (locY >= 0)
 		{
-			for (x = left > 0 ? left - 1 : 0; x <= right + 1 && x < GameConstants.MapSize; ++x)
+			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < GameConstants.MapSize; ++locX)
 			{
-				if (World.GetLoc(x, y).RegionId == 0 && World.GetLoc(x, y).RegionType() == regionType)
+				if (World.GetLoc(locX, locY).RegionId == 0 && World.GetLoc(locX, locY).RegionType() == regionType)
 				{
-					FillRegion(x, y, regionId, regionType);
+					FillRegion(locX, locY, regionId, regionType);
 				}
 			}
 		}
@@ -1726,8 +1717,8 @@ public class MapGenerator
 
 			//------- create military camp -------//
 
-			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 6, town.LocY1,
-				nation.nation_recno, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
+			//TODO randomize camp location
+			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.nation_recno, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
 
 			if (firmRecno == 0)
 			{

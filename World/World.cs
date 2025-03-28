@@ -719,7 +719,7 @@ public class World
 		return true;
 	}
 
-	public void set_all_power()
+	public void SetAllPower()
 	{
 		//--------- set town's influence -----------//
 

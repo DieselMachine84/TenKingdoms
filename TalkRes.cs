@@ -891,8 +891,9 @@ public class TalkRes
 
     private void process_talk_msg()
     {
-        foreach (TalkMsg talkMsg in talk_msg_array)
+        for (int i = talk_msg_array.Count - 1; i >= 0; i --)
         {
+            TalkMsg talkMsg = talk_msg_array[i];
             //--------------------------------------------------------//
             // If this is an AI message and there is no response from
             // the player after one month the message has been sent,

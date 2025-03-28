@@ -4,11 +4,12 @@ namespace TenKingdoms;
 
 public class RegionArray
 {
-    public List<RegionInfo> regionInfos = new List<RegionInfo>();
-    public List<RegionStat> regionStats = new List<RegionStat>();
+    public List<RegionInfo> RegionInfos { get; } = new List<RegionInfo>();
+    public List<RegionStat> RegionStats { get; } = new List<RegionStat>();
 
-    public int[] connect_bits;
-    public List<int> region_sorted_array = new List<int>(); // an array of region id. sorted by the region size
+    //TODO rewrite
+    private int[] _connectBits;
+    private readonly List<int> _sortedRegions = new List<int>(); // regions sorted by size
 
     private Info Info => Sys.Instance.Info;
 
@@ -19,7 +20,7 @@ public class RegionArray
         {
             // --------- allocate memory for RegionInfo --------//
             for (int i = 0; i < maxRegion; i++)
-                regionInfos.Add(new RegionInfo());
+                RegionInfos.Add(new RegionInfo());
 
             // ---- calculate the no. of bit required to store connection ----//
             connectBit = (maxRegion - 1) * maxRegion / 2;
@@ -30,193 +31,163 @@ public class RegionArray
         }
         else
         {
-            regionInfos.Clear();
+            RegionInfos.Clear();
             connectBit = 0;
         }
 
-        connect_bits = connectBit > 0 ? new int[(connectBit + 7) / 8] : null;
+        _connectBits = connectBit > 0 ? new int[(connectBit + 7) / 8] : null;
 
         //------ initialize adj_offset_bit and area -------//
 
         int j = 0;
 
-        for (int i = 0; i < regionInfos.Count; i++)
+        for (int i = 0; i < RegionInfos.Count; i++)
         {
-            regionInfos[i].region_id = i + 1;
-            regionInfos[i].adj_offset_bit = j;
-            regionInfos[i].region_size = 0;
+            RegionInfos[i].RegionId = i + 1;
+            RegionInfos[i].AdjOffsetBit = j;
+            RegionInfos[i].RegionSize = 0;
 
             j += i; // j += regionId-1;
         }
     }
 
-    public void next_day()
+    public void NextDay()
     {
         if (Info.TotalDays % 7 == 0)
-            update_region_stat();
+            UpdateRegionStat();
     }
 
-    public void inc_size(int reg)
+    public void IncSize(int reg)
     {
-        regionInfos[reg - 1].region_size++;
+        RegionInfos[reg - 1].RegionSize++;
     }
 
-    public void set_region(int reg, RegionType regType)
+    public void SetRegionType(int region, RegionType regType)
     {
-        regionInfos[reg - 1].region_type = regType;
+        RegionInfos[region - 1].RegionType = regType;
     }
 
-    public void set_adjacent(int reg1, int reg2)
+    public void SetAdjacent(int region1, int region2)
     {
-        if (reg1 == 0 || reg2 == 0)
-            return;
-
-        if (reg1 == reg2)
+        if (region1 == 0 || region2 == 0 || region1 == region2)
             return;
 
         int bitOffset;
-        if (reg1 > reg2)
+        if (region1 > region2)
         {
-            bitOffset = regionInfos[reg1 - 1].adj_offset_bit + (reg2 - 1);
+            bitOffset = RegionInfos[region1 - 1].AdjOffsetBit + (region2 - 1);
         }
         else
         {
-            bitOffset = regionInfos[reg2 - 1].adj_offset_bit + (reg1 - 1);
+            bitOffset = RegionInfos[region2 - 1].AdjOffsetBit + (region1 - 1);
         }
 
-        connect_bits[bitOffset / 8] |= 1 << (bitOffset % 8);
-
+        _connectBits[bitOffset / 8] |= 1 << (bitOffset % 8);
     }
 
-    public bool is_adjacent(int reg1, int reg2)
+    public bool IsAdjacent(int region1, int region2)
     {
-        if (reg1 == reg2)
+        if (region1 == region2)
             return true;
 
         int bitOffset;
-        if (reg1 > reg2)
+        if (region1 > region2)
         {
-            bitOffset = regionInfos[reg1 - 1].adj_offset_bit + (reg2 - 1);
+            bitOffset = RegionInfos[region1 - 1].AdjOffsetBit + (region2 - 1);
         }
         else
         {
-            bitOffset = regionInfos[reg2 - 1].adj_offset_bit + (reg1 - 1);
+            bitOffset = RegionInfos[region2 - 1].AdjOffsetBit + (region1 - 1);
         }
 
-        return (connect_bits[bitOffset / 8] & (1 << (bitOffset % 8))) != 0;
+        return (_connectBits[bitOffset / 8] & (1 << (bitOffset % 8))) != 0;
     }
 
-    public void sort_region()
-    {
-        region_sorted_array.Clear();
-        for (int i = 0; i < regionInfos.Count; i++)
-            region_sorted_array.Add(i + 1);
-
-        //----------- sort it now -----------//
-
-        region_sorted_array.Sort((x, y) => GetRegionInfo(x).region_size - GetRegionInfo(y).region_size);
-    }
-
-    public void init_region_stat()
+    public void InitRegionStat()
     {
         //------ count the no. of regions with statistic -----//
         //
         // Only include land regions that are big enough.
         //
         //----------------------------------------------------//
-
-        int region_stat_count = 0;
         
-        for (int i = 0; i < regionInfos.Count; i++)
+        SortRegions();
+
+        for (int i = 0; i < RegionInfos.Count; i++)
         {
-            RegionInfo regionInfo = regionInfos[i];
-
-            if (regionInfo.region_type == RegionType.REGION_LAND)
-            {
-                region_stat_count++;
-            }
-        }
-
-        //-------- init the region_stat_array ---------//
-
-        for (int i = 0; i < region_stat_count; i++)
-            regionStats.Add(new RegionStat());
-
-        int regionStatId = 1;
-
-        for (int i = 1; i <= regionInfos.Count; i++)
-        {
-            RegionInfo regionInfo = get_sorted_region(i);
-
-            if (regionInfo.region_type != RegionType.REGION_LAND)
+            RegionInfo regionInfo = GetSortedRegion(i);
+            if (regionInfo.RegionType != RegionType.LAND)
                 continue;
 
-            regionStats[regionStatId - 1].region_id = regionInfo.region_id;
-            regionInfo.region_stat_id = regionStatId;
-
-            if (++regionStatId > region_stat_count)
-                break;
+            RegionStat regionStat = new RegionStat(regionInfo.RegionId);
+            RegionStats.Add(regionStat);
+            regionInfo.RegionStatId = RegionStats.Count;
         }
 
-        for (int i = 0; i < region_stat_count; i++)
-            regionStats[i].init();
-
-        update_region_stat();
-    }
-
-    public void update_region_stat()
-    {
-        for (int i = 0; i < regionStats.Count; i++)
-            regionStats[i].update_stat();
-    }
-
-    public int get_sea_path_region_id(int regionId1, int regionId2)
-    {
-        RegionStat regionStat = get_region_stat(regionId1);
-        int regionStatId2 = GetRegionInfo(regionId2).region_stat_id;
-
-        for (int i = 0; i < regionStat.reachableRegions.Count; i++)
+        foreach (RegionStat regionStat in RegionStats)
         {
-            RegionPath regionPath = regionStat.reachableRegions[i];
-            if (regionPath.land_region_stat_id == regionStatId2)
-                return regionPath.sea_region_id;
+            regionStat.Init();
+        }
+
+        UpdateRegionStat();
+    }
+
+    public void UpdateRegionStat()
+    {
+        foreach (RegionStat regionStat in RegionStats)
+            regionStat.UpdateStat();
+    }
+
+    public int GetSeaPathRegionId(int regionId1, int regionId2)
+    {
+        RegionStat regionStat = GetRegionStat(regionId1);
+        int regionStatId2 = GetRegionInfo(regionId2).RegionStatId;
+
+        for (int i = 0; i < regionStat.ReachableRegions.Count; i++)
+        {
+            RegionPath regionPath = regionStat.ReachableRegions[i];
+            if (regionPath.LandRegionStatId == regionStatId2)
+                return regionPath.SeaRegionId;
         }
 
         return 0;
     }
 
-    public bool nation_has_base_town(int regionId, int nationRecno)
+    public bool NationHasBaseTown(int regionId, int nationId)
     {
-        for (int i = 0; i < regionStats.Count; i++)
+        for (int i = 0; i < RegionStats.Count; i++)
         {
-            RegionStat regionStat = regionStats[i];
-            if (regionStat.region_id != regionId)
+            RegionStat regionStat = RegionStats[i];
+            if (regionStat.RegionId != regionId)
                 continue;
 
-            return regionStat.base_town_nation_count_array[nationRecno - 1] > 0;
+            return regionStat.BaseTownNationCounts[nationId - 1] > 0;
         }
 
         return false;
     }
 
-    public RegionInfo GetRegionInfo(int region)
+    public RegionInfo GetRegionInfo(int regionId)
     {
-        return regionInfos[region - 1];
+        return RegionInfos[regionId - 1];
     }
 
-    //TODO check it
-    public RegionStat get_region_stat(int regionId)
+    public RegionStat GetRegionStat(int regionId)
     {
-        return regionStats[GetRegionInfo(regionId).region_stat_id - 1];
+        return RegionStats[GetRegionInfo(regionId).RegionStatId - 1];
     }
 
-    public RegionStat get_region_stat2(int regionStatId)
+    private void SortRegions()
     {
-        return regionStats[regionStatId - 1];
+        _sortedRegions.Clear();
+        for (int i = 0; i < RegionInfos.Count; i++)
+            _sortedRegions.Add(i + 1);
+
+        _sortedRegions.Sort((x, y) => GetRegionInfo(x).RegionSize - GetRegionInfo(y).RegionSize);
     }
 
-    public RegionInfo get_sorted_region(int recNo)
+    private RegionInfo GetSortedRegion(int index)
     {
-        return GetRegionInfo(region_sorted_array[recNo - 1]);
+        return GetRegionInfo(_sortedRegions[index]);
     }
 }

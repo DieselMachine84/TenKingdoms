@@ -68,7 +68,8 @@ public class FirmHarbor : Firm
 
 		//------- update the harbor count of the regions ------//
 
-		RegionArray.update_region_stat();
+		// TODO remove?
+		RegionArray.UpdateRegionStat();
 	}
 
 	protected override void deinit_derived()

@@ -552,12 +552,12 @@ public class NationBase
     public int base_town_count_in_region(int regionId)
     {
         // regionStatId may be zero
-        int regionStatId = RegionArray.GetRegionInfo(regionId).region_stat_id;
+        int regionStatId = RegionArray.GetRegionInfo(regionId).RegionStatId;
         if (regionStatId != 0)
         {
-            return RegionArray.get_region_stat2(regionStatId).base_town_nation_count_array[nation_recno - 1];
+            return RegionArray.GetRegionStat(regionId).BaseTownNationCounts[nation_recno - 1];
         }
-        else if (RegionArray.GetRegionInfo(regionId).region_size < InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT)
+        else if (RegionArray.GetRegionInfo(regionId).RegionSize < InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT)
         {
             return 0; // not enough to build any town
         }
