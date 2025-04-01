@@ -1362,7 +1362,7 @@ public class Town
 		NationArray[NationId].add_income(NationBase.INCOME_TAX, Population * GameConstants.TAX_PER_PERSON);
 	}
 
-	private void CollectTax(int remoteAction)
+	public void CollectTax(int remoteAction)
 	{
 		if (!HasLinkedOwnCamp)
 			return;

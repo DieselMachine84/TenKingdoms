@@ -182,6 +182,40 @@ public class Sys
     {
         Graphics.DeInit();
     }
+
+    private void Reset()
+    {
+        FrameNumber = 0;
+        FrameOfDay = 0;
+        GameEnded = false;
+        CreateObjects();
+        MapGenerator mapGenerator = new MapGenerator();
+        mapGenerator.Generate();
+        Renderer.Reset();
+    }
+
+    public void Run()
+    {
+        Config = new Config();
+        ConfigAdv = new ConfigAdv();
+        ColorRemap.InitRemapTable();
+        InitGraphics();
+        LoadResources();
+        Renderer = new Renderer(Graphics);
+        Reset();
+
+        /*try
+        {
+            MainLoop();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }*/
+        MainLoop();
+
+        DeinitGraphics();
+    }
     
     private void Process()
     {
@@ -221,25 +255,11 @@ public class Sys
         }
     }
 
-    private void ProcessEvent(SDL.SDL_Event sdlEvent)
-    {
-        if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
-        {
-            ProcessKeyboardEvent(sdlEvent.key);
-        }
-
-        if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN || sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
-        {
-            ProcessMouseButtonEvent(sdlEvent.button);
-        }
-    }
-    
     private void MainLoop()
     {
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         while (true)
         {
-            //TODO process all events
             bool hasEvent = false;
             bool nextFrameReady = false;
             SDL.SDL_Event sdlEvent = default;
@@ -260,15 +280,6 @@ public class Sys
                 }
                 else
                 {
-                    while (SDL.SDL_PollEvent(out sdlEvent) == 1)
-                    {
-                        hasEvent = true;
-                        if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
-                            return;
-
-                        ProcessEvent(sdlEvent);
-                    }
-                    
                     lastFrameTime = currentMilliseconds;
                     FrameNumber++;
                     nextFrameReady = true;
@@ -297,16 +308,21 @@ public class Sys
         }
     }
 
-    private void ProcessKeyboardEvent(SDL.SDL_KeyboardEvent keyboardEvent)
+    private void ProcessEvent(SDL.SDL_Event sdlEvent)
     {
-        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g)
+        if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
         {
-            CreateObjects();
-            MapGenerator mapGenerator = new MapGenerator();
-            mapGenerator.Generate();
-            Renderer.NeedFullRedraw = true;
+            ProcessKeyboardEvent(sdlEvent.key);
         }
 
+        if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN || sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
+        {
+            ProcessMouseButtonEvent(sdlEvent.button);
+        }
+    }
+
+    private void ProcessKeyboardEvent(SDL.SDL_KeyboardEvent keyboardEvent)
+    {
         if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_0 && keyboardEvent.keysym.sym <= SDL.SDL_Keycode.SDLK_9)
         {
             Speed = keyboardEvent.keysym.sym - SDL.SDL_Keycode.SDLK_0;
@@ -317,55 +333,35 @@ public class Sys
             if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_KP_0)
                 Speed = 0;
         }
+        
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g)
+        {
+            Reset();
+        }
     }
 
-    //private List<SDL.SDL_MouseButtonEvent> mouseEvents = new List<SDL.SDL_MouseButtonEvent>();
     private void ProcessMouseButtonEvent(SDL.SDL_MouseButtonEvent mouseButtonEvent)
     {
-        //mouseEvents.Add(mouseButtonEvent);
         if (mouseButtonEvent.button == 1 && mouseButtonEvent.state == 1)
         {
             //Left mouse button pressed
+            Renderer.ProcessInput(InputConstants.LeftMouseDown, mouseButtonEvent.x, mouseButtonEvent.y);
         }
         if (mouseButtonEvent.button == 1 && mouseButtonEvent.state == 0)
         {
             //Left mouse button released
-            Renderer.ProcessInput(InputConstants.LeftMousePressed, mouseButtonEvent.x, mouseButtonEvent.y);
+            Renderer.ProcessInput(InputConstants.LeftMouseUp, mouseButtonEvent.x, mouseButtonEvent.y);
         }
-    }
-
-    private void Reset()
-    {
-        FrameNumber = 0;
-        FrameOfDay = 0;
-        GameEnded = false;
-        CreateObjects();
-        MapGenerator mapGenerator = new MapGenerator();
-        mapGenerator.Generate();
-        Renderer.Reset();
-    }
-
-    public void Run()
-    {
-        Config = new Config();
-        ConfigAdv = new ConfigAdv();
-        ColorRemap.InitRemapTable();
-        InitGraphics();
-        LoadResources();
-        Renderer = new Renderer(Graphics);
-        Reset();
-
-        /*try
+        if (mouseButtonEvent.button == 3 && mouseButtonEvent.state == 1)
         {
-            MainLoop();
+            //Right mouse button pressed
+            Renderer.ProcessInput(InputConstants.RightMouseDown, mouseButtonEvent.x, mouseButtonEvent.y);
         }
-        catch (Exception e)
+        if (mouseButtonEvent.button == 3 && mouseButtonEvent.state == 0)
         {
-            Console.WriteLine(e);
-        }*/
-        MainLoop();
-
-        DeinitGraphics();
+            //Right mouse button released
+            Renderer.ProcessInput(InputConstants.RightMouseUp, mouseButtonEvent.x, mouseButtonEvent.y);
+        }
     }
 
     public void EndGame(int winNationRecno, int playerDestroyed = 0, int surrenderToNationRecno = 0, int retireFlag = 0)

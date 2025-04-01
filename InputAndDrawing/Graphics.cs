@@ -231,7 +231,12 @@ public class Graphics
     public void DrawRect(int x, int y, int width, int height, int paletteColor)
     {
         var color = _colors[paletteColor];
-        SDL.SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
+        DrawRect(x, y, width, height, color.r, color.g, color.b);
+    }
+
+    public void DrawRect(int x, int y, int width, int height, byte r, byte g, byte b)
+    {
+        SDL.SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;

@@ -9,4 +9,9 @@ public partial class Renderer
         int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
         Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
     }
+    
+    private void HandleUnitDetailsInput()
+    {
+        //
+    }
 }

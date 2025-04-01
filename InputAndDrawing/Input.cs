@@ -2,10 +2,26 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
+    private bool _leftMousePressed;
+    private bool _rightMousePressed;
+    private int _mouseButtonX;
+    private int _mouseButtonY;
+
     public void ProcessInput(int eventType, int screenX, int screenY)
     {
-        if (eventType == InputConstants.LeftMousePressed)
+        if (eventType == InputConstants.LeftMouseDown)
         {
+            _leftMousePressed = true;
+            _mouseButtonX = screenX;
+            _mouseButtonY = screenY;
+        }
+        
+        if (eventType == InputConstants.LeftMouseUp)
+        {
+            _leftMousePressed = false;
+            _mouseButtonX = screenX;
+            _mouseButtonY = screenY;
+            
             if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
             {
                 int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
@@ -14,26 +30,26 @@ public partial class Renderer
                 Location location = World.GetLoc(locX, locY);
                 if (location.IsTown())
                 {
-                    _selectedFirmId = _selectedUnitId = _selectedSiteId = 0;
+                    ResetSelection();
                     _selectedTownId = location.TownId();
                 }
 
                 if (location.IsFirm())
                 {
-                    _selectedTownId = _selectedUnitId = _selectedSiteId = 0;
+                    ResetSelection();
                     _selectedFirmId = location.FirmId();
                 }
 
                 if (location.HasUnit(UnitConstants.UNIT_LAND))
                 {
-                    _selectedTownId = _selectedFirmId = _selectedSiteId = 0;
+                    ResetSelection();
                     _selectedUnitId = location.UnitId(UnitConstants.UNIT_LAND);
                     UnitArray[_selectedUnitId].selected_flag = true;
                 }
 
                 if (location.HasSite())
                 {
-                    _selectedTownId = _selectedFirmId = _selectedUnitId = 0;
+                    ResetSelection();
                     _selectedSiteId = location.SiteId();
                 }
             }
@@ -65,10 +81,29 @@ public partial class Renderer
                 if (_topLeftLocY > GameConstants.MapSize - MainViewHeightInCells)
                     _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
             }
+
+            if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
+            {
+                if (_selectedTownId != 0)
+                    HandleTownDetailsInput();
+                
+                if (_selectedFirmId != 0)
+                    HandleFirmDetailsInput();
+                
+                if (_selectedUnitId != 0)
+                    HandleUnitDetailsInput();
+            }
         }
 
-        if (eventType == InputConstants.RightMousePressed)
+        if (eventType == InputConstants.RightMouseDown)
         {
+            _rightMousePressed = true;
+        }
+
+        if (eventType == InputConstants.RightMouseUp)
+        {
+            _rightMousePressed = false;
+            
             if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
             {
                 int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;

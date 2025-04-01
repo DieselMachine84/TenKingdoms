@@ -64,9 +64,9 @@ public class RaceInfo
 	public string name;
 	public string adjective;
 
-	public byte[] icon_bitmap;
-	public int icon_bitmapWidth;
-	public int icon_bitmapHeight;
+	public byte[] iconBitmap;
+	public int iconBitmapWidth;
+	public int iconBitmapHeight;
 
 	public byte[] scrollBitmap;
 	public int scrollBitmapWidth;
@@ -356,15 +356,15 @@ public class RaceRes
 			raceInfo.adjective = Misc.ToString(raceRec.adjective);
 
 			int bitmapOffset = BitConverter.ToInt32(raceRec.icon_bitmap_ptr, 0);
-			raceInfo.icon_bitmap = res_bitmap.Read(bitmapOffset);
-			raceInfo.icon_bitmapWidth = BitConverter.ToInt16(raceInfo.icon_bitmap, 0);
-			raceInfo.icon_bitmapHeight = BitConverter.ToInt16(raceInfo.icon_bitmap, 2);
-			raceInfo.icon_bitmap = raceInfo.icon_bitmap.Skip(4).ToArray();
+			byte[] iconBitmapData = res_bitmap.Read(bitmapOffset);
+			raceInfo.iconBitmapWidth = BitConverter.ToInt16(iconBitmapData, 0);
+			raceInfo.iconBitmapHeight = BitConverter.ToInt16(iconBitmapData, 2);
+			raceInfo.iconBitmap = iconBitmapData.Skip(4).ToArray();
 
 			byte[] scrollData = _scrollResources.Read("SCROLL-" + raceInfo.code[0]);
-			raceInfo.icon_bitmapWidth = BitConverter.ToInt16(scrollData, 0);
-			raceInfo.icon_bitmapHeight = BitConverter.ToInt16(scrollData, 2);
-			raceInfo.icon_bitmap = scrollData.Skip(4).ToArray();
+			raceInfo.scrollBitmapWidth = BitConverter.ToInt16(scrollData, 0);
+			raceInfo.scrollBitmapHeight = BitConverter.ToInt16(scrollData, 2);
+			raceInfo.scrollBitmap = scrollData.Skip(4).ToArray();
 
 			for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
 			{

@@ -50,11 +50,13 @@ public partial class Renderer
     private int _selectedFirmId;
     private int _selectedUnitId;
     private int _selectedSiteId;
-    
-    public Graphics Graphics { get; }
+    private int _selectedRaceId;
 
-    public Font FontSan { get; }
-    public Font FontStd { get; }
+    private Graphics Graphics { get; }
+
+    private Font FontSan { get; }
+    private Font FontStd { get; }
+    private Font FontMid { get; }
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
@@ -70,6 +72,7 @@ public partial class Renderer
     private static Config Config => Sys.Instance.Config;
     private static Info Info => Sys.Instance.Info;
     private static World World => Sys.Instance.World;
+    private static SECtrl SECtrl => Sys.Instance.SECtrl;
 
     
     private static RockArray DirtArray => Sys.Instance.DirtArray;
@@ -85,9 +88,13 @@ public partial class Renderer
 
         FontSan = new Font("SAN", 0, 0);
         FontStd = new Font("STD", 2, 0);
+        FontMid = new Font("MID", 1, 0);
         
         CreateUITextures();
         CreateAnimatedSegments();
+        CreateRacesTextures();
+        CreateArrowTextures();
+        CreateButtonTextures();
     }
 
     private int Scale(int size)
@@ -97,15 +104,8 @@ public partial class Renderer
     
     public void DrawFrame()
     {
-        if (_lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
-            return;
-
-        _lastFrame = Sys.Instance.FrameNumber;
-        DrawMainScreen();
-        DrawMainView();
-        DrawMiniMap();
-
         Graphics.ResetClipRectangle();
+        DrawMainScreen();
         if (_selectedTownId != 0 && !TownArray.IsDeleted(_selectedTownId))
         {
             DrawTownDetails(TownArray[_selectedTownId]);
@@ -120,6 +120,13 @@ public partial class Renderer
         {
             DrawUnitDetails(UnitArray[_selectedUnitId]);
         }
+
+        if (_lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
+            return;
+
+        _lastFrame = Sys.Instance.FrameNumber;
+        DrawMainView();
+        DrawMiniMap();
     }
 
     private void DrawMainScreen()
@@ -167,6 +174,20 @@ public partial class Renderer
             Scale(_bottomBorder1TextureWidth), Scale(_bottomBorder1TextureHeight));
         Graphics.DrawBitmap(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
             Scale(_bottomBorder2TextureWidth), Scale(_bottomBorder2TextureHeight));
+    }
+
+    private void ResetSelection()
+    {
+        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = 0;
+    }
+    
+    public void Reset()
+    {
+        _lastFrame = 0;
+        _screenSquareFrameCount = 0;
+        _screenSquareFrameStep = 1;
+        ResetSelection();
+        NeedFullRedraw = true;
     }
 
     private bool IsExplored(int locX1, int locX2, int locY1, int locY2)

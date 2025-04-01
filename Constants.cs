@@ -196,8 +196,10 @@ public static class InternalConstants
 
 public static class InputConstants
 {
-    public const int LeftMousePressed = 1;
-    public const int RightMousePressed = 2;
+    public const int LeftMouseDown = 1;
+    public const int LeftMouseUp = 2;
+    public const int RightMouseDown = 3;
+    public const int RightMouseUp = 4;
     public const int KeyBPressed = 98;
     public const int KeySPressed = 115;
     public const int KeyTPressed = 116;

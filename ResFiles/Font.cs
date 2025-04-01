@@ -6,37 +6,36 @@ namespace TenKingdoms;
 
 public class FontInfo // info for each character
 {
-    public sbyte offset_y;
-    public byte width;
-    public byte height;
+    public int offset_y;
+    public int width;
+    public int height;
     public int bitmap_offset; // file offset relative to bitmap data
-    private IntPtr texture;
+    private IntPtr _texture;
 
     public IntPtr GetTexture(Graphics graphics, byte[] bitmaps)
     {
-	    if (texture == default)
+	    if (_texture == default)
 	    {
-		    byte[] bitmap = bitmaps.Skip(bitmap_offset + 2 * sizeof(Int16)).Take(width * height).ToArray();
-		    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, width, height);
+		    int origWidth = width / 2;
+		    int origHeight = height / 2;
+		    byte[] bitmap = bitmaps.Skip(bitmap_offset + 2 * sizeof(Int16)).Take(origWidth * origHeight).ToArray();
+		    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, origWidth, origHeight);
 		    byte[] scaledBitmap = new byte[decompressedBitmap.Length * 4];
-		    for (int h = 0; h < height; h++)
+		    for (int h = 0; h < origHeight; h++)
 		    {
-			    for (int w = 0; w < width; w++)
+			    for (int w = 0; w < origWidth; w++)
 			    {
-				    scaledBitmap[h * 2 * width * 2 + w * 2] = bitmap[h * width + w];
-				    scaledBitmap[h * 2 * width * 2 + w * 2 + 1] = bitmap[h * width + w];
-				    scaledBitmap[(h * 2 + 1) * width * 2 + w * 2] = bitmap[h * width + w];
-				    scaledBitmap[(h * 2 + 1) * width * 2 + w * 2 + 1] = bitmap[h * width + w];
+				    scaledBitmap[h * 2 * width + w * 2] = bitmap[h * origWidth + w];
+				    scaledBitmap[h * 2 * width + w * 2 + 1] = bitmap[h * origWidth + w];
+				    scaledBitmap[(h * 2 + 1) * width + w * 2] = bitmap[h * origWidth + w];
+				    scaledBitmap[(h * 2 + 1) * width + w * 2 + 1] = bitmap[h * origWidth + w];
 			    }
 		    }
 
-		    offset_y *= 2;
-		    width *= 2;
-		    height *= 2;
-		    texture = graphics.CreateTextureFromBmp(scaledBitmap, width, height);
+		    _texture = graphics.CreateTextureFromBmp(scaledBitmap, width, height);
 	    }
 
-	    return texture;
+	    return _texture;
     }
 }
 
@@ -55,7 +54,7 @@ public class Font
 	public int InterCharSpace { get; }
     public int SpaceWidth { get; }
 
-    private FontInfo[] _fontInfos;
+    private readonly FontInfo[] _fontInfos;
     public byte[] FontBitmap { get; }
 
     public FontInfo this[int index] => _fontInfos[index];    
@@ -81,9 +80,9 @@ public class Font
         for (int i = 0; i < _fontInfos.Length; i++)
         {
             FontInfo fontInfo = new FontInfo();
-            fontInfo.offset_y = reader.ReadSByte();
-            fontInfo.width = reader.ReadByte();
-            fontInfo.height = reader.ReadByte();
+            fontInfo.offset_y = reader.ReadSByte() * 2;
+            fontInfo.width = reader.ReadByte() * 2;
+            fontInfo.height = reader.ReadByte() * 2;
             fontInfo.bitmap_offset = reader.ReadInt32();
             _fontInfos[i] = fontInfo;
         }
