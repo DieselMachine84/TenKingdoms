@@ -121,6 +121,11 @@ public partial class Renderer
             DrawUnitDetails(UnitArray[_selectedUnitId]);
         }
 
+        if (_selectedSiteId != 0 && !SiteArray.IsDeleted(_selectedSiteId))
+        {
+            DrawSiteDetails(SiteArray[_selectedSiteId]);
+        }
+
         if (_lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
             return;
 

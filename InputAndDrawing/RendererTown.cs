@@ -14,7 +14,7 @@ public partial class Renderer
     private void DrawTownDetails(Town town)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-        int townNameX1 = DetailsX1;
+        int townNameX1 = DetailsX1 + 2;
         if (town.NationId != 0)
         {
             townNameX1 += 8 + _colorSquareWidth * 2;
