@@ -665,4 +665,14 @@ public class FirmHarbor : Firm
 			}
 		}
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawHarborDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleHarborDetailsInput(this);
+	}
 }

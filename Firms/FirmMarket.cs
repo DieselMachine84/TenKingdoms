@@ -1395,4 +1395,14 @@ public class FirmMarket : Firm
 
 		return true;
 	}
+	
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawMarketDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleMarketDetailsInput(this);
+	}
 }

@@ -6,7 +6,7 @@ namespace TenKingdoms;
 [Flags]
 public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
 
-public partial class Renderer
+public partial class Renderer : IRenderer
 {
     public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
     public const int WindowHeight = MainViewY + MainViewHeight;
@@ -51,12 +51,14 @@ public partial class Renderer
     private int _selectedUnitId;
     private int _selectedSiteId;
     private int _selectedRaceId;
+    private int _selectedWorkerId;
 
     private Graphics Graphics { get; }
 
     private Font FontSan { get; }
     private Font FontStd { get; }
     private Font FontMid { get; }
+    private Font FontSmall { get; }
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
@@ -67,6 +69,7 @@ public partial class Renderer
     private static TownRes TownRes => Sys.Instance.TownRes;
     private static FirmRes FirmRes => Sys.Instance.FirmRes;
     private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
+    private static UnitRes UnitRes => Sys.Instance.UnitRes;
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
     private static Config Config => Sys.Instance.Config;
@@ -89,10 +92,10 @@ public partial class Renderer
         FontSan = new Font("SAN", 0, 0);
         FontStd = new Font("STD", 2, 0);
         FontMid = new Font("MID", 1, 0);
+        FontSmall = new Font("SMAL", 1, 0);
         
         CreateUITextures();
         CreateAnimatedSegments();
-        CreateRacesTextures();
         CreateArrowTextures();
         CreateButtonTextures();
     }
@@ -183,7 +186,7 @@ public partial class Renderer
 
     private void ResetSelection()
     {
-        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = 0;
+        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedWorkerId = 0;
     }
     
     public void Reset()

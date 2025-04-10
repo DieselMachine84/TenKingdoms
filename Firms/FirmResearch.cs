@@ -243,4 +243,14 @@ public class FirmResearch : Firm
 
         return true;
     }
+    
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawResearchDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleResearchDetailsInput(this);
+    }
 }

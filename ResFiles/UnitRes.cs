@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -348,13 +349,99 @@ public class UnitInfo
 	public int attack_count;
 	public int die_effect_id;
 
-	public byte[] soldier_icon_ptr;
-	public byte[] general_icon_ptr;
-	public byte[] king_icon_ptr;
+	public byte[] soldierIcon;
+	public int soldierIconWidth;
+	public int soldierIconHeight;
+	private IntPtr _soldierIconTexture;
+	public byte[] generalIcon;
+	public int generalIconWidth;
+	public int generalIconHeight;
+	private IntPtr _generalIconTexture;
+	public byte[] kingIcon;
+	public int kingIconWidth;
+	public int kingIconHeight;
+	private IntPtr _kingIconTexture;
 
-	public byte[] soldier_small_icon_ptr;
-	public byte[] general_small_icon_ptr;
-	public byte[] king_small_icon_ptr;
+	public byte[] soldierSmallIcon;
+	public int soldierSmallIconWidth;
+	public int soldierSmallIconHeight;
+	private IntPtr _soldierSmallIconTexture;
+	public byte[] generalSmallIcon;
+	public int generalSmallIconWidth;
+	public int generalSmallIconHeight;
+	private IntPtr _generalSmallIconTexture;
+	public byte[] kingSmallIcon;
+	public int kingSmallIconWidth;
+	public int kingSmallIconHeight;
+	private IntPtr _kingSmallIconTexture;
+
+	public IntPtr GetSoldierIconTexture(Graphics graphics)
+	{
+		if (_soldierIconTexture == default)
+			_soldierIconTexture = graphics.CreateTextureFromBmp(soldierIcon, soldierIconWidth, soldierIconHeight);
+
+		return _soldierIconTexture;
+	}
+	
+	public IntPtr GetGeneralIconTexture(Graphics graphics)
+	{
+		if (_generalIconTexture == default)
+			_generalIconTexture = graphics.CreateTextureFromBmp(generalIcon, generalIconWidth, generalIconHeight);
+
+		return _generalIconTexture;
+	}
+	
+	public IntPtr GetKingIconTexture(Graphics graphics)
+	{
+		if (_kingIconTexture == default)
+			_kingIconTexture = graphics.CreateTextureFromBmp(kingIcon, kingIconWidth, kingIconHeight);
+
+		return _kingIconTexture;
+	}
+	
+	public IntPtr GetSoldierSmallIconTexture(Graphics graphics)
+	{
+		if (_soldierSmallIconTexture == default)
+			_soldierSmallIconTexture = graphics.CreateTextureFromBmp(soldierSmallIcon, soldierSmallIconWidth, soldierSmallIconHeight);
+
+		return _soldierSmallIconTexture;
+	}
+	
+	public IntPtr GetGeneralSmallIconTexture(Graphics graphics)
+	{
+		if (_generalSmallIconTexture == default)
+			_generalSmallIconTexture = graphics.CreateTextureFromBmp(generalSmallIcon, generalSmallIconWidth, generalSmallIconHeight);
+
+		return _generalSmallIconTexture;
+	}
+
+	public IntPtr GetKingSmallIconTexture(Graphics graphics)
+	{
+		if (_kingSmallIconTexture == default)
+			_kingSmallIconTexture = graphics.CreateTextureFromBmp(kingSmallIcon, kingSmallIconWidth, kingSmallIconHeight);
+
+		return _kingSmallIconTexture;
+	}
+	
+	public IntPtr GetLargeIconTexture(Graphics graphics, int rankId)
+	{
+		return rankId switch
+		{
+			Unit.RANK_KING => GetKingIconTexture(graphics),
+			Unit.RANK_GENERAL => GetGeneralIconTexture(graphics),
+			_ => GetSoldierIconTexture(graphics)
+		};
+	}
+
+	public IntPtr GetSmallIconTexture(Graphics graphics, int rankId)
+	{
+		return rankId switch
+		{
+			Unit.RANK_KING => GetKingSmallIconTexture(graphics),
+			Unit.RANK_GENERAL => GetGeneralSmallIconTexture(graphics),
+			_ => GetSoldierSmallIconTexture(graphics)
+		};
+	}
 	
 	// each nation's tech level on this unit
 	public int[] nation_tech_level_array = new int[GameConstants.MAX_NATION];
@@ -381,11 +468,11 @@ public class UnitInfo
 		switch (rankId)
 		{
 			case Unit.RANK_KING:
-				return king_icon_ptr;
+				return kingIcon;
 			case Unit.RANK_GENERAL:
-				return general_icon_ptr;
+				return generalIcon;
 			default:
-				return soldier_icon_ptr;
+				return soldierIcon;
 		}
 	}
 
@@ -394,11 +481,11 @@ public class UnitInfo
 		switch (rankId)
 		{
 			case Unit.RANK_KING:
-				return king_small_icon_ptr;
+				return kingSmallIcon;
 			case Unit.RANK_GENERAL:
-				return general_small_icon_ptr;
+				return generalSmallIcon;
 			default:
-				return soldier_small_icon_ptr;
+				return soldierSmallIcon;
 		}
 	}
 
@@ -630,49 +717,67 @@ public class UnitRes
 			unitInfo.guard_combat_level = Misc.ToInt32(unitRec.guard_combat_level);
 
 			int bitmapOffset = BitConverter.ToInt32(unitRec.large_icon_ptr, 0);
-			unitInfo.soldier_icon_ptr = res_large_icon.Read(bitmapOffset);
+			byte[] soldierIconData = res_large_icon.Read(bitmapOffset);
+			unitInfo.soldierIconWidth = BitConverter.ToInt16(soldierIconData, 0);
+			unitInfo.soldierIconHeight = BitConverter.ToInt16(soldierIconData, 2);
+			unitInfo.soldierIcon = soldierIconData.Skip(4).ToArray();
 
 			if (unitRec.general_icon_file_name[0] != '\0' && unitRec.general_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.general_icon_ptr, 0);
-				unitInfo.general_icon_ptr = res_general_icon.Read(bitmapOffset);
+				byte[] generalIconData = res_general_icon.Read(bitmapOffset);
+				unitInfo.generalIconWidth = BitConverter.ToInt16(generalIconData, 0);
+				unitInfo.generalIconHeight = BitConverter.ToInt16(generalIconData, 2);
+				unitInfo.generalIcon = generalIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.general_icon_ptr = unitInfo.soldier_icon_ptr;
+				unitInfo.generalIcon = soldierIconData.Skip(4).ToArray();
 			}
 
 			if (unitRec.king_icon_file_name[0] != '\0' && unitRec.king_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.king_icon_ptr, 0);
-				unitInfo.king_icon_ptr = res_king_icon.Read(bitmapOffset);
+				byte[] kingIconData = res_king_icon.Read(bitmapOffset);
+				unitInfo.kingIconWidth = BitConverter.ToInt16(kingIconData, 0);
+				unitInfo.kingIconHeight = BitConverter.ToInt16(kingIconData, 2);
+				unitInfo.kingIcon = kingIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.king_icon_ptr = unitInfo.soldier_icon_ptr;
+				unitInfo.kingIcon = soldierIconData.Skip(4).ToArray();
 			}
 
 			bitmapOffset = BitConverter.ToInt32(unitRec.small_icon_ptr, 0);
-			unitInfo.soldier_small_icon_ptr = res_small_icon.Read(bitmapOffset);
+			byte[] soldierSmallIconData = res_small_icon.Read(bitmapOffset);
+			unitInfo.soldierSmallIconWidth = BitConverter.ToInt16(soldierSmallIconData, 0);
+			unitInfo.soldierSmallIconHeight = BitConverter.ToInt16(soldierSmallIconData, 2);
+			unitInfo.soldierSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 
 			if (unitRec.general_small_icon_file_name[0] != '\0' && unitRec.general_small_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.general_small_icon_ptr, 0);
-				unitInfo.general_small_icon_ptr = res_general_small_icon.Read(bitmapOffset);
+				byte[] generalSmallIconData = res_general_small_icon.Read(bitmapOffset);
+				unitInfo.generalSmallIconWidth = BitConverter.ToInt16(generalSmallIconData, 0);
+				unitInfo.generalSmallIconHeight = BitConverter.ToInt16(generalSmallIconData, 2);
+				unitInfo.generalSmallIcon = generalSmallIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.general_small_icon_ptr = unitInfo.soldier_small_icon_ptr;
+				unitInfo.generalSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 			}
 
 			if (unitRec.king_small_icon_file_name[0] != '\0' && unitRec.king_small_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.king_small_icon_ptr, 0);
-				unitInfo.king_small_icon_ptr = res_king_small_icon.Read(bitmapOffset);
+				byte[] kingSmallIconData = res_king_small_icon.Read(bitmapOffset);
+				unitInfo.kingSmallIconWidth = BitConverter.ToInt16(kingSmallIconData, 0);
+				unitInfo.kingSmallIconHeight = BitConverter.ToInt16(kingSmallIconData, 2);
+				unitInfo.kingSmallIcon = kingSmallIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.king_small_icon_ptr = unitInfo.soldier_small_icon_ptr;
+				unitInfo.kingSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 			}
 
 			unitInfo.first_attack = Misc.ToInt32(unitRec.first_attack);

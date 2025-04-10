@@ -484,4 +484,14 @@ public class FirmInn : Firm
 
 		return true;
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawInnDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleInnDetailsInput(this);
+	}
 }

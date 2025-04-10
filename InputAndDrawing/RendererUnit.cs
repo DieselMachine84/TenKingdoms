@@ -10,7 +10,7 @@ public partial class Renderer
         Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
     }
     
-    private void HandleUnitDetailsInput()
+    private void HandleUnitDetailsInput(Unit unit)
     {
         //
     }

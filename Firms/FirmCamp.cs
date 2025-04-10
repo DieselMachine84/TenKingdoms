@@ -2121,4 +2121,14 @@ public class FirmCamp : Firm
 			unit.assign(loc_x1, loc_y1);
 		}
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawCampDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleCampDetailsInput(this);
+	}
 }

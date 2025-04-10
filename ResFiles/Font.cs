@@ -119,7 +119,6 @@ public class Font
         _stdFontHeight *= 2;
         FontHeight *= 2;
         InterCharSpace *= 2;
-        SpaceWidth *= 2;
     }
 
     public int TextWidth(string text, int maxDispWidth = 0)

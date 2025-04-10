@@ -118,11 +118,6 @@ public class Worker
         }
     }
 
-    public byte[] small_icon_ptr()
-    {
-        return UnitRes[unit_id].get_small_icon_ptr(rank_id);
-    }
-
     public void change_loyalty(int loyaltyChange)
     {
         if (town_recno != 0) // for those live in town, their loyalty are based on town people loyalty.

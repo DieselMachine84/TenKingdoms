@@ -67,11 +67,20 @@ public class RaceInfo
 	public byte[] iconBitmap;
 	public int iconBitmapWidth;
 	public int iconBitmapHeight;
+	private IntPtr _iconTexture;
 
 	public byte[] scrollBitmap;
 	public int scrollBitmapWidth;
 	public int scrollBitmapHeight;
 	private IntPtr _scrollTexture;
+
+	public IntPtr GetIconTexture(Graphics graphics)
+	{
+		if (_iconTexture == default)
+			_iconTexture = graphics.CreateTextureFromBmp(iconBitmap, iconBitmapWidth, iconBitmapHeight);
+
+		return _iconTexture;
+	}
 
 	public IntPtr GetScrollTexture(Graphics graphics)
 	{

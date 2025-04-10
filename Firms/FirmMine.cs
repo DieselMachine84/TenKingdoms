@@ -349,4 +349,14 @@ public class FirmMine : Firm
 
         return false;
     }
+    
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawMineDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleMineDetailsInput(this);
+    }
 }

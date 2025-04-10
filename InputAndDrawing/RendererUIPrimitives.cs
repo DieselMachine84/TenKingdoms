@@ -15,6 +15,7 @@ public partial class Renderer
 	private const int Button4X = DetailsX1 + 251;
 	private const int Button5X = DetailsX1 + 334;
 	private const int ButtonsTownY = DetailsY1 + 385;
+	private const int ButtonsCampY = DetailsY1 + 376;
 
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
 	private int _colorSquareWidth;
@@ -70,6 +71,21 @@ public partial class Renderer
 	private IntPtr _smallPanelTexture;
 	private int _smallPanelWidth;
 	private int _smallPanelHeight;
+	private IntPtr _overseerPanelTexture;
+	private int _overseerPanelWidth;
+	private int _overseerPanelHeight;
+	private IntPtr _workersPanelTexture;
+	private int _workersPanelWidth;
+	private int _workersPanelHeight;
+	private IntPtr _workerDetailsPanelTexture;
+	private int _workerDetailsPanelWidth;
+	private int _workerDetailsPanelHeight;
+	private IntPtr _fieldPanel1Texture;
+	private int _fieldPanel1Width;
+	private int _fieldPanel1Height;
+	private IntPtr _fieldPanel2Texture;
+	private int _fieldPanel2Width;
+	private int _fieldPanel2Height;
 
 	private IntPtr _listBoxPanelTexture;
 	private int _listBoxPanelWidth;
@@ -80,10 +96,6 @@ public partial class Renderer
 	private IntPtr _listBoxScrollPanelTexture;
 	private int _listBoxScrollPanelWidth;
 	private int _listBoxScrollPanelHeight;
-
-	private readonly List<IntPtr> _racesTextures = new List<nint>();
-	private int _raceTextureWidth;
-	private int _raceTextureHeight;
 
 	private IntPtr _arrowUpTexture;
 	private int _arrowUpWidth;
@@ -117,10 +129,24 @@ public partial class Renderer
 	private IntPtr _buttonGrantDisabledTexture;
 	private int _buttonGrantWidth;
 	private int _buttonGrantHeight;
+	private IntPtr _buttonPatrolTexture;
+	private IntPtr _buttonPatrolDisabledTexture;
+	private int _buttonPatrolWidth;
+	private int _buttonPatrolHeight;
 
 	private IntPtr _buttonSpyMenuTexture;
 	private int _buttonSpyMenuWidth;
 	private int _buttonSpyMenuHeight;
+	private IntPtr _buttonRewardTexture;
+	private IntPtr _buttonRewardDisabledTexture;
+	private int _buttonRewardWidth;
+	private int _buttonRewardHeight;
+	private IntPtr _buttonDefenseOnTexture;
+	private int _buttonDefenseOnWidth;
+	private int _buttonDefenseOnHeight;
+	private IntPtr _buttonDefenseOffTexture;
+	private int _buttonDefenseOffWidth;
+	private int _buttonDefenseOffHeight;
 	
 	private void CreateUITextures()
 	{
@@ -224,19 +250,39 @@ public partial class Renderer
             584 + _detailsTexture1Width - _detailsTexture2Width, 264 + _detailsTexture2Height, _detailsTexture4Width, _detailsTexture4Height);
         _detailsTexture4 = Graphics.CreateTextureFromBmp(detailsBitmap4, _detailsTexture4Width, _detailsTexture4Height);
         
-        CreateSmallPanel(detailsBitmap1, detailsBitmap2);
+        CreatePanels(detailsBitmap1, detailsBitmap2);
 
         CreateListBoxPanels(detailsBitmap1, detailsBitmap2);
         
         CreateListBoxScrollPanel(detailsBitmap1, detailsBitmap2);
 	}
 
-	private void CreateSmallPanel(byte[] detailsBitmap1, byte[] detailsBitmap2)
+	private void CreatePanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
 	{
 		_smallPanelWidth = (DetailsWidth - 4) / 3 * 2;
 		_smallPanelHeight = 30;
 		byte[] smallPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _smallPanelWidth, _smallPanelHeight);
 		_smallPanelTexture = Graphics.CreateTextureFromBmp(smallPanelBitmap, _smallPanelWidth, _smallPanelHeight, 32);
+		_overseerPanelWidth = _smallPanelWidth;
+		_overseerPanelHeight = 62;
+		byte[] overseerPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _overseerPanelWidth, _overseerPanelHeight);
+		_overseerPanelTexture = Graphics.CreateTextureFromBmp(overseerPanelBitmap, _overseerPanelWidth, _overseerPanelHeight, 32);
+		_workersPanelWidth = _smallPanelWidth;
+		_workersPanelHeight = 72;
+		byte[] workersPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workersPanelWidth, _workersPanelHeight);
+		_workersPanelTexture = Graphics.CreateTextureFromBmp(workersPanelBitmap, _workersPanelWidth, _workersPanelHeight, 32);
+		_workerDetailsPanelWidth = _smallPanelWidth;
+		_workerDetailsPanelHeight = 44;
+		byte[] workerDetailsPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workerDetailsPanelWidth, _workerDetailsPanelHeight);
+		_workerDetailsPanelTexture = Graphics.CreateTextureFromBmp(workerDetailsPanelBitmap, _workerDetailsPanelWidth, _workerDetailsPanelHeight, 32);
+		_fieldPanel1Width = 62;
+		_fieldPanel1Height = 18;
+		byte[] fieldPanel1Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel1Width, _fieldPanel1Height);
+		_fieldPanel1Texture = Graphics.CreateTextureFromBmp(fieldPanel1Bitmap, _fieldPanel1Width, _fieldPanel1Height, 32);
+		_fieldPanel2Width = 67;
+		_fieldPanel2Height = 18;
+		byte[] fieldPanel2Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel2Width, _fieldPanel2Height);
+		_fieldPanel2Texture = Graphics.CreateTextureFromBmp(fieldPanel2Bitmap, _fieldPanel2Width, _fieldPanel2Height, 32);
 	}
 
 	private void CreateListBoxPanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
@@ -260,16 +306,6 @@ public partial class Renderer
 		_listBoxScrollPanelTexture = Graphics.CreateTextureFromBmp(listBoxScrollPanelBitmap, _listBoxScrollPanelWidth, _listBoxScrollPanelHeight, 32);
 	}
 	
-	private void CreateRacesTextures()
-	{
-		_raceTextureWidth = RaceRes[1].iconBitmapWidth;
-		_raceTextureHeight = RaceRes[1].iconBitmapHeight;
-		for (int i = 1; i <= GameConstants.MAX_RACE; i++)
-		{
-			_racesTextures.Add(Graphics.CreateTextureFromBmp(RaceRes[i].iconBitmap, _raceTextureWidth, _raceTextureHeight));
-		}
-	}
-
 	private void CreateArrowTextures()
 	{
 		ResourceIdx arrowResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_ICON.RES");
@@ -329,12 +365,36 @@ public partial class Renderer
 		_buttonGrantTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonGrantWidth, _buttonGrantHeight);
 		buttonData = CreateDisabledButtonTexture(buttonData, _buttonGrantWidth, _buttonGrantHeight);
 		_buttonGrantDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonGrantWidth, _buttonGrantHeight, 32);
+		buttonData = buttonImages.Read("PATROL");
+		_buttonPatrolWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonPatrolHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonPatrolWidth, _buttonPatrolHeight);
+		_buttonPatrolTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
+		_buttonPatrolDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight, 32);
 		
 		buttonData = buttonImages.Read("SPYMENU");
 		_buttonSpyMenuWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonSpyMenuHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyMenuWidth, _buttonSpyMenuHeight);
 		_buttonSpyMenuTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+		buttonData = buttonImages.Read("REWARDCB");
+		_buttonRewardWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonRewardHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRewardWidth, _buttonRewardHeight);
+		_buttonRewardTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRewardWidth, _buttonRewardHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonRewardWidth, _buttonRewardHeight);
+		_buttonRewardDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRewardWidth, _buttonRewardHeight, 32);
+		buttonData = buttonImages.Read("DEFENSE1");
+		_buttonDefenseOnWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDefenseOnHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDefenseOnWidth, _buttonDefenseOnHeight);
+		_buttonDefenseOnTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDefenseOnWidth, _buttonDefenseOnHeight);
+		buttonData = buttonImages.Read("DEFENSE0");
+		_buttonDefenseOffWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDefenseOffHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDefenseOffWidth, _buttonDefenseOffHeight);
+		_buttonDefenseOffTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDefenseOffWidth, _buttonDefenseOffHeight);
 	}
 
 	private byte[] CreateDisabledButtonTexture(byte[] buttonData, int width, int height)
@@ -450,6 +510,31 @@ public partial class Renderer
 		Graphics.DrawBitmap(_smallPanelTexture, x, y, Scale(_smallPanelWidth), Scale(_smallPanelHeight));
 	}
 
+	private void DrawOverseerPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_overseerPanelTexture, x, y, Scale(_overseerPanelWidth), Scale(_overseerPanelHeight));
+	}
+
+	private void DrawWorkersPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_workersPanelTexture, x, y, Scale(_workersPanelWidth), Scale(_workersPanelHeight));
+	}
+
+	private void DrawWorkerDetailsPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_workerDetailsPanelTexture, x, y, Scale(_workerDetailsPanelWidth), Scale(_workerDetailsPanelHeight));
+	}
+
+	private void DrawFieldPanel1(int x, int y)
+	{
+		Graphics.DrawBitmap(_fieldPanel1Texture, x, y, Scale(_fieldPanel1Width), Scale(_fieldPanel1Height));
+	}
+
+	private void DrawFieldPanel2(int x, int y)
+	{
+		Graphics.DrawBitmap(_fieldPanel2Texture, x, y, Scale(_fieldPanel2Width), Scale(_fieldPanel2Height));
+	}
+	
 	private void DrawListBoxPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_listBoxPanelTexture, x, y, Scale(_listBoxPanelWidth), Scale(_listBoxPanelHeight));
@@ -484,7 +569,7 @@ public partial class Renderer
 		PutText(font, text, textX, textY, x2);
 	}
 
-	private void PutText(Font font, string text, int x, int y, int x2 = -1)
+	private void PutText(Font font, string text, int x, int y, int x2 = -1, bool smallSize = false)
 	{
 		if (x2 < 0) // default
 			x2 = x + font.MaxFontWidth * text.Length;
@@ -543,8 +628,18 @@ public partial class Renderer
 
 					if (fontInfo.width > 0)
 					{
-						Graphics.DrawBitmap(fontInfo.GetTexture(Graphics, font.FontBitmap), x, y + fontInfo.offset_y, fontInfo.width, fontInfo.height);
-						x += fontInfo.width; // inter-character space
+						if (smallSize)
+						{
+							Graphics.DrawBitmap(fontInfo.GetTexture(Graphics, font.FontBitmap),
+								x, y + fontInfo.offset_y * 2 / 3, fontInfo.width * 2 / 3, fontInfo.height * 2 / 3);
+							x += fontInfo.width * 2 / 3; // inter-character space
+						}
+						else
+						{
+							Graphics.DrawBitmap(fontInfo.GetTexture(Graphics, font.FontBitmap),
+								x, y + fontInfo.offset_y, fontInfo.width, fontInfo.height);
+							x += fontInfo.width; // inter-character space
+						}
 					}
 				}
 				else
@@ -558,7 +653,7 @@ public partial class Renderer
 				}
 			}
 
-			x += font.InterCharSpace;
+			x += smallSize ? font.InterCharSpace * 2 / 3 : font.InterCharSpace;
 		}
 	}
 }

@@ -992,4 +992,14 @@ public class FirmMonster : Firm
 		// original probability 1/6
 		return Misc.Random(Sys.Instance.FirmRes[FIRM_MONSTER].total_firm_count * ConfigAdv.monster_attack_divisor) == 0;
 	}
+	
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawMonsterLairDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleMonsterLairDetailsInput(this);
+	}
 }

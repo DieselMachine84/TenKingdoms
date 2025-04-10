@@ -85,13 +85,13 @@ public partial class Renderer
             if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
             {
                 if (_selectedTownId != 0)
-                    HandleTownDetailsInput();
+                    HandleTownDetailsInput(TownArray[_selectedTownId]);
                 
                 if (_selectedFirmId != 0)
-                    HandleFirmDetailsInput();
+                    HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
                 
                 if (_selectedUnitId != 0)
-                    HandleUnitDetailsInput();
+                    HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
             }
         }
 

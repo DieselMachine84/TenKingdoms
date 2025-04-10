@@ -283,4 +283,14 @@ public class FirmBase : Firm
 
         invoke_god();
     }
+
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawBaseDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleBaseDetailsInput(this);
+    }
 }

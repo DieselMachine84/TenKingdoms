@@ -340,4 +340,14 @@ public class FirmWar : Firm
 
         return true;
     }
+    
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawWarFactoryDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleWarFactoryDetailsInput(this);
+    }
 }

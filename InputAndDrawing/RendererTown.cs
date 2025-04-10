@@ -61,7 +61,8 @@ public partial class Renderer
             if (_selectedRaceId == 0)
                 _selectedRaceId = i + 1;
 
-            Graphics.DrawBitmap(_racesTextures[i], DetailsX1 + 14, raceY, _raceTextureWidth * 2, _raceTextureHeight * 2);
+            RaceInfo raceInfo = RaceRes[i + 1];
+            Graphics.DrawBitmap(raceInfo.GetIconTexture(Graphics), DetailsX1 + 14, raceY, raceInfo.iconBitmapWidth * 2, raceInfo.iconBitmapHeight * 2);
 
             int textY = raceY + 4;
             PutText(FontMid, town.RacesPopulation[i].ToString(), DetailsX1 + 100, textY);
@@ -139,23 +140,20 @@ public partial class Renderer
                 Graphics.DrawBitmap(_buttonRecruitDisabledTexture, Button1X + 2, ButtonsTownY + 8, Scale(_buttonRecruitWidth), Scale(_buttonRecruitHeight));
             }
 
-            if (town.HasLinkedOwnCamp)
+            if (IsTrainEnabled(town))
             {
-                if (town.CanTrain(_selectedRaceId))
-                {
-                    bool mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
-                                         _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-                    if (_leftMousePressed && mouseOnButton)
-                        Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
-                    else
-                        Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                    Graphics.DrawBitmap(_buttonTrainTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
-                }
+                bool mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+                                     _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
+                if (_leftMousePressed && mouseOnButton)
+                    Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
                 else
-                {
-                    Graphics.DrawBitmap(_buttonDisabledTexture, Button2X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                    Graphics.DrawBitmap(_buttonTrainDisabledTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
-                }
+                    Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                Graphics.DrawBitmap(_buttonTrainTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
+            }
+            else
+            {
+                Graphics.DrawBitmap(_buttonDisabledTexture, Button2X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
+                Graphics.DrawBitmap(_buttonTrainDisabledTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
             }
 
             if (town.HasPlayerSpy())
@@ -169,63 +167,57 @@ public partial class Renderer
                 Graphics.DrawBitmap(_buttonSpyMenuTexture, Button3X + 4, ButtonsTownY + 16, Scale(_buttonSpyMenuWidth), Scale(_buttonSpyMenuHeight));
             }
 
-            if (town.HasLinkedOwnCamp)
+            if (IsCollectTaxEnabled(town))
             {
-                if (town.AverageLoyalty() >= GameConstants.REBEL_LOYALTY)
-                {
-                    bool mouseOnButton = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
-                                         _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-                    if (_leftMousePressed && mouseOnButton)
-                        Graphics.DrawBitmap(_buttonDownTexture, Button4X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
-                    else
-                        Graphics.DrawBitmap(_buttonUpTexture, Button4X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                    Graphics.DrawBitmap(_buttonCollectTaxTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
-                }
+                bool mouseOnButton = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
+                                     _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
+                if (_leftMousePressed && mouseOnButton)
+                    Graphics.DrawBitmap(_buttonDownTexture, Button4X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
                 else
-                {
-                    Graphics.DrawBitmap(_buttonDisabledTexture, Button4X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                    Graphics.DrawBitmap(_buttonCollectTaxDisabledTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
-                }
+                    Graphics.DrawBitmap(_buttonUpTexture, Button4X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                Graphics.DrawBitmap(_buttonCollectTaxTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
+            }
+            else
+            {
+                Graphics.DrawBitmap(_buttonDisabledTexture, Button4X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
+                Graphics.DrawBitmap(_buttonCollectTaxDisabledTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
+            }
 
-                if (NationArray.player.cash > 0.0)
-                {
-                    bool mouseOnButton = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
-                                         _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-                    if (_leftMousePressed && mouseOnButton)
-                        Graphics.DrawBitmap(_buttonDownTexture, Button5X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
-                    else
-                        Graphics.DrawBitmap(_buttonUpTexture, Button5X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                    Graphics.DrawBitmap(_buttonGrantTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
-                }
+            if (IsGrantEnabled(town))
+            {
+                bool mouseOnButton = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
+                                     _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
+                if (_leftMousePressed && mouseOnButton)
+                    Graphics.DrawBitmap(_buttonDownTexture, Button5X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
                 else
-                {
-                    Graphics.DrawBitmap(_buttonDisabledTexture, Button5X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                    Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
-                }
+                    Graphics.DrawBitmap(_buttonUpTexture, Button5X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                Graphics.DrawBitmap(_buttonGrantTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+            }
+            else
+            {
+                Graphics.DrawBitmap(_buttonDisabledTexture, Button5X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
+                Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
             }
         }
         else
         {
-            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
-            if (canGrantToNonOwnTown)
+            if (IsGrantToNonOwnTownEnabled(town))
             {
-                if (NationArray.player.cash > 0.0)
-                {
-                    bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
-                                         _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-                    if (_leftMousePressed && mouseOnButton)
-                        Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
-                    else
-                        Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                    Graphics.DrawBitmap(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
-                }
+                bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+                                     _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
+                if (_leftMousePressed && mouseOnButton)
+                    Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
                 else
-                {
-                    Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                    Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
-                }
+                    Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                Graphics.DrawBitmap(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+            }
+            else
+            {
+                Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
+                Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
             }
             
+            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
             if (town.HasPlayerSpy())
             {
                 int buttonSpyMenuX = canGrantToNonOwnTown ? Button2X : Button1X;
@@ -240,10 +232,8 @@ public partial class Renderer
         }
     }
 
-    private void HandleTownDetailsInput()
+    private void HandleTownDetailsInput(Town town)
     {
-        Town town = TownArray[_selectedTownId];
-
         bool race1Selected = _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
                              _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;
         bool race2Selected = _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
@@ -286,7 +276,7 @@ public partial class Renderer
                 town.Recruit(-1, _selectedRaceId, InternalConstants.COMMAND_PLAYER);
             }
 
-            if (button2Pressed && town.HasLinkedOwnCamp && town.CanTrain(_selectedRaceId))
+            if (button2Pressed && IsTrainEnabled(town))
             {
                 // TODO train
             }
@@ -296,13 +286,13 @@ public partial class Renderer
                 // TODO show spies list
             }
 
-            if (button4Pressed && town.HasLinkedOwnCamp && town.AverageLoyalty() >= GameConstants.REBEL_LOYALTY)
+            if (button4Pressed && IsCollectTaxEnabled(town))
             {
                 SECtrl.immediate_sound("TURN_ON");
                 town.CollectTax(InternalConstants.COMMAND_PLAYER);
             }
 
-            if (button5Pressed && town.HasLinkedOwnCamp && NationArray.player.cash > 0.0)
+            if (button5Pressed && IsGrantEnabled(town))
             {
                 SECtrl.immediate_sound("TURN_ON");
                 town.Reward(InternalConstants.COMMAND_PLAYER);
@@ -310,17 +300,37 @@ public partial class Renderer
         }
         else
         {
-            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
-            if (button1Pressed && canGrantToNonOwnTown && NationArray.player.cash > 0.0)
+            if (button1Pressed && IsGrantToNonOwnTownEnabled(town))
             {
                 // TODO grant
             }
             
+            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
             bool spiesButtonPressed = (canGrantToNonOwnTown ? button2Pressed : button1Pressed);
             if (spiesButtonPressed && town.HasPlayerSpy())
             {
                 // TODO show spies list
             }
         }
+    }
+
+    private bool IsTrainEnabled(Town town)
+    {
+        return town.HasLinkedOwnCamp && town.CanTrain(_selectedRaceId);
+    }
+    
+    private bool IsCollectTaxEnabled(Town town)
+    {
+        return town.HasLinkedOwnCamp && town.AverageLoyalty() >= GameConstants.REBEL_LOYALTY;
+    }
+
+    private bool IsGrantEnabled(Town town)
+    {
+        return town.HasLinkedOwnCamp && NationArray.player.cash > 0.0;
+    }
+
+    private bool IsGrantToNonOwnTownEnabled(Town town)
+    {
+        return NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno) && NationArray.player.cash > 0.0;
     }
 }

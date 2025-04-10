@@ -581,4 +581,14 @@ public class FirmFactory : Firm
 
 		return false;
 	}
+	
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawFactoryDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleFactoryDetailsInput(this);
+	}
 }

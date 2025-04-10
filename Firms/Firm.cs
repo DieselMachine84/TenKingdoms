@@ -447,7 +447,7 @@ public abstract class Firm
 
 	public bool own_firm() // whether the firm is controlled by the current player
 	{
-		return nation_recno == NationArray.player_recno;
+		return NationArray.player_recno != 0 && nation_recno == NationArray.player_recno;
 	}
 
 	public bool can_sell()
@@ -3909,4 +3909,8 @@ public abstract class Firm
 			r = firmBuild.under_construction_bitmap_count - 1;
 		return r;
 	}
+
+	public abstract void DrawDetails(IRenderer renderer);
+
+	public abstract void HandleDetailsInput(IRenderer renderer);
 }
