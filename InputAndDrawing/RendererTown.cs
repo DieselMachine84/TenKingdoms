@@ -87,7 +87,7 @@ public partial class Renderer
             int loyaltyWidth = FontMid.TextWidth(loyaltyString);
             string targetLoyaltyString = targetLoyalty.ToString();
             int targetLoyaltyWidth = FontMid.TextWidth(targetLoyaltyString);
-            if (loyalty != targetLoyalty)
+            if (targetLoyalty != -1 && targetLoyalty != loyalty)
             {
                 int fullLoyaltyWidth = loyaltyWidth + targetLoyaltyWidth + 8;
                 fullLoyaltyWidth += (targetLoyalty < loyalty ? _arrowDownWidth * 2 : _arrowUpWidth * 2);
@@ -201,26 +201,30 @@ public partial class Renderer
         }
         else
         {
-            if (IsGrantToNonOwnTownEnabled(town))
+            bool displayGrantButton = town.HasLinkedCamp(NationArray.player_recno, false);
+            if (displayGrantButton)
             {
-                bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
-                                     _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-                if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                if (IsGrantToNonOwnTownEnabled(town))
+                {
+                    bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+                                         _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
+                    if (_leftMousePressed && mouseOnButton)
+                        Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    else
+                        Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                    Graphics.DrawBitmap(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+                }
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+                {
+                    Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
+                    Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth),
+                        Scale(_buttonGrantHeight));
+                }
             }
-            else
-            {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
-            }
-            
-            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
+
             if (town.HasPlayerSpy())
             {
-                int buttonSpyMenuX = canGrantToNonOwnTown ? Button2X : Button1X;
+                int buttonSpyMenuX = displayGrantButton ? Button2X : Button1X;
                 bool mouseOnButton = _mouseButtonX >= buttonSpyMenuX + 2 && _mouseButtonX <= buttonSpyMenuX + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
@@ -305,8 +309,8 @@ public partial class Renderer
                 // TODO grant
             }
             
-            bool canGrantToNonOwnTown = (NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno));
-            bool spiesButtonPressed = (canGrantToNonOwnTown ? button2Pressed : button1Pressed);
+            bool displayGrantButton = town.HasLinkedCamp(NationArray.player_recno, false);
+            bool spiesButtonPressed = (displayGrantButton ? button2Pressed : button1Pressed);
             if (spiesButtonPressed && town.HasPlayerSpy())
             {
                 // TODO show spies list
