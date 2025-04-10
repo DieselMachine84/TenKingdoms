@@ -2,6 +2,11 @@ namespace TenKingdoms;
 
 public interface IRenderer
 {
+    void DrawFrame();
+    void ProcessInput(int eventType, int screenX, int screenY);
+    void Reset();
+
+   
     void DrawMineDetails(FirmMine mine);
     void DrawFactoryDetails(FirmFactory factory);
     void DrawResearchDetails(FirmResearch research);
