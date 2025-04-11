@@ -123,7 +123,7 @@ public partial class Renderer
         
         DrawWorkers(camp);
 
-        DrawWorkerDetailsPanel(DetailsX1 + 2, DetailsY1 + 303);
+        DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 303);
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 308);
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 337);
         DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 308);

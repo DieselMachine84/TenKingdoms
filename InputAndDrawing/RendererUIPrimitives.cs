@@ -77,9 +77,9 @@ public partial class Renderer
 	private IntPtr _workersPanelTexture;
 	private int _workersPanelWidth;
 	private int _workersPanelHeight;
-	private IntPtr _workerDetailsPanelTexture;
-	private int _workerDetailsPanelWidth;
-	private int _workerDetailsPanelHeight;
+	private IntPtr _panelWithTwoFieldsTexture;
+	private int _panelWithTwoFieldsWidth;
+	private int _panelWithTwoFieldsHeight;
 	private IntPtr _fieldPanel1Texture;
 	private int _fieldPanel1Width;
 	private int _fieldPanel1Height;
@@ -271,10 +271,10 @@ public partial class Renderer
 		_workersPanelHeight = 72;
 		byte[] workersPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workersPanelWidth, _workersPanelHeight);
 		_workersPanelTexture = Graphics.CreateTextureFromBmp(workersPanelBitmap, _workersPanelWidth, _workersPanelHeight, 32);
-		_workerDetailsPanelWidth = _smallPanelWidth;
-		_workerDetailsPanelHeight = 44;
-		byte[] workerDetailsPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workerDetailsPanelWidth, _workerDetailsPanelHeight);
-		_workerDetailsPanelTexture = Graphics.CreateTextureFromBmp(workerDetailsPanelBitmap, _workerDetailsPanelWidth, _workerDetailsPanelHeight, 32);
+		_panelWithTwoFieldsWidth = _smallPanelWidth;
+		_panelWithTwoFieldsHeight = 44;
+		byte[] workerDetailsPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight);
+		_panelWithTwoFieldsTexture = Graphics.CreateTextureFromBmp(workerDetailsPanelBitmap, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight, 32);
 		_fieldPanel1Width = 62;
 		_fieldPanel1Height = 18;
 		byte[] fieldPanel1Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel1Width, _fieldPanel1Height);
@@ -520,9 +520,9 @@ public partial class Renderer
 		Graphics.DrawBitmap(_workersPanelTexture, x, y, Scale(_workersPanelWidth), Scale(_workersPanelHeight));
 	}
 
-	private void DrawWorkerDetailsPanel(int x, int y)
+	private void DrawPanelWithTwoFields(int x, int y)
 	{
-		Graphics.DrawBitmap(_workerDetailsPanelTexture, x, y, Scale(_workerDetailsPanelWidth), Scale(_workerDetailsPanelHeight));
+		Graphics.DrawBitmap(_panelWithTwoFieldsTexture, x, y, Scale(_panelWithTwoFieldsWidth), Scale(_panelWithTwoFieldsHeight));
 	}
 
 	private void DrawFieldPanel1(int x, int y)

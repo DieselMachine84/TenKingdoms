@@ -71,6 +71,7 @@ public partial class Renderer : IRenderer
     private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
     private static UnitRes UnitRes => Sys.Instance.UnitRes;
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
+    private static GodRes GodRes => Sys.Instance.GodRes;
 
     private static Config Config => Sys.Instance.Config;
     private static Info Info => Sys.Instance.Info;
