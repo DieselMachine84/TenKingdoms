@@ -9,8 +9,7 @@ public partial class Renderer
         if (firm.nation_recno != 0)
         {
             firmNameX1 += 8 + _colorSquareWidth * 2;
-            int colorScheme = ColorRemap.ColorSchemes[firm.nation_recno];
-            int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
+            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.nation_recno], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
         PutTextCenter(FontSan, firm.firm_name(), firmNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
@@ -132,16 +131,16 @@ public partial class Renderer
 
         if (_selectedWorkerId == 0 && overseer != null)
         {
-            PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 311, -1, true);
-            PutText(FontSan, overseer.skill.combat_level.ToString(), DetailsX1 + 108, DetailsY1 + 312, -1, true);
-            PutText(FontSan, "Hit Points", DetailsX1 + 13, DetailsY1 + 340, -1, true);
-            PutText(FontSan, (int)overseer.hit_points + "/" + overseer.max_hit_points, DetailsX1 + 108, DetailsY1 + 341, -1, true);
-            PutText(FontSan, "Leadership", DetailsX1 + 214, DetailsY1 + 311, -1, true);
-            PutText(FontSan, overseer.skill.get_skill(Skill.SKILL_LEADING).ToString(), DetailsX1 + 316, DetailsY1 + 312, -1, true);
+            PutText(FontSan, "Leadership", DetailsX1 + 13, DetailsY1 + 311, -1, true);
+            PutText(FontSan, overseer.skill.get_skill(Skill.SKILL_LEADING).ToString(), DetailsX1 + 113, DetailsY1 + 313, -1, true);
+            PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 340, -1, true);
+            PutText(FontSan, overseer.skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 342, -1, true);
+            PutText(FontSan, "Hit Points", DetailsX1 + 214, DetailsY1 + 311, -1, true);
+            PutText(FontSan, (int)overseer.hit_points + "/" + overseer.max_hit_points, DetailsX1 + 307, DetailsY1 + 313, -1, true);
             if (overseer.rank_id != Unit.RANK_KING)
             {
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 340, -1, true);
-                PutText(FontSan, overseer.loyalty + " " + overseer.target_loyalty, DetailsX1 + 316, DetailsY1 + 341, -1, true);
+                PutText(FontSan, overseer.loyalty + " " + overseer.target_loyalty, DetailsX1 + 307, DetailsY1 + 342, -1, true);
             }
         }
         else

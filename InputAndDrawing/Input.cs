@@ -44,7 +44,7 @@ public partial class Renderer
                 {
                     ResetSelection();
                     _selectedUnitId = location.UnitId(UnitConstants.UNIT_LAND);
-                    UnitArray[_selectedUnitId].selected_flag = true;
+                    UnitArray[_selectedUnitId].selected_flag = !UnitArray[_selectedUnitId].selected_flag;
                 }
 
                 if (location.HasSite())
@@ -113,11 +113,9 @@ public partial class Renderer
                 {
                     if (unit.selected_flag)
                     {
-                        if (unit.nation_recno == 1)
+                        if (unit.true_nation_recno() == 1)
                         {
-                            Nation nation = NationArray[unit.nation_recno];
-                            if (nation.nation_type == NationBase.NATION_OWN)
-                                unit.MoveTo(locX, locY);
+                            unit.MoveTo(locX, locY);
                         }
                     }
                 }

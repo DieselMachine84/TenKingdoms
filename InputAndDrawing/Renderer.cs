@@ -84,6 +84,7 @@ public partial class Renderer : IRenderer
     private static TownArray TownArray => Sys.Instance.TownArray;
     private static FirmArray FirmArray => Sys.Instance.FirmArray;
     private static UnitArray UnitArray => Sys.Instance.UnitArray;
+    private static SpyArray SpyArray => Sys.Instance.SpyArray;
     private static SiteArray SiteArray => Sys.Instance.SiteArray;
 
     public Renderer(Graphics graphics)

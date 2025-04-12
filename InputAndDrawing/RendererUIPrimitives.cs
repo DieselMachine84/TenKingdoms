@@ -77,9 +77,15 @@ public partial class Renderer
 	private IntPtr _workersPanelTexture;
 	private int _workersPanelWidth;
 	private int _workersPanelHeight;
+	private IntPtr _unitPanelTexture;
+	private int _unitPanelWidth;
+	private int _unitPanelHeight;
 	private IntPtr _panelWithTwoFieldsTexture;
 	private int _panelWithTwoFieldsWidth;
 	private int _panelWithTwoFieldsHeight;
+	private IntPtr _panelWithThreeFieldsTexture;
+	private int _panelWithThreeFieldsWidth;
+	private int _panelWithThreeFieldsHeight;
 	private IntPtr _fieldPanel1Texture;
 	private int _fieldPanel1Width;
 	private int _fieldPanel1Height;
@@ -271,15 +277,23 @@ public partial class Renderer
 		_workersPanelHeight = 72;
 		byte[] workersPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workersPanelWidth, _workersPanelHeight);
 		_workersPanelTexture = Graphics.CreateTextureFromBmp(workersPanelBitmap, _workersPanelWidth, _workersPanelHeight, 32);
+		_unitPanelWidth = _smallPanelWidth;
+		_unitPanelHeight = 62;
+		byte[] unitPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _unitPanelWidth, _unitPanelHeight);
+		_unitPanelTexture = Graphics.CreateTextureFromBmp(unitPanelBitmap, _unitPanelWidth, _unitPanelHeight, 32);
 		_panelWithTwoFieldsWidth = _smallPanelWidth;
 		_panelWithTwoFieldsHeight = 44;
-		byte[] workerDetailsPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight);
-		_panelWithTwoFieldsTexture = Graphics.CreateTextureFromBmp(workerDetailsPanelBitmap, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight, 32);
-		_fieldPanel1Width = 62;
+		byte[] panelWithTwoFieldsBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight);
+		_panelWithTwoFieldsTexture = Graphics.CreateTextureFromBmp(panelWithTwoFieldsBitmap, _panelWithTwoFieldsWidth, _panelWithTwoFieldsHeight, 32);
+		_panelWithThreeFieldsWidth = _smallPanelWidth;
+		_panelWithThreeFieldsHeight = 63;
+		byte[] panelWithThreeFieldsBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithThreeFieldsWidth, _panelWithThreeFieldsHeight);
+		_panelWithThreeFieldsTexture = Graphics.CreateTextureFromBmp(panelWithThreeFieldsBitmap, _panelWithThreeFieldsWidth, _panelWithThreeFieldsHeight, 32);
+		_fieldPanel1Width = 67;
 		_fieldPanel1Height = 18;
 		byte[] fieldPanel1Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel1Width, _fieldPanel1Height);
 		_fieldPanel1Texture = Graphics.CreateTextureFromBmp(fieldPanel1Bitmap, _fieldPanel1Width, _fieldPanel1Height, 32);
-		_fieldPanel2Width = 67;
+		_fieldPanel2Width = 62;
 		_fieldPanel2Height = 18;
 		byte[] fieldPanel2Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel2Width, _fieldPanel2Height);
 		_fieldPanel2Texture = Graphics.CreateTextureFromBmp(fieldPanel2Bitmap, _fieldPanel2Width, _fieldPanel2Height, 32);
@@ -520,9 +534,19 @@ public partial class Renderer
 		Graphics.DrawBitmap(_workersPanelTexture, x, y, Scale(_workersPanelWidth), Scale(_workersPanelHeight));
 	}
 
+	private void DrawUnitPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_unitPanelTexture, x, y, Scale(_unitPanelWidth), Scale(_unitPanelHeight));
+	}
+	
 	private void DrawPanelWithTwoFields(int x, int y)
 	{
 		Graphics.DrawBitmap(_panelWithTwoFieldsTexture, x, y, Scale(_panelWithTwoFieldsWidth), Scale(_panelWithTwoFieldsHeight));
+	}
+
+	private void DrawPanelWithThreeFields(int x, int y)
+	{
+		Graphics.DrawBitmap(_panelWithThreeFieldsTexture, x, y, Scale(_panelWithThreeFieldsWidth), Scale(_panelWithThreeFieldsHeight));
 	}
 
 	private void DrawFieldPanel1(int x, int y)
