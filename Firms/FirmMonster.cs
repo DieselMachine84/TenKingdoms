@@ -501,7 +501,7 @@ public class FirmMonster : Firm
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (UnitArray.IsDeleted(unit.sprite_recno))
+			if (UnitArray.IsDeleted(unit.SpriteId))
 				continue;
 
 			//------ reset the monster's defense mode -----//
@@ -663,7 +663,7 @@ public class FirmMonster : Firm
 			monster.action_misc_para = firm_recno;
 		}
 
-		return monster.sprite_recno;
+		return monster.SpriteId;
 	}
 
 	private int think_attack_neighbor()

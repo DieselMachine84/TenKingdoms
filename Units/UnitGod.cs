@@ -305,9 +305,9 @@ public class UnitGod : Unit
 
 	private void viking_summon_tornado()
 	{
-		int xLoc = next_x_loc();
-		int yLoc = next_y_loc();
-		int dir = final_dir % 8;
+		int xLoc = NextLocX;
+		int yLoc = NextLocY;
+		int dir = FinalDir % 8;
 
 		// put a tornado one location ahead
 		if (dir == 0 || dir == 1 || dir == 7)
@@ -486,7 +486,7 @@ public class UnitGod : Unit
 		if (!is_ai_all_stop())
 			return;
 
-		if (Info.TotalDays % 7 != sprite_recno % 7)
+		if (Info.TotalDays % 7 != SpriteId % 7)
 			return;
 
 		switch (god_id)
@@ -782,19 +782,19 @@ public class UnitGod : Unit
 		// see if any unit near by
 
 		int castRadius = 2;
-		int leftLocX = next_x_loc() - castRadius;
+		int leftLocX = NextLocX - castRadius;
 		if (leftLocX < 0)
 			leftLocX = 0;
 
-		int rightLocX = next_x_loc() + castRadius;
+		int rightLocX = NextLocX + castRadius;
 		if (rightLocX >= GameConstants.MapSize)
 			rightLocX = GameConstants.MapSize - 1;
 
-		int topLocY = next_y_loc() - castRadius;
+		int topLocY = NextLocY - castRadius;
 		if (topLocY < 0)
 			topLocY = 0;
 
-		int bottomLocY = next_y_loc() + castRadius;
+		int bottomLocY = NextLocY + castRadius;
 		if (bottomLocY >= GameConstants.MapSize)
 			bottomLocY = GameConstants.MapSize - 1;
 
@@ -844,7 +844,7 @@ public class UnitGod : Unit
 		if (curRating > 1)
 		{
 			// if enemy unit come near, cast
-			go_cast_power(next_x_loc(), next_y_loc(), 1, InternalConstants.COMMAND_AI);
+			go_cast_power(NextLocX, NextLocY, 1, InternalConstants.COMMAND_AI);
 		}
 		else
 		{
@@ -853,24 +853,24 @@ public class UnitGod : Unit
 			foreach (Unit unit in UnitArray)
 			{
 				// don't affect independent unit
-				if (unit.is_visible() && unit.mobile_type == UnitConstants.UNIT_LAND &&
+				if (unit.is_visible() && unit.MobileType == UnitConstants.UNIT_LAND &&
 				    unit.nation_recno != 0 && unit.nation_recno != nation_recno &&
 				    (unit.loyalty >= 20 && unit.loyalty <= 60 || unit.loyalty <= 80 && unit.target_loyalty < 30) &&
 				    ownNation.get_relation(unit.nation_recno).status == NationBase.NATION_HOSTILE)
 				{
-					int cost = Misc.points_distance(next_x_loc(), next_y_loc(), unit.next_x_loc(), unit.next_y_loc());
+					int cost = Misc.points_distance(NextLocX, NextLocY, unit.NextLocX, unit.NextLocY);
 					if (cost < bestUnitCost)
 					{
 						bestUnitCost = cost;
-						xLoc = unit.next_x_loc();
-						yLoc = unit.next_y_loc();
+						xLoc = unit.NextLocX;
+						yLoc = unit.NextLocY;
 					}
 				}
 			}
 
 			if (bestUnitCost < 100)
 			{
-				if (Misc.points_distance(next_x_loc(), next_y_loc(), xLoc, yLoc) <= GodRes[god_id].cast_power_range)
+				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[god_id].cast_power_range)
 					go_cast_power(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
 					MoveTo(xLoc, yLoc);
@@ -878,12 +878,12 @@ public class UnitGod : Unit
 			else if (Misc.Random(4) == 0)
 			{
 				// move to a near random location
-				xLoc = next_x_loc() + Misc.Random(100) - 50;
+				xLoc = NextLocX + Misc.Random(100) - 50;
 				if (xLoc < 0)
 					xLoc = 0;
 				if (xLoc >= GameConstants.MapSize)
 					xLoc = GameConstants.MapSize - 1;
-				yLoc = next_y_loc() + Misc.Random(100) - 50;
+				yLoc = NextLocY + Misc.Random(100) - 50;
 				if (yLoc < 0)
 					yLoc = 0;
 				if (yLoc >= GameConstants.MapSize)

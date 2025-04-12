@@ -506,10 +506,9 @@ public class NewsArray
 		//------- set location --------//
 
 		if (betrayToNationRecno == NationArray.player_recno)
-			news.set_loc(unit.next_x_loc(), unit.next_y_loc(), News.NEWS_LOC_UNIT,
-				unitRecno, unit.name_id);
+			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unitRecno, unit.name_id);
 		else
-			news.set_loc(unit.next_x_loc(), unit.next_y_loc(), News.NEWS_LOC_ANY);
+			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
 
 	public void unit_assassinated(int unitRecno, bool spyKilled)
@@ -565,7 +564,7 @@ public class NewsArray
 		news.short_para1 = unit.race_id;
 		news.short_para2 = unit.name_id;
 
-		news.set_loc(unit.next_x_loc(), unit.next_y_loc(), News.NEWS_LOC_ANY);
+		news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
 
 	public void raw_exhaust(int rawId, int xLoc, int yLoc)

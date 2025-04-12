@@ -9,7 +9,7 @@ public partial class Renderer
         if (Config.show_ai_info || unit.is_own())
             return true;
         
-        if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(unit.next_x_loc(), unit.next_y_loc()))
+        if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(unit.NextLocX, unit.NextLocY))
             return true;
 
         return false;

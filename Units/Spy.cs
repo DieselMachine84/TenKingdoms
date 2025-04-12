@@ -184,10 +184,10 @@ public class Spy : IIdObject
 					}
 					else
 					{
-						int xLoc1 = ship.next_x_loc();
-						int yLoc1 = ship.next_y_loc();
-						int xLoc2 = xLoc1 + ship.sprite_info.loc_width - 1;
-						int yLoc2 = yLoc1 + ship.sprite_info.loc_height - 1;
+						int xLoc1 = ship.NextLocX;
+						int yLoc1 = ship.NextLocY;
+						int xLoc2 = xLoc1 + ship.SpriteInfo.loc_width - 1;
+						int yLoc2 = yLoc1 + ship.SpriteInfo.loc_height - 1;
 						int range = UnitRes[ship.unit_id].visual_range;
 
 						World.Unveil(xLoc1, yLoc1, xLoc2, yLoc2);
@@ -703,7 +703,7 @@ public class Spy : IIdObject
 		unit.spy_recno = spy_recno;
 		unit.set_name(name_id); // set the name id. of this unit
 
-		set_place(SPY_MOBILE, unit.sprite_recno);
+		set_place(SPY_MOBILE, unit.SpriteId);
 
 		return unit;
 	}
@@ -974,13 +974,13 @@ public class Spy : IIdObject
 					if (unit.unit_mode == UnitConstants.UNIT_MODE_ON_SHIP)
 					{
 						Unit ship = UnitArray[unit.unit_mode_para];
-						xLoc = ship.next_x_loc();
-						yLoc = ship.next_y_loc();
+						xLoc = ship.NextLocX;
+						yLoc = ship.NextLocY;
 					}
 					else
 					{
-						xLoc = unit.next_x_loc();
-						yLoc = unit.next_y_loc();
+						xLoc = unit.NextLocX;
+						yLoc = unit.NextLocY;
 					}
 
 					return true;
@@ -1039,7 +1039,7 @@ public class Spy : IIdObject
 			//--- if the unit assassinated is the player's unit ---//
 
 			if (targetUnit.nation_recno == NationArray.player_recno)
-				NewsArray.unit_assassinated(targetUnit.sprite_recno, spyKillFlag);
+				NewsArray.unit_assassinated(targetUnit.SpriteId, spyKillFlag);
 
 			firm.kill_overseer();
 

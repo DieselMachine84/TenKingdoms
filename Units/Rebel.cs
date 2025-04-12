@@ -39,7 +39,7 @@ public class Rebel : IIdObject
 
     public void Init(Unit unit, int hostileNationRecno, int actionMode, int actionPara)
     {
-        leader_unit_recno = unit.sprite_recno;
+        leader_unit_recno = unit.SpriteId;
         action_mode = actionMode;
         action_para = actionPara;
         mobile_rebel_count = 1;
@@ -252,8 +252,8 @@ public class Rebel : IIdObject
 
         Unit leaderUnit = UnitArray[leader_unit_recno];
 
-        int leaderXLoc = leaderUnit.cur_x_loc();
-        int leaderYLoc = leaderUnit.cur_y_loc();
+        int leaderXLoc = leaderUnit.CurLocX;
+        int leaderYLoc = leaderUnit.CurLocY;
 
         //----------------------------------------------//
 
@@ -290,7 +290,7 @@ public class Rebel : IIdObject
     public bool think_settle_to()
     {
         Unit leaderUnit = UnitArray[leader_unit_recno];
-        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
@@ -317,9 +317,9 @@ public class Rebel : IIdObject
         //------- get the leader unit's info -----------//
 
         Unit leaderUnit = UnitArray[leader_unit_recno];
-        int leaderXLoc = leaderUnit.cur_x_loc();
-        int leaderYLoc = leaderUnit.cur_y_loc();
-        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int leaderXLoc = leaderUnit.CurLocX;
+        int leaderYLoc = leaderUnit.CurLocY;
+        int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         //----------------------------------------------//
 
@@ -361,9 +361,9 @@ public class Rebel : IIdObject
         //------- get the leader unit's info -----------//
 
         Unit leaderUnit = UnitArray[leader_unit_recno];
-        int leaderXLoc = leaderUnit.cur_x_loc();
-        int leaderYLoc = leaderUnit.cur_y_loc();
-        int curRegionId = World.GetRegionId(leaderUnit.cur_x_loc(), leaderUnit.cur_y_loc());
+        int leaderXLoc = leaderUnit.CurLocX;
+        int leaderYLoc = leaderUnit.CurLocY;
+        int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         //----------------------------------------------//
 
@@ -407,7 +407,7 @@ public class Rebel : IIdObject
         {
             if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
             {
-                rebelRecnoArray.Add(unit.sprite_recno);
+                rebelRecnoArray.Add(unit.SpriteId);
             }
         }
 
@@ -468,7 +468,7 @@ public class Rebel : IIdObject
             if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
             {
                 unit.set_rank(Unit.RANK_GENERAL);
-                leader_unit_recno = unit.sprite_recno;
+                leader_unit_recno = unit.SpriteId;
                 break;
             }
         }

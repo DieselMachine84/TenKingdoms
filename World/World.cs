@@ -1529,10 +1529,10 @@ public class World
 		foreach (Unit unit in UnitArray)
 		{
 			// no damage to air units, sea units and units inside camps and bases
-			if (unit.mobile_type == UnitConstants.UNIT_AIR || unit.mobile_type == UnitConstants.UNIT_SEA || !unit.is_visible())
+			if (unit.MobileType == UnitConstants.UNIT_AIR || unit.MobileType == UnitConstants.UNIT_SEA || !unit.is_visible())
 				continue;
 
-			double damage = Weather.quake_rate(unit.cur_x_loc(), unit.cur_y_loc()) * unit.max_hit_points / 200.0;
+			double damage = Weather.quake_rate(unit.CurLocX, unit.CurLocY) * unit.max_hit_points / 200.0;
 			if (damage >= unit.hit_points)
 				damage = unit.hit_points - 1.0;
 			if (damage < 5.0)
@@ -1550,7 +1550,7 @@ public class World
 			}
 			else
 			{
-				if (UnitRes[unit.unit_id].solider_id != 0 && Weather.quake_rate(unit.cur_x_loc(), unit.cur_y_loc()) >= 60)
+				if (UnitRes[unit.unit_id].solider_id != 0 && Weather.quake_rate(unit.CurLocX, unit.CurLocY) >= 60)
 				{
 					((UnitVehicle)unit).dismount();
 				}
@@ -1587,15 +1587,15 @@ public class World
 			if (!unit.is_visible())
 				continue;
 
-			if (unit.cur_x_loc() <= locX + radius && unit.cur_x_loc() + unit.sprite_info.loc_width > locX - radius &&
-			    unit.cur_y_loc() <= locY + radius && unit.cur_y_loc() + unit.sprite_info.loc_height > locY - radius)
+			if (unit.CurLocX <= locX + radius && unit.CurLocX + unit.SpriteInfo.loc_width > locX - radius &&
+			    unit.CurLocY <= locY + radius && unit.CurLocY + unit.SpriteInfo.loc_height > locY - radius)
 			{
-				unit.hit_points -= (double)unit.sprite_info.lightning_damage / InternalConstants.ATTACK_SLOW_DOWN;
+				unit.hit_points -= (double)unit.SpriteInfo.lightning_damage / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
 				if (unit.is_own())
-					NewsArray.lightning_damage(unit.cur_x_loc(), unit.cur_y_loc(),
-						News.NEWS_LOC_UNIT, unit.sprite_recno, unit.hit_points <= 0.0 ? 1 : 0);
+					NewsArray.lightning_damage(unit.CurLocX, unit.CurLocY,
+						News.NEWS_LOC_UNIT, unit.SpriteId, unit.hit_points <= 0.0 ? 1 : 0);
 
 				if (unit.hit_points <= 0.0)
 					unit.hit_points = 0.0;

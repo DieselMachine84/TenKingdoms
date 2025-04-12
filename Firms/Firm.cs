@@ -618,8 +618,8 @@ public abstract class Firm : IIdObject
 			//----------- there should be space for creating the overseer ---------//
 			Unit newOverseer = UnitArray[newOverseerRecno];
 
-			int originalXLoc = newOverseer.next_x_loc();
-			int originalYLoc = newOverseer.next_y_loc();
+			int originalXLoc = newOverseer.NextLocX;
+			int originalYLoc = newOverseer.NextLocY;
 
 			newOverseer.deinit_sprite();
 
@@ -744,8 +744,8 @@ public abstract class Firm : IIdObject
 			}
 
 			// save the location for later init_sprite() if the assign settle action failed
-			unitXLoc = unit.next_x_loc();
-			unitYLoc = unit.next_y_loc();
+			unitXLoc = unit.NextLocX;
+			unitYLoc = unit.NextLocY;
 
 			unit.deinit_sprite(); // free the location for creating the worst unit
 
@@ -1643,7 +1643,7 @@ public abstract class Firm : IIdObject
 			//#### end alex 18/10 ####//
 			if (unit.is_visible()) // is visible if the unit is not inside the firm location
 			{
-				builder_region_id = World.GetRegionId(unit.cur_x_loc(), unit.cur_y_loc());
+				builder_region_id = World.GetRegionId(unit.CurLocX, unit.CurLocY);
 				unit.deinit_sprite();
 
 				if (unit.selected_flag)
@@ -1692,7 +1692,7 @@ public abstract class Firm : IIdObject
 			}
 			else if (unit.action_mode == UnitConstants.ACTION_ASSIGN_TO_FIRM && unit.action_para2 == firm_recno)
 			{
-				return unit.sprite_recno;
+				return unit.SpriteId;
 			}
 			else if (unit.action_mode != UnitConstants.ACTION_STOP)
 			{
@@ -1700,12 +1700,12 @@ public abstract class Firm : IIdObject
 			}
 
 			if (!nearest)
-				return unit.sprite_recno;
+				return unit.SpriteId;
 
-			int curDist = Misc.points_distance(unit.next_x_loc(), unit.next_y_loc(), loc_x1, loc_y1);
+			int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, loc_x1, loc_y1);
 			if (curDist < minDist)
 			{
-				resultRecno = unit.sprite_recno;
+				resultRecno = unit.SpriteId;
 				minDist = curDist;
 			}
 		}
@@ -2264,7 +2264,7 @@ public abstract class Firm : IIdObject
 			under_construction = false;
 
 			if (nation_recno == NationArray.player_recno)
-				SERes.far_sound(center_x, center_y, 1, 'S', unit.sprite_id, "FINS", 'F', firm_id);
+				SERes.far_sound(center_x, center_y, 1, 'S', unit.SpriteResId, "FINS", 'F', firm_id);
 
 			FirmInfo firmInfo = FirmRes[firm_id];
 
@@ -2295,7 +2295,7 @@ public abstract class Firm : IIdObject
 				{
 					//------- init_sprite or delete the builder ---------//
 					int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
-					SpriteInfo spriteInfo = unit.sprite_info;
+					SpriteInfo spriteInfo = unit.SpriteInfo;
 					if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
 						    spriteInfo.loc_width, spriteInfo.loc_height))
 						UnitArray.disappear_in_firm(builder_recno); // kill the unit
@@ -2693,7 +2693,7 @@ public abstract class Firm : IIdObject
 		//-------- if the overseer is a spy -------//
 
 		if (overseer.spy_recno != 0)
-			SpyArray[overseer.spy_recno].set_place(Spy.SPY_MOBILE, overseer.sprite_recno);
+			SpyArray[overseer.spy_recno].set_place(Spy.SPY_MOBILE, overseer.SpriteId);
 
 		//---- cancel the overseer's presence in the town -----//
 
@@ -2737,7 +2737,7 @@ public abstract class Firm : IIdObject
 		//----------- mobilize the builder -------------//
 		Unit unit = UnitArray[recno];
 
-		SpriteInfo spriteInfo = unit.sprite_info;
+		SpriteInfo spriteInfo = unit.SpriteInfo;
 		int xLoc = loc_x1, yLoc = loc_y1;
 
 		if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
@@ -3902,7 +3902,7 @@ public abstract class Firm : IIdObject
 		if (townRecno != 0)
 			TownArray[townRecno].DecPopulation(unit.race_id, unitHasJob);
 
-		return unit.sprite_recno;
+		return unit.SpriteId;
 	}
 
 	public int construction_frame() // for under construction only

@@ -12,11 +12,11 @@ public class UnitExpCart : Unit
 
 	public override bool process_die()
 	{
-		if (triggered && cur_frame == 3)
+		if (triggered && CurFrame == 3)
 		{
-			int x1 = next_x_loc();
+			int x1 = NextLocX;
 			int x2 = x1;
-			int y1 = next_y_loc();
+			int y1 = NextLocY;
 			int y2 = y1;
 			x1 -= GameConstants.CHAIN_TRIGGER_RANGE;
 			x2 += GameConstants.CHAIN_TRIGGER_RANGE;
@@ -46,11 +46,11 @@ public class UnitExpCart : Unit
 			}
 		}
 
-		if (triggered && (cur_frame == 3 || cur_frame == 7))
+		if (triggered && (CurFrame == 3 || CurFrame == 7))
 		{
-			int x1 = next_x_loc();
+			int x1 = NextLocX;
 			int x2 = x1;
-			int y1 = next_y_loc();
+			int y1 = NextLocY;
 			int y2 = y1;
 			x1 -= GameConstants.EXPLODE_RANGE;
 			x2 += GameConstants.EXPLODE_RANGE;
@@ -66,7 +66,7 @@ public class UnitExpCart : Unit
 			if (y2 >= GameConstants.MapSize)
 				y2 = GameConstants.MapSize - 1;
 
-			if (cur_frame == 3)
+			if (CurFrame == 3)
 			{
 				for (int y = y1; y <= y2; ++y)
 				{
@@ -99,14 +99,14 @@ public class UnitExpCart : Unit
 					}
 				}
 			}
-			else if (cur_frame == 7)
+			else if (CurFrame == 7)
 			{
 				for (int y = y1; y <= y2; ++y)
 				{
 					for (int x = x1; x <= x2; ++x)
 					{
 						Location location = World.GetLoc(x, y);
-						int fl = (Math.Abs(x - next_x_loc()) + Math.Abs(y - next_y_loc())) * -30 + 80;
+						int fl = (Math.Abs(x - NextLocX) + Math.Abs(y - NextLocY)) * -30 + 80;
 						if (location.CanSetFire() && location.FireStrength() < fl)
 							location.SetFireStrength(fl);
 						if (location.Flammability() > 0)

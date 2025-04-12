@@ -11,13 +11,13 @@ public class BulletFlame : Bullet
         // note : BulletFlame should have at least one dummy moving frame for each direction
         base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
 
-        cur_action = SPRITE_IDLE;
+        CurAction = SPRITE_IDLE;
     }
 
     public override void process_idle()
     {
         // Sprite::process_idle();
-        if (++cur_frame <= cur_sprite_stop().frame_count)
+        if (++CurFrame <= cur_sprite_stop().frame_count)
         {
             // ----- warn/ attack target every frame -------//
             warn_target();
@@ -25,14 +25,14 @@ public class BulletFlame : Bullet
         }
         else
         {
-            cur_action = SPRITE_DIE;
-            cur_frame = 1;
+            CurAction = SPRITE_DIE;
+            CurFrame = 1;
         }
     }
 
     public override int display_layer()
     {
-        switch (mobile_type)
+        switch (MobileType)
         {
             case UnitConstants.UNIT_LAND:
             case UnitConstants.UNIT_SEA:

@@ -141,7 +141,7 @@ public class NationNew : NationBase
                         bool isCapturer = false;
                         foreach (CaptureIndependentTask task in captureIndependentTasks)
                         {
-                            if (task.Capturers.Contains(overseer.sprite_recno))
+                            if (task.Capturers.Contains(overseer.SpriteId))
                             {
                                 isCapturer = true;
                                 break;

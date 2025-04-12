@@ -391,7 +391,7 @@ public class Nation : NationBase
 		if (skilledUnit.action_x_loc == actionNode.action_x_loc && skilledUnit.action_y_loc == actionNode.action_y_loc)
 		{
 			skilledUnit.ai_action_id = actionNode.action_id;
-			actionNode.unit_recno = skilledUnit.sprite_recno;
+			actionNode.unit_recno = skilledUnit.SpriteId;
 
 			return 1;
 		}
@@ -447,7 +447,7 @@ public class Nation : NationBase
 		skilledUnit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		skilledUnit.ai_action_id = actionNode.action_id;
 
-		actionNode.unit_recno = skilledUnit.sprite_recno;
+		actionNode.unit_recno = skilledUnit.SpriteId;
 
 		return 1;
 	}
@@ -483,7 +483,7 @@ public class Nation : NationBase
 		skilledUnit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		skilledUnit.ai_action_id = actionNode.action_id;
 
-		actionNode.unit_recno = skilledUnit.sprite_recno;
+		actionNode.unit_recno = skilledUnit.SpriteId;
 
 		return 1;
 	}
@@ -727,9 +727,9 @@ public class Nation : NationBase
 
 		//------ change the cloak of the spy ------//
 		Town nearbyTown = null;
-		for (int x = spyUnit.next_x_loc() - 1; x <= spyUnit.next_x_loc() + 1; x++)
+		for (int x = spyUnit.NextLocX - 1; x <= spyUnit.NextLocX + 1; x++)
 		{
-			for (int y = spyUnit.next_y_loc() - 1; y <= spyUnit.next_y_loc() + 1; y++)
+			for (int y = spyUnit.NextLocY - 1; y <= spyUnit.NextLocY + 1; y++)
 			{
 				x = Math.Max(0, x);
 				x = Math.Min(GameConstants.MapSize - 1, x);
@@ -761,8 +761,8 @@ public class Nation : NationBase
 
 		if (!spyUnit.can_spy_change_nation()) // if the spy can't change nation recno now
 		{
-			int destXLoc = spyUnit.next_x_loc() + Misc.Random(20) - 10;
-			int destYLoc = spyUnit.next_y_loc() + Misc.Random(20) - 10;
+			int destXLoc = spyUnit.NextLocX + Misc.Random(20) - 10;
+			int destYLoc = spyUnit.NextLocY + Misc.Random(20) - 10;
 
 			destXLoc = Math.Max(0, destXLoc);
 			destXLoc = Math.Min(GameConstants.MapSize - 1, destXLoc);
@@ -1112,7 +1112,7 @@ public class Nation : NationBase
 
 			Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
-			if (unit.cur_action != Sprite.SPRITE_IDLE) // only attack if this unit is idle
+			if (unit.CurAction != Sprite.SPRITE_IDLE) // only attack if this unit is idle
 				continue;
 
 			if (unit.nation_recno == nation_recno) // don't attack our own units
@@ -2580,9 +2580,9 @@ public class Nation : NationBase
 				if (!unit.is_ai_all_stop())
 					continue;
 
-				if (unit.skill.skill_id == skillId && unit.cur_action != Sprite.SPRITE_ATTACK && unit.ai_action_id == 0)
+				if (unit.skill.skill_id == skillId && unit.CurAction != Sprite.SPRITE_ATTACK && unit.ai_action_id == 0)
 				{
-					int curDist = Misc.points_distance(unit.next_x_loc(), unit.next_y_loc(), destX, destY);
+					int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, destX, destY);
 
 					if (curDist < minDist)
 					{
@@ -3871,7 +3871,7 @@ public class Nation : NationBase
 
 				Unit unit = UnitArray[ourUnits[i]];
 				// only units that are currently attacking or idle are counted, moving units may just be passing by
-				if (unit.cur_action == Sprite.SPRITE_ATTACK || unit.cur_action == Sprite.SPRITE_IDLE)
+				if (unit.CurAction == Sprite.SPRITE_ATTACK || unit.CurAction == Sprite.SPRITE_IDLE)
 				{
 					totalCombatLevel -= unit.unit_power();
 				}
@@ -3905,7 +3905,7 @@ public class Nation : NationBase
 				if (firmHarbor.sea_region_id != targetRegionId)
 					continue;
 
-				firmHarbor.sail_ship(unitMarine.sprite_recno, InternalConstants.COMMAND_AI);
+				firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 			}
 
 			if (!unitMarine.is_visible()) // no space in the sea for placing the ship
@@ -3943,7 +3943,7 @@ public class Nation : NationBase
 
 				//--- if there is an idle unit on the mine building site ---//
 
-				if (unit.cur_action != Sprite.SPRITE_IDLE || unit.nation_recno == 0)
+				if (unit.CurAction != Sprite.SPRITE_IDLE || unit.nation_recno == 0)
 					continue;
 
 				//----- if this is our spy cloaked in another nation, reveal its true identity -----//
@@ -3997,8 +3997,8 @@ public class Nation : NationBase
 		Unit attackerUnit = UnitArray[attackerUnitRecno];
 
 
-		int attackerXLoc = attackerUnit.next_x_loc();
-		int attackerYLoc = attackerUnit.next_y_loc();
+		int attackerXLoc = attackerUnit.NextLocX;
+		int attackerYLoc = attackerUnit.NextLocY;
 		int targetRegionId = World.GetLoc(attackerXLoc, attackerYLoc).RegionId;
 
 		int enemyCombatLevel = ai_evaluate_target_combat_level(attackerXLoc, attackerYLoc, attackerUnit.nation_recno);
@@ -4832,7 +4832,7 @@ public class Nation : NationBase
 					captureTown.LocCenterX, captureTown.LocCenterY, out _);
 
 				if (skilledUnit != null)
-					unitRecno = skilledUnit.sprite_recno;
+					unitRecno = skilledUnit.SpriteId;
 			}
 
 			if (unitRecno == 0)
@@ -4928,7 +4928,7 @@ public class Nation : NationBase
 			if (targetResistance < bestTargetResistance)
 			{
 				bestTargetResistance = targetResistance;
-				bestUnitRecno = unit.sprite_recno;
+				bestUnitRecno = unit.SpriteId;
 			}
 		}
 
@@ -5458,7 +5458,7 @@ public class Nation : NationBase
 					continue;
 
 				Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-				if (unit.cur_action == Sprite.SPRITE_ATTACK)
+				if (unit.CurAction == Sprite.SPRITE_ATTACK)
 				{
 					if (unit.nation_recno == nation_recno)
 					{
@@ -6169,14 +6169,14 @@ public class Nation : NationBase
 
 		//---- figure out the sea region id which the ship should appear ----//
 
-		int unitRegionId = World.GetRegionId(unit.next_x_loc(), unit.next_y_loc());
+		int unitRegionId = World.GetRegionId(unit.NextLocX, unit.NextLocY);
 		int destRegionId = World.GetRegionId(actionNode.action_x_loc, actionNode.action_y_loc);
 
 		int seaRegionId = RegionArray.GetSeaPathRegionId(unitRegionId, destRegionId);
 
 		//------- 1. try to locate a ship --------//
 
-		int shipUnitRecno = ai_find_transport_ship(seaRegionId, unit.next_x_loc(), unit.next_y_loc());
+		int shipUnitRecno = ai_find_transport_ship(seaRegionId, unit.NextLocX, unit.NextLocY);
 
 		// must return -1 instead of 0 as the action must be executed immediately
 		// otherwise the units will be assigned with other action and the unit list may no longer be valid
@@ -6191,7 +6191,7 @@ public class Nation : NationBase
 		{
 			FirmHarbor firmHarbor = (FirmHarbor)FirmArray[unitMarine.unit_mode_para];
 
-			firmHarbor.sail_ship(unitMarine.sprite_recno, InternalConstants.COMMAND_AI);
+			firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 		}
 
 		if (!unitMarine.is_visible()) // no space in the sea for placing the ship 
@@ -6201,8 +6201,8 @@ public class Nation : NationBase
 
 		unitMarine.ai_action_id = actionNode.action_id;
 
-		UnitArray.assign_to_ship(unitMarine.next_x_loc(), unitMarine.next_y_loc(), false,
-			actionNode.group_unit_array, InternalConstants.COMMAND_AI, unitMarine.sprite_recno);
+		UnitArray.assign_to_ship(unitMarine.NextLocX, unitMarine.NextLocY, false,
+			actionNode.group_unit_array, InternalConstants.COMMAND_AI, unitMarine.SpriteId);
 
 		for (int i = 0; i < actionNode.instance_count; i++)
 			UnitArray[actionNode.group_unit_array[i]].ai_action_id = actionNode.action_id;
@@ -6384,9 +6384,9 @@ public class Nation : NationBase
 			//--------- check if the sea region is matched ---------//
 
 			if (!findBest) // return immediately when a suitable one is found
-				return unitMarine.sprite_recno;
+				return unitMarine.SpriteId;
 
-			int curRating = World.DistanceRating(unitXLoc, unitYLoc, unitMarine.next_x_loc(), unitMarine.next_y_loc());
+			int curRating = World.DistanceRating(unitXLoc, unitYLoc, unitMarine.NextLocX, unitMarine.NextLocY);
 
 			// damage + ship class
 			curRating += (int)(unitMarine.hit_points / 10.0 + unitMarine.max_hit_points / 10.0);
@@ -6394,7 +6394,7 @@ public class Nation : NationBase
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				bestUnitRecno = unitMarine.sprite_recno;
+				bestUnitRecno = unitMarine.SpriteId;
 			}
 		}
 
@@ -6472,7 +6472,7 @@ public class Nation : NationBase
 			    (unitMarine.stop_array[1].firm_recno == firmRecno1 &&
 			     unitMarine.stop_array[0].firm_recno == firmRecno2))
 			{
-				return unitMarine.sprite_recno != 0;
+				return unitMarine.SpriteId != 0;
 			}
 		}
 
@@ -6794,7 +6794,7 @@ public class Nation : NationBase
 		{
 			//--- move to the independent or our town ---//
 			add_action(loc_x1, loc_y1, -1, -1,
-				ACTION_AI_ASSIGN_SPY, cloakedNationRecno, 1, spyUnit.sprite_recno);
+				ACTION_AI_ASSIGN_SPY, cloakedNationRecno, 1, spyUnit.SpriteId);
 		}
 		else
 		{
@@ -7401,7 +7401,7 @@ public class Nation : NationBase
 			if (unit.nation_recno != enemyNationRecno)
 				continue;
 
-			if (!unit.is_visible() || unit.mobile_type != UnitConstants.UNIT_LAND) // only deal with land units now 
+			if (!unit.is_visible() || unit.MobileType != UnitConstants.UNIT_LAND) // only deal with land units now 
 				continue;
 
 			//--- only attack if we have any base town in the enemy unit's region ---//
@@ -7411,13 +7411,13 @@ public class Nation : NationBase
 
 			//----- take into account of the mobile units around this town -----//
 
-			if (is_battle(unit.next_x_loc(), unit.next_y_loc()) > 0)
+			if (is_battle(unit.NextLocX, unit.NextLocY) > 0)
 				continue;
 
 			int enemyCombatLevel =
-				ai_evaluate_target_combat_level(unit.next_x_loc(), unit.next_y_loc(), unit.nation_recno);
+				ai_evaluate_target_combat_level(unit.NextLocX, unit.NextLocY, unit.nation_recno);
 
-			return ai_attack_target(unit.next_x_loc(), unit.next_y_loc(), enemyCombatLevel);
+			return ai_attack_target(unit.NextLocX, unit.NextLocY, enemyCombatLevel);
 		}
 
 		return false;
@@ -8827,9 +8827,9 @@ public class Nation : NationBase
 		//------- calculate the combat level of the target units there ------//
 
 		int targetCombatLevel =
-			ai_evaluate_target_combat_level(unit.next_x_loc(), unit.next_y_loc(), unit.nation_recno);
+			ai_evaluate_target_combat_level(unit.NextLocX, unit.NextLocY, unit.nation_recno);
 
-		if (ai_attack_target(unit.next_x_loc(), unit.next_y_loc(), targetCombatLevel, true))
+		if (ai_attack_target(unit.NextLocX, unit.NextLocY, targetCombatLevel, true))
 		{
 			fromRelation.last_military_aid_date = Info.game_date;
 			return true;

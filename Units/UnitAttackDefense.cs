@@ -22,9 +22,9 @@ public partial class Unit
 		int clearOrder = 0;
 		Unit targetUnit = null;
 
-		if (UnitArray.IsDeleted(action_para) || action_para == sprite_recno)
+		if (UnitArray.IsDeleted(action_para) || action_para == SpriteId)
 		{
-			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
+			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -94,11 +94,11 @@ public partial class Unit
 		}
 
 		//---------------- define parameters ---------------------//
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
-		int spriteXLoc = next_x_loc();
-		int spriteYLoc = next_y_loc();
-		AttackInfo attackInfo = attack_info_array[cur_attack];
+		int targetXLoc = targetUnit.NextLocX;
+		int targetYLoc = targetUnit.NextLocY;
+		int spriteXLoc = NextLocX;
+		int spriteYLoc = NextLocY;
+		AttackInfo attackInfo = attack_info_array[CurAttack];
 
 		//------------------------------------------------------------//
 		// If this unit's target has moved, change the destination accordingly.
@@ -115,9 +115,9 @@ public partial class Unit
 		//-----------------------------------------------------//
 		//if( cur_action==SPRITE_ATTACK && next_x==cur_x && next_y==cur_y)
 
-		if (Math.Abs(cur_x - next_x) <= sprite_info.speed && Math.Abs(cur_y - next_y) <= sprite_info.speed)
+		if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
 		{
-			if (cur_action == SPRITE_ATTACK)
+			if (CurAction == SPRITE_ATTACK)
 			{
 				attack_target(targetUnit);
 			}
@@ -151,7 +151,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (FirmArray.IsDeleted(action_para))
 		{
-			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
+			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -200,27 +200,27 @@ public partial class Unit
 		//-----------------------------------------------------//
 		// If the unit is currently attacking somebody.
 		//-----------------------------------------------------//
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 		{
-			if (remain_attack_delay != 0)
+			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[cur_attack];
+			AttackInfo attackInfo = attack_info_array[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
-				if (cur_frame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.bullet_out_frame)
 					return;
 
 				//------- seek location to attack by bullet ----------//
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, mobile_type,
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType,
 					    range_attack_x_loc, range_attack_y_loc, UnitConstants.UNIT_LAND,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, action_x_loc, action_y_loc,
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, action_x_loc, action_y_loc,
 						    UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
 						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
 						    attackInfo.bullet_sprite_id))
@@ -245,7 +245,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (cur_frame != cur_sprite_attack().frame_count)
+				if (CurFrame != cur_sprite_attack().frame_count)
 					return; // is attacking
 
 				hit_firm(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -262,9 +262,9 @@ public partial class Unit
 		// If the unit is on its way to attack somebody, if it has gotten close next to the target, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(cur_x - next_x) <= sprite_info.speed && Math.Abs(cur_y - next_y) <= sprite_info.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
 		{
-			if (mobile_type == UnitConstants.UNIT_LAND)
+			if (MobileType == UnitConstants.UNIT_LAND)
 			{
 				if (detect_surround_target())
 					return;
@@ -285,8 +285,8 @@ public partial class Unit
 			int targetYLoc = targetFirm.loc_y1;
 
 			int attackDistance = cal_distance(targetXLoc, targetYLoc, firmInfo.loc_width, firmInfo.loc_height);
-			int curXLoc = next_x_loc();
-			int curYLoc = next_y_loc();
+			int curXLoc = NextLocX;
+			int curYLoc = NextLocY;
 
 			if (attackDistance <= attack_range) // able to attack target
 			{
@@ -295,10 +295,10 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[cur_attack];
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, targetXLoc, targetYLoc,
+					AttackInfo attackInfo = attack_info_array[CurAttack];
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
 						    UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
 						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
 						    attackInfo.bullet_sprite_id))
@@ -313,7 +313,7 @@ public partial class Unit
 
 					//---------- able to do range attack ----------//
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
-					cur_frame = 1;
+					CurFrame = 1;
 
 					if (is_dir_correct())
 						set_attack();
@@ -323,7 +323,7 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 					TerminateMove();
 
 					if (targetFirm.firm_id != Firm.FIRM_RESEARCH)
@@ -372,7 +372,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (TownArray.IsDeleted(action_para))
 		{
-			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
+			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -421,26 +421,26 @@ public partial class Unit
 		//-----------------------------------------------------//
 		// If the unit is currently attacking somebody.
 		//-----------------------------------------------------//
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 		{
-			if (remain_attack_delay != 0)
+			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[cur_attack];
+			AttackInfo attackInfo = attack_info_array[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//---------- wait for bullet emit ---------//
-				if (cur_frame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.bullet_out_frame)
 					return;
 
 				//------- seek location to attack target by bullet --------//
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, mobile_type, range_attack_x_loc,
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, range_attack_x_loc,
 					    range_attack_y_loc,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, action_x_loc, action_y_loc,
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, action_x_loc, action_y_loc,
 						    UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
 						    attackInfo.bullet_sprite_id))
@@ -465,7 +465,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (cur_frame != cur_sprite_attack().frame_count)
+				if (CurFrame != cur_sprite_attack().frame_count)
 					return; // attacking
 
 				hit_town(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -482,9 +482,9 @@ public partial class Unit
 		// If the unit is on its way to attack the town, if it has gotten close next to it, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(cur_x - next_x) <= sprite_info.speed && Math.Abs(cur_y - next_y) <= sprite_info.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
 		{
-			if (mobile_type == UnitConstants.UNIT_LAND)
+			if (MobileType == UnitConstants.UNIT_LAND)
 			{
 				if (detect_surround_target())
 					return;
@@ -512,12 +512,12 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[cur_attack];
-					int curXLoc = next_x_loc();
-					int curYLoc = next_y_loc();
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, targetXLoc, targetYLoc,
+					AttackInfo attackInfo = attack_info_array[CurAttack];
+					int curXLoc = NextLocX;
+					int curYLoc = NextLocY;
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
 						    UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
 						    attackInfo.bullet_sprite_id))
@@ -531,8 +531,8 @@ public partial class Unit
 					}
 
 					//---------- able to do range attack ----------//
-					set_attack_dir(next_x_loc(), next_y_loc(), range_attack_x_loc, range_attack_y_loc);
-					cur_frame = 1;
+					set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
+					CurFrame = 1;
 
 					if (is_dir_correct())
 						set_attack();
@@ -542,9 +542,9 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 					TerminateMove();
-					set_dir(next_x_loc(), next_y_loc(), targetTown.LocCenterX, targetTown.LocCenterY);
+					set_dir(NextLocX, NextLocY, targetTown.LocCenterX, targetTown.LocCenterY);
 
 					if (is_dir_correct())
 						set_attack();
@@ -569,7 +569,7 @@ public partial class Unit
 		Location loc = World.GetLoc(action_x_loc, action_y_loc);
 		if (!loc.IsWall())
 		{
-			if (!ConfigAdv.unit_finish_attack_move || cur_action == SPRITE_ATTACK)
+			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 			{
 				stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -580,26 +580,26 @@ public partial class Unit
 		//-----------------------------------------------------//
 		// If the unit is currently attacking.
 		//-----------------------------------------------------//
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 		{
-			if (remain_attack_delay != 0)
+			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[cur_attack];
+			AttackInfo attackInfo = attack_info_array[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
-				if (cur_frame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.bullet_out_frame)
 					return;
 
 				//---------- seek location to attack target by bullet --------//
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, mobile_type, range_attack_x_loc,
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, range_attack_x_loc,
 					    range_attack_y_loc,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, 
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, 
 						    action_x_loc, action_y_loc,
 						    UnitConstants.UNIT_LAND, 1, 1,
 						    out range_attack_x_loc, out range_attack_y_loc,
@@ -624,7 +624,7 @@ public partial class Unit
 			}
 			else
 			{
-				if (cur_frame != cur_sprite_attack().frame_count)
+				if (CurFrame != cur_sprite_attack().frame_count)
 					return; // attacking
 
 				hit_wall(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -641,9 +641,9 @@ public partial class Unit
 		// If the unit is on its way to attack somebody, if it has gotten close next to the target, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(cur_x - next_x) <= sprite_info.speed && Math.Abs(cur_y - next_y) <= sprite_info.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
 		{
-			if (mobile_type == UnitConstants.UNIT_LAND)
+			if (MobileType == UnitConstants.UNIT_LAND)
 			{
 				if (detect_surround_target())
 					return;
@@ -668,12 +668,12 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[cur_attack];
-					int curXLoc = next_x_loc();
-					int curYLoc = next_y_loc();
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type,
+					AttackInfo attackInfo = attack_info_array[CurAttack];
+					int curXLoc = NextLocX;
+					int curYLoc = NextLocY;
+					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
 						    action_x_loc, action_y_loc,
 						    UnitConstants.UNIT_LAND, 1, 1,
 						    out range_attack_x_loc, out range_attack_y_loc,
@@ -688,7 +688,7 @@ public partial class Unit
 
 					//---------- able to do range attack ----------//
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
-					cur_frame = 1;
+					CurFrame = 1;
 
 					if (is_dir_correct())
 						set_attack();
@@ -698,9 +698,9 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 					TerminateMove();
-					set_attack_dir(next_x_loc(), next_y_loc(), action_x_loc, action_y_loc);
+					set_attack_dir(NextLocX, NextLocY, action_x_loc, action_y_loc);
 
 					if (is_dir_correct())
 						set_attack();
@@ -757,13 +757,13 @@ public partial class Unit
 
 		loc = World.GetLoc(targetXLoc, targetYLoc);
 
-		int targetMobileType = (next_x_loc() == targetXLoc && next_y_loc() == targetYLoc)
-			? loc.HasAnyUnit(mobile_type) : loc.HasAnyUnit();
+		int targetMobileType = (NextLocX == targetXLoc && NextLocY == targetYLoc)
+			? loc.HasAnyUnit(MobileType) : loc.HasAnyUnit();
 
 		if (targetMobileType != 0)
 		{
 			Unit targetUnit = UnitArray[loc.UnitId(targetMobileType)];
-			attack_unit(targetUnit.sprite_recno, xOffset, yOffset, resetBlockedEdge);
+			attack_unit(targetUnit.SpriteId, xOffset, yOffset, resetBlockedEdge);
 		}
 
 		//------ set ai_original_target_?_loc --------//
@@ -806,23 +806,23 @@ public partial class Unit
 		//		the unit reach a location there can do range attack later, is that the action
 		//		will be resumed in function idle_detect_target()
 		//----------------------------------------------------------------------------------//
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 		Unit targetUnit = UnitArray[targetRecno];
-		int targetMobileType = targetUnit.mobile_type;
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
+		int targetMobileType = targetUnit.MobileType;
+		int targetXLoc = targetUnit.NextLocX;
+		int targetYLoc = targetUnit.NextLocY;
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
-		Location loc = World.GetLoc(targetUnit.next_x_loc(), targetUnit.next_y_loc());
+		Location loc = World.GetLoc(targetUnit.NextLocX, targetUnit.NextLocY);
 
-		if (targetMobileType != 0 && mobile_type != UnitConstants.UNIT_AIR) // air unit can move to anywhere
+		if (targetMobileType != 0 && MobileType != UnitConstants.UNIT_AIR) // air unit can move to anywhere
 		{
 			//------------------------------------------------------------------------//
 			// return if not feasible condition
 			//------------------------------------------------------------------------//
-			if ((mobile_type != UnitConstants.UNIT_LAND || targetMobileType != UnitConstants.UNIT_SEA) &&
-			    mobile_type != targetMobileType)
+			if ((MobileType != UnitConstants.UNIT_LAND || targetMobileType != UnitConstants.UNIT_SEA) &&
+			    MobileType != targetMobileType)
 			{
 				if (!can_attack_different_target_type())
 				{
@@ -842,7 +842,7 @@ public partial class Unit
 				maxRange = max_attack_range();
 				Unit unit = UnitArray[loc.UnitId(targetMobileType)];
 				if (!possible_place_for_range_attack(targetXLoc, targetYLoc,
-					    unit.sprite_info.loc_width, unit.sprite_info.loc_height, maxRange))
+					    unit.SpriteInfo.loc_width, unit.SpriteInfo.loc_height, maxRange))
 				{
 					if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 					    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
@@ -891,11 +891,11 @@ public partial class Unit
 		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
 		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == targetUnit.sprite_recno && action_x_loc2 == targetXLoc && action_y_loc2 == targetYLoc)
+		    action_para2 == targetUnit.SpriteId && action_x_loc2 == targetXLoc && action_y_loc2 == targetYLoc)
 		{
 			//------------ old order ------------//
 
-			if (cur_action != SPRITE_IDLE)
+			if (CurAction != SPRITE_IDLE)
 			{
 				//------- the old order is processing, return -------//
 				return;
@@ -911,7 +911,7 @@ public partial class Unit
 				action_mode2 = UnitConstants.ACTION_ATTACK_UNIT;
 			}
 
-			action_para2 = targetUnit.sprite_recno;
+			action_para2 = targetUnit.SpriteId;
 			action_x_loc2 = targetXLoc;
 			action_y_loc2 = targetYLoc;
 		}
@@ -920,13 +920,13 @@ public partial class Unit
 		// process new order
 		//-------------------------------------------------------------//
 		stop();
-		cur_attack = 0;
+		CurAttack = 0;
 
-		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetUnit.sprite_info.loc_width,
-			targetUnit.sprite_info.loc_height);
+		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetUnit.SpriteInfo.loc_width,
+			targetUnit.SpriteInfo.loc_height);
 		choose_best_attack_mode(attackDistance, targetMobileType);
 
-		AttackInfo attackInfo = attack_info_array[cur_attack];
+		AttackInfo attackInfo = attack_info_array[CurAttack];
 		if (attackInfo.attack_range < attackDistance) // need to move to target
 		{
 			int searchResult = 1;
@@ -954,7 +954,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory from this
 					//		unit. But able to attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					MoveToRangeAttack(targetXLoc, targetYLoc, targetUnit.sprite_id, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE,
+					MoveToRangeAttack(targetXLoc, targetYLoc, targetUnit.SpriteResId, SeekPath.SEARCH_MODE_ATTACK_UNIT_BY_RANGE,
 						maxRange);
 				}
 				else
@@ -965,7 +965,7 @@ public partial class Unit
 					// 3) different type from target, but target located in the same territory of this
 					//		unit.
 					//--------------------------------------------------------------------------------//
-					searchResult = Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, targetUnit.sprite_recno);
+					searchResult = Search(targetXLoc, targetYLoc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, targetUnit.SpriteId);
 				}
 			}
 
@@ -991,19 +991,18 @@ public partial class Unit
 				}
 			}
 		}
-		else if (cur_action == SPRITE_IDLE) // the target is within attack range, attacks it now if the unit is idle
+		else if (CurAction == SPRITE_IDLE) // the target is within attack range, attacks it now if the unit is idle
 		{
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(next_x, next_y);
+			set_cur(NextX, NextY);
 			set_attack_dir(curXLoc, curYLoc, targetXLoc, targetYLoc);
 			if (is_dir_correct())
 			{
 				if (attackInfo.attack_range == 1)
 				{
 					set_attack();
-					turn_delay = 0;
 				}
 			}
 			else
@@ -1013,7 +1012,7 @@ public partial class Unit
 		}
 
 		action_mode = UnitConstants.ACTION_ATTACK_UNIT;
-		action_para = targetUnit.sprite_recno;
+		action_para = targetUnit.SpriteId;
 		action_x_loc = targetXLoc;
 		action_y_loc = targetYLoc;
 
@@ -1074,8 +1073,8 @@ public partial class Unit
 		FirmInfo firmInfo = FirmRes[firm.firm_id];
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
-		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		if (MobileType != UnitConstants.UNIT_AIR &&
+		    World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			//Firm		*firm = FirmArray[loc.firm_recno()];
@@ -1106,7 +1105,7 @@ public partial class Unit
 		    action_para2 == firm.firm_recno && action_x_loc2 == firmXLoc && action_y_loc2 == firmYLoc)
 		{
 			//-------------- old order -------------//
-			if (cur_action != SPRITE_IDLE)
+			if (CurAction != SPRITE_IDLE)
 			{
 				return;
 			}
@@ -1128,12 +1127,12 @@ public partial class Unit
 		// process new order
 		//-------------------------------------------------------------//
 		stop();
-		cur_attack = 0;
+		CurAttack = 0;
 
 		int attackDistance = cal_distance(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[cur_attack];
+		AttackInfo attackInfo = attack_info_array[CurAttack];
 		if (attackInfo.attack_range < attackDistance) // need to move to target
 		{
 			int searchResult = 1;
@@ -1193,21 +1192,21 @@ public partial class Unit
 					blocked_edge[i] = 0xff;
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(next_x, next_y);
+			set_cur(NextX, NextY);
 
 			if (firm.firm_id != Firm.FIRM_RESEARCH)
 			{
-				set_attack_dir(next_x_loc(), next_y_loc(), firm.center_x, firm.center_y);
+				set_attack_dir(NextLocX, NextLocY, firm.center_x, firm.center_y);
 			}
 			else // FIRM_RESEARCH with size 2x3
 			{
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
 
 				int hitXLoc = (curXLoc > firm.loc_x1) ? firm.loc_x2 : firm.loc_x1;
 
@@ -1287,8 +1286,8 @@ public partial class Unit
 		//------------------------------------------------------------------------------------//
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
-		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		if (MobileType != UnitConstants.UNIT_AIR &&
+		    World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, maxRange))
@@ -1319,7 +1318,7 @@ public partial class Unit
 		{
 			//----------- old order ------------//
 
-			if (cur_action != SPRITE_IDLE)
+			if (CurAction != SPRITE_IDLE)
 			{
 				//-------- old order is processing -------//
 				return;
@@ -1342,12 +1341,12 @@ public partial class Unit
 		// process new order
 		//-------------------------------------------------------------//
 		stop();
-		cur_attack = 0;
+		CurAttack = 0;
 
 		int attackDistance = cal_distance(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[cur_attack];
+		AttackInfo attackInfo = attack_info_array[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
 			int searchResult = 1;
@@ -1406,13 +1405,13 @@ public partial class Unit
 					blocked_edge[i] = 0xff;
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(next_x, next_y);
-			set_attack_dir(next_x_loc(), next_y_loc(), town.LocCenterX, town.LocCenterY);
+			set_cur(NextX, NextY);
+			set_attack_dir(NextLocX, NextLocY, town.LocCenterX, town.LocCenterY);
 			if (is_dir_correct())
 			{
 				if (attackInfo.attack_range == 1)
@@ -1476,8 +1475,8 @@ public partial class Unit
 		//------------------------------------------------------------------------------------//
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
-		if (mobile_type != UnitConstants.UNIT_AIR &&
-		    World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		if (MobileType != UnitConstants.UNIT_AIR &&
+		    World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(wallXLoc, wallYLoc, 1, 1, maxRange))
@@ -1508,7 +1507,7 @@ public partial class Unit
 		{
 			//------------ old order ------------//
 
-			if (cur_action != SPRITE_IDLE)
+			if (CurAction != SPRITE_IDLE)
 			{
 				//------- old order is processing --------//
 				return;
@@ -1531,12 +1530,12 @@ public partial class Unit
 		// process new order
 		//-------------------------------------------------------------//
 		stop();
-		cur_attack = 0;
+		CurAttack = 0;
 
 		int attackDistance = cal_distance(wallXLoc, wallYLoc, 1, 1);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[cur_attack];
+		AttackInfo attackInfo = attack_info_array[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
 			int searchResult = 1;
@@ -1595,13 +1594,13 @@ public partial class Unit
 					blocked_edge[i] = 0xff;
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(next_x, next_y);
-			set_attack_dir(next_x_loc(), next_y_loc(), wallXLoc, wallYLoc);
+			set_cur(NextX, NextY);
+			set_attack_dir(NextLocX, NextLocY, wallXLoc, wallYLoc);
 			if (is_dir_correct())
 			{
 				if (attackInfo.attack_range == 1)
@@ -1629,7 +1628,7 @@ public partial class Unit
 		// Note : checking for nation_recno since one unit can attack units
 		//			 in same nation by bullet accidentally
 		//------------------------------------------------------------//
-		if (parentUnit != null && parentUnit.cur_action != SPRITE_DIE && parentUnit.is_visible() &&
+		if (parentUnit != null && parentUnit.CurAction != SPRITE_DIE && parentUnit.is_visible() &&
 		    parentNationRecno != targetNationRecno && parentUnit.nation_can_attack(targetNationRecno) &&
 		    targetUnit.in_auto_defense_mode())
 		{
@@ -1639,7 +1638,7 @@ public partial class Unit
 				if (firm.firm_id == Firm.FIRM_CAMP)
 				{
 					FirmCamp camp = (FirmCamp)firm;
-					camp.defense(parentUnit.sprite_recno);
+					camp.defense(parentUnit.SpriteId);
 				}
 			}
 			else
@@ -1650,7 +1649,7 @@ public partial class Unit
 
 		// ---------- add indicator on the map ----------//
 		if (NationArray.player_recno != 0 && targetUnit.is_own())
-			WarPointArray.AddPoint(targetUnit.next_x_loc(), targetUnit.next_y_loc());
+			WarPointArray.AddPoint(targetUnit.NextLocX, targetUnit.NextLocY);
 
 		//-----------------------------------------------------------------------//
 		// decrease the hit points of the target Unit
@@ -1767,7 +1766,7 @@ public partial class Unit
 		if (parentUnit == null) // do nothing if parent is dead
 			return;
 
-		if (parentUnit.cur_action == SPRITE_DIE) // skip for explosive cart
+		if (parentUnit.CurAction == SPRITE_DIE) // skip for explosive cart
 			return;
 
 		// the target and the attacker's nations are different
@@ -1780,7 +1779,7 @@ public partial class Unit
 		if (parentNation != null && targetNationRecno != 0)
 		{
 			parentNation.set_at_war_today();
-			targetNation.set_at_war_today(parentUnit.sprite_recno);
+			targetNation.set_at_war_today(parentUnit.SpriteId);
 		}
 
 		//-------- increase battling fryhtan score --------//
@@ -1799,21 +1798,21 @@ public partial class Unit
 			if (targetUnit.ai_unit)
 			{
 				if (targetUnit.rank_id >= RANK_GENERAL)
-					targetUnit.ai_leader_being_attacked(parentUnit.sprite_recno);
+					targetUnit.ai_leader_being_attacked(parentUnit.SpriteId);
 
 				if (UnitRes[targetUnit.unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
-					((UnitMarine)targetUnit).ai_ship_being_attacked(parentUnit.sprite_recno);
+					((UnitMarine)targetUnit).ai_ship_being_attacked(parentUnit.SpriteId);
 			}
 
 			//--- if a member in a troop is under attack, ask for other troop members to help ---//
 
-			if (Info.TotalDays % 2 == sprite_recno % 2)
+			if (Info.TotalDays % 2 == SpriteId % 2)
 			{
 				if (targetUnit.leader_unit_recno != 0 ||
 				    (targetUnit.team_info != null && targetUnit.team_info.member_unit_array.Count > 1))
 				{
 					if (!UnitArray.IsDeleted(parentUnit
-						    .sprite_recno)) // it is possible that parentUnit is dying right now 
+						    .SpriteId)) // it is possible that parentUnit is dying right now 
 					{
 						targetUnit.ask_team_help_attack(parentUnit);
 					}
@@ -1830,13 +1829,13 @@ public partial class Unit
 
 			//--- if a member in a troop is under attack, ask for other troop members to help ---//
 
-			if (Info.TotalDays % 2 == sprite_recno % 2)
+			if (Info.TotalDays % 2 == SpriteId % 2)
 			{
 				if (targetUnit.leader_unit_recno != 0 ||
 				    (targetUnit.team_info != null && targetUnit.team_info.member_unit_array.Count > 1))
 				{
 					if (!UnitArray.IsDeleted(parentUnit
-						    .sprite_recno)) // it is possible that parentUnit is dying right now 
+						    .SpriteId)) // it is possible that parentUnit is dying right now 
 					{
 						targetUnit.ask_team_help_attack(parentUnit);
 					}
@@ -1880,12 +1879,12 @@ public partial class Unit
 		//------------------------------------------------------------------------------//
 		// the target and the attacker's nations are different
 		// (it's possible that when a unit who has just changed nation has its bullet hitting its own nation)
-		if (attackUnit != null && attackUnit.cur_action != SPRITE_DIE && targetFirm.nation_recno != attackNationRecno)
+		if (attackUnit != null && attackUnit.CurAction != SPRITE_DIE && targetFirm.nation_recno != attackNationRecno)
 		{
 			if (attackNation != null && targetFirm.nation_recno != 0)
 			{
 				attackNation.set_at_war_today();
-				NationArray[targetFirm.nation_recno].set_at_war_today(attackUnit.sprite_recno);
+				NationArray[targetFirm.nation_recno].set_at_war_today(attackUnit.SpriteId);
 			}
 
 			if (targetFirm.nation_recno != 0)
@@ -1893,12 +1892,12 @@ public partial class Unit
 
 			//------------ auto defense -----------------//
 			if (attackUnit.is_visible())
-				targetFirm.auto_defense(attackUnit.sprite_recno);
+				targetFirm.auto_defense(attackUnit.SpriteId);
 
 			if (attackNationRecno != targetFirm.nation_recno)
 				attackUnit.gain_experience(); // gain experience to increase combat level
 
-			targetFirm.being_attacked(attackUnit.sprite_recno);
+			targetFirm.being_attacked(attackUnit.SpriteId);
 
 			//------ increase battling fryhtan score -------//
 
@@ -1968,7 +1967,7 @@ public partial class Unit
 		//------------------------------------------------------------------------------//
 		// the target and the attacker's nations are different
 		// (it's possible that when a unit who has just changed nation has its bullet hitting its own nation)
-		if (attackUnit != null && attackUnit.cur_action != SPRITE_DIE && targetTown.NationId != attackNationRecno)
+		if (attackUnit != null && attackUnit.CurAction != SPRITE_DIE && targetTown.NationId != attackNationRecno)
 		{
 			int townNationRecno = targetTown.NationId;
 
@@ -1977,7 +1976,7 @@ public partial class Unit
 			if (attackNationRecno != 0 && targetTown.NationId != 0)
 			{
 				NationArray[attackNationRecno].set_at_war_today();
-				NationArray[targetTown.NationId].set_at_war_today(attackUnit.sprite_recno);
+				NationArray[targetTown.NationId].set_at_war_today(attackUnit.SpriteId);
 			}
 
 			if (targetTown.NationId != 0)
@@ -1988,7 +1987,7 @@ public partial class Unit
 			// don't add the town abandon news that might be called by Town::dec_pop() as the town is actually destroyed not abandoned
 			NewsArray.disable();
 
-			targetTown.BeingAttacked(attackUnit.sprite_recno, attackDamage);
+			targetTown.BeingAttacked(attackUnit.SpriteId, attackDamage);
 
 			NewsArray.enable();
 
@@ -2008,7 +2007,7 @@ public partial class Unit
 			//------------ auto defense -----------------//
 
 			if (!FirmArray.IsDeleted(targetTownRecno))
-				targetTown.AutoDefense(attackUnit.sprite_recno);
+				targetTown.AutoDefense(attackUnit.SpriteId);
 		}
 	}
 	
@@ -2033,7 +2032,7 @@ public partial class Unit
 		// not ship. 1 for allowing, 0 otherwise
 		//------------------------------------------------------------------------------------//
 		int allowMove = 1;
-		if (sprite_info.sprite_sub_type == 'M')
+		if (SpriteInfo.sprite_sub_type == 'M')
 		{
 			UnitInfo unitInfo = UnitRes[unit_id];
 			if (unitInfo.carry_goods_capacity != 0)
@@ -2045,9 +2044,9 @@ public partial class Unit
 		}
 
 		//---------------------------------------------------------//
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
-		SpriteInfo targetSpriteInfo = targetUnit.sprite_info;
+		int targetXLoc = targetUnit.NextLocX;
+		int targetYLoc = targetUnit.NextLocY;
+		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 
 		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height);
 		action_x_loc2 = action_x_loc = targetXLoc; // update target location
@@ -2056,8 +2055,8 @@ public partial class Unit
 		//---------------------------------------------------------------------//
 		// target is out of attacking range, move closer to it
 		//---------------------------------------------------------------------//
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 		if (attackDistance > attack_range)
 		{
 			//---------------- stop all actions if not allow to move -----------------//
@@ -2072,7 +2071,7 @@ public partial class Unit
 			//---------------------------------------------------------------------//
 			if (!update_attack_path_dist())
 			{
-				if (cur_action == SPRITE_MOVE || cur_action == SPRITE_WAIT || cur_action == SPRITE_READY_TO_MOVE)
+				if (CurAction == SPRITE_MOVE || CurAction == SPRITE_WAIT || CurAction == SPRITE_READY_TO_MOVE)
 					return;
 			}
 
@@ -2084,7 +2083,7 @@ public partial class Unit
 				range_attack_x_loc = range_attack_y_loc = -1;
 
 				// choose better attack mode to attack the target
-				choose_best_attack_mode(attackDistance, targetUnit.mobile_type);
+				choose_best_attack_mode(attackDistance, targetUnit.MobileType);
 			}
 		}
 		else // attackDistance <= attack_range
@@ -2092,29 +2091,29 @@ public partial class Unit
 			//-----------------------------------------------------------------------------//
 			// although the target has moved, the unit can still attack it. no need to move
 			//-----------------------------------------------------------------------------//
-			if (Math.Abs(cur_x - next_x) >= sprite_info.speed || Math.Abs(cur_y - next_y) >= sprite_info.speed)
+			if (Math.Abs(CurX - NextX) >= SpriteInfo.speed || Math.Abs(CurY - NextY) >= SpriteInfo.speed)
 				return; // return as moving
 
 			if (attackDistance == 1 && attack_range > 1) // may change attack mode
-				choose_best_attack_mode(attackDistance, targetUnit.mobile_type);
+				choose_best_attack_mode(attackDistance, targetUnit.MobileType);
 
 			if (attack_range > 1) // range attack
 			{
 				//------------------ do range attack ----------------------//
-				AttackInfo attackInfo = attack_info_array[cur_attack];
+				AttackInfo attackInfo = attack_info_array[CurAttack];
 				// range attack possible
-				if (BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, targetXLoc, targetYLoc,
-					    targetUnit.mobile_type, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+				if (BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
+					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					set_cur(next_x, next_y);
+					set_cur(NextX, NextY);
 
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
 					if (ConfigAdv.unit_target_move_range_cycle)
 					{
 						cycle_eqv_attack();
-						attackInfo = attack_info_array[cur_attack]; // cur_attack may change
-						cur_frame = 1;
+						attackInfo = attack_info_array[CurAttack]; // cur_attack may change
+						CurFrame = 1;
 					}
 
 					if (is_dir_correct())
@@ -2133,15 +2132,15 @@ public partial class Unit
 					if (TryMoveToRangeAttack(targetUnit) == 1)
 					{
 						//range_attack_x_loc = range_attack_y_loc = -1;
-						choose_best_attack_mode(attackDistance, targetUnit.mobile_type);
+						choose_best_attack_mode(attackDistance, targetUnit.MobileType);
 					}
 				}
 			}
 			else if (attackDistance == 1) // close attack
 			{
-				set_cur(next_x, next_y);
+				set_cur(NextX, NextY);
 				set_attack_dir(curXLoc, curYLoc, targetXLoc, targetYLoc);
-				cur_frame = 1;
+				CurFrame = 1;
 
 				if (is_dir_correct())
 					set_attack();
@@ -2153,29 +2152,29 @@ public partial class Unit
 
 	private void attack_target(Unit targetUnit)
 	{
-		if (remain_attack_delay != 0)
+		if (RemainAttackDelay != 0)
 			return;
 
-		int unitXLoc = next_x_loc();
-		int unitYLoc = next_y_loc();
+		int unitXLoc = NextLocX;
+		int unitYLoc = NextLocY;
 
 		if (attack_range > 1) // use range attack
 		{
 			//---------------- use range attack -----------------//
-			AttackInfo attackInfo = attack_info_array[cur_attack];
+			AttackInfo attackInfo = attack_info_array[CurAttack];
 
-			if (cur_frame != attackInfo.bullet_out_frame)
+			if (CurFrame != attackInfo.bullet_out_frame)
 				return; // wait for bullet_out_frame
 
-			if (!BulletArray.bullet_path_possible(unitXLoc, unitYLoc, mobile_type,
-				    range_attack_x_loc, range_attack_y_loc, targetUnit.mobile_type,
+			if (!BulletArray.bullet_path_possible(unitXLoc, unitYLoc, MobileType,
+				    range_attack_x_loc, range_attack_y_loc, targetUnit.MobileType,
 				    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 			{
-				SpriteInfo targetSpriteInfo = targetUnit.sprite_info;
+				SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 				// seek for another possible point to attack if target size > 1x1
 				if ((targetSpriteInfo.loc_width > 1 || targetSpriteInfo.loc_height > 1) &&
-				    !BulletArray.add_bullet_possible(unitXLoc, unitYLoc, mobile_type, action_x_loc, action_y_loc,
-					    targetUnit.mobile_type, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+				    !BulletArray.add_bullet_possible(unitXLoc, unitYLoc, MobileType, action_x_loc, action_y_loc,
+					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------ no suitable location to attack target by bullet, move to target --------//
@@ -2198,9 +2197,9 @@ public partial class Unit
 		else // close attack
 		{
 			//--------------------- close attack ------------------------//
-			AttackInfo attackInfo = attack_info_array[cur_attack];
+			AttackInfo attackInfo = attack_info_array[CurAttack];
 
-			if (cur_frame == cur_sprite_attack().frame_count)
+			if (CurFrame == cur_sprite_attack().frame_count)
 			{
 				if (targetUnit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.is_nation(nation_recno))
 					((UnitExpCart)targetUnit).trigger_explode();
@@ -2220,7 +2219,7 @@ public partial class Unit
 
 	private bool on_way_to_attack(Unit targetUnit)
 	{
-		if (mobile_type == UnitConstants.UNIT_LAND)
+		if (MobileType == UnitConstants.UNIT_LAND)
 		{
 			if (attack_range == 1)
 			{
@@ -2231,33 +2230,33 @@ public partial class Unit
 				if (_pathNodeDistance > attack_range)
 					return detect_surround_target();
 			}
-			else if (_pathNodeDistance != 0 && cur_action != SPRITE_TURN)
+			else if (_pathNodeDistance != 0 && CurAction != SPRITE_TURN)
 			{
 				if (detect_surround_target())
 					return true; // detect surrounding target while walking
 			}
 		}
 
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
-		SpriteInfo targetSpriteInfo = targetUnit.sprite_info;
+		int targetXLoc = targetUnit.NextLocX;
+		int targetYLoc = targetUnit.NextLocY;
+		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 
 		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height);
 
 		if (attackDistance <= attack_range) // able to attack target
 		{
 			if ((attackDistance == 1) && attack_range > 1) // often false condition is checked first
-				choose_best_attack_mode(1, targetUnit.mobile_type); // may change to close attack
+				choose_best_attack_mode(1, targetUnit.MobileType); // may change to close attack
 
 			if (attack_range > 1) // use range attack
 			{
-				set_cur(next_x, next_y);
+				set_cur(NextX, NextY);
 
-				AttackInfo attackInfo = attack_info_array[cur_attack];
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
-				if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, mobile_type, targetXLoc, targetYLoc,
-					    targetUnit.mobile_type, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+				AttackInfo attackInfo = attack_info_array[CurAttack];
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
+					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
 					    out range_attack_x_loc, out range_attack_y_loc,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
@@ -2270,8 +2269,8 @@ public partial class Unit
 				}
 
 				//---------- able to do range attack ----------//
-				set_attack_dir(next_x_loc(), next_y_loc(), range_attack_x_loc, range_attack_y_loc);
-				cur_frame = 1;
+				set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
+				CurFrame = 1;
 
 				if (is_dir_correct())
 					set_attack();
@@ -2281,9 +2280,9 @@ public partial class Unit
 			else // close attack
 			{
 				//---------- attack now ---------//
-				set_cur(next_x, next_y);
+				set_cur(NextX, NextY);
 				TerminateMove();
-				set_attack_dir(next_x_loc(), next_y_loc(), targetXLoc, targetYLoc);
+				set_attack_dir(NextLocX, NextLocY, targetXLoc, targetYLoc);
 
 				if (is_dir_correct())
 					set_attack();
@@ -2300,8 +2299,8 @@ public partial class Unit
 		const int DIMENSION = 3;
 		const int CHECK_SIZE = DIMENSION * DIMENSION;
 
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 		int checkXLoc, checkYLoc, xShift, yShift;
 		Unit target;
 		int targetRecno;
@@ -2373,11 +2372,11 @@ public partial class Unit
 			int attackDir1 = (targetDir + 2) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 			int attackDir2 = (targetDir + 6) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 
-			if ((attackDir1 + 8 - final_dir) % InternalConstants.MAX_SPRITE_DIR_TYPE <=
-			    (attackDir2 + 8 - final_dir) % InternalConstants.MAX_SPRITE_DIR_TYPE)
-				final_dir = attackDir1;
+			if ((attackDir1 + 8 - FinalDir) % InternalConstants.MAX_SPRITE_DIR_TYPE <=
+			    (attackDir2 + 8 - FinalDir) % InternalConstants.MAX_SPRITE_DIR_TYPE)
+				FinalDir = attackDir1;
 			else
-				final_dir = attackDir2;
+				FinalDir = attackDir2;
 
 			attack_dir = targetDir;
 		}
@@ -2391,7 +2390,7 @@ public partial class Unit
 	private bool can_attack_different_target_type()
 	{
 		int maxRange = max_attack_range();
-		if (mobile_type == UnitConstants.UNIT_LAND && maxRange == 0)
+		if (MobileType == UnitConstants.UNIT_LAND && maxRange == 0)
 			return false; // unable to do range attack or cannot attack
 
 		if (maxRange > 1)
@@ -2402,11 +2401,11 @@ public partial class Unit
 
 	private bool possible_place_for_range_attack(int targetXLoc, int targetYLoc, int targetWidth, int targetHeight, int maxRange)
 	{
-		if (mobile_type == UnitConstants.UNIT_AIR)
+		if (MobileType == UnitConstants.UNIT_AIR)
 			return true; // air unit can reach any region
 
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 
 		if (Math.Abs(curXLoc - targetXLoc) <= maxRange &&
 		    Math.Abs(curYLoc - targetYLoc) <= maxRange) // inside the attack range
@@ -2422,7 +2421,7 @@ public partial class Unit
 		int checkXLoc, checkYLoc;
 
 		//--------- do adjustment for UnitConstants.UNIT_SEA and UnitConstants.UNIT_AIR ---------//
-		if (mobile_type != UnitConstants.UNIT_LAND)
+		if (MobileType != UnitConstants.UNIT_LAND)
 		{
 			if (xLoc1 % 2 != 0)
 				xLoc1++;
@@ -2435,28 +2434,28 @@ public partial class Unit
 		}
 
 		//-------- checking for surrounding location ----------//
-		switch (mobile_type)
+		switch (MobileType)
 		{
 			case UnitConstants.UNIT_LAND:
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
 					loc = World.GetLoc(checkXLoc, yLoc1);
-					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 						return true;
 
 					loc = World.GetLoc(checkXLoc, yLoc2);
-					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
 					loc = World.GetLoc(xLoc1, checkYLoc);
-					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 						return true;
 
 					loc = World.GetLoc(xLoc2, checkYLoc);
-					if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+					if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 						return true;
 				}
 
@@ -2468,14 +2467,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc1);
-						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc2);
-						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 							return true;
 					}
 				}
@@ -2485,14 +2484,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc1, checkYLoc);
-						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc2, checkYLoc);
-						if (loc.RegionId == regionId && loc.IsAccessible(mobile_type))
+						if (loc.RegionId == regionId && loc.IsAccessible(MobileType))
 							return true;
 					}
 				}
@@ -2505,14 +2504,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc1);
-						if (loc.IsAccessible(mobile_type))
+						if (loc.IsAccessible(MobileType))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc2);
-						if (loc.IsAccessible(mobile_type))
+						if (loc.IsAccessible(MobileType))
 							return true;
 					}
 				}
@@ -2522,14 +2521,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc1, checkYLoc);
-						if (loc.IsAccessible(mobile_type))
+						if (loc.IsAccessible(MobileType))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc2, checkYLoc);
-						if (loc.IsAccessible(mobile_type))
+						if (loc.IsAccessible(MobileType))
 							return true;
 					}
 				}
@@ -2545,18 +2544,18 @@ public partial class Unit
 
 	private bool space_for_attack(int targetXLoc, int targetYLoc, int targetMobileType, int targetWidth, int targetHeight)
 	{
-		if (mobile_type == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_LAND)
+		if (MobileType == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_LAND)
 			return space_around_target(targetXLoc, targetYLoc, targetWidth, targetHeight);
 
-		if ((mobile_type == UnitConstants.UNIT_SEA && targetMobileType == UnitConstants.UNIT_SEA) ||
-		    (mobile_type == UnitConstants.UNIT_AIR && targetMobileType == UnitConstants.UNIT_AIR))
+		if ((MobileType == UnitConstants.UNIT_SEA && targetMobileType == UnitConstants.UNIT_SEA) ||
+		    (MobileType == UnitConstants.UNIT_AIR && targetMobileType == UnitConstants.UNIT_AIR))
 			return space_around_target_ver2(targetXLoc, targetYLoc, targetWidth, targetHeight);
 
 		//-------------------------------------------------------------------------//
 		// mobile_type is differet from that of target unit
 		//-------------------------------------------------------------------------//
-		Location loc = World.GetLoc(next_x_loc(), next_y_loc());
-		if (mobile_type == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_SEA &&
+		Location loc = World.GetLoc(NextLocX, NextLocY);
+		if (MobileType == UnitConstants.UNIT_LAND && targetMobileType == UnitConstants.UNIT_SEA &&
 		    !can_attack_different_target_type() && ship_surr_has_free_land(targetXLoc, targetYLoc, loc.RegionId))
 			return true;
 
@@ -2601,12 +2600,12 @@ public partial class Unit
 			for (; i < width; i++, locWeight <<= 1)
 			{
 				loc = World.GetLoc(squareXLoc + i, testYLoc);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2636,12 +2635,12 @@ public partial class Unit
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
 				loc = World.GetLoc(testXLoc, squareYLoc + i);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2671,12 +2670,12 @@ public partial class Unit
 			for (; i >= 0; i--, locWeight <<= 1)
 			{
 				loc = World.GetLoc(squareXLoc + i, testYLoc);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2706,12 +2705,12 @@ public partial class Unit
 			for (; i < height; i++, locWeight <<= 1)
 			{
 				loc = World.GetLoc(testXLoc, squareYLoc + i);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2758,12 +2757,12 @@ public partial class Unit
 			for (; i <= xLoc2; i += 2, locWeight <<= 1)
 			{
 				loc = World.GetLoc(i, yLoc1);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2793,12 +2792,12 @@ public partial class Unit
 			for (; i > yLoc1; i -= 2, locWeight <<= 1)
 			{
 				loc = World.GetLoc(xLoc1, i);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2828,12 +2827,12 @@ public partial class Unit
 			for (; i > xLoc1; i -= 2, locWeight <<= 1)
 			{
 				loc = World.GetLoc(i, yLoc2);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2863,12 +2862,12 @@ public partial class Unit
 			for (; i < yLoc2; i += 2, locWeight <<= 1)
 			{
 				loc = World.GetLoc(xLoc2, i);
-				if (loc.CanMove(mobile_type))
+				if (loc.CanMove(MobileType))
 					sum ^= locWeight;
-				else if (loc.HasUnit(mobile_type))
+				else if (loc.HasUnit(MobileType))
 				{
-					unit = UnitArray[loc.UnitId(mobile_type)];
-					if (unit.cur_action != SPRITE_ATTACK)
+					unit = UnitArray[loc.UnitId(MobileType)];
+					if (unit.CurAction != SPRITE_ATTACK)
 						sum ^= locWeight;
 				}
 			}
@@ -2898,7 +2897,7 @@ public partial class Unit
 				continue;
 
 			loc = World.GetLoc(checkXLoc, checkYLoc);
-			if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+			if (loc.RegionId == regionId && loc.CanMove(MobileType))
 				return true;
 		}
 
@@ -2910,8 +2909,8 @@ public partial class Unit
 		//if(mobile_type==UnitConstants.UNIT_AIR)
 		//	return true; // air unit can reach any region
 
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 
 		if (Math.Abs(curXLoc - targetXLoc) <= maxRange &&
 		    Math.Abs(curYLoc - targetYLoc) <= maxRange) // inside the attack range
@@ -2926,7 +2925,7 @@ public partial class Unit
 		int checkXLoc, checkYLoc;
 
 		//--------- do adjustment for UnitConstants.UNIT_SEA and UnitConstants.UNIT_AIR ---------//
-		if (mobile_type != UnitConstants.UNIT_LAND)
+		if (MobileType != UnitConstants.UNIT_LAND)
 		{
 			if (xLoc1 % 2 != 0)
 				xLoc1++;
@@ -2939,28 +2938,28 @@ public partial class Unit
 		}
 
 		//-------- checking for surrounding location ----------//
-		switch (mobile_type)
+		switch (MobileType)
 		{
 			case UnitConstants.UNIT_LAND:
 				for (checkXLoc = xLoc1; checkXLoc <= xLoc2; checkXLoc++)
 				{
 					loc = World.GetLoc(checkXLoc, yLoc1);
-					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(MobileType))
 						return true;
 
 					loc = World.GetLoc(checkXLoc, yLoc2);
-					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(MobileType))
 						return true;
 				}
 
 				for (checkYLoc = yLoc1 + 1; checkYLoc < yLoc2; checkYLoc++)
 				{
 					loc = World.GetLoc(xLoc1, checkYLoc);
-					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(MobileType))
 						return true;
 
 					loc = World.GetLoc(xLoc2, checkYLoc);
-					if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+					if (loc.RegionId == regionId && loc.CanMove(MobileType))
 						return true;
 				}
 
@@ -2972,14 +2971,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc1);
-						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(MobileType))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc2);
-						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(MobileType))
 							return true;
 					}
 				}
@@ -2989,14 +2988,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc1, checkYLoc);
-						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(MobileType))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc2, checkYLoc);
-						if (loc.RegionId == regionId && loc.CanMove(mobile_type))
+						if (loc.RegionId == regionId && loc.CanMove(MobileType))
 							return true;
 					}
 				}
@@ -3009,14 +3008,14 @@ public partial class Unit
 					if (checkXLoc % 2 == 0 && yLoc1 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc1);
-						if (loc.CanMove(mobile_type))
+						if (loc.CanMove(MobileType))
 							return true;
 					}
 
 					if (checkXLoc % 2 == 0 && yLoc2 % 2 == 0)
 					{
 						loc = World.GetLoc(checkXLoc, yLoc2);
-						if (loc.CanMove(mobile_type))
+						if (loc.CanMove(MobileType))
 							return true;
 					}
 				}
@@ -3026,14 +3025,14 @@ public partial class Unit
 					if (xLoc1 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc1, checkYLoc);
-						if (loc.CanMove(mobile_type))
+						if (loc.CanMove(MobileType))
 							return true;
 					}
 
 					if (xLoc2 % 2 == 0 && checkYLoc % 2 == 0)
 					{
 						loc = World.GetLoc(xLoc2, checkYLoc);
-						if (loc.CanMove(mobile_type))
+						if (loc.CanMove(MobileType))
 							return true;
 					}
 				}
@@ -3054,12 +3053,12 @@ public partial class Unit
 		//return;
 
 		//-------------------- define parameters -----------------------//
-		int attackModeBeingUsed = cur_attack;
+		int attackModeBeingUsed = CurAttack;
 		//UCHAR maxAttackRangeMode = 0;
-		int maxAttackRangeMode = cur_attack;
+		int maxAttackRangeMode = CurAttack;
 		AttackInfo attackInfoMaxRange = attack_info_array[0];
 		AttackInfo attackInfoChecking;
-		AttackInfo attackInfoSelected = attack_info_array[cur_attack];
+		AttackInfo attackInfoSelected = attack_info_array[CurAttack];
 
 		//--------------------------------------------------------------//
 		// If targetMobileType==UnitConstants.UNIT_AIR or mobile_type==UnitConstants.UNIT_AIR,
@@ -3093,7 +3092,7 @@ public partial class Unit
 					selectedDamageWeight = attackInfoSelected.attack_damage;
 
 					if (attackDistance == 1 &&
-					    (targetMobileType != UnitConstants.UNIT_AIR && mobile_type != UnitConstants.UNIT_AIR))
+					    (targetMobileType != UnitConstants.UNIT_AIR && MobileType != UnitConstants.UNIT_AIR))
 					{
 						//------------ force to use close attack if possible -----------//
 						if (attackInfoSelected.attack_range == attackDistance)
@@ -3123,7 +3122,7 @@ public partial class Unit
 						if (attackInfoChecking.attack_range < attackInfoSelected.attack_range)
 						{
 							if (attackInfoChecking.attack_range > 1 ||
-							    (targetMobileType != UnitConstants.UNIT_AIR && mobile_type != UnitConstants.UNIT_AIR))
+							    (targetMobileType != UnitConstants.UNIT_AIR && MobileType != UnitConstants.UNIT_AIR))
 							{
 								//--------------------------------------------------------------------------//
 								// select one with shortest attack_range
@@ -3161,15 +3160,15 @@ public partial class Unit
 			}
 
 			if (canAttack)
-				cur_attack = attackModeBeingUsed; // choose the strongest damage mode if able to attack
+				CurAttack = attackModeBeingUsed; // choose the strongest damage mode if able to attack
 			else
-				cur_attack = maxAttackRangeMode; //	choose the longest attack range if unable to attack
+				CurAttack = maxAttackRangeMode; //	choose the longest attack range if unable to attack
 
-			attack_range = attack_info_array[cur_attack].attack_range;
+			attack_range = attack_info_array[CurAttack].attack_range;
 		}
 		else
 		{
-			cur_attack = 0; // only one mode is supported
+			CurAttack = 0; // only one mode is supported
 			attack_range = attack_info_array[0].attack_range;
 			return;
 		}
@@ -3208,25 +3207,25 @@ public partial class Unit
 	public void cycle_eqv_attack()
 	{
 		int trial = SpriteInfo.MAX_UNIT_ATTACK_TYPE + 2;
-		if (attack_info_array[cur_attack].eqv_attack_next > 0)
+		if (attack_info_array[CurAttack].eqv_attack_next > 0)
 		{
 			do
 			{
-				cur_attack = attack_info_array[cur_attack].eqv_attack_next - 1;
-			} while (!can_attack_with(cur_attack));
+				CurAttack = attack_info_array[CurAttack].eqv_attack_next - 1;
+			} while (!can_attack_with(CurAttack));
 		}
 		else
 		{
-			if (!can_attack_with(cur_attack))
+			if (!can_attack_with(CurAttack))
 			{
 				// force to search again
-				int attackRange = attack_info_array[cur_attack].attack_range;
+				int attackRange = attack_info_array[CurAttack].attack_range;
 				for (int i = 0; i < attack_count; i++)
 				{
 					AttackInfo attackInfo = attack_info_array[i];
 					if (attackInfo.attack_range >= attackRange && can_attack_with(attackInfo))
 					{
-						cur_attack = i;
+						CurAttack = i;
 						break;
 					}
 				}
@@ -3463,17 +3462,17 @@ public partial class Unit
 			switch (action_mode)
 			{
 				case UnitConstants.ACTION_ATTACK_UNIT:
-					spriteInfo = unit.sprite_info;
+					spriteInfo = unit.SpriteInfo;
 
 					//-----------------------------------------------------------------//
 					// attack the target if able to reach the target surrounding, otherwise
 					// continue to wait
 					//-----------------------------------------------------------------//
-					action_x_loc2 = unit.next_x_loc(); // update target location
-					action_y_loc2 = unit.next_y_loc();
-					if (space_for_attack(action_x_loc2, action_y_loc2, unit.mobile_type,
+					action_x_loc2 = unit.NextLocX; // update target location
+					action_y_loc2 = unit.NextLocY;
+					if (space_for_attack(action_x_loc2, action_y_loc2, unit.MobileType,
 						    spriteInfo.loc_width, spriteInfo.loc_height))
-						attack_unit(unit.sprite_recno, 0, 0, true);
+						attack_unit(unit.SpriteId, 0, 0, true);
 					break;
 
 				case UnitConstants.ACTION_ATTACK_FIRM:
@@ -3485,7 +3484,7 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					attack_firm(action_x_loc2, action_y_loc2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, sprite_info.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
 						    action_x_loc2, action_y_loc2, firmInfo.loc_width, firmInfo.loc_height))
 						waiting_term = 0;
 					break;
@@ -3497,14 +3496,14 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					attack_town(action_x_loc2, action_y_loc2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, sprite_info.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
 						    action_x_loc2, action_y_loc2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 						waiting_term = 0;
 					break;
 
 				case UnitConstants.ACTION_ATTACK_WALL:
 					attack_wall(action_x_loc2, action_y_loc2);
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, sprite_info.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
 						    action_x_loc2, action_y_loc2, 1, 1))
 						waiting_term = 0;
 					break;
@@ -3628,7 +3627,7 @@ public partial class Unit
 				}
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			if (FirmArray.IsDeleted(action_misc_para))
 				clearDefenseMode++;
@@ -3656,12 +3655,12 @@ public partial class Unit
 		if (UnitArray.IsDeleted(action_para))
 			return true;
 
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 			return true;
 
 		Unit target = UnitArray[action_para];
 		Location loc = World.GetLoc(action_x_loc, action_y_loc);
-		if (!loc.HasUnit(target.mobile_type))
+		if (!loc.HasUnit(target.MobileType))
 			return true; // the target may be dead or invisible
 
 		int returnFactor;
@@ -3683,14 +3682,14 @@ public partial class Unit
 				returnFactor = PROB_FRIENDLY_RETURN;
 		}
 
-		SpriteInfo targetSpriteInfo = target.sprite_info;
+		SpriteInfo targetSpriteInfo = target.SpriteInfo;
 
 		//-----------------------------------------------------------------//
 		// if the target moves faster than this unit, it is more likely for
 		// this unit to go back to military camp.
 		//-----------------------------------------------------------------//
 		//-**** should also consider the combat level and hit_points of both unit ****-//
-		if (targetSpriteInfo.speed > sprite_info.speed)
+		if (targetSpriteInfo.speed > SpriteInfo.speed)
 			returnFactor -= 5;
 
 		if (Misc.Random(returnFactor) != 0) // return to camp if true
@@ -3826,7 +3825,7 @@ public partial class Unit
 				}
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			if (TownArray.IsDeleted(action_misc_para))
 				clearDefenseMode++;
@@ -3846,7 +3845,7 @@ public partial class Unit
 
 	private bool defend_town_follow_target()
 	{
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 			return true;
 
 		if (TownArray.IsDeleted(unit_mode_para))
@@ -3856,8 +3855,8 @@ public partial class Unit
 			return false;
 		}
 
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 
 		Town town = TownArray[unit_mode_para];
 		if ((curXLoc < town.LocCenterX - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
@@ -4011,7 +4010,7 @@ public partial class Unit
 				}
 			}
 		}
-		else if (cur_action == SPRITE_IDLE)
+		else if (CurAction == SPRITE_IDLE)
 		{
 			if (FirmArray.IsDeleted(action_misc_para))
 				clearDefendMode++;
@@ -4032,7 +4031,7 @@ public partial class Unit
 
 	private bool monster_defend_follow_target()
 	{
-		if (cur_action == SPRITE_ATTACK)
+		if (CurAction == SPRITE_ATTACK)
 			return true;
 		/*
 		if(FirmArray.IsDeleted(action_misc_para))
@@ -4051,8 +4050,8 @@ public partial class Unit
 		//--------------------------------------------------------------------------------//
 		// choose to return to firm
 		//--------------------------------------------------------------------------------//
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 
 		Firm firm = FirmArray[action_misc_para];
 		if ((curXLoc < firm.center_x - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||

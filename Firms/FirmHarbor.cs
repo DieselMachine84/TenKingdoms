@@ -196,7 +196,7 @@ public class FirmHarbor : Firm
 
 		Unit unit = UnitArray[unitRecno];
 
-		SpriteInfo spriteInfo = unit.sprite_info;
+		SpriteInfo spriteInfo = unit.SpriteInfo;
 		int xLoc = loc_x1; // xLoc & yLoc are used for returning results
 		int yLoc = loc_y1;
 
@@ -216,7 +216,7 @@ public class FirmHarbor : Firm
 		{
 			Power.reset_selection();
 			unit.selected_flag = true;
-			UnitArray.selected_recno = unit.sprite_recno;
+			UnitArray.selected_recno = unit.SpriteId;
 			UnitArray.selected_count = 1;
 
 			Info.disp();
@@ -593,7 +593,7 @@ public class FirmHarbor : Firm
 		{
 			Unit unit = UnitArray.AddUnit(build_unit_id, nation_recno);
 
-			add_hosted_ship(unit.sprite_recno);
+			add_hosted_ship(unit.SpriteId);
 
 			if (own_firm())
 				SERes.far_sound(center_x, center_y, 1, 'F', firm_id,

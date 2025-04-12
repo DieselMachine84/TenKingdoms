@@ -1752,7 +1752,7 @@ public class Town : IIdObject
 
 	private void FinishTrain(Unit unit)
 	{
-		SpriteInfo spriteInfo = unit.sprite_info;
+		SpriteInfo spriteInfo = unit.SpriteInfo;
 		int locX = LocX1; // xLoc & yLoc are used for returning results
 		int locY = LocY1;
 
@@ -1762,7 +1762,7 @@ public class Town : IIdObject
 		unit.init_sprite(locX, locY);
 
 		if (unit.is_own())
-			SERes.far_sound(locX, locY, 1, 'S', unit.sprite_id, "RDY");
+			SERes.far_sound(locX, locY, 1, 'S', unit.SpriteResId, "RDY");
 
 		unit.unit_mode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
 		TrainUnitId = 0;
@@ -2342,7 +2342,7 @@ public class Town : IIdObject
 		{
 			if (trainSkillId == Skill.SKILL_SPYING)
 			{
-				unit.spy_recno = SpyArray.AddSpy(unit.sprite_recno, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
+				unit.spy_recno = SpyArray.AddSpy(unit.SpriteId, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
 			}
 			else
 			{
@@ -2352,7 +2352,7 @@ public class Town : IIdObject
 			
 			//---- training solider or skilled unit takes time ----//
 
-			TrainUnitId = unit.sprite_recno;
+			TrainUnitId = unit.SpriteId;
 			_startTrainFrameNumber = Sys.Instance.FrameNumber; // as an offset for displaying the progress bar correctly
 
 			unit.deinit_sprite();
@@ -2369,7 +2369,7 @@ public class Town : IIdObject
 
 			if (unit.is_own())
 			{
-				SERes.far_sound(unit.cur_x_loc(), unit.cur_y_loc(), 1, 'S', unit.sprite_id, "RDY");
+				SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "RDY");
 			}
 		}
 
@@ -2381,7 +2381,7 @@ public class Town : IIdObject
 				Info.disp();
 		}
 
-		return unit.sprite_recno;
+		return unit.SpriteId;
 	}
 
 	public int RecruitDecLoyalty(int raceId, bool decNow = true)
@@ -3324,7 +3324,7 @@ public class Town : IIdObject
 
 		// only call out defender when the attacking unit is within the effective defending distance
 
-		if (Misc.rects_distance(attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(), attackerUnit.cur_x_loc(), attackerUnit.cur_y_loc(),
+		if (Misc.rects_distance(attackerUnit.CurLocX, attackerUnit.CurLocY, attackerUnit.CurLocX, attackerUnit.CurLocY,
 			    LocX1, LocY1, LocX2, LocY2) <= UnitConstants.EFFECTIVE_DEFEND_TOWN_DISTANCE)
 		{
 			while (true)
@@ -3643,7 +3643,7 @@ public class Town : IIdObject
 					break;
 
 				rebelUnit.unit_group_id = curGroupId;
-				rebelUnit.leader_unit_recno = rebelLeader.sprite_recno;
+				rebelUnit.leader_unit_recno = rebelLeader.SpriteId;
 
 				rebel.join(rebelUnit);
 
@@ -3757,7 +3757,7 @@ public class Town : IIdObject
 		kingUnit.skill.skill_level = 50 + Misc.Random(51);
 		kingUnit.set_combat_level(70 + Misc.Random(31));
 
-		newNation.set_king(kingUnit.sprite_recno, 1);
+		newNation.set_king(kingUnit.SpriteId, 1);
 
 		DecPopulation(raceId, false);
 
@@ -4900,7 +4900,7 @@ public class Town : IIdObject
 
 					//--- if the unit is idle and he is our enemy ---//
 
-					if (unit.cur_action == Sprite.SPRITE_IDLE &&
+					if (unit.CurAction == Sprite.SPRITE_IDLE &&
 					    nation.get_relation_status(unit.nation_recno) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.hit_points;

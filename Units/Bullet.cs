@@ -29,7 +29,7 @@ public class Bullet : Sprite
 
 	public Bullet()
 	{
-		sprite_id = 0;
+		SpriteResId = 0;
 	}
 
 	public virtual void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
@@ -44,7 +44,7 @@ public class Bullet : Sprite
 
 		//---------- copy attack info from the parent unit --------//
 
-		AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.cur_attack];
+		AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
 
 		attack_damage = parentUnit.actual_damage();
 		damage_radius = attackInfo.bullet_radius;
@@ -53,21 +53,21 @@ public class Bullet : Sprite
 
 		//----- clone vars from sprite_res for fast access -----//
 
-		sprite_id = attackInfo.bullet_sprite_id;
-		sprite_info = SpriteRes[sprite_id];
+		SpriteResId = attackInfo.bullet_sprite_id;
+		SpriteInfo = SpriteRes[SpriteResId];
 
 		//sprite_info.load_bitmap_res(); 
 
 		//--------- set the starting position of the bullet -------//
 
-		cur_action = SPRITE_MOVE;
-		cur_frame = 1;
+		CurAction = SPRITE_MOVE;
+		CurFrame = 1;
 		set_dir(parentUnit.attack_dir);
 
 		SpriteFrame spriteFrame = cur_sprite_frame(out _);
 
-		origin_x = cur_x = parentUnit.cur_x;
-		origin_y = cur_y = parentUnit.cur_y;
+		origin_x = CurX = parentUnit.CurX;
+		origin_y = CurY = parentUnit.CurY;
 
 		//------ set the target position and bullet mobile_type -------//
 
@@ -75,15 +75,15 @@ public class Bullet : Sprite
 		target_y_loc = targetYLoc;
 
 		// -spriteFrame.offset_x to make abs_x1 & abs_y1 = original x1 & y1. So the bullet will be centered on the target
-		go_x = target_x_loc * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.offset_x - spriteFrame.width / 2;
-		go_y = target_y_loc * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.offset_y - spriteFrame.height / 2;
+		GoX = target_x_loc * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.offset_x - spriteFrame.width / 2;
+		GoY = target_y_loc * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.offset_y - spriteFrame.height / 2;
 
-		mobile_type = parentUnit.mobile_type;
+		MobileType = parentUnit.MobileType;
 
 		//---------- set bullet movement steps -----------//
 
-		int xStep = (go_x - cur_x) / attackInfo.bullet_speed;
-		int yStep = (go_y - cur_y) / attackInfo.bullet_speed;
+		int xStep = (GoX - CurX) / attackInfo.bullet_speed;
+		int yStep = (GoY - CurY) / attackInfo.bullet_speed;
 
 		total_step = Math.Max(1, Math.Max(Math.Abs(xStep), Math.Abs(yStep)));
 		cur_step = 0;
@@ -98,15 +98,15 @@ public class Bullet : Sprite
 		//
 		//------------------------------------------------//
 
-		cur_x = origin_x + (go_x - origin_x) * cur_step / total_step;
-		cur_y = origin_y + (go_y - origin_y) * cur_step / total_step;
+		CurX = origin_x + (GoX - origin_x) * cur_step / total_step;
+		CurY = origin_y + (GoY - origin_y) * cur_step / total_step;
 
 		//cur_step++;
 
 		//------- update frame id. --------//
 
-		if (++cur_frame > cur_sprite_move().frame_count)
-			cur_frame = 1;
+		if (++CurFrame > cur_sprite_move().frame_count)
+			CurFrame = 1;
 
 		//----- if the sprite has reach the destintion ----//
 
@@ -115,16 +115,16 @@ public class Bullet : Sprite
 		{
 			check_hit();
 
-			cur_action = SPRITE_DIE; // Explosion
+			CurAction = SPRITE_DIE; // Explosion
 
 			// if it has die frame, adjust cur_x, cur_y to be align with the target_x_loc, target_y_loc
-			if (sprite_info.die.first_frame_recno != 0)
+			if (SpriteInfo.die.first_frame_recno != 0)
 			{
-				next_x = cur_x = target_x_loc * InternalConstants.CellWidth;
-				next_y = cur_y = target_y_loc * InternalConstants.CellHeight;
+				NextX = CurX = target_x_loc * InternalConstants.CellWidth;
+				NextY = CurY = target_y_loc * InternalConstants.CellHeight;
 			}
 
-			cur_frame = 1;
+			CurFrame = 1;
 		}
 		else if (total_step - cur_step == 1)
 		{
@@ -135,12 +135,12 @@ public class Bullet : Sprite
 	public override bool process_die()
 	{
 		// ------- sound effect --------//
-		SERes.sound(cur_x_loc(), cur_y_loc(), cur_frame, 'S', sprite_id, "DIE");
+		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
 		//--------- next frame ---------//
-		if (++cur_frame > sprite_info.die.frame_count)
+		if (++CurFrame > SpriteInfo.die.frame_count)
 			// ####### begin Gilbert 28/6 ########//
-			if (++cur_frame > sprite_info.die.frame_count)
+			if (++CurFrame > SpriteInfo.die.frame_count)
 			{
 				// ------- set fire on the target area --------//
 				if (fire_radius > 0)
@@ -220,7 +220,7 @@ public class Bullet : Sprite
 			nation_recno = parentUnit.nation_recno;
 		}
 
-		double attackDamage = attenuated_damage(targetUnit.cur_x, targetUnit.cur_y);
+		double attackDamage = attenuated_damage(targetUnit.CurX, targetUnit.CurY);
 
 		// -------- if the unit is guarding reduce damage ----------//
 		if (attackDamage == 0)
@@ -238,7 +238,7 @@ public class Bullet : Sprite
 
 		if (targetUnit.is_guarding())
 		{
-			switch (targetUnit.cur_action)
+			switch (targetUnit.CurAction)
 			{
 				case SPRITE_IDLE:
 				case SPRITE_READY_TO_MOVE:
@@ -246,15 +246,15 @@ public class Bullet : Sprite
 				case SPRITE_MOVE:
 				case SPRITE_ATTACK:
 					// check if on the opposite direction
-					if ((targetUnit.cur_dir & 7) == ((cur_dir + 4) & 7) ||
-					    (targetUnit.cur_dir & 7) == ((cur_dir + 3) & 7) ||
-					    (targetUnit.cur_dir & 7) == ((cur_dir + 5) & 7))
+					if ((targetUnit.CurDir & 7) == ((CurDir + 4) & 7) ||
+					    (targetUnit.CurDir & 7) == ((CurDir + 3) & 7) ||
+					    (targetUnit.CurDir & 7) == ((CurDir + 5) & 7))
 					{
 						attackDamage = (attackDamage > 10.0 / InternalConstants.ATTACK_SLOW_DOWN)
 							? attackDamage - 10.0 / InternalConstants.ATTACK_SLOW_DOWN
 							: 0.0;
-						SERes.sound(targetUnit.cur_x_loc(), targetUnit.cur_y_loc(), 1, 'S',
-							targetUnit.sprite_id, "DEF", 'S', sprite_id);
+						SERes.sound(targetUnit.CurLocX, targetUnit.CurLocY, 1, 'S',
+							targetUnit.SpriteResId, "DEF", 'S', SpriteResId);
 					}
 
 					break;
@@ -466,26 +466,26 @@ public class Bullet : Sprite
 				if (!UnitArray.IsDeleted(unitRecno))
 				{
 					Unit unit = UnitArray[unitRecno];
-					if (attenuated_damage(unit.cur_x, unit.cur_y) > 0)
+					if (attenuated_damage(unit.CurX, unit.CurY) > 0)
 					{
 						warnCount++;
-						switch (unit.cur_action)
+						switch (unit.CurAction)
 						{
 							case SPRITE_IDLE:
 							case SPRITE_READY_TO_MOVE:
 								//case SPRITE_TURN:
 								if (unit.can_stand_guard() && !unit.is_guarding())
 								{
-									unit.set_dir((cur_dir + 4) & 7); // opposite direction of arrow
+									unit.set_dir((CurDir + 4) & 7); // opposite direction of arrow
 									unit.set_guard_on();
 								}
 
 								break;
 							case SPRITE_MOVE:
 								if (unit.can_move_guard() && !unit.is_guarding() &&
-								    ((unit.cur_dir & 7) == ((cur_dir + 4) & 7) ||
-								     (unit.cur_dir & 7) == ((cur_dir + 5) & 7) ||
-								     (unit.cur_dir & 7) == ((cur_dir + 3) & 7)))
+								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
+								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||
+								     (unit.CurDir & 7) == ((CurDir + 3) & 7)))
 								{
 									unit.set_guard_on();
 								}
@@ -493,10 +493,10 @@ public class Bullet : Sprite
 								break;
 							case SPRITE_ATTACK:
 								if (unit.can_attack_guard() && !unit.is_guarding() &&
-								    unit.remain_attack_delay >= InternalConstants.GUARD_COUNT_MAX &&
-								    ((unit.cur_dir & 7) == ((cur_dir + 4) & 7) ||
-								     (unit.cur_dir & 7) == ((cur_dir + 5) & 7) ||
-								     (unit.cur_dir & 7) == ((cur_dir + 3) & 7)))
+								    unit.RemainAttackDelay >= InternalConstants.GUARD_COUNT_MAX &&
+								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
+								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||
+								     (unit.CurDir & 7) == ((CurDir + 3) & 7)))
 								{
 									unit.set_guard_on();
 								}
@@ -514,7 +514,7 @@ public class Bullet : Sprite
 
 	public virtual int display_layer()
 	{
-		if (mobile_type == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
+		if (MobileType == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
 			return 8;
 		else
 			return 1;

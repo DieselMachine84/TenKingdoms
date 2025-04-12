@@ -113,7 +113,7 @@ public class GodInfo
         unitGod.base_firm_recno = firmRecno;
         unitGod.hit_points = Convert.ToInt32(firmBase.pray_points);
 
-        return unitGod.sprite_recno;
+        return unitGod.SpriteId;
     }
 
     public void enable_know(int nationRecno)

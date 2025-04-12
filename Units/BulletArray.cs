@@ -39,11 +39,11 @@ public class BulletArray : SpriteArray
 		//------------------------------------------------------//
 		// define parameters
 		//------------------------------------------------------//
-		SpriteInfo targetSpriteInfo = targetUnit.sprite_info;
+		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 		int attackXLoc = parentUnit.range_attack_x_loc;
 		int attackYLoc = parentUnit.range_attack_y_loc;
-		int targetXLoc = targetUnit.next_x_loc();
-		int targetYLoc = targetUnit.next_y_loc();
+		int targetXLoc = targetUnit.NextLocX;
+		int targetYLoc = targetUnit.NextLocY;
 
 		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + targetSpriteInfo.loc_width &&
 		    attackYLoc >= targetYLoc && attackYLoc < targetYLoc + targetSpriteInfo.loc_height)
@@ -52,11 +52,11 @@ public class BulletArray : SpriteArray
 			// the previous used range attack destination can be reused,
 			// time is saved 'cos no need to check for bullet_path_possible()
 			//-------------------------------------------------------//
-			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.cur_attack];
+			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.sprite_recno,
-				attackXLoc, attackYLoc, targetUnit.mobile_type);
+			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,
+				attackXLoc, attackYLoc, targetUnit.MobileType);
 			return bullet;
 		}
 
@@ -98,10 +98,10 @@ public class BulletArray : SpriteArray
 			// the previous used range attack destination can be reused,
 			// time is saved 'cos no need to check for bullet_path_possible()
 			//-------------------------------------------------------//
-			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.cur_attack];
+			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.sprite_recno,
+			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,
 				attackXLoc, attackYLoc, UnitConstants.UNIT_LAND);
 			return bullet;
 		}

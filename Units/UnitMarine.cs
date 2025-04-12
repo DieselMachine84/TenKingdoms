@@ -81,7 +81,7 @@ public class UnitMarine : Unit
 		
 		extra_move_in_beach = NO_EXTRA_MOVE;
 
-		int spriteId = sprite_info.get_sub_sprite_info(1).sprite_id;
+		int spriteId = SpriteInfo.get_sub_sprite_info(1).sprite_id;
 		//splash.init(spriteId, cur_x_loc(), cur_y_loc());
 		//splash.cur_frame = 1;
 
@@ -263,8 +263,8 @@ public class UnitMarine : Unit
 		//-----------------------------------------------------------------------------------------//
 		// reset dest_stop_id since the order of the stop may be changed
 		//-----------------------------------------------------------------------------------------//
-		int xLoc = next_x_loc();
-		int yLoc = next_y_loc();
+		int xLoc = NextLocX;
+		int yLoc = NextLocY;
 		int minDist = Int32.MaxValue;
 
 		for (i = 0, dest_stop_id = 0; i < stop_defined_num; i++)
@@ -334,7 +334,7 @@ public class UnitMarine : Unit
 	public override void pre_process()
 	{
 		base.pre_process();
-		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || cur_action == SPRITE_DIE)
+		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
 			return;
 
 		if (action_mode2 >= UnitConstants.ACTION_ATTACK_UNIT && action_mode2 <= UnitConstants.ACTION_ATTACK_WALL)
@@ -369,8 +369,8 @@ public class UnitMarine : Unit
 					return;
 				}
 
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
 				int moveStep = move_step_magn();
 				if (curXLoc < firm.loc_x1 - moveStep || curXLoc > firm.loc_x2 + moveStep || curYLoc < firm.loc_y1 - moveStep ||
 				    curYLoc > firm.loc_y2 + moveStep)
@@ -384,15 +384,15 @@ public class UnitMarine : Unit
 	
 					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 					journey_status = ON_WAY_TO_FIRM;*/
-					if (cur_action == SPRITE_IDLE)
-						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+					if (CurAction == SPRITE_IDLE)
+						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
 					else
 						journey_status = InternalConstants.ON_WAY_TO_FIRM;
 					//#### end alex 6/10 ####//
 				}
 				else
 				{
-					if (cur_x == next_x && cur_y == next_y && cur_action == SPRITE_IDLE)
+					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
 					{
 						journey_status = InternalConstants.SURROUND_FIRM;
 						if (NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty)
@@ -495,7 +495,7 @@ public class UnitMarine : Unit
 				break;
 		}
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			//TODO
 			/*if (nation_recno == NationArray.player_recno || Config.show_ai_info)
@@ -518,7 +518,7 @@ public class UnitMarine : Unit
 		if (cur_firm_recno != 0 && FirmArray.IsDeleted(cur_firm_recno))
 		{
 			hit_points = 0.0; // ship also die if the harbor is deleted
-			UnitArray.disappear_in_firm(sprite_recno); // ship also die if the harnor is deleted
+			UnitArray.disappear_in_firm(SpriteId); // ship also die if the harnor is deleted
 			return;
 		}
 
@@ -541,7 +541,7 @@ public class UnitMarine : Unit
 		Firm firm;
 
 		//TODO change %2 == 0
-		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(mobile_type))
+		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(MobileType))
 			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
@@ -576,7 +576,7 @@ public class UnitMarine : Unit
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 
 		if (autoMode != 0) // move to next firm only if autoMode is on
-			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
 	}
 
 	public void ship_on_way()
@@ -587,14 +587,14 @@ public class UnitMarine : Unit
 		int nextYLoc;
 		int moveStep;
 
-		if (cur_action == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
+		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
 		{
 			if (!FirmArray.IsDeleted(shipStop.firm_recno))
 			{
 				firm = FirmArray[shipStop.firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
-				nextXLoc = next_x_loc();
-				nextYLoc = next_y_loc();
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
+				nextXLoc = NextLocX;
+				nextYLoc = NextLocY;
 				moveStep = move_step_magn();
 				if (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
 				    nextYLoc <= firm.loc_y2 + moveStep)
@@ -604,7 +604,7 @@ public class UnitMarine : Unit
 			}
 		}
 
-		if (UnitArray.IsDeleted(sprite_recno))
+		if (UnitArray.IsDeleted(SpriteId))
 			return; //-***************** BUGHERE ***************//
 
 		if (FirmArray.IsDeleted(shipStop.firm_recno))
@@ -614,7 +614,7 @@ public class UnitMarine : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
 			}
 
 			return;
@@ -623,11 +623,11 @@ public class UnitMarine : Unit
 		//ShipStop *stop = stop_array + dest_stop_id - 1;
 		firm = FirmArray[shipStop.firm_recno];
 
-		nextXLoc = next_x_loc();
-		nextYLoc = next_y_loc();
+		nextXLoc = NextLocX;
+		nextYLoc = NextLocY;
 		moveStep = move_step_magn();
 		if (journey_status == InternalConstants.SURROUND_FIRM ||
-		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && cur_x == next_x && cur_y == next_y && // move in a tile exactly
+		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && CurX == NextX && CurY == NextY && // move in a tile exactly
 		     (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
 		      nextYLoc <= firm.loc_y2 + moveStep)))
 		{
@@ -659,19 +659,19 @@ public class UnitMarine : Unit
 			ResetPath();
 			deinit_sprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
 
-			cur_x--; // set cur_x to -2, such that invisible but still process pre_process()
+			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
 
 			journey_status = InternalConstants.INSIDE_FIRM;
 		}
 		else
 		{
-			if (cur_action != SPRITE_MOVE)
+			if (CurAction != SPRITE_MOVE)
 			{
 				//----------------------------------------------------//
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -705,7 +705,7 @@ public class UnitMarine : Unit
 			}
 
 			Location location = World.GetLoc(checkXLoc, checkYLoc);
-			if (location.CanMove(mobile_type))
+			if (location.CanMove(MobileType))
 			{
 				found = true;
 				break;
@@ -1436,7 +1436,7 @@ public class UnitMarine : Unit
 
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.hit_points <= 0.0 || unit.cur_action == SPRITE_DIE || unit.action_mode2 == UnitConstants.ACTION_DIE)
+		if (unit.hit_points <= 0.0 || unit.CurAction == SPRITE_DIE || unit.action_mode2 == UnitConstants.ACTION_DIE)
 			return;
 
 		if (UnitsOnBoard.Count == UnitConstants.MAX_UNIT_IN_SHIP)
@@ -1444,7 +1444,7 @@ public class UnitMarine : Unit
 
 		UnitsOnBoard.Add(unitRecno);
 
-		unit.set_mode(UnitConstants.UNIT_MODE_ON_SHIP, sprite_recno); // set unit mode
+		unit.set_mode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
 
 		if (unit.selected_flag)
 		{
@@ -1456,7 +1456,7 @@ public class UnitMarine : Unit
 
 		//--- if this marine unit is currently selected ---//
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
 				//disp_info(INFO_UPDATE);
@@ -1504,8 +1504,8 @@ public class UnitMarine : Unit
 		// return if no territory is nearby the ship
 		//-------------------------------------------------------------------------//
 
-		int curXLoc = next_x_loc(); // ship location
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX; // ship location
+		int curYLoc = NextLocY;
 		int unprocess = isAll ? UnitsOnBoard.Count : 1;
 		Unit unit = isAll ? UnitArray[UnitsOnBoard[unprocess - 1]] : UnitArray[UnitsOnBoard[unitSeqId]];
 		int regionId = 0; // unload all the units in the same territory
@@ -1550,11 +1550,11 @@ public class UnitMarine : Unit
 						UnitArray.selected_count++;
 
 						if (UnitArray.selected_recno == 0)
-							UnitArray.selected_recno = unit.sprite_recno;
+							UnitArray.selected_recno = unit.SpriteId;
 					}
 
 					unprocess--;
-					UnitsOnBoard.Remove(unit.sprite_recno);
+					UnitsOnBoard.Remove(unit.SpriteId);
 
 					if (unprocess > 0)
 						unit = UnitArray[UnitsOnBoard[unprocess - 1]]; // point to next unit
@@ -1616,8 +1616,8 @@ public class UnitMarine : Unit
 	{
 		int[] offset = { 0, 1, -1 };
 
-		int curXLoc = next_x_loc();
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX;
+		int curYLoc = NextLocY;
 
 		int vecX = action_x_loc2 - curXLoc;
 		int vecY = action_y_loc2 - curYLoc;
@@ -1647,7 +1647,7 @@ public class UnitMarine : Unit
 				if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
 					continue;
 
-				if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mobile_type))
+				if (World.GetLoc(checkXLoc, checkYLoc).CanMove(MobileType))
 				{
 					found = true;
 					break;
@@ -1661,7 +1661,7 @@ public class UnitMarine : Unit
 			checkXLoc = curXLoc + vecX;
 			checkYLoc = curYLoc + vecY;
 
-			if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mobile_type))
+			if (World.GetLoc(checkXLoc, checkYLoc).CanMove(MobileType))
 				found = true;
 		}
 
@@ -1669,9 +1669,9 @@ public class UnitMarine : Unit
 			return;
 
 		set_dir(curXLoc, curYLoc, checkXLoc, checkYLoc);
-		cur_action = SPRITE_SHIP_EXTRA_MOVE;
-		go_x = checkXLoc * InternalConstants.CellWidth;
-		go_y = checkYLoc * InternalConstants.CellHeight;
+		CurAction = SPRITE_SHIP_EXTRA_MOVE;
+		GoX = checkXLoc * InternalConstants.CellWidth;
+		GoY = checkYLoc * InternalConstants.CellHeight;
 		//extra_move_in_beach = EXTRA_MOVING_IN;
 	}
 
@@ -1683,28 +1683,28 @@ public class UnitMarine : Unit
 		if (!match_dir()) // process turning
 			return;
 
-		if (cur_x != go_x || cur_y != go_y)
+		if (CurX != GoX || CurY != GoY)
 		{
 			//------------------------------------------------------------------------//
 			// set cargo_recno, extra_move_in_beach
 			//------------------------------------------------------------------------//
-			if (cur_x == next_x && cur_y == next_y)
+			if (CurX == NextX && CurY == NextY)
 			{
-				int goXLoc = go_x >> InternalConstants.CellWidthShift;
-				int goYLoc = go_y >> InternalConstants.CellHeightShift;
-				if (!World.GetLoc(goXLoc, goYLoc).CanMove(mobile_type))
+				int goXLoc = GoX >> InternalConstants.CellWidthShift;
+				int goYLoc = GoY >> InternalConstants.CellHeightShift;
+				if (!World.GetLoc(goXLoc, goYLoc).CanMove(MobileType))
 				{
-					go_x = next_x;
-					go_y = next_y;
+					GoX = NextX;
+					GoY = NextY;
 					return;
 				}
 
-				int curXLoc = next_x_loc();
-				int curYLoc = next_y_loc();
-				World.SetUnitId(curXLoc, curYLoc, mobile_type, 0);
-				World.SetUnitId(goXLoc, goYLoc, mobile_type, sprite_recno);
-				next_x = go_x;
-				next_y = go_y;
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				World.SetUnitId(curXLoc, curYLoc, MobileType, 0);
+				World.SetUnitId(goXLoc, goYLoc, MobileType, SpriteId);
+				NextX = GoX;
+				NextY = GoY;
 
 				//TODO %2 == 0
 				in_beach = !(curXLoc % 2 != 0 || curYLoc % 2 != 0);
@@ -1716,34 +1716,34 @@ public class UnitMarine : Unit
 			}
 
 			//---------- process moving -----------//
-			int stepX = sprite_info.speed;
-			int stepY = sprite_info.speed;
-			int vectorX = vector_x_array[final_dir] * sprite_info.speed; // cur_dir may be changed in the above set_next() call
-			int vectorY = vector_y_array[final_dir] * sprite_info.speed;
+			int stepX = SpriteInfo.speed;
+			int stepY = SpriteInfo.speed;
+			int vectorX = vector_x_array[FinalDir] * SpriteInfo.speed; // cur_dir may be changed in the above set_next() call
+			int vectorY = vector_y_array[FinalDir] * SpriteInfo.speed;
 
-			if (Math.Abs(cur_x - go_x) <= stepX)
-				cur_x = go_x;
+			if (Math.Abs(CurX - GoX) <= stepX)
+				CurX = GoX;
 			else
-				cur_x += vectorX;
+				CurX += vectorX;
 
-			if (Math.Abs(cur_y - go_y) <= stepY)
-				cur_y = go_y;
+			if (Math.Abs(CurY - GoY) <= stepY)
+				CurY = GoY;
 			else
-				cur_y += vectorY;
+				CurY += vectorY;
 		}
 
-		if (cur_x == go_x && cur_y == go_y)
+		if (CurX == GoX && CurY == GoY)
 		{
 			if (PathNodes.Count == 0)
 			{
-				cur_action = SPRITE_IDLE;
-				cur_frame = 1;
-				move_to_x_loc = next_x_loc();
-				move_to_y_loc = next_y_loc();
+				CurAction = SPRITE_IDLE;
+				CurFrame = 1;
+				move_to_x_loc = NextLocX;
+				move_to_y_loc = NextLocY;
 			}
 			else
 			{
-				cur_action = SPRITE_MOVE;
+				CurAction = SPRITE_MOVE;
 				NextMove();
 			}
 
@@ -1776,7 +1776,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		FirmHarbor harbor = (FirmHarbor)firm;
 
-		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != harbor.sea_region_id)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.sea_region_id)
 			return;
 
 		//-----------------------------------------//
@@ -1889,7 +1889,7 @@ public class UnitMarine : Unit
 			if (newStopFirmRecno != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -1899,7 +1899,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		// refresh stop info area
 		//-------------------------------------------------------//
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			if (nation_recno == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -1924,7 +1924,7 @@ public class UnitMarine : Unit
 		stop_defined_num--;
 		update_stop_list();
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
 				//Info.disp();
@@ -1933,7 +1933,7 @@ public class UnitMarine : Unit
 
 	public override bool is_ai_all_stop()
 	{
-		if (cur_action != SPRITE_IDLE || ai_action_id != 0)
+		if (CurAction != SPRITE_IDLE || ai_action_id != 0)
 			return false;
 
 		//---- if the ship is on the beach, it's action mode is always ACTION_SHIP_TO_BEACH, so we can't check it against ACTION_STOP ---//
@@ -2051,7 +2051,7 @@ public class UnitMarine : Unit
 
 	public void copy_route(int copyUnitRecno, int remoteAction)
 	{
-		if (sprite_recno == copyUnitRecno)
+		if (SpriteId == copyUnitRecno)
 			return;
 
 		UnitMarine copyUnit = (UnitMarine)UnitArray[copyUnitRecno];
@@ -2121,7 +2121,7 @@ public class UnitMarine : Unit
 
 		//---- Think about setting new trade route -------//
 
-		if (Info.TotalDays % 15 == sprite_recno % 15)
+		if (Info.TotalDays % 15 == SpriteId % 15)
 		{
 			if (stop_defined_num < 2 && is_visible() && is_ai_all_stop())
 				ai_sail_to_nearby_harbor();
@@ -2129,7 +2129,7 @@ public class UnitMarine : Unit
 
 		//------ Think about resigning this caravan -------//
 
-		if (Info.TotalDays % 60 == sprite_recno % 60)
+		if (Info.TotalDays % 60 == SpriteId % 60)
 			think_resign();
 	}
 
@@ -2189,7 +2189,7 @@ public class UnitMarine : Unit
 		Nation ownNation = NationArray[nation_recno];
 		FirmHarbor bestHarbor = null;
 		int bestRating = 0;
-		int curXLoc = cur_x_loc(), curYLoc = cur_y_loc();
+		int curXLoc = CurLocX, curYLoc = CurLocY;
 		int curRegionId = region_id();
 
 		for (int i = 0; i < ownNation.ai_harbor_array.Count; i++)
@@ -2221,16 +2221,16 @@ public class UnitMarine : Unit
 		if (attackerUnit.nation_recno == nation_recno) // this can happen when the unit has just changed nation
 			return;
 
-		if (Info.TotalDays % 5 == sprite_recno % 5)
+		if (Info.TotalDays % 5 == SpriteId % 5)
 		{
-			NationArray[nation_recno].ai_sea_attack_target(attackerUnit.next_x_loc(), attackerUnit.next_y_loc());
+			NationArray[nation_recno].ai_sea_attack_target(attackerUnit.NextLocX, attackerUnit.NextLocY);
 		}
 	}
 
 	public bool is_on_coast()
 	{
-		int curXLoc = next_x_loc(); // ship location
-		int curYLoc = next_y_loc();
+		int curXLoc = NextLocX; // ship location
+		int curYLoc = NextLocY;
 
 		for (int i = 2; i <= 9; i++) // checking for the surrounding location
 		{

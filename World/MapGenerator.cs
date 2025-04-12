@@ -1681,7 +1681,7 @@ public class MapGenerator
 				if (spyFlag)
 				{
 					int spySkill = 20 + Misc.Random(80); // 20 to 100
-					unit.spy_recno = SpyArray.AddSpy(unit.sprite_recno, spySkill).spy_recno;
+					unit.spy_recno = SpyArray.AddSpy(unit.SpriteId, spySkill).spy_recno;
 				}
 
 				break;
@@ -1736,8 +1736,8 @@ public class MapGenerator
 
 			if (king != null)
 			{
-				nation.set_king(king.sprite_recno, 1);
-				FirmArray[firmRecno].assign_overseer(king.sprite_recno);
+				nation.set_king(king.SpriteId, 1);
+				FirmArray[firmRecno].assign_overseer(king.SpriteId);
 			}
 			else
 			{

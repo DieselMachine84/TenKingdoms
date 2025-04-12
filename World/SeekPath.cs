@@ -116,7 +116,7 @@ public class SeekPath
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
 							unit = UnitArray[cargoId];
 							//TODO what's the difference between caravan and trader?
-							return unit.cur_action == Sprite.SPRITE_MOVE && unit.unit_id != UnitConstants.UNIT_CARAVAN;
+							return unit.CurAction == Sprite.SPRITE_MOVE && unit.unit_id != UnitConstants.UNIT_CARAVAN;
 
 						case SEARCH_MODE_TO_ATTACK: // to attack target
 						case SEARCH_MODE_TO_VEHICLE: // move to a vehicle
@@ -168,11 +168,11 @@ public class SeekPath
 
 				//------- checking for unit's groupId, curAction, nationId and position --------//
 				unit = UnitArray[cargoId];
-				unitCurrentAction = unit.cur_action;
+				unitCurrentAction = unit.CurAction;
 				return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
 				       (unitCurrentAction == Sprite.SPRITE_MOVE &&
-				        unit.cur_x - unit.next_x <= InternalConstants.CellWidth / 2 &&
-				        unit.cur_y - unit.next_y <= InternalConstants.CellHeight / 2) ||
+				        unit.CurX - unit.NextX <= InternalConstants.CellWidth / 2 &&
+				        unit.CurY - unit.NextY <= InternalConstants.CellHeight / 2) ||
 				       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 			case UnitConstants.UNIT_SEA:
@@ -192,7 +192,7 @@ public class SeekPath
 							break;
 
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
-							return UnitArray[cargoId].cur_action == Sprite.SPRITE_MOVE;
+							return UnitArray[cargoId].CurAction == Sprite.SPRITE_MOVE;
 
 						case SEARCH_MODE_TO_ATTACK:
 							if (cargoId == _targetId)
@@ -232,7 +232,7 @@ public class SeekPath
 									return true;
 
 								unit = UnitArray[cargoId];
-								unitCurrentAction = unit.cur_action;
+								unitCurrentAction = unit.CurAction;
 								return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK &&
 								        unit.action_mode2 != UnitConstants.ACTION_SHIP_TO_BEACH) ||
 								       (unit.unit_group_id != _groupId && unitCurrentAction == Sprite.SPRITE_MOVE);
@@ -250,7 +250,7 @@ public class SeekPath
 
 				//------- checking for unit's groupId, curAction, nationId and position --------//
 				unit = UnitArray[cargoId];
-				unitCurrentAction = unit.cur_action;
+				unitCurrentAction = unit.CurAction;
 				//TODO different condition with UNIT_LAND
 				return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
 				       unitCurrentAction == Sprite.SPRITE_MOVE ||
@@ -275,13 +275,13 @@ public class SeekPath
 					case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 					case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
 						unit = UnitArray[cargoId];
-						unitCurrentAction = unit.cur_action;
+						unitCurrentAction = unit.CurAction;
 						return (unit.unit_group_id == _groupId && unitCurrentAction != Sprite.SPRITE_ATTACK) ||
 						       unitCurrentAction == Sprite.SPRITE_MOVE ||
 						       (unit.nation_recno == _seekNationId && unitCurrentAction == Sprite.SPRITE_IDLE);
 
 					case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
-						return UnitArray[cargoId].cur_action == Sprite.SPRITE_MOVE;
+						return UnitArray[cargoId].CurAction == Sprite.SPRITE_MOVE;
 				}
 
 				return false;

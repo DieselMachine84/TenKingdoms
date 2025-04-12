@@ -81,7 +81,7 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// return if the market stop is in another territory
 		//-------------------------------------------------------//
-		if (World.GetLoc(next_x_loc(), next_y_loc()).RegionId != loc.RegionId)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 			return;
 
 		//-------------------------------------------//
@@ -193,14 +193,14 @@ public class UnitCaravan : Unit
 			if ((newStopFirmRecno = stop_array[dest_stop_id - 1].firm_recno) != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, stop_array[dest_stop_id - 1].firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, stop_array[dest_stop_id - 1].firm_id);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
 			stop2();
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			if (nation_recno == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -227,7 +227,7 @@ public class UnitCaravan : Unit
 
 		update_stop_list();
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			if ( /*!remote.is_enable() ||*/ nation_recno == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -389,8 +389,8 @@ public class UnitCaravan : Unit
 		//-----------------------------------------------------------------------------------------//
 		// reset dest_stop_id since the order of the stop may be changed
 		//-----------------------------------------------------------------------------------------//
-		int xLoc = next_x_loc();
-		int yLoc = next_y_loc();
+		int xLoc = NextLocX;
+		int yLoc = NextLocY;
 		int minDist = Int32.MaxValue;
 
 		for (i = 0, dest_stop_id = 0; i < stop_defined_num; i++)
@@ -482,7 +482,7 @@ public class UnitCaravan : Unit
 				break;
 		}
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 		{
 			//TODO
 			//if (nation_recno == NationArray.player_recno || Config.show_ai_info)
@@ -524,7 +524,7 @@ public class UnitCaravan : Unit
 		if (FirmArray.IsDeleted(action_para))
 		{
 			hit_points = 0.0; // caravan also die if the market is deleted
-			UnitArray.disappear_in_firm(sprite_recno); // caravan also die if the market is deleted
+			UnitArray.disappear_in_firm(SpriteId); // caravan also die if the market is deleted
 			return;
 		}
 
@@ -546,7 +546,7 @@ public class UnitCaravan : Unit
 		Location loc = World.GetLoc(xLoc, yLoc);
 		Firm firm;
 
-		if (loc.CanMove(mobile_type))
+		if (loc.CanMove(MobileType))
 			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
@@ -578,7 +578,7 @@ public class UnitCaravan : Unit
 		firm = FirmArray[stop_array[dest_stop_id - 1].firm_recno];
 
 		action_para = 0; // since action_para is used to store the current market recno, reset before searching
-		MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+		MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
 
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 	}
@@ -590,14 +590,14 @@ public class UnitCaravan : Unit
 		int nextXLoc = -1;
 		int nextYLoc = -1;
 
-		if (cur_action == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
+		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
 		{
 			if (!FirmArray.IsDeleted(stop.firm_recno))
 			{
 				firm = FirmArray[stop.firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
-				nextXLoc = next_x_loc();
-				nextYLoc = next_y_loc();
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
+				nextXLoc = NextLocX;
+				nextYLoc = NextLocY;
 
 				// hard code 1 for caravan size 1x1
 				if (nextXLoc >= firm.loc_x1 - 1 && nextXLoc <= firm.loc_x2 + 1 && nextYLoc >= firm.loc_y1 - 1 &&
@@ -611,7 +611,7 @@ public class UnitCaravan : Unit
 			}
 		}
 
-		int unitRecno = sprite_recno;
+		int unitRecno = SpriteId;
 
 		if (UnitArray.IsDeleted(unitRecno))
 			return; //-***************** BUGHERE ***************//
@@ -623,7 +623,7 @@ public class UnitCaravan : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
 			}
 
 			return;
@@ -632,11 +632,11 @@ public class UnitCaravan : Unit
 		//CaravanStop *stop = stop_array + dest_stop_id - 1;
 		firm = FirmArray[stop.firm_recno];
 
-		nextXLoc = next_x_loc();
-		nextYLoc = next_y_loc();
+		nextXLoc = NextLocX;
+		nextYLoc = NextLocY;
 
 		if (journey_status == InternalConstants.SURROUND_FIRM ||
-		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && cur_x == next_x && cur_y == next_y && // move in a tile exactly
+		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && CurX == NextX && CurY == NextY && // move in a tile exactly
 		     (nextXLoc >= firm.loc_x1 - 1 && nextXLoc <= firm.loc_x2 + 1 &&
 		      nextYLoc >= firm.loc_y1 - 1 && nextYLoc <= firm.loc_y2 + 1))) // in the surrounding of the firm
 		{
@@ -683,19 +683,19 @@ public class UnitCaravan : Unit
 			ResetPath();
 			deinit_sprite(true); // the caravan enters the market now. 1-keep it selected if it is currently selected
 
-			cur_x--; // set cur_x to -2, such that invisible but still process pre_process()
+			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
 
 			journey_status = InternalConstants.INSIDE_FIRM;
 		}
 		else
 		{
-			if (cur_action != SPRITE_MOVE)
+			if (CurAction != SPRITE_MOVE)
 			{
 				//----------------------------------------------------//
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -705,7 +705,7 @@ public class UnitCaravan : Unit
 	{
 		base.pre_process();
 
-		if (cur_x == -1) // can't use !is_visible(), keep process if cur_x < -1
+		if (CurX == -1) // can't use !is_visible(), keep process if cur_x < -1
 			return;
 
 		//-----------------------------------------------------------------------------//
@@ -766,13 +766,13 @@ public class UnitCaravan : Unit
 				return;
 			}
 
-			int curXLoc = next_x_loc();
-			int curYLoc = next_y_loc();
+			int curXLoc = NextLocX;
+			int curYLoc = NextLocY;
 
 			if (curXLoc < firmXLoc1 - 1 || curXLoc > firmXLoc2 + 1 || curYLoc < firmYLoc1 - 1 || curYLoc > firmYLoc2 + 1)
 			{
-				if (cur_action == SPRITE_IDLE)
-					MoveToFirmSurround(firmXLoc1, firmYLoc1, sprite_info.loc_width, sprite_info.loc_height, firmId);
+				if (CurAction == SPRITE_IDLE)
+					MoveToFirmSurround(firmXLoc1, firmYLoc1, SpriteInfo.loc_width, SpriteInfo.loc_height, firmId);
 				else
 					journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
@@ -818,7 +818,7 @@ public class UnitCaravan : Unit
 
 	public void copy_route(int copyUnitRecno, int remoteAction)
 	{
-		if (sprite_recno == copyUnitRecno)
+		if (SpriteId == copyUnitRecno)
 			return;
 
 		UnitCaravan copyUnit = (UnitCaravan)UnitArray[copyUnitRecno];
@@ -881,7 +881,7 @@ public class UnitCaravan : Unit
 	{
 		//-- Think about removing stops whose owner nation is at war with us. --//
 
-		if (Info.TotalDays % 30 == sprite_recno % 30)
+		if (Info.TotalDays % 30 == SpriteId % 30)
 		{
 			if (think_del_stop())
 				return;
@@ -912,7 +912,7 @@ public class UnitCaravan : Unit
 		//---- if the caravan hasn't loaded any goods for a year ----//
 
 		// don't call too often as the action may fail and it takes a while to call the function each time
-		if (Info.game_date > last_load_goods_date.AddDays(365) && Info.TotalDays % 30 == sprite_recno % 30)
+		if (Info.game_date > last_load_goods_date.AddDays(365) && Info.TotalDays % 30 == SpriteId % 30)
 		{
 			//--- don't resign if this caravan carries any goods ---//
 
@@ -932,7 +932,7 @@ public class UnitCaravan : Unit
 		//--- (neither of them has any direct supplies) ------//
 
 		if (Info.TotalDays % 30 ==
-		    sprite_recno % 30) // don't call too often as the action may fail and it takes a while to call the function each time
+		    SpriteId % 30) // don't call too often as the action may fail and it takes a while to call the function each time
 		{
 			for (int i = stop_defined_num; i > 0; i--)
 			{
@@ -1491,7 +1491,7 @@ public class UnitCaravan : Unit
 			}
 		}
 
-		if (UnitArray.selected_recno == sprite_recno)
+		if (UnitArray.selected_recno == SpriteId)
 			Info.disp();
 
 		return processed > 0 || moreToUnload;
@@ -1658,7 +1658,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.GetLoc(testXLoc, testYLoc);
-				if (location.CanMove(mobile_type))
+				if (location.CanMove(MobileType))
 				{
 					found = true;
 					break;
@@ -1684,7 +1684,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.GetLoc(testXLoc, testYLoc);
-				if (location.CanMove(mobile_type))
+				if (location.CanMove(MobileType))
 				{
 					found = true;
 					break;
@@ -1710,7 +1710,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.GetLoc(testXLoc, testYLoc);
-				if (location.CanMove(mobile_type))
+				if (location.CanMove(MobileType))
 				{
 					found = true;
 					break;
@@ -1736,7 +1736,7 @@ public class UnitCaravan : Unit
 					continue;
 
 				Location location = World.GetLoc(testXLoc, testYLoc);
-				if (location.CanMove(mobile_type))
+				if (location.CanMove(MobileType))
 				{
 					found = true;
 					break;

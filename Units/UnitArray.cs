@@ -100,14 +100,14 @@ public class UnitArray : SpriteArray
 		    return true;
 
 	    Unit unit = this[recNo];
-	    return unit.hit_points <= 0 || unit.cur_action == Sprite.SPRITE_DIE || unit.action_mode == UnitConstants.ACTION_DIE;
+	    return unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE || unit.action_mode == UnitConstants.ACTION_DIE;
     }
 
     public override void Process()
     {
 	    foreach (Unit unit in this)
 	    {
-		    int unitRecno = unit.sprite_recno;
+		    int unitRecno = unit.SpriteId;
 
 		    // only process each firm once per day
 		    if (unitRecno % InternalConstants.FRAMES_PER_DAY ==
@@ -224,7 +224,7 @@ public class UnitArray : SpriteArray
 			    {
 				    if (!unit.selected_flag || !unit.is_visible())
 					    continue;
-				    if (unit.hit_points <= 0 || unit.cur_action == Sprite.SPRITE_DIE ||
+				    if (unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
 				        unit.action_mode == UnitConstants.ACTION_DIE)
 					    continue;
 				    if (!unit.is_own()) // only if the unit belongs to us (a spy is also okay if true_nation_recno is ours)
@@ -262,7 +262,7 @@ public class UnitArray : SpriteArray
 				    Unit unit = this[recNo];
 				    if (!unit.is_visible())
 					    continue;
-				    if (unit.hit_points <= 0 || unit.cur_action == Sprite.SPRITE_DIE ||
+				    if (unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
 				        unit.action_mode == UnitConstants.ACTION_DIE)
 					    continue;
 				    //---------------------------------//
@@ -572,7 +572,7 @@ public class UnitArray : SpriteArray
 			    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
 			    //TODO why reset sub mode?
 			    Unit firstUnit = this[selectedUnits[0]];
-			    if (firstUnit.mobile_type == UnitConstants.UNIT_LAND)
+			    if (firstUnit.MobileType == UnitConstants.UNIT_LAND)
 				    SeekPath.SetSubMode();
 		    }
 	    }
@@ -582,7 +582,7 @@ public class UnitArray : SpriteArray
 	{
 		//-------------- no filtering for unit air --------------------------//
 		Unit unit = this[selectedUnits[0]];
-		if (unit.mobile_type == UnitConstants.UNIT_AIR)
+		if (unit.MobileType == UnitConstants.UNIT_AIR)
 		{
 			MoveToNow(destLocX, destLocY, selectedUnits);
 			return;
@@ -613,7 +613,7 @@ public class UnitArray : SpriteArray
 			for (i = 0; i < filteringCount; i++)
 			{
 				unit = this[filtering_unit_array[i]];
-				if (World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId == filterRegionId)
+				if (World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId == filterRegionId)
 					filtered_unit_array.Add(filtering_unit_array[i]);
 				else
 					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
@@ -628,7 +628,7 @@ public class UnitArray : SpriteArray
 
 			//---------------- update parameters for next checking ------------------//
 			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId;
+			filterRegionId = World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId;
 			filterDestX = destLocX;
 			filterDestY = destLocY;
 			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
@@ -644,7 +644,7 @@ public class UnitArray : SpriteArray
 		int oddCount, evenCount;
 		Unit firstUnit = this[selectedUnits[0]];
 		int curGroupId = firstUnit.unit_group_id;
-		int mobileType = firstUnit.mobile_type;
+		int mobileType = firstUnit.MobileType;
 		int sizeOneSelectedCount = selectedUnits.Count;
 
 		//---------- set Unit::unit_group_id and count the unit by size ----------//
@@ -652,10 +652,10 @@ public class UnitArray : SpriteArray
 		{
 			Unit unit = this[selectedUnits[i]];
 
-			if (unit.cur_action == Sprite.SPRITE_ATTACK)
+			if (unit.CurAction == Sprite.SPRITE_ATTACK)
 				unit.stop();
 
-			if (unit.cur_action == Sprite.SPRITE_IDLE)
+			if (unit.CurAction == Sprite.SPRITE_IDLE)
 				unit.set_ready();
 		}
 
@@ -668,7 +668,7 @@ public class UnitArray : SpriteArray
 			for (int i = 0; i < selectedUnits.Count && unprocessCount > 0; i++)
 			{
 				Unit unit = this[selectedUnits[i]];
-				if (unit.sprite_info.loc_width == 1)
+				if (unit.SpriteInfo.loc_width == 1)
 				{
 					selectedSizeOneUnitArray.Add(selectedUnits[i]);
 					unprocessCount--;
@@ -785,9 +785,9 @@ public class UnitArray : SpriteArray
 		{
 			Unit unit = this[selectedSizeOneUnitArray[i]];
 
-			if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
+			if (unit.NextLocY < y) // lower_right_case or upper_left_case
 				lower_right_case++;
-			else if (unit.next_y_loc() > y)
+			else if (unit.NextLocY > y)
 				upper_left_case++;
 		}
 
@@ -801,9 +801,9 @@ public class UnitArray : SpriteArray
 			{
 				Unit unit = this[selectedSizeOneUnitArray[i]];
 
-				if (unit.next_y_loc() < y) // lower_right_case or upper_left_case
+				if (unit.NextLocY < y) // lower_right_case or upper_left_case
 					lower_right_case++;
-				else if (unit.next_y_loc() > y)
+				else if (unit.NextLocY > y)
 					upper_left_case++;
 			}
 		}
@@ -840,22 +840,22 @@ public class UnitArray : SpriteArray
 						do
 						{
 							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.sprite_info.loc_width > 1);
+						} while (unit.SpriteInfo.loc_width > 1);
 
 						if (sizeOneSelectedCount > 1)
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
@@ -883,22 +883,22 @@ public class UnitArray : SpriteArray
 						do
 						{
 							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.sprite_info.loc_width > 1);
+						} while (unit.SpriteInfo.loc_width > 1);
 
 						if (sizeOneSelectedCount > 1)
 						{
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
-								if (unit.mobile_type == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
-									unit.SelectSearchSubMode(unit.next_x_loc(), unit.next_y_loc(), i, y,
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
 										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
@@ -973,7 +973,7 @@ public class UnitArray : SpriteArray
 				// d(x,y)=x+c*|y|
 				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
 				// plus/minus x coord difference
-				distance[i] += (x - unit.cur_x_loc() + c * Math.Abs(unit.cur_y_loc() - y));
+				distance[i] += (x - unit.CurLocX + c * Math.Abs(unit.CurLocY - y));
 			}
 		}
 		else // upper_left_case
@@ -984,7 +984,7 @@ public class UnitArray : SpriteArray
 				// d(x,y)=x+c*|y|
 				distance[i] = GameConstants.MapSize; // to aviod -ve no. in the following line
 				// plus/minus x coord difference
-				distance[i] += (unit.cur_x_loc() - x + c * Math.Abs(unit.cur_y_loc() - y));
+				distance[i] += (unit.CurLocX - x + c * Math.Abs(unit.CurLocY - y));
 			}
 		}
 
@@ -1437,8 +1437,8 @@ public class UnitArray : SpriteArray
 			    Unit unit = this[targetUnitRecno];
 			    if (unit.is_visible())
 			    {
-				    targetXLoc = unit.next_x_loc();
-				    targetYLoc = unit.next_y_loc();
+				    targetXLoc = unit.NextLocX;
+				    targetYLoc = unit.NextLocY;
 				    if (unit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
 					    targetNationRecno = unit.nation_recno;
 			    }
@@ -1557,8 +1557,8 @@ public class UnitArray : SpriteArray
 	    Unit firstUnit = this[selectedUnits[0]];
 	    Unit targetUnit = this[targetUnitRecno];
 	    if ((World.GetLoc(targetXLoc, targetYLoc).RegionId !=
-	         World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId) ||
-	        (targetUnit.mobile_type != firstUnit.mobile_type))
+	         World.GetLoc(firstUnit.NextLocX, firstUnit.NextLocY).RegionId) ||
+	        (targetUnit.MobileType != firstUnit.MobileType))
 	    {
 		    set_group_id(selectedUnits);
 
@@ -1573,8 +1573,8 @@ public class UnitArray : SpriteArray
 	    //*********************** improve later end ***************************//
 
 	    //----------- initialize local parameters ------------//
-	    int targetWidth = targetUnit.sprite_info.loc_width;
-	    int targetHeight = targetUnit.sprite_info.loc_height;
+	    int targetWidth = targetUnit.SpriteInfo.loc_width;
+	    int targetHeight = targetUnit.SpriteInfo.loc_height;
 	    int targetXLoc2 = targetXLoc + targetWidth - 1;
 	    int targetYLoc2 = targetYLoc + targetHeight - 1;
 	    int surroundLoc = get_target_surround_loc(targetWidth, targetHeight);
@@ -1616,7 +1616,7 @@ public class UnitArray : SpriteArray
 	    // analyze the surrounding location of the target
 	    //---------------------------------------------------------------------//
 	    int analyseResult = analyse_surround_location(targetXLoc, targetYLoc, targetWidth, targetHeight,
-			    targetUnit.mobile_type, unreachable_table);
+			    targetUnit.MobileType, unreachable_table);
 
 	    if (analyseResult == 0) // 0 if all surround location is not accessible
 	    {
@@ -1702,8 +1702,8 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
-				    xDist = Math.Abs(xLoc - unit.next_x_loc());
-				    yDist = Math.Abs(yLoc - unit.next_y_loc());
+				    xDist = Math.Abs(xLoc - unit.NextLocX);
+				    yDist = Math.Abs(yLoc - unit.NextLocY);
 				    dist = (xDist >= yDist) ? xDist * 10 + yDist : yDist * 10 + xDist;
 
 				    if (dist < minDist)
@@ -1723,7 +1723,7 @@ public class UnitArray : SpriteArray
 			    //------------------------------------------------------------//
 			    // store the unit sprite_recno in the array
 			    //------------------------------------------------------------//
-			    unit_processed_array[unit_processed_count++] = unit.sprite_recno;
+			    unit_processed_array[unit_processed_count++] = unit.SpriteId;
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
@@ -1737,10 +1737,10 @@ public class UnitArray : SpriteArray
 				    // the nearby location should also be unreachable
 				    //------------------------------------------------------------//
 				    check_nearby_location(targetXLoc, targetYLoc, xOffset, yOffset, targetWidth, targetHeight,
-					    targetUnit.mobile_type, unreachable_table, ref analyseResult);
+					    targetUnit.MobileType, unreachable_table, ref analyseResult);
 			    }
 
-			    update_unreachable_table(targetXLoc, targetYLoc, targetWidth, targetHeight, unit.mobile_type,
+			    update_unreachable_table(targetXLoc, targetYLoc, targetWidth, targetHeight, unit.MobileType,
 				    ref analyseResult, unreachable_table);
 		    }
 	    }
@@ -1768,7 +1768,7 @@ public class UnitArray : SpriteArray
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
 	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
-	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	        World.GetLoc(firstUnit.NextLocX, firstUnit.NextLocY).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -1827,7 +1827,7 @@ public class UnitArray : SpriteArray
 	    // analyse the surrounding location of the target
 	    //---------------------------------------------------------------------//
 	    int analyseResult = analyse_surround_location(targetXLoc, targetYLoc, firmWidth, firmHeight,
-		    unit.mobile_type, unreachable_table);
+		    unit.MobileType, unreachable_table);
 
 	    if (analyseResult == 0) // 0 if all surround location is not accessible
 	    {
@@ -1910,8 +1910,8 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
-				    xDist = Math.Abs(xLoc - unit.next_x_loc());
-				    yDist = Math.Abs(yLoc - unit.next_y_loc());
+				    xDist = Math.Abs(xLoc - unit.NextLocX);
+				    yDist = Math.Abs(yLoc - unit.NextLocY);
 				    dist = (xDist >= yDist) ? xDist * 10 + yDist : yDist * 10 + xDist;
 
 				    if (dist < minDist)
@@ -1940,10 +1940,10 @@ public class UnitArray : SpriteArray
 				    // the nearby location should also be unreachable
 				    //------------------------------------------------------------//
 				    check_nearby_location(targetXLoc, targetYLoc, xOffset, yOffset, firmWidth, firmHeight,
-					    unit.mobile_type, unreachable_table, ref analyseResult);
+					    unit.MobileType, unreachable_table, ref analyseResult);
 			    }
 
-			    update_unreachable_table(targetXLoc, targetYLoc, firmWidth, firmHeight, unit.mobile_type,
+			    update_unreachable_table(targetXLoc, targetYLoc, firmWidth, firmHeight, unit.MobileType,
 				    ref analyseResult, unreachable_table);
 		    }
 	    }
@@ -1971,7 +1971,7 @@ public class UnitArray : SpriteArray
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
 	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
-	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	        World.GetLoc(firstUnit.NextLocX, firstUnit.NextLocY).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2026,7 +2026,7 @@ public class UnitArray : SpriteArray
 	    // analyse the surrounding location of the target
 	    //---------------------------------------------------------------------//
 	    int analyseResult = analyse_surround_location(targetXLoc, targetYLoc,
-		    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, unit.mobile_type, unreachable_table);
+		    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, unit.MobileType, unreachable_table);
 
 	    if (analyseResult == 0) // 0 if all surround location is not accessible
 	    {
@@ -2112,8 +2112,8 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
-				    xDist = Math.Abs(xLoc - unit.next_x_loc());
-				    yDist = Math.Abs(yLoc - unit.next_y_loc());
+				    xDist = Math.Abs(xLoc - unit.NextLocX);
+				    yDist = Math.Abs(yLoc - unit.NextLocY);
 				    dist = (xDist >= yDist) ? xDist * 10 + yDist : yDist * 10 + xDist;
 
 				    if (dist < minDist)
@@ -2142,11 +2142,11 @@ public class UnitArray : SpriteArray
 				    // the nearby location should also be unreachable
 				    //------------------------------------------------------------//
 				    check_nearby_location(targetXLoc, targetYLoc, xOffset, yOffset, InternalConstants.TOWN_WIDTH,
-					    InternalConstants.TOWN_HEIGHT, unit.mobile_type, unreachable_table, ref analyseResult);
+					    InternalConstants.TOWN_HEIGHT, unit.MobileType, unreachable_table, ref analyseResult);
 			    }
 
 			    update_unreachable_table(targetXLoc, targetYLoc, InternalConstants.TOWN_WIDTH,
-				    InternalConstants.TOWN_HEIGHT, unit.mobile_type, ref analyseResult, unreachable_table);
+				    InternalConstants.TOWN_HEIGHT, unit.MobileType, ref analyseResult, unreachable_table);
 		    }
 	    }
 
@@ -2173,7 +2173,7 @@ public class UnitArray : SpriteArray
 	    //---------------------------------------------------------------------//
 	    Unit firstUnit = this[selectedUnits[0]];
 	    if (World.GetLoc(targetXLoc, targetYLoc).RegionId !=
-	        World.GetLoc(firstUnit.next_x_loc(), firstUnit.next_y_loc()).RegionId)
+	        World.GetLoc(firstUnit.NextLocX, firstUnit.NextLocY).RegionId)
 	    {
 		    set_group_id(selectedUnits);
 
@@ -2226,7 +2226,7 @@ public class UnitArray : SpriteArray
 	    // analyse the surrounding location of the target
 	    //---------------------------------------------------------------------//
 	    int analyseResult = analyse_surround_location(targetXLoc, targetYLoc, 1, 1,
-		    unit.mobile_type, unreachable_table);
+		    unit.MobileType, unreachable_table);
 
 	    if (analyseResult == 0) // 0 if all surround location is not accessible
 	    {
@@ -2308,8 +2308,8 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
-				    xDist = Math.Abs(xLoc - unit.next_x_loc());
-				    yDist = Math.Abs(yLoc - unit.next_y_loc());
+				    xDist = Math.Abs(xLoc - unit.NextLocX);
+				    yDist = Math.Abs(yLoc - unit.NextLocY);
 				    dist = (xDist >= yDist) ? xDist * 10 + yDist : yDist * 10 + xDist;
 
 				    if (dist < minDist)
@@ -2337,10 +2337,10 @@ public class UnitArray : SpriteArray
 				    // the nearby location should also be unreachable
 				    //------------------------------------------------------------//
 				    check_nearby_location(targetXLoc, targetYLoc, xOffset, yOffset, 1, 1,
-					    unit.mobile_type, unreachable_table, ref analyseResult);
+					    unit.MobileType, unreachable_table, ref analyseResult);
 			    }
 
-			    update_unreachable_table(targetXLoc, targetYLoc, 1, 1, unit.mobile_type,
+			    update_unreachable_table(targetXLoc, targetYLoc, 1, 1, unit.MobileType,
 				    ref analyseResult, unreachable_table);
 		    }
 	    }
@@ -2392,7 +2392,7 @@ public class UnitArray : SpriteArray
 
 			    if (unit.selected_flag && unit.is_own())
 			    {
-				    selectedUnits.Add(unit.sprite_recno);
+				    selectedUnits.Add(unit.SpriteId);
 			    }
 		    }
 	    }
@@ -2462,7 +2462,7 @@ public class UnitArray : SpriteArray
 			    {
 				    Unit unit = this[selectedUnits[0]];
 
-				    if (unit.sprite_info.loc_width <= 1)
+				    if (unit.SpriteInfo.loc_width <= 1)
 				    {
 					    unit.unit_group_id = cur_group_id++;
 					    unit.assign(destX, destY);
@@ -2471,14 +2471,14 @@ public class UnitArray : SpriteArray
 				    {
 					    Location loc = World.GetLoc(destX, destY);
 					    if (loc.IsFirm())
-						    unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
-							    unit.sprite_info.loc_height, loc.FirmId());
+						    unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.loc_width,
+							    unit.SpriteInfo.loc_height, loc.FirmId());
 					    else if (loc.IsTown())
-						    unit.MoveToTownSurround(destX, destY, unit.sprite_info.loc_width,
-							    unit.sprite_info.loc_height);
+						    unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.loc_width,
+							    unit.SpriteInfo.loc_height);
 					    else if (loc.HasUnit(UnitConstants.UNIT_LAND))
-						    unit.MoveToUnitSurround(destX, destY, unit.sprite_info.loc_width,
-							    unit.sprite_info.loc_height, loc.UnitId(UnitConstants.UNIT_LAND));
+						    unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.loc_width,
+							    unit.SpriteInfo.loc_height, loc.UnitId(UnitConstants.UNIT_LAND));
 				    }
 			    }
 			    else // for more than one unit selecting, call group_assign() to take care of it
@@ -2576,8 +2576,8 @@ public class UnitArray : SpriteArray
 
 		    if (ship != null && ship.is_visible())
 		    {
-			    shipXLoc = ship.next_x_loc();
-			    shipYLoc = ship.next_y_loc();
+			    shipXLoc = ship.NextLocX;
+			    shipYLoc = ship.NextLocY;
 		    }
 		    else
 			    return;
@@ -2590,8 +2590,8 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit unit = this[selectedUnits[i]];
-			    int distX = Math.Abs(shipXLoc - unit.next_x_loc());
-			    int distY = Math.Abs(shipYLoc - unit.next_y_loc());
+			    int distX = Math.Abs(shipXLoc - unit.NextLocX);
+			    int distY = Math.Abs(shipYLoc - unit.NextLocY);
 			    int dist = (distX > distY) ? distX : distY;
 			    if (dist < minDist)
 			    {
@@ -2607,8 +2607,8 @@ public class UnitArray : SpriteArray
 		    //------------------------------------------------------------------------------------//
 		    int curGroupId = cur_group_id++;
 		    Unit closestUnit = this[selectedUnits[closestUnitRecno]];
-		    int closestUnitXLoc = closestUnit.next_x_loc();
-		    int closestUnitYLoc = closestUnit.next_y_loc();
+		    int closestUnitXLoc = closestUnit.NextLocX;
+		    int closestUnitYLoc = closestUnit.NextLocY;
 		    int defaultRegionId = World.GetLoc(closestUnitXLoc, closestUnitYLoc).RegionId;
 		    List<int> newSelectedArray = new List<int>();
 
@@ -2617,13 +2617,13 @@ public class UnitArray : SpriteArray
 			    for (int i = 0; i < selectedUnits.Count; i++)
 			    {
 				    Unit unit = this[selectedUnits[i]];
-				    if (World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).RegionId == defaultRegionId)
+				    if (World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId == defaultRegionId)
 				    {
 					    newSelectedArray.Add(selectedUnits[i]); // on the same territory
 					    unit.unit_group_id = curGroupId;
 				    }
 
-				    if (unit.cur_action == Sprite.SPRITE_IDLE)
+				    if (unit.CurAction == Sprite.SPRITE_IDLE)
 					    unit.set_ready();
 			    }
 		    }
@@ -2634,8 +2634,8 @@ public class UnitArray : SpriteArray
 		    }
 
 		    //-------------- ordering the ship move near the coast ----------------//
-		    int curXLoc = closestUnit.next_x_loc();
-		    int curYLoc = closestUnit.next_y_loc();
+		    int curXLoc = closestUnit.NextLocX;
+		    int curYLoc = closestUnit.NextLocY;
 
 		    // ##### patch begin Gilbert 5/8 #######//
 		    // UnitMarine *ship = (UnitMarine*) get_ptr(world.get_unit_recno(shipXLoc, shipYLoc, UnitConstants.UNIT_SEA));
@@ -2670,7 +2670,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Unit unit = this[newSelectedArray[i]];
-					    unit.assign_to_ship(landX, landY, ship.sprite_recno, k);
+					    unit.assign_to_ship(landX, landY, ship.SpriteId, k);
 					    break;
 				    }
 			    }
@@ -2693,7 +2693,7 @@ public class UnitArray : SpriteArray
 
 			    if (unit.selected_flag && unit.is_own())
 			    {
-				    selectedUnits.Add(unit.sprite_recno);
+				    selectedUnits.Add(unit.SpriteId);
 			    }
 		    }
 	    }
@@ -2836,7 +2836,7 @@ public class UnitArray : SpriteArray
 
 		    //--- check if the location of the unit has been explored ---//
 
-		    if (!World.GetLoc(unit.next_x_loc(), unit.next_y_loc()).IsExplored())
+		    if (!World.GetLoc(unit.NextLocX, unit.NextLocY).IsExplored())
 			    continue;
 
 		    //-------- if are of the same nation --------//
@@ -2850,10 +2850,10 @@ public class UnitArray : SpriteArray
 		    {
 			    Power.reset_selection();
 			    unit.selected_flag = true;
-			    selected_recno = unit.sprite_recno;
+			    selected_recno = unit.SpriteId;
 			    selected_count++;
 
-			    World.GoToLocation(unit.cur_x_loc(), unit.cur_y_loc());
+			    World.GoToLocation(unit.CurLocX, unit.CurLocY);
 			    return;
 		    }
 	    }
@@ -2880,7 +2880,7 @@ public class UnitArray : SpriteArray
 				continue;
 
 			Unit unit = this[selectedUnitRecno];
-			switch (unit.mobile_type)
+			switch (unit.MobileType)
 			{
 				case UnitConstants.UNIT_LAND:
 					_selectedLandUnits.Add(selectedUnitRecno);
@@ -2910,7 +2910,7 @@ public class UnitArray : SpriteArray
 
 			unit.unit_group_id = curGroupId;
 
-			if (unit.cur_action == Sprite.SPRITE_IDLE) //**maybe need to include SPRITE_ATTACK as well
+			if (unit.CurAction == Sprite.SPRITE_IDLE) //**maybe need to include SPRITE_ATTACK as well
 				unit.set_ready();
 		}
 	}
@@ -3046,11 +3046,11 @@ public class UnitArray : SpriteArray
 			Unit unit = this[selectedUnits[i]];
 
 			unit.unit_group_id = unitGroupId; // set unit_group_id
-			if (unit.cur_action == Sprite.SPRITE_IDLE)
+			if (unit.CurAction == Sprite.SPRITE_IDLE)
 				unit.set_ready();
 
-			int curXLoc = unit.next_x_loc();
-			int curYLoc = unit.next_y_loc();
+			int curXLoc = unit.NextLocX;
+			int curYLoc = unit.NextLocY;
 			if (curXLoc >= xLoc1 - 1 && curXLoc <= xLoc2 + 1 && curYLoc >= yLoc1 - 1 && curYLoc <= yLoc2 + 1)
 			{
 				//------------- already in the target surrounding ----------------//
@@ -3544,7 +3544,7 @@ public class UnitArray : SpriteArray
 		for (int i = 0; i < selectedUnits.Count; i++)
 		{
 			Unit unit = this[selectedUnits[i]];
-			if (unit.sprite_info.loc_width <= 1)
+			if (unit.SpriteInfo.loc_width <= 1)
 			{
 				// the third parameter is used to generate different result for the searching
 				unit.assign(destX, destY, i + 1);
@@ -3557,18 +3557,18 @@ public class UnitArray : SpriteArray
 				switch (assignType)
 				{
 					case ASSIGN_TYPE_UNIT:
-						unit.MoveToUnitSurround(destX, destY, unit.sprite_info.loc_width,
-							unit.sprite_info.loc_height, miscNo);
+						unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.loc_width,
+							unit.SpriteInfo.loc_height, miscNo);
 						break; // is a unit
 
 					case ASSIGN_TYPE_FIRM:
-						unit.MoveToFirmSurround(destX, destY, unit.sprite_info.loc_width,
-							unit.sprite_info.loc_height, miscNo);
+						unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.loc_width,
+							unit.SpriteInfo.loc_height, miscNo);
 						break; // is a firm
 
 					case ASSIGN_TYPE_TOWN:
-						unit.MoveToTownSurround(destX, destY, unit.sprite_info.loc_width,
-							unit.sprite_info.loc_height);
+						unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.loc_width,
+							unit.SpriteInfo.loc_height);
 						break; // is a town
 
 					default:

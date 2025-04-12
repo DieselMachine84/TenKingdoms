@@ -260,7 +260,7 @@ public partial class Renderer
                 continue;
 
             int lineColor = Colors.V_BLACK;
-            if (unit.mobile_type == UnitConstants.UNIT_SEA)
+            if (unit.MobileType == UnitConstants.UNIT_SEA)
                 lineColor = Colors.V_WHITE;
 
             //TODO replace with unit.selected_flag
@@ -285,16 +285,16 @@ public partial class Renderer
                 }
             }
             
-            byte nationColor = unit.cur_action != Sprite.SPRITE_ATTACK
+            byte nationColor = unit.CurAction != Sprite.SPRITE_ATTACK
                 ? nationColorArray[unit.nation_recno]
                 : excitedColorArray[ColorRemap.ColorSchemes[unit.nation_recno], Sys.Instance.FrameNumber % excitedColorCount];
 
-            int locX = unit.cur_x_loc();
-            int locY = unit.cur_y_loc();
+            int locX = unit.CurLocX;
+            int locY = unit.CurLocY;
             if (IsExplored(locX, locX, locY, locY))
             {
                 int size = 2;
-                if (unit.mobile_type != UnitConstants.UNIT_LAND)
+                if (unit.MobileType != UnitConstants.UNIT_LAND)
                 {
                     size = 3;
                     if (locX > 0)

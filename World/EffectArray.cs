@@ -16,6 +16,6 @@ public class EffectArray : SpriteArray
     
     public void DeleteEffect(Effect effect)
     {
-        Delete(effect.sprite_recno);
+        Delete(effect.SpriteId);
     }
 }

@@ -37,11 +37,11 @@ public class UnitVehicle : Unit
 
         //---- look for an empty location for the unit to stand ----//
 
-        int xLoc = next_x_loc();
-        int yLoc = next_y_loc();
+        int xLoc = NextLocX;
+        int yLoc = NextLocY;
 
         if (!World.LocateSpace(ref xLoc, ref yLoc,
-                xLoc + sprite_info.loc_width - 1, yLoc + sprite_info.loc_height - 1,
+                xLoc + SpriteInfo.loc_width - 1, yLoc + SpriteInfo.loc_height - 1,
                 soliderSpriteInfo.loc_width, soliderSpriteInfo.loc_height))
         {
             return;
@@ -55,7 +55,7 @@ public class UnitVehicle : Unit
 
         //-------- delete current unit ----------//
 
-        int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+        int curXLoc = NextLocX, curYLoc = NextLocY;
 
         UnitArray.DeleteUnit(this); // delete the vehicle (e.g. horse)
 

@@ -337,8 +337,8 @@ public class TownArray : DynArray<Town>
 		// so update the location now
 		//----------------------------------------------------//
 
-		int unitLocX = unit.next_x_loc();
-		int unitLocY = unit.next_y_loc();
+		int unitLocX = unit.NextLocX;
+		int unitLocY = unit.NextLocY;
 		Location location = World.GetLoc(unitLocX, unitLocY);
 
 		town.AssignUnit(unit);

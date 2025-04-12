@@ -950,7 +950,7 @@ public class NationBase : IIdObject
 
             //--- if the unit has not changed nation, the unit will disappear ---//
 
-            if (!UnitArray.IsDeleted(unit.sprite_recno))
+            if (!UnitArray.IsDeleted(unit.SpriteId))
                 unitsToDelete.Add(unit);
         }
 
@@ -983,7 +983,7 @@ public class NationBase : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.sprite_recno == king_unit_recno || unit.sprite_recno == newKing.sprite_recno)
+            if (unit.SpriteId == king_unit_recno || unit.SpriteId == newKing.SpriteId)
                 continue;
 
             if (unit.nation_recno != nation_recno)
@@ -1037,11 +1037,11 @@ public class NationBase : IIdObject
 
         //------- add news --------//
 
-        NewsArray.new_king(nation_recno, newKing.sprite_recno);
+        NewsArray.new_king(nation_recno, newKing.SpriteId);
 
         //-------- set the new king now ------//
 
-        set_king(newKing.sprite_recno, 0); // 0-not the first king, it is a succession
+        set_king(newKing.SpriteId, 0); // 0-not the first king, it is a succession
 
         //------ if the new king is a spy -------//
 
@@ -1550,7 +1550,7 @@ public class NationBase : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.sprite_recno == king_unit_recno)
+            if (unit.SpriteId == king_unit_recno)
                 continue;
 
             if (unit.nation_recno != nation_recno)
@@ -1739,7 +1739,7 @@ public class NationBase : IIdObject
         {
             if (unit.unit_id == UnitConstants.UNIT_PHOENIX && unit.nation_recno == nation_recno)
             {
-                if (Misc.points_distance(xLoc, yLoc, unit.next_x_loc(), unit.next_y_loc()) <= effectiveRange)
+                if (Misc.points_distance(xLoc, yLoc, unit.NextLocX, unit.NextLocY) <= effectiveRange)
                 {
                     return true;
                 }

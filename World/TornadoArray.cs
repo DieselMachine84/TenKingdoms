@@ -19,7 +19,7 @@ public class TornadoArray : SpriteArray
 
     public void DeleteTornado(Tornado tornado)
     {
-        Delete(tornado.sprite_recno);
+        Delete(tornado.SpriteId);
     }
 
     public override void Process()
@@ -30,7 +30,7 @@ public class TornadoArray : SpriteArray
         {
             tornado.pre_process();
 
-            switch (tornado.cur_action)
+            switch (tornado.CurAction)
             {
                 case Sprite.SPRITE_IDLE:
                 case Sprite.SPRITE_READY_TO_MOVE:

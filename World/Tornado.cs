@@ -13,13 +13,13 @@ public class Tornado : Sprite
 
     public new void init(int startX, int startY, int lifeTime)
     {
-        base.init(TORNADO_SPRITE_ID, startX, startY);
+        base.Init(TORNADO_SPRITE_ID, startX, startY);
 
         attack_damage = 2.0 / InternalConstants.ATTACK_SLOW_DOWN;
         life_time = lifeTime;
 
         set_dir(InternalConstants.DIR_N);
-        cur_action = SPRITE_MOVE; // always moving
+        CurAction = SPRITE_MOVE; // always moving
         dmg_offset_x = 0;
         dmg_offset_y = 0;
     }
@@ -30,7 +30,7 @@ public class Tornado : Sprite
         dmg_offset_x = Convert.ToInt32(InternalConstants.DAMAGE_POINT_RADIUS * Math.Cos(angle));
         dmg_offset_y = Convert.ToInt32(InternalConstants.DAMAGE_POINT_RADIUS * Math.Sin(angle));
         if (--life_time <= 0)
-            cur_action = SPRITE_DIE;
+            CurAction = SPRITE_DIE;
     }
 
     public override void process_move()
@@ -44,10 +44,10 @@ public class Tornado : Sprite
 
         //TODO check this
         double windDir = Sys.Instance.Weather.wind_direct_rad() + (Misc.Random(31) - 15) * Math.PI / 180.0;
-        cur_x += Convert.ToInt32(speed * Math.Cos(windDir));
-        cur_y -= Convert.ToInt32(speed * Math.Sin(windDir));
-        if (++cur_frame > cur_sprite_move().frame_count)
-            cur_frame = 1;
+        CurX += Convert.ToInt32(speed * Math.Cos(windDir));
+        CurY -= Convert.ToInt32(speed * Math.Sin(windDir));
+        if (++CurFrame > cur_sprite_move().frame_count)
+            CurFrame = 1;
 
         hit_target();
     }
@@ -157,11 +157,11 @@ public class Tornado : Sprite
 
     public int damage_x_loc()
     {
-        return (cur_x + dmg_offset_x) >> InternalConstants.CellWidthShift;
+        return (CurX + dmg_offset_x) >> InternalConstants.CellWidthShift;
     }
 
     public int damage_y_loc()
     {
-        return (cur_y + dmg_offset_y) >> InternalConstants.CellHeightShift;
+        return (CurY + dmg_offset_y) >> InternalConstants.CellHeightShift;
     }
 }

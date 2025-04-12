@@ -63,7 +63,7 @@ public class UnitMonster : Unit
         if (!is_visible() || !is_ai_all_stop())
             return;
 
-        if (Info.TotalDays % 15 == sprite_recno % 15)
+        if (Info.TotalDays % 15 == SpriteId % 15)
         {
             random_attack(); // randomly attacking targets
 
@@ -87,8 +87,8 @@ public class UnitMonster : Unit
 
         //--- check if the location where the unit dies already has an item ---//
 
-        int xLoc = cur_x_loc();
-        int yLoc = cur_y_loc();
+        int xLoc = CurLocX;
+        int yLoc = CurLocY;
 
         if (!World.GetLoc(xLoc, yLoc).CanBuildSite())
         {
@@ -140,14 +140,14 @@ public class UnitMonster : Unit
         //---------- add news ----------//
 
         if (rank_id == RANK_KING)
-            NewsArray.monster_king_killed(get_monster_id(), next_x_loc(), next_y_loc());
+            NewsArray.monster_king_killed(get_monster_id(), NextLocX, NextLocY);
     }
 
     private int random_attack()
     {
         const int ATTACK_SCAN_RANGE = 100;
 
-        int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+        int curXLoc = NextLocX, curYLoc = NextLocY;
         int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         for (int i = 2; i < ATTACK_SCAN_RANGE * ATTACK_SCAN_RANGE; i++)
@@ -221,7 +221,7 @@ public class UnitMonster : Unit
 
     private int assign_to_firm()
     {
-        int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+        int curXLoc = NextLocX, curYLoc = NextLocY;
         int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
@@ -231,7 +231,7 @@ public class UnitMonster : Unit
 
             if (firm.firm_id == Firm.FIRM_MONSTER)
             {
-                if (((FirmMonster)firm).can_assign_monster(sprite_recno))
+                if (((FirmMonster)firm).can_assign_monster(SpriteId))
                 {
                     group_order_monster(firm.loc_x1, firm.loc_y1, 2); // 2-the action is assign
                     return 1;
@@ -246,7 +246,7 @@ public class UnitMonster : Unit
     {
         const int GROUP_ACTION_RANGE = 30; // only notify units within this range
 
-        int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+        int curXLoc = NextLocX, curYLoc = NextLocY;
         int regionId = World.GetRegionId(curXLoc, curYLoc);
 
         List<int> unitOrderedArray = new List<int>();
@@ -307,7 +307,7 @@ public class UnitMonster : Unit
     {
         const int SCROLL_SCAN_RANGE = 10;
 
-        int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+        int curXLoc = NextLocX, curYLoc = NextLocY;
         int regionId = World.GetRegionId(curXLoc, curYLoc);
         int[] raceCountArray = new int[GameConstants.MAX_RACE];
 

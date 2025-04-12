@@ -231,7 +231,7 @@ public class FirmMarket : Firm
 		unitCaravan.set_stop(1, loc_x1, loc_y1, InternalConstants.COMMAND_AUTO);
 		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
 
-		return unitCaravan.sprite_recno;
+		return unitCaravan.SpriteId;
 	}
 
 	public int can_hire_caravan()

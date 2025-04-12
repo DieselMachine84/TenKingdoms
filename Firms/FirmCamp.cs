@@ -272,7 +272,7 @@ public class FirmCamp : Firm
 
 			if (overseerUnit.is_own())
 			{
-				SERes.sound(overseerUnit.cur_x_loc(), overseerUnit.cur_y_loc(), 1, 'S', overseerUnit.sprite_id, "SEL");
+				SERes.sound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
 			}
 
 			//--- add the overseer into the patrol_unit_array[] of this camp ---//
@@ -407,7 +407,7 @@ public class FirmCamp : Firm
 	public void defense(int targetRecno, bool useRangeAttack = false)
 	{
 		//--******* BUGHERE , please provide a reasonable condition to set useRangeAttack to 1
-		useRangeAttack = UnitArray[targetRecno].mobile_type != UnitConstants.UNIT_LAND ? true : false;
+		useRangeAttack = UnitArray[targetRecno].MobileType != UnitConstants.UNIT_LAND ? true : false;
 		//#### end alex 15/10 ####//
 
 		if (!defense_flag)
@@ -566,7 +566,7 @@ public class FirmCamp : Firm
 		if (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET ||
 		    unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP ||
 		    (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-		     unit.cur_action == Sprite.SPRITE_IDLE))
+		     unit.CurAction == Sprite.SPRITE_IDLE))
 		{
 			//----------------- attack new target now -------------------//
 			unit.defense_attack_unit(targetRecno);
@@ -1341,10 +1341,10 @@ public class FirmCamp : Firm
 	{
 		bool shouldAttackUnit = false;
 
-		if (attackerUnit.cur_action == Sprite.SPRITE_IDLE)
+		if (attackerUnit.CurAction == Sprite.SPRITE_IDLE)
 			shouldAttackUnit = true;
 
-		else if (attackerUnit.cur_action == Sprite.SPRITE_ATTACK)
+		else if (attackerUnit.CurAction == Sprite.SPRITE_ATTACK)
 		{
 			//--- if this unit is currently attacking the town, ask it to attack a defender unit ---//
 
@@ -1368,9 +1368,9 @@ public class FirmCamp : Firm
 						InternalConstants.COMMAND_AI);
 
 				List<int> selectedUnits = new List<int>(1);
-				selectedUnits.Add(attackerUnit.sprite_recno);
-				UnitArray.attack(unit.next_x_loc(), unit.next_y_loc(), false, selectedUnits,
-					InternalConstants.COMMAND_AI, unit.sprite_recno);
+				selectedUnits.Add(attackerUnit.SpriteId);
+				UnitArray.attack(unit.NextLocX, unit.NextLocY, false, selectedUnits,
+					InternalConstants.COMMAND_AI, unit.SpriteId);
 				break;
 			}
 		}
@@ -1417,7 +1417,7 @@ public class FirmCamp : Firm
 
 					//--- if the unit is idle and he is our enemy ---//
 
-					if (unit.cur_action == Sprite.SPRITE_ATTACK &&
+					if (unit.CurAction == Sprite.SPRITE_ATTACK &&
 					    nation.get_relation_status(unit.nation_recno) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.hit_points;
@@ -1747,7 +1747,7 @@ public class FirmCamp : Firm
 			{
 				Unit unit = UnitArray[patrol_unit_array[i - 1]];
 
-				if (unit.cur_action == Sprite.SPRITE_IDLE)
+				if (unit.CurAction == Sprite.SPRITE_IDLE)
 					ai_attack_town_defender(unit);
 			}
 		}

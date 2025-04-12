@@ -11,7 +11,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 
     public void DeleteSprite(Sprite sprite)
     {
-	    int spriteRecno = sprite.sprite_recno;
+	    int spriteRecno = sprite.SpriteId;
 	    sprite.Deinit();
 	    Delete(spriteRecno);
     }
@@ -25,13 +25,13 @@ public abstract class SpriteArray : DynArray<Sprite>
     {
 	    foreach (Sprite sprite in this)
 	    {
-		    if (sprite.remain_attack_delay > 0)
-			    sprite.remain_attack_delay--;
+		    if (sprite.RemainAttackDelay > 0)
+			    sprite.RemainAttackDelay--;
 
-		    if (sprite.cur_x == -1) // cur_x == -1 if the unit has removed from the map and gone into a firm
+		    if (sprite.CurX == -1) // cur_x == -1 if the unit has removed from the map and gone into a firm
 			    continue;
 
-		    int spriteRecno = sprite.sprite_recno;
+		    int spriteRecno = sprite.SpriteId;
 
 		    sprite.pre_process(); // it's actually calling Unit::pre_process() and other derived Unit classes
 
@@ -47,17 +47,18 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    if (IsDeleted(spriteRecno)) // in case pre_process() kills the current Sprite
 			    continue;
 
-		    if (sprite.cur_x < 0) //if( spritePtr->cur_x == -1 || spritePtr->cur_x==-2)
+		    if (sprite.CurX < 0) //if( spritePtr->cur_x == -1 || spritePtr->cur_x==-2)
 			    continue;
 
-		    switch (sprite.cur_action)
+		    switch (sprite.CurAction)
 		    {
 			    case Sprite.SPRITE_IDLE:
 				    sprite.process_idle();
 				    break;
 
 			    case Sprite.SPRITE_READY_TO_MOVE:
-				    sprite.cur_action = Sprite.SPRITE_IDLE; // to avoid problems of insensitive of mouse cursor
+				    // TODO remove?
+				    //sprite.CurAction = Sprite.SPRITE_IDLE; // to avoid problems of insensitive of mouse cursor
 				    sprite.process_idle();
 				    break;
 
@@ -93,10 +94,10 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    //----- can use other reasonable value to replace MIN_BACKGROUND_NODE_USED_UP ----//
 		    if (!IsDeleted(spriteRecno))
 		    {
-			    if (sprite.guard_count > 0)
+			    if (sprite.GuardCount > 0)
 			    {
-				    if (++sprite.guard_count > InternalConstants.GUARD_COUNT_MAX)
-					    sprite.guard_count = 0;
+				    if (++sprite.GuardCount > InternalConstants.GUARD_COUNT_MAX)
+					    sprite.GuardCount = 0;
 			    }
 		    }
 	    }

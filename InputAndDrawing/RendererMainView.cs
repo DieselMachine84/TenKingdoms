@@ -360,20 +360,21 @@ public partial class Renderer
     {
         foreach (Unit unit in UnitArray)
         {
-            //TODO check conditions for big units
-            if (unit.cur_x_loc() < _topLeftLocX || unit.cur_x_loc() > _topLeftLocX + MainViewWidthInCells)
+            // TODO check conditions for big units
+            // TODO CurLoc or NextLoc?
+            if (unit.CurLocX < _topLeftLocX || unit.CurLocX > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (unit.cur_y_loc() < _topLeftLocY || unit.cur_y_loc() > _topLeftLocY + MainViewHeightInCells)
+            if (unit.CurLocY < _topLeftLocY || unit.CurLocY > _topLeftLocY + MainViewHeightInCells)
                 continue;
 
             SpriteFrame spriteFrame = unit.cur_sprite_frame(out bool needMirror);
-            int unitX = MainViewX + Scale(unit.cur_x) - _topLeftLocX * CellTextureWidth + spriteFrame.offset_x;
-            int unitY = MainViewY + Scale(unit.cur_y) - _topLeftLocY * CellTextureHeight + spriteFrame.offset_y;
+            int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + spriteFrame.offset_x;
+            int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + spriteFrame.offset_y;
 
-            SpriteInfo spriteInfo = SpriteRes[unit.sprite_id];
+            SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
             //TODO select only under cursor?
-            bool isSelected = (unit.sprite_recno == _selectedUnitId);
-            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, isSelected), unitX, unitY,
+            //bool isSelected = (unit.sprite_recno == _selectedUnitId);
+            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, unit.selected_flag), unitX, unitY,
                 Scale(spriteFrame.width), Scale(spriteFrame.height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
     }
@@ -395,7 +396,7 @@ public partial class Renderer
 
             if (unit.PathNodes.Count > 0)
             {
-                if (unit.cur_x != unit.go_x || unit.cur_y != unit.go_y)
+                if (unit.CurX != unit.GoX || unit.CurY != unit.GoY)
                 {
                     //TODO draw part of animated line
                 }

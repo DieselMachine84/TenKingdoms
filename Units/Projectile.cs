@@ -3,22 +3,20 @@ namespace TenKingdoms;
 public class Projectile : Bullet
 {
     public double z_coff; // height = z_coff * (cur_step) * (total_step - cur_step)
-    public Sprite act_bullet;
-    public Sprite bullet_shadow;
+    public Sprite act_bullet = new Sprite();
+    public Sprite bullet_shadow = new Sprite();
 
     public Projectile()
     {
-        act_bullet.sprite_recno = 0;
-        bullet_shadow.sprite_recno = 0;
     }
 
     public override void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
     {
         base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
-        int spriteId = sprite_info.get_sub_sprite_info(1).sprite_id;
-        act_bullet.init(spriteId, cur_x_loc(), cur_y_loc());
-        int shadowSpriteId = sprite_info.get_sub_sprite_info(2).sprite_id;
-        bullet_shadow.init(shadowSpriteId, cur_x_loc(), cur_y_loc());
+        int spriteId = SpriteInfo.get_sub_sprite_info(1).sprite_id;
+        act_bullet.Init(spriteId, CurLocX, CurLocY);
+        int shadowSpriteId = SpriteInfo.get_sub_sprite_info(2).sprite_id;
+        bullet_shadow.Init(shadowSpriteId, CurLocX, CurLocY);
 
         // calculate z_coff;
         z_coff = 1.0;
@@ -32,13 +30,13 @@ public class Projectile : Bullet
             cur_dir &= 7;
         */
 
-        // --------- recalcuate spriteFrame pointer ----------//
+        // --------- recalculate spriteFrame pointer ----------//
         SpriteFrame spriteFrame = cur_sprite_frame(out _);
     }
 
     public override int display_layer()
     {
-        if (mobile_type == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
+        if (MobileType == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
             return 8;
         else
             return 2;
