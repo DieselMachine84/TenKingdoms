@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class Site
+public class Site : IIdObject
 {
     public const int SITE_RAW = 1;
     public const int SITE_SCROLL = 2;
@@ -29,9 +29,13 @@ public class Site
     {
     }
 
-    public void Init(int siteId, int siteType, int objectId, int locX, int locY, int reserveQty)
+    void IIdObject.SetId(int id)
     {
-        SiteId = siteId;
+        SiteId = id;
+    }
+
+    public void Init(int siteType, int objectId, int locX, int locY, int reserveQty)
+    {
         SiteType = siteType;
         ObjectId = objectId;
         LocX = locX;
@@ -39,7 +43,7 @@ public class Site
         ReserveQty = reserveQty;
 
         Location location = World.GetLoc(locX, locY);
-        location.SetSite(siteId);
+        location.SetSite(SiteId);
         RegionId = location.RegionId;
     }
 

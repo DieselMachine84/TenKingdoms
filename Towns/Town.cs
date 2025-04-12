@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class Town
+public class Town : IIdObject
 {
 	public int TownId { get; private set; }
 	public int NationId { get; private set; }
@@ -124,9 +124,13 @@ public class Town
 	{
 	}
 
-	public void Init(int townId, int nationId, int raceId, int locX, int locY)
+	void IIdObject.SetId(int id)
 	{
-		TownId = townId;
+		TownId = id;
+	}
+
+	public void Init(int nationId, int raceId, int locX, int locY)
+	{
 		NationId = nationId;
 
 		//---- set the town section's absolute positions on the map ----//

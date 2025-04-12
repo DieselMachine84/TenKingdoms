@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class Spy
+public class Spy : IIdObject
 {
 	public const int SPY_UNDEFINED = 0;
 	public const int SPY_MOBILE = 1;
@@ -55,6 +55,11 @@ public class Spy
 
 	public Spy()
 	{
+	}
+
+	void IIdObject.SetId(int id)
+	{
+		spy_recno = id;
 	}
 
 	public void Init(int unitRecno, int spySkill)

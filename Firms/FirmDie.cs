@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-public class FirmDie
+public class FirmDie : IIdObject
 {
     public int firm_id;
     public int firm_build_id;
@@ -11,6 +11,11 @@ public class FirmDie
     public int loc_x1, loc_y1, loc_x2, loc_y2;
 
     private FirmDieRes FirmDieRes => Sys.Instance.FirmDieRes;
+
+    void IIdObject.SetId(int id)
+    {
+        firmdie_recno = id;
+    }
 
     public void Init(int firmId, int firmBuildId, int nationRecno,
         int locX1, int locY1, int locX2, int locY2)

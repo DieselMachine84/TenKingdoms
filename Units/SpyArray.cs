@@ -31,8 +31,6 @@ public class SpyArray : DynArray<Spy>
     public Spy AddSpy(int unitRecno, int spySkill)
     {
         Spy spy = CreateNew();
-        spy.spy_recno = nextId;
-        nextId++;
         spy.Init(unitRecno, spySkill);
 
         return spy;

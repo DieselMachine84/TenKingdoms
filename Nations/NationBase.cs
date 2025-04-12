@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class NationBase
+public class NationBase : IIdObject
 {
     public const int NATION_OWN = 1;
     public const int NATION_REMOTE = 2;
@@ -717,6 +717,11 @@ public class NationBase
 
     public NationBase()
     {
+    }
+
+    void IIdObject.SetId(int id)
+    {
+        nation_recno = id;
     }
 
     public virtual void init(int nationType, int raceId, int colorSchemeId, int playerId = 0)

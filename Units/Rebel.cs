@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class Rebel
+public class Rebel : IIdObject
 {
     public const int REBEL_IDLE = 1;
     public const int REBEL_ATTACK_TOWN = 2; // Attack town without capturing
@@ -30,6 +30,11 @@ public class Rebel
 
     public Rebel()
     {
+    }
+    
+    void IIdObject.SetId(int id)
+    {
+        rebel_recno = id;
     }
 
     public void Init(Unit unit, int hostileNationRecno, int actionMode, int actionPara)

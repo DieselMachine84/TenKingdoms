@@ -31,35 +31,35 @@ public class FirmHarbor : Firm
 	{
 	}
 
-	public override void init(int firmRecno, int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
+	public override void init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
 	{
 		// ignore raceId and find north, south, west or east harbor
 
 		if (World.GetLoc(xLoc + 1, yLoc + 2).CanBuildHarbor(1))
 		{
 			// check north harbour
-			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
+			base.init(nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
 		}
 		else if (World.GetLoc(xLoc + 1, yLoc).CanBuildHarbor(1))
 		{
 			// check south harbour
-			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
+			base.init(nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
 		}
 		else if (World.GetLoc(xLoc + 2, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check west harbour
-			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
+			base.init(nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
 			sea_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
 		}
 		else if (World.GetLoc(xLoc, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check east harbour
-			base.init(firmRecno, nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
+			base.init(nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
 			land_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
 		}

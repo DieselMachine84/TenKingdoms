@@ -6,11 +6,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 {
     public Sprite AddSprite(int objectId)
     {
-	    Sprite sprite = CreateNew(objectId);
-	    sprite.sprite_recno = nextId;
-	    nextId++;
-
-	    return sprite;
+	    return CreateNew(objectId);
     }
 
     public void DeleteSprite(Sprite sprite)

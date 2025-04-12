@@ -30,8 +30,7 @@ public class SiteArray : DynArray<Site>
 	public Site AddSite(int xLoc, int yLoc, int siteType, int objectId, int reserveQty = 0)
 	{
 		Site site = CreateNew();
-		site.Init(nextId, siteType, objectId, xLoc, yLoc, reserveQty);
-		nextId++;
+		site.Init(siteType, objectId, xLoc, yLoc, reserveQty);
 
 		switch (siteType)
 		{

@@ -74,8 +74,7 @@ public class FirmArray : DynArray<Firm>
 		//---------- create and build the firm -------------//
 
 		Firm firm = CreateNew(firmId);
-		firm.init(nextId, nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
-		nextId++;
+		firm.init(nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
 
 		//------ pay the land cost to the nation that owns the land ------//
 

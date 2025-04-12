@@ -32,8 +32,6 @@ public class RebelArray : DynArray<Rebel>
         //-------- create a new rebel group ---------//
 
         Rebel newRebel = CreateNew();
-        newRebel.rebel_recno = nextId;
-        nextId++;
         newRebel.Init(rebelUnit, hostileNationRecno, actionMode, actionPara);
 
         return newRebel;

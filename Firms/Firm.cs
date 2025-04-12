@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public abstract class Firm
+public abstract class Firm : IIdObject
 {
 	public const int MAX_FIRM_TYPE = 10;
 	public const int FIRM_BASE = 1;
@@ -139,7 +139,12 @@ public abstract class Firm
 	{
 	}
 
-	public virtual void init(int firmRecno, int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
+	void IIdObject.SetId(int id)
+	{
+		firm_recno = id;
+	}
+
+	public virtual void init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
 	{
 		FirmInfo firmInfo = FirmRes[firmId];
 
@@ -152,7 +157,6 @@ public abstract class Firm
 
 		//----------- set vars -------------//
 
-		firm_recno = firmRecno;
 		nation_recno = nationRecno;
 		setup_date = Info.game_date;
 

@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class Sprite
+public class Sprite : IIdObject
 {
 	public const int SPRITE_IDLE = 1;
 	public const int SPRITE_READY_TO_MOVE = 2;
@@ -76,12 +76,10 @@ public class Sprite
 	{
 	}
 
-	public void init(int spriteId, int startX, int startY)
+	void IIdObject.SetId(int id)
 	{
-		sprite_id = spriteId;
-
-		cur_x = startX * InternalConstants.CellWidth;
-		cur_y = startY * InternalConstants.CellHeight;
+		SpriteId = id;
+	}
 
 		go_x = next_x = cur_x;
 		go_y = next_y = cur_y;

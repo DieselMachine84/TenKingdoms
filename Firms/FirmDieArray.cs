@@ -16,9 +16,7 @@ public class FirmDieArray : DynArray<FirmDie>
     public void Add(Firm firm)
     {
         FirmDie firmDie = CreateNew();
-        firmDie.firmdie_recno = nextId;
         firmDie.Init(firm);
-        nextId++;
     }
 
     public override bool IsDeleted(int recNo)

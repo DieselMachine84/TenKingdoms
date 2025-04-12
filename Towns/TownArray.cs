@@ -31,8 +31,7 @@ public class TownArray : DynArray<Town>
 	public Town AddTown(int nationId, int raceId, int locX, int locY)
 	{
 		Town town = CreateNew();
-		town.Init(nextId, nationId, raceId, locX, locY);
-		nextId++;
+		town.Init(nationId, raceId, locX, locY);
 
 		NationArray.update_statistic();
 

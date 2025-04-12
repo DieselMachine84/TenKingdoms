@@ -81,29 +81,25 @@ public class NationArray : DynArray<Nation>
 		return new Nation();
 	}
 
-	public Nation AddNation()
+	protected override int GetNextId()
 	{
-		int freeRecno = 0;
-		bool recnoIsUsed = true;
-		while (recnoIsUsed)
+		int freeId = 0;
+		bool idUsed = true;
+		while (idUsed)
 		{
-			freeRecno++;
-			recnoIsUsed = false;
+			freeId++;
+			idUsed = false;
 
 			foreach (Nation nation in this)
 			{
-				if (nation.nation_recno == freeRecno)
+				if (nation.nation_recno == freeId)
 				{
-					recnoIsUsed = true;
+					idUsed = true;
 				}
 			}
 		}
 
-		nextId = freeRecno;
-		Nation newNation = CreateNew();
-		newNation.nation_recno = nextId;
-
-		return newNation;
+		return freeId;
 	}
 
 	public void DeleteNation(Nation nation)
@@ -139,7 +135,7 @@ public class NationArray : DynArray<Nation>
 
 	public Nation new_nation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
 	{
-		Nation nation = AddNation();
+		Nation nation = CreateNew();
 
 		ColorRemap.ColorSchemes[nation.nation_recno] = colorSchemeId;
 
