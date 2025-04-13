@@ -192,7 +192,7 @@ public partial class Unit : Sprite
 	public List<int> PathNodes { get; } = new List<int>();
 	public int PathNodeIndex { get; private set; } = -1;
 	private int _pathNodeDistance;
-	private readonly List<int> wayPoints = new List<int>();
+	private List<int> WayPoints { get; } = new List<int>();
 
 	//--------- AI parameters ------------//
 
@@ -430,7 +430,7 @@ public partial class Unit : Sprite
 		range_attack_y_loc = -1;
 
 		//------- initialize way point vars -------//
-		wayPoints.Clear();
+		WayPoints.Clear();
 
 		//---------- initialize game vars ----------//
 
@@ -2820,10 +2820,9 @@ public partial class Unit : Sprite
 		}
 
 		//------------- process way point ------------//
-		if (action_mode == UnitConstants.ACTION_STOP && action_mode2 == UnitConstants.ACTION_STOP &&
-		    wayPoints.Count > 0)
+		if (action_mode == UnitConstants.ACTION_STOP && action_mode2 == UnitConstants.ACTION_STOP && WayPoints.Count > 0)
 		{
-			if (wayPoints.Count == 1)
+			if (WayPoints.Count == 1)
 				ResetWayPoints();
 			else
 				ProcessWayPoint();
@@ -4498,7 +4497,7 @@ public partial class Unit : Sprite
 		int oldNationRecno = nation_recno;
 
 		group_select_id = 0; // clear group select id
-		if (wayPoints.Count > 0)
+		if (WayPoints.Count > 0)
 			ResetWayPoints();
 
 		//-- if the player is giving a command to this unit, cancel the command --//

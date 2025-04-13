@@ -7,9 +7,9 @@ public partial class Unit
 	public void MoveTo(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
 		//---------- reset way point array since new action is assigned --------//
-		if (wayPoints.Count > 0)
+		if (WayPoints.Count > 0)
 		{
-			World.GetLocXAndLocY(wayPoints[0], out var locX, out var locY);
+			World.GetLocXAndLocY(WayPoints[0], out var locX, out var locY);
 			if (locX != destLocX || locY != destLocY)
 				ResetWayPoints();
 		}
@@ -1110,7 +1110,7 @@ public partial class Unit
 					if (unit.unit_group_id == unit_group_id)
 					{
 						//--------------- from the same group -----------------//
-						if (wayPoints.Count != 0 && unit.wayPoints.Count == 0)
+						if (WayPoints.Count != 0 && unit.WayPoints.Count == 0)
 						{
 							//------------ reset way point --------------//
 							stop2();
@@ -1135,7 +1135,7 @@ public partial class Unit
 					}
 					else if (unit.action_mode2 == UnitConstants.ACTION_STOP)
 						HandleBlockedByIdleUnit(unit);
-					else if (wayPoints.Count != 0 && unit.wayPoints.Count == 0)
+					else if (WayPoints.Count != 0 && unit.WayPoints.Count == 0)
 					{
 						stop2();
 						ResetWayPoints();
@@ -1991,7 +1991,7 @@ public partial class Unit
 			result = Searching(destLocX, destLocY, preserveAction, searchMode, miscNo, numOfPaths);
 		}
 
-		if (wayPoints.Count > 0 && PathNodes.Count == 0) // can move no more
+		if (WayPoints.Count > 0 && PathNodes.Count == 0) // can move no more
 			ResetWayPoints();
 
 		// 0 means extra_move_in_beach != UnitMarine.NO_EXTRA_MOVE
@@ -2211,22 +2211,22 @@ public partial class Unit
 
 	public void AddWayPoint(int locX, int locY)
 	{
-		if (wayPoints.Count > 1) // don't allow to remove the 1st node, since the unit is moving there
+		if (WayPoints.Count > 1) // don't allow to remove the 1st node, since the unit is moving there
 		{
-			for (int i = wayPoints.Count - 1; i >= 0; i--)
+			for (int i = WayPoints.Count - 1; i >= 0; i--)
 			{
-				World.GetLocXAndLocY(wayPoints[i], out int wayPointLocX, out int wayPointLocY);
+				World.GetLocXAndLocY(WayPoints[i], out int wayPointLocX, out int wayPointLocY);
 				if (wayPointLocX == locX && wayPointLocY == locY) // remove this node
 				{
-					wayPoints.RemoveAt(i);
+					WayPoints.RemoveAt(i);
 					return; // there should be one and only one node with the same value
 				}
 			}
 		}
 
-		wayPoints.Add(World.GetMatrixIndex(locX, locY));
+		WayPoints.Add(World.GetMatrixIndex(locX, locY));
 
-		if (wayPoints.Count == 1)
+		if (WayPoints.Count == 1)
 			MoveTo(locX, locY);
 	}
 
@@ -2237,22 +2237,22 @@ public partial class Unit
 		// 1) action_mode2!=ACTION_MOVE in Unit::stop()
 		// 2) dest? != node_? in the first node of wayPoints in calling Unit::move_to()
 		//------------------------------------------------------------------------------------//
-		wayPoints.Clear();
+		WayPoints.Clear();
 	}
 
 	public void ProcessWayPoint()
 	{
 		int destX, destY;
-		if (wayPoints.Count > 1)
+		if (WayPoints.Count > 1)
 		{
-			World.GetLocXAndLocY(wayPoints[1], out int wayPointLocX, out int wayPointLocY);
+			World.GetLocXAndLocY(WayPoints[1], out int wayPointLocX, out int wayPointLocY);
 			destX = wayPointLocX;
 			destY = wayPointLocY;
-			wayPoints.RemoveAt(1);
+			WayPoints.RemoveAt(1);
 		}
 		else // only one unprocessed node
 		{
-			World.GetLocXAndLocY(wayPoints[0], out int wayPointLocX, out int wayPointLocY);
+			World.GetLocXAndLocY(WayPoints[0], out int wayPointLocX, out int wayPointLocY);
 			destX = wayPointLocX;
 			destY = wayPointLocY;
 		}
