@@ -1587,10 +1587,10 @@ public class World
 			if (!unit.is_visible())
 				continue;
 
-			if (unit.CurLocX <= locX + radius && unit.CurLocX + unit.SpriteInfo.loc_width > locX - radius &&
-			    unit.CurLocY <= locY + radius && unit.CurLocY + unit.SpriteInfo.loc_height > locY - radius)
+			if (unit.CurLocX <= locX + radius && unit.CurLocX + unit.SpriteInfo.LocWidth > locX - radius &&
+			    unit.CurLocY <= locY + radius && unit.CurLocY + unit.SpriteInfo.LocHeight > locY - radius)
 			{
-				unit.hit_points -= (double)unit.SpriteInfo.lightning_damage / InternalConstants.ATTACK_SLOW_DOWN;
+				unit.hit_points -= (double)unit.SpriteInfo.LightningDamage / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
 				if (unit.is_own())

@@ -6,15 +6,15 @@ namespace TenKingdoms;
 
 public class SpriteFrameRec
 {
-    public const int NAME_LEN = 8;
-    public const int ACTION_LEN = 2;
-    public const int DIR_LEN = 2;
-    public const int FRAME_ID_LEN = 2;
-    public const int OFFSET_LEN = 4;
-    public const int WIDTH_LEN = 3;
-    public const int HEIGHT_LEN = 3;
-    public const int FILE_NAME_LEN = 8;
-    public const int BITMAP_OFFSET_LEN = 4;
+    private const int NAME_LEN = 8;
+    private const int ACTION_LEN = 2;
+    private const int DIR_LEN = 2;
+    private const int FRAME_ID_LEN = 2;
+    private const int OFFSET_LEN = 4;
+    private const int WIDTH_LEN = 3;
+    private const int HEIGHT_LEN = 3;
+    private const int FILE_NAME_LEN = 8;
+    private const int BITMAP_OFFSET_LEN = 4;
 
     public char[] sprite_name = new char[NAME_LEN];
     public char[] action = new char[ACTION_LEN];
@@ -66,30 +66,30 @@ public class SpriteFrameRec
 
 public class SpriteFrame
 {
-    public int offset_x;
-    public int offset_y;
-    public int width;
-    public int height;
-    public int bitmap_offset;
-    private Dictionary<int, IntPtr> unitTextures = new Dictionary<int, nint>();
-    private IntPtr nonUnitTexture;
+    public int OffsetX;
+    public int OffsetY;
+    public int Width;
+    public int Height;
+    public int BitmapOffset;
+    private Dictionary<int, IntPtr> _unitTextures = new Dictionary<int, nint>();
+    private IntPtr _nonUnitTexture;
 
     public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
     {
         int colorScheme = ColorRemap.ColorSchemes[nationId];
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
-        if (!unitTextures.ContainsKey(textureKey))
+        if (!_unitTextures.ContainsKey(textureKey))
         {
-            byte[] bitmaps = spriteInfo.res_bitmap.ReadFull();
-            int bitmapSize = BitConverter.ToInt16(bitmaps, bitmap_offset);
-            byte[] bitmap = bitmaps.Skip(bitmap_offset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, width, height,
+            byte[] bitmaps = spriteInfo._resBitmap.ReadFull();
+            int bitmapSize = BitConverter.ToInt16(bitmaps, BitmapOffset);
+            byte[] bitmap = bitmaps.Skip(BitmapOffset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, Width, Height,
                 ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
-            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, width, height);
-            unitTextures.Add(textureKey, texture);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, Width, Height);
+            _unitTextures.Add(textureKey, texture);
         }
         
-        return unitTextures[textureKey];
+        return _unitTextures[textureKey];
     }
 }
 
@@ -97,7 +97,7 @@ public class SpriteFrameRes
 {
     private const string SPRITE_FRAME_DB = "SFRAME";
 
-    private SpriteFrame[] spriteFrames;
+    private SpriteFrame[] _spriteFrames;
 
     public GameSet GameSet { get; }
 
@@ -108,26 +108,26 @@ public class SpriteFrameRes
         LoadInfo();
     }
 
-    public SpriteFrame this[int recNo] => spriteFrames[recNo - 1];
+    public SpriteFrame this[int recNo] => _spriteFrames[recNo - 1];
 
     private void LoadInfo()
     {
         Database dbSpriteFrame = GameSet.OpenDb(SPRITE_FRAME_DB);
-        spriteFrames = new SpriteFrame[dbSpriteFrame.RecordCount];
+        _spriteFrames = new SpriteFrame[dbSpriteFrame.RecordCount];
 
-        for (int i = 0; i < spriteFrames.Length; i++)
+        for (int i = 0; i < _spriteFrames.Length; i++)
         {
             SpriteFrameRec frameRec = new SpriteFrameRec(dbSpriteFrame, i + 1);
             SpriteFrame spriteFrame = new SpriteFrame();
-            spriteFrames[i] = spriteFrame;
+            _spriteFrames[i] = spriteFrame;
 
-            spriteFrame.offset_x = Misc.ToInt32(frameRec.offset_x);
-            spriteFrame.offset_y = Misc.ToInt32(frameRec.offset_y);
+            spriteFrame.OffsetX = Misc.ToInt32(frameRec.offset_x);
+            spriteFrame.OffsetY = Misc.ToInt32(frameRec.offset_y);
 
-            spriteFrame.width = Misc.ToInt32(frameRec.width);
-            spriteFrame.height = Misc.ToInt32(frameRec.height);
+            spriteFrame.Width = Misc.ToInt32(frameRec.width);
+            spriteFrame.Height = Misc.ToInt32(frameRec.height);
 
-            spriteFrame.bitmap_offset = BitConverter.ToInt32(frameRec.bitmap_offset, 0);
+            spriteFrame.BitmapOffset = BitConverter.ToInt32(frameRec.bitmap_offset, 0);
         }
     }
 }

@@ -192,7 +192,7 @@ public class FirmWar : Firm
             int yLoc = loc_y1;
 
             if (!World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
-                    spriteInfo.loc_width, spriteInfo.loc_height, unitInfo.mobile_type))
+                    spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
             {
                 build_progress_days = totalBuildDays + 1;
                 return;

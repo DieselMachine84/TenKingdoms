@@ -115,7 +115,7 @@ public partial class Unit
 		//-----------------------------------------------------//
 		//if( cur_action==SPRITE_ATTACK && next_x==cur_x && next_y==cur_y)
 
-		if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
+		if (Math.Abs(CurX - NextX) <= SpriteInfo.Speed && Math.Abs(CurY - NextY) <= SpriteInfo.Speed)
 		{
 			if (CurAction == SPRITE_ATTACK)
 			{
@@ -245,7 +245,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (CurFrame != cur_sprite_attack().frame_count)
+				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // is attacking
 
 				hit_firm(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -262,7 +262,7 @@ public partial class Unit
 		// If the unit is on its way to attack somebody, if it has gotten close next to the target, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.Speed && Math.Abs(CurY - NextY) <= SpriteInfo.Speed)
 		{
 			if (MobileType == UnitConstants.UNIT_LAND)
 			{
@@ -295,7 +295,7 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 
 					AttackInfo attackInfo = attack_info_array[CurAttack];
 					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
@@ -315,7 +315,7 @@ public partial class Unit
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
 					CurFrame = 1;
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -323,7 +323,7 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 					TerminateMove();
 
 					if (targetFirm.firm_id != Firm.FIRM_RESEARCH)
@@ -343,7 +343,7 @@ public partial class Unit
 						set_attack_dir(curXLoc, curYLoc, hitXLoc, hitYLoc);
 					}
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -465,7 +465,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (CurFrame != cur_sprite_attack().frame_count)
+				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // attacking
 
 				hit_town(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -482,7 +482,7 @@ public partial class Unit
 		// If the unit is on its way to attack the town, if it has gotten close next to it, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.Speed && Math.Abs(CurY - NextY) <= SpriteInfo.Speed)
 		{
 			if (MobileType == UnitConstants.UNIT_LAND)
 			{
@@ -512,7 +512,7 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 
 					AttackInfo attackInfo = attack_info_array[CurAttack];
 					int curXLoc = NextLocX;
@@ -534,7 +534,7 @@ public partial class Unit
 					set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
 					CurFrame = 1;
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -542,11 +542,11 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 					TerminateMove();
-					set_dir(NextLocX, NextLocY, targetTown.LocCenterX, targetTown.LocCenterY);
+					SetDir(NextLocX, NextLocY, targetTown.LocCenterX, targetTown.LocCenterY);
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -624,7 +624,7 @@ public partial class Unit
 			}
 			else
 			{
-				if (CurFrame != cur_sprite_attack().frame_count)
+				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // attacking
 
 				hit_wall(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
@@ -641,7 +641,7 @@ public partial class Unit
 		// If the unit is on its way to attack somebody, if it has gotten close next to the target, attack now
 		//--------------------------------------------------------------------------------------------------//
 		// it has moved to the specified location. check cur_x & go_x to make sure the sprite has completely move to the location, not just crossing it.
-		else if (Math.Abs(CurX - NextX) <= SpriteInfo.speed && Math.Abs(CurY - NextY) <= SpriteInfo.speed)
+		else if (Math.Abs(CurX - NextX) <= SpriteInfo.Speed && Math.Abs(CurY - NextY) <= SpriteInfo.Speed)
 		{
 			if (MobileType == UnitConstants.UNIT_LAND)
 			{
@@ -668,7 +668,7 @@ public partial class Unit
 
 				if (attack_range > 1) // use range attack
 				{
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 
 					AttackInfo attackInfo = attack_info_array[CurAttack];
 					int curXLoc = NextLocX;
@@ -690,7 +690,7 @@ public partial class Unit
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
 					CurFrame = 1;
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -698,11 +698,11 @@ public partial class Unit
 				else // close attack
 				{
 					//---------- attack now ---------//
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 					TerminateMove();
 					set_attack_dir(NextLocX, NextLocY, action_x_loc, action_y_loc);
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -842,7 +842,7 @@ public partial class Unit
 				maxRange = max_attack_range();
 				Unit unit = UnitArray[loc.UnitId(targetMobileType)];
 				if (!possible_place_for_range_attack(targetXLoc, targetYLoc,
-					    unit.SpriteInfo.loc_width, unit.SpriteInfo.loc_height, maxRange))
+					    unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight, maxRange))
 				{
 					if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 					    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
@@ -922,8 +922,8 @@ public partial class Unit
 		stop();
 		CurAttack = 0;
 
-		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetUnit.SpriteInfo.loc_width,
-			targetUnit.SpriteInfo.loc_height);
+		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetUnit.SpriteInfo.LocWidth,
+			targetUnit.SpriteInfo.LocHeight);
 		choose_best_attack_mode(attackDistance, targetMobileType);
 
 		AttackInfo attackInfo = attack_info_array[CurAttack];
@@ -996,9 +996,9 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(NextX, NextY);
+			SetCur(NextX, NextY);
 			set_attack_dir(curXLoc, curYLoc, targetXLoc, targetYLoc);
-			if (is_dir_correct())
+			if (IsDirCorrect())
 			{
 				if (attackInfo.attack_range == 1)
 				{
@@ -1197,7 +1197,7 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(NextX, NextY);
+			SetCur(NextX, NextY);
 
 			if (firm.firm_id != Firm.FIRM_RESEARCH)
 			{
@@ -1221,7 +1221,7 @@ public partial class Unit
 				set_attack_dir(curXLoc, curYLoc, hitXLoc, hitYLoc);
 			}
 
-			if (is_dir_correct())
+			if (IsDirCorrect())
 			{
 				if (attackInfo.attack_range == 1)
 					set_attack();
@@ -1410,9 +1410,9 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(NextX, NextY);
+			SetCur(NextX, NextY);
 			set_attack_dir(NextLocX, NextLocY, town.LocCenterX, town.LocCenterY);
-			if (is_dir_correct())
+			if (IsDirCorrect())
 			{
 				if (attackInfo.attack_range == 1)
 					set_attack();
@@ -1599,9 +1599,9 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// attack now
 			//---------------------------------------------------------------//
-			set_cur(NextX, NextY);
+			SetCur(NextX, NextY);
 			set_attack_dir(NextLocX, NextLocY, wallXLoc, wallYLoc);
-			if (is_dir_correct())
+			if (IsDirCorrect())
 			{
 				if (attackInfo.attack_range == 1)
 					set_attack();
@@ -2032,7 +2032,7 @@ public partial class Unit
 		// not ship. 1 for allowing, 0 otherwise
 		//------------------------------------------------------------------------------------//
 		int allowMove = 1;
-		if (SpriteInfo.sprite_sub_type == 'M')
+		if (SpriteInfo.SpriteSubType == 'M')
 		{
 			UnitInfo unitInfo = UnitRes[unit_id];
 			if (unitInfo.carry_goods_capacity != 0)
@@ -2048,7 +2048,7 @@ public partial class Unit
 		int targetYLoc = targetUnit.NextLocY;
 		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 
-		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height);
+		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight);
 		action_x_loc2 = action_x_loc = targetXLoc; // update target location
 		action_y_loc2 = action_y_loc = targetYLoc;
 
@@ -2091,7 +2091,7 @@ public partial class Unit
 			//-----------------------------------------------------------------------------//
 			// although the target has moved, the unit can still attack it. no need to move
 			//-----------------------------------------------------------------------------//
-			if (Math.Abs(CurX - NextX) >= SpriteInfo.speed || Math.Abs(CurY - NextY) >= SpriteInfo.speed)
+			if (Math.Abs(CurX - NextX) >= SpriteInfo.Speed || Math.Abs(CurY - NextY) >= SpriteInfo.Speed)
 				return; // return as moving
 
 			if (attackDistance == 1 && attack_range > 1) // may change attack mode
@@ -2103,10 +2103,10 @@ public partial class Unit
 				AttackInfo attackInfo = attack_info_array[CurAttack];
 				// range attack possible
 				if (BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					set_cur(NextX, NextY);
+					SetCur(NextX, NextY);
 
 					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
 					if (ConfigAdv.unit_target_move_range_cycle)
@@ -2116,7 +2116,7 @@ public partial class Unit
 						CurFrame = 1;
 					}
 
-					if (is_dir_correct())
+					if (IsDirCorrect())
 						set_attack();
 					else
 						set_turn();
@@ -2138,11 +2138,11 @@ public partial class Unit
 			}
 			else if (attackDistance == 1) // close attack
 			{
-				set_cur(NextX, NextY);
+				SetCur(NextX, NextY);
 				set_attack_dir(curXLoc, curYLoc, targetXLoc, targetYLoc);
 				CurFrame = 1;
 
-				if (is_dir_correct())
+				if (IsDirCorrect())
 					set_attack();
 				else
 					set_turn();
@@ -2172,9 +2172,9 @@ public partial class Unit
 			{
 				SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 				// seek for another possible point to attack if target size > 1x1
-				if ((targetSpriteInfo.loc_width > 1 || targetSpriteInfo.loc_height > 1) &&
+				if ((targetSpriteInfo.LocWidth > 1 || targetSpriteInfo.LocHeight > 1) &&
 				    !BulletArray.add_bullet_possible(unitXLoc, unitYLoc, MobileType, action_x_loc, action_y_loc,
-					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					//------ no suitable location to attack target by bullet, move to target --------//
@@ -2199,7 +2199,7 @@ public partial class Unit
 			//--------------------- close attack ------------------------//
 			AttackInfo attackInfo = attack_info_array[CurAttack];
 
-			if (CurFrame == cur_sprite_attack().frame_count)
+			if (CurFrame == CurSpriteAttack().frameCount)
 			{
 				if (targetUnit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.is_nation(nation_recno))
 					((UnitExpCart)targetUnit).trigger_explode();
@@ -2241,7 +2241,7 @@ public partial class Unit
 		int targetYLoc = targetUnit.NextLocY;
 		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 
-		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height);
+		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight);
 
 		if (attackDistance <= attack_range) // able to attack target
 		{
@@ -2250,13 +2250,13 @@ public partial class Unit
 
 			if (attack_range > 1) // use range attack
 			{
-				set_cur(NextX, NextY);
+				SetCur(NextX, NextY);
 
 				AttackInfo attackInfo = attack_info_array[CurAttack];
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
 				if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-					    targetUnit.MobileType, targetSpriteInfo.loc_width, targetSpriteInfo.loc_height,
+					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 					    out range_attack_x_loc, out range_attack_y_loc,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
@@ -2272,7 +2272,7 @@ public partial class Unit
 				set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
 				CurFrame = 1;
 
-				if (is_dir_correct())
+				if (IsDirCorrect())
 					set_attack();
 				else
 					set_turn();
@@ -2280,11 +2280,11 @@ public partial class Unit
 			else // close attack
 			{
 				//---------- attack now ---------//
-				set_cur(NextX, NextY);
+				SetCur(NextX, NextY);
 				TerminateMove();
 				set_attack_dir(NextLocX, NextLocY, targetXLoc, targetYLoc);
 
-				if (is_dir_correct())
+				if (IsDirCorrect())
 					set_attack();
 				else
 					set_turn();
@@ -2366,7 +2366,7 @@ public partial class Unit
 
 	private void set_attack_dir(int curX, int curY, int targetX, int targetY)
 	{
-		int targetDir = get_dir(curX, curY, targetX, targetY);
+		int targetDir = GetDir(curX, curY, targetX, targetY);
 		if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			int attackDir1 = (targetDir + 2) % InternalConstants.MAX_SPRITE_DIR_TYPE;
@@ -2383,10 +2383,15 @@ public partial class Unit
 		else
 		{
 			attack_dir = targetDir;
-			set_dir(targetDir);
+			SetDir(targetDir);
 		}
 	}
 
+	private void set_remain_attack_delay()
+	{
+		RemainAttackDelay = attack_info_array[CurAttack].attack_delay;
+	}
+	
 	private bool can_attack_different_target_type()
 	{
 		int maxRange = max_attack_range();
@@ -3471,7 +3476,7 @@ public partial class Unit
 					action_x_loc2 = unit.NextLocX; // update target location
 					action_y_loc2 = unit.NextLocY;
 					if (space_for_attack(action_x_loc2, action_y_loc2, unit.MobileType,
-						    spriteInfo.loc_width, spriteInfo.loc_height))
+						    spriteInfo.LocWidth, spriteInfo.LocHeight))
 						attack_unit(unit.SpriteId, 0, 0, true);
 					break;
 
@@ -3484,7 +3489,7 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					attack_firm(action_x_loc2, action_y_loc2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 						    action_x_loc2, action_y_loc2, firmInfo.loc_width, firmInfo.loc_height))
 						waiting_term = 0;
 					break;
@@ -3496,14 +3501,14 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					attack_town(action_x_loc2, action_y_loc2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 						    action_x_loc2, action_y_loc2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 						waiting_term = 0;
 					break;
 
 				case UnitConstants.ACTION_ATTACK_WALL:
 					attack_wall(action_x_loc2, action_y_loc2);
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 						    action_x_loc2, action_y_loc2, 1, 1))
 						waiting_term = 0;
 					break;
@@ -3689,7 +3694,7 @@ public partial class Unit
 		// this unit to go back to military camp.
 		//-----------------------------------------------------------------//
 		//-**** should also consider the combat level and hit_points of both unit ****-//
-		if (targetSpriteInfo.speed > SpriteInfo.speed)
+		if (targetSpriteInfo.Speed > SpriteInfo.Speed)
 			returnFactor -= 5;
 
 		if (Misc.Random(returnFactor) != 0) // return to camp if true

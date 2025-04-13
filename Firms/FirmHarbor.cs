@@ -201,7 +201,7 @@ public class FirmHarbor : Firm
 		int yLoc = loc_y1;
 
 		if (!World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
-			    spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_SEA, sea_region_id))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_SEA, sea_region_id))
 		{
 			return;
 		}

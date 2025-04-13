@@ -1624,7 +1624,7 @@ public class MapGenerator
 
 		if (!World.LocateSpace(ref xLoc, ref yLoc,
 			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-			    spriteInfo.loc_width, spriteInfo.loc_height))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight))
 		{
 			return null;
 		}

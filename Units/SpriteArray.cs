@@ -4,21 +4,22 @@ namespace TenKingdoms;
 
 public abstract class SpriteArray : DynArray<Sprite>
 {
-    public Sprite AddSprite(int objectId)
+    protected Sprite AddSprite(int objectId)
     {
 	    return CreateNew(objectId);
     }
 
-    public void DeleteSprite(Sprite sprite)
+    protected void DeleteSprite(Sprite sprite)
     {
-	    int spriteRecno = sprite.SpriteId;
+	    // TODO do not change SpriteId
+	    int spriteId = sprite.SpriteId;
 	    sprite.Deinit();
-	    Delete(spriteRecno);
+	    Delete(spriteId);
     }
 
-    public virtual void die(int spriteRecno)
+    protected virtual void Die(int spriteId)
     {
-	    DeleteSprite(this[spriteRecno]);
+	    DeleteSprite(this[spriteId]);
     }
 
     public virtual void Process()
@@ -31,20 +32,19 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    if (sprite.CurX == -1) // cur_x == -1 if the unit has removed from the map and gone into a firm
 			    continue;
 
-		    int spriteRecno = sprite.SpriteId;
+		    // TODO do not change SpriteId
+		    int spriteId = sprite.SpriteId;
 
-		    sprite.pre_process(); // it's actually calling Unit::pre_process() and other derived Unit classes
+		    sprite.PreProcess(); // it's actually calling Unit::pre_process() and other derived Unit classes
 
 		    //-----------------------------------------------------//
-		    // note: for unit cur_x == -1, the unit is invisible and
-		    //			no pre_process is done.
+		    // note: for unit cur_x == -1, the unit is invisible and no pre_process is done.
 		    //
-		    //			for unit cur_x == -2, eg caravan, the unit is
-		    //			invisible but pre_process is still processed.
-		    //			However, sprite cur_action should be skipped.
+		    //       for unit cur_x == -2, eg caravan, the unit is invisible but pre_process is still processed.
+		    //       However, sprite cur_action should be skipped.
 		    //-----------------------------------------------------//
 
-		    if (IsDeleted(spriteRecno)) // in case pre_process() kills the current Sprite
+		    if (IsDeleted(spriteId)) // in case pre_process() kills the current Sprite
 			    continue;
 
 		    if (sprite.CurX < 0) //if( spritePtr->cur_x == -1 || spritePtr->cur_x==-2)
@@ -53,46 +53,44 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    switch (sprite.CurAction)
 		    {
 			    case Sprite.SPRITE_IDLE:
-				    sprite.process_idle();
+				    sprite.ProcessIdle();
 				    break;
 
 			    case Sprite.SPRITE_READY_TO_MOVE:
 				    // TODO remove?
 				    //sprite.CurAction = Sprite.SPRITE_IDLE; // to avoid problems of insensitive of mouse cursor
-				    sprite.process_idle();
+				    sprite.ProcessIdle();
 				    break;
 
 			    case Sprite.SPRITE_MOVE:
-				    sprite.process_move();
+				    sprite.ProcessMove();
 				    break;
 
 			    case Sprite.SPRITE_WAIT:
-				    sprite.process_wait();
+				    sprite.ProcessWait();
 				    break;
 
 			    case Sprite.SPRITE_ATTACK:
-				    sprite.process_attack();
+				    sprite.ProcessAttack();
 				    break;
 
 			    case Sprite.SPRITE_TURN:
-				    sprite.process_turn();
+				    sprite.ProcessTurn();
 				    break;
 
 			    case Sprite.SPRITE_SHIP_EXTRA_MOVE: // for ship only
-				    sprite.process_extra_move();
+				    sprite.ProcessExtraMove();
 				    break;
 
 			    case Sprite.SPRITE_DIE:
-				    if (sprite.process_die())
+				    if (sprite.ProcessDie())
 				    {
-					    die(spriteRecno);
+					    Die(spriteId);
 				    }
-
 				    break;
 		    }
 
-		    //----- can use other reasonable value to replace MIN_BACKGROUND_NODE_USED_UP ----//
-		    if (!IsDeleted(spriteRecno))
+		    if (!IsDeleted(spriteId))
 		    {
 			    if (sprite.GuardCount > 0)
 			    {

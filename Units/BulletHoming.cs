@@ -40,15 +40,15 @@ public class BulletHoming : Bullet
 		max_step = (attackInfo.attack_range * InternalConstants.CellWidth + speed - 1) / speed;
 
 		//--------- keep backup of centre of the bullet ---------//
-		SpriteFrame spriteFrame = cur_sprite_frame(out _);
+		SpriteFrame spriteFrame = CurSpriteFrame(out _);
 
 		// origin_x/y and origin2_x/y are pointing at the centre of the bullet bitmap //
-		origin_x += spriteFrame.offset_x + spriteFrame.width / 2;
-		origin_y += spriteFrame.offset_y + spriteFrame.height / 2;
+		origin_x += spriteFrame.OffsetX + spriteFrame.Width / 2;
+		origin_y += spriteFrame.OffsetY + spriteFrame.Height / 2;
 		origin2_x = origin_x;
 		origin2_y = origin_y;
-		GoX += spriteFrame.offset_x + spriteFrame.width / 2;
-		GoY += spriteFrame.offset_y + spriteFrame.height / 2;
+		GoX += spriteFrame.OffsetX + spriteFrame.Width / 2;
+		GoY += spriteFrame.OffsetY + spriteFrame.Height / 2;
 
 		// ------- find the target_type and target_recno ------//
 		Location location = World.GetLoc(targetXLoc, targetYLoc);
@@ -77,7 +77,7 @@ public class BulletHoming : Bullet
 		}
 	}
 
-	public override void process_move()
+	public override void ProcessMove()
 	{
 		int actualStep = total_step;
 		SpriteFrame spriteFrame;
@@ -112,9 +112,9 @@ public class BulletHoming : Bullet
 					GoY = unit.CurY + InternalConstants.CellHeight / 2;
 
 					//---------- set bullet movement steps -----------//
-					spriteFrame = cur_sprite_frame(out _);
-					adjX = spriteFrame.offset_x + spriteFrame.width / 2;
-					adjY = spriteFrame.offset_y + spriteFrame.height / 2;
+					spriteFrame = CurSpriteFrame(out _);
+					adjX = spriteFrame.OffsetX + spriteFrame.Width / 2;
+					adjY = spriteFrame.OffsetY + spriteFrame.Height / 2;
 
 					int xStep = Math.Abs(GoX - (CurX + adjX)) / speed;
 					int yStep = Math.Abs(GoY - (CurY + adjY)) / speed;
@@ -144,9 +144,9 @@ public class BulletHoming : Bullet
 		//	origin2_y = origin_y;
 
 		// origin_x/y and origin2_x/y are pointing at the centre of the bullet bitmap //
-		spriteFrame = cur_sprite_frame(out _);
-		adjX = spriteFrame.offset_x + spriteFrame.width / 2;
-		adjY = spriteFrame.offset_y + spriteFrame.height / 2;
+		spriteFrame = CurSpriteFrame(out _);
+		adjX = spriteFrame.OffsetX + spriteFrame.Width / 2;
+		adjY = spriteFrame.OffsetY + spriteFrame.Height / 2;
 		origin_x = CurX + adjX;
 		origin_y = CurY + adjY;
 
@@ -156,12 +156,12 @@ public class BulletHoming : Bullet
 
 		// detect changing direction
 		if (cur_step > 3) // not allow changing direction so fast
-			set_dir(origin2_x, origin2_y, CurX, CurY);
+			SetDir(origin2_x, origin2_y, CurX, CurY);
 
 		// change cur_x, cur_y to bitmap reference point
-		spriteFrame = cur_sprite_frame(out _);
-		adjX = spriteFrame.offset_x + spriteFrame.width / 2;
-		adjY = spriteFrame.offset_y + spriteFrame.height / 2;
+		spriteFrame = CurSpriteFrame(out _);
+		adjX = spriteFrame.OffsetX + spriteFrame.Width / 2;
+		adjY = spriteFrame.OffsetY + spriteFrame.Height / 2;
 		CurX -= adjX;
 		CurY -= adjY;
 
@@ -169,7 +169,7 @@ public class BulletHoming : Bullet
 
 		//------- update frame id. --------//
 
-		if (++CurFrame > cur_sprite_move().frame_count)
+		if (++CurFrame > CurSpriteMove().FrameCount)
 			CurFrame = 1;
 
 		//----- if the sprite has reach the destintion ----//
@@ -181,7 +181,7 @@ public class BulletHoming : Bullet
 			CurAction = SPRITE_DIE; // Explosion
 			// ###### begin Gilbert 17/5 ########//
 			// if it has die frame, adjust cur_x, cur_y to be align with the target_x_loc, target_y_loc
-			if (SpriteInfo.die.first_frame_recno != 0)
+			if (SpriteInfo.Die.FirstFrameId != 0)
 			{
 				NextX = CurX = target_x_loc * InternalConstants.CellWidth;
 				NextY = CurY = target_y_loc * InternalConstants.CellHeight;

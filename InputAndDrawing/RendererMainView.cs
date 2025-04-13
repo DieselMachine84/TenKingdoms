@@ -367,15 +367,15 @@ public partial class Renderer
             if (unit.CurLocY < _topLeftLocY || unit.CurLocY > _topLeftLocY + MainViewHeightInCells)
                 continue;
 
-            SpriteFrame spriteFrame = unit.cur_sprite_frame(out bool needMirror);
-            int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + spriteFrame.offset_x;
-            int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + spriteFrame.offset_y;
+            SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
+            int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + spriteFrame.OffsetX;
+            int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + spriteFrame.OffsetY;
 
             SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
             //TODO select only under cursor?
             //bool isSelected = (unit.sprite_recno == _selectedUnitId);
             Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, unit.selected_flag), unitX, unitY,
-                Scale(spriteFrame.width), Scale(spriteFrame.height), needMirror ? FlipMode.Horizontal : FlipMode.None);
+                Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
     }
 

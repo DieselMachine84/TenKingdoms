@@ -14,10 +14,10 @@ public class BulletFlame : Bullet
         CurAction = SPRITE_IDLE;
     }
 
-    public override void process_idle()
+    public override void ProcessIdle()
     {
         // Sprite::process_idle();
-        if (++CurFrame <= cur_sprite_stop().frame_count)
+        if (++CurFrame <= CurSpriteStop().FrameCount)
         {
             // ----- warn/ attack target every frame -------//
             warn_target();

@@ -10,7 +10,7 @@ public class UnitExpCart : Unit
 	{
 	}
 
-	public override bool process_die()
+	public override bool ProcessDie()
 	{
 		if (triggered && CurFrame == 3)
 		{
@@ -116,7 +116,7 @@ public class UnitExpCart : Unit
 			}
 		}
 
-		return base.process_die();
+		return base.ProcessDie();
 	}
 
 	public void trigger_explode()

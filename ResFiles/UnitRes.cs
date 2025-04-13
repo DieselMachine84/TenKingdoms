@@ -29,7 +29,7 @@ public class UnitRec
 
 	public char[] visual_range = new char[UNIT_PARA_LEN];
 	public char[] visual_extend = new char[UNIT_PARA_LEN];
-	public char[] shealth = new char[UNIT_PARA_LEN];
+	public char[] stealth = new char[UNIT_PARA_LEN];
 	public char[] hit_points = new char[UNIT_PARA_LEN];
 	public char[] armor = new char[UNIT_PARA_LEN];
 
@@ -105,8 +105,8 @@ public class UnitRec
 		for (int i = 0; i < visual_extend.Length; i++, dataIndex++)
 			visual_extend[i] = Convert.ToChar(data[dataIndex]);
 
-		for (int i = 0; i < shealth.Length; i++, dataIndex++)
-			shealth[i] = Convert.ToChar(data[dataIndex]);
+		for (int i = 0; i < stealth.Length; i++, dataIndex++)
+			stealth[i] = Convert.ToChar(data[dataIndex]);
 
 		for (int i = 0; i < hit_points.Length; i++, dataIndex++)
 			hit_points[i] = Convert.ToChar(data[dataIndex]);
@@ -322,7 +322,7 @@ public class UnitInfo
 
 	public int visual_range;
 	public int visual_extend;
-	public int shealth;
+	public int stealth;
 	public int armor;
 
 	public int hit_points;
@@ -694,7 +694,7 @@ public class UnitRes
 
 			unitInfo.visual_range = Misc.ToInt32(unitRec.visual_range);
 			unitInfo.visual_extend = Misc.ToInt32(unitRec.visual_extend);
-			unitInfo.shealth = Misc.ToInt32(unitRec.shealth);
+			unitInfo.stealth = Misc.ToInt32(unitRec.stealth);
 			unitInfo.hit_points = Misc.ToInt32(unitRec.hit_points);
 			unitInfo.armor = Misc.ToInt32(unitRec.armor);
 

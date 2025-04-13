@@ -59,6 +59,10 @@ public class Sprite : IIdObject
 		InternalConstants.CellHeight, InternalConstants.CellHeight, 0, -InternalConstants.CellHeight
 	};
 
+	private static readonly int[] MoveXVectors = { 0, 1, 1, 1, 0, -1, -1, -1 };
+	private static readonly int[] MoveYVectors = { -1, -1, 0, 1, 1, 1, 0, -1 };
+	private static readonly int[] TurnAmount = { 60, 30, 20, 15, 12, 10, 9, 8, 7, 6 };
+	
 	protected Config Config => Sys.Instance.Config;
 	protected World World => Sys.Instance.World;
 	protected SpriteRes SpriteRes => Sys.Instance.SpriteRes;
@@ -98,7 +102,7 @@ public class Sprite : IIdObject
 		SpriteInfo = SpriteRes[SpriteResId];
 
 		RemainAttackDelay = 0;
-		RemainFramesPerStep = SpriteInfo.frames_per_step;
+		RemainFramesPerStep = SpriteInfo.FramesPerStep;
 	}
 
 	public virtual void Deinit()
@@ -107,34 +111,34 @@ public class Sprite : IIdObject
 
 	//----- clone vars from sprite_res for fast access -----//
 
-	public SpriteMove cur_sprite_move()
+	protected SpriteMove CurSpriteMove()
 	{
-		return SpriteInfo.move_array[CurDir];
+		return SpriteInfo.Moves[CurDir];
 	}
 
-	public SpriteAttack cur_sprite_attack()
+	protected SpriteAttack CurSpriteAttack()
 	{
-		return SpriteInfo.attack_array[CurAttack, CurDir];
+		return SpriteInfo.Attacks[CurAttack, CurDir];
 	}
 
-	public SpriteStop cur_sprite_stop()
+	protected SpriteStop CurSpriteStop()
 	{
-		return SpriteInfo.stop_array[CurDir];
+		return SpriteInfo.Stops[CurDir];
 	}
 
-	public SpriteDie cur_sprite_die()
+	protected SpriteDie CurSpriteDie()
 	{
-		return SpriteInfo.die;
+		return SpriteInfo.Die;
 	}
 
-	private bool NeedMirror(int dispDir)
+	private bool NeedMirror(int displayDir)
 	{
-		return (dispDir < 8 || SpriteInfo.turn_resolution <= 8) ? (dispDir & 7) >= 5 : (dispDir & 7) >= 4;
+		return (displayDir < 8 || SpriteInfo.TurnResolution <= 8) ? (displayDir & 7) >= 5 : (displayDir & 7) >= 4;
 	}
 	
-	public SpriteFrame cur_sprite_frame(out bool needMirror)
+	public SpriteFrame CurSpriteFrame(out bool needMirror)
 	{
-		int curDir = display_dir();
+		int curDir = DisplayDir();
 		needMirror = NeedMirror(curDir);
 
 		switch (CurAction)
@@ -146,29 +150,29 @@ public class Sprite : IIdObject
 					if (curDir >= InternalConstants.MAX_SPRITE_DIR_TYPE)
 						curDir %= InternalConstants.MAX_SPRITE_DIR_TYPE;
 
-					return SpriteFrameRes[SpriteInfo.guard_move_array[curDir].first_frame_recno + CurFrame - 1];
+					return SpriteFrameRes[SpriteInfo.GuardMoves[curDir].FirstFrameId + CurFrame - 1];
 				}
 				else
 				{
-					return SpriteFrameRes[SpriteInfo.move_array[curDir].first_frame_recno + CurFrame - 1];
+					return SpriteFrameRes[SpriteInfo.Moves[curDir].FirstFrameId + CurFrame - 1];
 				}
 
 			case SPRITE_ATTACK:
 				if (GuardCount != 0)
 				{
-					SpriteGuardStop guardStopAction = SpriteInfo.guard_stop_array[curDir];
-					return SpriteFrameRes[guardStopAction.first_frame_recno + Math.Min(GuardCount, guardStopAction.frame_count) - 1];
+					SpriteGuardStop guardStopAction = SpriteInfo.GuardStops[curDir];
+					return SpriteFrameRes[guardStopAction.FirstFrameId + Math.Min(GuardCount, guardStopAction.FrameCount) - 1];
 				}
 				else
 				{
-					return SpriteFrameRes[SpriteInfo.attack_array[CurAttack, curDir].first_frame_recno + CurFrame - 1];
+					return SpriteFrameRes[SpriteInfo.Attacks[CurAttack, curDir].FirstFrameId + CurFrame - 1];
 				}
 
 			case SPRITE_TURN:
 			case SPRITE_IDLE:
 			case SPRITE_WAIT:
 			{
-				// air unit needs it own stop frames to float on air
+				// air unit needs its own stop frames to float on air
 				if (GuardCount != 0)
 				{
 					if (curDir >= InternalConstants.MAX_SPRITE_DIR_TYPE)
@@ -179,34 +183,34 @@ public class Sprite : IIdObject
 						curDir %= InternalConstants.MAX_SPRITE_DIR_TYPE;
 					}
 
-					SpriteGuardStop guardStopAction = SpriteInfo.guard_stop_array[curDir];
-					return SpriteFrameRes[guardStopAction.first_frame_recno + Math.Min(GuardCount, guardStopAction.frame_count) - 1];
+					SpriteGuardStop guardStopAction = SpriteInfo.GuardStops[curDir];
+					return SpriteFrameRes[guardStopAction.FirstFrameId + Math.Min(GuardCount, guardStopAction.FrameCount) - 1];
 				}
 				else
 				{
-					SpriteStop stopAction = SpriteInfo.stop_array[curDir];
-					if (CurFrame > stopAction.frame_count)
-						return SpriteFrameRes[stopAction.frame_recno]; // first frame
+					SpriteStop stopAction = SpriteInfo.Stops[curDir];
+					if (CurFrame > stopAction.FrameCount)
+						return SpriteFrameRes[stopAction.FrameId]; // first frame
 					else // only few sprite has stopAction->frame_count > 1
-						return SpriteFrameRes[stopAction.frame_recno + CurFrame - 1];
+						return SpriteFrameRes[stopAction.FrameId + CurFrame - 1];
 				}
 			}
 
 			case SPRITE_DIE:
-				if (SpriteInfo.die.first_frame_recno != 0) // only if this sprite has dying frame
+				if (SpriteInfo.Die.FirstFrameId != 0) // only if this sprite has dying frame
 				{
 					needMirror = false; // no need to mirror at any direction
-					return SpriteFrameRes[SpriteInfo.die.first_frame_recno + CurFrame - 1];
+					return SpriteFrameRes[SpriteInfo.Die.FirstFrameId + CurFrame - 1];
 				}
 
 				return null;
 
 			default:
-				return SpriteFrameRes[SpriteInfo.move_array[curDir].first_frame_recno + CurFrame - 1];
+				return SpriteFrameRes[SpriteInfo.Moves[curDir].FirstFrameId + CurFrame - 1];
 		}
 	}
 
-	public void sprite_move(int desX, int desY)
+	protected void SpriteMove(int destX, int destY)
 	{
 		if (CurAction != SPRITE_MOVE)
 		{
@@ -214,33 +218,33 @@ public class Sprite : IIdObject
 			CurFrame = 1;
 		}
 
-		GoX = desX;
-		GoY = desY;
+		GoX = destX;
+		GoY = destY;
 
 		//----------- determine the movement direction ---------//
-		set_dir(CurX, CurY, GoX, GoY);
+		SetDir(CurX, CurY, GoX, GoY);
 
 		//------ set the next tile to move towards -------//
-		int stepMagn = move_step_magn();
-		set_next(CurX + stepMagn * MoveXPixels[FinalDir], CurY + stepMagn * MoveYPixels[FinalDir], -stepMagn);
+		int stepCoeff = MoveStepCoeff();
+		SetNext(CurX + stepCoeff * MoveXPixels[FinalDir], CurY + stepCoeff * MoveYPixels[FinalDir], -stepCoeff);
 	}
 
-	public void set_cur(int curX, int curY)
+	protected void SetCur(int curX, int curY)
 	{
 		CurX = curX;
 		CurY = curY;
-		update_abs_pos();
+		UpdateAbsPos();
 	}
 
-	public virtual void set_next(int nextX, int nextY, int para = 0, int blockedChecked = 0)
+	protected virtual void SetNext(int nextX, int nextY, int para = 0, int blockedChecked = 0)
 	{
 		NextX = nextX;
 		NextY = nextY;
 	}
 
-	protected virtual void update_abs_pos(SpriteFrame spriteFrame = null)
+	protected virtual void UpdateAbsPos(SpriteFrame spriteFrame = null)
 	{
-		spriteFrame ??= cur_sprite_frame(out _);
+		spriteFrame ??= CurSpriteFrame(out _);
 
 		//abs_x1 = cur_x + spriteFrame.offset_x;		// absolute position 
 		//abs_y1 = cur_y + spriteFrame.offset_y;
@@ -249,39 +253,38 @@ public class Sprite : IIdObject
 		//abs_y2 = abs_y1 + spriteFrame.height - 1;
 	}
 
-	public int move_step_magn()
+	protected int MoveStepCoeff()
 	{
 		return MobileType == UnitConstants.UNIT_LAND ? 1 : 2;
 	}
 
-	public virtual void pre_process()
+	public virtual void PreProcess()
 	{
 	}
 
-	public virtual void process_idle()
+	public virtual void ProcessIdle()
 	{
 		//-------- If it's an air unit --------//
-		// note : most land units do have have stop frame,
-		// so cur_sprite_stop.frame_count is 0
-		if (++CurFrame > cur_sprite_stop().frame_count)
+		// note : most land units do have have stop frame, so cur_sprite_stop.frame_count is 0
+		if (++CurFrame > CurSpriteStop().FrameCount)
 			CurFrame = 1;
 	}
 
-	public virtual void process_move()
+	public virtual void ProcessMove()
 	{
 		//---- for some sprite (e.g. elephant), move one step per a few frames ----//
 
 		if (--RemainFramesPerStep > 0)
 			return;
-		else
-			RemainFramesPerStep = SpriteInfo.frames_per_step;
 
-		//----- if the sprite has reach the destintion ----//
+		RemainFramesPerStep = SpriteInfo.FramesPerStep;
+
+		//----- if the sprite has reach the destination ----//
 
 		if (CurX == GoX && CurY == GoY)
 		{
 			CurAction = SPRITE_IDLE;
-			set_next(CurX, CurY); //********* BUGHERE
+			SetNext(CurX, CurY); //********* BUGHERE
 
 			CurFrame = 1;
 			return;
@@ -289,38 +292,33 @@ public class Sprite : IIdObject
 
 		//---- set the next tile the sprite will be moving towards ---//
 
-		int[] vector_x_array = { 0, 1, 1, 1, 0, -1, -1, -1 }; // default vectors, temporary only
-		int[] vector_y_array = { -1, -1, 0, 1, 1, 1, 0, -1 };
-
-		int stepX = SpriteInfo.speed; //abs(vectorX);	//********* improve later
-		int stepY = SpriteInfo.speed; //abs(vectorY);
+		int stepX = SpriteInfo.Speed; //abs(vectorX);	//********* improve later
+		int stepY = SpriteInfo.Speed; //abs(vectorY);
 
 		// if next_x==go_x & next_y==go_y, reach destination already, don't move further.
 		if (NextX != GoX || NextY != GoY)
 		{
 			if (Math.Abs(CurX - NextX) <= stepX && Math.Abs(CurY - NextY) <= stepY)
 			{
-				int stepMagn = move_step_magn();
-				set_next(NextX + stepMagn * MoveXPixels[FinalDir],
-					NextY + stepMagn * MoveYPixels[FinalDir], -stepMagn);
+				int stepCoeff = MoveStepCoeff();
+				SetNext(NextX + stepCoeff * MoveXPixels[FinalDir], NextY + stepCoeff * MoveYPixels[FinalDir], -stepCoeff);
 			}
 		}
 
-		//---- if the is blocked, cur_action is changed to SPRITE_WAIT, return now ----//
+		//---- if blocked, cur_action is changed to SPRITE_WAIT, return now ----//
 
 		if (CurAction != SPRITE_MOVE)
 			return;
 
 		//-------------- update position -----------------//
 		//
-		// If it gets very close to the destination, fit it
-		// to the destination ingoring the normal vector.
+		// If it gets very close to the destination, fit it to the destination ignoring the normal vector.
 		//
 		//------------------------------------------------//
 
 		// cur_dir may be changed in the above set_next() call
-		int vectorX = vector_x_array[FinalDir] * SpriteInfo.speed;
-		int vectorY = vector_y_array[FinalDir] * SpriteInfo.speed;
+		int vectorX = MoveXVectors[FinalDir] * SpriteInfo.Speed;
+		int vectorY = MoveYVectors[FinalDir] * SpriteInfo.Speed;
 
 		if (Math.Abs(CurX - GoX) <= stepX)
 			CurX = GoX;
@@ -334,27 +332,24 @@ public class Sprite : IIdObject
 
 		//------- update frame id. --------//
 
-		if (++CurFrame > cur_sprite_move().frame_count)
+		if (++CurFrame > CurSpriteMove().FrameCount)
 			CurFrame = 1;
 	}
 
-	public virtual void process_wait()
+	public virtual void ProcessWait()
 	{
 	}
 
-	public virtual int process_attack()
+	public virtual int ProcessAttack()
 	{
 		if (RemainAttackDelay != 0 && CurFrame == 1)
 			return 0;
 
+		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "A" + (CurAttack + 1));
+
 		//------- next attack frame --------//
-		SpriteAttack spriteAttack = cur_sprite_attack();
-
-		// ------ sound effect --------//
-		string action = "A" + (CurAttack + 1);
-		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, action);
-
-		if (++CurFrame > spriteAttack.frame_count)
+		SpriteAttack spriteAttack = CurSpriteAttack();
+		if (++CurFrame > spriteAttack.frameCount)
 		{
 			((Unit)this).cycle_eqv_attack(); // assume only unit can attack
 			CurFrame = 1;
@@ -364,45 +359,35 @@ public class Sprite : IIdObject
 		return 0;
 	}
 
-	public virtual bool process_die()
+	public virtual bool ProcessDie()
 	{
 		//--------- next frame ---------//
 
 		if (Sys.Instance.FrameNumber % 3 == 0)
 		{
 			SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
-			if (++CurFrame > SpriteInfo.die.frame_count)
+			if (++CurFrame > SpriteInfo.Die.FrameCount)
 				return true;
 		}
 
 		return false;
 	}
 
-	public void process_turn()
+	public void ProcessTurn()
 	{
-		match_dir();
+		MatchDir();
 	}
 
-	public virtual void process_extra_move()
+	public virtual void ProcessExtraMove()
 	{
 	}
 
-	public void set_dir(int curX, int curY, int destX, int destY)
+	protected void SetDir(int curX, int curY, int destX, int destY)
 	{
-		int newDir = get_dir(curX, curY, destX, destY);
-		if (newDir != FinalDir)
-		{
-			FinalDir = newDir;
-			TurnDelay = 0;
-		}
-
-		if (SpriteInfo.need_turning == 0)
-			CurDir = FinalDir;
-		else
-			match_dir(); // start turning
+		SetDir(GetDir(curX, curY, destX, destY));
 	}
 
-	public void set_dir(int newDir) //	 overloading function
+	public void SetDir(int newDir) //	 overloading function
 	{
 		if (newDir != FinalDir)
 		{
@@ -410,13 +395,13 @@ public class Sprite : IIdObject
 			TurnDelay = 0;
 		}
 
-		if (SpriteInfo.need_turning == 0)
+		if (SpriteInfo.NeedTurning == 0)
 			CurDir = FinalDir;
 		else
-			match_dir();
+			MatchDir();
 	}
 
-	public int get_dir(int curX, int curY, int destX, int destY)
+	protected int GetDir(int curX, int curY, int destX, int destY)
 	{
 		int xDiff = Math.Abs(destX - curX);
 		int yDiff = Math.Abs(destY - curY);
@@ -424,10 +409,7 @@ public class Sprite : IIdObject
 
 		if (destX == curX)
 		{
-			if (destY > curY)
-				return InternalConstants.DIR_S;
-			else
-				return InternalConstants.DIR_N;
+			return destY > curY ? InternalConstants.DIR_S : InternalConstants.DIR_N;
 		}
 		else if (destX < curX)
 		{
@@ -481,22 +463,18 @@ public class Sprite : IIdObject
 		return InternalConstants.DIR_N;
 	}
 
-	public bool is_dir_correct()
+	protected bool IsDirCorrect()
 	{
 		return CurDir == FinalDir && TurnDelay == 0;
 	}
 
-	public bool match_dir()
+	protected bool MatchDir()
 	{
-		if (SpriteInfo.need_turning == 0)
+		if (SpriteInfo.NeedTurning == 0)
 		{
 			CurDir = FinalDir;
 			return true;
 		}
-
-		int[] turn_amount = { 60, 30, 20, 15, 12, 10, 9, 8, 7, 6 };
-		int HALF_SPRITE_DIR_TYPE = InternalConstants.MAX_SPRITE_DIR_TYPE / 2;
-		int TURN_REQUIRE_AMOUNT = 60;
 
 		if (CurDir == FinalDir) // same direction
 		{
@@ -504,7 +482,9 @@ public class Sprite : IIdObject
 			return true;
 		}
 
-		int turnAmount = turn_amount[SpriteInfo.need_turning];
+		const int HALF_SPRITE_DIR_TYPE = InternalConstants.MAX_SPRITE_DIR_TYPE / 2;
+		const int TURN_REQUIRE_AMOUNT = 60;
+		int turnAmount = TurnAmount[SpriteInfo.NeedTurning];
 
 		if ((CurDir + HALF_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE == FinalDir) // opposite direction
 		{
@@ -537,16 +517,10 @@ public class Sprite : IIdObject
 		return FinalDir == CurDir;
 	}
 
-	public void set_remain_attack_delay()
-	{
-		Unit unit = (Unit)this; //**BUGHERE, assuming all Sprite that call process_attack() are Unit
-		RemainAttackDelay = unit.attack_info_array[unit.CurAttack].attack_delay;
-	}
-
-	public int display_dir()
+	private int DisplayDir()
 	{
 		int curDir = CurDir;
-		switch (SpriteInfo.turn_resolution)
+		switch (SpriteInfo.TurnResolution)
 		{
 			case 0: // fall through
 			case 1:
@@ -592,24 +566,24 @@ public class Sprite : IIdObject
 		return curDir;
 	}
 
-	public void set_guard_on()
+	public void SetGuardOn()
 	{
 		GuardCount = 1;
 	}
 
-	public void set_guard_off()
+	public void SetGuardOff()
 	{
 		GuardCount = 0;
 	}
 
-	public bool is_guarding()
+	public bool IsGuarding()
 	{
 		return GuardCount > 0;
 	}
 
-	public virtual bool is_shealth()
+	public virtual bool IsStealth()
 	{
-		// if the visibility of location is just explored, consider shealth
+		// if the visibility of location is just explored, consider stealth
 		return Config.fog_of_war && World.GetLoc(CurLocX, CurLocY).Visibility() <= Location.EXPLORED_VISIBILITY;
 	}
 }

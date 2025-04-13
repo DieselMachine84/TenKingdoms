@@ -62,9 +62,9 @@ public class Bullet : Sprite
 
 		CurAction = SPRITE_MOVE;
 		CurFrame = 1;
-		set_dir(parentUnit.attack_dir);
+		SetDir(parentUnit.attack_dir);
 
-		SpriteFrame spriteFrame = cur_sprite_frame(out _);
+		SpriteFrame spriteFrame = CurSpriteFrame(out _);
 
 		origin_x = CurX = parentUnit.CurX;
 		origin_y = CurY = parentUnit.CurY;
@@ -75,8 +75,8 @@ public class Bullet : Sprite
 		target_y_loc = targetYLoc;
 
 		// -spriteFrame.offset_x to make abs_x1 & abs_y1 = original x1 & y1. So the bullet will be centered on the target
-		GoX = target_x_loc * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.offset_x - spriteFrame.width / 2;
-		GoY = target_y_loc * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.offset_y - spriteFrame.height / 2;
+		GoX = target_x_loc * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.OffsetX - spriteFrame.Width / 2;
+		GoY = target_y_loc * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.OffsetY - spriteFrame.Height / 2;
 
 		MobileType = parentUnit.MobileType;
 
@@ -89,7 +89,7 @@ public class Bullet : Sprite
 		cur_step = 0;
 	}
 
-	public override void process_move()
+	public override void ProcessMove()
 	{
 		//-------------- update position -----------------//
 		//
@@ -105,7 +105,7 @@ public class Bullet : Sprite
 
 		//------- update frame id. --------//
 
-		if (++CurFrame > cur_sprite_move().frame_count)
+		if (++CurFrame > CurSpriteMove().FrameCount)
 			CurFrame = 1;
 
 		//----- if the sprite has reach the destintion ----//
@@ -118,7 +118,7 @@ public class Bullet : Sprite
 			CurAction = SPRITE_DIE; // Explosion
 
 			// if it has die frame, adjust cur_x, cur_y to be align with the target_x_loc, target_y_loc
-			if (SpriteInfo.die.first_frame_recno != 0)
+			if (SpriteInfo.Die.FirstFrameId != 0)
 			{
 				NextX = CurX = target_x_loc * InternalConstants.CellWidth;
 				NextY = CurY = target_y_loc * InternalConstants.CellHeight;
@@ -132,15 +132,15 @@ public class Bullet : Sprite
 		}
 	}
 
-	public override bool process_die()
+	public override bool ProcessDie()
 	{
 		// ------- sound effect --------//
 		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
 		//--------- next frame ---------//
-		if (++CurFrame > SpriteInfo.die.frame_count)
+		if (++CurFrame > SpriteInfo.Die.FrameCount)
 			// ####### begin Gilbert 28/6 ########//
-			if (++CurFrame > SpriteInfo.die.frame_count)
+			if (++CurFrame > SpriteInfo.Die.FrameCount)
 			{
 				// ------- set fire on the target area --------//
 				if (fire_radius > 0)
@@ -236,7 +236,7 @@ public class Bullet : Sprite
 		if (!NationArray.should_attack(nation_recno, targetUnit.nation_recno))
 			return;
 
-		if (targetUnit.is_guarding())
+		if (targetUnit.IsGuarding())
 		{
 			switch (targetUnit.CurAction)
 			{
@@ -474,31 +474,31 @@ public class Bullet : Sprite
 							case SPRITE_IDLE:
 							case SPRITE_READY_TO_MOVE:
 								//case SPRITE_TURN:
-								if (unit.can_stand_guard() && !unit.is_guarding())
+								if (unit.can_stand_guard() && !unit.IsGuarding())
 								{
-									unit.set_dir((CurDir + 4) & 7); // opposite direction of arrow
-									unit.set_guard_on();
+									unit.SetDir((CurDir + 4) & 7); // opposite direction of arrow
+									unit.SetGuardOn();
 								}
 
 								break;
 							case SPRITE_MOVE:
-								if (unit.can_move_guard() && !unit.is_guarding() &&
+								if (unit.can_move_guard() && !unit.IsGuarding() &&
 								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 3) & 7)))
 								{
-									unit.set_guard_on();
+									unit.SetGuardOn();
 								}
 
 								break;
 							case SPRITE_ATTACK:
-								if (unit.can_attack_guard() && !unit.is_guarding() &&
+								if (unit.can_attack_guard() && !unit.IsGuarding() &&
 								    unit.RemainAttackDelay >= InternalConstants.GUARD_COUNT_MAX &&
 								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 3) & 7)))
 								{
-									unit.set_guard_on();
+									unit.SetGuardOn();
 								}
 
 								break;

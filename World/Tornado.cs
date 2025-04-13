@@ -18,13 +18,13 @@ public class Tornado : Sprite
         attack_damage = 2.0 / InternalConstants.ATTACK_SLOW_DOWN;
         life_time = lifeTime;
 
-        set_dir(InternalConstants.DIR_N);
+        SetDir(InternalConstants.DIR_N);
         CurAction = SPRITE_MOVE; // always moving
         dmg_offset_x = 0;
         dmg_offset_y = 0;
     }
 
-    public override void pre_process()
+    public override void PreProcess()
     {
         double angle = Misc.Random(32) / 16.0 * Math.PI;
         dmg_offset_x = Convert.ToInt32(InternalConstants.DAMAGE_POINT_RADIUS * Math.Cos(angle));
@@ -33,7 +33,7 @@ public class Tornado : Sprite
             CurAction = SPRITE_DIE;
     }
 
-    public override void process_move()
+    public override void ProcessMove()
     {
         int speed = Sys.Instance.Weather.wind_speed() / 6;
         int minSpeed = Sys.Instance.MagicWeather.wind_day > 0 ? 1 : 5;
@@ -46,7 +46,7 @@ public class Tornado : Sprite
         double windDir = Sys.Instance.Weather.wind_direct_rad() + (Misc.Random(31) - 15) * Math.PI / 180.0;
         CurX += Convert.ToInt32(speed * Math.Cos(windDir));
         CurY -= Convert.ToInt32(speed * Math.Sin(windDir));
-        if (++CurFrame > cur_sprite_move().frame_count)
+        if (++CurFrame > CurSpriteMove().FrameCount)
             CurFrame = 1;
 
         hit_target();

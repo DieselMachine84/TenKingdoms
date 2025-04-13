@@ -680,9 +680,9 @@ public partial class Unit : Sprite
 
 		//-------- set the cargo_recno -------------//
 
-		for (int h = 0, y = startYLoc; h < SpriteInfo.loc_height; h++, y++)
+		for (int h = 0, y = startYLoc; h < SpriteInfo.LocHeight; h++, y++)
 		{
-			for (int w = 0, x = startXLoc; w < SpriteInfo.loc_width; w++, x++)
+			for (int w = 0, x = startXLoc; w < SpriteInfo.LocWidth; w++, x++)
 			{
 				World.SetUnitId(x, y, MobileType, SpriteId);
 			}
@@ -690,11 +690,11 @@ public partial class Unit : Sprite
 
 		if (is_own() || (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
 		{
-			World.Unveil(startXLoc, startYLoc, startXLoc + SpriteInfo.loc_width - 1,
-				startYLoc + SpriteInfo.loc_height - 1);
+			World.Unveil(startXLoc, startYLoc, startXLoc + SpriteInfo.LocWidth - 1,
+				startYLoc + SpriteInfo.LocHeight - 1);
 
-			World.Visit(startXLoc, startYLoc, startXLoc + SpriteInfo.loc_width - 1,
-				startYLoc + SpriteInfo.loc_height - 1, UnitRes[unit_id].visual_range,
+			World.Visit(startXLoc, startYLoc, startXLoc + SpriteInfo.LocWidth - 1,
+				startYLoc + SpriteInfo.LocHeight - 1, UnitRes[unit_id].visual_range,
 				UnitRes[unit_id].visual_extend);
 		}
 	}
@@ -717,9 +717,9 @@ public partial class Unit : Sprite
 
 		//-------- clear the cargo_recno ----------//
 
-		for (int h = 0, y = NextLocY; h < SpriteInfo.loc_height; h++, y++)
+		for (int h = 0, y = NextLocY; h < SpriteInfo.LocHeight; h++, y++)
 		{
-			for (int w = 0, x = NextLocX; w < SpriteInfo.loc_width; w++, x++)
+			for (int w = 0, x = NextLocX; w < SpriteInfo.LocWidth; w++, x++)
 			{
 				World.SetUnitId(x, y, MobileType, 0);
 			}
@@ -919,9 +919,9 @@ public partial class Unit : Sprite
 		unit_mode_para = modePara;
 	}
 
-	public override bool is_shealth()
+	public override bool IsStealth()
 	{
-		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[unit_id].shealth;
+		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[unit_id].stealth;
 	}
 
 	public bool is_civilian()
@@ -2181,7 +2181,7 @@ public partial class Unit : Sprite
 		}
 
 		if (bestTown != null)
-			MoveToTownSurround(bestTown.LocX1, bestTown.LocY1, SpriteInfo.loc_width, SpriteInfo.loc_height);
+			MoveToTownSurround(bestTown.LocX1, bestTown.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
 	}
 
 	public bool ai_escape_fire()
@@ -2682,7 +2682,7 @@ public partial class Unit : Sprite
 
 	//------------- processing functions --------------------//
 
-	public override void pre_process()
+	public override void PreProcess()
 	{
 		//------ if all the hit points are lost, die now ------//
 		if (hit_points <= 0.0 && action_mode != UnitConstants.ACTION_DIE)
@@ -2700,7 +2700,7 @@ public partial class Unit : Sprite
 			if (is_own() || (nation_recno != 0 && NationArray[nation_recno].is_allied_with_player))
 			{
 				World.Visit(NextLocX, NextLocY,
-					NextLocX + SpriteInfo.loc_width - 1, NextLocY + SpriteInfo.loc_height - 1,
+					NextLocX + SpriteInfo.LocWidth - 1, NextLocY + SpriteInfo.LocHeight - 1,
 					UnitRes[unit_id].visual_range, UnitRes[unit_id].visual_extend);
 			}
 		}
@@ -2782,7 +2782,7 @@ public partial class Unit : Sprite
 		//-****** don't add code here, the unit may be removed after the above function call*******-//
 	}
 
-	public override void process_idle() // derived function of Sprite
+	public override void ProcessIdle() // derived function of Sprite
 	{
 		//---- if the unit is defending the town ----//
 
@@ -2841,12 +2841,12 @@ public partial class Unit : Sprite
 		//move_to_x_loc = next_x_loc();     //***************BUGHERE
 		//move_to_y_loc = next_y_loc();
 
-		if (match_dir())
+		if (MatchDir())
 		{
-			if (!is_guarding() && race_id != 0) // only these units can move
+			if (!IsGuarding() && race_id != 0) // only these units can move
 			{
 				if (Misc.Random(150) == 0) // change direction randomly
-					set_dir(Misc.Random(8));
+					SetDir(Misc.Random(8));
 			}
 		}
 		else
@@ -2856,7 +2856,7 @@ public partial class Unit : Sprite
 
 		//------- call Sprite::process_idle() -------//
 
-		base.process_idle();
+		base.ProcessIdle();
 
 		//---------------------------------------------------------------------------//
 		// reset idle blocked attacking unit.  If the previous condition is totally
@@ -2940,7 +2940,7 @@ public partial class Unit : Sprite
 		}
 	}
 
-	public override void process_move() // derived function of Sprite
+	public override void ProcessMove() // derived function of Sprite
 	{
 		//----- if the sprite has reach the destintion ----//
 
@@ -2981,7 +2981,7 @@ public partial class Unit : Sprite
 		// should equal to that from cur_? to go_?
 		//--------------------------------------------------------//
 
-		base.process_move();
+		base.ProcessMove();
 
 		if (CurX == GoX && CurY == GoY && CurAction == SPRITE_IDLE) // the sprite has reached its destination
 		{
@@ -2997,9 +2997,9 @@ public partial class Unit : Sprite
 		//--------------------------------------------------------//
 	}
 
-	public override void process_wait() // derived function of Sprite
+	public override void ProcessWait() // derived function of Sprite
 	{
-		if (!match_dir())
+		if (!MatchDir())
 			return;
 
 		//-----------------------------------------------------//
@@ -3032,7 +3032,7 @@ public partial class Unit : Sprite
 			return; // terminate since already in destination
 		}
 
-		int stepMagn = move_step_magn();
+		int stepMagn = MoveStepCoeff();
 		int nextX = CurX + stepMagn * MoveXPixels[FinalDir];
 		int nextY = CurY + stepMagn * MoveYPixels[FinalDir];
 
@@ -3068,7 +3068,7 @@ public partial class Unit : Sprite
 			waiting_term = 0;
 			set_move();
 			CurFrame = 1;
-			set_next(nextX, nextY, -stepMagn, 1);
+			SetNext(nextX, nextY, -stepMagn, 1);
 		}
 		else
 		{
@@ -3079,11 +3079,11 @@ public partial class Unit : Sprite
 	}
 
 	// derived function of Sprite, for ship only
-	public override void process_extra_move()
+	public override void ProcessExtraMove()
 	{
 	}
 
-	public override bool process_die()
+	public override bool ProcessDie()
 	{
 		//--------- voice ------------//
 		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
@@ -3096,7 +3096,7 @@ public partial class Unit : Sprite
 		}
 
 		//--------- next frame ---------//
-		if (++CurFrame > SpriteInfo.die.frame_count)
+		if (++CurFrame > SpriteInfo.Die.FrameCount)
 			return true;
 
 		return false;
@@ -3160,7 +3160,7 @@ public partial class Unit : Sprite
 			skill.combat_level = 100;
 	}
 
-	public override void set_next(int newNextX, int newNextY, int para = 0, int blockedChecked = 0)
+	protected override void SetNext(int newNextX, int newNextY, int para = 0, int blockedChecked = 0)
 	{
 		int curNextXLoc = NextLocX;
 		int curNextYLoc = NextLocY;
@@ -3169,7 +3169,7 @@ public partial class Unit : Sprite
 
 		if (curNextXLoc != newNextXLoc || curNextYLoc != newNextYLoc)
 		{
-			if (!match_dir())
+			if (!MatchDir())
 			{
 				set_wait();
 				return;
@@ -3211,7 +3211,7 @@ public partial class Unit : Sprite
 
 			if (blocked)
 			{
-				set_cur(NextX, NextY); // align the sprite to 32x32 location when it stops
+				SetCur(NextX, NextY); // align the sprite to 32x32 location when it stops
 
 				//------ avoid infinitely looping in calling handle_blocked_move() ------//
 				if (blocked_by_member != 0 || move_action_call_flag)
@@ -3243,20 +3243,20 @@ public partial class Unit : Sprite
 				//---- move sprite_recno to the next location ------//
 
 				y = curNextYLoc;
-				for (int h = 0; h < SpriteInfo.loc_height; h++, y++)
+				for (int h = 0; h < SpriteInfo.LocHeight; h++, y++)
 				{
 					x = curNextXLoc;
-					for (int w = 0; w < SpriteInfo.loc_width; w++, x++)
+					for (int w = 0; w < SpriteInfo.LocWidth; w++, x++)
 					{
 						World.SetUnitId(x, y, MobileType, 0);
 					}
 				}
 
 				y = NextLocY;
-				for (int h = 0; h < SpriteInfo.loc_height; h++, y++)
+				for (int h = 0; h < SpriteInfo.LocHeight; h++, y++)
 				{
 					x = NextLocX;
-					for (int w = 0; w < SpriteInfo.loc_width; w++, x++)
+					for (int w = 0; w < SpriteInfo.LocWidth; w++, x++)
 					{
 						World.SetUnitId(x, y, MobileType, SpriteId);
 					}
@@ -3270,7 +3270,7 @@ public partial class Unit : Sprite
 					int yLoc1 = Math.Max(0, newNextYLoc - GameConstants.EXPLORE_RANGE);
 					int xLoc2 = Math.Min(GameConstants.MapSize - 1, newNextXLoc + GameConstants.EXPLORE_RANGE);
 					int yLoc2 = Math.Min(GameConstants.MapSize - 1, newNextYLoc + GameConstants.EXPLORE_RANGE);
-					int exploreWidth = move_step_magn() - 1;
+					int exploreWidth = MoveStepCoeff() - 1;
 
 					if (newNextYLoc < curNextYLoc) // if move upwards, explore upper area
 						World.Explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth);
@@ -3418,7 +3418,7 @@ public partial class Unit : Sprite
 			//--- if its current action is SPRITE_ATTACK, stop immediately ---//
 
 			case SPRITE_ATTACK:
-				set_next(CurX, CurY, 0, 1); //********** BUGHERE
+				SetNext(CurX, CurY, 0, 1); //********** BUGHERE
 				GoX = NextX;
 				GoY = NextY;
 				move_to_x_loc = NextLocX;
@@ -3940,7 +3940,7 @@ public partial class Unit : Sprite
 		int firmWidth = firmInfo.loc_width;
 		int firmHeight = firmInfo.loc_height;
 
-		if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+		if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 			    buildXLoc, buildYLoc, firmWidth, firmHeight))
 		{
 			//----------- not in the firm surrounding ---------//
@@ -3949,8 +3949,8 @@ public partial class Unit : Sprite
 		else
 		{
 			//------- the unit is in the firm surrounding -------//
-			set_cur(NextX, NextY);
-			set_dir(move_to_x_loc, move_to_y_loc, buildXLoc + firmWidth / 2, buildYLoc + firmHeight / 2);
+			SetCur(NextX, NextY);
+			SetDir(move_to_x_loc, move_to_y_loc, buildXLoc + firmWidth / 2, buildYLoc + firmHeight / 2);
 		}
 
 		//----------- set action to build the firm -----------//
@@ -4029,7 +4029,7 @@ public partial class Unit : Sprite
 		else
 		{
 			if (CurX == NextX && CurY == NextY)
-				set_dir(NextLocX, NextLocY, burnXLoc, burnYLoc);
+				SetDir(NextLocX, NextLocY, burnXLoc, burnYLoc);
 		}
 
 		//--------------------------------------------------------//
@@ -4159,7 +4159,7 @@ public partial class Unit : Sprite
 		//----- order the sprite to stop as soon as possible -----//
 		stop(); // new order
 
-		if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+		if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 			    settleXLoc, settleYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 		{
 			//------------ not in the town surrounding ------------//
@@ -4169,8 +4169,8 @@ public partial class Unit : Sprite
 		else
 		{
 			//------- the unit is within the settle location -------//
-			set_cur(NextX, NextY);
-			set_dir(move_to_x_loc, move_to_y_loc, settleXLoc + InternalConstants.TOWN_WIDTH / 2,
+			SetCur(NextX, NextY);
+			SetDir(move_to_x_loc, move_to_y_loc, settleXLoc + InternalConstants.TOWN_WIDTH / 2,
 				settleYLoc + InternalConstants.TOWN_HEIGHT / 2);
 		}
 
@@ -4233,7 +4233,7 @@ public partial class Unit : Sprite
 
 			if (quit)
 			{
-				MoveToFirmSurround(assignXLoc, assignYLoc, SpriteInfo.loc_width, SpriteInfo.loc_height,
+				MoveToFirmSurround(assignXLoc, assignYLoc, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 					firm.firm_id);
 				return;
 			}
@@ -4241,7 +4241,7 @@ public partial class Unit : Sprite
 		else if (unitRegionId != loc.RegionId)
 		{
 			if (loc.IsTown())
-				MoveToTownSurround(assignXLoc, assignYLoc, SpriteInfo.loc_width, SpriteInfo.loc_height);
+				MoveToTownSurround(assignXLoc, assignYLoc, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
 			/*else if(loc.has_unit(UnitRes.UNIT_LAND))
 			{
 				Unit *unit = UnitArray[loc.unit_recno(UnitRes.UNIT_LAND)];
@@ -4290,7 +4290,7 @@ public partial class Unit : Sprite
 			if (firm_can_assign(recno) == 0)
 			{
 				//firmNeedUnit = 0; // move to the surrounding of the firm
-				MoveToFirmSurround(assignXLoc, assignYLoc, SpriteInfo.loc_width, SpriteInfo.loc_height,
+				MoveToFirmSurround(assignXLoc, assignYLoc, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 					firm.firm_id);
 				return;
 			}
@@ -4332,7 +4332,7 @@ public partial class Unit : Sprite
 			Town targetTown = TownArray[recno];
 			if (TownArray[recno].NationId != nation_recno)
 			{
-				MoveToTownSurround(assignXLoc, assignYLoc, SpriteInfo.loc_width, SpriteInfo.loc_height);
+				MoveToTownSurround(assignXLoc, assignYLoc, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
 				return;
 			}
 
@@ -4769,7 +4769,7 @@ public partial class Unit : Sprite
 
 		if (combatLevel >= unitInfo.guard_combat_level)
 		{
-			can_guard_flag = SpriteInfo.can_guard_flag;
+			can_guard_flag = SpriteInfo.CanGuard;
 			if (unit_id == UnitConstants.UNIT_ZULU)
 				can_guard_flag |= 4; // shield during attack delay
 		}
@@ -5404,7 +5404,7 @@ public partial class Unit : Sprite
 							break;
 
 						//case FIRM_INN:
-						// shealthed soldier spy can assign to inn
+						// stealthed soldier spy can assign to inn
 						//	return rank_id == RANK_SOLDIER && nation_recno != true_nation_recno() ? 4 : 0;
 
 						default:
@@ -5509,7 +5509,7 @@ public partial class Unit : Sprite
 		if (action_mode2 == UnitConstants.ACTION_STOP)
 			return false; // return for no idle action
 
-		if (!is_dir_correct())
+		if (!IsDirCorrect())
 			return true; // cheating for turning the direction
 
 		int curXLoc = move_to_x_loc;
@@ -5533,7 +5533,7 @@ public partial class Unit : Sprite
 					Unit unit = UnitArray[action_para2];
 					SpriteInfo spriteInfo = unit.SpriteInfo;
 
-					if (space_for_attack(action_x_loc2, action_y_loc2, unit.MobileType, spriteInfo.loc_width, spriteInfo.loc_height))
+					if (space_for_attack(action_x_loc2, action_y_loc2, unit.MobileType, spriteInfo.LocWidth, spriteInfo.LocHeight))
 					{
 						//------ there should be place for this unit to attack the target, attempts to attack it ------//
 						attack_unit(action_para2, 0, 0, false); // last 0 for not reset blocked_edge
@@ -6159,7 +6159,7 @@ public partial class Unit : Sprite
 
 		//---------------------------------------------//
 		if (space_for_attack(targetUnit.NextLocX, targetUnit.NextLocY, targetUnit.MobileType,
-			    spriteInfo.loc_width, spriteInfo.loc_height))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return true;
 		else
 			return false;
@@ -6330,7 +6330,7 @@ public partial class Unit : Sprite
 		//--------------------------------------------------------------------//
 
 		int changeToAttack = 0;
-		if (CurAction == SPRITE_ATTACK || (SpriteInfo.need_turning != 0 && CurAction == SPRITE_TURN &&
+		if (CurAction == SPRITE_ATTACK || (SpriteInfo.NeedTurning != 0 && CurAction == SPRITE_TURN &&
 		                                    (Math.Abs(NextLocX - action_x_loc) < attack_range ||
 		                                     Math.Abs(NextLocY - action_y_loc) < attack_range)))
 		{
@@ -6380,7 +6380,7 @@ public partial class Unit : Sprite
 				int attackYLoc = attackUnit.NextLocY;
 
 				int attackDistance = cal_distance(attackXLoc, attackYLoc,
-					attackUnit.SpriteInfo.loc_width, attackUnit.SpriteInfo.loc_height);
+					attackUnit.SpriteInfo.LocWidth, attackUnit.SpriteInfo.LocHeight);
 				if (attackDistance == 1) // only consider close attack
 				{
 					Unit targetUnit = UnitArray[action_para];
@@ -6404,7 +6404,7 @@ public partial class Unit : Sprite
 		//--------------------------------------------------------------------------------//
 		// checking for ship processing trading
 		//--------------------------------------------------------------------------------//
-		if (SpriteInfo.sprite_sub_type == 'M') //**** BUGHERE, is sprite_sub_type really representing UNIT_MARINE???
+		if (SpriteInfo.SpriteSubType == 'M') //**** BUGHERE, is sprite_sub_type really representing UNIT_MARINE???
 		{
 			UnitInfo unitInfo = UnitRes[unit_id];
 			if (unitInfo.carry_goods_capacity != 0)
@@ -6416,7 +6416,7 @@ public partial class Unit : Sprite
 					int targetYLoc = attackUnit.NextLocY;
 					SpriteInfo targetSpriteInfo = attackUnit.SpriteInfo;
 					int attackDistance = cal_distance(targetXLoc, targetYLoc,
-						targetSpriteInfo.loc_width, targetSpriteInfo.loc_height);
+						targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight);
 					int maxAttackRange = max_attack_range();
 					if (maxAttackRange < attackDistance)
 						return; // can't attack the target
@@ -6528,12 +6528,12 @@ public partial class Unit : Sprite
 		int dispX = 0, dispY = 0;
 
 		if (curXLoc < targetXLoc)
-			dispX = (targetXLoc - curXLoc - SpriteInfo.loc_width) + 1;
+			dispX = (targetXLoc - curXLoc - SpriteInfo.LocWidth) + 1;
 		else if ((dispX = curXLoc - targetXLoc - targetWidth + 1) < 0)
 			dispX = 0;
 
 		if (curYLoc < targetYLoc)
-			dispY = (targetYLoc - curYLoc - SpriteInfo.loc_height) + 1;
+			dispY = (targetYLoc - curYLoc - SpriteInfo.LocHeight) + 1;
 		else if ((dispY = curYLoc - targetYLoc - targetHeight + 1) < 0)
 			return dispX;
 
@@ -6543,7 +6543,7 @@ public partial class Unit : Sprite
 	private bool is_in_surrounding(int checkXLoc, int checkYLoc, int width,
 		int targetXLoc, int targetYLoc, int targetWidth, int targetHeight)
 	{
-		switch (move_step_magn())
+		switch (MoveStepCoeff())
 		{
 			case 1:
 				if (checkXLoc >= targetXLoc - width && checkXLoc <= targetXLoc + targetWidth &&
@@ -6595,7 +6595,7 @@ public partial class Unit : Sprite
 				//---------------------------------------------------------//
 				// check whether the unit in the building surrounding
 				//---------------------------------------------------------//
-				if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+				if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 					    action_x_loc, action_y_loc, width, height))
 				{
 					//---------- not in the building surrounding ---------//
@@ -6635,7 +6635,7 @@ public partial class Unit : Sprite
 
 					// action_para = firm id.
 					if (FirmArray.BuildFirm(action_x_loc, action_y_loc, nation_recno, action_para,
-						    SpriteInfo.sprite_code, SpriteId) != 0)
+						    SpriteInfo.SpriteCode, SpriteId) != 0)
 					{
 						//--------- able to build the firm --------//
 
@@ -6738,7 +6738,7 @@ public partial class Unit : Sprite
 					FirmInfo firmInfo = FirmRes[firm.firm_id];
 
 					//---------- resume action if the unit has not reached the firm surrounding ----------//
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
 						    action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height))
 					{
 						//------------ not in the surrounding -----------//
@@ -6811,7 +6811,7 @@ public partial class Unit : Sprite
 				else if (loc.IsTown() && loc.TownId() == action_para)
 				{
 					//---------------- a town on the location -----------------//
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width, action_x_loc,
+					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth, action_x_loc,
 						    action_y_loc,
 						    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					{
@@ -6897,7 +6897,7 @@ public partial class Unit : Sprite
 			if (NextLocX == action_x_loc && NextLocY == action_y_loc)
 			{
 				reset_action_para2();
-				set_dir(move_to_x_loc, move_to_y_loc, action_x_loc, action_y_loc);
+				SetDir(move_to_x_loc, move_to_y_loc, action_x_loc, action_y_loc);
 				World.SetupFire(action_x_loc, action_y_loc);
 			}
 
@@ -6913,7 +6913,7 @@ public partial class Unit : Sprite
 
 			if (CurLocX == move_to_x_loc && CurLocY == move_to_y_loc)
 			{
-				if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.loc_width, action_x_loc, action_y_loc,
+				if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth, action_x_loc, action_y_loc,
 					    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					return;
 
@@ -6979,19 +6979,19 @@ public partial class Unit : Sprite
 		    Math.Abs(shipXLoc - curXLoc) <= 1 && Math.Abs(shipYLoc - curYLoc) <= 1)
 		{
 			//----------- assign the unit now -----------//
-			if (Math.Abs(CurX - NextX) < SpriteInfo.speed && Math.Abs(CurY - NextY) < SpriteInfo.speed)
+			if (Math.Abs(CurX - NextX) < SpriteInfo.Speed && Math.Abs(CurY - NextY) < SpriteInfo.Speed)
 			{
 				if (ai_action_id != 0)
 					NationArray[nation_recno].action_finished(ai_action_id, SpriteId);
 
 				stop2();
-				set_dir(curXLoc, curYLoc, shipXLoc, shipYLoc);
+				SetDir(curXLoc, curYLoc, shipXLoc, shipYLoc);
 				ship.load_unit(SpriteId);
 				return;
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
-			set_dir(curXLoc, curYLoc, ship.move_to_x_loc, ship.move_to_y_loc);
+			SetDir(curXLoc, curYLoc, ship.move_to_x_loc, ship.move_to_y_loc);
 
 		//---------------------------------------------------------------------------//
 		// update location to embark
@@ -7066,7 +7066,7 @@ public partial class Unit : Sprite
 			else
 				reset_action_para();
 		}
-		else if (CurAction == SPRITE_TURN && is_dir_correct())
+		else if (CurAction == SPRITE_TURN && IsDirCorrect())
 			set_move();
 	}
 
@@ -7126,7 +7126,7 @@ public partial class Unit : Sprite
 			{
 				if (NextLocX != action_x_loc2 || NextLocY != action_y_loc2)
 				{
-					set_dir(NextLocX, NextLocY, action_x_loc2, action_y_loc2);
+					SetDir(NextLocX, NextLocY, action_x_loc2, action_y_loc2);
 				}
 
 				set_attack(); // set cur_action=sprite_attack to cast power 

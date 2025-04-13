@@ -256,7 +256,7 @@ public partial class Renderer
 
         foreach (Unit unit in UnitArray)
         {
-            if (!unit.is_visible() || unit.is_shealth())
+            if (!unit.is_visible() || unit.IsStealth())
                 continue;
 
             int lineColor = Colors.V_BLACK;

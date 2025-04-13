@@ -1756,7 +1756,7 @@ public class Town : IIdObject
 		int locX = LocX1; // xLoc & yLoc are used for returning results
 		int locY = LocY1;
 
-		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return;
 
 		unit.init_sprite(locX, locY);
@@ -2438,7 +2438,7 @@ public class Town : IIdObject
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 		int locX = LocX1, locY = LocY1; // locX & locY are used for returning results
 
-		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return null;
 
 		//---------- add the unit now -----------//
@@ -3688,7 +3688,7 @@ public class Town : IIdObject
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 		int locX = LocX1, locY = LocY1; // xLoc & yLoc are used for returning results
 
-		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return null;
 
 		//---------- add the unit now -----------//
@@ -3743,7 +3743,7 @@ public class Town : IIdObject
 		int locX = LocX1, locY = LocY1;
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 
-		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.loc_width, spriteInfo.loc_height))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return;
 
 		//--------- create a new nation ---------//

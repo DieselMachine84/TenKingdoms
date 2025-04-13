@@ -629,7 +629,7 @@ public class FirmMonster : Firm
 		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
 
 		if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
-			    spriteInfo.loc_width, spriteInfo.loc_height, unitInfo.mobile_type))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
 		{
 			return 0;
 		}

@@ -13,9 +13,9 @@ public class Projectile : Bullet
     public override void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
     {
         base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
-        int spriteId = SpriteInfo.get_sub_sprite_info(1).sprite_id;
+        int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
         act_bullet.Init(spriteId, CurLocX, CurLocY);
-        int shadowSpriteId = SpriteInfo.get_sub_sprite_info(2).sprite_id;
+        int shadowSpriteId = SpriteInfo.GetSubSpriteInfo(2).SpriteId;
         bullet_shadow.Init(shadowSpriteId, CurLocX, CurLocY);
 
         // calculate z_coff;
@@ -31,7 +31,7 @@ public class Projectile : Bullet
         */
 
         // --------- recalculate spriteFrame pointer ----------//
-        SpriteFrame spriteFrame = cur_sprite_frame(out _);
+        SpriteFrame spriteFrame = CurSpriteFrame(out _);
     }
 
     public override int display_layer()

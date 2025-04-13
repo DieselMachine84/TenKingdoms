@@ -34,14 +34,14 @@ public class Effect : Sprite
         //sprite_info.load_bitmap_res();
 
         // -------- adjust cur_dir -----------//
-        if (SpriteInfo.turn_resolution <= 1)
+        if (SpriteInfo.TurnResolution <= 1)
             CurDir = 0;
         FinalDir = CurDir;
 
         //------------- init other vars --------------//
 
         RemainAttackDelay = 0;
-        RemainFramesPerStep = SpriteInfo.frames_per_step;
+        RemainFramesPerStep = SpriteInfo.FramesPerStep;
 
         layer = dispLayer;
         if (effectLife > 0)
@@ -53,16 +53,16 @@ public class Effect : Sprite
             switch (CurAction)
             {
                 case SPRITE_IDLE:
-                    life = SpriteInfo.stop_array[CurDir].frame_count - CurFrame;
+                    life = SpriteInfo.Stops[CurDir].FrameCount - CurFrame;
                     break;
                 case SPRITE_DIE:
-                    life = SpriteInfo.die.frame_count - CurFrame;
+                    life = SpriteInfo.Die.FrameCount - CurFrame;
                     break;
             }
         }
     }
 
-    public override void pre_process()
+    public override void PreProcess()
     {
         if (--life < 0)
         {
@@ -70,15 +70,15 @@ public class Effect : Sprite
         }
     }
 
-    public override void process_idle()
+    public override void ProcessIdle()
     {
-        if (++CurFrame > cur_sprite_stop().frame_count)
+        if (++CurFrame > CurSpriteStop().FrameCount)
             CurFrame = 1;
     }
 
-    public override bool process_die()
+    public override bool ProcessDie()
     {
-        if (++CurFrame > cur_sprite_die().frame_count)
+        if (++CurFrame > CurSpriteDie().FrameCount)
             CurFrame = 1;
         return false;
     }

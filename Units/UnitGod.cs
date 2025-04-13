@@ -26,9 +26,9 @@ public class UnitGod : Unit
 			can_attack_flag = false; // unable to attack
 	}
 
-	public override void pre_process()
+	public override void PreProcess()
 	{
-		base.pre_process();
+		base.PreProcess();
 
 		//---- set force_move_flag to 1 if the god does not have the ability to attack ----//
 
@@ -61,9 +61,9 @@ public class UnitGod : Unit
 			set_die();
 	}
 
-	public override int process_attack()
+	public override int ProcessAttack()
 	{
-		if (base.process_attack() == 0) // return 1 if the unit just finished its current attack
+		if (base.ProcessAttack() == 0) // return 1 if the unit just finished its current attack
 			return 0;
 
 		//------- consumer pray points --------//

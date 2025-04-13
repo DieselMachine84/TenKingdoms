@@ -28,32 +28,32 @@ public class TornadoArray : SpriteArray
 
         foreach (Tornado tornado in this)
         {
-            tornado.pre_process();
+            tornado.PreProcess();
 
             switch (tornado.CurAction)
             {
                 case Sprite.SPRITE_IDLE:
                 case Sprite.SPRITE_READY_TO_MOVE:
-                    tornado.process_idle();
+                    tornado.ProcessIdle();
                     break;
 
                 case Sprite.SPRITE_MOVE:
-                    tornado.process_move();
+                    tornado.ProcessMove();
                     break;
 
                 case Sprite.SPRITE_TURN:
                     break;
 
                 case Sprite.SPRITE_WAIT:
-                    tornado.process_wait();
+                    tornado.ProcessWait();
                     break;
 
                 case Sprite.SPRITE_ATTACK:
-                    tornado.process_attack();
+                    tornado.ProcessAttack();
                     break;
 
                 case Sprite.SPRITE_DIE:
-                    if (tornado.process_die())
+                    if (tornado.ProcessDie())
                         tornadoesToDelete.Add(tornado);
                     break;
             }

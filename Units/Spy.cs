@@ -186,8 +186,8 @@ public class Spy : IIdObject
 					{
 						int xLoc1 = ship.NextLocX;
 						int yLoc1 = ship.NextLocY;
-						int xLoc2 = xLoc1 + ship.SpriteInfo.loc_width - 1;
-						int yLoc2 = yLoc1 + ship.SpriteInfo.loc_height - 1;
+						int xLoc2 = xLoc1 + ship.SpriteInfo.LocWidth - 1;
+						int yLoc2 = yLoc1 + ship.SpriteInfo.LocHeight - 1;
 						int range = UnitRes[ship.unit_id].visual_range;
 
 						World.Unveil(xLoc1, yLoc1, xLoc2, yLoc2);

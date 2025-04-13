@@ -4,12 +4,12 @@ namespace TenKingdoms;
 
 public class SpriteRec
 {
-    public const int CODE_LEN = 8;
-    public const int RECNO_LEN = 5;
-    public const int COUNT_LEN = 5;
-    public const int SPRITE_PARA_LEN = 2;
-    public const int DAMAGE_LEN = 3;
-    public const int TURN_RES_LEN = 2;
+    private const int CODE_LEN = 8;
+    private const int RECNO_LEN = 5;
+    private const int COUNT_LEN = 5;
+    private const int SPRITE_PARA_LEN = 2;
+    private const int DAMAGE_LEN = 3;
+    private const int TURN_RES_LEN = 2;
 
     public char[] sprite_code = new char[CODE_LEN];
 
@@ -83,11 +83,11 @@ public class SpriteRec
 
 public class SpriteActionRec
 {
-    public const int NAME_LEN = 8;
-    public const int ACTION_LEN = 2;
-    public const int DIR_ID_LEN = 2;
-    public const int RECNO_LEN = 5;
-    public const int COUNT_LEN = 2;
+	private const int NAME_LEN = 8;
+	private const int ACTION_LEN = 2;
+	private const int DIR_ID_LEN = 2;
+	private const int RECNO_LEN = 5;
+	private const int COUNT_LEN = 2;
 
     public char[] sprite_name = new char[NAME_LEN];
     public char[] action = new char[ACTION_LEN];
@@ -117,42 +117,42 @@ public class SpriteActionRec
 
 public class SpriteMove
 {
-    public int first_frame_recno; // first frame recno to frame_array.
-    public int frame_count; // no. of frames in the movement
+    public int FirstFrameId; // first frame recno to frame_array.
+    public int FrameCount; // no. of frames in the movement
 }
 
 public class SpriteAttack
 {
-    public int first_frame_recno; // first frame recno to frame_array.
-    public int frame_count; // no. of frames in the movement
+    public int FirstFrameId; // first frame recno to frame_array.
+    public int frameCount; // no. of frames in the movement
 
     // no. of frames should be delayed between attack motions. (i.e. when one motion is complete,
     // it will delay <delay_frames> before move on to the next action motion in the cycle
-    public int attack_delay;
+    public int AttackDelay;
 }
 
 public class SpriteStop
 {
-    public int frame_recno; // frame recno to frame_array.
-    public int frame_count;
+    public int FrameId; // frame recno to frame_array.
+    public int FrameCount;
 }
 
 public class SpriteDie
 {
-    public int first_frame_recno; // first frame recno to frame_array.
-    public int frame_count; // no. of frames in the movement
+    public int FirstFrameId; // first frame recno to frame_array.
+    public int FrameCount; // no. of frames in the movement
 }
 
 public class SpriteGuardStop
 {
-    public int first_frame_recno; // first frame recno to frame_array.
-    public int frame_count;
+    public int FirstFrameId; // first frame recno to frame_array.
+    public int FrameCount;
 }
 
 public class SpriteGuardMove
 {
-    public int first_frame_recno; // first frame recno to frame_array.
-    public int frame_count; // no. of frames in the movement
+    public int FirstFrameId; // first frame recno to frame_array.
+    public int FrameCount; // no. of frames in the movement
 }
 
 public class SpriteInfo
@@ -160,56 +160,56 @@ public class SpriteInfo
 	public const int MAX_SPRITE_DIR_TYPE = 8;
 	public const int MAX_UNIT_ATTACK_TYPE = 3;
 
-	public string sprite_code;
+	public string SpriteCode;
 
-	public int sprite_type;
-	public int sprite_sub_type;
+	public int SpriteType;
+	public int SpriteSubType;
 
-	public int need_turning;
-	public int turn_resolution;
+	public int NeedTurning;
+	public int TurnResolution;
 
-	public int loc_width; // no. of locations it takes horizontally and vertically
-	public int loc_height;
+	public int LocWidth; // no. of locations it takes horizontally and vertically
+	public int LocHeight;
 
-	public int speed; // based on UnitRes, can be upgraded during the game.
-	public int frames_per_step;
-	public int max_rain_slowdown;
-	public int max_snow_slowdown;
-	public int lightning_damage;
-	public bool remap_bitmap_flag;
-	public int max_speed; // original speed
-	public int can_guard_flag; // bit0= standing guard, bit1=moving guard
+	public int Speed; // based on UnitRes, can be upgraded during the game.
+	public int FramesPerStep;
+	public int MaxRainSlowdown;
+	public int MaxSnowSlowdown;
+	public int LightningDamage;
+	public bool RemapBitmap;
+	public int MaxSpeed; // original speed
+	public int CanGuard; // bit0= standing guard, bit1=moving guard
 
-	public ResourceDb res_bitmap; // frame bitmap resource
+	public ResourceDb _resBitmap; // frame bitmap resource
 
 	// move_array[24] to cater upward and downward directions for projectile
 	// and also 16-direction movement for weapons
-	public SpriteMove[] move_array = new SpriteMove[3 * MAX_SPRITE_DIR_TYPE];
-	public SpriteAttack[,] attack_array = new SpriteAttack[MAX_UNIT_ATTACK_TYPE, MAX_SPRITE_DIR_TYPE];
-	public SpriteStop[] stop_array = new SpriteStop[3 * MAX_SPRITE_DIR_TYPE];
-	public SpriteDie die = new SpriteDie();
-	public SpriteGuardStop[] guard_stop_array = new SpriteGuardStop[MAX_SPRITE_DIR_TYPE];
-	public SpriteGuardMove[] guard_move_array = new SpriteGuardMove[MAX_SPRITE_DIR_TYPE];
+	public readonly SpriteMove[] Moves = new SpriteMove[3 * MAX_SPRITE_DIR_TYPE];
+	public readonly SpriteAttack[,] Attacks = new SpriteAttack[MAX_UNIT_ATTACK_TYPE, MAX_SPRITE_DIR_TYPE];
+	public readonly SpriteStop[] Stops = new SpriteStop[3 * MAX_SPRITE_DIR_TYPE];
+	public readonly SpriteDie Die = new SpriteDie();
+	public readonly SpriteGuardStop[] GuardStops = new SpriteGuardStop[MAX_SPRITE_DIR_TYPE];
+	public readonly SpriteGuardMove[] GuardMoves = new SpriteGuardMove[MAX_SPRITE_DIR_TYPE];
 
-	public SubSpriteInfo[] sub_sprite_info;
+	public SubSpriteInfo[] SubSpriteInfo;
 
 	public SpriteInfo()
 	{
-		for (int i = 0; i < move_array.Length; i++)
-			move_array[i] = new SpriteMove();
+		for (int i = 0; i < Moves.Length; i++)
+			Moves[i] = new SpriteMove();
 
-		for (int i = 0; i < attack_array.GetLength(0); i++)
-			for (int j = 0; j < attack_array.GetLength(1); j++)
-				attack_array[i, j] = new SpriteAttack();
+		for (int i = 0; i < Attacks.GetLength(0); i++)
+			for (int j = 0; j < Attacks.GetLength(1); j++)
+				Attacks[i, j] = new SpriteAttack();
 
-		for (int i = 0; i < stop_array.Length; i++)
-			stop_array[i] = new SpriteStop();
+		for (int i = 0; i < Stops.Length; i++)
+			Stops[i] = new SpriteStop();
 		
-		for (int i = 0; i < guard_stop_array.Length; i++)
-			guard_stop_array[i] = new SpriteGuardStop();
+		for (int i = 0; i < GuardStops.Length; i++)
+			GuardStops[i] = new SpriteGuardStop();
 		
-		for (int i = 0; i < guard_move_array.Length; i++)
-			guard_move_array[i] = new SpriteGuardMove();
+		for (int i = 0; i < GuardMoves.Length; i++)
+			GuardMoves[i] = new SpriteGuardMove();
 	}
 
 	/*public void load_bitmap_res()
@@ -217,29 +217,24 @@ public class SpriteInfo
 		res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{sprite_code}.SPR");
 	}*/
 
-	public SpriteInfo get_sub_sprite(int i)
+	public SubSpriteInfo GetSubSpriteInfo(int i)
 	{
-		return i >= 1 && i <= sub_sprite_info.Length ? sub_sprite_info[i - 1].sprite_info : null;
+		return i >= 1 && i <= SubSpriteInfo.Length ? SubSpriteInfo[i - 1] : null;
 	}
 
-	public SubSpriteInfo get_sub_sprite_info(int i)
+	public int CanStandGuard()
 	{
-		return i >= 1 && i <= sub_sprite_info.Length ? sub_sprite_info[i - 1] : null;
+		return CanGuard & 1;
 	}
 
-	public int can_stand_guard()
+	public int CanMoveGuard()
 	{
-		return can_guard_flag & 1;
+		return CanGuard & 2;
 	}
 
-	public int can_move_guard()
+	public int TravelDays(int travelDistance)
 	{
-		return can_guard_flag & 2;
-	}
-
-	public int travel_days(int travelDistance)
-	{
-		int travelFrames = InternalConstants.CellWidth * travelDistance / speed;
+		int travelFrames = InternalConstants.CellWidth * travelDistance / Speed;
 
 		// + 10% for circumstances that the units are blocked and needed to wait and turning, etc.
 		return travelFrames / InternalConstants.FRAMES_PER_DAY * 110 / 100;
@@ -248,10 +243,10 @@ public class SpriteInfo
 
 public class SubSpriteRec
 {
-    public const int CODE_LEN = 8;
-    public const int SUB_NO_LEN = 3;
-    public const int OFFSET_LEN = 3;
-    public const int RECNO_LEN = 3;
+    private const int CODE_LEN = 8;
+    private const int SUB_NO_LEN = 3;
+    private const int OFFSET_LEN = 3;
+    private const int RECNO_LEN = 3;
 
     public char[] sprite_code = new char[CODE_LEN];
     public char[] sub_no = new char[SUB_NO_LEN];
@@ -289,10 +284,10 @@ public class SubSpriteRec
 
 public class SubSpriteInfo
 {
-    public SpriteInfo sprite_info;
-    public int sprite_id;
-    public int offset_x;
-    public int offset_y;
+    public SpriteInfo SpriteInfo;
+    public int SpriteId;
+    public int OffsetX;
+    public int OffsetY;
 }
 
 public class SpriteRes
@@ -301,8 +296,8 @@ public class SpriteRes
 	private const string SUB_SPRITE_DB = "SUB_SPR";
 	private const string SPRITE_ACTION_DB = "SACTION";
 
-    public SpriteInfo[] spriteInfos;
-    public SubSpriteInfo[] subSpriteInfos;
+    private SpriteInfo[] _spriteInfos;
+    private SubSpriteInfo[] _subSpriteInfos;
 
     public GameSet GameSet { get; }
 
@@ -322,85 +317,85 @@ public class SpriteRes
 	    rainScale = rainScale > 7 ? 7 : rainScale;
 	    snowScale = snowScale > 7 ? 7 : snowScale;
 
-	    foreach (SpriteInfo spriteInfo in spriteInfos)
+	    foreach (SpriteInfo spriteInfo in _spriteInfos)
 	    {
 		    int speedDrop = 0;
 
-		    if (rainScale > 0 && spriteInfo.max_rain_slowdown > 0)
+		    if (rainScale > 0 && spriteInfo.MaxRainSlowdown > 0)
 		    {
-			    speedDrop += rainScale * spriteInfo.max_rain_slowdown / 8 + 1;
+			    speedDrop += rainScale * spriteInfo.MaxRainSlowdown / 8 + 1;
 		    }
 
-		    if (snowScale > 0 && spriteInfo.max_snow_slowdown > 0)
+		    if (snowScale > 0 && spriteInfo.MaxSnowSlowdown > 0)
 		    {
-			    speedDrop += snowScale * spriteInfo.max_snow_slowdown / 8 + 1;
+			    speedDrop += snowScale * spriteInfo.MaxSnowSlowdown / 8 + 1;
 		    }
 
-		    spriteInfo.speed = spriteInfo.max_speed - speedDrop;
+		    spriteInfo.Speed = spriteInfo.MaxSpeed - speedDrop;
 	    }
     }
 
-    public SpriteInfo this[int recNo] => spriteInfos[recNo - 1];
+    public SpriteInfo this[int recNo] => _spriteInfos[recNo - 1];
 
     private void LoadSpriteInfo()
     {
 	    Database dbSprite = GameSet.OpenDb(SPRITE_DB);
-	    spriteInfos = new SpriteInfo[dbSprite.RecordCount];
+	    _spriteInfos = new SpriteInfo[dbSprite.RecordCount];
 
-	    int[] first_dir_recno_array = new int[spriteInfos.Length];
-	    int[] dir_count_array = new int[spriteInfos.Length];
+	    int[] firstDirIds = new int[_spriteInfos.Length];
+	    int[] dirCounts = new int[_spriteInfos.Length];
 
-	    for (int i = 0; i < spriteInfos.Length; i++)
+	    for (int i = 0; i < _spriteInfos.Length; i++)
 	    {
 		    SpriteRec spriteRec = new SpriteRec(dbSprite.Read(i + 1));
 		    SpriteInfo spriteInfo = new SpriteInfo();
-		    spriteInfos[i] = spriteInfo;
+		    _spriteInfos[i] = spriteInfo;
 
-		    spriteInfo.sprite_code = Misc.ToString(spriteRec.sprite_code);
+		    spriteInfo.SpriteCode = Misc.ToString(spriteRec.sprite_code);
 
-		    spriteInfo.sprite_type = spriteRec.sprite_type;
-		    if (spriteInfo.sprite_type == ' ')
-			    spriteInfo.sprite_type = 0;
+		    spriteInfo.SpriteType = spriteRec.sprite_type;
+		    if (spriteInfo.SpriteType == ' ')
+			    spriteInfo.SpriteType = 0;
 
-		    spriteInfo.sprite_sub_type = spriteRec.sprite_sub_type;
-		    if (spriteInfo.sprite_sub_type == ' ')
-			    spriteInfo.sprite_sub_type = 0;
+		    spriteInfo.SpriteSubType = spriteRec.sprite_sub_type;
+		    if (spriteInfo.SpriteSubType == ' ')
+			    spriteInfo.SpriteSubType = 0;
 
 		    if (spriteRec.need_turning != ' ')
-			    spriteInfo.need_turning = spriteRec.need_turning - '0';
+			    spriteInfo.NeedTurning = spriteRec.need_turning - '0';
 
-		    spriteInfo.turn_resolution = Misc.ToInt32(spriteRec.turn_resolution);
-		    spriteInfo.loc_width = Misc.ToInt32(spriteRec.loc_width);
-		    spriteInfo.loc_height = Misc.ToInt32(spriteRec.loc_height);
+		    spriteInfo.TurnResolution = Misc.ToInt32(spriteRec.turn_resolution);
+		    spriteInfo.LocWidth = Misc.ToInt32(spriteRec.loc_width);
+		    spriteInfo.LocHeight = Misc.ToInt32(spriteRec.loc_height);
 
-		    spriteInfo.speed = Misc.ToInt32(spriteRec.speed);
-		    spriteInfo.max_speed = Misc.ToInt32(spriteRec.speed);
-		    spriteInfo.frames_per_step = Misc.ToInt32(spriteRec.frames_per_step);
+		    spriteInfo.Speed = Misc.ToInt32(spriteRec.speed);
+		    spriteInfo.MaxSpeed = Misc.ToInt32(spriteRec.speed);
+		    spriteInfo.FramesPerStep = Misc.ToInt32(spriteRec.frames_per_step);
 
-		    spriteInfo.max_rain_slowdown = Misc.ToInt32(spriteRec.max_rain_slowdown);
-		    spriteInfo.max_snow_slowdown = Misc.ToInt32(spriteRec.max_snow_slowdown);
-		    spriteInfo.lightning_damage = Misc.ToInt32(spriteRec.lightning_damage);
+		    spriteInfo.MaxRainSlowdown = Misc.ToInt32(spriteRec.max_rain_slowdown);
+		    spriteInfo.MaxSnowSlowdown = Misc.ToInt32(spriteRec.max_snow_slowdown);
+		    spriteInfo.LightningDamage = Misc.ToInt32(spriteRec.lightning_damage);
 		    if (spriteRec.remap_bitmap_flag == '\0' || spriteRec.remap_bitmap_flag == ' ' || spriteRec.remap_bitmap_flag == '0')
-			    spriteInfo.remap_bitmap_flag = false;
+			    spriteInfo.RemapBitmap = false;
 		    else
-			    spriteInfo.remap_bitmap_flag = true;
+			    spriteInfo.RemapBitmap = true;
 		    
-		    spriteInfo.res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{spriteInfo.sprite_code}.SPR");
+		    spriteInfo._resBitmap = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{spriteInfo.SpriteCode}.SPR");
 
-		    first_dir_recno_array[i] = Misc.ToInt32(spriteRec.first_move_recno);
-		    dir_count_array[i] = Misc.ToInt32(spriteRec.move_count);
+		    firstDirIds[i] = Misc.ToInt32(spriteRec.first_move_recno);
+		    dirCounts[i] = Misc.ToInt32(spriteRec.move_count);
 	    }
 
 	    Database dbSpriteMove = GameSet.OpenDb(SPRITE_ACTION_DB);
 
-	    for (int i = 0; i < spriteInfos.Length; i++)
+	    for (int i = 0; i < _spriteInfos.Length; i++)
 	    {
-		    SpriteInfo spriteInfo = spriteInfos[i];
-		    int actionRecno = first_dir_recno_array[i];
+		    SpriteInfo spriteInfo = _spriteInfos[i];
+		    int actionId = firstDirIds[i];
 
-		    for (int j = 0; j < dir_count_array[i]; j++, actionRecno++)
+		    for (int j = 0; j < dirCounts[i]; j++, actionId++)
 		    {
-			    SpriteActionRec spriteActionRec = new SpriteActionRec(dbSpriteMove.Read(actionRecno));
+			    SpriteActionRec spriteActionRec = new SpriteActionRec(dbSpriteMove.Read(actionId));
 
 			    int dirId = Misc.ToInt32(spriteActionRec.dir_id);
 
@@ -408,17 +403,17 @@ public class SpriteRes
 
 			    if (spriteActionRec.action[0] == 'M')
 			    {
-				    SpriteMove spriteMove = spriteInfo.move_array[dirId];
+				    SpriteMove spriteMove = spriteInfo.Moves[dirId];
 
-				    spriteMove.first_frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-				    spriteMove.frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+				    spriteMove.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+				    spriteMove.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 
 				    //--- the first movement frame is the default stop frame ---//
 
-				    if (spriteInfo.stop_array[dirId].frame_recno == 0)
+				    if (spriteInfo.Stops[dirId].FrameId == 0)
 				    {
-					    spriteInfo.stop_array[dirId].frame_recno = spriteMove.first_frame_recno;
-					    spriteInfo.stop_array[dirId].frame_count = 1;
+					    spriteInfo.Stops[dirId].FrameId = spriteMove.FirstFrameId;
+					    spriteInfo.Stops[dirId].FrameCount = 1;
 				    }
 			    }
 
@@ -426,26 +421,26 @@ public class SpriteRes
 
 			    else if (spriteActionRec.action[0] == 'A')
 			    {
-				    SpriteAttack spriteAttack = spriteInfo.attack_array[spriteActionRec.action[1] - '1', dirId];
+				    SpriteAttack spriteAttack = spriteInfo.Attacks[spriteActionRec.action[1] - '1', dirId];
 
-				    spriteAttack.first_frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-				    spriteAttack.frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+				    spriteAttack.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+				    spriteAttack.frameCount = Misc.ToInt32(spriteActionRec.frame_count);
 			    }
 
 			    //--------- stop bitmap ---------//
 
 			    else if (spriteActionRec.action[0] == 'S')
 			    {
-				    spriteInfo.stop_array[dirId].frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-				    spriteInfo.stop_array[dirId].frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+				    spriteInfo.Stops[dirId].FrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+				    spriteInfo.Stops[dirId].FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 			    }
 
 			    //-------- dying motion ---------//
 
 			    else if (spriteActionRec.action[0] == 'D')
 			    {
-				    spriteInfo.die.first_frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-				    spriteInfo.die.frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+				    spriteInfo.Die.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+				    spriteInfo.Die.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 			    }
 
 			    //--------- guarding motion --------//
@@ -455,22 +450,22 @@ public class SpriteRes
 				    if (spriteActionRec.action[1] == 'M')
 				    {
 					    // moving guard
-					    SpriteGuardMove spriteGuardMove = spriteInfo.guard_move_array[dirId];
-					    spriteGuardMove.first_frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-					    spriteGuardMove.frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+					    SpriteGuardMove spriteGuardMove = spriteInfo.GuardMoves[dirId];
+					    spriteGuardMove.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+					    spriteGuardMove.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 
 					    // set can_guard_flag
-					    spriteInfo.can_guard_flag |= 2;
+					    spriteInfo.CanGuard |= 2;
 				    }
 				    else
 				    {
 					    // standing guard
-					    SpriteGuardStop spriteGuardStop = spriteInfo.guard_stop_array[dirId];
-					    spriteGuardStop.first_frame_recno = Misc.ToInt32(spriteActionRec.first_frame_recno);
-					    spriteGuardStop.frame_count = Misc.ToInt32(spriteActionRec.frame_count);
+					    SpriteGuardStop spriteGuardStop = spriteInfo.GuardStops[dirId];
+					    spriteGuardStop.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
+					    spriteGuardStop.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 
 					    // set can_guard_flag
-					    spriteInfo.can_guard_flag |= 1;
+					    spriteInfo.CanGuard |= 1;
 				    }
 			    }
 		    }
@@ -480,18 +475,18 @@ public class SpriteRes
     private void LoadSubSpriteInfo()
     {
 	    Database dbSubSprite = GameSet.OpenDb(SUB_SPRITE_DB);
-	    subSpriteInfos = new SubSpriteInfo[dbSubSprite.RecordCount];
+	    _subSpriteInfos = new SubSpriteInfo[dbSubSprite.RecordCount];
 
-	    for (int i = 0; i < subSpriteInfos.Length; i++)
+	    for (int i = 0; i < _subSpriteInfos.Length; i++)
 	    {
 		    SubSpriteRec subSpriteRec = new SubSpriteRec(dbSubSprite.Read(i + 1));
 		    SubSpriteInfo subSpriteInfo = new SubSpriteInfo();
-		    subSpriteInfos[i] = subSpriteInfo;
+		    _subSpriteInfos[i] = subSpriteInfo;
 
-		    subSpriteInfo.sprite_id = Misc.ToInt32(subSpriteRec.sub_sprite_id);
-		    subSpriteInfo.sprite_info = spriteInfos[subSpriteInfo.sprite_id - 1];
-		    subSpriteInfo.offset_x = Misc.ToInt32(subSpriteRec.offset_x);
-		    subSpriteInfo.offset_y = Misc.ToInt32(subSpriteRec.offset_y);
+		    subSpriteInfo.SpriteId = Misc.ToInt32(subSpriteRec.sub_sprite_id);
+		    subSpriteInfo.SpriteInfo = _spriteInfos[subSpriteInfo.SpriteId - 1];
+		    subSpriteInfo.OffsetX = Misc.ToInt32(subSpriteRec.offset_x);
+		    subSpriteInfo.OffsetY = Misc.ToInt32(subSpriteRec.offset_y);
 
 		    // set link from parent
 		    // assume SUB_SPR database is sorted by sprite_name and sub_no
@@ -499,14 +494,14 @@ public class SpriteRes
 		    int subNo = Misc.ToInt32(subSpriteRec.sub_no);
 		    SpriteInfo parentSprite = this[Misc.ToInt32(subSpriteRec.sprite_id)];
 
-		    parentSprite.sub_sprite_info = new SubSpriteInfo[subNo];
-		    for (int j = 0; j < parentSprite.sub_sprite_info.Length; j++)
+		    parentSprite.SubSpriteInfo = new SubSpriteInfo[subNo];
+		    for (int j = 0; j < parentSprite.SubSpriteInfo.Length; j++)
 		    {
-			    parentSprite.sub_sprite_info[j] = new SubSpriteInfo();
+			    parentSprite.SubSpriteInfo[j] = new SubSpriteInfo();
 		    }
 
 		    if (subNo == 1)
-			    parentSprite.sub_sprite_info[0] = subSpriteInfo;
+			    parentSprite.SubSpriteInfo[0] = subSpriteInfo;
 	    }
     }
 }

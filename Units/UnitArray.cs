@@ -158,12 +158,12 @@ public class UnitArray : SpriteArray
 	    DeleteUnit(unit);
     }
 
-    public override void die(int unitRecno)
+    protected override void Die(int unitId)
     {
-	    Unit unit = this[unitRecno];
+	    Unit unit = this[unitId];
 
 	    if( unit.unit_mode == UnitConstants.UNIT_MODE_REBEL )
-		    RebelArray.drop_rebel_identity(unitRecno);
+		    RebelArray.drop_rebel_identity(unitId);
 
 	    unit.die();
 
@@ -668,7 +668,7 @@ public class UnitArray : SpriteArray
 			for (int i = 0; i < selectedUnits.Count && unprocessCount > 0; i++)
 			{
 				Unit unit = this[selectedUnits[i]];
-				if (unit.SpriteInfo.loc_width == 1)
+				if (unit.SpriteInfo.LocWidth == 1)
 				{
 					selectedSizeOneUnitArray.Add(selectedUnits[i]);
 					unprocessCount--;
@@ -840,7 +840,7 @@ public class UnitArray : SpriteArray
 						do
 						{
 							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.SpriteInfo.loc_width > 1);
+						} while (unit.SpriteInfo.LocWidth > 1);
 
 						if (sizeOneSelectedCount > 1)
 						{
@@ -883,7 +883,7 @@ public class UnitArray : SpriteArray
 						do
 						{
 							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.SpriteInfo.loc_width > 1);
+						} while (unit.SpriteInfo.LocWidth > 1);
 
 						if (sizeOneSelectedCount > 1)
 						{
@@ -1573,8 +1573,8 @@ public class UnitArray : SpriteArray
 	    //*********************** improve later end ***************************//
 
 	    //----------- initialize local parameters ------------//
-	    int targetWidth = targetUnit.SpriteInfo.loc_width;
-	    int targetHeight = targetUnit.SpriteInfo.loc_height;
+	    int targetWidth = targetUnit.SpriteInfo.LocWidth;
+	    int targetHeight = targetUnit.SpriteInfo.LocHeight;
 	    int targetXLoc2 = targetXLoc + targetWidth - 1;
 	    int targetYLoc2 = targetYLoc + targetHeight - 1;
 	    int surroundLoc = get_target_surround_loc(targetWidth, targetHeight);
@@ -2462,7 +2462,7 @@ public class UnitArray : SpriteArray
 			    {
 				    Unit unit = this[selectedUnits[0]];
 
-				    if (unit.SpriteInfo.loc_width <= 1)
+				    if (unit.SpriteInfo.LocWidth <= 1)
 				    {
 					    unit.unit_group_id = cur_group_id++;
 					    unit.assign(destX, destY);
@@ -2471,14 +2471,14 @@ public class UnitArray : SpriteArray
 				    {
 					    Location loc = World.GetLoc(destX, destY);
 					    if (loc.IsFirm())
-						    unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.loc_width,
-							    unit.SpriteInfo.loc_height, loc.FirmId());
+						    unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							    unit.SpriteInfo.LocHeight, loc.FirmId());
 					    else if (loc.IsTown())
-						    unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.loc_width,
-							    unit.SpriteInfo.loc_height);
+						    unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							    unit.SpriteInfo.LocHeight);
 					    else if (loc.HasUnit(UnitConstants.UNIT_LAND))
-						    unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.loc_width,
-							    unit.SpriteInfo.loc_height, loc.UnitId(UnitConstants.UNIT_LAND));
+						    unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							    unit.SpriteInfo.LocHeight, loc.UnitId(UnitConstants.UNIT_LAND));
 				    }
 			    }
 			    else // for more than one unit selecting, call group_assign() to take care of it
@@ -3544,7 +3544,7 @@ public class UnitArray : SpriteArray
 		for (int i = 0; i < selectedUnits.Count; i++)
 		{
 			Unit unit = this[selectedUnits[i]];
-			if (unit.SpriteInfo.loc_width <= 1)
+			if (unit.SpriteInfo.LocWidth <= 1)
 			{
 				// the third parameter is used to generate different result for the searching
 				unit.assign(destX, destY, i + 1);
@@ -3557,18 +3557,18 @@ public class UnitArray : SpriteArray
 				switch (assignType)
 				{
 					case ASSIGN_TYPE_UNIT:
-						unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.loc_width,
-							unit.SpriteInfo.loc_height, miscNo);
+						unit.MoveToUnitSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							unit.SpriteInfo.LocHeight, miscNo);
 						break; // is a unit
 
 					case ASSIGN_TYPE_FIRM:
-						unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.loc_width,
-							unit.SpriteInfo.loc_height, miscNo);
+						unit.MoveToFirmSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							unit.SpriteInfo.LocHeight, miscNo);
 						break; // is a firm
 
 					case ASSIGN_TYPE_TOWN:
-						unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.loc_width,
-							unit.SpriteInfo.loc_height);
+						unit.MoveToTownSurround(destX, destY, unit.SpriteInfo.LocWidth,
+							unit.SpriteInfo.LocHeight);
 						break; // is a town
 
 					default:

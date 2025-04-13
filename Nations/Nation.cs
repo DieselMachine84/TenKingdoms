@@ -3512,7 +3512,7 @@ public class Nation : NationBase
 				maxDistance = attackCamp.distance;
 		}
 
-		int maxTravelDays = SpriteRes[UnitRes[UnitConstants.UNIT_NORMAN].sprite_id].travel_days(maxDistance);
+		int maxTravelDays = SpriteRes[UnitRes[UnitConstants.UNIT_NORMAN].sprite_id].TravelDays(maxDistance);
 
 		//------ set the date which the troop should start moving -----//
 

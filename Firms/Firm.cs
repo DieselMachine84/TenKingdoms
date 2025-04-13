@@ -591,8 +591,8 @@ public abstract class Firm : IIdObject
 			int xLoc = loc_x1;
 			int yLoc = loc_y1;
 
-			if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.loc_width,
-				    spriteInfo.loc_height))
+			if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2, spriteInfo.LocWidth,
+				    spriteInfo.LocHeight))
 			{
 				if (remove_firm)
 					kill_overseer();
@@ -2297,7 +2297,7 @@ public abstract class Firm : IIdObject
 					int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
 					SpriteInfo spriteInfo = unit.SpriteInfo;
 					if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
-						    spriteInfo.loc_width, spriteInfo.loc_height))
+						    spriteInfo.LocWidth, spriteInfo.LocHeight))
 						UnitArray.disappear_in_firm(builder_recno); // kill the unit
 					else
 						unit.init_sprite(xLoc, yLoc); // restore the unit
@@ -2706,7 +2706,7 @@ public abstract class Firm : IIdObject
 		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
 
 		bool spaceFound = locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
-			spriteInfo.loc_width, spriteInfo.loc_height);
+			spriteInfo.LocWidth, spriteInfo.LocHeight);
 
 		if (spaceFound)
 		{
@@ -2741,9 +2741,9 @@ public abstract class Firm : IIdObject
 		int xLoc = loc_x1, yLoc = loc_y1;
 
 		if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
-			    spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_LAND, builder_region_id) &&
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, builder_region_id) &&
 		    !World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
-			    spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.UNIT_LAND, builder_region_id))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, builder_region_id))
 		{
 			kill_builder(recno);
 			return false;
@@ -3888,7 +3888,7 @@ public abstract class Firm : IIdObject
 		int xLoc = loc_x1, yLoc = loc_y1;
 
 		if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
-			    spriteInfo.loc_width, spriteInfo.loc_height))
+			    spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return 0;
 
 		//------------ add the unit now ----------------//

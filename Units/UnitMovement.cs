@@ -142,7 +142,7 @@ public partial class Unit
 		Unit unit = UnitArray[miscNo];
 		SpriteInfo spriteInfo = unit.SpriteInfo;
 		stop();
-		SetMoveToSurround(destX, destY, spriteInfo.loc_width, spriteInfo.loc_height, UnitConstants.BUILDING_TYPE_VEHICLE);
+		SetMoveToSurround(destX, destY, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.BUILDING_TYPE_VEHICLE);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -441,7 +441,7 @@ public partial class Unit
 				GoX = CurX;
 				GoY = CurY;
 				set_idle();
-				set_dir(move_to_x_loc, move_to_y_loc, buildLocX + width / 2, buildLocY + height / 2);
+				SetDir(move_to_x_loc, move_to_y_loc, buildLocX + width / 2, buildLocY + height / 2);
 			}
 
 			return 1;
@@ -459,7 +459,7 @@ public partial class Unit
 		//----------------------------------------------------------------------------//
 
 		//------- calculate the surrounding top-left and bottom-right points ------//
-		int moveScale = move_step_magn();
+		int moveScale = MoveStepCoeff();
 		int xLoc1 = objectXLoc1 - readyDist - 1;
 		int yLoc1 = objectYLoc1 - readyDist - 1;
 		int xLoc2 = objectXLoc2 + readyDist + 1;
@@ -621,7 +621,7 @@ public partial class Unit
 		int resultNode = PathNodes[PathNodeIndex];
 		World.GetLocXAndLocY(resultNode, out int resultNodeLocX, out int resultNodeLocY);
 
-		sprite_move(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
+		SpriteMove(resultNodeLocX * InternalConstants.CellWidth, resultNodeLocY * InternalConstants.CellHeight);
 	}
 
 	private void TerminateMove()
@@ -659,7 +659,7 @@ public partial class Unit
 		int destY = action_y_loc2;
 		int curX = NextLocX;
 		int curY = NextLocY;
-		int moveScale = move_step_magn();
+		int moveScale = MoveStepCoeff();
 
 		//------------------------------------------------------------------//
 		// setting for unit pointed by unit
@@ -777,9 +777,9 @@ public partial class Unit
 		int vecY = editNode1LocY - editNode2LocY;
 
 		if (vecX != 0)
-			vecX = ((vecX > 0) ? 1 : -1) * move_step_magn();
+			vecX = ((vecX > 0) ? 1 : -1) * MoveStepCoeff();
 		if (vecY != 0)
-			vecY = ((vecY > 0) ? 1 : -1) * move_step_magn();
+			vecY = ((vecY > 0) ? 1 : -1) * MoveStepCoeff();
 
 		int x = editNode1LocX;
 		int y = editNode1LocY;
@@ -818,9 +818,9 @@ public partial class Unit
 			vecX = editNode1LocX - editNode2LocX;
 			vecY = editNode1LocY - editNode2LocY;
 			if (vecX != 0)
-				vecX = ((vecX > 0) ? 1 : -1) * move_step_magn();
+				vecX = ((vecX > 0) ? 1 : -1) * MoveStepCoeff();
 			if (vecY != 0)
-				vecY = ((vecY > 0) ? 1 : -1) * move_step_magn();
+				vecY = ((vecY > 0) ? 1 : -1) * MoveStepCoeff();
 
 			x = editNode1LocX;
 			y = editNode1LocY;
@@ -868,7 +868,7 @@ public partial class Unit
 			move_to_x_loc = preX;
 			move_to_y_loc = preY;
 
-			_pathNodeDistance -= (removedStep) * move_step_magn();
+			_pathNodeDistance -= (removedStep) * MoveStepCoeff();
 		}
 
 		return found;
@@ -895,8 +895,8 @@ public partial class Unit
 		else
 		{
 			//--------------- different territory ------------------//
-			int targetWidth = targetUnit.SpriteInfo.loc_width;
-			int targetHeight = targetUnit.SpriteInfo.loc_height;
+			int targetWidth = targetUnit.SpriteInfo.LocWidth;
+			int targetHeight = targetUnit.SpriteInfo.LocHeight;
 			int maxRange = max_attack_range();
 
 			if (possible_place_for_range_attack(targetXLoc, targetYLoc, targetWidth, targetHeight, maxRange))
@@ -1019,7 +1019,7 @@ public partial class Unit
 	private void HandleBlockedMoveS11(Unit unit)
 	{
 		int waitTerm;
-		int moveStep = move_step_magn();
+		int moveStep = MoveStepCoeff();
 
 		switch (unit.CurAction)
 		{
@@ -1155,8 +1155,8 @@ public partial class Unit
 						if (action_mode == UnitConstants.ACTION_ATTACK_UNIT &&
 						    unit.nation_recno != nation_recno && unit.SpriteId == action_para)
 						{
-							set_dir(NextX, NextY, unit.NextX, unit.NextY);
-							if (is_dir_correct())
+							SetDir(NextX, NextY, unit.NextX, unit.NextY);
+							if (IsDirCorrect())
 								attack_unit(action_para, 0, 0, true);
 							else
 								set_turn();
@@ -1380,11 +1380,11 @@ public partial class Unit
 
 	private void HandleBlockedWait(Unit unit)
 	{
-		int stepMagn = move_step_magn();
+		int stepMagn = MoveStepCoeff();
 		int cycleWait = 0;
 		Location loc;
 
-		if (is_dir_correct())
+		if (IsDirCorrect())
 		{
 			Unit blockedUnit = unit;
 			SpriteInfo unitSpriteInfo = unit.SpriteInfo;
@@ -1406,10 +1406,10 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			while (cycleWait == 0 && blockedUnit.CurAction == SPRITE_WAIT)
 			{
-				if (unitSpriteInfo.loc_width > 1)
+				if (unitSpriteInfo.LocWidth > 1)
 					break; // don't handle unit size > 1
 
-				if (!blockedUnit.is_dir_correct())
+				if (!blockedUnit.IsDirCorrect())
 					break;
 
 				//----------------------------------------------------------------------------------------//
@@ -1489,7 +1489,7 @@ public partial class Unit
 			CycleWaitShiftRecno(this, unit); // shift all the unit in the cycle
 			backupSpriteRecno = World.GetUnitId(CurLocX, CurLocY, MobileType);
 			World.SetUnitId(CurLocX, CurLocY, MobileType, SpriteId);
-			set_next(unit.CurX, unit.CurY, -stepMagn, 1);
+			SetNext(unit.CurX, unit.CurY, -stepMagn, 1);
 			set_move();
 			World.SetUnitId(unit.CurLocX, unit.CurLocY, MobileType, SpriteId);
 			World.SetUnitId(CurLocX, CurLocY, MobileType, backupSpriteRecno);
@@ -1500,7 +1500,7 @@ public partial class Unit
 			set_wait();
 
 			//if(waiting_term>=MAX_WAITING_TERM_SAME)
-			if (waiting_term >= UnitConstants.MAX_WAITING_TERM_SAME * move_step_magn())
+			if (waiting_term >= UnitConstants.MAX_WAITING_TERM_SAME * MoveStepCoeff())
 			{
 				//-----------------------------------------------------------------//
 				// codes used to speed up frame rate
@@ -1518,7 +1518,7 @@ public partial class Unit
 
 	private void CycleWaitShiftRecno(Unit curUnit, Unit nextUnit)
 	{
-		int stepMagn = move_step_magn();
+		int stepMagn = MoveStepCoeff();
 		Unit blockedUnit;
 		Location loc;
 
@@ -1542,7 +1542,7 @@ public partial class Unit
 		if (blockedUnit != this)
 		{
 			CycleWaitShiftRecno(nextUnit, blockedUnit);
-			nextUnit.set_next(blockedUnit.CurX, blockedUnit.CurY, -stepMagn, 1);
+			nextUnit.SetNext(blockedUnit.CurX, blockedUnit.CurY, -stepMagn, 1);
 			nextUnit.set_move();
 			World.SetUnitId(blockedUnit.CurLocX, blockedUnit.CurLocY,
 				nextUnit.MobileType, nextUnit.SpriteId);
@@ -1551,7 +1551,7 @@ public partial class Unit
 		}
 		else // the cycle shift is ended
 		{
-			nextUnit.set_next(CurX, CurY, -stepMagn, 1);
+			nextUnit.SetNext(CurX, CurY, -stepMagn, 1);
 			nextUnit.set_move();
 			World.SetUnitId(CurLocX, CurLocY, nextUnit.MobileType, nextUnit.SpriteId);
 			World.SetUnitId(nextUnit.CurLocX, nextUnit.CurLocY, nextUnit.MobileType, 0);
@@ -1672,7 +1672,7 @@ public partial class Unit
 		// is attacking the unit pointed by target
 		//----------------------------------------------------------//
 		if (space_for_attack(action_x_loc, action_y_loc, target.MobileType,
-			    target.SpriteInfo.loc_width, target.SpriteInfo.loc_height))
+			    target.SpriteInfo.LocWidth, target.SpriteInfo.LocHeight))
 		{
 			SearchOrStop(move_to_x_loc, move_to_y_loc, 1, SeekPath.SEARCH_MODE_TO_ATTACK, target.SpriteId);
 			//search(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_TO_ATTACK, target.sprite_recno);
@@ -1724,7 +1724,7 @@ public partial class Unit
 			World.GetLocXAndLocY(curNode, out int curNodeLocX, out int curNodeLocY);
 			int nextNode = PathNodes[nextNodeIndex];
 			World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
-			int moveScale = move_step_magn();
+			int moveScale = MoveStepCoeff();
 			int nodeCount = PathNodes.Count;
 			Location loc;
 			int i, j, found, pathDist;
@@ -1912,7 +1912,7 @@ public partial class Unit
 			return; // no suitable location, wait until finding suitable location
 
 		//---------------- leave now --------------------//
-		set_dir(shipOldXLoc, shipOldYLoc, checkXLoc, checkYLoc);
+		SetDir(shipOldXLoc, shipOldYLoc, checkXLoc, checkYLoc);
 		set_ship_extra_move();
 		GoX = checkXLoc * InternalConstants.CellWidth;
 		GoY = checkYLoc * InternalConstants.CellHeight;
@@ -2084,7 +2084,7 @@ public partial class Unit
 			{
 				int nextNode = PathNodes[1];
 				World.GetLocXAndLocY(nextNode, out int nextNodeLocX, out int nextNodeLocY);
-				set_dir(startLocX, startLocY, nextNodeLocX, nextNodeLocY);
+				SetDir(startLocX, startLocY, nextNodeLocX, nextNodeLocY);
 				NextMove();
 			}
 		}

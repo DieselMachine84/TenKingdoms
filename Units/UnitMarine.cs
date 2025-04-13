@@ -81,7 +81,7 @@ public class UnitMarine : Unit
 		
 		extra_move_in_beach = NO_EXTRA_MOVE;
 
-		int spriteId = SpriteInfo.get_sub_sprite_info(1).sprite_id;
+		int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
 		//splash.init(spriteId, cur_x_loc(), cur_y_loc());
 		//splash.cur_frame = 1;
 
@@ -331,9 +331,9 @@ public class UnitMarine : Unit
 		return nextStopId;
 	}
 
-	public override void pre_process()
+	public override void PreProcess()
 	{
-		base.pre_process();
+		base.PreProcess();
 		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
 			return;
 
@@ -371,7 +371,7 @@ public class UnitMarine : Unit
 
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				int moveStep = move_step_magn();
+				int moveStep = MoveStepCoeff();
 				if (curXLoc < firm.loc_x1 - moveStep || curXLoc > firm.loc_x2 + moveStep || curYLoc < firm.loc_y1 - moveStep ||
 				    curYLoc > firm.loc_y2 + moveStep)
 				{
@@ -385,7 +385,7 @@ public class UnitMarine : Unit
 					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 					journey_status = ON_WAY_TO_FIRM;*/
 					if (CurAction == SPRITE_IDLE)
-						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
+						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
 					else
 						journey_status = InternalConstants.ON_WAY_TO_FIRM;
 					//#### end alex 6/10 ####//
@@ -576,7 +576,7 @@ public class UnitMarine : Unit
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 
 		if (autoMode != 0) // move to next firm only if autoMode is on
-			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
+			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 	}
 
 	public void ship_on_way()
@@ -592,10 +592,10 @@ public class UnitMarine : Unit
 			if (!FirmArray.IsDeleted(shipStop.firm_recno))
 			{
 				firm = FirmArray[shipStop.firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				nextXLoc = NextLocX;
 				nextYLoc = NextLocY;
-				moveStep = move_step_magn();
+				moveStep = MoveStepCoeff();
 				if (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
 				    nextYLoc <= firm.loc_y2 + moveStep)
 					journey_status = InternalConstants.SURROUND_FIRM;
@@ -614,7 +614,7 @@ public class UnitMarine : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, firm.firm_id);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
 			}
 
 			return;
@@ -625,7 +625,7 @@ public class UnitMarine : Unit
 
 		nextXLoc = NextLocX;
 		nextYLoc = NextLocY;
-		moveStep = move_step_magn();
+		moveStep = MoveStepCoeff();
 		if (journey_status == InternalConstants.SURROUND_FIRM ||
 		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && CurX == NextX && CurY == NextY && // move in a tile exactly
 		     (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
@@ -671,7 +671,7 @@ public class UnitMarine : Unit
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -1388,9 +1388,9 @@ public class UnitMarine : Unit
 		return totalQty;
 	}
 
-	protected override void update_abs_pos(SpriteFrame spriteFrame = null)
+	protected override void UpdateAbsPos(SpriteFrame spriteFrame = null)
 	{
-		base.update_abs_pos(spriteFrame);
+		base.UpdateAbsPos(spriteFrame);
 		int h = wave_height(6);
 		//abs_y1 -= h;
 		//abs_y2 -= h;
@@ -1668,19 +1668,19 @@ public class UnitMarine : Unit
 		if (!found)
 			return;
 
-		set_dir(curXLoc, curYLoc, checkXLoc, checkYLoc);
+		SetDir(curXLoc, curYLoc, checkXLoc, checkYLoc);
 		CurAction = SPRITE_SHIP_EXTRA_MOVE;
 		GoX = checkXLoc * InternalConstants.CellWidth;
 		GoY = checkYLoc * InternalConstants.CellHeight;
 		//extra_move_in_beach = EXTRA_MOVING_IN;
 	}
 
-	public override void process_extra_move()
+	public override void ProcessExtraMove()
 	{
 		int[] vector_x_array = { 0, 1, 1, 1, 0, -1, -1, -1 }; // default vectors, temporarily only
 		int[] vector_y_array = { -1, -1, 0, 1, 1, 1, 0, -1 };
 
-		if (!match_dir()) // process turning
+		if (!MatchDir()) // process turning
 			return;
 
 		if (CurX != GoX || CurY != GoY)
@@ -1716,10 +1716,10 @@ public class UnitMarine : Unit
 			}
 
 			//---------- process moving -----------//
-			int stepX = SpriteInfo.speed;
-			int stepY = SpriteInfo.speed;
-			int vectorX = vector_x_array[FinalDir] * SpriteInfo.speed; // cur_dir may be changed in the above set_next() call
-			int vectorY = vector_y_array[FinalDir] * SpriteInfo.speed;
+			int stepX = SpriteInfo.Speed;
+			int stepY = SpriteInfo.Speed;
+			int vectorX = vector_x_array[FinalDir] * SpriteInfo.Speed; // cur_dir may be changed in the above set_next() call
+			int vectorY = vector_y_array[FinalDir] * SpriteInfo.Speed;
 
 			if (Math.Abs(CurX - GoX) <= stepX)
 				CurX = GoX;
@@ -1889,7 +1889,7 @@ public class UnitMarine : Unit
 			if (newStopFirmRecno != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.loc_width, SpriteInfo.loc_height, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}

@@ -18,7 +18,7 @@ public class BulletArray : SpriteArray
 	{
 		SpriteInfo spriteInfo = SpriteRes[objectType];
 
-		switch (spriteInfo.sprite_sub_type)
+		switch (spriteInfo.SpriteSubType)
 		{
 			case 0:
 			case ' ':
@@ -45,8 +45,8 @@ public class BulletArray : SpriteArray
 		int targetXLoc = targetUnit.NextLocX;
 		int targetYLoc = targetUnit.NextLocY;
 
-		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + targetSpriteInfo.loc_width &&
-		    attackYLoc >= targetYLoc && attackYLoc < targetYLoc + targetSpriteInfo.loc_height)
+		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + targetSpriteInfo.LocWidth &&
+		    attackYLoc >= targetYLoc && attackYLoc < targetYLoc + targetSpriteInfo.LocHeight)
 		{
 			//-------------------------------------------------------//
 			// the previous used range attack destination can be reused,
@@ -267,7 +267,7 @@ public class BulletArray : SpriteArray
 
 		//-------- skip the checking for projectile -----------//
 		SpriteInfo spriteInfo = SpriteRes[bulletSpriteId];
-		if (spriteInfo.sprite_sub_type == 'P')
+		if (spriteInfo.SpriteSubType == 'P')
 			return true;
 
 		//----------------------- define variables ---------------//

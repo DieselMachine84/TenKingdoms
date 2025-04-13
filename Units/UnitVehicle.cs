@@ -41,8 +41,8 @@ public class UnitVehicle : Unit
         int yLoc = NextLocY;
 
         if (!World.LocateSpace(ref xLoc, ref yLoc,
-                xLoc + SpriteInfo.loc_width - 1, yLoc + SpriteInfo.loc_height - 1,
-                soliderSpriteInfo.loc_width, soliderSpriteInfo.loc_height))
+                xLoc + SpriteInfo.LocWidth - 1, yLoc + SpriteInfo.LocHeight - 1,
+                soliderSpriteInfo.LocWidth, soliderSpriteInfo.LocHeight))
         {
             return;
         }
