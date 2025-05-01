@@ -306,29 +306,29 @@ public class FirmInfo
 
         Unit unit = UnitArray[unitRecno];
 
-        if (unit.nation_recno == 0)
+        if (unit.NationId == 0)
             return false;
 
-        if (get_nation_tech_level(unit.nation_recno) == 0)
+        if (get_nation_tech_level(unit.NationId) == 0)
             return false;
 
         //------ fortress of power ------//
 
         if (firm_id == Firm.FIRM_BASE) // only if the nation has acquired the myth to build it
         {
-            if (unit.rank_id == Unit.RANK_GENERAL ||
-                unit.rank_id == Unit.RANK_KING ||
-                unit.skill.skill_id == Skill.SKILL_PRAYING ||
-                unit.skill.skill_id == Skill.SKILL_CONSTRUCTION)
+            if (unit.Rank == Unit.RANK_GENERAL ||
+                unit.Rank == Unit.RANK_KING ||
+                unit.Skill.skill_id == Skill.SKILL_PRAYING ||
+                unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
             {
                 //----- each nation can only build one seat of power -----//
 
-                if (unit.nation_recno > 0 && unit.race_id > 0 &&
-                    NationArray[unit.nation_recno].base_count_array[unit.race_id - 1] == 0)
+                if (unit.NationId > 0 && unit.RaceId > 0 &&
+                    NationArray[unit.NationId].base_count_array[unit.RaceId - 1] == 0)
                 {
                     //--- if this nation has acquired the needed scroll of power ---//
 
-                    return NationArray[unit.nation_recno].know_base_array[unit.race_id - 1] != 0;
+                    return NationArray[unit.NationId].know_base_array[unit.RaceId - 1] != 0;
                 }
             }
 
@@ -339,18 +339,18 @@ public class FirmInfo
 
         if (firm_race_id == 0)
         {
-            if (unit.rank_id == Unit.RANK_KING || unit.skill.skill_id == Skill.SKILL_CONSTRUCTION)
+            if (unit.Rank == Unit.RANK_KING || unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
                 return true;
         }
 
         //----- if the firm is race specific, if the unit is right race, return true ----//
 
-        if (firm_race_id == unit.race_id)
+        if (firm_race_id == unit.RaceId)
             return true;
 
         //---- if the unit has the skill needed by the firm or the unit has general construction skill ----//
 
-        if (firm_skill_id != 0 && firm_skill_id == unit.skill.skill_id)
+        if (firm_skill_id != 0 && firm_skill_id == unit.Skill.skill_id)
             return true;
 
         return false;

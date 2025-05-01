@@ -13,7 +13,7 @@ public partial class Unit
 		}
 
 		//------- if the targeted unit has been destroyed --------//
-		if (action_para == 0)
+		if (ActionParam == 0)
 			return;
 
 		//--------------------------------------------------------------------------//
@@ -22,7 +22,7 @@ public partial class Unit
 		int clearOrder = 0;
 		Unit targetUnit = null;
 
-		if (UnitArray.IsDeleted(action_para) || action_para == SpriteId)
+		if (UnitArray.IsDeleted(ActionParam) || ActionParam == SpriteId)
 		{
 			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
@@ -35,9 +35,9 @@ public partial class Unit
 		}
 		else
 		{
-			targetUnit = UnitArray[action_para];
-			if (targetUnit.nation_recno != 0 && !nation_can_attack(targetUnit.nation_recno) &&
-			    targetUnit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART) // cannot attack this nation
+			targetUnit = UnitArray[ActionParam];
+			if (targetUnit.NationId != 0 && !nation_can_attack(targetUnit.NationId) &&
+			    targetUnit.UnitType != UnitConstants.UNIT_EXPLOSIVE_CART) // cannot attack this nation
 				clearOrder++;
 		}
 
@@ -82,11 +82,11 @@ public partial class Unit
 		{
 			//----- for caravan entering the market -------//
 			// the current firm recno of the firm the caravan entered is stored in action_para
-			if (FirmArray.IsDeleted(targetUnit.action_para))
+			if (FirmArray.IsDeleted(targetUnit.ActionParam))
 				stop2(UnitConstants.KEEP_DEFENSE_MODE); // clear order
 			else
 			{
-				Firm firm = FirmArray[targetUnit.action_para];
+				Firm firm = FirmArray[targetUnit.ActionParam];
 				attack_firm(firm.loc_x1, firm.loc_y1);
 			}
 
@@ -98,15 +98,15 @@ public partial class Unit
 		int targetYLoc = targetUnit.NextLocY;
 		int spriteXLoc = NextLocX;
 		int spriteYLoc = NextLocY;
-		AttackInfo attackInfo = attack_info_array[CurAttack];
+		AttackInfo attackInfo = AttackInfos[CurAttack];
 
 		//------------------------------------------------------------//
 		// If this unit's target has moved, change the destination accordingly.
 		//------------------------------------------------------------//
-		if (targetXLoc != action_x_loc || targetYLoc != action_y_loc)
+		if (targetXLoc != ActionLocX || targetYLoc != ActionLocY)
 		{
 			target_move(targetUnit);
-			if (action_mode == UnitConstants.ACTION_STOP)
+			if (ActionMode == UnitConstants.ACTION_STOP)
 				return;
 		}
 
@@ -141,7 +141,7 @@ public partial class Unit
 		}
 
 		//------- if the targeted firm has been destroyed --------//
-		if (action_para == 0)
+		if (ActionParam == 0)
 			return;
 
 		Firm targetFirm = null;
@@ -149,7 +149,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// check attack conditions
 		//------------------------------------------------------------//
-		if (FirmArray.IsDeleted(action_para))
+		if (FirmArray.IsDeleted(ActionParam))
 		{
 			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
@@ -162,7 +162,7 @@ public partial class Unit
 		}
 		else
 		{
-			targetFirm = FirmArray[action_para];
+			targetFirm = FirmArray[ActionParam];
 
 			if (!nation_can_attack(targetFirm.nation_recno)) // cannot attack this nation
 				clearOrder++;
@@ -205,7 +205,7 @@ public partial class Unit
 			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[CurAttack];
+			AttackInfo attackInfo = AttackInfos[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
@@ -216,30 +216,32 @@ public partial class Unit
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
 				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType,
-					    range_attack_x_loc, range_attack_y_loc, UnitConstants.UNIT_LAND,
+					    RangeAttackLocX, RangeAttackLocY, UnitConstants.UNIT_LAND,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, action_x_loc, action_y_loc,
-						    UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
-						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
-						    attackInfo.bullet_sprite_id))
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//------- no suitable location, so move to target again ---------//
-						SetMoveToSurround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
+						SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height,
 							UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 						return;
 					}
 				}
 
 				//--------- add bullet, bullet emits ----------//
-				BulletArray.AddBullet(this, action_x_loc, action_y_loc);
+				BulletArray.AddBullet(this, ActionLocX, ActionLocY);
 				add_close_attack_effect();
 
 				// ------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 				return;
 			}
@@ -248,13 +250,13 @@ public partial class Unit
 				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // is attacking
 
-				hit_firm(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
+				hit_firm(this, ActionLocX, ActionLocY, actual_damage(), NationId);
 				add_close_attack_effect();
 
 				// ------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 			}
 		}
@@ -270,13 +272,13 @@ public partial class Unit
 					return;
 			}
 
-			if (attack_range == 1)
+			if (AttackRange == 1)
 			{
 				//------------------------------------------------------------//
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (_pathNodeDistance > attack_range)
+				if (_pathNodeDistance > AttackRange)
 					return;
 			}
 
@@ -288,31 +290,33 @@ public partial class Unit
 			int curXLoc = NextLocX;
 			int curYLoc = NextLocY;
 
-			if (attackDistance <= attack_range) // able to attack target
+			if (attackDistance <= AttackRange) // able to attack target
 			{
-				if ((attackDistance == 1) && attack_range > 1) // often false condition is checked first
+				if ((attackDistance == 1) && AttackRange > 1) // often false condition is checked first
 					choose_best_attack_mode(1); // may change to use close attack
 
-				if (attack_range > 1) // use range attack
+				if (AttackRange > 1) // use range attack
 				{
 					SetCur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[CurAttack];
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-						    UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
-						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
-						    attackInfo.bullet_sprite_id))
+					AttackInfo attackInfo = AttackInfos[CurAttack];
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count  == 0) // no step for continue moving
-							SetMoveToSurround(action_x_loc, action_y_loc, firmInfo.loc_width, firmInfo.loc_height,
+							SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height,
 								UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 
 						return; // unable to attack, continue to move
 					}
 
 					//---------- able to do range attack ----------//
-					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
+					set_attack_dir(curXLoc, curYLoc, RangeAttackLocX, RangeAttackLocY);
 					CurFrame = 1;
 
 					if (IsDirCorrect())
@@ -362,7 +366,7 @@ public partial class Unit
 		}
 
 		//------- if the targeted town has been destroyed --------//
-		if (action_para == 0)
+		if (ActionParam == 0)
 			return;
 
 		Town targetTown = null;
@@ -370,7 +374,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// check attack conditions
 		//------------------------------------------------------------//
-		if (TownArray.IsDeleted(action_para))
+		if (TownArray.IsDeleted(ActionParam))
 		{
 			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
 				clearOrder++;
@@ -383,7 +387,7 @@ public partial class Unit
 		}
 		else
 		{
-			targetTown = TownArray[action_para];
+			targetTown = TownArray[ActionParam];
 
 			if (!nation_can_attack(targetTown.NationId)) // cannot attack this nation
 				clearOrder++;
@@ -426,7 +430,7 @@ public partial class Unit
 			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[CurAttack];
+			AttackInfo attackInfo = AttackInfos[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//---------- wait for bullet emit ---------//
@@ -436,30 +440,32 @@ public partial class Unit
 				//------- seek location to attack target by bullet --------//
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, range_attack_x_loc,
-					    range_attack_y_loc,
+				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, RangeAttackLocX,
+					    RangeAttackLocY,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, action_x_loc, action_y_loc,
-						    UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
-						    attackInfo.bullet_sprite_id))
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//----- no suitable location, move to target --------//
-						SetMoveToSurround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+						SetMoveToSurround(ActionLocX, ActionLocY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 							UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 						return;
 					}
 				}
 
 				//--------- add bullet, bullet emits --------//
-				BulletArray.AddBullet(this, action_x_loc, action_y_loc);
+				BulletArray.AddBullet(this, ActionLocX, ActionLocY);
 				add_close_attack_effect();
 
 				// ------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 				return;
 			}
@@ -468,13 +474,13 @@ public partial class Unit
 				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // attacking
 
-				hit_town(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
+				hit_town(this, ActionLocX, ActionLocY, actual_damage(), NationId);
 				add_close_attack_effect();
 
 				// ------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 			}
 		}
@@ -490,13 +496,13 @@ public partial class Unit
 					return;
 			}
 
-			if (attack_range == 1)
+			if (AttackRange == 1)
 			{
 				//------------------------------------------------------------//
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (_pathNodeDistance > attack_range)
+				if (_pathNodeDistance > AttackRange)
 					return;
 			}
 
@@ -505,33 +511,35 @@ public partial class Unit
 
 			int attackDistance = cal_distance(targetXLoc, targetYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT);
 
-			if (attackDistance <= attack_range) // able to attack target
+			if (attackDistance <= AttackRange) // able to attack target
 			{
-				if ((attackDistance == 1) && attack_range > 1) // often false condition is checked first
+				if ((attackDistance == 1) && AttackRange > 1) // often false condition is checked first
 					choose_best_attack_mode(1); // may change to use close attack
 
-				if (attack_range > 1) // use range attack
+				if (AttackRange > 1) // use range attack
 				{
 					SetCur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[CurAttack];
+					AttackInfo attackInfo = AttackInfos[CurAttack];
 					int curXLoc = NextLocX;
 					int curYLoc = NextLocY;
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-						    UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-						    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed,
-						    attackInfo.bullet_sprite_id))
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count  == 0) // no step for continuing moving
-							SetMoveToSurround(action_x_loc, action_y_loc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+							SetMoveToSurround(ActionLocX, ActionLocY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 								UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 
 						return; // unable to attack, continue to move
 					}
 
 					//---------- able to do range attack ----------//
-					set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
+					set_attack_dir(NextLocX, NextLocY, RangeAttackLocX, RangeAttackLocY);
 					CurFrame = 1;
 
 					if (IsDirCorrect())
@@ -566,7 +574,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// if the targeted wall has been destroyed
 		//------------------------------------------------------------//
-		Location loc = World.GetLoc(action_x_loc, action_y_loc);
+		Location loc = World.GetLoc(ActionLocX, ActionLocY);
 		if (!loc.IsWall())
 		{
 			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
@@ -585,7 +593,7 @@ public partial class Unit
 			if (RemainAttackDelay != 0)
 				return;
 
-			AttackInfo attackInfo = attack_info_array[CurAttack];
+			AttackInfo attackInfo = AttackInfos[CurAttack];
 			if (attackInfo.attack_range > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
@@ -595,30 +603,31 @@ public partial class Unit
 				//---------- seek location to attack target by bullet --------//
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, range_attack_x_loc,
-					    range_attack_y_loc,
+				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, RangeAttackLocX,
+					    RangeAttackLocY,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, 
-						    action_x_loc, action_y_loc,
-						    UnitConstants.UNIT_LAND, 1, 1,
-						    out range_attack_x_loc, out range_attack_y_loc,
-						    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//--------- no suitable location, move to target ----------//
-						SetMoveToSurround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+						SetMoveToSurround(ActionLocX, ActionLocY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 						return;
 					}
 				}
 
 				//---------- add bullet, bullet emits -----------//
-				BulletArray.AddBullet(this, action_x_loc, action_y_loc);
+				BulletArray.AddBullet(this, ActionLocX, ActionLocY);
 				add_close_attack_effect();
 
 				// ------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 				return;
 			}
@@ -627,13 +636,13 @@ public partial class Unit
 				if (CurFrame != CurSpriteAttack().frameCount)
 					return; // attacking
 
-				hit_wall(this, action_x_loc, action_y_loc, actual_damage(), nation_recno);
+				hit_wall(this, ActionLocX, ActionLocY, actual_damage(), NationId);
 				add_close_attack_effect();
 
 				//------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 			}
 		}
@@ -649,45 +658,46 @@ public partial class Unit
 					return;
 			}
 
-			if (attack_range == 1)
+			if (AttackRange == 1)
 			{
 				//------------------------------------------------------------//
 				// for close attack, the unit unable to attack the firm if
 				// it is not in the firm surrounding
 				//------------------------------------------------------------//
-				if (_pathNodeDistance > attack_range)
+				if (_pathNodeDistance > AttackRange)
 					return;
 			}
 
-			int attackDistance = cal_distance(action_x_loc, action_y_loc, 1, 1);
+			int attackDistance = cal_distance(ActionLocX, ActionLocY, 1, 1);
 
-			if (attackDistance <= attack_range) // able to attack target
+			if (attackDistance <= AttackRange) // able to attack target
 			{
-				if ((attackDistance == 1) && attack_range > 1) // often false condition is checked first
+				if ((attackDistance == 1) && AttackRange > 1) // often false condition is checked first
 					choose_best_attack_mode(1); // may change to use close attack
 
-				if (attack_range > 1) // use range attack
+				if (AttackRange > 1) // use range attack
 				{
 					SetCur(NextX, NextY);
 
-					AttackInfo attackInfo = attack_info_array[CurAttack];
+					AttackInfo attackInfo = AttackInfos[CurAttack];
 					int curXLoc = NextLocX;
 					int curYLoc = NextLocY;
-					if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
-						    action_x_loc, action_y_loc,
-						    UnitConstants.UNIT_LAND, 1, 1,
-						    out range_attack_x_loc, out range_attack_y_loc,
-						    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count == 0) // no step for continuing moving
-							SetMoveToSurround(action_x_loc, action_y_loc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
+							SetMoveToSurround(ActionLocX, ActionLocY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 
 						return; // unable to attack, continue to move
 					}
 
 					//---------- able to do range attack ----------//
-					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
+					set_attack_dir(curXLoc, curYLoc, RangeAttackLocX, RangeAttackLocY);
 					CurFrame = 1;
 
 					if (IsDirCorrect())
@@ -700,7 +710,7 @@ public partial class Unit
 					//---------- attack now ---------//
 					SetCur(NextX, NextY);
 					TerminateMove();
-					set_attack_dir(NextLocX, NextLocY, action_x_loc, action_y_loc);
+					set_attack_dir(NextLocX, NextLocY, ActionLocX, ActionLocY);
 
 					if (IsDirCorrect())
 						set_attack();
@@ -724,8 +734,8 @@ public partial class Unit
 		{
 			Unit unit = UnitArray[loc.UnitId(UnitConstants.UNIT_LAND)];
 
-			if (unit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
-				targetNationRecno = unit.nation_recno;
+			if (unit.UnitType != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
+				targetNationRecno = unit.NationId;
 		}
 		else if (loc.IsFirm())
 		{
@@ -736,9 +746,9 @@ public partial class Unit
 			targetNationRecno = TownArray[loc.TownId()].NationId;
 		}
 
-		if (nation_recno != 0 && targetNationRecno != 0)
+		if (NationId != 0 && targetNationRecno != 0)
 		{
-			if (!NationArray[nation_recno].get_relation(targetNationRecno).should_attack)
+			if (!NationArray[NationId].get_relation(targetNationRecno).should_attack)
 				return;
 		}
 
@@ -768,10 +778,10 @@ public partial class Unit
 
 		//------ set ai_original_target_?_loc --------//
 
-		if (ai_unit)
+		if (AIUnit)
 		{
-			ai_original_target_x_loc = targetXLoc;
-			ai_original_target_y_loc = targetYLoc;
+			AIOriginalTargetLocX = targetXLoc;
+			AIOriginalTargetLocY = targetYLoc;
 		}
 	}
 	
@@ -844,9 +854,9 @@ public partial class Unit
 				if (!possible_place_for_range_attack(targetXLoc, targetYLoc,
 					    unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight, maxRange))
 				{
-					if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-					    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-					    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+					if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+					    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+					    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 						MoveTo(targetXLoc, targetYLoc);
 					else // in defend mode, but unable to attack target
 						general_defend_mode_detect_target(1);
@@ -865,9 +875,9 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (targetMobileType == 0)
 		{
-			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+			if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 			{
 				stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -878,7 +888,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		// cannot attack this nation
 		//------------------------------------------------------------//
-		if (!nation_can_attack(targetUnit.nation_recno) && targetUnit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART)
+		if (!nation_can_attack(targetUnit.NationId) && targetUnit.UnitType != UnitConstants.UNIT_EXPLOSIVE_CART)
 		{
 			stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			return;
@@ -887,11 +897,11 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// action_mode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if ((action_mode2 == UnitConstants.ACTION_ATTACK_UNIT ||
-		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == targetUnit.SpriteId && action_x_loc2 == targetXLoc && action_y_loc2 == targetYLoc)
+		if ((ActionMode2 == UnitConstants.ACTION_ATTACK_UNIT ||
+		     ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
+		    ActionPara2 == targetUnit.SpriteId && ActionLocX2 == targetXLoc && ActionLocY2 == targetYLoc)
 		{
 			//------------ old order ------------//
 
@@ -904,16 +914,16 @@ public partial class Unit
 		else
 		{
 			//-------------- store new order ----------------//
-			if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+			if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 			{
-				action_mode2 = UnitConstants.ACTION_ATTACK_UNIT;
+				ActionMode2 = UnitConstants.ACTION_ATTACK_UNIT;
 			}
 
-			action_para2 = targetUnit.SpriteId;
-			action_x_loc2 = targetXLoc;
-			action_y_loc2 = targetYLoc;
+			ActionPara2 = targetUnit.SpriteId;
+			ActionLocX2 = targetXLoc;
+			ActionLocY2 = targetYLoc;
 		}
 
 		//-------------------------------------------------------------//
@@ -926,7 +936,7 @@ public partial class Unit
 			targetUnit.SpriteInfo.LocHeight);
 		choose_best_attack_mode(attackDistance, targetMobileType);
 
-		AttackInfo attackInfo = attack_info_array[CurAttack];
+		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance) // need to move to target
 		{
 			int searchResult = 1;
@@ -974,20 +984,20 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			if (searchResult != 0)
 			{
-				waiting_term = 0;
+				WaitingTerm = 0;
 				if (resetBlockedEdge)
 				{
-					for (int i = 0; i < blocked_edge.Length; i++)
+					for (int i = 0; i < BlockedEdges.Length; i++)
 					{
-						blocked_edge[i] = 0;
+						BlockedEdges[i] = 0;
 					}
 				}
 			}
 			else
 			{
-				for (int i = 0; i < blocked_edge.Length; i++)
+				for (int i = 0; i < BlockedEdges.Length; i++)
 				{
-					blocked_edge[i] = 0xff;
+					BlockedEdges[i] = 0xff;
 				}
 			}
 		}
@@ -1011,17 +1021,17 @@ public partial class Unit
 			}
 		}
 
-		action_mode = UnitConstants.ACTION_ATTACK_UNIT;
-		action_para = targetUnit.SpriteId;
-		action_x_loc = targetXLoc;
-		action_y_loc = targetYLoc;
+		ActionMode = UnitConstants.ACTION_ATTACK_UNIT;
+		ActionParam = targetUnit.SpriteId;
+		ActionLocX = targetXLoc;
+		ActionLocY = targetYLoc;
 
 		//------ set ai_original_target_?_loc --------//
 
-		if (ai_unit)
+		if (AIUnit)
 		{
-			ai_original_target_x_loc = targetXLoc;
-			ai_original_target_y_loc = targetYLoc;
+			AIOriginalTargetLocX = targetXLoc;
+			AIOriginalTargetLocY = targetYLoc;
 		}
 	}
 	
@@ -1047,9 +1057,9 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (!loc.IsFirm())
 		{
-			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+			if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 			{
 				stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -1080,9 +1090,9 @@ public partial class Unit
 			//Firm		*firm = FirmArray[loc.firm_recno()];
 			if (!possible_place_for_range_attack(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height, maxRange))
 			{
-				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+				    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+				    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
 					MoveTo(firmXLoc, firmYLoc);
 				}
@@ -1098,11 +1108,11 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// action_mode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if ((action_mode2 == UnitConstants.ACTION_ATTACK_FIRM ||
-		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == firm.firm_recno && action_x_loc2 == firmXLoc && action_y_loc2 == firmYLoc)
+		if ((ActionMode2 == UnitConstants.ACTION_ATTACK_FIRM ||
+		     ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
+		    ActionPara2 == firm.firm_recno && ActionLocX2 == firmXLoc && ActionLocY2 == firmYLoc)
 		{
 			//-------------- old order -------------//
 			if (CurAction != SPRITE_IDLE)
@@ -1113,14 +1123,14 @@ public partial class Unit
 		else
 		{
 			//-------------- new order -------------//
-			if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-				action_mode2 = UnitConstants.ACTION_ATTACK_FIRM;
+			if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				ActionMode2 = UnitConstants.ACTION_ATTACK_FIRM;
 
-			action_para2 = firm.firm_recno;
-			action_x_loc2 = firmXLoc;
-			action_y_loc2 = firmYLoc;
+			ActionPara2 = firm.firm_recno;
+			ActionLocX2 = firmXLoc;
+			ActionLocY2 = firmYLoc;
 		}
 
 		//-------------------------------------------------------------//
@@ -1132,7 +1142,7 @@ public partial class Unit
 		int attackDistance = cal_distance(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[CurAttack];
+		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance) // need to move to target
 		{
 			int searchResult = 1;
@@ -1179,17 +1189,17 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			if (searchResult != 0)
 			{
-				waiting_term = 0;
+				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)
 				{
-					for (int i = 0; i < blocked_edge.Length; i++)
-						blocked_edge[i] = 0;
+					for (int i = 0; i < BlockedEdges.Length; i++)
+						BlockedEdges[i] = 0;
 				}
 			}
 			else
 			{
-				for (int i = 0; i < blocked_edge.Length; i++)
-					blocked_edge[i] = 0xff;
+				for (int i = 0; i < BlockedEdges.Length; i++)
+					BlockedEdges[i] = 0xff;
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
@@ -1233,10 +1243,10 @@ public partial class Unit
 			}
 		}
 
-		action_mode = UnitConstants.ACTION_ATTACK_FIRM;
-		action_para = firm.firm_recno;
-		action_x_loc = firmXLoc;
-		action_y_loc = firmYLoc;
+		ActionMode = UnitConstants.ACTION_ATTACK_FIRM;
+		ActionParam = firm.firm_recno;
+		ActionLocX = firmXLoc;
+		ActionLocY = firmYLoc;
 	}
 	
 	public void attack_town(int townXLoc, int townYLoc, int xOffset = 0, int yOffset = 0, int resetBlockedEdge = 1)
@@ -1261,9 +1271,9 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (!loc.IsTown())
 		{
-			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+			if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 			{
 				stop(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -1292,9 +1302,9 @@ public partial class Unit
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, maxRange))
 			{
-				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-				    action_mode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+				    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+				    ActionMode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
 					MoveTo(townXLoc, townYLoc);
 				}
@@ -1310,11 +1320,11 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// action_mode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if ((action_mode2 == UnitConstants.ACTION_ATTACK_TOWN ||
-		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == town.TownId && action_x_loc2 == townXLoc && action_y_loc2 == townYLoc)
+		if ((ActionMode2 == UnitConstants.ACTION_ATTACK_TOWN ||
+		     ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
+		    ActionPara2 == town.TownId && ActionLocX2 == townXLoc && ActionLocY2 == townYLoc)
 		{
 			//----------- old order ------------//
 
@@ -1327,14 +1337,14 @@ public partial class Unit
 		else
 		{
 			//------------ new order -------------//
-			if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-				action_mode2 = UnitConstants.ACTION_ATTACK_TOWN;
+			if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				ActionMode2 = UnitConstants.ACTION_ATTACK_TOWN;
 
-			action_para2 = town.TownId;
-			action_x_loc2 = townXLoc;
-			action_y_loc2 = townYLoc;
+			ActionPara2 = town.TownId;
+			ActionLocX2 = townXLoc;
+			ActionLocY2 = townYLoc;
 		}
 
 		//-------------------------------------------------------------//
@@ -1346,7 +1356,7 @@ public partial class Unit
 		int attackDistance = cal_distance(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[CurAttack];
+		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
 			int searchResult = 1;
@@ -1392,17 +1402,17 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			if (searchResult != 0)
 			{
-				waiting_term = 0;
+				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)
 				{
-					for (int i = 0; i < blocked_edge.Length; i++)
-						blocked_edge[i] = 0;
+					for (int i = 0; i < BlockedEdges.Length; i++)
+						BlockedEdges[i] = 0;
 				}
 			}
 			else
 			{
-				for (int i = 0; i < blocked_edge.Length; i++)
-					blocked_edge[i] = 0xff;
+				for (int i = 0; i < BlockedEdges.Length; i++)
+					BlockedEdges[i] = 0xff;
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
@@ -1423,10 +1433,10 @@ public partial class Unit
 			}
 		}
 
-		action_mode = UnitConstants.ACTION_ATTACK_TOWN;
-		action_para = town.TownId;
-		action_x_loc = townXLoc;
-		action_y_loc = townYLoc;
+		ActionMode = UnitConstants.ACTION_ATTACK_TOWN;
+		ActionParam = town.TownId;
+		ActionLocX = townXLoc;
+		ActionLocY = townYLoc;
 	}
 	
 	public void attack_wall(int wallXLoc, int wallYLoc, int xOffset = 0, int yOffset = 0, int resetBlockedEdge = 1)
@@ -1451,9 +1461,9 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (!loc.IsWall())
 		{
-			if (action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-			    action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+			if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+			    ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 			{
 				stop(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -1481,9 +1491,9 @@ public partial class Unit
 			maxRange = max_attack_range();
 			if (!possible_place_for_range_attack(wallXLoc, wallYLoc, 1, 1, maxRange))
 			{
-				if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-				    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-				    action_mode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+				    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+				    ActionMode != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				{
 					MoveTo(wallXLoc, wallYLoc);
 				}
@@ -1499,11 +1509,11 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// action_mode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if ((action_mode2 == UnitConstants.ACTION_ATTACK_WALL ||
-		     action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
-		     action_mode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    action_para2 == 0 && action_x_loc2 == wallXLoc && action_y_loc2 == wallYLoc)
+		if ((ActionMode2 == UnitConstants.ACTION_ATTACK_WALL ||
+		     ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
+		     ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
+		    ActionPara2 == 0 && ActionLocX2 == wallXLoc && ActionLocY2 == wallYLoc)
 		{
 			//------------ old order ------------//
 
@@ -1516,14 +1526,14 @@ public partial class Unit
 		else
 		{
 			//-------------- new order -------------//
-			if (action_mode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-			    action_mode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
-				action_mode2 = UnitConstants.ACTION_ATTACK_WALL;
+			if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+			    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
+				ActionMode2 = UnitConstants.ACTION_ATTACK_WALL;
 
-			action_para2 = 0;
-			action_x_loc2 = wallXLoc;
-			action_y_loc2 = wallYLoc;
+			ActionPara2 = 0;
+			ActionLocX2 = wallXLoc;
+			ActionLocY2 = wallYLoc;
 		}
 
 		//-------------------------------------------------------------//
@@ -1535,7 +1545,7 @@ public partial class Unit
 		int attackDistance = cal_distance(wallXLoc, wallYLoc, 1, 1);
 		choose_best_attack_mode(attackDistance);
 
-		AttackInfo attackInfo = attack_info_array[CurAttack];
+		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
 			int searchResult = 1;
@@ -1581,17 +1591,17 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			if (searchResult != 0)
 			{
-				waiting_term = 0;
+				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)
 				{
-					for (int i = 0; i < blocked_edge.Length; i++)
-						blocked_edge[i] = 0;
+					for (int i = 0; i < BlockedEdges.Length; i++)
+						BlockedEdges[i] = 0;
 				}
 			}
 			else
 			{
-				for (int i = 0; i < blocked_edge.Length; i++)
-					blocked_edge[i] = 0xff;
+				for (int i = 0; i < BlockedEdges.Length; i++)
+					BlockedEdges[i] = 0xff;
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
@@ -1612,15 +1622,15 @@ public partial class Unit
 			}
 		}
 
-		action_mode = UnitConstants.ACTION_ATTACK_WALL;
-		action_para = 0;
-		action_x_loc = wallXLoc;
-		action_y_loc = wallYLoc;
+		ActionMode = UnitConstants.ACTION_ATTACK_WALL;
+		ActionParam = 0;
+		ActionLocX = wallXLoc;
+		ActionLocY = wallYLoc;
 	}
 	
 	public void hit_target(Unit parentUnit, Unit targetUnit, double attackDamage, int parentNationRecno)
 	{
-		int targetNationRecno = targetUnit.nation_recno;
+		int targetNationRecno = targetUnit.NationId;
 
 		//------------------------------------------------------------//
 		// if the attacked unit is in defense mode, order other available
@@ -1632,9 +1642,9 @@ public partial class Unit
 		    parentNationRecno != targetNationRecno && parentUnit.nation_can_attack(targetNationRecno) &&
 		    targetUnit.in_auto_defense_mode())
 		{
-			if (!FirmArray.IsDeleted(targetUnit.action_misc_para))
+			if (!FirmArray.IsDeleted(targetUnit.ActionMiscParam))
 			{
-				Firm firm = FirmArray[targetUnit.action_misc_para];
+				Firm firm = FirmArray[targetUnit.ActionMiscParam];
 				if (firm.firm_id == Firm.FIRM_CAMP)
 				{
 					FirmCamp camp = (FirmCamp)firm;
@@ -1660,21 +1670,21 @@ public partial class Unit
 		const double COMPARE_POINT = DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN + ONE_OVER_ATTACK_SLOW_DOWN;
 
 		if (attackDamage >= COMPARE_POINT)
-			targetUnit.hit_points -= attackDamage - DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN;
+			targetUnit.HitPoints -= attackDamage - DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN;
 		else
-			targetUnit.hit_points -= Math.Min(attackDamage, ONE_OVER_ATTACK_SLOW_DOWN);  // in case attackDamage = 0, no hit_point is reduced
+			targetUnit.HitPoints -= Math.Min(attackDamage, ONE_OVER_ATTACK_SLOW_DOWN);  // in case attackDamage = 0, no hit_point is reduced
 		
 		Nation parentNation = parentNationRecno != 0 ? NationArray[parentNationRecno] : null;
 		Nation targetNation = targetNationRecno != 0 ? NationArray[targetNationRecno] : null;
-		int targetUnitClass = UnitRes[targetUnit.unit_id].unit_class;
+		int targetUnitClass = UnitRes[targetUnit.UnitType].unit_class;
 
-		if (targetUnit.hit_points <= 0.0)
+		if (targetUnit.HitPoints <= 0.0)
 		{
-			targetUnit.hit_points = 0.0;
+			targetUnit.HitPoints = 0.0;
 
 			//---- if the unit killed is a human unit -----//
 
-			if (targetUnit.race_id != 0)
+			if (targetUnit.RaceId != 0)
 			{
 				//---- if the unit killed is a town defender unit -----//
 
@@ -1682,27 +1692,27 @@ public partial class Unit
 				{
 					if (targetNationRecno != 0)
 					{
-						targetNation.civilian_killed(targetUnit.race_id, false, 1);
+						targetNation.civilian_killed(targetUnit.RaceId, false, 1);
 						targetNation.own_civilian_killed++;
 					}
 
 					if (parentNation != null)
 					{
-						parentNation.civilian_killed(targetUnit.race_id, true, 1);
+						parentNation.civilian_killed(targetUnit.RaceId, true, 1);
 						parentNation.enemy_civilian_killed++;
 					}
 				}
-				else if (targetUnit.is_civilian() && targetUnit.skill.combat_level < 20) //--- mobile civilian ---//
+				else if (targetUnit.is_civilian() && targetUnit.Skill.combat_level < 20) //--- mobile civilian ---//
 				{
 					if (targetNationRecno != 0)
 					{
-						targetNation.civilian_killed(targetUnit.race_id, false, 0);
+						targetNation.civilian_killed(targetUnit.RaceId, false, 0);
 						targetNation.own_civilian_killed++;
 					}
 
 					if (parentNation != null)
 					{
-						parentNation.civilian_killed(targetUnit.race_id, true, 0);
+						parentNation.civilian_killed(targetUnit.RaceId, true, 0);
 						parentNation.enemy_civilian_killed++;
 					}
 				}
@@ -1720,7 +1730,7 @@ public partial class Unit
 
 			else
 			{
-				switch (UnitRes[targetUnit.unit_id].unit_class)
+				switch (UnitRes[targetUnit.UnitType].unit_class)
 				{
 					case UnitConstants.UNIT_CLASS_WEAPON:
 						if (parentNation != null)
@@ -1743,7 +1753,7 @@ public partial class Unit
 				//---- if the unit destroyed is a trader or caravan -----//
 
 				// killing a caravan is resented by all races
-				if (targetUnit.unit_id == UnitConstants.UNIT_CARAVAN || targetUnit.unit_id == UnitConstants.UNIT_VESSEL)
+				if (targetUnit.UnitType == UnitConstants.UNIT_CARAVAN || targetUnit.UnitType == UnitConstants.UNIT_VESSEL)
 				{
 					// Race-Id of 0 means a loyalty penalty applied for all races
 					if (targetNationRecno != 0)
@@ -1795,12 +1805,12 @@ public partial class Unit
 		{
 			targetNation.being_attacked(parentNationRecno);
 
-			if (targetUnit.ai_unit)
+			if (targetUnit.AIUnit)
 			{
-				if (targetUnit.rank_id >= RANK_GENERAL)
+				if (targetUnit.Rank >= RANK_GENERAL)
 					targetUnit.ai_leader_being_attacked(parentUnit.SpriteId);
 
-				if (UnitRes[targetUnit.unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+				if (UnitRes[targetUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 					((UnitMarine)targetUnit).ai_ship_being_attacked(parentUnit.SpriteId);
 			}
 
@@ -1808,14 +1818,11 @@ public partial class Unit
 
 			if (Info.TotalDays % 2 == SpriteId % 2)
 			{
-				if (targetUnit.leader_unit_recno != 0 ||
-				    (targetUnit.team_info != null && targetUnit.team_info.member_unit_array.Count > 1))
+				if (targetUnit.LeaderId != 0 || targetUnit.TeamInfo.Members.Count > 1)
 				{
-					if (!UnitArray.IsDeleted(parentUnit
-						    .SpriteId)) // it is possible that parentUnit is dying right now 
-					{
+					// it is possible that parentUnit is dying right now
+					if (!UnitArray.IsDeleted(parentUnit.SpriteId)) 
 						targetUnit.ask_team_help_attack(parentUnit);
-					}
 				}
 			}
 		}
@@ -1831,14 +1838,11 @@ public partial class Unit
 
 			if (Info.TotalDays % 2 == SpriteId % 2)
 			{
-				if (targetUnit.leader_unit_recno != 0 ||
-				    (targetUnit.team_info != null && targetUnit.team_info.member_unit_array.Count > 1))
+				if (targetUnit.LeaderId != 0 || targetUnit.TeamInfo.Members.Count > 1)
 				{
-					if (!UnitArray.IsDeleted(parentUnit
-						    .SpriteId)) // it is possible that parentUnit is dying right now 
-					{
+					// it is possible that parentUnit is dying right now
+					if (!UnitArray.IsDeleted(parentUnit.SpriteId)) 
 						targetUnit.ask_team_help_attack(parentUnit);
-					}
 				}
 			}
 		}
@@ -2034,7 +2038,7 @@ public partial class Unit
 		int allowMove = 1;
 		if (SpriteInfo.SpriteSubType == 'M')
 		{
-			UnitInfo unitInfo = UnitRes[unit_id];
+			UnitInfo unitInfo = UnitRes[UnitType];
 			if (unitInfo.carry_goods_capacity != 0)
 			{
 				UnitMarine ship = (UnitMarine)this;
@@ -2049,15 +2053,15 @@ public partial class Unit
 		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 
 		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight);
-		action_x_loc2 = action_x_loc = targetXLoc; // update target location
-		action_y_loc2 = action_y_loc = targetYLoc;
+		ActionLocX2 = ActionLocX = targetXLoc; // update target location
+		ActionLocY2 = ActionLocY = targetYLoc;
 
 		//---------------------------------------------------------------------//
 		// target is out of attacking range, move closer to it
 		//---------------------------------------------------------------------//
 		int curXLoc = NextLocX;
 		int curYLoc = NextLocY;
-		if (attackDistance > attack_range)
+		if (attackDistance > AttackRange)
 		{
 			//---------------- stop all actions if not allow to move -----------------//
 			if (allowMove == 0)
@@ -2080,7 +2084,7 @@ public partial class Unit
 				//-----------------------------------------------------------------------//
 				// reset attack parameters
 				//-----------------------------------------------------------------------//
-				range_attack_x_loc = range_attack_y_loc = -1;
+				RangeAttackLocX = RangeAttackLocY = -1;
 
 				// choose better attack mode to attack the target
 				choose_best_attack_mode(attackDistance, targetUnit.MobileType);
@@ -2094,25 +2098,28 @@ public partial class Unit
 			if (Math.Abs(CurX - NextX) >= SpriteInfo.Speed || Math.Abs(CurY - NextY) >= SpriteInfo.Speed)
 				return; // return as moving
 
-			if (attackDistance == 1 && attack_range > 1) // may change attack mode
+			if (attackDistance == 1 && AttackRange > 1) // may change attack mode
 				choose_best_attack_mode(attackDistance, targetUnit.MobileType);
 
-			if (attack_range > 1) // range attack
+			if (AttackRange > 1) // range attack
 			{
 				//------------------ do range attack ----------------------//
-				AttackInfo attackInfo = attack_info_array[CurAttack];
+				AttackInfo attackInfo = AttackInfos[CurAttack];
 				// range attack possible
-				if (BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+				bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
+					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+				RangeAttackLocX = resultLocX;
+				RangeAttackLocY = resultLocY;
+				if (canAddBullet)
 				{
 					SetCur(NextX, NextY);
 
-					set_attack_dir(curXLoc, curYLoc, range_attack_x_loc, range_attack_y_loc);
+					set_attack_dir(curXLoc, curYLoc, RangeAttackLocX, RangeAttackLocY);
 					if (ConfigAdv.unit_target_move_range_cycle)
 					{
 						cycle_eqv_attack();
-						attackInfo = attack_info_array[CurAttack]; // cur_attack may change
+						attackInfo = AttackInfos[CurAttack]; // cur_attack may change
 						CurFrame = 1;
 					}
 
@@ -2158,29 +2165,34 @@ public partial class Unit
 		int unitXLoc = NextLocX;
 		int unitYLoc = NextLocY;
 
-		if (attack_range > 1) // use range attack
+		if (AttackRange > 1) // use range attack
 		{
 			//---------------- use range attack -----------------//
-			AttackInfo attackInfo = attack_info_array[CurAttack];
+			AttackInfo attackInfo = AttackInfos[CurAttack];
 
 			if (CurFrame != attackInfo.bullet_out_frame)
 				return; // wait for bullet_out_frame
 
 			if (!BulletArray.bullet_path_possible(unitXLoc, unitYLoc, MobileType,
-				    range_attack_x_loc, range_attack_y_loc, targetUnit.MobileType,
+				    RangeAttackLocX, RangeAttackLocY, targetUnit.MobileType,
 				    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 			{
 				SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 				// seek for another possible point to attack if target size > 1x1
-				if ((targetSpriteInfo.LocWidth > 1 || targetSpriteInfo.LocHeight > 1) &&
-				    !BulletArray.add_bullet_possible(unitXLoc, unitYLoc, MobileType, action_x_loc, action_y_loc,
-					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-					    out range_attack_x_loc, out range_attack_y_loc, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+				if (targetSpriteInfo.LocWidth > 1 || targetSpriteInfo.LocHeight > 1)
 				{
-					//------ no suitable location to attack target by bullet, move to target --------//
-					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
-						if (TryMoveToRangeAttack(targetUnit) == 0)
-							return; // can't reach a location to attack target
+					bool canAddBullet = BulletArray.add_bullet_possible(unitXLoc, unitYLoc, MobileType,
+						ActionLocX, ActionLocY, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
+						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					RangeAttackLocX = resultLocX;
+					RangeAttackLocY = resultLocY;
+					if (!canAddBullet)
+					{
+						//------ no suitable location to attack target by bullet, move to target --------//
+						if (PathNodes.Count == 0 || _pathNodeDistance == 0)
+							if (TryMoveToRangeAttack(targetUnit) == 0)
+								return; // can't reach a location to attack target
+					}
 				}
 			}
 
@@ -2188,30 +2200,30 @@ public partial class Unit
 			add_close_attack_effect();
 
 			// ------- reduce power --------//
-			cur_power -= attackInfo.consume_power;
-			if (cur_power < 0) // ***** BUGHERE
-				cur_power = 0;
+			CurPower -= attackInfo.consume_power;
+			if (CurPower < 0) // ***** BUGHERE
+				CurPower = 0;
 			set_remain_attack_delay();
 			return; // bullet emits
 		}
 		else // close attack
 		{
 			//--------------------- close attack ------------------------//
-			AttackInfo attackInfo = attack_info_array[CurAttack];
+			AttackInfo attackInfo = AttackInfos[CurAttack];
 
 			if (CurFrame == CurSpriteAttack().frameCount)
 			{
-				if (targetUnit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.is_nation(nation_recno))
+				if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.is_nation(NationId))
 					((UnitExpCart)targetUnit).trigger_explode();
 				else
-					hit_target(this, targetUnit, actual_damage(), nation_recno);
+					hit_target(this, targetUnit, actual_damage(), NationId);
 
 				add_close_attack_effect();
 
 				//------- reduce power --------//
-				cur_power -= attackInfo.consume_power;
-				if (cur_power < 0) // ***** BUGHERE
-					cur_power = 0;
+				CurPower -= attackInfo.consume_power;
+				if (CurPower < 0) // ***** BUGHERE
+					CurPower = 0;
 				set_remain_attack_delay();
 			}
 		}
@@ -2221,13 +2233,13 @@ public partial class Unit
 	{
 		if (MobileType == UnitConstants.UNIT_LAND)
 		{
-			if (attack_range == 1)
+			if (AttackRange == 1)
 			{
 				//------------------------------------------------------------//
 				// for close attack, the unit unable to attack the target if
 				// it is not in the target surrounding
 				//------------------------------------------------------------//
-				if (_pathNodeDistance > attack_range)
+				if (_pathNodeDistance > AttackRange)
 					return detect_surround_target();
 			}
 			else if (_pathNodeDistance != 0 && CurAction != SPRITE_TURN)
@@ -2243,22 +2255,24 @@ public partial class Unit
 
 		int attackDistance = cal_distance(targetXLoc, targetYLoc, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight);
 
-		if (attackDistance <= attack_range) // able to attack target
+		if (attackDistance <= AttackRange) // able to attack target
 		{
-			if ((attackDistance == 1) && attack_range > 1) // often false condition is checked first
+			if ((attackDistance == 1) && AttackRange > 1) // often false condition is checked first
 				choose_best_attack_mode(1, targetUnit.MobileType); // may change to close attack
 
-			if (attack_range > 1) // use range attack
+			if (AttackRange > 1) // use range attack
 			{
 				SetCur(NextX, NextY);
 
-				AttackInfo attackInfo = attack_info_array[CurAttack];
+				AttackInfo attackInfo = AttackInfos[CurAttack];
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType, targetXLoc, targetYLoc,
-					    targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-					    out range_attack_x_loc, out range_attack_y_loc,
-					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+				bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
+					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+				RangeAttackLocX = resultLocX;
+				RangeAttackLocY = resultLocY;
+				if (!canAddBullet)
 				{
 					//------- no suitable location, move to target ---------//
 					if (PathNodes.Count == 0 || _pathNodeDistance == 0)
@@ -2269,7 +2283,7 @@ public partial class Unit
 				}
 
 				//---------- able to do range attack ----------//
-				set_attack_dir(NextLocX, NextLocY, range_attack_x_loc, range_attack_y_loc);
+				set_attack_dir(NextLocX, NextLocY, RangeAttackLocX, RangeAttackLocY);
 				CurFrame = 1;
 
 				if (IsDirCorrect())
@@ -2322,7 +2336,7 @@ public partial class Unit
 					continue;
 
 				target = UnitArray[targetRecno];
-				if (target.nation_recno == nation_recno)
+				if (target.NationId == NationId)
 					continue;
 
 				if (idle_detect_unit_checking(targetRecno))
@@ -2367,7 +2381,7 @@ public partial class Unit
 	private void set_attack_dir(int curX, int curY, int targetX, int targetY)
 	{
 		int targetDir = GetDir(curX, curY, targetX, targetY);
-		if (UnitRes[unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			int attackDir1 = (targetDir + 2) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 			int attackDir2 = (targetDir + 6) % InternalConstants.MAX_SPRITE_DIR_TYPE;
@@ -2378,18 +2392,18 @@ public partial class Unit
 			else
 				FinalDir = attackDir2;
 
-			attack_dir = targetDir;
+			AttackDirection = targetDir;
 		}
 		else
 		{
-			attack_dir = targetDir;
+			AttackDirection = targetDir;
 			SetDir(targetDir);
 		}
 	}
 
 	private void set_remain_attack_delay()
 	{
-		RemainAttackDelay = attack_info_array[CurAttack].attack_delay;
+		RemainAttackDelay = AttackInfos[CurAttack].attack_delay;
 	}
 	
 	private bool can_attack_different_target_type()
@@ -2616,9 +2630,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[0] != sum)
+		if (BlockedEdges[0] != sum)
 		{
-			blocked_edge[0] = sum;
+			BlockedEdges[0] = sum;
 			equal = 0;
 		}
 
@@ -2651,9 +2665,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[1] != sum)
+		if (BlockedEdges[1] != sum)
 		{
-			blocked_edge[1] = sum;
+			BlockedEdges[1] = sum;
 			equal = 0;
 		}
 
@@ -2686,9 +2700,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[2] != sum)
+		if (BlockedEdges[2] != sum)
 		{
-			blocked_edge[2] = sum;
+			BlockedEdges[2] = sum;
 			equal = 0;
 		}
 
@@ -2721,9 +2735,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[3] != sum)
+		if (BlockedEdges[3] != sum)
 		{
-			blocked_edge[3] = sum;
+			BlockedEdges[3] = sum;
 			equal = 0;
 		}
 
@@ -2773,9 +2787,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[0] != sum)
+		if (BlockedEdges[0] != sum)
 		{
-			blocked_edge[0] = sum;
+			BlockedEdges[0] = sum;
 			equal = 0;
 		}
 
@@ -2808,9 +2822,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[1] != sum)
+		if (BlockedEdges[1] != sum)
 		{
-			blocked_edge[1] = sum;
+			BlockedEdges[1] = sum;
 			equal = 0;
 		}
 
@@ -2843,9 +2857,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[2] != sum)
+		if (BlockedEdges[2] != sum)
 		{
-			blocked_edge[2] = sum;
+			BlockedEdges[2] = sum;
 			equal = 0;
 		}
 
@@ -2878,9 +2892,9 @@ public partial class Unit
 			}
 		}
 
-		if (blocked_edge[3] != sum)
+		if (BlockedEdges[3] != sum)
 		{
-			blocked_edge[3] = sum;
+			BlockedEdges[3] = sum;
 			equal = 0;
 		}
 
@@ -3061,26 +3075,26 @@ public partial class Unit
 		int attackModeBeingUsed = CurAttack;
 		//UCHAR maxAttackRangeMode = 0;
 		int maxAttackRangeMode = CurAttack;
-		AttackInfo attackInfoMaxRange = attack_info_array[0];
+		AttackInfo attackInfoMaxRange = AttackInfos[0];
 		AttackInfo attackInfoChecking;
-		AttackInfo attackInfoSelected = attack_info_array[CurAttack];
+		AttackInfo attackInfoSelected = AttackInfos[CurAttack];
 
 		//--------------------------------------------------------------//
 		// If targetMobileType==UnitConstants.UNIT_AIR or mobile_type==UnitConstants.UNIT_AIR,
 		//	force to use range_attack.
 		// If there is no range_attack, return 0, i.e. cur_attack=0
 		//--------------------------------------------------------------//
-		if (attack_count > 1)
+		if (AttackCount > 1)
 		{
 			bool canAttack = false;
 			int checkingDamageWeight, selectedDamageWeight;
 
-			for (int i = 0; i < attack_count; i++)
+			for (int i = 0; i < AttackCount; i++)
 			{
 				if (attackModeBeingUsed == i)
 					continue; // it is the mode already used
 
-				attackInfoChecking = attack_info_array[i];
+				attackInfoChecking = AttackInfos[i];
 				if (can_attack_with(attackInfoChecking) && attackInfoChecking.attack_range >= attackDistance)
 				{
 					//-------------------- able to attack ----------------------//
@@ -3169,12 +3183,12 @@ public partial class Unit
 			else
 				CurAttack = maxAttackRangeMode; //	choose the longest attack range if unable to attack
 
-			attack_range = attack_info_array[CurAttack].attack_range;
+			AttackRange = AttackInfos[CurAttack].attack_range;
 		}
 		else
 		{
 			CurAttack = 0; // only one mode is supported
-			attack_range = attack_info_array[0].attack_range;
+			AttackRange = AttackInfos[0].attack_range;
 			return;
 		}
 	}
@@ -3183,9 +3197,9 @@ public partial class Unit
 	{
 		int maxRange = 0;
 
-		for (int i = 0; i < attack_count; i++)
+		for (int i = 0; i < AttackCount; i++)
 		{
-			AttackInfo attackInfo = attack_info_array[i];
+			AttackInfo attackInfo = AttackInfos[i];
 			if (can_attack_with(attackInfo) && attackInfo.attack_range > maxRange)
 				maxRange = attackInfo.attack_range;
 		}
@@ -3195,28 +3209,28 @@ public partial class Unit
 	
 	private bool can_attack_with(int i) // 0 to attack_count-1
 	{
-		AttackInfo attackInfo = attack_info_array[i];
-		return skill.combat_level >= attackInfo.combat_level && cur_power >= attackInfo.min_power;
+		AttackInfo attackInfo = AttackInfos[i];
+		return Skill.combat_level >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
 	}
 
 	private bool can_attack_with(AttackInfo attackInfo)
 	{
-		return skill.combat_level >= attackInfo.combat_level && cur_power >= attackInfo.min_power;
+		return Skill.combat_level >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
 	}
 
 	public bool can_attack()
 	{
-		return can_attack_flag && attack_count > 0;
+		return CanAttack && AttackCount > 0;
 	}
 	
 	public void cycle_eqv_attack()
 	{
 		int trial = SpriteInfo.MAX_UNIT_ATTACK_TYPE + 2;
-		if (attack_info_array[CurAttack].eqv_attack_next > 0)
+		if (AttackInfos[CurAttack].eqv_attack_next > 0)
 		{
 			do
 			{
-				CurAttack = attack_info_array[CurAttack].eqv_attack_next - 1;
+				CurAttack = AttackInfos[CurAttack].eqv_attack_next - 1;
 			} while (!can_attack_with(CurAttack));
 		}
 		else
@@ -3224,10 +3238,10 @@ public partial class Unit
 			if (!can_attack_with(CurAttack))
 			{
 				// force to search again
-				int attackRange = attack_info_array[CurAttack].attack_range;
-				for (int i = 0; i < attack_count; i++)
+				int attackRange = AttackInfos[CurAttack].attack_range;
+				for (int i = 0; i < AttackCount; i++)
 				{
-					AttackInfo attackInfo = attack_info_array[i];
+					AttackInfo attackInfo = AttackInfos[i];
 					if (attackInfo.attack_range >= attackRange && can_attack_with(attackInfo))
 					{
 						CurAttack = i;
@@ -3238,63 +3252,63 @@ public partial class Unit
 		}
 	}
 
-	public virtual void fix_attack_info() // set attack_info_array appropriately
+	protected virtual void FixAttackInfo() // set AttackInfos appropriately
 	{
-		UnitInfo unitInfo = UnitRes[unit_id];
+		UnitInfo unitInfo = UnitRes[UnitType];
 
-		attack_count = unitInfo.attack_count;
+		AttackCount = unitInfo.attack_count;
 
-		if (attack_count > 0 && unitInfo.first_attack > 0)
+		if (AttackCount > 0 && unitInfo.first_attack > 0)
 		{
-			attack_info_array = new AttackInfo[attack_count];
-			for (int i = 0; i < attack_count; i++)
+			AttackInfos = new AttackInfo[AttackCount];
+			for (int i = 0; i < AttackCount; i++)
 			{
-				attack_info_array[i] = UnitRes.attack_info_array[unitInfo.first_attack - 1 + i];
+				AttackInfos[i] = UnitRes.attack_info_array[unitInfo.first_attack - 1 + i];
 			}
 		}
 		else
 		{
-			attack_info_array = null;
+			AttackInfos = Array.Empty<AttackInfo>();
 		}
 
-		int old_attack_count = attack_count;
+		int oldAttackCount = AttackCount;
 		int techLevel;
 		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON && (techLevel = get_weapon_version()) > 0)
 		{
-			switch (unit_id)
+			switch (UnitType)
 			{
 				case UnitConstants.UNIT_BALLISTA:
 				case UnitConstants.UNIT_F_BALLISTA:
-					attack_count = 2;
+					AttackCount = 2;
 					break;
 				case UnitConstants.UNIT_EXPLOSIVE_CART:
-					attack_count = 0;
+					AttackCount = 0;
 					break;
 				default:
-					attack_count = 1;
+					AttackCount = 1;
 					break;
 			}
 
-			if (attack_count > 0)
+			if (AttackCount > 0)
 			{
 				//TODO check this
-				attack_info_array = new AttackInfo[attack_count];
-				for (int i = 0; i < attack_count; i++)
+				AttackInfos = new AttackInfo[AttackCount];
+				for (int i = 0; i < AttackCount; i++)
 				{
-					attack_info_array[i] = UnitRes.attack_info_array[old_attack_count + (techLevel - 1) * attack_count + i];
+					AttackInfos[i] = UnitRes.attack_info_array[oldAttackCount + (techLevel - 1) * AttackCount + i];
 				}
 			}
 			else
 			{
 				// no attack like explosive cart
-				attack_info_array = null;
+				AttackInfos = Array.Empty<AttackInfo>();
 			}
 		}
 	}
 	
 	public bool is_action_attack()
 	{
-		switch (action_mode2)
+		switch (ActionMode2)
 		{
 			case UnitConstants.ACTION_ATTACK_UNIT:
 			case UnitConstants.ACTION_ATTACK_FIRM:
@@ -3318,40 +3332,40 @@ public partial class Unit
 	
 	public void defense_attack_unit(int targetRecno)
 	{
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
 		attack_unit(targetRecno, 0, 0, true);
 	}
 
 	public void defense_attack_firm(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
 		attack_firm(targetXLoc, targetYLoc);
 	}
 
 	public void defense_attack_town(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
 		attack_town(targetXLoc, targetYLoc);
 	}
 
 	public void defense_attack_wall(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET;
 		attack_wall(targetXLoc, targetYLoc);
 	}
 
 	public void defense_detect_target()
 	{
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET;
-		action_para2 = UnitConstants.AUTO_DEFENSE_DETECT_COUNT;
-		action_x_loc2 = -1;
-		action_y_loc2 = -1;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET;
+		ActionPara2 = UnitConstants.AUTO_DEFENSE_DETECT_COUNT;
+		ActionLocX2 = -1;
+		ActionLocY2 = -1;
 	}
 
 	private void general_defend_mode_detect_target(int checkDefendMode = 0)
 	{
 		stop();
-		switch (action_mode2)
+		switch (ActionMode2)
 		{
 			case UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET:
 				defense_detect_target();
@@ -3383,34 +3397,34 @@ public partial class Unit
 		// if the unit's action mode is in defensive attack action, process the corresponding
 		// checking.
 		//------------------------------------------------------------------------------//
-		switch (action_mode)
+		switch (ActionMode)
 		{
 			case UnitConstants.ACTION_ATTACK_UNIT:
-				if (UnitArray.IsDeleted(action_para2))
+				if (UnitArray.IsDeleted(ActionPara2))
 				{
 					clearToDetect++;
 				}
 				else
 				{
-					unit = UnitArray[action_para2];
+					unit = UnitArray[ActionPara2];
 
 					//if(unit.cur_action==SPRITE_IDLE)
 					//	clearToDetect++;
 
-					if (!nation_can_attack(unit.nation_recno)) // cannot attack this nation
+					if (!nation_can_attack(unit.NationId)) // cannot attack this nation
 						clearToDetect++;
 				}
 
 				break;
 
 			case UnitConstants.ACTION_ATTACK_FIRM:
-				if (FirmArray.IsDeleted(action_para2))
+				if (FirmArray.IsDeleted(ActionPara2))
 				{
 					clearToDetect++;
 				}
 				else
 				{
-					firm = FirmArray[action_para2];
+					firm = FirmArray[ActionPara2];
 
 					if (!nation_can_attack(firm.nation_recno)) // cannot attack this nation
 						clearToDetect++;
@@ -3419,13 +3433,13 @@ public partial class Unit
 				break;
 
 			case UnitConstants.ACTION_ATTACK_TOWN:
-				if (TownArray.IsDeleted(action_para2))
+				if (TownArray.IsDeleted(ActionPara2))
 				{
 					clearToDetect++;
 				}
 				else
 				{
-					Town town = TownArray[action_para2];
+					Town town = TownArray[ActionPara2];
 
 					if (!nation_can_attack(town.NationId)) // cannot attack this nation
 						clearToDetect++;
@@ -3434,7 +3448,7 @@ public partial class Unit
 				break;
 
 			case UnitConstants.ACTION_ATTACK_WALL:
-				loc = World.GetLoc(action_x_loc2, action_y_loc2);
+				loc = World.GetLoc(ActionLocX2, ActionLocY2);
 
 				if (!loc.IsWall() || !nation_can_attack(loc.PowerNationId))
 					clearToDetect++;
@@ -3456,15 +3470,15 @@ public partial class Unit
 			reset_action_para();
 			return true;
 		}
-		else if (waiting_term < UnitConstants.ATTACK_WAITING_TERM)
-			waiting_term++;
+		else if (WaitingTerm < UnitConstants.ATTACK_WAITING_TERM)
+			WaitingTerm++;
 		else
 		{
 			//------------------------------------------------------------------------------//
 			// process the corresponding attacking procedure.
 			//------------------------------------------------------------------------------//
-			waiting_term = 0;
-			switch (action_mode)
+			WaitingTerm = 0;
+			switch (ActionMode)
 			{
 				case UnitConstants.ACTION_ATTACK_UNIT:
 					spriteInfo = unit.SpriteInfo;
@@ -3473,9 +3487,9 @@ public partial class Unit
 					// attack the target if able to reach the target surrounding, otherwise
 					// continue to wait
 					//-----------------------------------------------------------------//
-					action_x_loc2 = unit.NextLocX; // update target location
-					action_y_loc2 = unit.NextLocY;
-					if (space_for_attack(action_x_loc2, action_y_loc2, unit.MobileType,
+					ActionLocX2 = unit.NextLocX; // update target location
+					ActionLocY2 = unit.NextLocY;
+					if (space_for_attack(ActionLocX2, ActionLocY2, unit.MobileType,
 						    spriteInfo.LocWidth, spriteInfo.LocHeight))
 						attack_unit(unit.SpriteId, 0, 0, true);
 					break;
@@ -3487,11 +3501,11 @@ public partial class Unit
 					// attack the target if able to reach the target surrounding, otherwise
 					// continue to wait
 					//-----------------------------------------------------------------//
-					attack_firm(action_x_loc2, action_y_loc2);
+					attack_firm(ActionLocX2, ActionLocY2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
-						    action_x_loc2, action_y_loc2, firmInfo.loc_width, firmInfo.loc_height))
-						waiting_term = 0;
+					if (!is_in_surrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+						    ActionLocX2, ActionLocY2, firmInfo.loc_width, firmInfo.loc_height))
+						WaitingTerm = 0;
 					break;
 
 				case UnitConstants.ACTION_ATTACK_TOWN:
@@ -3499,18 +3513,18 @@ public partial class Unit
 					// attack the target if able to reach the target surrounding, otherwise
 					// continue to wait
 					//-----------------------------------------------------------------//
-					attack_town(action_x_loc2, action_y_loc2);
+					attack_town(ActionLocX2, ActionLocY2);
 
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
-						    action_x_loc2, action_y_loc2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
-						waiting_term = 0;
+					if (!is_in_surrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+						    ActionLocX2, ActionLocY2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+						WaitingTerm = 0;
 					break;
 
 				case UnitConstants.ACTION_ATTACK_WALL:
-					attack_wall(action_x_loc2, action_y_loc2);
-					if (!is_in_surrounding(move_to_x_loc, move_to_y_loc, SpriteInfo.LocWidth,
-						    action_x_loc2, action_y_loc2, 1, 1))
-						waiting_term = 0;
+					attack_wall(ActionLocX2, ActionLocY2);
+					if (!is_in_surrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+						    ActionLocX2, ActionLocY2, 1, 1))
+						WaitingTerm = 0;
 					break;
 
 				default:
@@ -3525,7 +3539,7 @@ public partial class Unit
 	private void defense_back_camp(int firmXLoc, int firmYLoc)
 	{
 		assign(firmXLoc, firmYLoc);
-		action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP;
+		ActionMode2 = UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP;
 	}
 
 	private void process_auto_defense_attack_target()
@@ -3542,16 +3556,16 @@ public partial class Unit
 		// no target or target is out of detect range, so change state to
 		// back camp
 		//----------------------------------------------------------------//
-		if (action_para2 == 0)
+		if (ActionPara2 == 0)
 		{
-			if (FirmArray.IsDeleted(action_misc_para))
+			if (FirmArray.IsDeleted(ActionMiscParam))
 			{
 				process_auto_defense_back_camp();
 				return;
 			}
 
-			Firm firm = FirmArray[action_misc_para];
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != nation_recno)
+			Firm firm = FirmArray[ActionMiscParam];
+			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
 			{
 				process_auto_defense_back_camp();
 				return;
@@ -3565,14 +3579,14 @@ public partial class Unit
 			}
 
 			Unit target = UnitArray[camp.defend_target_recno];
-			if (target.action_mode != UnitConstants.ACTION_ATTACK_FIRM || target.action_para != camp.firm_recno)
+			if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != camp.firm_recno)
 			{
 				process_auto_defense_back_camp();
 				return;
 			}
 
 			//action_mode2 = UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET;
-			action_para2 = UnitConstants.AUTO_DEFENSE_DETECT_COUNT;
+			ActionPara2 = UnitConstants.AUTO_DEFENSE_DETECT_COUNT;
 			return;
 		}
 
@@ -3582,7 +3596,7 @@ public partial class Unit
 		int startLoc;
 		int dimension;
 
-		switch (action_para2 % InternalConstants.FRAMES_PER_DAY)
+		switch (ActionPara2 % InternalConstants.FRAMES_PER_DAY)
 		{
 			case 3:
 				startLoc = 2; // 1-7, check 224 = 15^2-1
@@ -3600,7 +3614,7 @@ public partial class Unit
 				break;
 
 			default:
-				action_para2--;
+				ActionPara2--;
 				return;
 		}
 
@@ -3608,22 +3622,22 @@ public partial class Unit
 		// attack the target if target detected, or change the detect region
 		//---------------------------------------------------------------//
 		if (!idle_detect_attack(startLoc, dimension, 1)) // defense mode is on
-			action_para2--;
+			ActionPara2--;
 	}
 
 	private void process_auto_defense_back_camp()
 	{
 		int clearDefenseMode = 0;
 		// the unit may become idle or unable to reach firm, reactivate it
-		if (action_mode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
+		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
 		{
-			if (action_misc != UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO ||
-			    action_misc_para == 0 || FirmArray.IsDeleted(action_misc_para))
+			if (ActionMisc != UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO ||
+			    ActionMiscParam == 0 || FirmArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
 			{
-				Firm firm = FirmArray[action_misc_para];
-				if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != nation_recno)
+				Firm firm = FirmArray[ActionMiscParam];
+				if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
 					clearDefenseMode++;
 				else
 				{
@@ -3634,11 +3648,11 @@ public partial class Unit
 		}
 		else if (CurAction == SPRITE_IDLE)
 		{
-			if (FirmArray.IsDeleted(action_misc_para))
+			if (FirmArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
 			{
-				Firm firm = FirmArray[action_misc_para];
+				Firm firm = FirmArray[ActionMiscParam];
 				defense_back_camp(firm.loc_x1, firm.loc_y1);
 				return;
 			}
@@ -3657,14 +3671,14 @@ public partial class Unit
 		const int PROB_FRIENDLY_RETURN = 20;
 		const int PROB_NEUTRAL_RETURN = 30;
 
-		if (UnitArray.IsDeleted(action_para))
+		if (UnitArray.IsDeleted(ActionParam))
 			return true;
 
 		if (CurAction == SPRITE_ATTACK)
 			return true;
 
-		Unit target = UnitArray[action_para];
-		Location loc = World.GetLoc(action_x_loc, action_y_loc);
+		Unit target = UnitArray[ActionParam];
+		Location loc = World.GetLoc(ActionLocX, ActionLocY);
 		if (!loc.HasUnit(target.MobileType))
 			return true; // the target may be dead or invisible
 
@@ -3674,14 +3688,14 @@ public partial class Unit
 		// calculate the chance to go back to military camp in following the
 		// target
 		//-----------------------------------------------------------------//
-		if (loc.PowerNationId == nation_recno)
+		if (loc.PowerNationId == NationId)
 			return true; // target within our nation
 		else if (loc.PowerNationId == 0) // is neutral
 			returnFactor = PROB_NEUTRAL_RETURN;
 		else
 		{
 			Nation locNation = NationArray[loc.PowerNationId];
-			if (locNation.get_relation_status(nation_recno) == NationBase.NATION_HOSTILE)
+			if (locNation.get_relation_status(NationId) == NationBase.NATION_HOSTILE)
 				returnFactor = PROB_HOSTILE_RETURN;
 			else
 				returnFactor = PROB_FRIENDLY_RETURN;
@@ -3707,16 +3721,16 @@ public partial class Unit
 	//========== town unit's defend mode ==========//
 	private void defend_town_attack_unit(int targetRecno)
 	{
-		action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET;
 		attack_unit(targetRecno, 0, 0, true);
 	}
 
 	private void defend_town_detect_target()
 	{
-		action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
-		action_para2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
-		action_x_loc2 = -1;
-		action_y_loc2 = -1;
+		ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
+		ActionPara2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
+		ActionLocX2 = -1;
+		ActionLocY2 = -1;
 	}
 
 	private void defend_town_back_town(int townRecno)
@@ -3724,16 +3738,16 @@ public partial class Unit
 		Town town = TownArray[townRecno];
 
 		assign(town.LocX1, town.LocY1);
-		action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN;
+		ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN;
 	}
 
 	private void process_defend_town_attack_target()
 	{
 		if (general_defend_mode_process_attack_target())
 		{
-			action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
-			action_para2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
-			action_x_loc2 = action_y_loc2 = -1;
+			ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
+			ActionPara2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
+			ActionLocX2 = ActionLocY2 = -1;
 		}
 	}
 
@@ -3743,21 +3757,21 @@ public partial class Unit
 		// no target or target is out of detect range, so change state to
 		// back camp
 		//----------------------------------------------------------------//
-		if (action_para2 == 0)
+		if (ActionPara2 == 0)
 		{
 			int back = 0;
 
-			if (TownArray.IsDeleted(action_misc_para))
+			if (TownArray.IsDeleted(ActionMiscParam))
 				back++;
 			else
 			{
-				Town town = TownArray[action_misc_para];
+				Town town = TownArray[ActionMiscParam];
 				if (UnitArray.IsDeleted(town.DefendTargetId))
 					back++;
 				else
 				{
 					Unit target = UnitArray[town.DefendTargetId];
-					if (target.action_mode != UnitConstants.ACTION_ATTACK_TOWN || target.action_para != town.TownId)
+					if (target.ActionMode != UnitConstants.ACTION_ATTACK_TOWN || target.ActionParam != town.TownId)
 						back++;
 				}
 			}
@@ -3765,7 +3779,7 @@ public partial class Unit
 			if (back == 0)
 			{
 				//action_mode2 = ACTION_DEFEND_TOWN_DETECT_TARGET;
-				action_para2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
+				ActionPara2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
 				return;
 			}
 
@@ -3779,7 +3793,7 @@ public partial class Unit
 		int startLoc;
 		int dimension;
 
-		switch (action_para2 % InternalConstants.FRAMES_PER_DAY)
+		switch (ActionPara2 % InternalConstants.FRAMES_PER_DAY)
 		{
 			case 3:
 				startLoc = 2; // 1-7, check 224 = 15^2-1
@@ -3797,7 +3811,7 @@ public partial class Unit
 				break;
 
 			default:
-				action_para2--;
+				ActionPara2--;
 				return;
 		}
 
@@ -3806,37 +3820,37 @@ public partial class Unit
 		//---------------------------------------------------------------//
 
 		if (!idle_detect_attack(startLoc, dimension, 1)) // defense mode is on
-			action_para2--;
+			ActionPara2--;
 	}
 
 	private void process_defend_town_back_town()
 	{
 		int clearDefenseMode = 0;
 		// the unit may become idle or unable to reach town, reactivate it
-		if (action_mode != UnitConstants.ACTION_ASSIGN_TO_TOWN)
+		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_TOWN)
 		{
-			if (action_misc != UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO ||
-			    action_misc_para == 0 || TownArray.IsDeleted(action_misc_para))
+			if (ActionMisc != UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO ||
+			    ActionMiscParam == 0 || TownArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
 			{
-				Town town = TownArray[action_misc_para];
-				if (town.NationId != nation_recno)
+				Town town = TownArray[ActionMiscParam];
+				if (town.NationId != NationId)
 					clearDefenseMode++;
 				else
 				{
-					defend_town_back_town(action_misc_para); // go back to the town
+					defend_town_back_town(ActionMiscParam); // go back to the town
 					return;
 				}
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
 		{
-			if (TownArray.IsDeleted(action_misc_para))
+			if (TownArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
 			{
-				defend_town_back_town(action_misc_para);
+				defend_town_back_town(ActionMiscParam);
 				return;
 			}
 		}
@@ -3853,7 +3867,7 @@ public partial class Unit
 		if (CurAction == SPRITE_ATTACK)
 			return true;
 
-		if (TownArray.IsDeleted(unit_mode_para))
+		if (TownArray.IsDeleted(UnitModeParam))
 		{
 			stop2(); //**** BUGHERE
 			set_mode(0); //***BUGHERE
@@ -3863,13 +3877,13 @@ public partial class Unit
 		int curXLoc = NextLocX;
 		int curYLoc = NextLocY;
 
-		Town town = TownArray[unit_mode_para];
+		Town town = TownArray[UnitModeParam];
 		if ((curXLoc < town.LocCenterX - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
 		    (curXLoc > town.LocCenterX + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
 		    (curYLoc < town.LocCenterY - UnitConstants.UNIT_DEFEND_TOWN_DISTANCE) ||
 		    (curYLoc > town.LocCenterY + UnitConstants.UNIT_DEFEND_TOWN_DISTANCE))
 		{
-			defend_town_back_town(unit_mode_para);
+			defend_town_back_town(UnitModeParam);
 			return false;
 		}
 
@@ -3878,40 +3892,40 @@ public partial class Unit
 
 	private void monster_defend_attack_unit(int targetRecno)
 	{
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
 		attack_unit(targetRecno, 0, 0, true);
 	}
 
 	private void monster_defend_attack_firm(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
 		attack_firm(targetXLoc, targetYLoc);
 	}
 
 	private void monster_defend_attack_town(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
 		attack_town(targetXLoc, targetYLoc);
 	}
 
 	private void monster_defend_attack_wall(int targetXLoc, int targetYLoc)
 	{
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET;
 		attack_wall(targetXLoc, targetYLoc);
 	}
 
 	private void monster_defend_detect_target()
 	{
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
-		action_para2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
-		action_x_loc2 = -1;
-		action_y_loc2 = -1;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
+		ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
+		ActionLocX2 = -1;
+		ActionLocY2 = -1;
 	}
 
 	private void monster_defend_back_firm(int firmXLoc, int firmYLoc)
 	{
 		assign(firmXLoc, firmYLoc);
-		action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM;
+		ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM;
 	}
 
 	private void process_monster_defend_attack_target()
@@ -3928,22 +3942,22 @@ public partial class Unit
 		// no target or target is out of detect range, so change state to
 		// back camp
 		//----------------------------------------------------------------//
-		if (action_para2 == 0)
+		if (ActionPara2 == 0)
 		{
 			int back = 0;
 
-			if (FirmArray.IsDeleted(action_misc_para))
+			if (FirmArray.IsDeleted(ActionMiscParam))
 				back++;
 			else
 			{
-				FirmMonster firmMonster = (FirmMonster)FirmArray[action_misc_para];
+				FirmMonster firmMonster = (FirmMonster)FirmArray[ActionMiscParam];
 				if (UnitArray.IsDeleted(firmMonster.defend_target_recno))
 					back++;
 				else
 				{
 					Unit target = UnitArray[firmMonster.defend_target_recno];
-					if (target.action_mode != UnitConstants.ACTION_ATTACK_FIRM ||
-					    target.action_para != firmMonster.firm_recno)
+					if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM ||
+					    target.ActionParam != firmMonster.firm_recno)
 						back++;
 				}
 			}
@@ -3951,7 +3965,7 @@ public partial class Unit
 			if (back == 0)
 			{
 				//action_mode2 = ACTION_MONSTER_DEFEND_DETECT_TARGET;
-				action_para2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
+				ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
 				return;
 			}
 
@@ -3965,7 +3979,7 @@ public partial class Unit
 		int startLoc;
 		int dimension;
 
-		switch (action_para2 % InternalConstants.FRAMES_PER_DAY)
+		switch (ActionPara2 % InternalConstants.FRAMES_PER_DAY)
 		{
 			case 3:
 				startLoc = 2; // 1-7, check 224 = 15^2-1
@@ -3983,7 +3997,7 @@ public partial class Unit
 				break;
 
 			default:
-				action_para2--;
+				ActionPara2--;
 				return;
 		}
 
@@ -3991,22 +4005,22 @@ public partial class Unit
 		// attack the target if target detected, or change the detect region
 		//---------------------------------------------------------------//
 		if (!idle_detect_attack(startLoc, dimension, 1)) // defense mode is on
-			action_para2--;
+			ActionPara2--;
 	}
 
 	private void process_monster_defend_back_firm()
 	{
 		int clearDefendMode = 0;
 		// the unit may become idle or unable to reach firm, reactivate it
-		if (action_mode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
+		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
 		{
-			if (action_misc != UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO ||
-			    action_misc_para == 0 || FirmArray.IsDeleted(action_misc_para))
+			if (ActionMisc != UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO ||
+			    ActionMiscParam == 0 || FirmArray.IsDeleted(ActionMiscParam))
 				clearDefendMode++;
 			else
 			{
-				Firm firm = FirmArray[action_misc_para];
-				if (firm.firm_id != Firm.FIRM_MONSTER || firm.nation_recno != nation_recno)
+				Firm firm = FirmArray[ActionMiscParam];
+				if (firm.firm_id != Firm.FIRM_MONSTER || firm.nation_recno != NationId)
 					clearDefendMode++;
 				else
 				{
@@ -4017,11 +4031,11 @@ public partial class Unit
 		}
 		else if (CurAction == SPRITE_IDLE)
 		{
-			if (FirmArray.IsDeleted(action_misc_para))
+			if (FirmArray.IsDeleted(ActionMiscParam))
 				clearDefendMode++;
 			else
 			{
-				Firm firm = FirmArray[action_misc_para];
+				Firm firm = FirmArray[ActionMiscParam];
 				monster_defend_back_firm(firm.loc_x1, firm.loc_y1);
 				return;
 			}
@@ -4058,7 +4072,7 @@ public partial class Unit
 		int curXLoc = NextLocX;
 		int curYLoc = NextLocY;
 
-		Firm firm = FirmArray[action_misc_para];
+		Firm firm = FirmArray[ActionMiscParam];
 		if ((curXLoc < firm.center_x - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
 		    (curXLoc > firm.center_x + UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
 		    (curYLoc < firm.center_y - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
@@ -4073,49 +4087,49 @@ public partial class Unit
 	
 	public bool in_auto_defense_mode()
 	{
-		return (action_mode2 >= UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-		        action_mode2 <= UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP);
+		return (ActionMode2 >= UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+		        ActionMode2 <= UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP);
 	}
 
 	public bool in_defend_town_mode()
 	{
-		return (action_mode2 >= UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
-		        action_mode2 <= UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN);
+		return (ActionMode2 >= UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
+		        ActionMode2 <= UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN);
 	}
 
 	public bool in_monster_defend_mode()
 	{
-		return (action_mode2 >= UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET &&
-		        action_mode2 <= UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM);
+		return (ActionMode2 >= UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET &&
+		        ActionMode2 <= UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM);
 	}
 
 	private bool in_any_defense_mode()
 	{
-		return action_mode2 >= UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-		       action_mode2 <= UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM;
+		return ActionMode2 >= UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+		       ActionMode2 <= UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM;
 	}
 	
 	public void clear_unit_defense_mode()
 	{
 		//------- cancel defense mode and continue the current action -------//
-		action_mode2 = action_mode;
-		action_para2 = action_para;
-		action_x_loc2 = action_x_loc;
-		action_y_loc2 = action_y_loc;
+		ActionMode2 = ActionMode;
+		ActionPara2 = ActionParam;
+		ActionLocX2 = ActionLocX;
+		ActionLocY2 = ActionLocY;
 
 		reset_action_misc_para();
 
-		if (unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
+		if (UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
 			set_mode(0); // reset unit mode 
 	}
 
 	public void clear_town_defend_mode()
 	{
 		//------- cancel defense mode and continue the current action -------//
-		action_mode2 = action_mode;
-		action_para2 = action_para;
-		action_x_loc2 = action_x_loc;
-		action_y_loc2 = action_y_loc;
+		ActionMode2 = ActionMode;
+		ActionPara2 = ActionParam;
+		ActionLocX2 = ActionLocX;
+		ActionLocY2 = ActionLocY;
 
 		reset_action_misc_para();
 	}
@@ -4123,10 +4137,10 @@ public partial class Unit
 	public void clear_monster_defend_mode()
 	{
 		//------- cancel defense mode and continue the current action -------//
-		action_mode2 = action_mode;
-		action_para2 = action_para;
-		action_x_loc2 = action_x_loc;
-		action_y_loc2 = action_y_loc;
+		ActionMode2 = ActionMode;
+		ActionPara2 = ActionParam;
+		ActionLocX2 = ActionLocX;
+		ActionLocY2 = ActionLocY;
 
 		reset_action_misc_para();
 	}

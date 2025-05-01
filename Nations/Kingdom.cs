@@ -136,7 +136,7 @@ public class NationNew : NationBase
                 {
                     Unit overseer = UnitArray[firm.overseer_recno];
                     //TODO also take reputation into account
-                    if (overseer.skill.skill_level > 50) // TODO constant should depend on preferences
+                    if (overseer.Skill.skill_level > 50) // TODO constant should depend on preferences
                     {
                         bool isCapturer = false;
                         foreach (CaptureIndependentTask task in captureIndependentTasks)

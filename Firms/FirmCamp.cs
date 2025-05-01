@@ -122,11 +122,11 @@ public class FirmCamp : Firm
 
 			// divided by 150 instead of 100 because while the attacking ability of the unit is affected by the general,
 			// the hit points isn't, so we shouldn't do a direct multiplication.
-			totalCombatLevel += totalCombatLevel * unit.skill.skill_level / 150;
+			totalCombatLevel += totalCombatLevel * unit.Skill.skill_level / 150;
 
 			//------ the leader's own hit points ------//
 
-			totalCombatLevel += (int)unit.hit_points;
+			totalCombatLevel += (int)unit.HitPoints;
 		}
 
 		return totalCombatLevel;
@@ -169,7 +169,7 @@ public class FirmCamp : Firm
 
 		//--- if the overseer is the king, increase its combat level needed ---//
 
-		if (overseer_recno != 0 && UnitArray[overseer_recno].rank_id == Unit.RANK_KING)
+		if (overseer_recno != 0 && UnitArray[overseer_recno].Rank == Unit.RANK_KING)
 			combatNeeded = Math.Max(400, combatNeeded);
 
 		//---------------------------------------//
@@ -226,18 +226,18 @@ public class FirmCamp : Firm
 
 		if (overseer_recno != 0)
 		{
-			TeamInfo teamInfo = UnitArray[overseer_recno].team_info;
+			TeamInfo teamInfo = UnitArray[overseer_recno].TeamInfo;
 
-			if (workers.Count > 0 && teamInfo.member_unit_array.Count > 0)
+			if (workers.Count > 0 && teamInfo.Members.Count > 0)
 			{
-				for (int i = 0; i < teamInfo.member_unit_array.Count; i++)
+				for (int i = 0; i < teamInfo.Members.Count; i++)
 				{
-					int unitRecno = teamInfo.member_unit_array[i];
+					int unitRecno = teamInfo.Members[i];
 
 					if (UnitArray.IsDeleted(unitRecno))
 						continue;
 
-					UnitArray[unitRecno].leader_unit_recno = 0;
+					UnitArray[unitRecno].LeaderId = 0;
 				}
 			}
 		}
@@ -252,11 +252,11 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[overseer_recno];
 			// set it to the same team as the soldiers which are defined in mobilize_all_worker()
-			unit.team_id = UnitArray.cur_team_id - 1;
+			unit.TeamId = UnitArray.cur_team_id - 1;
 
 			if (nation_recno == NationArray.player_recno)
 			{
-				unit.selected_flag = true;
+				unit.SelectedFlag = true;
 				UnitArray.selected_recno = overseer_recno;
 				UnitArray.selected_count++;
 			}
@@ -281,10 +281,10 @@ public class FirmCamp : Firm
 
 			//------- set the team_info of the overseer -------//
 
-			overseerUnit.team_info.member_unit_array.Clear();
+			overseerUnit.TeamInfo.Members.Clear();
 			for (int i = 0; i < patrol_unit_array.Count; i++)
 			{
-				overseerUnit.team_info.member_unit_array.Add(patrol_unit_array[i]);
+				overseerUnit.TeamInfo.Members.Add(patrol_unit_array[i]);
 			}
 		}
 
@@ -323,17 +323,17 @@ public class FirmCamp : Firm
 
 			Unit unit = UnitArray[unitRecno];
 
-			unit.team_id = UnitArray.cur_team_id; // define it as a team
+			unit.TeamId = UnitArray.cur_team_id; // define it as a team
 
 			if (overseer_recno != 0)
 			{
-				unit.leader_unit_recno = overseer_recno;
+				unit.LeaderId = overseer_recno;
 				unit.update_loyalty(); // the unit is just assigned to a new leader, set its target loyalty
 			}
 
 			if (nation_recno == NationArray.player_recno)
 			{
-				unit.selected_flag = true;
+				unit.SelectedFlag = true;
 				UnitArray.selected_count++;
 				// set the first soldier as selected; this is also the soldier with the highest leadership (because of sorting)
 				if (UnitArray.selected_recno == 0)
@@ -351,7 +351,7 @@ public class FirmCamp : Firm
 
 		//------- if this is a construction worker -------//
 
-		if (unit.skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;
@@ -359,7 +359,7 @@ public class FirmCamp : Firm
 
 		//-------- assign the unit ----------//
 
-		int rankId = UnitArray[unitRecno].rank_id;
+		int rankId = UnitArray[unitRecno].Rank;
 
 		if (rankId == Unit.RANK_GENERAL || rankId == Unit.RANK_KING)
 		{
@@ -378,8 +378,8 @@ public class FirmCamp : Firm
 		if (overseerRecno != 0)
 		{
 			Unit unit = UnitArray[overseerRecno];
-			unit.team_info.member_unit_array.Clear();
-			unit.home_camp_firm_recno = 0;
+			unit.TeamInfo.Members.Clear();
+			unit.HomeCampId = 0;
 		}
 
 		//----- assign the overseer now -------//
@@ -422,9 +422,9 @@ public class FirmCamp : Firm
 				    defenseUnit.unit_recno != 0 && !UnitArray.IsDeleted(defenseUnit.unit_recno))
 				{
 					Unit unit = UnitArray[defenseUnit.unit_recno];
-					if (unit.nation_recno == nation_recno &&
-					    unit.action_misc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
-					    unit.action_misc_para == firm_recno)
+					if (unit.NationId == nation_recno &&
+					    unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
+					    unit.ActionMiscParam == firm_recno)
 					{
 						unit.clear_unit_defense_mode();
 					}
@@ -489,8 +489,8 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[defenseUnit.unit_recno];
 			defense_outside_camp(defenseUnit.unit_recno, targetRecno);
-			unit.action_misc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
-			unit.action_misc_para = firm_recno;
+			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
+			unit.ActionMiscParam = firm_recno;
 		}
 
 		//TODO check for bugs
@@ -513,13 +513,13 @@ public class FirmCamp : Firm
 				break;
 
 			Unit unit = UnitArray[unitRecno];
-			unit.team_id = UnitArray.cur_team_id; // define it as a team
-			unit.action_misc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
-			unit.action_misc_para = firm_recno; // store the firm_recno for going back camp
+			unit.TeamId = UnitArray.cur_team_id; // define it as a team
+			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
+			unit.ActionMiscParam = firm_recno; // store the firm_recno for going back camp
 
 			if (overseer_recno != 0)
 			{
-				unit.leader_unit_recno = overseer_recno;
+				unit.LeaderId = overseer_recno;
 				unit.update_loyalty(); // update target loyalty based on having a leader assigned
 			}
 
@@ -554,8 +554,8 @@ public class FirmCamp : Firm
 		Unit unit = UnitArray[unitRecno];
 		unit.defense_attack_unit(targetRecno);
 
-		if (unit.action_mode == UnitConstants.ACTION_STOP && unit.action_para == 0 &&
-		    unit.action_x_loc == -1 && unit.action_y_loc == -1)
+		if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
+		    unit.ActionLocX == -1 && unit.ActionLocY == -1)
 			unit.defense_detect_target();
 	}
 
@@ -563,16 +563,16 @@ public class FirmCamp : Firm
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET ||
-		    unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP ||
-		    (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
+		if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET ||
+		    unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP ||
+		    (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 		     unit.CurAction == Sprite.SPRITE_IDLE))
 		{
 			//----------------- attack new target now -------------------//
 			unit.defense_attack_unit(targetRecno);
 
-			if (unit.action_mode == UnitConstants.ACTION_STOP && unit.action_para == 0 &&
-			    unit.action_x_loc == -1 && unit.action_y_loc == -1)
+			if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
+			    unit.ActionLocX == -1 && unit.ActionLocY == -1)
 				unit.defense_detect_target();
 		}
 	}
@@ -584,8 +584,8 @@ public class FirmCamp : Firm
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.in_auto_defense_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
-			    unit.action_misc_para == firmRecno)
+			if (unit.in_auto_defense_mode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
+			    unit.ActionMiscParam == firmRecno)
 				unit.clear_unit_defense_mode();
 		}
 
@@ -600,7 +600,7 @@ public class FirmCamp : Firm
 
 		if (unitRecno != 0)
 		{
-			UnitArray[unitRecno].home_camp_firm_recno = firm_recno;
+			UnitArray[unitRecno].HomeCampId = firm_recno;
 			return unitRecno;
 		}
 
@@ -615,7 +615,7 @@ public class FirmCamp : Firm
 
 		if (unitRecno != 0)
 		{
-			UnitArray[unitRecno].home_camp_firm_recno = firm_recno;
+			UnitArray[unitRecno].HomeCampId = firm_recno;
 			return unitRecno;
 		}
 
@@ -699,7 +699,7 @@ public class FirmCamp : Firm
 			else
 			{
 				Unit unit = UnitArray[unitRecno];
-				isPatrolUnit = (unit.is_visible() && unit.nation_recno == nation_recno);
+				isPatrolUnit = (unit.is_visible() && unit.NationId == nation_recno);
 			}
 
 			if (!isPatrolUnit)
@@ -851,10 +851,10 @@ public class FirmCamp : Firm
 
 			Unit unitCommander = UnitArray[overseer_recno];
 
-			if (unitCommander.race_id == bestRaceId)
-				commanderLeadership = unitCommander.skill.skill_level;
+			if (unitCommander.RaceId == bestRaceId)
+				commanderLeadership = unitCommander.Skill.skill_level;
 			else
-				commanderLeadership = unitCommander.skill.skill_level / 2; // divided by 2 if the race doesn't match
+				commanderLeadership = unitCommander.Skill.skill_level / 2; // divided by 2 if the race doesn't match
 		}
 
 		return commanderLeadership;
@@ -889,8 +889,8 @@ public class FirmCamp : Firm
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.home_camp_firm_recno == firmRecno)
-				unit.home_camp_firm_recno = 0;
+			if (unit.HomeCampId == firmRecno)
+				unit.HomeCampId = 0;
 		}
 	}
 
@@ -921,44 +921,44 @@ public class FirmCamp : Firm
 
 		Unit overseerUnit = UnitArray[overseer_recno];
 
-		if (overseerUnit.skill.skill_id != Skill.SKILL_LEADING)
+		if (overseerUnit.Skill.skill_id != Skill.SKILL_LEADING)
 			return;
 
-		int overseerSkill = overseerUnit.skill.skill_level;
+		int overseerSkill = overseerUnit.Skill.skill_level;
 		int incValue;
 
 		//------- increase the commander's leadership ---------//
 
-		if (workers.Count > 0 && overseerUnit.skill.skill_level < 100)
+		if (workers.Count > 0 && overseerUnit.Skill.skill_level < 100)
 		{
 			//-- the more soldiers this commander has, the higher the leadership will increase ---//
 
-			incValue = (int)(5.0 * workers.Count * overseerUnit.hit_points / overseerUnit.max_hit_points
-				* (100.0 + overseerUnit.skill.skill_potential * 2.0) / 100.0);
+			incValue = (int)(5.0 * workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+				* (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
 
-			overseerUnit.skill.skill_level_minor += incValue;
+			overseerUnit.Skill.skill_level_minor += incValue;
 
-			if (overseerUnit.skill.skill_level_minor >= 100)
+			if (overseerUnit.Skill.skill_level_minor >= 100)
 			{
-				overseerUnit.skill.skill_level_minor -= 100;
-				overseerUnit.skill.skill_level++;
+				overseerUnit.Skill.skill_level_minor -= 100;
+				overseerUnit.Skill.skill_level++;
 			}
 		}
 
 		//------- increase the commander's combat level ---------//
 
-		if (overseerUnit.skill.combat_level < 100)
+		if (overseerUnit.Skill.combat_level < 100)
 		{
-			incValue = (int)(20.0 * overseerUnit.hit_points / overseerUnit.max_hit_points
-				* (100.0 + overseerUnit.skill.skill_potential * 2.0) / 100.0);
+			incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+				* (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
 
-			overseerUnit.skill.combat_level_minor += incValue;
+			overseerUnit.Skill.combat_level_minor += incValue;
 
-			if (overseerUnit.skill.combat_level_minor >= 100)
+			if (overseerUnit.Skill.combat_level_minor >= 100)
 			{
-				overseerUnit.skill.combat_level_minor -= 100;
+				overseerUnit.Skill.combat_level_minor -= 100;
 
-				overseerUnit.set_combat_level(overseerUnit.skill.combat_level + 1);
+				overseerUnit.set_combat_level(overseerUnit.Skill.combat_level + 1);
 			}
 		}
 
@@ -992,7 +992,7 @@ public class FirmCamp : Firm
 
 			if (worker.skill_potential > 0 && worker.skill_level < 100)
 			{
-				incValue = Math.Max(50, overseerUnit.skill.skill_level - worker.skill_level)
+				incValue = Math.Max(50, overseerUnit.Skill.skill_level - worker.skill_level)
 					* worker.hit_points / worker.max_hit_points()
 					* worker.skill_potential * 2 / 100;
 
@@ -1084,8 +1084,8 @@ public class FirmCamp : Firm
 				continue;
 
 			Unit unit = UnitArray[defenseUnit.unit_recno];
-			if (unit.nation_recno == nation_recno && unit.action_misc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
-			    unit.action_misc_para == firm_recno) // is a soldier of this camp
+			if (unit.NationId == nation_recno && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
+			    unit.ActionMiscParam == firm_recno) // is a soldier of this camp
 				found = true;
 		}
 
@@ -1162,7 +1162,7 @@ public class FirmCamp : Firm
 
 			//--- check if any of them are still on their way to this firm ---//
 
-			if (unit.nation_recno == nation_recno && unit.action_mode == UnitConstants.ACTION_ASSIGN_TO_FIRM)
+			if (unit.NationId == nation_recno && unit.ActionMode == UnitConstants.ACTION_ASSIGN_TO_FIRM)
 			{
 				realComingCount++;
 			}
@@ -1350,7 +1350,7 @@ public class FirmCamp : Firm
 
 			Town town = TownArray[ai_capture_town_recno];
 
-			if (attackerUnit.action_x_loc == town.LocX1 && attackerUnit.action_y_loc == town.LocY1)
+			if (attackerUnit.ActionLocX == town.LocX1 && attackerUnit.ActionLocY == town.LocY1)
 				shouldAttackUnit = true;
 		}
 
@@ -1361,10 +1361,10 @@ public class FirmCamp : Firm
 
 		foreach (Unit unit in UnitArray.EnumerateRandom())
 		{
-			if (unit.unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN && unit.unit_mode_para == ai_capture_town_recno)
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN && unit.UnitModeParam == ai_capture_town_recno)
 			{
-				if (unit.nation_recno != 0)
-					NationArray[nation_recno].set_relation_should_attack(unit.nation_recno, true,
+				if (unit.NationId != 0)
+					NationArray[nation_recno].set_relation_should_attack(unit.NationId, true,
 						InternalConstants.COMMAND_AI);
 
 				List<int> selectedUnits = new List<int>(1);
@@ -1412,15 +1412,15 @@ public class FirmCamp : Firm
 				{
 					Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
-					if (unit.nation_recno == 0)
+					if (unit.NationId == 0)
 						continue;
 
 					//--- if the unit is idle and he is our enemy ---//
 
 					if (unit.CurAction == Sprite.SPRITE_ATTACK &&
-					    nation.get_relation_status(unit.nation_recno) == NationBase.NATION_HOSTILE)
+					    nation.get_relation_status(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
-						enemyCombatLevel += (int)unit.hit_points;
+						enemyCombatLevel += (int)unit.HitPoints;
 
 						if (enemyXLoc == -1 || Misc.Random(5) == 0)
 						{
@@ -1694,7 +1694,7 @@ public class FirmCamp : Firm
 		if (overseer_recno != 0)
 		{
 			Unit unit = UnitArray[overseer_recno];
-			if (unit.race_id == raceId)
+			if (unit.RaceId == raceId)
 				currentTargetResistance = 100 - unit.CampInfluence();
 		}
 
@@ -1779,7 +1779,7 @@ public class FirmCamp : Firm
 		int curResistance, curTargetResistance, resistanceDec;
 		int minResistance = 100, bestTownRecno = 0;
 		Nation ownNation = NationArray[nation_recno];
-		int overseerRaceId = UnitArray[overseer_recno].race_id;
+		int overseerRaceId = UnitArray[overseer_recno].RaceId;
 
 		for (int i = 0; i < linked_town_array.Count; i++)
 		{
@@ -1993,7 +1993,7 @@ public class FirmCamp : Firm
 			if (overseer_recno != 0 && bestLeadership < 40)
 			{
 				Unit unitCommander = UnitArray[overseer_recno];
-				if (unitCommander.race_id != bestRaceId)
+				if (unitCommander.RaceId != bestRaceId)
 				{
 					Nation ourNation = NationArray[nation_recno];
 					int newLeaderRecno = ourNation.train_unit(firm_skill_id, bestRaceId, loc_x1, loc_y1, out _);
@@ -2068,7 +2068,7 @@ public class FirmCamp : Firm
 		bool hasSoldierOfDifferentRace = false;
 		foreach (Worker worker in workers)
 		{
-			if (worker.race_id > 0 && worker.race_id != overseer.race_id)
+			if (worker.race_id > 0 && worker.race_id != overseer.RaceId)
 			{
 				hasSoldierOfDifferentRace = true;
 				break;
@@ -2092,12 +2092,12 @@ public class FirmCamp : Firm
 			if (firmCamp.firm_recno == firm_recno)
 				continue;
 
-			if (firmCamp.overseer_recno != 0 && UnitArray[firmCamp.overseer_recno].race_id == overseer.race_id)
+			if (firmCamp.overseer_recno != 0 && UnitArray[firmCamp.overseer_recno].RaceId == overseer.RaceId)
 				continue;
 
 			for (int j = 0; j < firmCamp.workers.Count; j++)
 			{
-				if (firmCamp.workers[j].race_id == overseer.race_id)
+				if (firmCamp.workers[j].race_id == overseer.RaceId)
 				{
 					int distance = Misc.points_distance(center_x, center_y, firmCamp.center_x, firmCamp.center_y);
 					if (distance < bestDistance)

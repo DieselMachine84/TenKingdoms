@@ -172,8 +172,8 @@ public class RegionStat
 			if (unit.region_id() != RegionId)
 				continue;
 
-			if (unit.nation_recno != 0)
-				_unitNationCounts[unit.nation_recno - 1]++;
+			if (unit.NationId != 0)
+				_unitNationCounts[unit.NationId - 1]++;
 		}
 
 		foreach (Site site in SiteArray)

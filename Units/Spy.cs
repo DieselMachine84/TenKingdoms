@@ -71,11 +71,11 @@ public class Spy : IIdObject
 		{
 			Unit unit = UnitArray[unitRecno];
 			spy_place_para = unitRecno;
-			spy_loyalty = unit.loyalty;
-			race_id = unit.race_id;
-			name_id = unit.name_id;
-			true_nation_recno = unit.nation_recno;
-			cloaked_nation_recno = unit.nation_recno;
+			spy_loyalty = unit.Loyalty;
+			race_id = unit.RaceId;
+			name_id = unit.NameId;
+			true_nation_recno = unit.NationId;
+			cloaked_nation_recno = unit.NationId;
 		}
 
 		//--- spies hold a use right of the name id even though the unit itself will register the usage right of the name already ---//
@@ -168,17 +168,17 @@ public class Spy : IIdObject
 			else if (spy_place == SPY_MOBILE)
 			{
 				Unit unit = UnitArray[spy_place_para];
-				if (unit.unit_mode == UnitConstants.UNIT_MODE_CONSTRUCT)
+				if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 				{
-					Firm firm = FirmArray[unit.unit_mode_para];
+					Firm firm = FirmArray[unit.UnitModeParam];
 					World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
 				}
-				else if (unit.unit_mode == UnitConstants.UNIT_MODE_ON_SHIP)
+				else if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 				{
-					Unit ship = UnitArray[unit.unit_mode_para];
-					if (ship.unit_mode == UnitConstants.UNIT_MODE_IN_HARBOR)
+					Unit ship = UnitArray[unit.UnitModeParam];
+					if (ship.UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 					{
-						Firm firm = FirmArray[ship.unit_mode_para];
+						Firm firm = FirmArray[ship.UnitModeParam];
 						World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
 							GameConstants.EXPLORE_RANGE - 1);
 					}
@@ -188,7 +188,7 @@ public class Spy : IIdObject
 						int yLoc1 = ship.NextLocY;
 						int xLoc2 = xLoc1 + ship.SpriteInfo.LocWidth - 1;
 						int yLoc2 = yLoc1 + ship.SpriteInfo.LocHeight - 1;
-						int range = UnitRes[ship.unit_id].visual_range;
+						int range = UnitRes[ship.UnitType].visual_range;
 
 						World.Unveil(xLoc1, yLoc1, xLoc2, yLoc2);
 						World.Visit(xLoc1, yLoc1, xLoc2, yLoc2, range);
@@ -276,11 +276,11 @@ public class Spy : IIdObject
 			{
 				Unit unit = UnitArray[firm.overseer_recno];
 
-				if (unit.race_id == race_id)
+				if (unit.RaceId == race_id)
 				{
 					// a commander with a higher leadership skill will be less influenced by the spy's dissents
-					bool decLoyaltyChance = (Misc.Random(10 - spy_skill / 10 + 1 + unit.skill.skill_level / 20) == 0);
-					if (decLoyaltyChance && unit.loyalty > 0)
+					bool decLoyaltyChance = (Misc.Random(10 - spy_skill / 10 + 1 + unit.Skill.skill_level / 20) == 0);
+					if (decLoyaltyChance && unit.Loyalty > 0)
 					{
 						unit.change_loyalty(-1);
 					}
@@ -347,7 +347,7 @@ public class Spy : IIdObject
 			Firm firm = FirmArray[spy_place_para];
 
 			if (firm.nation_recno == true_nation_recno && firm.overseer_recno != 0 &&
-			    UnitArray[firm.overseer_recno].spy_recno == spy_recno)
+			    UnitArray[firm.overseer_recno].SpyId == spy_recno)
 			{
 				inOwnFirm = true;
 			}
@@ -405,9 +405,9 @@ public class Spy : IIdObject
 			{
 				Unit unit = UnitArray[firm.overseer_recno];
 
-				if (unit.spy_recno == spy_recno)
+				if (unit.SpyId == spy_recno)
 				{
-					unit.spy_recno = 0;
+					unit.SpyId = 0;
 					rc = true;
 				}
 			}
@@ -429,7 +429,7 @@ public class Spy : IIdObject
 		{
 			Unit unit = UnitArray[spy_place_para];
 
-			unit.spy_recno = 0;
+			unit.SpyId = 0;
 		}
 
 		//------ delete this Spy record from spy_array ----//
@@ -467,7 +467,7 @@ public class Spy : IIdObject
 		{
 			Firm firm = FirmArray[spy_place_para];
 
-			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].spy_recno == spy_recno)
+			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == spy_recno)
 			{
 				UnitArray[firm.overseer_recno].spy_change_nation(newNationRecno, InternalConstants.COMMAND_AUTO);
 				return;
@@ -523,7 +523,7 @@ public class Spy : IIdObject
 
 			if (!FirmRes[firm.firm_id].live_in_town) // if the workers of the firm do not live in towns
 			{
-				int unitLeadership = unit.skill.skill_level;
+				int unitLeadership = unit.Skill.skill_level;
 				int nationReputation = (int)NationArray[true_nation_recno].reputation;
 
 				for (int i = 0; i < firm.workers.Count; i++)
@@ -612,7 +612,7 @@ public class Spy : IIdObject
 			//
 			//-----------------------------------------------------//
 
-			if (firm.overseer_recno == 0 || UnitArray[firm.overseer_recno].spy_recno != spy_recno)
+			if (firm.overseer_recno == 0 || UnitArray[firm.overseer_recno].SpyId != spy_recno)
 			{
 				return false;
 			}
@@ -700,7 +700,7 @@ public class Spy : IIdObject
 		if (unit == null)
 			return null;
 
-		unit.spy_recno = spy_recno;
+		unit.SpyId = spy_recno;
 		unit.set_name(name_id); // set the name id. of this unit
 
 		set_place(SPY_MOBILE, unit.SpriteId);
@@ -722,7 +722,7 @@ public class Spy : IIdObject
 		{
 			Unit unit = UnitArray[firm.overseer_recno];
 
-			if (unit.spy_recno == spy_recno)
+			if (unit.SpyId == spy_recno)
 				spyUnitRecno = firm.mobilize_overseer();
 		}
 
@@ -828,7 +828,7 @@ public class Spy : IIdObject
 			{
 				Firm firm = FirmArray[spy_place_para];
 
-				if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].spy_recno == spy_recno)
+				if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == spy_recno)
 				{
 					return Unit.RANK_GENERAL;
 				}
@@ -839,7 +839,7 @@ public class Spy : IIdObject
 			}
 
 			case SPY_MOBILE:
-				return UnitArray[spy_place_para].rank_id;
+				return UnitArray[spy_place_para].Rank;
 
 			default:
 				return Unit.RANK_SOLDIER;
@@ -857,7 +857,7 @@ public class Spy : IIdObject
 				return FirmArray[spy_place_para].firm_skill_id;
 
 			case SPY_MOBILE:
-				return UnitArray[spy_place_para].skill.skill_id;
+				return UnitArray[spy_place_para].Skill.skill_id;
 
 			default:
 				return 0;
@@ -971,9 +971,9 @@ public class Spy : IIdObject
 				{
 					Unit unit = UnitArray[spy_place_para];
 
-					if (unit.unit_mode == UnitConstants.UNIT_MODE_ON_SHIP)
+					if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 					{
-						Unit ship = UnitArray[unit.unit_mode_para];
+						Unit ship = UnitArray[unit.UnitModeParam];
 						xLoc = ship.NextLocX;
 						yLoc = ship.NextLocY;
 					}
@@ -1010,10 +1010,10 @@ public class Spy : IIdObject
 
 		Unit targetUnit = UnitArray[targetUnitRecno];
 
-		if (targetUnit.unit_mode != UnitConstants.UNIT_MODE_OVERSEE)
+		if (targetUnit.UnitMode != UnitConstants.UNIT_MODE_OVERSEE)
 			return 0;
 
-		Firm firm = FirmArray[targetUnit.unit_mode_para];
+		Firm firm = FirmArray[targetUnit.UnitModeParam];
 
 		if (firm.firm_recno != spy_place_para)
 			return 0;
@@ -1038,7 +1038,7 @@ public class Spy : IIdObject
 
 			//--- if the unit assassinated is the player's unit ---//
 
-			if (targetUnit.nation_recno == NationArray.player_recno)
+			if (targetUnit.NationId == NationArray.player_recno)
 				NewsArray.unit_assassinated(targetUnit.SpriteId, spyKillFlag);
 
 			firm.kill_overseer();
@@ -1101,10 +1101,10 @@ public class Spy : IIdObject
 
 		Unit targetUnit = UnitArray[targetUnitRecno];
 
-		if (targetUnit.unit_mode != UnitConstants.UNIT_MODE_OVERSEE)
+		if (targetUnit.UnitMode != UnitConstants.UNIT_MODE_OVERSEE)
 			return false;
 
-		Firm firm = FirmArray[targetUnit.unit_mode_para];
+		Firm firm = FirmArray[targetUnit.UnitModeParam];
 
 		if (firm.firm_recno != spy_place_para)
 			return false;
@@ -1125,13 +1125,13 @@ public class Spy : IIdObject
 		//------ calculate success chance ------//
 
 		attackRating = spy_skill + spyHitPoints / 2;
-		defenseRating = (int)(targetUnit.hit_points / 2.0);
+		defenseRating = (int)(targetUnit.HitPoints / 2.0);
 		defenderCount = 0;
 
-		if (targetUnit.spy_recno != 0)
-			defenseRating += SpyArray[targetUnit.spy_recno].spy_skill;
+		if (targetUnit.SpyId != 0)
+			defenseRating += SpyArray[targetUnit.SpyId].spy_skill;
 
-		if (targetUnit.rank_id == Unit.RANK_KING)
+		if (targetUnit.Rank == Unit.RANK_KING)
 			defenseRating += 50;
 
 		for (int i = 0; i < firm.workers.Count; i++)
@@ -1212,7 +1212,7 @@ public class Spy : IIdObject
 			{
 				Unit unit = UnitArray[firm.overseer_recno];
 
-				if (unit.spy_recno == spy_recno)
+				if (unit.SpyId == spy_recno)
 				{
 					firm.kill_overseer();
 					return;
@@ -1426,7 +1426,7 @@ public class Spy : IIdObject
 		Nation ownNation = NationArray[true_nation_recno];
 		Unit overseerUnit = UnitArray[firm.overseer_recno];
 
-		if (spy_skill < Math.Min(50, overseerUnit.skill.skill_level) || !ownNation.ai_should_spend(30))
+		if (spy_skill < Math.Min(50, overseerUnit.Skill.skill_level) || !ownNation.ai_should_spend(30))
 		{
 			return false;
 		}
@@ -1591,7 +1591,7 @@ public class Spy : IIdObject
 		if (attackerUnit.true_nation_recno() == true_nation_recno)
 		{
 			if (spy_skill > 50 - trueNation.pref_spy / 10 ||
-			    spyUnit.hit_points < spyUnit.max_hit_points * (100 - trueNation.pref_military_courage / 2) / 100)
+			    spyUnit.HitPoints < spyUnit.MaxHitPoints * (100 - trueNation.pref_military_courage / 2) / 100)
 			{
 				change_cloaked_nation(true_nation_recno);
 				return 1;
@@ -1608,11 +1608,11 @@ public class Spy : IIdObject
 			//
 			//-----------------------------------------------------------//
 
-			if (trueNation.get_relation_status(attackerUnit.nation_recno) != NationBase.NATION_HOSTILE &&
+			if (trueNation.get_relation_status(attackerUnit.NationId) != NationBase.NATION_HOSTILE &&
 			    trueNation.get_relation_status(cloaked_nation_recno) == NationBase.NATION_HOSTILE)
 			{
 				if (spy_skill > 50 - trueNation.pref_spy / 10 ||
-				    spyUnit.hit_points < spyUnit.max_hit_points * (100 - trueNation.pref_military_courage / 2) / 100)
+				    spyUnit.HitPoints < spyUnit.MaxHitPoints * (100 - trueNation.pref_military_courage / 2) / 100)
 				{
 					change_cloaked_nation(true_nation_recno);
 					return 1;

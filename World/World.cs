@@ -1333,16 +1333,16 @@ public class World
 					else if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
 						targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-						targetUnit.hit_points -= 2.0 * flameDamage;
-						if (targetUnit.hit_points <= 0.0)
-							targetUnit.hit_points = 0.0;
+						targetUnit.HitPoints -= 2.0 * flameDamage;
+						if (targetUnit.HitPoints <= 0.0)
+							targetUnit.HitPoints = 0.0;
 					}
 					else if (location.HasUnit(UnitConstants.UNIT_SEA))
 					{
 						targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
-						targetUnit.hit_points -= 2.0 * flameDamage;
-						if (targetUnit.hit_points <= 0.0)
-							targetUnit.hit_points = 0.0;
+						targetUnit.HitPoints -= 2.0 * flameDamage;
+						if (targetUnit.HitPoints <= 0.0)
+							targetUnit.HitPoints = 0.0;
 					}
 					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].firm_id].buildable)
 					{
@@ -1532,28 +1532,21 @@ public class World
 			if (unit.MobileType == UnitConstants.UNIT_AIR || unit.MobileType == UnitConstants.UNIT_SEA || !unit.is_visible())
 				continue;
 
-			double damage = Weather.quake_rate(unit.CurLocX, unit.CurLocY) * unit.max_hit_points / 200.0;
-			if (damage >= unit.hit_points)
-				damage = unit.hit_points - 1.0;
+			double damage = Weather.quake_rate(unit.CurLocX, unit.CurLocY) * unit.MaxHitPoints / 200.0;
+			if (damage >= unit.HitPoints)
+				damage = unit.HitPoints - 1.0;
 			if (damage < 5.0)
 				damage = 5.0;
 
-			unit.hit_points -= damage;
+			unit.HitPoints -= damage;
 			if (unit.is_own())
 				unitDamage++;
 
-			if (unit.hit_points <= 0.0)
+			if (unit.HitPoints <= 0.0)
 			{
-				unit.hit_points = 0.0;
+				unit.HitPoints = 0.0;
 				if (unit.is_own())
 					unitsDied++;
-			}
-			else
-			{
-				if (UnitRes[unit.unit_id].solider_id != 0 && Weather.quake_rate(unit.CurLocX, unit.CurLocY) >= 60)
-				{
-					((UnitVehicle)unit).dismount();
-				}
 			}
 		}
 
@@ -1590,15 +1583,15 @@ public class World
 			if (unit.CurLocX <= locX + radius && unit.CurLocX + unit.SpriteInfo.LocWidth > locX - radius &&
 			    unit.CurLocY <= locY + radius && unit.CurLocY + unit.SpriteInfo.LocHeight > locY - radius)
 			{
-				unit.hit_points -= (double)unit.SpriteInfo.LightningDamage / InternalConstants.ATTACK_SLOW_DOWN;
+				unit.HitPoints -= (double)unit.SpriteInfo.LightningDamage / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
 				if (unit.is_own())
 					NewsArray.lightning_damage(unit.CurLocX, unit.CurLocY,
-						News.NEWS_LOC_UNIT, unit.SpriteId, unit.hit_points <= 0.0 ? 1 : 0);
+						News.NEWS_LOC_UNIT, unit.SpriteId, unit.HitPoints <= 0.0 ? 1 : 0);
 
-				if (unit.hit_points <= 0.0)
-					unit.hit_points = 0.0;
+				if (unit.HitPoints <= 0.0)
+					unit.HitPoints = 0.0;
 			}
 		}
 

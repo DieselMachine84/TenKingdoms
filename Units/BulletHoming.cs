@@ -35,7 +35,7 @@ public class BulletHoming : Bullet
 
 		//---------- copy attack info from the parent unit --------//
 
-		AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
+		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 		speed = attackInfo.bullet_speed;
 		max_step = (attackInfo.attack_range * InternalConstants.CellWidth + speed - 1) / speed;
 

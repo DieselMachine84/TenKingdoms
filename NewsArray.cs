@@ -267,8 +267,8 @@ public class NewsArray
 
 		Unit unit = UnitArray[kingUnitRecno];
 
-		news.short_para1 = unit.race_id;
-		news.short_para2 = unit.name_id;
+		news.short_para1 = unit.RaceId;
+		news.short_para2 = unit.NameId;
 	}
 
 	public void firm_destroyed(int firmRecno, Unit attackUnit, int destroyerNationRecno)
@@ -299,10 +299,10 @@ public class NewsArray
 		}
 		else if (attackUnit != null)
 		{
-			if (attackUnit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
+			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
 				news.short_para3 = News.DESTROYER_REBEL;
 
-			else if (UnitRes[attackUnit.unit_id].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
+			else if (UnitRes[attackUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
 				news.short_para3 = News.DESTROYER_MONSTER;
 		}
 
@@ -354,10 +354,10 @@ public class NewsArray
 		}
 		else if (attackUnit != null)
 		{
-			if (attackUnit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
+			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
 				news.short_para2 = News.DESTROYER_REBEL;
 
-			else if (UnitRes[attackUnit.unit_id].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
+			else if (UnitRes[attackUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
 				news.short_para2 = News.DESTROYER_MONSTER;
 		}
 
@@ -484,8 +484,8 @@ public class NewsArray
 		{
 			Unit unit = UnitArray[spy.spy_place_para];
 
-			news.short_para1 = unit.race_id;
-			news.short_para2 = unit.name_id;
+			news.short_para1 = unit.RaceId;
+			news.short_para2 = unit.NameId;
 		}
 	}
 
@@ -494,19 +494,19 @@ public class NewsArray
 		Unit unit = UnitArray[unitRecno];
 
 		News news = add_news(News.NEWS_UNIT_BETRAY, News.NEWS_NORMAL,
-			unit.nation_recno, betrayToNationRecno);
+			unit.NationId, betrayToNationRecno);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.race_id;
-		news.short_para2 = unit.name_id;
-		news.short_para3 = unit.rank_id;
+		news.short_para1 = unit.RaceId;
+		news.short_para2 = unit.NameId;
+		news.short_para3 = unit.Rank;
 
 		//------- set location --------//
 
 		if (betrayToNationRecno == NationArray.player_recno)
-			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unitRecno, unit.name_id);
+			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unitRecno, unit.NameId);
 		else
 			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
@@ -515,14 +515,14 @@ public class NewsArray
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		News news = add_news(News.NEWS_UNIT_ASSASSINATED, News.NEWS_NORMAL, unit.nation_recno);
+		News news = add_news(News.NEWS_UNIT_ASSASSINATED, News.NEWS_NORMAL, unit.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.race_id;
-		news.short_para2 = unit.name_id;
-		news.short_para3 = unit.rank_id;
+		news.short_para1 = unit.RaceId;
+		news.short_para2 = unit.NameId;
+		news.short_para3 = unit.Rank;
 		news.short_para4 = spyKilled ? 1 : 0;
 
 		//------- set location --------//
@@ -556,13 +556,13 @@ public class NewsArray
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		News news = add_news(News.NEWS_GENERAL_DIE, News.NEWS_NORMAL, unit.nation_recno);
+		News news = add_news(News.NEWS_GENERAL_DIE, News.NEWS_NORMAL, unit.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.race_id;
-		news.short_para2 = unit.name_id;
+		news.short_para1 = unit.RaceId;
+		news.short_para2 = unit.NameId;
 
 		news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
@@ -606,12 +606,12 @@ public class NewsArray
 		switch (objectId)
 		{
 			case News.NEWS_LOC_UNIT:
-				news.short_para2 = UnitArray[recno].race_id;
+				news.short_para2 = UnitArray[recno].RaceId;
 				if (news.short_para2 > 0)
-					news.short_para3 = UnitArray[recno].name_id;
+					news.short_para3 = UnitArray[recno].NameId;
 				else
-					news.short_para3 = UnitArray[recno].unit_id;
-				news.short_para4 = UnitArray[recno].rank_id;
+					news.short_para3 = UnitArray[recno].UnitType;
+				news.short_para4 = UnitArray[recno].Rank;
 				break;
 			case News.NEWS_LOC_FIRM:
 				news.short_para2 = FirmArray[recno].firm_id;

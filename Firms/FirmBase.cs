@@ -46,7 +46,7 @@ public class FirmBase : Firm
 
         //------- if this is a construction worker -------//
 
-        if (unit.skill.skill_id == Skill.SKILL_CONSTRUCTION)
+        if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
         {
             set_builder(unitRecno);
             return;
@@ -54,12 +54,12 @@ public class FirmBase : Firm
 
         //------ only assign units of the right race ------//
 
-        if (unit.race_id != race_id)
+        if (unit.RaceId != race_id)
             return;
 
         //-------- assign the unit ----------//
 
-        int rankId = unit.rank_id;
+        int rankId = unit.Rank;
 
         if (rankId == Unit.RANK_GENERAL || rankId == Unit.RANK_KING)
         {
@@ -79,7 +79,7 @@ public class FirmBase : Firm
         {
             Unit unit = UnitArray[overseerRecno];
 
-            unit.team_info.member_unit_array.Clear();
+            unit.TeamInfo.Members.Clear();
         }
 
         //----- assign the overseer now -------//
@@ -193,23 +193,23 @@ public class FirmBase : Firm
             return;
 
         Unit overseerUnit = UnitArray[overseer_recno];
-        int overseerSkill = overseerUnit.skill.skill_level;
+        int overseerSkill = overseerUnit.Skill.skill_level;
 
         //------- increase the commander's leadership ---------//
 
-        if (workers.Count > 0 && overseerUnit.skill.skill_level < 100)
+        if (workers.Count > 0 && overseerUnit.Skill.skill_level < 100)
         {
             //-- the more soldiers this commander has, the higher the leadership will increase ---//
 
-            int incValue = (int)(3.0 * workers.Count * overseerUnit.hit_points / overseerUnit.max_hit_points
-                * (100.0 + overseerUnit.skill.skill_potential * 2.0) / 100.0);
+            int incValue = (int)(3.0 * workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+                * (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
 
-            overseerUnit.skill.skill_level_minor += incValue;
+            overseerUnit.Skill.skill_level_minor += incValue;
 
-            if (overseerUnit.skill.skill_level_minor >= 100)
+            if (overseerUnit.Skill.skill_level_minor >= 100)
             {
-                overseerUnit.skill.skill_level_minor -= 100;
-                overseerUnit.skill.skill_level++;
+                overseerUnit.Skill.skill_level_minor -= 100;
+                overseerUnit.Skill.skill_level++;
             }
         }
 

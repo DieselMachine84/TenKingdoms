@@ -126,7 +126,7 @@ public class BuildMineTask : AITask
             return;
 
         Unit builder = UnitArray[_builderId];
-        if (builder.unit_mode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
 
         if (!_builderSent)

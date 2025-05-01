@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public class Skill
 {
-    public const int MAX_SKILL = 7;
+    private const int MAX_SKILL = 7;
     public const int MAX_TRAINABLE_SKILL = MAX_SKILL - 1; // exclude praying
     public const int SKILL_CONSTRUCTION = 1;
     public const int SKILL_LEADING = 2;
@@ -22,9 +22,7 @@ public class Skill
     public int skill_level_minor;
     public int skill_potential; // skill potential
 
-    public static string[] skill_str_array =
-        { "Construction", "Leadership", "Mining", "Manufacture", "Research", "Spying", "Praying" };
-
+    public static string[] skill_str_array = { "Construction", "Leadership", "Mining", "Manufacture", "Research", "Spying", "Praying" };
     public static string[] skill_code_array = { "CONS", "LEAD", "MINE", "MANU", "RESE", "SPY", "PRAY" };
 
     // the id. of the race that specialized in this skill.

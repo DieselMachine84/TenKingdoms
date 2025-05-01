@@ -62,7 +62,7 @@ public class Worker
             {
                 Unit overseerUnit = UnitArray[firmPtr.overseer_recno];
 
-                int overseerSkill = overseerUnit.skill.get_skill(Skill.SKILL_LEADING);
+                int overseerSkill = overseerUnit.Skill.get_skill(Skill.SKILL_LEADING);
                 int targetLoyalty = 30 + overseerSkill / 2;
 
                 //---------------------------------------------------//
@@ -78,10 +78,10 @@ public class Worker
                 if (skill_level > overseerSkill)
                     targetLoyalty -= skill_level - overseerSkill;
 
-                if (overseerUnit.rank_id == Unit.RANK_KING)
+                if (overseerUnit.Rank == Unit.RANK_KING)
                     targetLoyalty += 20;
 
-                if (RaceRes.is_same_race(race_id, overseerUnit.race_id))
+                if (RaceRes.is_same_race(race_id, overseerUnit.RaceId))
                     targetLoyalty += 20;
 
                 if (targetLoyalty < 0)

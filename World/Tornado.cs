@@ -67,24 +67,24 @@ public class Tornado : Sprite
         if (location.HasUnit(UnitConstants.UNIT_AIR))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
-            targetUnit.hit_points -= 2 * (int)attack_damage;
-            if (targetUnit.hit_points <= 0)
-                targetUnit.hit_points = 0;
+            targetUnit.HitPoints -= 2 * (int)attack_damage;
+            if (targetUnit.HitPoints <= 0)
+                targetUnit.HitPoints = 0;
         }
 
         if (location.HasUnit(UnitConstants.UNIT_LAND))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-            targetUnit.hit_points -= (int)attack_damage;
-            if (targetUnit.hit_points <= 0)
-                targetUnit.hit_points = 0;
+            targetUnit.HitPoints -= (int)attack_damage;
+            if (targetUnit.HitPoints <= 0)
+                targetUnit.HitPoints = 0;
         }
         else if (location.HasUnit(UnitConstants.UNIT_SEA))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
-            targetUnit.hit_points -= (int)attack_damage;
-            if (targetUnit.hit_points <= 0)
-                targetUnit.hit_points = 0;
+            targetUnit.HitPoints -= (int)attack_damage;
+            if (targetUnit.HitPoints <= 0)
+                targetUnit.HitPoints = 0;
         }
         else
         {

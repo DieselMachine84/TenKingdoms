@@ -33,7 +33,7 @@ public class UnitMonster : Unit
     {
         string str = String.Empty;
 
-        switch (rank_id)
+        switch (Rank)
         {
             case RANK_KING:
                 str = monster_name_king[get_monster_id() - 1];
@@ -117,13 +117,13 @@ public class UnitMonster : Unit
 
         //--- when a general monster is killed, it leaves gold coins ---//
 
-        if (nation_recno == 0 && get_monster_id() != 0) // to skip monster_res[ get_monster_id() ] error in test game 2
+        if (NationId == 0 && get_monster_id() != 0) // to skip monster_res[ get_monster_id() ] error in test game 2
         {
             MonsterInfo monsterInfo = MonsterRes[get_monster_id()];
 
-            if (rank_id == RANK_GENERAL)
+            if (Rank == RANK_GENERAL)
             {
-                int goldAmount = 2 * max_hit_points * monsterInfo.level * (100 + Misc.Random(30)) / 100;
+                int goldAmount = 2 * MaxHitPoints * monsterInfo.level * (100 + Misc.Random(30)) / 100;
 
                 SiteArray.AddSite(xLoc, yLoc, Site.SITE_GOLD_COIN, goldAmount);
                 SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
@@ -131,7 +131,7 @@ public class UnitMonster : Unit
 
             //--- when a king monster is killed, it leaves a scroll of power ---//
 
-            else if (rank_id == RANK_KING)
+            else if (Rank == RANK_KING)
             {
                 king_leave_scroll();
             }
@@ -139,7 +139,7 @@ public class UnitMonster : Unit
 
         //---------- add news ----------//
 
-        if (rank_id == RANK_KING)
+        if (Rank == RANK_KING)
             NewsArray.monster_king_killed(get_monster_id(), NextLocX, NextLocY);
     }
 
@@ -282,7 +282,7 @@ public class UnitMonster : Unit
 
             Unit unit = UnitArray[unitRecno];
 
-            if (UnitRes[unit.unit_id].unit_class != UnitConstants.UNIT_CLASS_MONSTER)
+            if (UnitRes[unit.UnitType].unit_class != UnitConstants.UNIT_CLASS_MONSTER)
                 continue;
 
             unitOrderedArray.Add(unitRecno);
@@ -332,9 +332,9 @@ public class UnitMonster : Unit
             if (location.HasUnit(UnitConstants.UNIT_LAND))
             {
                 Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-                if (unit.race_id > 0)
+                if (unit.RaceId > 0)
                 {
-                    raceCountArray[unit.race_id - 1]++;
+                    raceCountArray[unit.RaceId - 1]++;
                 }
             }
         }

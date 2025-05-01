@@ -69,7 +69,7 @@ public class FirmInn : Firm
 	{
 		//------- if this is a construction worker -------//
 
-		if (UnitArray[unitRecno].skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (UnitArray[unitRecno].Skill.skill_id == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 		}
@@ -97,17 +97,17 @@ public class FirmInn : Firm
 		//-------- set skills of the unit --------//
 
 		Unit unit = UnitArray[unitRecno];
-		unit.skill = innUnit.skill;
-
+		unit.Skill.skill_id = innUnit.skill.skill_id;
+		unit.Skill.skill_level = innUnit.skill.skill_level;
 		unit.set_combat_level(innUnit.skill.combat_level);
 
 		//-------- if the unit's skill is spying -----//
 
-		if (unit.skill.skill_id == Skill.SKILL_SPYING)
+		if (unit.Skill.skill_id == Skill.SKILL_SPYING)
 		{
-			Spy spy = SpyArray.AddSpy(unitRecno, unit.skill.skill_level);
-			unit.spy_recno = spy.spy_recno;
-			unit.skill.skill_id = 0; // reset its primary skill, its spying skill has been recorded in spy_array
+			Spy spy = SpyArray.AddSpy(unitRecno, unit.Skill.skill_level);
+			unit.SpyId = spy.spy_recno;
+			unit.Skill.skill_id = 0; // reset its primary skill, its spying skill has been recorded in spy_array
 		}
 
 		//----------------------------------------//
@@ -120,16 +120,16 @@ public class FirmInn : Firm
 
 		int unitLoyalty = 30 + (int)nation.reputation / 2;
 
-		if (RaceRes.is_same_race(unit.race_id, nation.race_id))
+		if (RaceRes.is_same_race(unit.RaceId, nation.race_id))
 			unitLoyalty += 20;
 
 		unitLoyalty = Math.Max(40, unitLoyalty);
 		unitLoyalty = Math.Min(100, unitLoyalty);
 
-		if (unit.spy_recno != 0)
-			SpyArray[unit.spy_recno].spy_loyalty = unitLoyalty;
+		if (unit.SpyId != 0)
+			SpyArray[unit.SpyId].spy_loyalty = unitLoyalty;
 		else
-			unit.loyalty = unitLoyalty;
+			unit.Loyalty = unitLoyalty;
 
 		//---- remove the record from the hire list ----//
 

@@ -229,12 +229,12 @@ public class News
 			{
 				Unit unit = UnitArray[loc_type_para];
 
-				if (unit.name_id == loc_type_para2)
+				if (unit.NameId == loc_type_para2)
 				{
 					//--- if the unit is no longer belong to our nation ----//
 					//--- only keep track of the unit for one month --------//
 
-					if (unit.nation_recno == NationArray.player_recno || Info.game_date < news_date.AddDays(30.0))
+					if (unit.NationId == NationArray.player_recno || Info.game_date < news_date.AddDays(30.0))
 					{
 						if (unit.get_cur_loc(out loc_x, out loc_y))
 						{

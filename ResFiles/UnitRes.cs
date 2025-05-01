@@ -646,7 +646,7 @@ public class UnitRes
 		LoadAttackInfo();
 	}
 
-	public UnitInfo this[int unitId] => unit_info_array[unitId - 1];
+	public UnitInfo this[int unitType] => unit_info_array[unitType - 1];
 
 	public AttackInfo GetAttackInfo(int attackId)
 	{

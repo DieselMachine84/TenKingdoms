@@ -96,7 +96,7 @@ public class FirmHarbor : Firm
 	{
 		//------- if this is a construction worker -------//
 
-		if (UnitArray[unitRecno].skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (UnitArray[unitRecno].Skill.skill_id == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;
@@ -215,7 +215,7 @@ public class FirmHarbor : Firm
 		if (FirmArray.selected_recno == firm_recno && nation_recno == NationArray.player_recno)
 		{
 			Power.reset_selection();
-			unit.selected_flag = true;
+			unit.SelectedFlag = true;
 			UnitArray.selected_recno = unit.SpriteId;
 			UnitArray.selected_count = 1;
 
@@ -527,7 +527,7 @@ public class FirmHarbor : Firm
 
 			//--- if this is a goods carrying ship and it doesn't have a defined trade route ---//
 
-			if (unitMarine.stop_defined_num < 2 && UnitRes[unitMarine.unit_id].carry_goods_capacity > 0)
+			if (unitMarine.stop_defined_num < 2 && UnitRes[unitMarine.UnitType].carry_goods_capacity > 0)
 			{
 				return unitMarine;
 			}

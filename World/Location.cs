@@ -758,7 +758,7 @@ public class Location
 		if (IsAccessible(mobileType))
 		{
 			int unitId = UnitId(mobileType);
-			return unitId == 0 || UnitArray[unitId].unit_group_id == curGroupId;
+			return unitId == 0 || UnitArray[unitId].GroupId == curGroupId;
 		}
 
 		return false;

@@ -264,7 +264,7 @@ public partial class Renderer
                 lineColor = Colors.V_WHITE;
 
             //TODO replace with unit.selected_flag
-            if (unit.selected_flag && (Config.show_unit_path & 2) != 0)
+            if (unit.SelectedFlag && (Config.show_unit_path & 2) != 0)
             {
                 if (Config.show_ai_info || NationArray.player_recno == 0 || unit.is_nation(NationArray.player_recno))
                 {
@@ -286,8 +286,8 @@ public partial class Renderer
             }
             
             byte nationColor = unit.CurAction != Sprite.SPRITE_ATTACK
-                ? nationColorArray[unit.nation_recno]
-                : excitedColorArray[ColorRemap.ColorSchemes[unit.nation_recno], Sys.Instance.FrameNumber % excitedColorCount];
+                ? nationColorArray[unit.NationId]
+                : excitedColorArray[ColorRemap.ColorSchemes[unit.NationId], Sys.Instance.FrameNumber % excitedColorCount];
 
             int locX = unit.CurLocX;
             int locY = unit.CurLocY;

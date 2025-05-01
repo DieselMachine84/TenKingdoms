@@ -70,9 +70,6 @@ public class UnitArray : SpriteArray
 			    if (unitInfo.is_monster != 0)
 				    return new UnitMonster();
 
-			    if (unitInfo.solider_id != 0) // if it is a vehicle unit
-				    return new UnitVehicle();
-
 			    if (GodRes.is_god_unit(objectType))
 				    return new UnitGod();
 
@@ -100,7 +97,7 @@ public class UnitArray : SpriteArray
 		    return true;
 
 	    Unit unit = this[recNo];
-	    return unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE || unit.action_mode == UnitConstants.ACTION_DIE;
+	    return unit.HitPoints <= 0 || unit.CurAction == Sprite.SPRITE_DIE || unit.ActionMode == UnitConstants.ACTION_DIE;
     }
 
     public override void Process()
@@ -115,9 +112,9 @@ public class UnitArray : SpriteArray
 		    {
 			    //-------------- reset ignore_power_nation ------------//
 			    if ((unitRecno % (365 * InternalConstants.FRAMES_PER_DAY) == Sys.Instance.FrameNumber % (365 * InternalConstants.FRAMES_PER_DAY))
-			        && unit.unit_id != UnitConstants.UNIT_CARAVAN)
+			        && unit.UnitType != UnitConstants.UNIT_CARAVAN)
 			    {
-				    unit.ignore_power_nation = 0;
+				    unit.IgnorePowerNation = 0;
 			    }
 
 			    unit.next_day();
@@ -125,12 +122,12 @@ public class UnitArray : SpriteArray
 			    if (IsDeleted(unitRecno))
 				    continue;
 
-			    if (unit.ai_unit)
+			    if (unit.AIUnit)
 				    unit.process_ai();
 
 			    //----- if it's an independent unit -------//
 
-			    else if (unit.nation_recno == 0 && unit.race_id != 0 && unit.spy_recno == 0)
+			    else if (unit.NationId == 0 && unit.RaceId != 0 && unit.SpyId == 0)
 				    unit.think_independent_unit();
 		    }
 	    }
@@ -145,7 +142,7 @@ public class UnitArray : SpriteArray
     
     public void DisappearInTown(Unit unit, Town town)
     {
-	    if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
+	    if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
 		    RebelArray.SettleTown(unit, town);
 
 	    DeleteUnit(unit);
@@ -162,7 +159,7 @@ public class UnitArray : SpriteArray
     {
 	    Unit unit = this[unitId];
 
-	    if( unit.unit_mode == UnitConstants.UNIT_MODE_REBEL )
+	    if( unit.UnitMode == UnitConstants.UNIT_MODE_REBEL )
 		    RebelArray.drop_rebel_identity(unitId);
 
 	    unit.die();
@@ -222,15 +219,15 @@ public class UnitArray : SpriteArray
 		    //{
 			    foreach (Unit unit in this)
 			    {
-				    if (!unit.selected_flag || !unit.is_visible())
+				    if (!unit.SelectedFlag || !unit.is_visible())
 					    continue;
-				    if (unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
-				        unit.action_mode == UnitConstants.ACTION_DIE)
+				    if (unit.HitPoints <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
+				        unit.ActionMode == UnitConstants.ACTION_DIE)
 					    continue;
 				    if (!unit.is_own()) // only if the unit belongs to us (a spy is also okay if true_nation_recno is ours)
 					    continue;
 				    //---------------------------------//
-				    if (unit.home_camp_firm_recno != 0)
+				    if (unit.HomeCampId != 0)
 					    unit.return_camp();
 			    }
 		    //}
@@ -262,11 +259,11 @@ public class UnitArray : SpriteArray
 				    Unit unit = this[recNo];
 				    if (!unit.is_visible())
 					    continue;
-				    if (unit.hit_points <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
-				        unit.action_mode == UnitConstants.ACTION_DIE)
+				    if (unit.HitPoints <= 0 || unit.CurAction == Sprite.SPRITE_DIE ||
+				        unit.ActionMode == UnitConstants.ACTION_DIE)
 					    continue;
 				    //---------------------------------//
-				    if (unit.home_camp_firm_recno != 0)
+				    if (unit.HomeCampId != 0)
 					    unit.return_camp();
 			    }
 		    //}
@@ -304,7 +301,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnitArray.Count; i++)
 		    {
 			    Unit unit = this[selectedUnitArray[i]];
-			    unit.unit_group_id = curGroupId;
+			    unit.GroupId = curGroupId;
 			    unit.stop2();
 		    }
 	    //}
@@ -317,7 +314,7 @@ public class UnitArray : SpriteArray
 		    if (!unit.is_visible())
 			    continue;
 
-		    if (unit.nation_recno == oldNationRecno)
+		    if (unit.NationId == oldNationRecno)
 		    {
 			    //------ stop all attacking unit with nation_recno = oldNationRecno -----//
 			    if (unit.is_action_attack())
@@ -330,19 +327,19 @@ public class UnitArray : SpriteArray
 			    int targetXLoc, targetYLoc;
 
 			    //---- stop all attacking unit with target's nation_recno = oldNationRecno ----//
-			    if (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
+			    if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
 			    {
-				    targetType = unit.action_mode;
-				    targetRecno = unit.action_para;
-				    targetXLoc = unit.action_x_loc;
-				    targetYLoc = unit.action_y_loc;
+				    targetType = unit.ActionMode;
+				    targetRecno = unit.ActionParam;
+				    targetXLoc = unit.ActionLocX;
+				    targetYLoc = unit.ActionLocY;
 			    }
 			    else
 			    {
-				    targetType = unit.action_mode2;
-				    targetRecno = unit.action_para2;
-				    targetXLoc = unit.action_x_loc2;
-				    targetYLoc = unit.action_y_loc2;
+				    targetType = unit.ActionMode2;
+				    targetRecno = unit.ActionPara2;
+				    targetXLoc = unit.ActionLocX2;
+				    targetYLoc = unit.ActionLocY2;
 			    }
 
 			    switch (targetType)
@@ -354,7 +351,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Unit targetUnit = this[targetRecno];
-					    if (targetUnit.nation_recno == oldNationRecno)
+					    if (targetUnit.NationId == oldNationRecno)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 
@@ -390,7 +387,7 @@ public class UnitArray : SpriteArray
     {
 	    foreach (Unit unit in this)
 	    {
-		    if (unit.nation_recno != nationRecno1 && unit.nation_recno != nationRecno2)
+		    if (unit.NationId != nationRecno1 && unit.NationId != nationRecno2)
 			    continue;
 
 		    if (unit.is_action_attack())
@@ -400,19 +397,19 @@ public class UnitArray : SpriteArray
 			    int targetXLoc, targetYLoc;
 
 			    //---- stop all attacking unit with target's nation_recno = oldNationRecno ----//
-			    if (unit.action_mode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
+			    if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
 			    {
-				    targetType = unit.action_mode;
-				    targetRecno = unit.action_para;
-				    targetXLoc = unit.action_x_loc;
-				    targetYLoc = unit.action_y_loc;
+				    targetType = unit.ActionMode;
+				    targetRecno = unit.ActionParam;
+				    targetXLoc = unit.ActionLocX;
+				    targetYLoc = unit.ActionLocY;
 			    }
 			    else
 			    {
-				    targetType = unit.action_mode2;
-				    targetRecno = unit.action_para2;
-				    targetXLoc = unit.action_x_loc2;
-				    targetYLoc = unit.action_y_loc2;
+				    targetType = unit.ActionMode2;
+				    targetRecno = unit.ActionPara2;
+				    targetXLoc = unit.ActionLocX2;
+				    targetYLoc = unit.ActionLocY2;
 			    }
 
 			    switch (targetType)
@@ -424,7 +421,7 @@ public class UnitArray : SpriteArray
 						    continue;
 
 					    Unit targetUnit = this[targetRecno];
-					    if (targetUnit.nation_recno == nationRecno1 || targetUnit.nation_recno == nationRecno2)
+					    if (targetUnit.NationId == nationRecno1 || targetUnit.NationId == nationRecno2)
 						    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					    break;
 
@@ -467,8 +464,8 @@ public class UnitArray : SpriteArray
 		    if (!unit.is_visible())
 			    continue;
 
-		    if ((unit.action_para == unitRecno && unit.action_mode == UnitConstants.ACTION_ATTACK_UNIT) ||
-		        (unit.action_para2 == unitRecno && unit.action_mode2 == UnitConstants.ACTION_ATTACK_UNIT))
+		    if ((unit.ActionParam == unitRecno && unit.ActionMode == UnitConstants.ACTION_ATTACK_UNIT) ||
+		        (unit.ActionPara2 == unitRecno && unit.ActionMode2 == UnitConstants.ACTION_ATTACK_UNIT))
 			    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 	    }
     }
@@ -483,8 +480,8 @@ public class UnitArray : SpriteArray
 		    if (!unit.is_visible())
 			    continue;
 
-		    if ((unit.action_para == firmRecno && unit.action_mode == UnitConstants.ACTION_ATTACK_FIRM) ||
-		        (unit.action_para2 == firmRecno && unit.action_mode2 == UnitConstants.ACTION_ATTACK_FIRM))
+		    if ((unit.ActionParam == firmRecno && unit.ActionMode == UnitConstants.ACTION_ATTACK_FIRM) ||
+		        (unit.ActionPara2 == firmRecno && unit.ActionMode2 == UnitConstants.ACTION_ATTACK_FIRM))
 			    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 	    }
     }
@@ -499,8 +496,8 @@ public class UnitArray : SpriteArray
 		    if (!unit.is_visible())
 			    continue;
 
-		    if ((unit.action_para == townRecno && unit.action_mode == UnitConstants.ACTION_ATTACK_TOWN) ||
-		        (unit.action_para2 == townRecno && unit.action_mode2 == UnitConstants.ACTION_ATTACK_TOWN))
+		    if ((unit.ActionParam == townRecno && unit.ActionMode == UnitConstants.ACTION_ATTACK_TOWN) ||
+		        (unit.ActionPara2 == townRecno && unit.ActionMode2 == UnitConstants.ACTION_ATTACK_TOWN))
 			    unit.stop2(UnitConstants.KEEP_DEFENSE_MODE);
 	    }
     }
@@ -547,15 +544,15 @@ public class UnitArray : SpriteArray
 		    foreach (var index in selectedUnits)
 		    {
 			    Unit unit = this[index];
-			    unit.unit_group_id = curGroupId;
-			    unit.action_mode = UnitConstants.ACTION_MOVE;
-			    unit.action_para = 0;
+			    unit.GroupId = curGroupId;
+			    unit.ActionMode = UnitConstants.ACTION_MOVE;
+			    unit.ActionParam = 0;
 
-			    if (unit.action_mode2 != UnitConstants.ACTION_MOVE)
+			    if (unit.ActionMode2 != UnitConstants.ACTION_MOVE)
 			    {
-				    unit.action_mode2 = UnitConstants.ACTION_MOVE;
-				    unit.action_para2 = 0;
-				    unit.action_x_loc2 = unit.action_y_loc2 = -1;
+				    unit.ActionMode2 = UnitConstants.ACTION_MOVE;
+				    unit.ActionPara2 = 0;
+				    unit.ActionLocX2 = unit.ActionLocY2 = -1;
 			    } // else keep the data to check whether same action mode is ordered
 		    }
 
@@ -643,7 +640,7 @@ public class UnitArray : SpriteArray
 		int vecX, vecY; // used to reset x, y
 		int oddCount, evenCount;
 		Unit firstUnit = this[selectedUnits[0]];
-		int curGroupId = firstUnit.unit_group_id;
+		int curGroupId = firstUnit.GroupId;
 		int mobileType = firstUnit.MobileType;
 		int sizeOneSelectedCount = selectedUnits.Count;
 
@@ -847,16 +844,16 @@ public class UnitArray : SpriteArray
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
 									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
 									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
@@ -890,16 +887,16 @@ public class UnitArray : SpriteArray
 							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
 									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.nation_recno != 0)
+								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
 									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.nation_recno, SeekPath.SEARCH_MODE_IN_A_GROUP);
+										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
@@ -1338,7 +1335,7 @@ public class UnitArray : SpriteArray
 	    for (; i < selectedUnits.Count; i++) // for first unit
 	    {
 		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0)
+		    if (UnitRes[unit.UnitType].carry_unit_capacity > 0)
 		    {
 			    // landX=landY=-1 if calling move_to() instead
 			    unit.ship_to_beach(destX, destY, out landX, out landY);
@@ -1355,7 +1352,7 @@ public class UnitArray : SpriteArray
 	    for (; i < selectedUnits.Count; i++) // for the rest units
 	    {
 		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.unit_id].carry_unit_capacity > 0 && landX != -1 && landY != -1)
+		    if (UnitRes[unit.UnitType].carry_unit_capacity > 0 && landX != -1 && landY != -1)
 		    {
 			    for (found = 0; j <= CHECK_SEA_SIZE; j++, totalCheck++)
 			    {
@@ -1439,8 +1436,8 @@ public class UnitArray : SpriteArray
 			    {
 				    targetXLoc = unit.NextLocX;
 				    targetYLoc = unit.NextLocY;
-				    if (unit.unit_id != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
-					    targetNationRecno = unit.nation_recno;
+				    if (unit.UnitType != UnitConstants.UNIT_EXPLOSIVE_CART) // attacking own porcupine is allowed
+					    targetNationRecno = unit.NationId;
 			    }
 			    else
 			    {
@@ -1491,9 +1488,9 @@ public class UnitArray : SpriteArray
 
 	    Unit attackUnit = this[selectedUnitArray[0]];
 
-	    if (attackUnit.nation_recno != 0 && targetNationRecno != 0)
+	    if (attackUnit.NationId != 0 && targetNationRecno != 0)
 	    {
-		    if (!NationArray[attackUnit.nation_recno].get_relation(targetNationRecno).should_attack)
+		    if (!NationArray[attackUnit.NationId].get_relation(targetNationRecno).should_attack)
 			    return;
 	    }
 
@@ -1544,7 +1541,7 @@ public class UnitArray : SpriteArray
 	    if (selectedUnits.Count == 1)
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
-		    selectedUnit.unit_group_id = cur_group_id++;
+		    selectedUnit.GroupId = cur_group_id++;
 		    selectedUnit.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
 		    return;
 	    }
@@ -1756,7 +1753,7 @@ public class UnitArray : SpriteArray
 	    if (selectedUnits.Count == 1)
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
-		    selectedUnit.unit_group_id = cur_group_id++;
+		    selectedUnit.GroupId = cur_group_id++;
 		    selectedUnit.attack_firm(targetXLoc, targetYLoc);
 		    return;
 	    }
@@ -1959,7 +1956,7 @@ public class UnitArray : SpriteArray
 	    if (selectedUnits.Count == 1)
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
-		    selectedUnit.unit_group_id = cur_group_id++;
+		    selectedUnit.GroupId = cur_group_id++;
 		    selectedUnit.attack_town(targetXLoc, targetYLoc);
 		    return;
 	    }
@@ -2161,7 +2158,7 @@ public class UnitArray : SpriteArray
 	    if (selectedUnits.Count == 1)
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
-		    selectedUnit.unit_group_id = cur_group_id++;
+		    selectedUnit.GroupId = cur_group_id++;
 		    selectedUnit.attack_wall(targetXLoc, targetYLoc);
 		    return;
 	    }
@@ -2390,7 +2387,7 @@ public class UnitArray : SpriteArray
 			    if (!unit.is_visible())
 				    continue;
 
-			    if (unit.selected_flag && unit.is_own())
+			    if (unit.SelectedFlag && unit.is_own())
 			    {
 				    selectedUnits.Add(unit.SpriteId);
 			    }
@@ -2464,7 +2461,7 @@ public class UnitArray : SpriteArray
 
 				    if (unit.SpriteInfo.LocWidth <= 1)
 				    {
-					    unit.unit_group_id = cur_group_id++;
+					    unit.GroupId = cur_group_id++;
 					    unit.assign(destX, destY);
 				    }
 				    else // move to object surrounding
@@ -2506,7 +2503,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit unit = this[selectedUnits[i]];
-			    int unitClass = UnitRes[unit.unit_id].unit_class;
+			    int unitClass = UnitRes[unit.UnitType].unit_class;
 			    if (unitClass == UnitConstants.UNIT_CLASS_HUMAN || unitClass == UnitConstants.UNIT_CLASS_WEAPON)
 				    assignArray.Add(selectedUnits[i]);
 			    else
@@ -2620,7 +2617,7 @@ public class UnitArray : SpriteArray
 				    if (World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId == defaultRegionId)
 				    {
 					    newSelectedArray.Add(selectedUnits[i]); // on the same territory
-					    unit.unit_group_id = curGroupId;
+					    unit.GroupId = curGroupId;
 				    }
 
 				    if (unit.CurAction == Sprite.SPRITE_IDLE)
@@ -2630,7 +2627,7 @@ public class UnitArray : SpriteArray
 		    else
 		    {
 			    newSelectedArray.Add(selectedUnits[0]);
-			    closestUnit.unit_group_id = curGroupId;
+			    closestUnit.GroupId = curGroupId;
 		    }
 
 		    //-------------- ordering the ship move near the coast ----------------//
@@ -2642,7 +2639,7 @@ public class UnitArray : SpriteArray
 		    // ##### patch end Gilbert 5/8 #######//
 
 		    int landX, landY;
-		    ship.unit_group_id = curGroupId;
+		    ship.GroupId = curGroupId;
 		    ship.ship_to_beach(curXLoc, curYLoc, out landX, out landY);
 
 		    if (landX != -1 && landY != -1)
@@ -2691,7 +2688,7 @@ public class UnitArray : SpriteArray
 			    if (!unit.is_visible())
 				    continue;
 
-			    if (unit.selected_flag && unit.is_own())
+			    if (unit.SelectedFlag && unit.is_own())
 			    {
 				    selectedUnits.Add(unit.SpriteId);
 			    }
@@ -2745,7 +2742,7 @@ public class UnitArray : SpriteArray
 			    if (selectedUnits.Count == 1)
 			    {
 				    Unit unit = this[selectedUnits[0]];
-				    unit.unit_group_id = cur_group_id++;
+				    unit.GroupId = cur_group_id++;
 				    unit.settle(destX, destY);
 			    }
 			    else
@@ -2776,7 +2773,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; ++i)
 		    {
 			    Unit unit = this[selectedUnits[i]];
-			    unit.unit_group_id = groupId;
+			    unit.GroupId = groupId;
 		    }
 
 		    cur_group_id++;
@@ -2799,7 +2796,7 @@ public class UnitArray : SpriteArray
 		    int unitRecno = selectedUnits[i];
 
 		    // a clocked spy cannot be commanded by original nation to attack
-		    if (!IsDeleted(unitRecno) && this[unitRecno].nation_recno == nationRecno)
+		    if (!IsDeleted(unitRecno) && this[unitRecno].NationId == nationRecno)
 		    {
 			    // pass
 			    ++i;
@@ -2823,8 +2820,8 @@ public class UnitArray : SpriteArray
 		    return;
 
 	    Unit selectedUnit = this[selected_recno];
-	    int unitClass = UnitRes[selectedUnit.unit_id].unit_class;
-	    int nationRecno = selectedUnit.nation_recno;
+	    int unitClass = UnitRes[selectedUnit.UnitType].unit_class;
+	    int nationRecno = selectedUnit.NationId;
 	    var enumerator = (seekDir >= 0) ? EnumerateAll(selected_recno, true) : EnumerateAll(selected_recno, false);
 
 	    foreach (int recNo in enumerator)
@@ -2841,15 +2838,15 @@ public class UnitArray : SpriteArray
 
 		    //-------- if are of the same nation --------//
 
-		    if (sameNation && unit.nation_recno != nationRecno)
+		    if (sameNation && unit.NationId != nationRecno)
 			    continue;
 
 		    //---------------------------------//
 
-		    if (UnitRes[unit.unit_id].unit_class == unitClass)
+		    if (UnitRes[unit.UnitType].unit_class == unitClass)
 		    {
 			    Power.reset_selection();
-			    unit.selected_flag = true;
+			    unit.SelectedFlag = true;
 			    selected_recno = unit.SpriteId;
 			    selected_count++;
 
@@ -2908,7 +2905,7 @@ public class UnitArray : SpriteArray
 		{
 			Unit unit = this[selectedUnits[j]];
 
-			unit.unit_group_id = curGroupId;
+			unit.GroupId = curGroupId;
 
 			if (unit.CurAction == Sprite.SPRITE_IDLE) //**maybe need to include SPRITE_ATTACK as well
 				unit.set_ready();
@@ -2928,7 +2925,7 @@ public class UnitArray : SpriteArray
 			//---------------- attack unit --------------//
 			//Unit *targetUnit = unit_array[loc.unit_recno(targetMobileType)];
 			Unit targetUnit = this[targetUnitRecno];
-			if (!targetUnit.is_visible() || targetUnit.hit_points <= 0)
+			if (!targetUnit.is_visible() || targetUnit.HitPoints <= 0)
 				return;
 
 			// short targetUnitRecno = targetUnit.sprite_recno;
@@ -3045,7 +3042,7 @@ public class UnitArray : SpriteArray
 		{
 			Unit unit = this[selectedUnits[i]];
 
-			unit.unit_group_id = unitGroupId; // set unit_group_id
+			unit.GroupId = unitGroupId; // set unit_group_id
 			if (unit.CurAction == Sprite.SPRITE_IDLE)
 				unit.set_ready();
 
@@ -3410,30 +3407,30 @@ public class UnitArray : SpriteArray
 				} while (found > 0);
 
 				Unit unit = this[recno];
-				unit.MoveTo(processed.move_to_x_loc, processed.move_to_y_loc);
+				unit.MoveTo(processed.MoveToLocX, processed.MoveToLocY);
 
 				switch (targetType)
 				{
 					case 0: // wall
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_WALL;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_WALL;
 						break;
 
 					case 1: // unit
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_UNIT;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_UNIT;
 						break;
 
 					case 2: // firm
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_FIRM;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_FIRM;
 						break;
 
 					case 3: // town
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_TOWN;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_TOWN;
 						break;
 				}
 
-				unit.action_para = unit.action_para2 = targetRecno;
-				unit.action_x_loc = unit.action_x_loc2 = targetXLoc;
-				unit.action_y_loc = unit.action_y_loc2 = targetYLoc;
+				unit.ActionParam = unit.ActionPara2 = targetRecno;
+				unit.ActionLocX = unit.ActionLocX2 = targetXLoc;
+				unit.ActionLocY = unit.ActionLocY2 = targetYLoc;
 
 				proCount--;
 				if (proCount < 0)
@@ -3470,8 +3467,8 @@ public class UnitArray : SpriteArray
 					break;
 			}
 
-			int moveToXLoc = first.move_to_x_loc;
-			int moveToYLoc = first.move_to_y_loc;
+			int moveToXLoc = first.MoveToLocX;
+			int moveToYLoc = first.MoveToLocY;
 
 			/*if(seek_path.path_status==PATH_NODE_USED_UP)
 			{
@@ -3486,28 +3483,28 @@ public class UnitArray : SpriteArray
 				switch (targetType)
 				{
 					case 0: // wall
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_WALL;
-						unit.action_para = unit.action_para2 = 0;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_WALL;
+						unit.ActionParam = unit.ActionPara2 = 0;
 						break;
 
 					case 1: // unit
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_UNIT;
-						unit.action_para = unit.action_para2 = targetRecno;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_UNIT;
+						unit.ActionParam = unit.ActionPara2 = targetRecno;
 						break;
 
 					case 2: // firm
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_FIRM;
-						unit.action_para = unit.action_para2 = targetRecno;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_FIRM;
+						unit.ActionParam = unit.ActionPara2 = targetRecno;
 						break;
 
 					case 3: // town
-						unit.action_mode = unit.action_mode2 = UnitConstants.ACTION_ATTACK_TOWN;
-						unit.action_para = unit.action_para2 = targetRecno;
+						unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_ATTACK_TOWN;
+						unit.ActionParam = unit.ActionPara2 = targetRecno;
 						break;
 				}
 
-				unit.action_x_loc = unit.action_x_loc2 = targetXLoc;
-				unit.action_y_loc = unit.action_y_loc2 = targetYLoc;
+				unit.ActionLocX = unit.ActionLocX2 = targetXLoc;
+				unit.ActionLocY = unit.ActionLocY2 = targetYLoc;
 
 				unprocessed--;
 			}

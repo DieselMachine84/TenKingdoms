@@ -40,8 +40,8 @@ public class BulletArray : SpriteArray
 		// define parameters
 		//------------------------------------------------------//
 		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
-		int attackXLoc = parentUnit.range_attack_x_loc;
-		int attackYLoc = parentUnit.range_attack_y_loc;
+		int attackXLoc = parentUnit.RangeAttackLocX;
+		int attackYLoc = parentUnit.RangeAttackLocY;
 		int targetXLoc = targetUnit.NextLocX;
 		int targetYLoc = targetUnit.NextLocY;
 
@@ -52,7 +52,7 @@ public class BulletArray : SpriteArray
 			// the previous used range attack destination can be reused,
 			// time is saved 'cos no need to check for bullet_path_possible()
 			//-------------------------------------------------------//
-			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
+			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
 			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,
@@ -68,8 +68,8 @@ public class BulletArray : SpriteArray
 		//------------------------------------------------------//
 		// define parameters
 		//------------------------------------------------------//
-		int attackXLoc = parentUnit.range_attack_x_loc;
-		int attackYLoc = parentUnit.range_attack_y_loc;
+		int attackXLoc = parentUnit.RangeAttackLocX;
+		int attackYLoc = parentUnit.RangeAttackLocY;
 		int targetXLoc = xLoc;
 		int targetYLoc = yLoc;
 		int width = 0, height = 0;
@@ -98,7 +98,7 @@ public class BulletArray : SpriteArray
 			// the previous used range attack destination can be reused,
 			// time is saved 'cos no need to check for bullet_path_possible()
 			//-------------------------------------------------------//
-			AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
+			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
 			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,

@@ -935,14 +935,14 @@ public class NationBase : IIdObject
         List<Unit> unitsToDelete = new List<Unit>();
         foreach (Unit unit in UnitArray)
         {
-            if (unit.nation_recno != nation_recno)
+            if (unit.NationId != nation_recno)
                 continue;
 
             //----- only human units will betray -----//
 
-            if (unit.race_id != 0)
+            if (unit.RaceId != 0)
             {
-                unit.loyalty = 0; // force it to detray
+                unit.Loyalty = 0; // force it to betray
 
                 if (unit.think_betray())
                     continue;
@@ -964,8 +964,8 @@ public class NationBase : IIdObject
     {
         int newKingLeadership = 0;
 
-        if (newKing.skill.skill_id == Skill.SKILL_LEADING)
-            newKingLeadership = newKing.skill.skill_level;
+        if (newKing.Skill.skill_id == Skill.SKILL_LEADING)
+            newKingLeadership = newKing.Skill.skill_level;
 
         newKingLeadership = Math.Max(20, newKingLeadership); // give the king a minimum level of leadership
 
@@ -976,7 +976,7 @@ public class NationBase : IIdObject
         if (newKingLeadership < king_leadership)
             loyaltyChange = (newKingLeadership - king_leadership) / 2;
 
-        if (newKing.rank_id != Unit.RANK_GENERAL)
+        if (newKing.Rank != Unit.RANK_GENERAL)
             loyaltyChange -= 20;
 
         //---- update loyalty of units in this nation ----//
@@ -986,13 +986,13 @@ public class NationBase : IIdObject
             if (unit.SpriteId == king_unit_recno || unit.SpriteId == newKing.SpriteId)
                 continue;
 
-            if (unit.nation_recno != nation_recno)
+            if (unit.NationId != nation_recno)
                 continue;
 
             //--------- update loyalty change ----------//
 
             unit.change_loyalty(loyaltyChange +
-                                succeed_king_loyalty_change(unit.race_id, newKing.race_id, race_id));
+                                succeed_king_loyalty_change(unit.RaceId, newKing.RaceId, race_id));
         }
 
         //---- update loyalty of units in camps ----//
@@ -1011,7 +1011,7 @@ public class NationBase : IIdObject
                     //--------- update loyalty change ----------//
 
                     worker.change_loyalty(loyaltyChange +
-                                          succeed_king_loyalty_change(worker.race_id, newKing.race_id, race_id));
+                                          succeed_king_loyalty_change(worker.race_id, newKing.RaceId, race_id));
                 }
             }
         }
@@ -1031,7 +1031,7 @@ public class NationBase : IIdObject
                 //------ update loyalty now ------//
 
                 town.ChangeLoyalty(raceId, loyaltyChange +
-                                            succeed_king_loyalty_change(raceId, newKing.race_id, race_id));
+                                            succeed_king_loyalty_change(raceId, newKing.RaceId, race_id));
             }
         }
 
@@ -1045,9 +1045,9 @@ public class NationBase : IIdObject
 
         //------ if the new king is a spy -------//
 
-        if (newKing.spy_recno != 0)
+        if (newKing.SpyId != 0)
         {
-            Spy spy = SpyArray[newKing.spy_recno];
+            Spy spy = SpyArray[newKing.SpyId];
 
             if (newKing.true_nation_recno() == nation_recno) // if this is your spy
                 spy.drop_spy_identity();
@@ -1064,10 +1064,10 @@ public class NationBase : IIdObject
 
         //--- if this unit currently has not have leadership ---//
 
-        if (kingUnit.skill.skill_id != Skill.SKILL_LEADING)
+        if (kingUnit.Skill.skill_id != Skill.SKILL_LEADING)
         {
-            kingUnit.skill.skill_id = Skill.SKILL_LEADING;
-            kingUnit.skill.skill_level = 0;
+            kingUnit.Skill.skill_id = Skill.SKILL_LEADING;
+            kingUnit.Skill.skill_level = 0;
         }
 
         kingUnit.set_rank(Unit.RANK_KING);
@@ -1078,12 +1078,12 @@ public class NationBase : IIdObject
 
         // for human players, the name is retrieved from NationArray::human_name_array
         if (nation_type == NATION_AI || firstKing == 0) // for succession, no longer use the original player name
-            nation_name_id = kingUnit.name_id;
+            nation_name_id = kingUnit.NameId;
         else
             nation_name_id = -nation_recno;
 
-        race_id = kingUnit.race_id;
-        king_leadership = kingUnit.skill.skill_level;
+        race_id = kingUnit.RaceId;
+        king_leadership = kingUnit.Skill.skill_level;
     }
 
     public void hand_over_to(int handoverNationRecno)
@@ -1104,12 +1104,12 @@ public class NationBase : IIdObject
 
             //---------------------------------------//
 
-            if (unit.nation_recno != nation_recno)
+            if (unit.NationId != nation_recno)
                 continue;
 
             //----- if it is a god, resign it -------//
 
-            if (GodRes.is_god_unit(unit.unit_id))
+            if (GodRes.is_god_unit(unit.UnitType))
             {
                 unit.resign(InternalConstants.COMMAND_AUTO);
                 continue;
@@ -1122,7 +1122,7 @@ public class NationBase : IIdObject
             //
             //---------------------------------------------------//
 
-            if (unit.spy_recno != 0)
+            if (unit.SpyId != 0)
                 unit.spy_change_nation(handoverNationRecno, InternalConstants.COMMAND_AUTO);
             else
                 unit.change_nation(handoverNationRecno);
@@ -1553,12 +1553,12 @@ public class NationBase : IIdObject
             if (unit.SpriteId == king_unit_recno)
                 continue;
 
-            if (unit.nation_recno != nation_recno)
+            if (unit.NationId != nation_recno)
                 continue;
 
             //--------- update loyalty change ----------//
 
-            if (raceId == 0 || unit.race_id == raceId)
+            if (raceId == 0 || unit.RaceId == raceId)
                 unit.change_loyalty((int)loyaltyChange);
         }
 
@@ -1737,7 +1737,7 @@ public class NationBase : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_id == UnitConstants.UNIT_PHOENIX && unit.nation_recno == nation_recno)
+            if (unit.UnitType == UnitConstants.UNIT_PHOENIX && unit.NationId == nation_recno)
             {
                 if (Misc.points_distance(xLoc, yLoc, unit.NextLocX, unit.NextLocY) <= effectiveRange)
                 {

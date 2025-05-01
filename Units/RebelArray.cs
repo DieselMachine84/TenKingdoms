@@ -54,7 +54,7 @@ public class RebelArray : DynArray<Rebel>
 
         //---- decrease the unit count of the rebel group ----//
 
-        int rebelRecno = unit.unit_mode_para;
+        int rebelRecno = unit.UnitModeParam;
         Rebel rebel = this[rebelRecno];
 
         rebel.mobile_rebel_count--;
@@ -79,7 +79,7 @@ public class RebelArray : DynArray<Rebel>
     {
         //---- decrease the unit count of the rebel group ----//
 
-        int rebelRecno = unit.unit_mode_para;
+        int rebelRecno = unit.UnitModeParam;
         Rebel rebel = this[rebelRecno];
         rebel.mobile_rebel_count--;
 

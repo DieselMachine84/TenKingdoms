@@ -176,10 +176,10 @@ public class FirmMonster : Firm
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		switch (unit.rank_id)
+		switch (unit.Rank)
 		{
 			case Unit.RANK_KING:
-				set_king(unit.get_monster_id(), unit.skill.combat_level);
+				set_king(unit.get_monster_id(), unit.Skill.combat_level);
 				break;
 
 			case Unit.RANK_GENERAL:
@@ -187,7 +187,7 @@ public class FirmMonster : Firm
 				break;
 
 			case Unit.RANK_SOLDIER:
-				add_soldier(unit.leader_unit_recno);
+				add_soldier(unit.LeaderId);
 				break;
 		}
 
@@ -226,8 +226,8 @@ public class FirmMonster : Firm
 
 		// contribution is used for storing the monster id. temporary
 		monsterInFirm.monster_id = unitPtr.get_monster_id();
-		monsterInFirm.set_combat_level(unitPtr.skill.combat_level);
-		monsterInFirm.hit_points = (int)unitPtr.hit_points;
+		monsterInFirm.set_combat_level(unitPtr.Skill.combat_level);
+		monsterInFirm.hit_points = (int)unitPtr.HitPoints;
 
 		if (monsterInFirm.hit_points == 0)
 			monsterInFirm.hit_points = 1;
@@ -361,7 +361,7 @@ public class FirmMonster : Firm
 			return 0;
 
 		Unit generalUnit = UnitArray[generalUnitRecno];
-		generalUnit.team_id = UnitArray.cur_team_id;
+		generalUnit.TeamId = UnitArray.cur_team_id;
 		generalUnit.set_monster_soldier_id(monsterInFirm.soldier_monster_id);
 
 		int mobilizedCount = 1;
@@ -385,8 +385,8 @@ public class FirmMonster : Firm
 
 				if (unitRecno != 0)
 				{
-					UnitArray[unitRecno].team_id = UnitArray.cur_team_id;
-					UnitArray[unitRecno].leader_unit_recno = generalUnitRecno;
+					UnitArray[unitRecno].TeamId = UnitArray.cur_team_id;
+					UnitArray[unitRecno].LeaderId = generalUnitRecno;
 					mobilizedCount++;
 
 					patrolUnits.Add(unitRecno);
@@ -403,11 +403,11 @@ public class FirmMonster : Firm
 
 		//------- set the team_info of the general -------//
 
-		generalUnit.team_info.member_unit_array.Clear();
+		generalUnit.TeamInfo.Members.Clear();
 
 		for (int i = 0; i < patrolUnits.Count; i++)
 		{
-			generalUnit.team_info.member_unit_array.Add(patrolUnits[i]);
+			generalUnit.TeamInfo.Members.Add(patrolUnits[i]);
 		}
 
 		//---- delete the monster general record from the array ----//
@@ -442,7 +442,7 @@ public class FirmMonster : Firm
 
 	public override void being_attacked(int attackerUnitRecno)
 	{
-		int attackerNationRecno = UnitArray[attackerUnitRecno].nation_recno;
+		int attackerNationRecno = UnitArray[attackerUnitRecno].NationId;
 
 		//--- increase reputation of the nation that attacks monsters ---//
 
@@ -507,8 +507,8 @@ public class FirmMonster : Firm
 			//------ reset the monster's defense mode -----//
 
 			if (unit.in_monster_defend_mode() &&
-			    unit.action_misc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO &&
-			    unit.action_misc_para == firm_recno)
+			    unit.ActionMisc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO &&
+			    unit.ActionMiscParam == firm_recno)
 			{
 				unit.clear_monster_defend_mode();
 				((UnitMonster)unit).set_monster_action_mode(UnitConstants.MONSTER_ACTION_STOP);
@@ -516,9 +516,9 @@ public class FirmMonster : Firm
 
 			//--- if this unit belongs to this firm, reset its association with this firm ---//
 
-			if (unit.unit_mode == UnitConstants.UNIT_MODE_MONSTER && unit.unit_mode_para == firm_recno)
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_MONSTER && unit.UnitModeParam == firm_recno)
 			{
-				unit.unit_mode_para = 0;
+				unit.UnitModeParam = 0;
 			}
 		}
 	}
@@ -646,9 +646,9 @@ public class FirmMonster : Firm
 		monster.set_monster_action_mode(current_monster_action_mode);
 
 		if (hitPoints != 0)
-			monster.hit_points = hitPoints;
+			monster.HitPoints = hitPoints;
 		else
-			monster.hit_points = monster.max_hit_points;
+			monster.HitPoints = monster.MaxHitPoints;
 
 		//-----------------------------------------------------//
 		// enable unit defend mode
@@ -656,11 +656,11 @@ public class FirmMonster : Firm
 		if (firm_recno != 0) // 0 when firm is ready to be deleted
 		{
 			monster.stop2();
-			monster.action_mode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
-			monster.action_para2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
+			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
+			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
 
-			monster.action_misc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
-			monster.action_misc_para = firm_recno;
+			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
+			monster.ActionMiscParam = firm_recno;
 		}
 
 		return monster.SpriteId;

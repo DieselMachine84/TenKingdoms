@@ -226,8 +226,6 @@ public class FirmMarket : Firm
 			return 0;
 
 		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitRecno];
-
-		unitCaravan.loyalty = 100;
 		unitCaravan.set_stop(1, loc_x1, loc_y1, InternalConstants.COMMAND_AUTO);
 		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
 

@@ -1643,14 +1643,14 @@ public class MapGenerator
 		switch (rankId)
 		{
 			case Unit.RANK_KING:
-				unit.skill.set_skill(Skill.SKILL_LEADING);
-				unit.skill.skill_level = 100;
+				unit.Skill.set_skill(Skill.SKILL_LEADING);
+				unit.Skill.skill_level = 100;
 				unit.set_combat_level(100);
 				break;
 
 			case Unit.RANK_GENERAL:
-				unit.skill.set_skill(Skill.SKILL_LEADING);
-				unit.skill.skill_level = 40 + Misc.Random(50); // 40 to 90
+				unit.Skill.set_skill(Skill.SKILL_LEADING);
+				unit.Skill.skill_level = 40 + Misc.Random(50); // 40 to 90
 				unit.set_combat_level(30 + Misc.Random(70)); // 30 to 100
 				break;
 
@@ -1666,8 +1666,8 @@ public class MapGenerator
 				}
 				else
 				{
-					unit.skill.skill_id = skillId;
-					unit.skill.skill_level = 30 + Misc.Random(70);
+					unit.Skill.skill_id = skillId;
+					unit.Skill.skill_level = 30 + Misc.Random(70);
 
 					if (skillId == Skill.SKILL_LEADING)
 						unit.set_combat_level(30 + Misc.Random(70));
@@ -1681,7 +1681,7 @@ public class MapGenerator
 				if (spyFlag)
 				{
 					int spySkill = 20 + Misc.Random(80); // 20 to 100
-					unit.spy_recno = SpyArray.AddSpy(unit.SpriteId, spySkill).spy_recno;
+					unit.SpyId = SpyArray.AddSpy(unit.SpriteId, spySkill).spy_recno;
 				}
 
 				break;

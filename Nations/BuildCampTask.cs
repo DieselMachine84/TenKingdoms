@@ -70,10 +70,10 @@ public class BuildCampTask : AITask
             return;
 
         Unit general = UnitArray[_generalId];
-        if (general.unit_mode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
+        if (general.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
         
-        if (general.rank_id != Unit.RANK_GENERAL || general.rank_id != Unit.RANK_KING)
+        if (general.Rank != Unit.RANK_GENERAL || general.Rank != Unit.RANK_KING)
             general.set_rank(Unit.RANK_GENERAL);
 
         if (!_generalSent)

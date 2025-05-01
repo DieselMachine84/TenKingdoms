@@ -165,7 +165,7 @@ public class SpyArray : DynArray<Spy>
             {
                 int firmOverseerRecno = FirmArray[spy.spy_place_para].overseer_recno;
 
-                if (firmOverseerRecno != 0 && UnitArray[firmOverseerRecno].spy_recno == spy.spy_recno)
+                if (firmOverseerRecno != 0 && UnitArray[firmOverseerRecno].SpyId == spy.spy_recno)
                 {
                     UnitArray[firmOverseerRecno].spy_change_nation(toNationRecno, InternalConstants.COMMAND_AUTO);
                     continue;

@@ -374,7 +374,7 @@ public partial class Renderer
             SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
             //TODO select only under cursor?
             //bool isSelected = (unit.sprite_recno == _selectedUnitId);
-            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.nation_recno, unit.selected_flag), unitX, unitY,
+            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, unit.SelectedFlag), unitX, unitY,
                 Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
     }
@@ -386,7 +386,7 @@ public partial class Renderer
 
         foreach (Unit unit in UnitArray)
         {
-            if (!unit.is_visible() || !unit.selected_flag)
+            if (!unit.is_visible() || !unit.SelectedFlag)
                 continue;
 
             if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.is_nation(NationArray.player_recno))

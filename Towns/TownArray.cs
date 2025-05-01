@@ -325,11 +325,11 @@ public class TownArray : DynArray<Town>
 
 		Unit unit = UnitArray[unitId];
 
-		int nationId = unit.nation_recno;
+		int nationId = unit.NationId;
 
 		//----- it's far enough to form another town --------//
 
-		Town town = AddTown(nationId, unit.race_id, xLoc, yLoc);
+		Town town = AddTown(nationId, unit.RaceId, xLoc, yLoc);
 
 		//----------------------------------------------------//
 		// if the settle unit is standing in the town area

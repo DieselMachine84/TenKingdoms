@@ -17,13 +17,13 @@ public class UnitGod : Unit
 	public override void init_derived()
 	{
 		cast_power_type = 0;
-		if (unit_id == UnitConstants.UNIT_PERSIAN_HEALER || unit_id == UnitConstants.UNIT_VIKING_GOD ||
-		    unit_id == UnitConstants.UNIT_KUKULCAN || unit_id == UnitConstants.UNIT_JAPANESE_GOD)
-			can_attack_flag = false; // unable to attack
+		if (UnitType == UnitConstants.UNIT_PERSIAN_HEALER || UnitType == UnitConstants.UNIT_VIKING_GOD ||
+		    UnitType == UnitConstants.UNIT_KUKULCAN || UnitType == UnitConstants.UNIT_JAPANESE_GOD)
+			CanAttack = false; // unable to attack
 
-		if (unit_id == UnitConstants.UNIT_EGYPTIAN_GOD || unit_id == UnitConstants.UNIT_INDIAN_GOD ||
-		    unit_id == UnitConstants.UNIT_ZULU_GOD)
-			can_attack_flag = false; // unable to attack
+		if (UnitType == UnitConstants.UNIT_EGYPTIAN_GOD || UnitType == UnitConstants.UNIT_INDIAN_GOD ||
+		    UnitType == UnitConstants.UNIT_ZULU_GOD)
+			CanAttack = false; // unable to attack
 	}
 
 	public override void PreProcess()
@@ -33,13 +33,13 @@ public class UnitGod : Unit
 		//---- set force_move_flag to 1 if the god does not have the ability to attack ----//
 
 		if (god_id != GodRes.GOD_CHINESE && god_id != GodRes.GOD_NORMAN) // only Chinese and Norman dragon can attack
-			force_move_flag = true;
+			ForceMove = true;
 
 		//--- if the seat of power supporting this unit is destroyed, this unit dies ---//
 
 		if (FirmArray.IsDeleted(base_firm_recno))
 		{
-			hit_points = 0;
+			HitPoints = 0;
 			set_die();
 			return;
 		}
@@ -55,9 +55,9 @@ public class UnitGod : Unit
 
 		//--------- update hit points --------//
 
-		hit_points = (int)firmBase.pray_points;
+		HitPoints = (int)firmBase.pray_points;
 
-		if (hit_points == 0)
+		if (HitPoints == 0)
 			set_die();
 	}
 
@@ -140,7 +140,7 @@ public class UnitGod : Unit
 		if (firmBase.pray_points < 0.0)
 			firmBase.pray_points = 0.0;
 
-		hit_points = (int)firmBase.pray_points;
+		HitPoints = (int)firmBase.pray_points;
 
 		return true;
 	}
@@ -161,7 +161,7 @@ public class UnitGod : Unit
 
 			//-- only heal human units belonging to our nation in ships --//
 
-			if (unit.nation_recno == nation_recno && UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			if (unit.NationId == NationId && UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 			{
 				UnitMarine unitMarine = (UnitMarine)unit;
 
@@ -205,7 +205,7 @@ public class UnitGod : Unit
 		{
 			Town town = TownArray[location.TownId()];
 
-			if (god_id == GodRes.GOD_JAPANESE && town.NationId != nation_recno)
+			if (god_id == GodRes.GOD_JAPANESE && town.NationId != NationId)
 			{
 				int divider = InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT;
 
@@ -219,10 +219,10 @@ public class UnitGod : Unit
 					if (town.NationId != 0)
 						town.ChangeLoyalty(i + 1, -changePoints / divider);
 					else
-						town.ChangeResistance(i + 1, nation_recno, -changePoints / divider);
+						town.ChangeResistance(i + 1, NationId, -changePoints / divider);
 				}
 			}
-			else if (god_id == GodRes.GOD_EGYPTIAN && town.NationId == nation_recno)
+			else if (god_id == GodRes.GOD_EGYPTIAN && town.NationId == NationId)
 			{
 				int raceId;
 
@@ -333,9 +333,9 @@ public class UnitGod : Unit
 
 		//-- only heal human units belonging to our nation --//
 
-		if (unit.nation_recno == nation_recno && unit.race_id > 0)
+		if (unit.NationId == NationId && unit.RaceId > 0)
 		{
-			double changePoints = (double)unit.max_hit_points / (6.0 + Misc.Random(4)); // divided by (6 to 9)
+			double changePoints = (double)unit.MaxHitPoints / (6.0 + Misc.Random(4)); // divided by (6 to 9)
 
 			changePoints = Math.Max(changePoints, 10);
 
@@ -349,7 +349,7 @@ public class UnitGod : Unit
 
 		//-- only cast on enemy units -----//
 
-		if (unit.nation_recno != nation_recno && unit.race_id > 0)
+		if (unit.NationId != NationId && unit.RaceId > 0)
 		{
 			int changePoints = 7 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
@@ -363,20 +363,20 @@ public class UnitGod : Unit
 
 		//-- only cast on mayan units belonging to our nation --//
 
-		if (unit.nation_recno == nation_recno && unit.race_id == (int)Race.RACE_MAYA)
+		if (unit.NationId == NationId && unit.RaceId == (int)Race.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
-			int newCombatLevel = unit.skill.combat_level + changePoints / divider;
+			int newCombatLevel = unit.Skill.combat_level + changePoints / divider;
 
 			if (newCombatLevel > 100)
 				newCombatLevel = 100;
 
-			double oldHitPoints = unit.hit_points;
+			double oldHitPoints = unit.HitPoints;
 
 			unit.set_combat_level(newCombatLevel);
 
-			unit.hit_points = oldHitPoints; // keep the hit points unchanged.
+			unit.HitPoints = oldHitPoints; // keep the hit points unchanged.
 		}
 	}
 
@@ -389,7 +389,7 @@ public class UnitGod : Unit
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.is_visible() && NationArray.should_attack(nation_recno, unit.nation_recno))
+		if (unit.is_visible() && NationArray.should_attack(NationId, unit.NationId))
 		{
 			unit.change_loyalty(-30 + Misc.Random(11));
 		}
@@ -400,22 +400,22 @@ public class UnitGod : Unit
 		// no effect
 		Unit unit = UnitArray[unitRecno];
 
-		if (nation_recno == unit.nation_recno && unit.race_id == (int)Race.RACE_ZULU && unit.rank_id != RANK_SOLDIER)
+		if (NationId == unit.NationId && unit.RaceId == (int)Race.RACE_ZULU && unit.Rank != RANK_SOLDIER)
 		{
 			int changePoints = 30; // add 15 twice to avoid 130 becomes -126
 			if (divider > 2)
 			{
-				unit.skill.skill_level += changePoints / divider;
-				if (unit.skill.skill_level > 100)
-					unit.skill.skill_level = 100;
+				unit.Skill.skill_level += changePoints / divider;
+				if (unit.Skill.skill_level > 100)
+					unit.Skill.skill_level = 100;
 			}
 			else
 			{
 				for (int t = 2; t > 0; --t)
 				{
-					unit.skill.skill_level += changePoints / 2 / divider;
-					if (unit.skill.skill_level > 100)
-						unit.skill.skill_level = 100;
+					unit.Skill.skill_level += changePoints / 2 / divider;
+					if (unit.Skill.skill_level > 100)
+						unit.Skill.skill_level = 100;
 				}
 			}
 		}
@@ -425,7 +425,7 @@ public class UnitGod : Unit
 	{
 		//-- only heal human units belonging to our nation --//
 
-		if (nationRecno == nation_recno && worker.race_id > 0)
+		if (nationRecno == NationId && worker.race_id > 0)
 		{
 			int changePoints = worker.max_hit_points() / (4 + Misc.Random(4)); // divided by (4 to 7)
 
@@ -439,7 +439,7 @@ public class UnitGod : Unit
 	{
 		//-- only cast on enemy units -----//
 
-		if (nationRecno != nation_recno && worker.race_id > 0)
+		if (nationRecno != NationId && worker.race_id > 0)
 		{
 			int changePoints = 7 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
@@ -451,7 +451,7 @@ public class UnitGod : Unit
 	{
 		//-- only cast on mayan units belonging to our nation --//
 
-		if (nationRecno == nation_recno && worker.race_id == (int)Race.RACE_MAYA)
+		if (nationRecno == NationId && worker.race_id == (int)Race.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
@@ -545,7 +545,7 @@ public class UnitGod : Unit
 	{
 		//------- there is no action, now think a new one ------//
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		int bestRating = 0;
 		int targetXLoc = -1, targetYLoc = -1;
 
@@ -559,7 +559,7 @@ public class UnitGod : Unit
 			{
 				Unit unit = UnitArray[firm.overseer_recno];
 
-				if (unit.race_id == (int)Race.RACE_MAYA && unit.skill.combat_level < 100)
+				if (unit.RaceId == (int)Race.RACE_MAYA && unit.Skill.combat_level < 100)
 					curRating += 10;
 			}
 
@@ -609,7 +609,7 @@ public class UnitGod : Unit
 	{
 		//------- there is no action, now think a new one ------//
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		int bestRating = 0;
 		int targetXLoc = -1, targetYLoc = -1;
 
@@ -636,7 +636,7 @@ public class UnitGod : Unit
 
 			//---- if the king is the commander of this camp -----//
 
-			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].rank_id == RANK_KING)
+			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].Rank == RANK_KING)
 			{
 				curRating += 20;
 			}
@@ -669,7 +669,7 @@ public class UnitGod : Unit
 	{
 		//------- there is no action, now think a new one ------//
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		int bestRating = 0;
 		int targetXLoc = -1, targetYLoc = -1;
 
@@ -742,7 +742,7 @@ public class UnitGod : Unit
 		{
 			//------ only cast on own nations ------//
 
-			if (town.NationId != nation_recno)
+			if (town.NationId != NationId)
 				continue;
 
 			//------ calculate the rating of the firm -------//
@@ -777,7 +777,7 @@ public class UnitGod : Unit
 
 	private void think_indian_god()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		// see if any unit near by
 
@@ -813,12 +813,12 @@ public class UnitGod : Unit
 				    && !UnitArray.IsDeleted(unitRecno)
 				    && (unit = UnitArray[unitRecno]) != null
 
-				    && unit.nation_recno != 0 // don't affect independent unit
-				    && unit.nation_recno != nation_recno
-				    && (unit.loyalty >= 20 && unit.loyalty <= 60 ||
-				        unit.loyalty <= 80 && unit.target_loyalty < 30))
+				    && unit.NationId != 0 // don't affect independent unit
+				    && unit.NationId != NationId
+				    && (unit.Loyalty >= 20 && unit.Loyalty <= 60 ||
+				        unit.Loyalty <= 80 && unit.TargetLoyalty < 30))
 				{
-					switch (ownNation.get_relation(unit.nation_recno).status)
+					switch (ownNation.get_relation(unit.NationId).status)
 					{
 						case NationBase.NATION_HOSTILE:
 							curRating += 3;
@@ -854,9 +854,9 @@ public class UnitGod : Unit
 			{
 				// don't affect independent unit
 				if (unit.is_visible() && unit.MobileType == UnitConstants.UNIT_LAND &&
-				    unit.nation_recno != 0 && unit.nation_recno != nation_recno &&
-				    (unit.loyalty >= 20 && unit.loyalty <= 60 || unit.loyalty <= 80 && unit.target_loyalty < 30) &&
-				    ownNation.get_relation(unit.nation_recno).status == NationBase.NATION_HOSTILE)
+				    unit.NationId != 0 && unit.NationId != NationId &&
+				    (unit.Loyalty >= 20 && unit.Loyalty <= 60 || unit.Loyalty <= 80 && unit.TargetLoyalty < 30) &&
+				    ownNation.get_relation(unit.NationId).status == NationBase.NATION_HOSTILE)
 				{
 					int cost = Misc.points_distance(NextLocX, NextLocY, unit.NextLocX, unit.NextLocY);
 					if (cost < bestUnitCost)
@@ -897,7 +897,7 @@ public class UnitGod : Unit
 	{
 		//------- there is no action, now think a new one ------//
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		int bestRating = 0;
 		int targetXLoc = -1, targetYLoc = -1;
 
@@ -910,25 +910,25 @@ public class UnitGod : Unit
 			Unit unit;
 			if (firm.overseer_recno != 0
 			    && (unit = UnitArray[firm.overseer_recno]) != null
-			    && unit.race_id == (int)Race.RACE_ZULU // only consider ZULU leader
-			    && unit.skill.skill_level <= 70)
+			    && unit.RaceId == (int)Race.RACE_ZULU // only consider ZULU leader
+			    && unit.Skill.skill_level <= 70)
 			{
-				if (unit.rank_id == RANK_KING)
+				if (unit.Rank == RANK_KING)
 					curRating += 5000; // weak king need leadership very much
 
-				if (unit.skill.skill_level >= 40)
-					curRating += 5000 - (unit.skill.skill_level - 40) * 60; // strong leader need not be enhanced
+				if (unit.Skill.skill_level >= 40)
+					curRating += 5000 - (unit.Skill.skill_level - 40) * 60; // strong leader need not be enhanced
 				else
-					curRating += 5000 - (40 - unit.skill.skill_level) * 80; // don't add weak leader
+					curRating += 5000 - (40 - unit.Skill.skill_level) * 80; // don't add weak leader
 
 				// calculate the benefits to his soldiers
 				for (int j = firm.workers.Count - 1; j >= 0; j--)
 				{
 					Worker worker = firm.workers[j];
 					if (worker.race_id == (int)Race.RACE_ZULU)
-						curRating += (unit.skill.combat_level - worker.combat_level) * 2;
+						curRating += (unit.Skill.combat_level - worker.combat_level) * 2;
 					else
-						curRating += unit.skill.combat_level - worker.combat_level;
+						curRating += unit.Skill.combat_level - worker.combat_level;
 				}
 
 				if (curRating > bestRating)
@@ -952,7 +952,7 @@ public class UnitGod : Unit
 	{
 		targetXLoc = -1;
 		targetYLoc = -1;
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		foreach (Firm firm in FirmArray.EnumerateRandom())
 		{

@@ -57,7 +57,7 @@ public partial class Renderer
     private bool IsCampRewardEnabled(Unit overseer)
     {
         return NationArray.player.cash >= GameConstants.REWARD_COST &&
-               (overseer != null && overseer.rank_id != Unit.RANK_KING || _selectedWorkerId != 0);
+               (overseer != null && overseer.Rank != Unit.RANK_KING || _selectedWorkerId != 0);
     }
 
     private bool IsFirmSpyListEnabled(Firm firm)
@@ -90,8 +90,8 @@ public partial class Renderer
         
         if (overseer != null)
         {
-            UnitInfo unitInfo = UnitRes[overseer.unit_id];
-            Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, overseer.rank_id), DetailsX1 + 12, DetailsY1 + 104,
+            UnitInfo unitInfo = UnitRes[overseer.UnitType];
+            Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, overseer.Rank), DetailsX1 + 12, DetailsY1 + 104,
                 unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
             
             if (_selectedWorkerId == 0)
@@ -104,17 +104,17 @@ public partial class Renderer
                     3, unitInfo.soldierIconHeight * 2 + 6, Colors.V_YELLOW);
             }
 
-            if (overseer.rank_id == Unit.RANK_KING)
+            if (overseer.Rank == Unit.RANK_KING)
             {
                 PutText(FontSan, "King", DetailsX1 + 111, DetailsY1 + 96);
                 PutText(FontSan, overseer.unit_name(0), DetailsX1 + 111, DetailsY1 + 126);
-                PutText(FontSan, "Leadership: " + overseer.skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 156);
+                PutText(FontSan, "Leadership: " + overseer.Skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 156);
             }
             else
             {
                 PutText(FontSan, overseer.unit_name(0), DetailsX1 + 111, DetailsY1 + 96);
-                PutText(FontSan, "Leadership: " + overseer.skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 126);
-                PutText(FontSan, "Loyalty: " + overseer.loyalty + " " + overseer.target_loyalty, DetailsX1 + 111, DetailsY1 + 156);
+                PutText(FontSan, "Leadership: " + overseer.Skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 126);
+                PutText(FontSan, "Loyalty: " + overseer.Loyalty + " " + overseer.TargetLoyalty, DetailsX1 + 111, DetailsY1 + 156);
                 // TODO loyalty arrow
                 // TODO spy icon
             }
@@ -126,21 +126,21 @@ public partial class Renderer
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 308);
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 337);
         DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 308);
-        if (overseer == null || overseer.rank_id != Unit.RANK_KING)
+        if (overseer == null || overseer.Rank != Unit.RANK_KING)
             DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 337);
 
         if (_selectedWorkerId == 0 && overseer != null)
         {
             PutText(FontSan, "Leadership", DetailsX1 + 13, DetailsY1 + 311, -1, true);
-            PutText(FontSan, overseer.skill.get_skill(Skill.SKILL_LEADING).ToString(), DetailsX1 + 113, DetailsY1 + 313, -1, true);
+            PutText(FontSan, overseer.Skill.get_skill(Skill.SKILL_LEADING).ToString(), DetailsX1 + 113, DetailsY1 + 313, -1, true);
             PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 340, -1, true);
-            PutText(FontSan, overseer.skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 342, -1, true);
+            PutText(FontSan, overseer.Skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 342, -1, true);
             PutText(FontSan, "Hit Points", DetailsX1 + 214, DetailsY1 + 311, -1, true);
-            PutText(FontSan, (int)overseer.hit_points + "/" + overseer.max_hit_points, DetailsX1 + 307, DetailsY1 + 313, -1, true);
-            if (overseer.rank_id != Unit.RANK_KING)
+            PutText(FontSan, (int)overseer.HitPoints + "/" + overseer.MaxHitPoints, DetailsX1 + 307, DetailsY1 + 313, -1, true);
+            if (overseer.Rank != Unit.RANK_KING)
             {
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 340, -1, true);
-                PutText(FontSan, overseer.loyalty + " " + overseer.target_loyalty, DetailsX1 + 307, DetailsY1 + 342, -1, true);
+                PutText(FontSan, overseer.Loyalty + " " + overseer.TargetLoyalty, DetailsX1 + 307, DetailsY1 + 342, -1, true);
             }
         }
         else

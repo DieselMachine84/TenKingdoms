@@ -44,11 +44,11 @@ public class Bullet : Sprite
 
 		//---------- copy attack info from the parent unit --------//
 
-		AttackInfo attackInfo = parentUnit.attack_info_array[parentUnit.CurAttack];
+		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 
 		attack_damage = parentUnit.actual_damage();
 		damage_radius = attackInfo.bullet_radius;
-		nation_recno = parentUnit.nation_recno;
+		nation_recno = parentUnit.NationId;
 		fire_radius = attackInfo.fire_radius;
 
 		//----- clone vars from sprite_res for fast access -----//
@@ -62,7 +62,7 @@ public class Bullet : Sprite
 
 		CurAction = SPRITE_MOVE;
 		CurFrame = 1;
-		SetDir(parentUnit.attack_dir);
+		SetDir(parentUnit.AttackDirection);
 
 		SpriteFrame spriteFrame = CurSpriteFrame(out _);
 
@@ -217,7 +217,7 @@ public class Bullet : Sprite
 		else
 		{
 			parentUnit = UnitArray[parent_recno];
-			nation_recno = parentUnit.nation_recno;
+			nation_recno = parentUnit.NationId;
 		}
 
 		double attackDamage = attenuated_damage(targetUnit.CurX, targetUnit.CurY);
@@ -226,14 +226,14 @@ public class Bullet : Sprite
 		if (attackDamage == 0)
 			return;
 
-		if (targetUnit.nation_recno == nation_recno)
+		if (targetUnit.NationId == nation_recno)
 		{
-			if (targetUnit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART)
+			if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
 				((UnitExpCart)targetUnit).trigger_explode();
 			return;
 		}
 
-		if (!NationArray.should_attack(nation_recno, targetUnit.nation_recno))
+		if (!NationArray.should_attack(nation_recno, targetUnit.NationId))
 			return;
 
 		if (targetUnit.IsGuarding())

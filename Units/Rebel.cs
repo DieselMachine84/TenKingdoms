@@ -52,7 +52,7 @@ public class Rebel : IIdObject
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
                 unit.set_mode(0);
             }
@@ -134,7 +134,7 @@ public class Rebel : IIdObject
         //
         //----------------------------------------------//
 
-        set_hostile_nation(UnitArray[attackerUnitRecno].nation_recno);
+        set_hostile_nation(UnitArray[attackerUnitRecno].NationId);
     }
 
     public void set_hostile_nation(int nationRecno)
@@ -300,7 +300,7 @@ public class Rebel : IIdObject
             if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
-            if (leaderUnit.race_id == town.MajorityRace())
+            if (leaderUnit.RaceId == town.MajorityRace())
             {
                 action_mode = REBEL_SETTLE_TO;
                 action_para = town.LocX1;
@@ -405,7 +405,7 @@ public class Rebel : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
                 rebelRecnoArray.Add(unit.SpriteId);
             }
@@ -444,7 +444,7 @@ public class Rebel : IIdObject
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
                 unit.stop();
             }
@@ -465,7 +465,7 @@ public class Rebel : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
                 unit.set_rank(Unit.RANK_GENERAL);
                 leader_unit_recno = unit.SpriteId;
@@ -480,9 +480,9 @@ public class Rebel : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
-                unit.leader_unit_recno = leader_unit_recno;
+                unit.LeaderId = leader_unit_recno;
             }
         }
 
@@ -540,7 +540,7 @@ public class Rebel : IIdObject
 
             foreach (Unit unit in UnitArray)
             {
-                if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL && unit.unit_mode_para == leader_unit_recno)
+                if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == leader_unit_recno)
                 {
                     unit.set_mode(0);
                     unit.change_nation(bestNationRecno);

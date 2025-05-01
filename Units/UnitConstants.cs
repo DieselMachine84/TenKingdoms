@@ -68,11 +68,9 @@ public static class UnitConstants
     public const int UNIT_MODE_DEFEND_TOWN = 2; // unit_mode_para is the recno of the town the unit is defending
     public const int UNIT_MODE_CONSTRUCT = 3; // unit_mode_para is the recno of the firm the unit is constructing
     public const int UNIT_MODE_REBEL = 4; // unit_mode_para is the recno of the rebel group the unit belongs to
-    // unit_mode_para is the recno of the firm recno of the monster firm it belongs to
-    public const int UNIT_MODE_MONSTER = 5;
+    public const int UNIT_MODE_MONSTER = 5; // unit_mode_para is the recno of the firm recno of the monster firm it belongs to
     public const int UNIT_MODE_ON_SHIP = 6; // unit_mode_para is the recno of the ship unit this unit is on
-    // for ships only, unit_mode_para is the recno of the harbor this marine unit is in
-    public const int UNIT_MODE_IN_HARBOR = 7;
+    public const int UNIT_MODE_IN_HARBOR = 7; // for ships only, unit_mode_para is the recno of the harbor this marine unit is in
     public const int UNIT_MODE_UNDER_TRAINING = 8;
     
     public const int ACTION_STOP = 0;
@@ -127,10 +125,7 @@ public static class UnitConstants
     public const int MAX_WAITING_TERM_DIFF = 3; // wait for diff. nation, used in handle_blocked...()
 
     public const int ATTACK_DETECT_DISTANCE = 6;// the distance for the unit to detect target while idle
-    public const int ATTACK_SEARCH_TRIES = 250; // the node no. used to process searching when target is close to this unit
     public const int ATTACK_WAITING_TERM = 10;  // terms no. to wait before calling searching to attack target
-
-    //MAX_SEARCH_OR_STOP_WAIT_TERM = 15; // note: should be the largest default value in waiting_term
 
     public const int AUTO_DEFENSE_STAY_OUTSIDE_COUNT = 4; //4 days
     public const int AUTO_DEFENSE_DETECT_COUNT = 3 + InternalConstants.FRAMES_PER_DAY * AUTO_DEFENSE_STAY_OUTSIDE_COUNT;

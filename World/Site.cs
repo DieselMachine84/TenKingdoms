@@ -55,27 +55,27 @@ public class Site : IIdObject
     public bool GetByUnit(int unitId)
     {
         Unit unit = UnitArray[unitId];
-        if (unit.nation_recno == 0)
+        if (unit.NationId == 0)
             return false;
 
         bool objectTaken = false;
 
         if (SiteType == SITE_SCROLL)
         {
-            if (GodRes[ObjectId].race_id == unit.race_id)
+            if (GodRes[ObjectId].race_id == unit.RaceId)
             {
-                GodRes[ObjectId].enable_know(unit.nation_recno);
+                GodRes[ObjectId].enable_know(unit.NationId);
                 objectTaken = true;
-                NewsArray.scroll_acquired(unit.nation_recno, GodRes[ObjectId].race_id);
+                NewsArray.scroll_acquired(unit.NationId, GodRes[ObjectId].race_id);
             }
         }
 
         if (SiteType == SITE_GOLD_COIN)
         {
-            NationArray[unit.nation_recno].add_income(NationBase.INCOME_TREASURE, ObjectId);
+            NationArray[unit.NationId].add_income(NationBase.INCOME_TREASURE, ObjectId);
             objectTaken = true;
 
-            if (unit.nation_recno == NationArray.player_recno)
+            if (unit.NationId == NationArray.player_recno)
                 NewsArray.monster_gold_acquired(ObjectId);
         }
 
@@ -120,10 +120,10 @@ public class Site : IIdObject
 
             Unit unit = UnitArray[unitId];
 
-            if (unit.race_id == 0 || !unit.ai_unit || unit.ai_action_id != 0)
+            if (unit.RaceId == 0 || !unit.AIUnit || unit.AIActionId != 0)
                 continue;
 
-            if (siteRaceId != 0 && siteRaceId != unit.race_id)
+            if (siteRaceId != 0 && siteRaceId != unit.RaceId)
                 continue;
 
             unit.MoveTo(LocX, LocY);

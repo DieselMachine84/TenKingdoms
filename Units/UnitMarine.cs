@@ -242,7 +242,7 @@ public class UnitMarine : Unit
 		{
 			stop = stop_array[i];
 			Firm firm = FirmArray[stop.firm_recno];
-			if (firm.nation_recno == nation_recno)
+			if (firm.nation_recno == NationId)
 			{
 				ourFirmExist = true;
 				break;
@@ -334,10 +334,10 @@ public class UnitMarine : Unit
 	public override void PreProcess()
 	{
 		base.PreProcess();
-		if (hit_points <= 0.0 || action_mode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
+		if (HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
 			return;
 
-		if (action_mode2 >= UnitConstants.ACTION_ATTACK_UNIT && action_mode2 <= UnitConstants.ACTION_ATTACK_WALL)
+		if (ActionMode2 >= UnitConstants.ACTION_ATTACK_UNIT && ActionMode2 <= UnitConstants.ACTION_ATTACK_WALL)
 			return; // don't process trading if unit is attacking
 
 		if (auto_mode != 0) // process trading automatically, same as caravan
@@ -395,7 +395,7 @@ public class UnitMarine : Unit
 					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
 					{
 						journey_status = InternalConstants.SURROUND_FIRM;
-						if (NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty)
+						if (NationArray[NationId].get_relation(firm.nation_recno).trade_treaty)
 						{
 							if (wait_count <= 0)
 							{
@@ -517,7 +517,7 @@ public class UnitMarine : Unit
 		//-----------------------------------------------------------------------------//
 		if (cur_firm_recno != 0 && FirmArray.IsDeleted(cur_firm_recno))
 		{
-			hit_points = 0.0; // ship also die if the harbor is deleted
+			HitPoints = 0.0; // ship also die if the harbor is deleted
 			UnitArray.disappear_in_firm(SpriteId); // ship also die if the harnor is deleted
 			return;
 		}
@@ -627,7 +627,7 @@ public class UnitMarine : Unit
 		nextYLoc = NextLocY;
 		moveStep = MoveStepCoeff();
 		if (journey_status == InternalConstants.SURROUND_FIRM ||
-		    (nextXLoc == move_to_x_loc && nextYLoc == move_to_y_loc && CurX == NextX && CurY == NextY && // move in a tile exactly
+		    (nextXLoc == MoveToLocX && nextYLoc == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
 		     (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
 		      nextYLoc <= firm.loc_y2 + moveStep)))
 		{
@@ -640,7 +640,7 @@ public class UnitMarine : Unit
 			//-------------------------------------------------------//
 			cur_firm_recno = shipStop.firm_recno;
 
-			if (NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty)
+			if (NationArray[NationId].get_relation(firm.nation_recno).trade_treaty)
 			{
 				get_harbor_linked_firm_info();
 				harbor_unload_goods();
@@ -652,8 +652,8 @@ public class UnitMarine : Unit
 
 			//-------------------------------------------------------//
 			//-------------------------------------------------------//
-			stop_x_loc = move_to_x_loc; // store entering location
-			stop_y_loc = move_to_y_loc;
+			stop_x_loc = MoveToLocX; // store entering location
+			stop_y_loc = MoveToLocY;
 			wait_count = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
 
 			ResetPath();
@@ -783,7 +783,7 @@ public class UnitMarine : Unit
 			{
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				if (market.nation_recno != nation_recno)
+				if (market.nation_recno != NationId)
 					continue; // don't unload goods to market of other nation
 
 				if (market.ai_status == Firm.MARKET_FOR_SELL)
@@ -885,7 +885,7 @@ public class UnitMarine : Unit
 			{
 				factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
 
-				if (factory.nation_recno != nation_recno)
+				if (factory.nation_recno != NationId)
 					continue; // don't unload goods to factory of other nation
 
 				if (factory.ai_status == Firm.FACTORY_RELOCATE)
@@ -906,7 +906,7 @@ public class UnitMarine : Unit
 			{
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				if (market.nation_recno != nation_recno)
+				if (market.nation_recno != NationId)
 					continue; // don't unload goods to market of other nation
 
 				if (market.ai_status == Firm.MARKET_FOR_SELL)
@@ -1091,12 +1091,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (factory.nation_recno != nation_recno)
+				if (factory.nation_recno != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (factory.nation_recno == nation_recno)
+				if (factory.nation_recno == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1127,12 +1127,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (market.nation_recno != nation_recno)
+				if (market.nation_recno != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (market.nation_recno == nation_recno)
+				if (market.nation_recno == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1145,7 +1145,7 @@ public class UnitMarine : Unit
 			}
 		}
 
-		Nation nation = NationArray[nation_recno];
+		Nation nation = NationArray[NationId];
 		int curDemand = carry_goods_capacity - product_raw_qty_array[goodsId];
 		firmSelectedIndex = 0;
 		//----------------------------------------------------------------------//
@@ -1168,7 +1168,7 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)(factory.stock_qty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (factory.nation_recno != nation_recno)
+			if (factory.nation_recno != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
@@ -1201,7 +1201,7 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)marketProduct.stock_qty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (market.nation_recno != nation_recno)
+			if (market.nation_recno != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
@@ -1253,12 +1253,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (mine.nation_recno != nation_recno)
+				if (mine.nation_recno != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (mine.nation_recno == nation_recno)
+				if (mine.nation_recno == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1289,12 +1289,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (market.nation_recno != nation_recno)
+				if (market.nation_recno != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (market.nation_recno == nation_recno)
+				if (market.nation_recno == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1307,7 +1307,7 @@ public class UnitMarine : Unit
 			}
 		}
 
-		Nation nation = NationArray[nation_recno];
+		Nation nation = NationArray[NationId];
 		int curDemand = carry_goods_capacity - raw_qty_array[goodsId];
 		firmSelectedIndex = 0;
 		//----------------------------------------------------------------------//
@@ -1330,7 +1330,7 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)(mine.stock_qty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (mine.nation_recno != nation_recno)
+			if (mine.nation_recno != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
@@ -1363,7 +1363,7 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)marketRaw.stock_qty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (market.nation_recno != nation_recno)
+			if (market.nation_recno != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
@@ -1408,10 +1408,10 @@ public class UnitMarine : Unit
 		{
 			Unit unit = UnitArray[UnitsOnBoard[i]];
 
-			if (unit.skill.skill_id == Skill.SKILL_LEADING)
+			if (unit.Skill.skill_id == Skill.SKILL_LEADING)
 			{
-				if (unit.skill.skill_level > highestLeadership)
-					highestLeadership = unit.skill.skill_level;
+				if (unit.Skill.skill_level > highestLeadership)
+					highestLeadership = unit.Skill.skill_level;
 			}
 		}
 
@@ -1436,7 +1436,7 @@ public class UnitMarine : Unit
 
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.hit_points <= 0.0 || unit.CurAction == SPRITE_DIE || unit.action_mode2 == UnitConstants.ACTION_DIE)
+		if (unit.HitPoints <= 0.0 || unit.CurAction == SPRITE_DIE || unit.ActionMode2 == UnitConstants.ACTION_DIE)
 			return;
 
 		if (UnitsOnBoard.Count == UnitConstants.MAX_UNIT_IN_SHIP)
@@ -1446,9 +1446,9 @@ public class UnitMarine : Unit
 
 		unit.set_mode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
 
-		if (unit.selected_flag)
+		if (unit.SelectedFlag)
 		{
-			unit.selected_flag = false;
+			unit.SelectedFlag = false;
 			UnitArray.selected_count--;
 		}
 
@@ -1513,7 +1513,7 @@ public class UnitMarine : Unit
 		bool found = false;
 		int sqtSize = 5, sqtArea = sqtSize * sqtSize;
 
-		if (isAll && nation_recno == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
+		if (isAll && NationId == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
 			Power.reset_selection();
 
 		while (unprocess > 0) // using the calculated 'i' to reduce useless calculation
@@ -1543,10 +1543,10 @@ public class UnitMarine : Unit
 					unit.init_sprite(checkXLoc, checkYLoc);
 					unit.set_mode(0);
 
-					if (isAll && nation_recno ==
+					if (isAll && NationId ==
 					    NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
 					{
-						unit.selected_flag = true; // mark selected if unload all
+						unit.SelectedFlag = true; // mark selected if unload all
 						UnitArray.selected_count++;
 
 						if (UnitArray.selected_recno == 0)
@@ -1581,7 +1581,7 @@ public class UnitMarine : Unit
 			i++;
 		}
 
-		if (nation_recno == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
+		if (NationId == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
 			Info.disp();
 
 		return true;
@@ -1609,7 +1609,7 @@ public class UnitMarine : Unit
 		if (firm.firm_id != Firm.FIRM_HARBOR)
 			return false;
 
-		return NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty;
+		return NationArray[NationId].get_relation(firm.nation_recno).trade_treaty;
 	}
 
 	public void extra_move()
@@ -1619,8 +1619,8 @@ public class UnitMarine : Unit
 		int curXLoc = NextLocX;
 		int curYLoc = NextLocY;
 
-		int vecX = action_x_loc2 - curXLoc;
-		int vecY = action_y_loc2 - curYLoc;
+		int vecX = ActionLocX2 - curXLoc;
+		int vecY = ActionLocY2 - curYLoc;
 		int checkXLoc = -1, checkYLoc = -1;
 		bool found = false;
 
@@ -1738,8 +1738,8 @@ public class UnitMarine : Unit
 			{
 				CurAction = SPRITE_IDLE;
 				CurFrame = 1;
-				move_to_x_loc = NextLocX;
-				move_to_y_loc = NextLocY;
+				MoveToLocX = NextLocX;
+				MoveToLocY = NextLocY;
 			}
 			else
 			{
@@ -1901,7 +1901,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		if (UnitArray.selected_recno == SpriteId)
 		{
-			if (nation_recno == NationArray.player_recno || Config.show_ai_info)
+			if (NationId == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
 		}
 	}
@@ -1933,18 +1933,18 @@ public class UnitMarine : Unit
 
 	public override bool is_ai_all_stop()
 	{
-		if (CurAction != SPRITE_IDLE || ai_action_id != 0)
+		if (CurAction != SPRITE_IDLE || AIActionId != 0)
 			return false;
 
 		//---- if the ship is on the beach, it's action mode is always ACTION_SHIP_TO_BEACH, so we can't check it against ACTION_STOP ---//
 
-		if (action_mode2 == UnitConstants.ACTION_SHIP_TO_BEACH)
+		if (ActionMode2 == UnitConstants.ACTION_SHIP_TO_BEACH)
 		{
 			if (in_beach && (extra_move_in_beach == NO_EXTRA_MOVE || extra_move_in_beach == EXTRA_MOVE_FINISH))
 				return true;
 		}
 
-		return action_mode == UnitConstants.ACTION_STOP && action_mode2 == UnitConstants.ACTION_STOP;
+		return ActionMode == UnitConstants.ACTION_STOP && ActionMode2 == UnitConstants.ACTION_STOP;
 	}
 
 	public override bool can_resign()
@@ -1952,100 +1952,26 @@ public class UnitMarine : Unit
 		return UnitsOnBoard.Count == 0;
 	}
 
-	public override void fix_attack_info() // set attack_info_array appropriately
+	protected override void FixAttackInfo() // set AttackInfos appropriately
 	{
-		base.fix_attack_info();
+		base.FixAttackInfo();
 
-		if (attack_count > 0)
+		if (AttackCount > 0)
 		{
 			if (attack_mode_selected == 0)
 			{
-				ship_attack_info = UnitRes.GetAttackInfo(UnitRes[unit_id].first_attack);
+				ship_attack_info = UnitRes.GetAttackInfo(UnitRes[UnitType].first_attack);
 			}
 
-			attack_info_array = new AttackInfo[attack_count];
-			for (int i = 0; i < attack_count; i++)
+			AttackInfos = new AttackInfo[AttackCount];
+			for (int i = 0; i < AttackCount; i++)
 			{
-				attack_info_array[i] = UnitRes.GetAttackInfo(UnitRes[unit_id].first_attack + i);
+				AttackInfos[i] = UnitRes.GetAttackInfo(UnitRes[UnitType].first_attack + i);
 			}
 		}
-	}
-
-	public void select_attack_weapon()
-	{
-		if (attack_count == 0) // TRANSPORT can't select attack weapon
-			return;
-
-		int oldAttackRange = attack_info_array[0].attack_range;
-		if (attack_mode_selected > UnitsOnBoard.Count)
-			attack_mode_selected = 0;
 		else
 		{
-			bool found = false;
-			for (int i = attack_mode_selected + 1; i <= UnitsOnBoard.Count; i++)
-			{
-				Unit unit = UnitArray[UnitsOnBoard[i - 1]];
-				if (unit.attack_count > 0 && UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				{
-					//ship_attack_info = *unit_res.get_attack_info(unit_res[unitPtr->unit_id]->first_attack);
-					ship_attack_info = unit.attack_info_array[0];
-					ship_attack_info.eqv_attack_next = 0;
-					ship_attack_info.bullet_out_frame = UnitRes.GetAttackInfo(UnitRes[unit_id].first_attack).bullet_out_frame;
-					attack_count = 1;
-					attack_info_array = new AttackInfo[attack_count];
-					attack_info_array[0] = ship_attack_info;
-					found = true;
-					attack_mode_selected = i;
-					//cur_action = SPRITE_READY_TO_MOVE;
-					break;
-				}
-			}
-
-			if (!found)
-				attack_mode_selected = 0;
-		}
-
-		if (attack_mode_selected == 0)
-		{
-			ship_attack_info = UnitRes.GetAttackInfo(UnitRes[unit_id].first_attack);
-			attack_count = 1;
-			attack_info_array = new AttackInfo[attack_count];
-			attack_info_array[0] = ship_attack_info;
-		}
-
-		//-------- update attacking if necessary --------//
-		if (attack_info_array[0].attack_range < oldAttackRange)
-		{
-			int attackXLoc, attackYLoc;
-			switch (action_mode)
-			{
-				case UnitConstants.ACTION_ATTACK_UNIT:
-					int attackPara = action_para;
-					stop2();
-					attack_unit(attackPara, 0, 0, true);
-					break;
-
-				case UnitConstants.ACTION_ATTACK_FIRM:
-					attackXLoc = action_x_loc;
-					attackYLoc = action_y_loc;
-					stop2();
-					attack_firm(attackXLoc, attackYLoc);
-					break;
-
-				case UnitConstants.ACTION_ATTACK_TOWN:
-					attackXLoc = action_x_loc;
-					attackYLoc = action_y_loc;
-					stop2();
-					attack_town(attackXLoc, attackYLoc);
-					break;
-
-				case UnitConstants.ACTION_ATTACK_WALL:
-					attackXLoc = action_x_loc;
-					attackYLoc = action_y_loc;
-					stop2();
-					attack_wall(attackXLoc, attackYLoc);
-					break;
-			}
+			AttackInfos = Array.Empty<AttackInfo>();
 		}
 	}
 
@@ -2056,7 +1982,7 @@ public class UnitMarine : Unit
 
 		UnitMarine copyUnit = (UnitMarine)UnitArray[copyUnitRecno];
 
-		if (copyUnit.nation_recno != nation_recno)
+		if (copyUnit.NationId != NationId)
 			return;
 
 		//if (remote.is_enable() && !remoteAction)
@@ -2142,12 +2068,12 @@ public class UnitMarine : Unit
 
 		//--- retire this ship if we have better ship technology available ---//
 
-		if (unit_id == UnitConstants.UNIT_TRANSPORT)
+		if (UnitType == UnitConstants.UNIT_TRANSPORT)
 		{
-			if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(nation_recno) > 0 ||
-			    UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(nation_recno) > 0)
+			if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(NationId) > 0 ||
+			    UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
 			{
-				if (!NationArray[nation_recno].ai_is_sea_travel_safe())
+				if (!NationArray[NationId].ai_is_sea_travel_safe())
 				{
 					resign(InternalConstants.COMMAND_AI);
 					return true;
@@ -2163,7 +2089,7 @@ public class UnitMarine : Unit
 		if (!is_visible()) // cannot del stop if the caravan is inside a market place.
 			return;
 
-		Nation nation = NationArray[nation_recno];
+		Nation nation = NationArray[NationId];
 
 		for (int i = stop_defined_num; i > 0; i--)
 		{
@@ -2186,7 +2112,7 @@ public class UnitMarine : Unit
 
 	public void ai_sail_to_nearby_harbor()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		FirmHarbor bestHarbor = null;
 		int bestRating = 0;
 		int curXLoc = CurLocX, curYLoc = CurLocY;
@@ -2218,12 +2144,12 @@ public class UnitMarine : Unit
 	{
 		Unit attackerUnit = UnitArray[attackerUnitRecno];
 
-		if (attackerUnit.nation_recno == nation_recno) // this can happen when the unit has just changed nation
+		if (attackerUnit.NationId == NationId) // this can happen when the unit has just changed nation
 			return;
 
 		if (Info.TotalDays % 5 == SpriteId % 5)
 		{
-			NationArray[nation_recno].ai_sea_attack_target(attackerUnit.NextLocX, attackerUnit.NextLocY);
+			NationArray[NationId].ai_sea_attack_target(attackerUnit.NextLocX, attackerUnit.NextLocY);
 		}
 	}
 
@@ -2255,7 +2181,7 @@ public class UnitMarine : Unit
 
 	public bool should_show_info()
 	{
-		if (Config.show_ai_info || nation_recno == NationArray.player_recno)
+		if (Config.show_ai_info || NationId == NationArray.player_recno)
 			return true;
 
 		//--- if any of the units on the ship are spies of the player ---//

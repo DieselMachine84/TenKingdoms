@@ -18,29 +18,29 @@ public partial class Renderer
     private void DrawUnitDetails(Unit unit)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-        if (unit.nation_recno != 0)
+        if (unit.NationId != 0)
         {
-            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.nation_recno], false);
+            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.NationId], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
         // TODO draw hit points bar and X button
         
         DrawUnitPanel(DetailsX1 + 2, DetailsY1 + 48);
         string title = String.Empty;
-        if (unit.race_id != 0)
+        if (unit.RaceId != 0)
         {
-            switch (unit.rank_id)
+            switch (unit.Rank)
             {
                 case Unit.RANK_KING:
                     title = "King";
                     break;
                 case Unit.RANK_GENERAL:
-                    title = (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL) ? "Rebel Leader" : "General";
+                    title = (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL) ? "Rebel Leader" : "General";
                     break;
                 case Unit.RANK_SOLDIER:
                     if (ShouldShowInfo(unit))
                     {
-                        title = unit.skill.skill_id switch
+                        title = unit.Skill.skill_id switch
                         {
                             Skill.SKILL_LEADING => "Soldier",
                             Skill.SKILL_CONSTRUCTION => "Construction Worker",
@@ -53,24 +53,24 @@ public partial class Renderer
                     }
                     else
                     {
-                        if (unit.skill.skill_id == Skill.SKILL_LEADING)
+                        if (unit.Skill.skill_id == Skill.SKILL_LEADING)
                             title = "Soldier";
                         if (unit.is_civilian())
                             title = "Civilian";
                     }
                     
-                    if (unit.unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
+                    if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
                         title = "Defending Villager";
-                    if (unit.unit_mode == UnitConstants.UNIT_MODE_REBEL)
+                    if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
                         title = "Rebel";
-                    if (UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_GOD)
+                    if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_GOD)
                         title = "Greater Being";
                     break;
             }
         }
         
-        UnitInfo unitInfo = UnitRes[unit.unit_id];
-        Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, unit.rank_id), DetailsX1 + 12, DetailsY1 + 56,
+        UnitInfo unitInfo = UnitRes[unit.UnitType];
+        Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, unit.Rank), DetailsX1 + 12, DetailsY1 + 56,
             unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
 
         if (!String.IsNullOrEmpty(title))
@@ -89,49 +89,49 @@ public partial class Renderer
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 144);
         int combatPanelDY = 0;
 
-        if (unit.skill.skill_id != 0)
+        if (unit.Skill.skill_id != 0)
         {
             DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149);
-            PutText(FontSan, unit.skill.skill_des(), DetailsX1 + 13, DetailsY1 + 152, -1, true);
-            PutText(FontSan, unit.skill.skill_level.ToString(), DetailsX1 + 113, DetailsY1 + 154, -1, true);
+            PutText(FontSan, unit.Skill.skill_des(), DetailsX1 + 13, DetailsY1 + 152, -1, true);
+            PutText(FontSan, unit.Skill.skill_level.ToString(), DetailsX1 + 113, DetailsY1 + 154, -1, true);
             combatPanelDY += 29;
         }
 
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149 + combatPanelDY);
         PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 152 + combatPanelDY, -1, true);
-        PutText(FontSan, unit.skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
+        PutText(FontSan, unit.Skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
 
-        if (unit.rank_id != Unit.RANK_KING && !unit.is_civilian())
+        if (unit.Rank != Unit.RANK_KING && !unit.is_civilian())
         {
             DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 207);
             PutText(FontSan, "Contribution", DetailsX1 + 13, DetailsY1 + 210, -1, true);
-            PutText(FontSan, unit.nation_contribution.ToString(), DetailsX1 + 113, DetailsY1 + 212, -1, true);
+            PutText(FontSan, unit.NationContribution.ToString(), DetailsX1 + 113, DetailsY1 + 212, -1, true);
         }
 
-        if (unit.rank_id != Unit.RANK_KING)
+        if (unit.Rank != Unit.RANK_KING)
         {
-            if (unit.spy_recno != 0 && unit.true_nation_recno() == NationArray.player_recno)
+            if (unit.SpyId != 0 && unit.true_nation_recno() == NationArray.player_recno)
             {
                 DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
-                PutText(FontSan, SpyArray[unit.spy_recno].spy_loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 154, -1, true);
+                PutText(FontSan, SpyArray[unit.SpyId].spy_loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 154, -1, true);
             }
             else
             {
-                if (unit.nation_recno != 0)
+                if (unit.NationId != 0)
                 {
                     DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
                     PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
-                    PutText(FontSan, unit.loyalty + " " + unit.target_loyalty, DetailsX1 + 307, DetailsY1 + 154, -1, true);
+                    PutText(FontSan, unit.Loyalty + " " + unit.TargetLoyalty, DetailsX1 + 307, DetailsY1 + 154, -1, true);
                 }
             }
         }
 
-        if (unit.spy_recno != 0 && unit.true_nation_recno() == NationArray.player_recno)
+        if (unit.SpyId != 0 && unit.true_nation_recno() == NationArray.player_recno)
         {
             DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 178);
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);
-            PutText(FontSan, SpyArray[unit.spy_recno].spy_skill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
+            PutText(FontSan, SpyArray[unit.SpyId].spy_skill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }
         
         if (unit.is_own_spy())
@@ -141,7 +141,7 @@ public partial class Renderer
     private void DrawSpyCloakPanel(Unit unit)
     {
         bool canChangeToOtherNation = unit.can_spy_change_nation();
-        bool canChangeToOwnNation = canChangeToOtherNation || unit.nation_recno != unit.true_nation_recno();
+        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.true_nation_recno();
         if (!canChangeToOwnNation)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 392);
@@ -164,13 +164,13 @@ public partial class Renderer
             }
             else
             {
-                if (nation != trueNation && nation.nation_recno != unit.nation_recno)
+                if (nation != trueNation && nation.nation_recno != unit.NationId)
                     continue;
             }
 
             byte color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[nation.nation_recno], false).MainColor;
             Graphics.DrawRect(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, 28, 28, color);
-            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.nation_recno == nation.nation_recno);
+            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.NationId == nation.nation_recno);
             
             if (colorDY != 0)
                 colorDX += 40;
@@ -181,7 +181,7 @@ public partial class Renderer
         if (canChangeToOtherNation)
         {
             Graphics.DrawRect(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, 28, 28, Colors.V_WHITE);
-            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.nation_recno == 0);
+            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.NationId == 0);
         }
     }
 
@@ -197,7 +197,7 @@ public partial class Renderer
     private void HandleUnitDetailsInput(Unit unit)
     {
         bool canChangeToOtherNation = unit.can_spy_change_nation();
-        bool canChangeToOwnNation = canChangeToOtherNation || unit.nation_recno != unit.true_nation_recno();
+        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.true_nation_recno();
         if (!canChangeToOwnNation || !unit.is_own_spy())
             return;
         
@@ -213,7 +213,7 @@ public partial class Renderer
             }
             else
             {
-                if (nation != trueNation && nation.nation_recno != unit.nation_recno)
+                if (nation != trueNation && nation.nation_recno != unit.NationId)
                     continue;
             }
 

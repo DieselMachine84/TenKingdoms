@@ -418,7 +418,7 @@ public abstract class Firm : IIdObject
 		//--- if there is a overseer, return the overseer's race ---//
 
 		if (overseer_recno != 0)
-			return UnitArray[overseer_recno].race_id;
+			return UnitArray[overseer_recno].RaceId;
 
 		if (workers.Count == 0)
 			return 0;
@@ -516,7 +516,7 @@ public abstract class Firm : IIdObject
 
 		//------- if this is a construction worker -------//
 
-		if (unit.skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;
@@ -524,7 +524,7 @@ public abstract class Firm : IIdObject
 
 		//---- if the unit does not belong to the firm's nation ----//
 
-		if (unit.nation_recno != nation_recno)
+		if (unit.NationId != nation_recno)
 		{
 			// can no longer capture a firm with a normal unit - must use spy  
 
@@ -542,17 +542,13 @@ public abstract class Firm : IIdObject
 
 		//-- if there isn't any overseer in this firm or this unit's skill is higher than the current overseer's skill --//
 
-		//### begin alex 18/10 ###//
-		unit.group_select_id = 0; // clear group select id
-		//#### end alex 18/10 ####//
-
 		FirmInfo firmInfo = FirmRes[firm_id];
 
 		if (firmInfo.need_overseer && (overseer_recno == 0 ||
-		                               (unit.skill.skill_id == firm_skill_id &&
-		                                UnitArray[overseer_recno].skill.skill_id != firm_skill_id) ||
-		                               (unit.skill.skill_id == firm_skill_id && unit.skill.skill_level >
-			                               UnitArray[overseer_recno].skill.skill_level)
+		                               (unit.Skill.skill_id == firm_skill_id &&
+		                                UnitArray[overseer_recno].Skill.skill_id != firm_skill_id) ||
+		                               (unit.Skill.skill_id == firm_skill_id && unit.Skill.skill_level >
+			                               UnitArray[overseer_recno].Skill.skill_level)
 		    ))
 		{
 			assign_overseer(unitRecno);
@@ -574,7 +570,7 @@ public abstract class Firm : IIdObject
 
 		//--- if the new overseer's nation is not the same as the firm's nation, don't assign ---//
 
-		if (newOverseerRecno != 0 && UnitArray[newOverseerRecno].nation_recno != nation_recno)
+		if (newOverseerRecno != 0 && UnitArray[newOverseerRecno].NationId != nation_recno)
 			return;
 
 		//------------------------------------------//
@@ -587,7 +583,7 @@ public abstract class Firm : IIdObject
 			// the old overseer may be kept in firm or killed if remove_firm is true
 			//------------------------------------------------------------------------------------------------//
 			Unit oldUnit = UnitArray[overseer_recno];
-			SpriteInfo spriteInfo = SpriteRes[UnitRes[oldUnit.unit_id].sprite_id];
+			SpriteInfo spriteInfo = SpriteRes[UnitRes[oldUnit.UnitType].sprite_id];
 			int xLoc = loc_x1;
 			int yLoc = loc_y1;
 
@@ -643,7 +639,7 @@ public abstract class Firm : IIdObject
 				if (FirmRes[firm_id].live_in_town)
 				{
 					// the overseer settles down
-					overseer_town_recno = assign_settle(newOverseer.race_id, newOverseer.loyalty, 1);
+					overseer_town_recno = assign_settle(newOverseer.RaceId, newOverseer.Loyalty, 1);
 					if (overseer_town_recno == 0)
 						return; // no space for creating the town, just return without assigning
 				}
@@ -656,8 +652,8 @@ public abstract class Firm : IIdObject
 
 				//--------- if the unit is a spy -----------//
 
-				if (overseer.spy_recno != 0)
-					SpyArray[overseer.spy_recno].set_place(Spy.SPY_FIRM, firm_recno);
+				if (overseer.SpyId != 0)
+					SpyArray[overseer.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
 				/*
 				//------ capture the firm if the overseer is from another nation ---//
 				if(UnitArray[overseer_recno].nation_recno != nation_recno)
@@ -672,7 +668,7 @@ public abstract class Firm : IIdObject
 				if (FirmRes[firm_id].live_in_town)
 				{
 					// the overseer settles down
-					overseer_town_recno = assign_settle(newOverseer.race_id, newOverseer.loyalty, 1);
+					overseer_town_recno = assign_settle(newOverseer.RaceId, newOverseer.Loyalty, 1);
 
 					if (overseer_town_recno == 0)
 						return; // reach MAX population and no space to create town, return without assigning
@@ -691,8 +687,8 @@ public abstract class Firm : IIdObject
 
 				//--------- if the unit is a spy -----------//
 
-				if (overseer.spy_recno != 0)
-					SpyArray[overseer.spy_recno].set_place(Spy.SPY_FIRM, firm_recno);
+				if (overseer.SpyId != 0)
+					SpyArray[overseer.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
 				/*
 				//------ capture the firm if the overseer is from another nation ---//
 				if(UnitArray[overseer_recno].nation_recno != nation_recno)
@@ -758,7 +754,7 @@ public abstract class Firm : IIdObject
 
 		if (FirmRes[firm_id].live_in_town)
 		{
-			newWorker.town_recno = assign_settle(unit.race_id, unit.loyalty, 0); // the worker settles down
+			newWorker.town_recno = assign_settle(unit.RaceId, unit.Loyalty, 0); // the worker settles down
 
 			if (newWorker.town_recno == 0)
 			{
@@ -773,37 +769,37 @@ public abstract class Firm : IIdObject
 		else
 		{
 			newWorker.town_recno = 0;
-			newWorker.worker_loyalty = unit.loyalty;
+			newWorker.worker_loyalty = unit.Loyalty;
 		}
 
 		//------- add the worker to the firm -------//
 
 		workers.Add(newWorker);
 
-		newWorker.name_id = unit.name_id;
-		newWorker.race_id = unit.race_id;
-		newWorker.unit_id = unit.unit_id;
-		newWorker.rank_id = unit.rank_id;
+		newWorker.name_id = unit.NameId;
+		newWorker.race_id = unit.RaceId;
+		newWorker.unit_id = unit.UnitType;
+		newWorker.rank_id = unit.Rank;
 
 		newWorker.skill_id = firm_skill_id;
-		newWorker.skill_level = unit.skill.get_skill(firm_skill_id);
+		newWorker.skill_level = unit.Skill.get_skill(firm_skill_id);
 
 		if (newWorker.skill_level == 0 && newWorker.race_id != 0)
 			newWorker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
 
-		newWorker.combat_level = unit.skill.combat_level;
-		newWorker.hit_points = (int)unit.hit_points;
+		newWorker.combat_level = unit.Skill.combat_level;
+		newWorker.hit_points = (int)unit.HitPoints;
 
 		if (newWorker.hit_points == 0) // 0.? will become 0 in (float) to (int) conversion
 			newWorker.hit_points = 1;
 
-		if (UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+		if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 		{
 			newWorker.extra_para = unit.get_weapon_version();
 		}
-		else if (unit.race_id != 0)
+		else if (unit.RaceId != 0)
 		{
-			newWorker.extra_para = unit.cur_power;
+			newWorker.extra_para = unit.CurPower;
 		}
 		else
 		{
@@ -814,18 +810,18 @@ public abstract class Firm : IIdObject
 
 		//------ if the recruited worker is a spy -----//
 
-		if (unit.spy_recno != 0)
+		if (unit.SpyId != 0)
 		{
-			SpyArray[unit.spy_recno].set_place(Spy.SPY_FIRM, firm_recno);
+			SpyArray[unit.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
 
-			newWorker.spy_recno = unit.spy_recno;
-			unit.spy_recno = 0; // reset it now so Unit::deinit() won't delete the Spy in SpyArray
+			newWorker.spy_recno = unit.SpyId;
+			unit.SpyId = 0; // reset it now so Unit::deinit() won't delete the Spy in SpyArray
 		}
 
 		//--------- the unit disappear in firm -----//
 
 		if (!FirmRes[firm_id].live_in_town) // if the unit does not live in town, increase the unit count now
-			UnitRes[unit.unit_id].inc_nation_unit_count(nation_recno);
+			UnitRes[unit.UnitType].inc_nation_unit_count(nation_recno);
 
 		UnitArray.disappear_in_firm(workerUnitRecno);
 	}
@@ -839,15 +835,15 @@ public abstract class Firm : IIdObject
 
 		Unit overseer = UnitArray[overseer_recno];
 
-		if (overseer.spy_recno != 0)
-			SpyArray[overseer.spy_recno].set_place(Spy.SPY_UNDEFINED, 0);
+		if (overseer.SpyId != 0)
+			SpyArray[overseer.SpyId].set_place(Spy.SPY_UNDEFINED, 0);
 
 		//-- no need to del the spy here, UnitArray.del() will del the spy --//
 
 		//-----------------------------------------//
 
 		if (overseer_town_recno != 0)
-			TownArray[overseer_town_recno].DecPopulation(UnitArray[overseer_recno].race_id, true);
+			TownArray[overseer_town_recno].DecPopulation(UnitArray[overseer_recno].RaceId, true);
 
 		UnitArray.DeleteUnit(overseer);
 
@@ -910,7 +906,7 @@ public abstract class Firm : IIdObject
 		if (nation_recno != 0 && firm_ai)
 		{
 			// this can happen when the unit has just changed nation
-			if (UnitArray[attackerUnitRecno].nation_recno == nation_recno)
+			if (UnitArray[attackerUnitRecno].NationId == nation_recno)
 				return;
 
 			NationArray[nation_recno].ai_defend(attackerUnitRecno);
@@ -1213,7 +1209,7 @@ public abstract class Firm : IIdObject
 		//
 		//------------------------------------------//
 
-		if (overseer_recno != 0 && UnitArray[overseer_recno].spy_recno != 0)
+		if (overseer_recno != 0 && UnitArray[overseer_recno].SpyId != 0)
 			UnitArray[overseer_recno].spy_change_nation(newNationRecno, InternalConstants.COMMAND_AUTO);
 		else
 			change_nation(newNationRecno);
@@ -1241,8 +1237,8 @@ public abstract class Firm : IIdObject
 
 			//--- if this is a spy, chance its cloak ----//
 
-			if (unit.spy_recno != 0)
-				SpyArray[unit.spy_recno].cloaked_nation_recno = newNationRecno;
+			if (unit.SpyId != 0)
+				SpyArray[unit.SpyId].cloaked_nation_recno = newNationRecno;
 		}
 
 		//---------- stop all actions attacking this firm --------//
@@ -1638,17 +1634,14 @@ public abstract class Firm : IIdObject
 		if (builder_recno != 0)
 		{
 			Unit unit = UnitArray[builder_recno];
-			//### begin alex 18/10 ###//
-			unit.group_select_id = 0; // clear group select id
-			//#### end alex 18/10 ####//
 			if (unit.is_visible()) // is visible if the unit is not inside the firm location
 			{
 				builder_region_id = World.GetRegionId(unit.CurLocX, unit.CurLocY);
 				unit.deinit_sprite();
 
-				if (unit.selected_flag)
+				if (unit.SelectedFlag)
 				{
-					unit.selected_flag = false;
+					unit.SelectedFlag = false;
 					UnitArray.selected_count--;
 				}
 			}
@@ -1669,32 +1662,32 @@ public abstract class Firm : IIdObject
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.nation_recno != nation_recno || unit.race_id == 0)
+			if (unit.NationId != nation_recno || unit.RaceId == 0)
 				continue;
 
-			if (unit.skill.skill_id != Skill.SKILL_CONSTRUCTION)
+			if (unit.Skill.skill_id != Skill.SKILL_CONSTRUCTION)
 				continue;
 
 			if (unit.is_visible() && unit.region_id() != region_id)
 				continue;
 
-			if (unit.unit_mode == UnitConstants.UNIT_MODE_CONSTRUCT)
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 			{
-				Firm firm = FirmArray[unit.unit_mode_para];
+				Firm firm = FirmArray[unit.UnitModeParam];
 
 				if (firm.under_construction || (firm.hit_points * 100 / firm.max_hit_points) <= 90 ||
 				    Info.game_date <= firm.last_attacked_date.AddDays(8))
 					continue;
 			}
-			else if (unit.unit_mode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
+			else if (unit.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
 			{
 				continue;
 			}
-			else if (unit.action_mode == UnitConstants.ACTION_ASSIGN_TO_FIRM && unit.action_para2 == firm_recno)
+			else if (unit.ActionMode == UnitConstants.ACTION_ASSIGN_TO_FIRM && unit.ActionPara2 == firm_recno)
 			{
 				return unit.SpriteId;
 			}
-			else if (unit.action_mode != UnitConstants.ACTION_STOP)
+			else if (unit.ActionMode != UnitConstants.ACTION_STOP)
 			{
 				continue;
 			}
@@ -1731,9 +1724,9 @@ public abstract class Firm : IIdObject
 			return;
 
 		Unit unit = UnitArray[unitRecno];
-		if (unit.unit_mode == UnitConstants.UNIT_MODE_CONSTRUCT)
+		if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 		{
-			Firm firm = FirmArray[unit.unit_mode_para];
+			Firm firm = FirmArray[unit.UnitModeParam];
 
 			// order idle unit out of the building
 			if (!firm.set_builder(0))
@@ -1920,7 +1913,7 @@ public abstract class Firm : IIdObject
 		if (bribeWorkerId != 0) // the overseer is selected
 			spyRecno = workers[bribeWorkerId - 1].spy_recno;
 		else
-			spyRecno = UnitArray[overseer_recno].spy_recno;
+			spyRecno = UnitArray[overseer_recno].SpyId;
 
 		if (spyRecno != 0)
 		{
@@ -1932,7 +1925,7 @@ public abstract class Firm : IIdObject
 			if (bribeWorkerId != 0)
 				canBribe = workers[bribeWorkerId - 1].race_id > 0; // cannot bribe if it's a weapon
 			else
-				canBribe = UnitArray[overseer_recno].rank_id != Unit.RANK_KING; // cannot bribe a king
+				canBribe = UnitArray[overseer_recno].Rank != Unit.RANK_KING; // cannot bribe a king
 		}
 
 		return canBribe;
@@ -1977,9 +1970,9 @@ public abstract class Firm : IIdObject
 			else if (overseer_recno != 0)
 			{
 				Unit unit = UnitArray[overseer_recno];
-				unit.spy_recno = newSpy.spy_recno;
-				newSpy.race_id = unit.race_id;
-				newSpy.name_id = unit.name_id;
+				unit.SpyId = newSpy.spy_recno;
+				newSpy.race_id = unit.RaceId;
+				newSpy.name_id = unit.NameId;
 			}
 
 			newSpy.set_place(Spy.SPY_FIRM, firm_recno);
@@ -2032,10 +2025,10 @@ public abstract class Firm : IIdObject
 		{
 			Unit unit = UnitArray[overseer_recno];
 
-			unitLoyalty = unit.loyalty;
-			unitRaceId = unit.race_id;
+			unitLoyalty = unit.Loyalty;
+			unitRaceId = unit.RaceId;
 			unitCommandPower = unit.commander_power();
-			targetSpyRecno = unit.spy_recno;
+			targetSpyRecno = unit.SpyId;
 		}
 
 		//---- determine whether the bribe will be successful ----//
@@ -2232,8 +2225,8 @@ public abstract class Firm : IIdObject
 
 		Unit unit = UnitArray[builder_recno];
 
-		if (unit.skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
-			hit_points += 1 + unit.skill.skill_level / 30;
+		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+			hit_points += 1 + unit.Skill.skill_level / 30;
 		else
 			hit_points++;
 
@@ -2242,14 +2235,14 @@ public abstract class Firm : IIdObject
 
 		//----- increase skill level of the builder unit -----//
 
-		if (unit.skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
 		{
-			if (++unit.skill.skill_level_minor > 100)
+			if (++unit.Skill.skill_level_minor > 100)
 			{
-				unit.skill.skill_level_minor = 0;
+				unit.Skill.skill_level_minor = 0;
 
-				if (unit.skill.skill_level < 100)
-					unit.skill.skill_level++;
+				if (unit.Skill.skill_level < 100)
+					unit.Skill.skill_level++;
 			}
 		}
 
@@ -2270,7 +2263,7 @@ public abstract class Firm : IIdObject
 
 			if ((firmInfo.need_overseer || firmInfo.need_worker) &&
 			    (firmInfo.firm_skill_id == 0 ||
-			     firmInfo.firm_skill_id == unit.skill.skill_id)) // the builder with the skill required
+			     firmInfo.firm_skill_id == unit.Skill.skill_id)) // the builder with the skill required
 			{
 				unit.set_mode(0); // reset it from UNIT_MODE_CONSTRUCT
 
@@ -2330,9 +2323,9 @@ public abstract class Firm : IIdObject
 		{
 			//---- if the construction worker is a spy, it will damage the building when the building is under attack ----//
 
-			if (unit.spy_recno != 0 && unit.true_nation_recno() != nation_recno)
+			if (unit.SpyId != 0 && unit.true_nation_recno() != nation_recno)
 			{
-				hit_points -= SpyArray[unit.spy_recno].spy_skill / 30.0;
+				hit_points -= SpyArray[unit.SpyId].spy_skill / 30.0;
 
 				if (hit_points < 0)
 					hit_points = 0.0;
@@ -2347,7 +2340,7 @@ public abstract class Firm : IIdObject
 			return;
 
 		// repair once every 1 to 6 days, depending on the skill level of the construction worker
-		int dayInterval = (100 - unit.skill.skill_level) / 20 + 1;
+		int dayInterval = (100 - unit.Skill.skill_level) / 20 + 1;
 
 		if (Info.TotalDays % dayInterval == firm_recno % dayInterval)
 		{
@@ -2508,11 +2501,11 @@ public abstract class Firm : IIdObject
 				break; // keep the rest workers as there is no space for creating the unit
 
 			Unit unit = UnitArray[unitRecno];
-			unit.team_id = UnitArray.cur_team_id;
+			unit.TeamId = UnitArray.cur_team_id;
 
 			if (nation_recno == NationArray.player_recno)
 			{
-				unit.selected_flag = true;
+				unit.SelectedFlag = true;
 				UnitArray.selected_count++;
 				if (UnitArray.selected_recno == 0)
 					UnitArray.selected_recno = unitRecno; // set first worker as selected
@@ -2580,101 +2573,25 @@ public abstract class Firm : IIdObject
 
 	public int create_worker_unit(Worker worker)
 	{
-		//--------- copy the worker's info --------//
+		//------------ create a unit --------------//
 
-		int unitLoyalty = worker.loyalty();
-
-		//------------ create an unit --------------//
-
-		int unitId = worker.unit_id;
 		// this worker no longer has a job as it has been resigned
-		int unitRecno = create_unit(unitId, worker.town_recno, false);
+		int unitRecno = create_unit(worker.unit_id, worker.town_recno, false);
 
 		if (unitRecno == 0)
 			return 0;
 
 		Unit unit = UnitArray[unitRecno];
-
-		//------- set the unit's parameters --------//
-
-		unit.skill.skill_id = worker.skill_id;
-		unit.skill.skill_level = worker.skill_level;
-		unit.skill.skill_level_minor = worker.skill_level_minor;
-		unit.set_combat_level(worker.combat_level);
-		unit.skill.combat_level_minor = worker.combat_level_minor;
-		unit.loyalty = unitLoyalty;
-		unit.hit_points = worker.hit_points;
-		unit.rank_id = worker.rank_id;
-
-		if (UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-		{
-			unit.set_weapon_version(worker.extra_para); // restore nation contribution
-		}
-		else if (unit.race_id != 0)
-		{
-			unit.cur_power = worker.extra_para;
-
-			if (unit.cur_power < 0)
-				unit.cur_power = 0;
-
-			if (unit.cur_power > 150)
-				unit.cur_power = 150;
-		}
-
-		unit.fix_attack_info();
-
-		//if( unitInfo.unit_class == UnitRes.UNIT_CLASS_WEAPON )
-		//{
-		//	switch( unitId )
-		//	{
-		//		case UNIT_BALLISTA:
-		//			unit.attack_count = 2;
-		//			break;
-		//		case UNIT_EXPLOSIVE_CART:
-		//			unit.attack_count = 0;
-		//			break;
-		//		default:
-		//			unit.attack_count = 1;
-		//	}
-		//		if( unit.attack_count > 0)
-		//		{
-		//			unit.attack_info_array = unit_res.attack_info_array
-		//				+ unitInfo.first_attack-1
-		//				+ (thisWorker.extra_para -1) * unit.attack_count;		// extra para keeps the weapon version
-		//		}
-		//		else
-		//		{
-		//			// no attack like explosive cart
-		//			unit.attack_info_array = NULL;
-		//		}
-		//}
-
-		if (worker.name_id != 0 && worker.race_id != 0) // if this worker is formerly an unit who has a name
-			unit.set_name(worker.name_id);
-
-		//------ if the unit is a spy -------//
-
-		if (worker.spy_recno != 0)
-		{
-			Spy spy = SpyArray[worker.spy_recno];
-
-			unit.spy_recno = worker.spy_recno;
-			unit.ai_unit = spy.cloaked_nation_recno != 0 && NationArray[spy.cloaked_nation_recno].is_ai();
-
-			unit.set_name(spy.name_id); // set the name id. of this unit
-
-			spy.set_place(Spy.SPY_MOBILE, unitRecno);
-		}
+		unit.InitFromWorker(worker);
 
 		//--- decrease the nation unit count as the Unit has already increased it ----//
 
 		if (!FirmRes[firm_id].live_in_town) // if the unit does not live in town, increase the unit count now
-			UnitRes[unit.unit_id].dec_nation_unit_count(nation_recno);
+			UnitRes[unit.UnitType].dec_nation_unit_count(nation_recno);
 
 		//--- set non-military units to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.race_id > 0 &&
-		    unit.skill.skill_id != Skill.SKILL_LEADING && !unit.ai_unit)
-			unit.aggressive_mode = 0;
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.skill_id != Skill.SKILL_LEADING && !unit.AIUnit)
+			unit.AggressiveMode = false;
 
 		return unitRecno;
 	}
@@ -2692,17 +2609,17 @@ public abstract class Firm : IIdObject
 
 		//-------- if the overseer is a spy -------//
 
-		if (overseer.spy_recno != 0)
-			SpyArray[overseer.spy_recno].set_place(Spy.SPY_MOBILE, overseer.SpriteId);
+		if (overseer.SpyId != 0)
+			SpyArray[overseer.SpyId].set_place(Spy.SPY_MOBILE, overseer.SpriteId);
 
 		//---- cancel the overseer's presence in the town -----//
 
 		if (FirmRes[firm_id].live_in_town)
-			TownArray[overseer_town_recno].DecPopulation(overseer.race_id, true);
+			TownArray[overseer_town_recno].DecPopulation(overseer.RaceId, true);
 
 		//----- get this overseer out of the firm -----//
 
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.unit_id].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.UnitType].sprite_id];
 		int xLoc = loc_x1, yLoc = loc_y1; // xLoc & yLoc are used for returning results
 
 		bool spaceFound = locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
@@ -2754,8 +2671,8 @@ public abstract class Firm : IIdObject
 		unit.set_mode(0);
 
 		//--- set builder to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.ai_unit)
-			unit.aggressive_mode = 0;
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
+			unit.AggressiveMode = false;
 
 		return true;
 	}
@@ -3900,7 +3817,7 @@ public abstract class Firm : IIdObject
 		//----- update the population of the town ------//
 
 		if (townRecno != 0)
-			TownArray[townRecno].DecPopulation(unit.race_id, unitHasJob);
+			TownArray[townRecno].DecPopulation(unit.RaceId, unitHasJob);
 
 		return unit.SpriteId;
 	}

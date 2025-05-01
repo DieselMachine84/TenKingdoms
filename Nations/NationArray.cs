@@ -374,33 +374,33 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.nation_recno == 0)
+			if (unit.NationId == 0)
 				continue;
 
 			//---- if this unit is a ship, increase total_ship_combat_level ----//
 
-			if (UnitRes[unit.unit_id].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 			{
-				this[unit.nation_recno].total_ship_combat_level += (int)unit.hit_points;
+				this[unit.NationId].total_ship_combat_level += (int)unit.HitPoints;
 			}
 
 			//----------------------------------//
 
-			if (unit.unit_mode == UnitConstants.UNIT_MODE_OVERSEE) // firm commanders are counted above with firm_array
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_OVERSEE) // firm commanders are counted above with firm_array
 				continue;
 
-			int addPoints = (int)unit.hit_points;
+			int addPoints = (int)unit.HitPoints;
 
-			UnitInfo unitInfo = UnitRes[unit.unit_id];
+			UnitInfo unitInfo = UnitRes[unit.UnitType];
 
 			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 				addPoints += (unitInfo.weapon_power + unit.get_weapon_version() - 1) * 30;
 
-			if (unit.leader_unit_recno != 0 && !UnitArray.IsDeleted(unit.leader_unit_recno))
-				addPoints += addPoints * UnitArray[unit.leader_unit_recno].skill.skill_level / 100;
+			if (unit.LeaderId != 0 && !UnitArray.IsDeleted(unit.LeaderId))
+				addPoints += addPoints * UnitArray[unit.LeaderId].Skill.skill_level / 100;
 
 			// 20 is the base military points for a unit, so the nation that has many more units can be reflected in the military rating
-			nationCombatLevelArray[unit.nation_recno - 1] += addPoints + 20;
+			nationCombatLevelArray[unit.NationId - 1] += addPoints + 20;
 		}
 
 		//------ update nation statistic ------//
@@ -439,9 +439,9 @@ public class NationArray : DynArray<Nation>
 		foreach (Unit unit in UnitArray)
 		{
 			// does not count kings
-			if (unit.nation_recno != 0 && unit.race_id != 0 && unit.rank_id != Unit.RANK_KING)
+			if (unit.NationId != 0 && unit.RaceId != 0 && unit.Rank != Unit.RANK_KING)
 			{
-				totalHumanCountArray[unit.nation_recno - 1]++;
+				totalHumanCountArray[unit.NationId - 1]++;
 			}
 		}
 

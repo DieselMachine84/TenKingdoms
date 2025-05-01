@@ -39,7 +39,7 @@ public class UnitExpCart : Unit
 					if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
 						Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-						if (unit.unit_id == UnitConstants.UNIT_EXPLOSIVE_CART)
+						if (unit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
 							((UnitExpCart)unit).trigger_explode();
 					}
 				}
@@ -76,16 +76,16 @@ public class UnitExpCart : Unit
 						if (location.HasUnit(UnitConstants.UNIT_LAND))
 						{
 							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
-								GameConstants.EXPLODE_DAMAGE, nation_recno);
+								GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.HasUnit(UnitConstants.UNIT_SEA))
 						{
 							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_SEA)],
-								GameConstants.EXPLODE_DAMAGE, nation_recno);
+								GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.IsWall())
 						{
-							hit_wall(this, x, y, GameConstants.EXPLODE_DAMAGE, nation_recno);
+							hit_wall(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.IsPlant())
 						{
@@ -94,7 +94,7 @@ public class UnitExpCart : Unit
 						}
 						else
 						{
-							hit_building(this, x, y, GameConstants.EXPLODE_DAMAGE, nation_recno);
+							hit_building(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 					}
 				}
@@ -121,10 +121,10 @@ public class UnitExpCart : Unit
 
 	public void trigger_explode()
 	{
-		if (hit_points > 0) // so dying cart cannot be triggered
+		if (HitPoints > 0) // so dying cart cannot be triggered
 		{
 			triggered = true;
-			hit_points = 0;
+			HitPoints = 0;
 		}
 	}
 }

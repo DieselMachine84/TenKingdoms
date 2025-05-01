@@ -1128,9 +1128,9 @@ public class Town : IIdObject
 			//------ if this race is the overseer's race -------//
 
 			//TODO targetLoyalty should depend on overseer's nation reputation
-			int baseInfluence = overseer.skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
+			int baseInfluence = overseer.Skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
 
-			if (overseer.rank_id == Unit.RANK_KING) // 20 points bonus for king
+			if (overseer.Rank == Unit.RANK_KING) // 20 points bonus for king
 				baseInfluence += 20;
 
 			//------------ update all race -----------//
@@ -1144,7 +1144,7 @@ public class Town : IIdObject
 
 				int thisInfluence = baseInfluence;
 
-				if (overseer.race_id == j + 1)
+				if (overseer.RaceId == j + 1)
 					thisInfluence += 8;
 
 				//--- if the overseer's nation's race is the same as this race ---//
@@ -1160,7 +1160,7 @@ public class Town : IIdObject
 					int targetLoyalty = RacesTargetLoyalty[j] + thisInfluence;
 					RacesTargetLoyalty[j] = Math.Min(100, targetLoyalty);
 				}
-				else if (overseer.race_id == j + 1) // for enemy camps, only decrease same race peasants
+				else if (overseer.RaceId == j + 1) // for enemy camps, only decrease same race peasants
 				{
 					int targetLoyalty = RacesTargetLoyalty[j] - thisInfluence;
 					RacesTargetLoyalty[j] = Math.Max(0, targetLoyalty);
@@ -1301,12 +1301,12 @@ public class Town : IIdObject
 
 			Unit overseer = UnitArray[firm.overseer_recno];
 
-			int curValue = RacesTargetResistance[overseer.race_id - 1, overseer.nation_recno - 1];
+			int curValue = RacesTargetResistance[overseer.RaceId - 1, overseer.NationId - 1];
 			int newValue = 100 - overseer.CampInfluence();
 
 			// need to do this comparison as there may be more than one command bases of the same nation linked to this town, we use the one with the most influence.
 			if (curValue == -1 || newValue < curValue)
-				RacesTargetResistance[overseer.race_id - 1, overseer.nation_recno - 1] = newValue;
+				RacesTargetResistance[overseer.RaceId - 1, overseer.NationId - 1] = newValue;
 		}
 	}
 
@@ -1710,7 +1710,7 @@ public class Town : IIdObject
 	private void ProcessTrain()
 	{
 		Unit unit = UnitArray[TrainUnitId];
-		int raceId = unit.race_id;
+		int raceId = unit.RaceId;
 
 		//---- if the unit being trained was killed -----//
 
@@ -1764,10 +1764,10 @@ public class Town : IIdObject
 		if (unit.is_own())
 			SERes.far_sound(locX, locY, 1, 'S', unit.SpriteResId, "RDY");
 
-		unit.unit_mode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
+		unit.UnitMode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
 		TrainUnitId = 0;
 
-		DecPopulation(unit.race_id, false); // decrease the population now as the recruit() does do so
+		DecPopulation(unit.RaceId, false); // decrease the population now as the recruit() does do so
 
 		//---- if this trained unit is tied to an AI action ----//
 
@@ -1784,11 +1784,11 @@ public class Town : IIdObject
 		{
 			Unit unit = UnitArray[TrainUnitId];
 			// check whether the unit is already a spy before training
-			if (unit.spy_recno != 0 && unit.skill.skill_id != 0)
+			if (unit.SpyId != 0 && unit.Skill.skill_id != 0)
 			{
 				//TODO check
-				SpyArray[unit.spy_recno].set_place(Spy.SPY_TOWN, TownId);
-				unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
+				SpyArray[unit.SpyId].set_place(Spy.SPY_TOWN, TownId);
+				unit.SpyId = 0; // reset it so Unit::deinit() won't delete the spy
 			}
 
 			UnitArray.DisappearInTown(unit, this);
@@ -1834,7 +1834,7 @@ public class Town : IIdObject
 		if (amount > 0 && TrainUnitId != 0)
 		{
 			Unit unit = UnitArray[TrainUnitId];
-			if (unit.skill.skill_id == skillId)
+			if (unit.Skill.skill_id == skillId)
 				CancelTrain();
 		}
 	}
@@ -2109,31 +2109,31 @@ public class Town : IIdObject
 	
 	public void AssignUnit(Unit unit)
 	{
-		if (Population >= GameConstants.MAX_TOWN_POPULATION || unit.rank_id == Unit.RANK_KING)
+		if (Population >= GameConstants.MAX_TOWN_POPULATION || unit.Rank == Unit.RANK_KING)
 		{
 			unit.stop2();
 			//----------------------------------------------------------------------//
 			// codes for handle_blocked_move set unit_group_id to a different value 
 			// s.t. the members in this group will not be blocked by this unit.
 			//----------------------------------------------------------------------//
-			unit.unit_group_id = UnitArray.cur_group_id++;
+			unit.GroupId = UnitArray.cur_group_id++;
 			return;
 		}
 
 		//------ if the unit is a general, demote it first -------//
 
-		if (unit.rank_id == Unit.RANK_GENERAL)
+		if (unit.Rank == Unit.RANK_GENERAL)
 			unit.set_rank(Unit.RANK_SOLDIER);
 
-		IncPopulation(unit.race_id, false, unit.loyalty);
+		IncPopulation(unit.RaceId, false, unit.Loyalty);
 
 		//---- free the unit's name from the name database ----//
 
-		RaceRes[unit.race_id].free_name_id(unit.name_id);
+		RaceRes[unit.RaceId].free_name_id(unit.NameId);
 
 		//----- if it's a town defending unit -----//
 
-		if (unit.unit_mode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
+		if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN)
 		{
 			//---------------------------------------------//
 			//
@@ -2142,23 +2142,23 @@ public class Town : IIdObject
 			//
 			//---------------------------------------------//
 
-			if (unit.nation_recno == NationId && unit.unit_mode_para == TownId)
+			if (unit.NationId == NationId && unit.UnitModeParam == TownId)
 			{
 				// if the unit is a town defender, skill.skill_level is temporarily used for storing the loyalty
 				// that will be added back to the town if the defender returns to the town
 
-				int loyaltyInc = unit.skill.skill_level;
+				int loyaltyInc = unit.Skill.skill_level;
 
 				if (NationId != 0) // set the loyalty later for NationId != 0
 				{
-					ChangeLoyalty(unit.race_id, loyaltyInc);
+					ChangeLoyalty(unit.RaceId, loyaltyInc);
 				}
 				else
 				{
 					for (int i = 0; i < GameConstants.MAX_NATION; i++) // set the resistance
 					{
-						double newResistance = RacesResistance[unit.race_id - 1, i] + loyaltyInc + GameConstants.RESISTANCE_INCREASE_DEFENDER;
-						RacesResistance[unit.race_id - 1, i] = Math.Min(newResistance, 100);
+						double newResistance = RacesResistance[unit.RaceId - 1, i] + loyaltyInc + GameConstants.RESISTANCE_INCREASE_DEFENDER;
+						RacesResistance[unit.RaceId - 1, i] = Math.Min(newResistance, 100);
 					}
 				}
 			}
@@ -2166,17 +2166,17 @@ public class Town : IIdObject
 
 		//------ if the unit is a spy -------//
 
-		if (unit.spy_recno > 0)
+		if (unit.SpyId > 0)
 		{
-			SpyArray[unit.spy_recno].set_place(Spy.SPY_TOWN, TownId);
-			unit.spy_recno = 0; // reset it so Unit::deinit() won't delete the spy
+			SpyArray[unit.SpyId].set_place(Spy.SPY_TOWN, TownId);
+			unit.SpyId = 0; // reset it so Unit::deinit() won't delete the spy
 		}
 
 		//----- if this is an independent town -----//
 
 		if (NationId == 0) // update the town people's combat level with this unit's combat level
 		{
-			TownCombatLevel = (TownCombatLevel * (Population - 1) + unit.skill.combat_level) / Population;
+			TownCombatLevel = (TownCombatLevel * (Population - 1) + unit.Skill.combat_level) / Population;
 		}
 
 		//--------- delete the unit --------//
@@ -2189,7 +2189,7 @@ public class Town : IIdObject
 	{
 		int recruitableCount = RacesJoblessPopulation[raceId - 1];
 
-		if (TrainUnitId != 0 && UnitArray[TrainUnitId].race_id == raceId)
+		if (TrainUnitId != 0 && UnitArray[TrainUnitId].RaceId == raceId)
 			recruitableCount--;
 
 		if (!recruitSpy)
@@ -2342,12 +2342,12 @@ public class Town : IIdObject
 		{
 			if (trainSkillId == Skill.SKILL_SPYING)
 			{
-				unit.spy_recno = SpyArray.AddSpy(unit.SpriteId, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
+				unit.SpyId = SpyArray.AddSpy(unit.SpriteId, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
 			}
 			else
 			{
-				unit.skill.skill_id = trainSkillId;
-				unit.skill.skill_level = GameConstants.TRAIN_SKILL_LEVEL;
+				unit.Skill.skill_id = trainSkillId;
+				unit.Skill.skill_level = GameConstants.TRAIN_SKILL_LEVEL;
 			}
 			
 			//---- training solider or skilled unit takes time ----//
@@ -2356,8 +2356,8 @@ public class Town : IIdObject
 			_startTrainFrameNumber = Sys.Instance.FrameNumber; // as an offset for displaying the progress bar correctly
 
 			unit.deinit_sprite();
-			unit.unit_mode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
-			unit.unit_mode_para = TownId;
+			unit.UnitMode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
+			unit.UnitModeParam = TownId;
 			
 			NationArray[NationId].add_expense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
 		}
@@ -2503,7 +2503,7 @@ public class Town : IIdObject
 
 					Unit overseerUnit = UnitArray[firm.overseer_recno];
 
-					if (overseerUnit.race_id == raceId && firm.overseer_town_recno == TownId)
+					if (overseerUnit.RaceId == raceId && firm.overseer_town_recno == TownId)
 					{
 						int overseerId = firm.overseer_recno;
 						Unit overseer = UnitArray[overseerId];
@@ -3235,7 +3235,7 @@ public class Town : IIdObject
 		unit.set_mode(UnitConstants.UNIT_MODE_DEFEND_TOWN, TownId);
 
 		// if the unit is a town defender, this var is temporarily used for storing the loyalty that will be added back to the town if the defender returns to the town
-		unit.skill.skill_level = (int)loyaltyDec;
+		unit.Skill.skill_level = (int)loyaltyDec;
 
 		int combatLevel = TownCombatLevel + Misc.Random(20) - 10; // -10 to +10 random difference
 		combatLevel = Math.Min(combatLevel, 100);
@@ -3248,10 +3248,10 @@ public class Town : IIdObject
 		//-----------------------------------------------------//
 
 		unit.stop2();
-		unit.action_mode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
-		unit.action_para2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
-		unit.action_misc = UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO;
-		unit.action_misc_para = TownId;
+		unit.ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
+		unit.ActionPara2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
+		unit.ActionMisc = UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO;
+		unit.ActionMiscParam = TownId;
 
 		DefendersCount++;
 
@@ -3268,7 +3268,7 @@ public class Town : IIdObject
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.in_defend_town_mode() && unit.action_misc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.action_misc_para == TownId)
+			if (unit.in_defend_town_mode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.ActionMiscParam == TownId)
 				unit.clear_town_defend_mode(); // note: maybe, unit.NationId != NationId
 		}
 	}
@@ -3311,10 +3311,10 @@ public class Town : IIdObject
 
 		Unit attackerUnit = UnitArray[attackerUnitId];
 
-		if (attackerUnit.nation_recno == NationId) // this can happen when the unit has just changed nation 
+		if (attackerUnit.NationId == NationId) // this can happen when the unit has just changed nation 
 			return;
 
-		int attackerNationId = attackerUnit.nation_recno;
+		int attackerNationId = attackerUnit.NationId;
 
 		LastBeingAttackedDate = Info.game_date;
 
@@ -3437,7 +3437,7 @@ public class Town : IIdObject
 
 		if (DefendersCount == 0 && NationId != 0)
 		{
-			if (attackerUnit.nation_recno != NationId) // they may become the same when the town has been captured 
+			if (attackerUnit.NationId != NationId) // they may become the same when the town has been captured 
 				NationArray[NationId].ai_defend(attackerUnitId);
 		}
 	}
@@ -3543,7 +3543,7 @@ public class Town : IIdObject
 		int[] restrictRebelCount = new int[GameConstants.MAX_RACE];
 
 		if (TrainUnitId != 0)
-			trainRaceId = UnitArray[TrainUnitId].race_id;
+			trainRaceId = UnitArray[TrainUnitId].RaceId;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
@@ -3609,7 +3609,7 @@ public class Town : IIdObject
 			return;
 
 		int curGroupId = UnitArray.cur_group_id++;
-		rebelLeader.unit_group_id = curGroupId;
+		rebelLeader.GroupId = curGroupId;
 
 		if (oneRebelOnly) // if there was just one unit in the town and he rebels
 		{
@@ -3642,8 +3642,8 @@ public class Town : IIdObject
 				if (rebelUnit == null)
 					break;
 
-				rebelUnit.unit_group_id = curGroupId;
-				rebelUnit.leader_unit_recno = rebelLeader.SpriteId;
+				rebelUnit.GroupId = curGroupId;
+				rebelUnit.LeaderId = rebelLeader.SpriteId;
 
 				rebel.join(rebelUnit);
 
@@ -3710,8 +3710,8 @@ public class Town : IIdObject
 
 			unit.set_combat_level(Math.Min(combatLevel, 100));
 
-			unit.skill.skill_id = Skill.SKILL_LEADING;
-			unit.skill.skill_level = Math.Min(leadershipLevel, 100);
+			unit.Skill.skill_id = Skill.SKILL_LEADING;
+			unit.Skill.skill_level = Math.Min(leadershipLevel, 100);
 		}
 		else
 		{
@@ -3753,8 +3753,8 @@ public class Town : IIdObject
 		//-------- create the king --------//
 
 		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.nation_recno, Unit.RANK_KING, 100, locX, locY);
-		kingUnit.skill.skill_id = Skill.SKILL_LEADING;
-		kingUnit.skill.skill_level = 50 + Misc.Random(51);
+		kingUnit.Skill.skill_id = Skill.SKILL_LEADING;
+		kingUnit.Skill.skill_level = 50 + Misc.Random(51);
 		kingUnit.set_combat_level(70 + Misc.Random(31));
 
 		newNation.set_king(kingUnit.SpriteId, 1);
@@ -3804,8 +3804,8 @@ public class Town : IIdObject
 						skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
 					} while (skillId == Skill.SKILL_SPYING);
 
-					unit.skill.skill_id = skillId;
-					unit.skill.skill_level = 50 + Misc.Random(50);
+					unit.Skill.skill_id = skillId;
+					unit.Skill.skill_level = 50 + Misc.Random(50);
 					unit.set_combat_level(50 + Misc.Random(50));
 				}
 				break;
@@ -4011,8 +4011,8 @@ public class Town : IIdObject
 				break;
 		}
 
-		unit.skill.skill_id = skillId;
-		unit.skill.skill_level = skillLevel;
+		unit.Skill.skill_id = skillId;
+		unit.Skill.skill_level = skillLevel;
 		unit.set_combat_level(combatLevel);
 
 		//------ change nation now --------//
@@ -4895,15 +4895,15 @@ public class Town : IIdObject
 				{
 					Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 
-					if (unit.nation_recno == 0)
+					if (unit.NationId == 0)
 						continue;
 
 					//--- if the unit is idle and he is our enemy ---//
 
 					if (unit.CurAction == Sprite.SPRITE_IDLE &&
-					    nation.get_relation_status(unit.nation_recno) == NationBase.NATION_HOSTILE)
+					    nation.get_relation_status(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
-						enemyCombatLevel += (int)unit.hit_points;
+						enemyCombatLevel += (int)unit.HitPoints;
 
 						if (enemyXLoc == -1 || Misc.Random(5) == 0)
 						{
@@ -5446,7 +5446,7 @@ public class Town : IIdObject
 			}
 
 			Unit overseer = UnitArray[firmCamp.overseer_recno];
-			if (majorRaceCampRecno == 0 && overseer.race_id == MajorityRace())
+			if (majorRaceCampRecno == 0 && overseer.RaceId == MajorityRace())
 			{
 				majorRaceCampRecno = firmRecno;
 				thisTownProtectionCamps.Add(firmRecno);
@@ -5454,7 +5454,7 @@ public class Town : IIdObject
 
 			if (!minimumProtection)
 			{
-				if ((overseer.hit_points < overseer.max_hit_points) && (overseer.hit_points < 100 - ownNation.pref_military_courage / 2))
+				if ((overseer.HitPoints < overseer.MaxHitPoints) && (overseer.HitPoints < 100 - ownNation.pref_military_courage / 2))
 				{
 					thisTownProtectionCamps.Add(firmRecno);
 				}
