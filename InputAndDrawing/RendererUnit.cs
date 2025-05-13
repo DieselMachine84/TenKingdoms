@@ -6,7 +6,7 @@ public partial class Renderer
 {
     private bool ShouldShowInfo(Unit unit)
     {
-        if (Config.show_ai_info || unit.is_own())
+        if (Config.show_ai_info || unit.IsOwn())
             return true;
         
         if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(unit.NextLocX, unit.NextLocY))
@@ -55,7 +55,7 @@ public partial class Renderer
                     {
                         if (unit.Skill.skill_id == Skill.SKILL_LEADING)
                             title = "Soldier";
-                        if (unit.is_civilian())
+                        if (unit.IsCivilian())
                             title = "Civilian";
                     }
                     
@@ -77,12 +77,12 @@ public partial class Renderer
         {
             PutTextCenter(FontSan, title, DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56,
                 DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight);
-            PutTextCenter(FontSan, unit.unit_name(0), DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56 + unitInfo.soldierIconHeight,
+            PutTextCenter(FontSan, unit.GetUnitName(false), DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56 + unitInfo.soldierIconHeight,
                 DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight * 2);
         }
         else
         {
-            PutTextCenter(FontSan, unit.unit_name(), DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56,
+            PutTextCenter(FontSan, unit.GetUnitName(), DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56,
                 DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight * 2);
         }
         
@@ -101,7 +101,7 @@ public partial class Renderer
         PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 152 + combatPanelDY, -1, true);
         PutText(FontSan, unit.Skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
 
-        if (unit.Rank != Unit.RANK_KING && !unit.is_civilian())
+        if (unit.Rank != Unit.RANK_KING && !unit.IsCivilian())
         {
             DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 207);
             PutText(FontSan, "Contribution", DetailsX1 + 13, DetailsY1 + 210, -1, true);
@@ -110,7 +110,7 @@ public partial class Renderer
 
         if (unit.Rank != Unit.RANK_KING)
         {
-            if (unit.SpyId != 0 && unit.true_nation_recno() == NationArray.player_recno)
+            if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
             {
                 DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
@@ -127,21 +127,21 @@ public partial class Renderer
             }
         }
 
-        if (unit.SpyId != 0 && unit.true_nation_recno() == NationArray.player_recno)
+        if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
         {
             DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 178);
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);
             PutText(FontSan, SpyArray[unit.SpyId].spy_skill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }
         
-        if (unit.is_own_spy())
+        if (unit.IsOwnSpy())
             DrawSpyCloakPanel(unit);
     }
 
     private void DrawSpyCloakPanel(Unit unit)
     {
-        bool canChangeToOtherNation = unit.can_spy_change_nation();
-        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.true_nation_recno();
+        bool canChangeToOtherNation = unit.CanSpyChangeNation();
+        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.TrueNationId();
         if (!canChangeToOwnNation)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 392);
@@ -154,7 +154,7 @@ public partial class Renderer
         PutTextCenter(FontSan, "Cloak", DetailsX1 + 5, DetailsY1 + 442, DetailsX1 + 160, DetailsY1 + 476);
         int colorDX = 0;
         int colorDY = 0;
-        Nation trueNation = NationArray[unit.true_nation_recno()];
+        Nation trueNation = NationArray[unit.TrueNationId()];
         foreach (Nation nation in NationArray)
         {
             if (canChangeToOtherNation)
@@ -196,14 +196,14 @@ public partial class Renderer
     
     private void HandleUnitDetailsInput(Unit unit)
     {
-        bool canChangeToOtherNation = unit.can_spy_change_nation();
-        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.true_nation_recno();
-        if (!canChangeToOwnNation || !unit.is_own_spy())
+        bool canChangeToOtherNation = unit.CanSpyChangeNation();
+        bool canChangeToOwnNation = canChangeToOtherNation || unit.NationId != unit.TrueNationId();
+        if (!canChangeToOwnNation || !unit.IsOwnSpy())
             return;
         
         int colorDX = 0;
         int colorDY = 0;
-        Nation trueNation = NationArray[unit.true_nation_recno()];
+        Nation trueNation = NationArray[unit.TrueNationId()];
         foreach (Nation nation in NationArray)
         {
             if (canChangeToOtherNation)
@@ -220,7 +220,7 @@ public partial class Renderer
             if (_mouseButtonX >= DetailsX1 + 160 + colorDX && _mouseButtonX <= DetailsX1 + 160 + colorDX + 28 &&
                 _mouseButtonY >= DetailsY1 + 404 + colorDY && _mouseButtonY <= DetailsY1 + 404 + colorDY + 28)
             {
-                unit.spy_change_nation(nation.nation_recno, InternalConstants.COMMAND_PLAYER);
+                unit.SpyChangeNation(nation.nation_recno, InternalConstants.COMMAND_PLAYER);
                 return;
             }
             
@@ -235,7 +235,7 @@ public partial class Renderer
             if (_mouseButtonX >= DetailsX1 + 160 + colorDX && _mouseButtonX <= DetailsX1 + 160 + colorDX + 28 &&
                 _mouseButtonY >= DetailsY1 + 404 + colorDY && _mouseButtonY <= DetailsY1 + 404 + colorDY + 28)
             {
-                unit.spy_change_nation(0, InternalConstants.COMMAND_PLAYER);
+                unit.SpyChangeNation(0, InternalConstants.COMMAND_PLAYER);
             }
         }
     }

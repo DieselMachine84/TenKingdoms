@@ -1645,13 +1645,13 @@ public class MapGenerator
 			case Unit.RANK_KING:
 				unit.Skill.set_skill(Skill.SKILL_LEADING);
 				unit.Skill.skill_level = 100;
-				unit.set_combat_level(100);
+				unit.SetCombatLevel(100);
 				break;
 
 			case Unit.RANK_GENERAL:
 				unit.Skill.set_skill(Skill.SKILL_LEADING);
 				unit.Skill.skill_level = 40 + Misc.Random(50); // 40 to 90
-				unit.set_combat_level(30 + Misc.Random(70)); // 30 to 100
+				unit.SetCombatLevel(30 + Misc.Random(70)); // 30 to 100
 				break;
 
 			case Unit.RANK_SOLDIER:
@@ -1661,7 +1661,7 @@ public class MapGenerator
 
 				if (skillId == Skill.SKILL_SPYING)
 				{
-					unit.set_combat_level(10 + Misc.Random(10));
+					unit.SetCombatLevel(10 + Misc.Random(10));
 					spyFlag = true;
 				}
 				else
@@ -1670,9 +1670,9 @@ public class MapGenerator
 					unit.Skill.skill_level = 30 + Misc.Random(70);
 
 					if (skillId == Skill.SKILL_LEADING)
-						unit.set_combat_level(30 + Misc.Random(70));
+						unit.SetCombatLevel(30 + Misc.Random(70));
 					else
-						unit.set_combat_level(10 + Misc.Random(10));
+						unit.SetCombatLevel(10 + Misc.Random(10));
 
 					if (Misc.Random(5) == 0)
 						spyFlag = true;

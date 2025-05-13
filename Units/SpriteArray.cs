@@ -35,7 +35,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    // TODO do not change SpriteId
 		    int spriteId = sprite.SpriteId;
 
-		    sprite.PreProcess(); // it's actually calling Unit::pre_process() and other derived Unit classes
+		    sprite.PreProcess(); // it's actually calling Unit.PreProcess() and other derived Unit classes
 
 		    //-----------------------------------------------------//
 		    // note: for unit cur_x == -1, the unit is invisible and no pre_process is done.

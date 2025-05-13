@@ -169,7 +169,7 @@ public class RegionStat
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.region_id() != RegionId)
+			if (unit.RegionId() != RegionId)
 				continue;
 
 			if (unit.NationId != 0)

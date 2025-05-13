@@ -99,7 +99,7 @@ public class FirmInn : Firm
 		Unit unit = UnitArray[unitRecno];
 		unit.Skill.skill_id = innUnit.skill.skill_id;
 		unit.Skill.skill_level = innUnit.skill.skill_level;
-		unit.set_combat_level(innUnit.skill.combat_level);
+		unit.SetCombatLevel(innUnit.skill.combat_level);
 
 		//-------- if the unit's skill is spying -----//
 

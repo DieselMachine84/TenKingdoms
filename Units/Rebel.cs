@@ -45,7 +45,7 @@ public class Rebel : IIdObject
         mobile_rebel_count = 1;
         set_hostile_nation(hostileNationRecno);
 
-        unit.set_mode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
+        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
     }
 
     public void Deinit()
@@ -54,7 +54,7 @@ public class Rebel : IIdObject
         {
             if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
-                unit.set_mode(0);
+                unit.SetMode(0);
             }
         }
     }
@@ -111,7 +111,7 @@ public class Rebel : IIdObject
 
     public void join(Unit unit)
     {
-        unit.set_mode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
+        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
 
         mobile_rebel_count++;
     }
@@ -446,7 +446,7 @@ public class Rebel : IIdObject
         {
             if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
-                unit.stop();
+                unit.Stop();
             }
         }
     }
@@ -467,7 +467,7 @@ public class Rebel : IIdObject
         {
             if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
             {
-                unit.set_rank(Unit.RANK_GENERAL);
+                unit.SetRank(Unit.RANK_GENERAL);
                 leader_unit_recno = unit.SpriteId;
                 break;
             }
@@ -542,8 +542,8 @@ public class Rebel : IIdObject
             {
                 if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == leader_unit_recno)
                 {
-                    unit.set_mode(0);
-                    unit.change_nation(bestNationRecno);
+                    unit.SetMode(0);
+                    unit.ChangeNation(bestNationRecno);
                 }
             }
         }

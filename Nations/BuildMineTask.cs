@@ -133,7 +133,7 @@ public class BuildMineTask : AITask
         {
             //World.can_build_firm()
             //TODO find best location
-            builder.build_firm(site.LocX, site.LocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
+            builder.BuildFirm(site.LocX, site.LocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
             _builderSent = true;
         }
         else

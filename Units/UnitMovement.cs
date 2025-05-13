@@ -14,7 +14,7 @@ public partial class Unit
 				ResetWayPoints();
 		}
 
-		if (is_unit_dead())
+		if (IsUnitDead())
 			return;
 
 		//----------------------------------------------------------------//
@@ -56,18 +56,18 @@ public partial class Unit
 							if (CurAction != SPRITE_SHIP_EXTRA_MOVE)
 							{
 								if (CurX != NextX || CurY != NextY)
-									set_move();
+									SetMove();
 								else
-									set_idle();
+									SetIdle();
 							}
 							//else keep extra_moving
 						}
 						else
 						{
 							if (CurX != NextX || CurY != NextY)
-								set_move();
+								SetMove();
 							else
-								set_idle();
+								SetIdle();
 						}
 					}
 
@@ -108,7 +108,7 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (is_unit_dead())
+		if (IsUnitDead())
 			return;
 
 		//----------------------------------------------------------------//
@@ -128,7 +128,7 @@ public partial class Unit
 					//-------- the old order is processing --------//
 					if (PathNodes.Count == 0) // cannot move
 					{
-						set_idle();
+						SetIdle();
 					}
 
 					return;
@@ -141,7 +141,7 @@ public partial class Unit
 
 		Unit unit = UnitArray[miscNo];
 		SpriteInfo spriteInfo = unit.SpriteInfo;
-		stop();
+		Stop();
 		SetMoveToSurround(destX, destY, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.BUILDING_TYPE_VEHICLE);
 
 		//----------------------------------------------------------------//
@@ -181,7 +181,7 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (is_unit_dead())
+		if (IsUnitDead())
 			return;
 
 		//----------------------------------------------------------------//
@@ -201,7 +201,7 @@ public partial class Unit
 					//-------- the old order is processing --------//
 					if (PathNodes.Count == 0) // cannot move
 					{
-						set_idle();
+						SetIdle();
 					}
 
 					return;
@@ -213,7 +213,7 @@ public partial class Unit
 		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
 
 		FirmInfo firmInfo = FirmRes[miscNo];
-		stop();
+		Stop();
 		SetMoveToSurround(destX, destY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
 
 		//----------------------------------------------------------------//
@@ -240,7 +240,7 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (is_unit_dead())
+		if (IsUnitDead())
 			return;
 
 		//----------------------------------------------------------------//
@@ -260,7 +260,7 @@ public partial class Unit
 					//-------- the old order is processing --------//
 					if (PathNodes.Count == 0) // cannot move
 					{
-						set_idle();
+						SetIdle();
 					}
 
 					return;
@@ -271,7 +271,7 @@ public partial class Unit
 		int destX = Math.Max(0, ((width > 1) ? destXLoc : destXLoc - width + 1));
 		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
 
-		stop();
+		Stop();
 		SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 
 		//----------------------------------------------------------------//
@@ -298,7 +298,7 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// return if the unit is dead
 		//----------------------------------------------------------------//
-		if (is_unit_dead())
+		if (IsUnitDead())
 			return;
 
 		//----------------------------------------------------------------//
@@ -318,7 +318,7 @@ public partial class Unit
 					//-------- the old order is processing --------//
 					if (PathNodes.Count == 0) // cannot move
 					{
-						set_idle();
+						SetIdle();
 					}
 
 					return;
@@ -329,7 +329,7 @@ public partial class Unit
 		int destX = Math.Max(0, (width > 1) ? destXLoc : destXLoc - width + 1);
 		int destY = Math.Max(0, (height > 1) ? destYLoc : destYLoc - height + 1);
 
-		stop();
+		Stop();
 		SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 
 		//----------------------------------------------------------------//
@@ -348,7 +348,7 @@ public partial class Unit
 		// calculate the distance from the object
 		//--------------------------------------------------------------//
 		// 0 for inside, 1 for surrounding, >1 for the rest
-		int distance = cal_distance(buildLocX, buildLocY, width, height);
+		int distance = CalcDistance(buildLocX, buildLocY, width, height);
 
 		//--------------------------------------------------------------//
 		// inside the building
@@ -357,7 +357,7 @@ public partial class Unit
 		{
 			ResetPath();
 			if (CurX == NextX && CurY == NextY)
-				set_idle();
+				SetIdle();
 
 			return 1;
 		}
@@ -440,7 +440,7 @@ public partial class Unit
 				MoveToLocY = NextLocY;
 				GoX = CurX;
 				GoY = CurY;
-				set_idle();
+				SetIdle();
 				SetDir(MoveToLocX, MoveToLocY, buildLocX + width / 2, buildLocY + height / 2);
 			}
 
@@ -601,16 +601,16 @@ public partial class Unit
 		{
 			//------------ all nodes are visited --------------//
 			ResetPath();
-			set_idle();
+			SetIdle();
 
 			if (ActionMode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
 			{
 				ForceMove = false;
 
 				//------- reset ACTION_MOVE parameters ------//
-				reset_action_para();
+				ResetActionParameters();
 				if (MoveToLocX == ActionLocX2 && MoveToLocY == ActionLocY2)
-					reset_action_para2();
+					ResetActionParameters2();
 			}
 
 			return;
@@ -635,7 +635,7 @@ public partial class Unit
 		CurFrame = 1;
 
 		ResetPath();
-		set_idle();
+		SetIdle();
 	}
 
 	private void MoveToMyLoc(Unit unit)
@@ -743,7 +743,7 @@ public partial class Unit
 		//TODO check this
 		PathNodeIndex = 1;
 		if (shouldWait != 0)
-			set_wait(); // wait for the blocking unit to move first
+			SetWait(); // wait for the blocking unit to move first
 	}
 	
 	private int MoveToRangeAttack(int targetXLoc, int targetYLoc, int miscNo, int searchMode, int maxRange)
@@ -888,7 +888,7 @@ public partial class Unit
 				return 1;
 			else // search failure,
 			{
-				stop2(UnitConstants.KEEP_DEFENSE_MODE);
+				Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 				return 0;
 			}
 		}
@@ -908,7 +908,7 @@ public partial class Unit
 					return 1;
 				else
 				{
-					stop2(UnitConstants.KEEP_DEFENSE_MODE);
+					Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 					return 0;
 				}
 
@@ -924,7 +924,7 @@ public partial class Unit
 				    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 					MoveTo(targetXLoc, targetYLoc, 1); // abort attacking, just call move_to() instead
 				else
-					stop2(UnitConstants.KEEP_DEFENSE_MODE);
+					Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 				return 0;
 			}
 		}
@@ -1037,7 +1037,7 @@ public partial class Unit
 					WaitingTerm = 0;
 				}
 				else // wait
-					set_wait();
+					SetWait();
 
 				return;
 
@@ -1062,7 +1062,7 @@ public partial class Unit
 						WaitingTerm = 0;
 					}
 					else
-						set_wait();
+						SetWait();
 				}
 
 				return;
@@ -1085,7 +1085,7 @@ public partial class Unit
 						    ActionLocX2 == unit.ActionLocX2 && ActionLocY2 == unit.ActionLocY2)
 						{
 							int tempX, tempY;
-							ship_to_beach(ActionLocX2, ActionLocY2, out tempX, out tempY);
+							ShipToBeach(ActionLocX2, ActionLocY2, out tempX, out tempY);
 						}
 						else
 						{
@@ -1093,9 +1093,9 @@ public partial class Unit
 								? UnitConstants.MAX_WAITING_TERM_SAME
 								: UnitConstants.MAX_WAITING_TERM_DIFF;
 							if (WaitingTerm >= waitTerm)
-								stop2();
+								Stop2();
 							else
-								set_wait();
+								SetWait();
 						}
 
 						return;
@@ -1113,7 +1113,7 @@ public partial class Unit
 						if (WayPoints.Count != 0 && unit.WayPoints.Count == 0)
 						{
 							//------------ reset way point --------------//
-							stop2();
+							Stop2();
 							ResetWayPoints();
 						}
 						else if ((unit.NextLocX != MoveToLocX || unit.NextLocY != MoveToLocY) &&
@@ -1123,7 +1123,7 @@ public partial class Unit
 							else
 								MoveToMyLoc(unit); // push the blocking unit and exchange their destination
 						else if (unit.ActionMode == UnitConstants.ACTION_SETTLE)
-							set_wait(); // wait for the settler
+							SetWait(); // wait for the settler
 						else if (WaitingTerm > UnitConstants.MAX_WAITING_TERM_SAME)
 						{
 							//---------- stop if wait too long ----------//
@@ -1131,13 +1131,13 @@ public partial class Unit
 							WaitingTerm = 0;
 						}
 						else
-							set_wait();
+							SetWait();
 					}
 					else if (unit.ActionMode2 == UnitConstants.ACTION_STOP)
 						HandleBlockedByIdleUnit(unit);
 					else if (WayPoints.Count != 0 && unit.WayPoints.Count == 0)
 					{
-						stop2();
+						Stop2();
 						ResetWayPoints();
 					}
 					else
@@ -1159,7 +1159,7 @@ public partial class Unit
 							if (IsDirCorrect())
 								attack_unit(ActionParam, 0, 0, true);
 							else
-								set_turn();
+								SetTurn();
 							CurFrame = 1;
 						}
 					}
@@ -1200,27 +1200,27 @@ public partial class Unit
 
 					case UnitConstants.ACTION_ATTACK_FIRM:
 						if (unit.ActionParam == 0 || FirmArray.IsDeleted(unit.ActionParam))
-							set_wait();
+							SetWait();
 						else
 							HandleBlockedAttackFirm(unit);
 						break;
 
 					case UnitConstants.ACTION_ATTACK_TOWN:
 						if (unit.ActionParam == 0 || TownArray.IsDeleted(unit.ActionParam))
-							set_wait();
+							SetWait();
 						else
 							HandleBlockedAttackTown(unit);
 						break;
 
 					case UnitConstants.ACTION_ATTACK_WALL:
 						if (unit.ActionParam != 0)
-							set_wait();
+							SetWait();
 						else
 							HandleBlockedAttackWall(unit);
 						break;
 
 					case UnitConstants.ACTION_GO_CAST_POWER:
-						set_wait();
+						SetWait();
 						break;
 
 					default:
@@ -1233,7 +1233,7 @@ public partial class Unit
 			// the blocked unit can pass after the blocking unit disappears in air.
 			//------------------------------------------------------------------------------------//
 			case SPRITE_DIE:
-				set_wait(); // assume this unit will not wait too long
+				SetWait(); // assume this unit will not wait too long
 				return;
 
 			default:
@@ -1283,11 +1283,11 @@ public partial class Unit
 				continue;
 
 			unit.MoveTo(checkXLoc, checkYLoc);
-			set_wait();
+			SetWait();
 			return;
 		}
 
-		stop(UnitConstants.KEEP_DEFENSE_MODE);
+		Stop(UnitConstants.KEEP_DEFENSE_MODE);
 
 		//--------------------------------------------------------------------------------//
 		// improved version!!!
@@ -1398,7 +1398,7 @@ public partial class Unit
 			int arraySize = 20;
 			CycleWaitUnitArrayDefSize = arraySize;
 			CycleWaitUnitIndex = 0;
-			CycleWaitUnitArrayMultipler = 1;
+			CycleWaitUnitArrayMultiplier = 1;
 			CycleWaitUnitArray = new int[CycleWaitUnitArrayDefSize];
 
 			//---------------------------------------------------------------//
@@ -1451,8 +1451,8 @@ public partial class Unit
 						//------------------------------------------------------//
 						if (CycleWaitUnitIndex >= arraySize)
 						{
-							CycleWaitUnitArrayMultipler++;
-							arraySize = CycleWaitUnitArrayDefSize * CycleWaitUnitArrayMultipler;
+							CycleWaitUnitArrayMultiplier++;
+							arraySize = CycleWaitUnitArrayDefSize * CycleWaitUnitArrayMultiplier;
 							int[] cycle_wait_unit_array_new = new int[arraySize];
 							for (int j = 0; j < CycleWaitUnitArray.Length; j++)
 							{
@@ -1490,14 +1490,14 @@ public partial class Unit
 			backupSpriteRecno = World.GetUnitId(CurLocX, CurLocY, MobileType);
 			World.SetUnitId(CurLocX, CurLocY, MobileType, SpriteId);
 			SetNext(unit.CurX, unit.CurY, -stepMagn, 1);
-			set_move();
+			SetMove();
 			World.SetUnitId(unit.CurLocX, unit.CurLocY, MobileType, SpriteId);
 			World.SetUnitId(CurLocX, CurLocY, MobileType, backupSpriteRecno);
 			Swapping = true;
 		}
 		else // not in a cycle
 		{
-			set_wait();
+			SetWait();
 
 			//if(waiting_term>=MAX_WAITING_TERM_SAME)
 			if (WaitingTerm >= UnitConstants.MAX_WAITING_TERM_SAME * MoveStepCoeff())
@@ -1507,7 +1507,7 @@ public partial class Unit
 				//-----------------------------------------------------------------//
 				loc = World.GetLoc(MoveToLocX, MoveToLocY);
 				if (!loc.CanMove(MobileType) && ActionMode2 != UnitConstants.ACTION_MOVE)
-					stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
+					Stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 				else
 					SearchOrWait();
 
@@ -1543,7 +1543,7 @@ public partial class Unit
 		{
 			CycleWaitShiftRecno(nextUnit, blockedUnit);
 			nextUnit.SetNext(blockedUnit.CurX, blockedUnit.CurY, -stepMagn, 1);
-			nextUnit.set_move();
+			nextUnit.SetMove();
 			World.SetUnitId(blockedUnit.CurLocX, blockedUnit.CurLocY,
 				nextUnit.MobileType, nextUnit.SpriteId);
 			World.SetUnitId(nextUnit.CurLocX, nextUnit.CurLocY, nextUnit.MobileType, 0);
@@ -1552,7 +1552,7 @@ public partial class Unit
 		else // the cycle shift is ended
 		{
 			nextUnit.SetNext(CurX, CurY, -stepMagn, 1);
-			nextUnit.set_move();
+			nextUnit.SetMove();
 			World.SetUnitId(CurLocX, CurLocY, nextUnit.MobileType, nextUnit.SpriteId);
 			World.SetUnitId(nextUnit.CurLocX, nextUnit.CurLocY, nextUnit.MobileType, 0);
 
@@ -1583,7 +1583,7 @@ public partial class Unit
 			//------------- both attacks the same firm ------------//
 			Location loc = World.GetLoc(ActionLocX, ActionLocY);
 			if (!loc.IsFirm())
-				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since firm is deleted
+				Stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since firm is deleted
 			else
 			{
 				Firm firm = FirmArray[ActionParam];
@@ -1600,11 +1600,11 @@ public partial class Unit
 						attack_firm(firm.loc_x1, firm.loc_y1);
 				}
 				else // no surrounding place found, stop now
-					stop(UnitConstants.KEEP_PRESERVE_ACTION);
+					Stop(UnitConstants.KEEP_PRESERVE_ACTION);
 			}
 		}
 		else // let process_idle() handle it
-			stop();
+			Stop();
 	}
 
 	private void HandleBlockedAttackTown(Unit unit)
@@ -1615,7 +1615,7 @@ public partial class Unit
 			//---------------- both attacks the same town ----------------------//
 			Location loc = World.GetLoc(ActionLocX, ActionLocY);
 			if (!loc.IsTown())
-				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since town is deleted
+				Stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since town is deleted
 			else if (space_for_attack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
 				         InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 			{
@@ -1630,10 +1630,10 @@ public partial class Unit
 				}
 			}
 			else // no surrounding place found, stop now
-				stop(UnitConstants.KEEP_PRESERVE_ACTION);
+				Stop(UnitConstants.KEEP_PRESERVE_ACTION);
 		}
 		else
-			stop();
+			Stop();
 	}
 
 	private void HandleBlockedAttackWall(Unit unit)
@@ -1643,7 +1643,7 @@ public partial class Unit
 			//------------- both attacks the same wall ------------//
 			Location loc = World.GetLoc(ActionLocX, ActionLocY);
 			if (!loc.IsWall())
-				stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since wall is deleted
+				Stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since wall is deleted
 			else if (space_for_attack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1))
 			{
 				//------------ found surrounding place to attack the wall -------------//
@@ -1654,14 +1654,14 @@ public partial class Unit
 					attack_wall(ActionLocX, ActionLocY);
 			}
 			else // no surrounding place found, stop now
-				stop(UnitConstants.KEEP_PRESERVE_ACTION); // no space available, so stop to wait for space to attack the wall
+				Stop(UnitConstants.KEEP_PRESERVE_ACTION); // no space available, so stop to wait for space to attack the wall
 		}
 		else
 		{
 			if (ActionLocX == -1 || ActionLocY == -1)
-				stop();
+				Stop();
 			else
-				set_wait();
+				SetWait();
 		}
 	}
 
@@ -1689,10 +1689,10 @@ public partial class Unit
 			// will still attack the original target since it is the only target in the
 			// detect range
 			//------------------------------------------------------------------------//
-			stop2(UnitConstants.KEEP_DEFENSE_MODE);
+			Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 		}
 		else
-			set_wait(); // set wait to stop the movement
+			SetWait(); // set wait to stop the movement
 	}
 
 	private bool ShipToBeachPathEdit(ref int resultXLoc, ref int resultYLoc, int regionId)
@@ -1913,11 +1913,76 @@ public partial class Unit
 
 		//---------------- leave now --------------------//
 		SetDir(shipOldXLoc, shipOldYLoc, checkXLoc, checkYLoc);
-		set_ship_extra_move();
+		SetShipExtraMove();
 		GoX = checkXLoc * InternalConstants.CellWidth;
 		GoY = checkYLoc * InternalConstants.CellHeight;
 	}
-	
+
+	private void BurnPathEdit(int burnLocX, int burnLocY)
+	{
+		if (PathNodes.Count == 0)
+			return;
+
+		//--------------------------------------------------------//
+		// edit the result path such that the unit can reach the burning location surrounding
+		// there should be at least two nodes, and should take at least two steps to the destination
+		//--------------------------------------------------------//
+
+		int lastNode1 = PathNodes[^1]; // the last node
+		World.GetLocXAndLocY(lastNode1, out int lastNode1LocX, out int lastNode1LocY);
+		int lastNode2 = PathNodes[^2]; // the node before the last node
+		World.GetLocXAndLocY(lastNode2, out int lastNode2LocX, out int lastNode2LocY);
+
+		int vX = lastNode1LocX - lastNode2LocX; // get the vectors direction
+		int vY = lastNode1LocY - lastNode2LocY;
+		int vDirX = (vX != 0) ? vX / Math.Abs(vX) : 0;
+		int vDirY = (vY != 0) ? vY / Math.Abs(vY) : 0;
+
+		if (PathNodes.Count > 2) // go_? should not be the burning location 
+		{
+			if (Math.Abs(vX) > 1 || Math.Abs(vY) > 1)
+			{
+				lastNode1LocX -= vDirX;
+				lastNode1LocY -= vDirY;
+				PathNodes[^1] = World.GetMatrixIndex(lastNode1LocX, lastNode1LocY);
+
+				MoveToLocX = lastNode1LocX;
+				MoveToLocY = lastNode1LocY;
+			}
+			else // move only one step
+			{
+				//TODO check
+				PathNodes.RemoveAt(PathNodes.Count - 1); // remove a node
+				MoveToLocX = lastNode2LocX;
+				MoveToLocY = lastNode2LocY;
+			}
+		}
+		else // go_? may be the burning location
+		{
+			lastNode1LocX -= vDirX;
+			lastNode1LocY -= vDirY;
+			PathNodes[^1] = World.GetMatrixIndex(lastNode1LocX, lastNode1LocY);
+
+			if (GoX >> InternalConstants.CellWidthShift == burnLocX && GoY >> InternalConstants.CellHeightShift == burnLocY)
+			{
+				// go_? is the burning location
+				//--- edit parameters such that only moving to the nearby location to do the action ---//
+
+				GoX = lastNode1LocX * InternalConstants.CellWidth;
+				GoY = lastNode1LocY * InternalConstants.CellHeight;
+			}
+			//else the unit is still doing something else, no action here
+
+			MoveToLocX = lastNode1LocX;
+			MoveToLocY = lastNode1LocY;
+		}
+
+		//--------------------------------------------------------------//
+		// reduce the result_path_dist by 1
+		//--------------------------------------------------------------//
+		_pathNodeDistance--;
+	}
+
 	public void SelectSearchSubMode(int sx, int sy, int dx, int dy, int nationRecno, int searchMode)
 	{
 		if (!ConfigAdv.unit_allow_path_power_mode)
@@ -1963,7 +2028,7 @@ public partial class Unit
 		    HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
 		{
 			//TODO check, this code should be never executed
-			stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
+			Stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
 			return 1;
 		}
 
@@ -2000,7 +2065,7 @@ public partial class Unit
 
 	private int Searching(int destLocX, int destLocY, int preserveAction, int searchMode, int miscNo, int numOfPaths)
 	{
-		stop(preserveAction); // stop the unit as soon as possible
+		Stop(preserveAction); // stop the unit as soon as possible
 
 		int startLocX = NextLocX; // next location the sprite is moving towards
 		int startLocY = NextLocY;
@@ -2014,9 +2079,9 @@ public partial class Unit
 		if (startLocX == destLocX && startLocY == destLocY) // already here
 		{
 			if (CurX != NextX || CurY != NextY)
-				set_move();
+				SetMove();
 			else
-				set_idle();
+				SetIdle();
 
 			return 1;
 		}
@@ -2096,9 +2161,9 @@ public partial class Unit
 			MoveToLocY = startLocY;
 
 			if (CurX != NextX || CurY != NextY)
-				set_move();
+				SetMove();
 			else
-				set_idle();
+				SetIdle();
 		}
 
 		//-------------------------------------------------------//
@@ -2116,7 +2181,7 @@ public partial class Unit
 		Location loc = World.GetLoc(destX, destY);
 		if (!loc.CanMove(MobileType))
 		{
-			stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
+			Stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 			//waiting_term = MAX_SEARCH_OT_STOP_WAIT_TERM;
 		}
 		else
@@ -2201,7 +2266,7 @@ public partial class Unit
 		}
 
 		if (shouldWait == 1)
-			set_wait();
+			SetWait();
 	}
 	
 	protected void ResetPath()

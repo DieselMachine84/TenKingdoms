@@ -318,18 +318,16 @@ public class TownArray : DynArray<Town>
 		return false;
 	}
 
-	public bool Settle(int unitId, int xLoc, int yLoc)
+	public bool Settle(int unitId, int locX, int locY)
 	{
-		if (!World.CanBuildTown(xLoc, yLoc, unitId))
+		if (!World.CanBuildTown(locX, locY, unitId))
 			return false;
 
 		Unit unit = UnitArray[unitId];
 
-		int nationId = unit.NationId;
-
 		//----- it's far enough to form another town --------//
 
-		Town town = AddTown(nationId, unit.RaceId, xLoc, yLoc);
+		Town town = AddTown(unit.NationId, unit.RaceId, locX, locY);
 
 		//----------------------------------------------------//
 		// if the settle unit is standing in the town area

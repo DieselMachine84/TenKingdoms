@@ -282,7 +282,7 @@ public class Spy : IIdObject
 					bool decLoyaltyChance = (Misc.Random(10 - spy_skill / 10 + 1 + unit.Skill.skill_level / 20) == 0);
 					if (decLoyaltyChance && unit.Loyalty > 0)
 					{
-						unit.change_loyalty(-1);
+						unit.ChangeLoyalty(-1);
 					}
 				}
 			}
@@ -357,6 +357,7 @@ public class Spy : IIdObject
 		{
 			if (nation.food > 0)
 			{
+				// TODO check that spies consume food correctly
 				nation.consume_food(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
 			}
 			else
@@ -459,7 +460,7 @@ public class Spy : IIdObject
 
 		if (spy_place == SPY_MOBILE)
 		{
-			UnitArray[spy_place_para].spy_change_nation(newNationRecno, InternalConstants.COMMAND_AUTO);
+			UnitArray[spy_place_para].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
 			return;
 		}
 
@@ -469,7 +470,7 @@ public class Spy : IIdObject
 
 			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == spy_recno)
 			{
-				UnitArray[firm.overseer_recno].spy_change_nation(newNationRecno, InternalConstants.COMMAND_AUTO);
+				UnitArray[firm.overseer_recno].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
 				return;
 			}
 		}
@@ -487,7 +488,7 @@ public class Spy : IIdObject
 
 		if (spy_place == SPY_MOBILE)
 		{
-			return UnitArray[spy_place_para].can_spy_change_nation();
+			return UnitArray[spy_place_para].CanSpyChangeNation();
 		}
 		else // can't change in firms or towns.
 		{
@@ -569,7 +570,7 @@ public class Spy : IIdObject
 
 			//----- the spy change nation and capture the firm -------//
 
-			unit.spy_change_nation(true_nation_recno, InternalConstants.COMMAND_AUTO);
+			unit.SpyChangeNation(true_nation_recno, InternalConstants.COMMAND_AUTO);
 		}
 		else
 		{
@@ -701,7 +702,7 @@ public class Spy : IIdObject
 			return null;
 
 		unit.SpyId = spy_recno;
-		unit.set_name(name_id); // set the name id. of this unit
+		unit.SetName(name_id); // set the name id. of this unit
 
 		set_place(SPY_MOBILE, unit.SpriteId);
 
@@ -1389,12 +1390,12 @@ public class Spy : IIdObject
 
 		//--- if the spy is on the ship, nothing can be done ---//
 
-		if (!unit.is_visible())
+		if (!unit.IsVisible())
 			return false;
 
 		//---- if the spy has stopped and there is no new action ----//
 
-		if (unit.is_ai_all_stop() /* && (!notify_cloaked_nation_flag || cloaked_nation_recno==0) */)
+		if (unit.IsAIAllStop() /* && (!notify_cloaked_nation_flag || cloaked_nation_recno==0) */)
 		{
 			return think_mobile_spy_new_action();
 		}
@@ -1559,7 +1560,7 @@ public class Spy : IIdObject
 		int loc_x1;
 		int loc_y1;
 		int cloakedNationRecno;
-		int spyRegionId = spyUnit.region_id();
+		int spyRegionId = spyUnit.RegionId();
 
 		bool hasNewMission = trueNation.think_spy_new_mission(race_id, spyRegionId,
 			out loc_x1, out loc_y1, out cloakedNationRecno);
@@ -1588,7 +1589,7 @@ public class Spy : IIdObject
 
 		//----- if we are attacking our own units -----//
 
-		if (attackerUnit.true_nation_recno() == true_nation_recno)
+		if (attackerUnit.TrueNationId() == true_nation_recno)
 		{
 			if (spy_skill > 50 - trueNation.pref_spy / 10 ||
 			    spyUnit.HitPoints < spyUnit.MaxHitPoints * (100 - trueNation.pref_military_courage / 2) / 100)

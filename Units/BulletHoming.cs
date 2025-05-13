@@ -93,7 +93,7 @@ public class BulletHoming : Bullet
 			else
 			{
 				Unit unit = UnitArray[target_recno];
-				if (!unit.is_visible())
+				if (!unit.IsVisible())
 				{
 					// target lost/die, proceed to Bullet::process_move
 					target_type = BULLET_TARGET_NONE;

@@ -105,7 +105,7 @@ public class FirmBase : Firm
         //----- change the nation recno of the god invoked by the base if there is any ----//
 
         if (god_unit_recno != 0 && !UnitArray.IsDeleted(god_unit_recno))
-            UnitArray[god_unit_recno].change_nation(newNationRecno);
+            UnitArray[god_unit_recno].ChangeNation(newNationRecno);
 
         //-------- change the nation of this firm now ----------//
 

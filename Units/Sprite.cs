@@ -31,6 +31,29 @@ public class Sprite : IIdObject
 	public int RemainAttackDelay { get; set; } // no. of frames has to be delayed before the next attack motion
 	protected int RemainFramesPerStep { get; set; } // no. of frames remained in this step
 
+	
+	//------------------------------------------------//
+	//
+	// Prime rule:
+	//
+	// World.GetLoc(NextLocX and NextLocY).cargo_recno is always = SpriteId no matter what CurAction is.
+	//
+	//------------------------------------------------//
+	//
+	// Relationship between (NextX, NextY) and (CurX, CurY)
+	//
+	// when SPRITE_WAIT, SPRITE_IDLE, SPRITE_READY_TO_MOVE, SPRITE_ATTACK, SPRITE_DIE:
+	//
+	// (NextX, NextY) == (CurX, CurY), it's the location of the sprite.
+	//
+	// when SPRITE_MOVE:
+	//
+	// (NextX, NextY) != (CurX, CurY)
+	// (NextX, NextY) is where the sprite is moving towards.
+	// (CurX , CurY) is the location of the sprite.
+	//
+	//------------------------------------------------//
+
 	public int CurX { get; protected set; } // current location
 	public int CurY { get; protected set; }
 	public int NextX { get; protected set; } // next tile in the moving path

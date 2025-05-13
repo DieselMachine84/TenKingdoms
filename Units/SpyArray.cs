@@ -167,13 +167,13 @@ public class SpyArray : DynArray<Spy>
 
                 if (firmOverseerRecno != 0 && UnitArray[firmOverseerRecno].SpyId == spy.spy_recno)
                 {
-                    UnitArray[firmOverseerRecno].spy_change_nation(toNationRecno, InternalConstants.COMMAND_AUTO);
+                    UnitArray[firmOverseerRecno].SpyChangeNation(toNationRecno, InternalConstants.COMMAND_AUTO);
                     continue;
                 }
             }
             else if (spyPlace == Spy.SPY_MOBILE)
             {
-                UnitArray[spy.spy_place_para].spy_change_nation(toNationRecno, InternalConstants.COMMAND_AUTO);
+                UnitArray[spy.spy_place_para].SpyChangeNation(toNationRecno, InternalConstants.COMMAND_AUTO);
                 continue;
             }
 

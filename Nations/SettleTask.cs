@@ -149,7 +149,7 @@ public class SettleTask : AITask
 
             if (bestSettleLocX != -1 && bestSettleLocY != -1)
             {
-                settler.settle(bestSettleLocX, bestSettleLocY);
+                settler.Settle(bestSettleLocX, bestSettleLocY);
                 _settlerSent = true;
             }
             else
@@ -160,7 +160,7 @@ public class SettleTask : AITask
         else
         {
             //TODO check that settler is on the way, not stuck and is able to settle
-            if (settler.is_ai_all_stop())
+            if (settler.IsAIAllStop())
                 _settlerSent = false;
         }
     }

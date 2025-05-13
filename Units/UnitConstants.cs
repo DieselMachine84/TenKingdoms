@@ -136,6 +136,7 @@ public static class UnitConstants
     public const int UNIT_DEFEND_TOWN_DETECT_COUNT = 3 + InternalConstants.FRAMES_PER_DAY * UNIT_DEFEND_TOWN_STAY_OUTSIDE_COUNT;
     public const int UNIT_DEFEND_TOWN_WAITING_TERM = 4;
     public const int EFFECTIVE_DEFEND_TOWN_DISTANCE = 9;
+    public const int AUTO_GUARD_CHASE_ATTACK_DISTANCE = 5;
 
     public const int MONSTER_DEFEND_FIRM_DISTANCE = 8;
     public const int MONSTER_DEFEND_STAY_OUTSIDE_COUNT = 4; // 4 days

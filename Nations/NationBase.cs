@@ -944,7 +944,7 @@ public class NationBase : IIdObject
             {
                 unit.Loyalty = 0; // force it to betray
 
-                if (unit.think_betray())
+                if (unit.ThinkBetray())
                     continue;
             }
 
@@ -991,7 +991,7 @@ public class NationBase : IIdObject
 
             //--------- update loyalty change ----------//
 
-            unit.change_loyalty(loyaltyChange +
+            unit.ChangeLoyalty(loyaltyChange +
                                 succeed_king_loyalty_change(unit.RaceId, newKing.RaceId, race_id));
         }
 
@@ -1049,7 +1049,7 @@ public class NationBase : IIdObject
         {
             Spy spy = SpyArray[newKing.SpyId];
 
-            if (newKing.true_nation_recno() == nation_recno) // if this is your spy
+            if (newKing.TrueNationId() == nation_recno) // if this is your spy
                 spy.drop_spy_identity();
             else
                 spy.think_become_king();
@@ -1070,9 +1070,9 @@ public class NationBase : IIdObject
             kingUnit.Skill.skill_level = 0;
         }
 
-        kingUnit.set_rank(Unit.RANK_KING);
+        kingUnit.SetRank(Unit.RANK_KING);
         // clear the existing order, as there might be an assigning to firm/town order. But kings cannot be assigned to towns or firms as workers.
-        kingUnit.stop2();
+        kingUnit.Stop2();
 
         //---------- king related vars ----------//
 
@@ -1111,7 +1111,7 @@ public class NationBase : IIdObject
 
             if (GodRes.is_god_unit(unit.UnitType))
             {
-                unit.resign(InternalConstants.COMMAND_AUTO);
+                unit.Resign(InternalConstants.COMMAND_AUTO);
                 continue;
             }
 
@@ -1123,9 +1123,9 @@ public class NationBase : IIdObject
             //---------------------------------------------------//
 
             if (unit.SpyId != 0)
-                unit.spy_change_nation(handoverNationRecno, InternalConstants.COMMAND_AUTO);
+                unit.SpyChangeNation(handoverNationRecno, InternalConstants.COMMAND_AUTO);
             else
-                unit.change_nation(handoverNationRecno);
+                unit.ChangeNation(handoverNationRecno);
         }
 
         //------- hand over firms ---------//
@@ -1559,7 +1559,7 @@ public class NationBase : IIdObject
             //--------- update loyalty change ----------//
 
             if (raceId == 0 || unit.RaceId == raceId)
-                unit.change_loyalty((int)loyaltyChange);
+                unit.ChangeLoyalty((int)loyaltyChange);
         }
 
         //---- update loyalty of units in camps ----//
@@ -1675,7 +1675,7 @@ public class NationBase : IIdObject
 
         if (king_unit_recno != 0)
         {
-            UnitArray[king_unit_recno].set_rank(Unit.RANK_GENERAL);
+            UnitArray[king_unit_recno].SetRank(Unit.RANK_GENERAL);
             king_unit_recno = 0;
         }
 

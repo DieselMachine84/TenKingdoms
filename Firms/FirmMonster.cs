@@ -174,12 +174,12 @@ public class FirmMonster : Firm
 
 	public override void assign_unit(int unitRecno)
 	{
-		Unit unit = UnitArray[unitRecno];
+		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
 
 		switch (unit.Rank)
 		{
 			case Unit.RANK_KING:
-				set_king(unit.get_monster_id(), unit.Skill.combat_level);
+				set_king(unit.MonsterId, unit.Skill.combat_level);
 				break;
 
 			case Unit.RANK_GENERAL:
@@ -198,10 +198,10 @@ public class FirmMonster : Firm
 
 	public bool can_assign_monster(int unitRecno)
 	{
-		Unit unit = UnitArray[unitRecno];
+		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
 
 		// can assign if the build code are the same
-		return FirmRes.get_build(firm_build_id).build_code == MonsterRes[unit.get_monster_id()].firm_build_code;
+		return FirmRes.get_build(firm_build_id).build_code == MonsterRes[unit.MonsterId].firm_build_code;
 	}
 
 	public void set_king(int monsterId, int combatLevel)
@@ -220,12 +220,12 @@ public class FirmMonster : Firm
 		if (monsterGenerals.Count >= GameConstants.MAX_MONSTER_GENERAL_IN_FIRM)
 			return;
 
-		Unit unitPtr = UnitArray[generalUnitRecno];
+		UnitMonster unitPtr = (UnitMonster)UnitArray[generalUnitRecno];
 
 		MonsterInFirm monsterInFirm = new MonsterInFirm();
 
 		// contribution is used for storing the monster id. temporary
-		monsterInFirm.monster_id = unitPtr.get_monster_id();
+		monsterInFirm.monster_id = unitPtr.MonsterId;
 		monsterInFirm.set_combat_level(unitPtr.Skill.combat_level);
 		monsterInFirm.hit_points = (int)unitPtr.HitPoints;
 
@@ -233,7 +233,7 @@ public class FirmMonster : Firm
 			monsterInFirm.hit_points = 1;
 
 		// total_reward is used for storing the soldier monster id temporarily
-		monsterInFirm.soldier_monster_id = unitPtr.get_monster_soldier_id();
+		monsterInFirm.soldier_monster_id = unitPtr.MonsterSoldierId;
 		monsterInFirm.soldier_count = 0;
 
 		monsterInFirm.mobile_unit_recno = generalUnitRecno; // unit recno of this monster when it is a mobile unit
@@ -360,9 +360,9 @@ public class FirmMonster : Firm
 		if (generalUnitRecno == 0)
 			return 0;
 
-		Unit generalUnit = UnitArray[generalUnitRecno];
+		UnitMonster generalUnit = (UnitMonster)UnitArray[generalUnitRecno];
 		generalUnit.TeamId = UnitArray.cur_team_id;
-		generalUnit.set_monster_soldier_id(monsterInFirm.soldier_monster_id);
+		generalUnit.MonsterSoldierId = monsterInFirm.soldier_monster_id;
 
 		int mobilizedCount = 1;
 
@@ -590,7 +590,7 @@ public class FirmMonster : Firm
 			int unitRecno = patrolUnits[i];
 
 			bool isDeleted = UnitArray.IsDeleted(unitRecno);
-			bool isVisible = !isDeleted && UnitArray[unitRecno].is_visible();
+			bool isVisible = !isDeleted && UnitArray[unitRecno].IsVisible();
 
 			if (isDeleted || !isVisible)
 			{
@@ -640,9 +640,9 @@ public class FirmMonster : Firm
 
 		UnitMonster monster = (UnitMonster)unit;
 
-		monster.set_mode(UnitConstants.UNIT_MODE_MONSTER, firm_recno);
-		monster.set_combat_level(combatLevel);
-		monster.set_monster_id(monsterId);
+		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, firm_recno);
+		monster.SetCombatLevel(combatLevel);
+		monster.MonsterId = monsterId;
 		monster.set_monster_action_mode(current_monster_action_mode);
 
 		if (hitPoints != 0)
@@ -655,7 +655,7 @@ public class FirmMonster : Firm
 		//-----------------------------------------------------//
 		if (firm_recno != 0) // 0 when firm is ready to be deleted
 		{
-			monster.stop2();
+			monster.Stop2();
 			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
 			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
 

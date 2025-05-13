@@ -46,7 +46,7 @@ public class Bullet : Sprite
 
 		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 
-		attack_damage = parentUnit.actual_damage();
+		attack_damage = parentUnit.ActualDamage();
 		damage_radius = attackInfo.bullet_radius;
 		nation_recno = parentUnit.NationId;
 		fire_radius = attackInfo.fire_radius;
@@ -474,7 +474,7 @@ public class Bullet : Sprite
 							case SPRITE_IDLE:
 							case SPRITE_READY_TO_MOVE:
 								//case SPRITE_TURN:
-								if (unit.can_stand_guard() && !unit.IsGuarding())
+								if (unit.CanStandGuard && !unit.IsGuarding())
 								{
 									unit.SetDir((CurDir + 4) & 7); // opposite direction of arrow
 									unit.SetGuardOn();
@@ -482,7 +482,7 @@ public class Bullet : Sprite
 
 								break;
 							case SPRITE_MOVE:
-								if (unit.can_move_guard() && !unit.IsGuarding() &&
+								if (unit.CanMoveGuard && !unit.IsGuarding() &&
 								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 3) & 7)))
@@ -492,7 +492,7 @@ public class Bullet : Sprite
 
 								break;
 							case SPRITE_ATTACK:
-								if (unit.can_attack_guard() && !unit.IsGuarding() &&
+								if (unit.CanAttackGuard && !unit.IsGuarding() &&
 								    unit.RemainAttackDelay >= InternalConstants.GUARD_COUNT_MAX &&
 								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
 								     (unit.CurDir & 7) == ((CurDir + 5) & 7) ||

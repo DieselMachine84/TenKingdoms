@@ -59,7 +59,7 @@ public class RebelArray : DynArray<Rebel>
 
         rebel.mobile_rebel_count--;
 
-        unit.set_mode(0); // drop its rebel identity 
+        unit.SetMode(0); // drop its rebel identity 
 
         //----- if all rebels are dead and the rebel doesn't occupy a town, del the rebel group ----//
 

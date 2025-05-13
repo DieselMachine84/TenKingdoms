@@ -74,7 +74,7 @@ public class BuildCampTask : AITask
             return;
         
         if (general.Rank != Unit.RANK_GENERAL || general.Rank != Unit.RANK_KING)
-            general.set_rank(Unit.RANK_GENERAL);
+            general.SetRank(Unit.RANK_GENERAL);
 
         if (!_generalSent)
         {
@@ -136,7 +136,7 @@ public class BuildCampTask : AITask
 
             if (bestBuildLocX != -1 && bestBuildLocY != -1)
             {
-                general.build_firm(bestBuildLocX, bestBuildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
+                general.BuildFirm(bestBuildLocX, bestBuildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
                 _generalSent = true;
             }
             else
@@ -147,7 +147,7 @@ public class BuildCampTask : AITask
         else
         {
             //TODO check that general is on the way, not stuck and is able to build camp
-            if (general.is_ai_all_stop())
+            if (general.IsAIAllStop())
                 _generalSent = false;
         }
     }

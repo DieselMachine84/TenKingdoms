@@ -1348,14 +1348,14 @@ public class FirmMarket : Firm
 
 			if (stop1PickUpType != 0 && !unitCaravan.has_pick_up_type(stop1Id, stop1PickUpType))
 			{
-				if (unitCaravan.is_visible()) // can't set stop when the caravan is in a firm
+				if (unitCaravan.IsVisible()) // can't set stop when the caravan is in a firm
 					unitCaravan.set_stop_pick_up(stop1Id, stop1PickUpType, InternalConstants.COMMAND_AI);
 				rc = true;
 			}
 
 			if (stop2PickUpType != 0 && !unitCaravan.has_pick_up_type(stop2Id, stop2PickUpType))
 			{
-				if (unitCaravan.is_visible()) // can't set stop when the caravan is in a firm
+				if (unitCaravan.IsVisible()) // can't set stop when the caravan is in a firm
 					unitCaravan.set_stop_pick_up(stop2Id, stop2PickUpType, InternalConstants.COMMAND_AI);
 				rc = true;
 			}

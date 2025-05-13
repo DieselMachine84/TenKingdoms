@@ -394,7 +394,7 @@ public class NationArray : DynArray<Nation>
 			UnitInfo unitInfo = UnitRes[unit.UnitType];
 
 			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				addPoints += (unitInfo.weapon_power + unit.get_weapon_version() - 1) * 30;
+				addPoints += (unitInfo.weapon_power + unit.WeaponVersion - 1) * 30;
 
 			if (unit.LeaderId != 0 && !UnitArray.IsDeleted(unit.LeaderId))
 				addPoints += addPoints * UnitArray[unit.LeaderId].Skill.skill_level / 100;

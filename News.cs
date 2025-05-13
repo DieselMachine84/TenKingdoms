@@ -236,7 +236,7 @@ public class News
 
 					if (unit.NationId == NationArray.player_recno || Info.game_date < news_date.AddDays(30.0))
 					{
-						if (unit.get_cur_loc(out loc_x, out loc_y))
+						if (unit.GetNextLoc(out loc_x, out loc_y))
 						{
 							Location location = World.GetLoc(loc_x, loc_y);
 

@@ -386,10 +386,10 @@ public partial class Renderer
 
         foreach (Unit unit in UnitArray)
         {
-            if (!unit.is_visible() || !unit.SelectedFlag)
+            if (!unit.IsVisible() || !unit.SelectedFlag)
                 continue;
 
-            if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.is_nation(NationArray.player_recno))
+            if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
                 continue;
             
             //TODO draw paths of air units on top of land units

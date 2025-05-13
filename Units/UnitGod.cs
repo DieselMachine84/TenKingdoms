@@ -14,8 +14,9 @@ public class UnitGod : Unit
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
 	private TornadoArray TornadoArray => Sys.Instance.TornadoArray;
 
-	public override void init_derived()
+	public override void Init(int unitType, int nationId, int rank, int unitLoyalty, int startLocX, int startLocY)
 	{
+		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
 		cast_power_type = 0;
 		if (UnitType == UnitConstants.UNIT_PERSIAN_HEALER || UnitType == UnitConstants.UNIT_VIKING_GOD ||
 		    UnitType == UnitConstants.UNIT_KUKULCAN || UnitType == UnitConstants.UNIT_JAPANESE_GOD)
@@ -40,7 +41,7 @@ public class UnitGod : Unit
 		if (FirmArray.IsDeleted(base_firm_recno))
 		{
 			HitPoints = 0;
-			set_die();
+			SetDie();
 			return;
 		}
 
@@ -58,7 +59,7 @@ public class UnitGod : Unit
 		HitPoints = (int)firmBase.pray_points;
 
 		if (HitPoints == 0)
-			set_die();
+			SetDie();
 	}
 
 	public override int ProcessAttack()
@@ -339,7 +340,7 @@ public class UnitGod : Unit
 
 			changePoints = Math.Max(changePoints, 10);
 
-			unit.change_hit_points(changePoints / divider);
+			unit.ChangeHitPoints(changePoints / divider);
 		}
 	}
 
@@ -353,7 +354,7 @@ public class UnitGod : Unit
 		{
 			int changePoints = 7 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
-			unit.change_loyalty(-Math.Max(1, changePoints / divider));
+			unit.ChangeLoyalty(-Math.Max(1, changePoints / divider));
 		}
 	}
 
@@ -374,7 +375,7 @@ public class UnitGod : Unit
 
 			double oldHitPoints = unit.HitPoints;
 
-			unit.set_combat_level(newCombatLevel);
+			unit.SetCombatLevel(newCombatLevel);
 
 			unit.HitPoints = oldHitPoints; // keep the hit points unchanged.
 		}
@@ -389,9 +390,9 @@ public class UnitGod : Unit
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.is_visible() && NationArray.should_attack(NationId, unit.NationId))
+		if (unit.IsVisible() && NationArray.should_attack(NationId, unit.NationId))
 		{
-			unit.change_loyalty(-30 + Misc.Random(11));
+			unit.ChangeLoyalty(-30 + Misc.Random(11));
 		}
 	}
 
@@ -481,9 +482,9 @@ public class UnitGod : Unit
 
 	//--------- AI functions ----------//
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
-		if (!is_ai_all_stop())
+		if (!IsAIAllStop())
 			return;
 
 		if (Info.TotalDays % 7 != SpriteId % 7)
@@ -583,7 +584,7 @@ public class UnitGod : Unit
 
 		if (bestRating != 0)
 		{
-			go_cast_power(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -601,7 +602,7 @@ public class UnitGod : Unit
 
 		if (think_god_attack_target(out targetXLoc, out targetYLoc))
 		{
-			go_cast_power(targetXLoc + 1, targetYLoc + 1, 2, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc + 1, targetYLoc + 1, 2, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -653,7 +654,7 @@ public class UnitGod : Unit
 
 		if (bestRating != 0)
 		{
-			go_cast_power(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -728,7 +729,7 @@ public class UnitGod : Unit
 
 		if (bestRating != 0)
 		{
-			go_cast_power(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -771,7 +772,7 @@ public class UnitGod : Unit
 
 		if (bestRating != 0)
 		{
-			go_cast_power(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -844,7 +845,7 @@ public class UnitGod : Unit
 		if (curRating > 1)
 		{
 			// if enemy unit come near, cast
-			go_cast_power(NextLocX, NextLocY, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(NextLocX, NextLocY, 1, InternalConstants.COMMAND_AI);
 		}
 		else
 		{
@@ -853,7 +854,7 @@ public class UnitGod : Unit
 			foreach (Unit unit in UnitArray)
 			{
 				// don't affect independent unit
-				if (unit.is_visible() && unit.MobileType == UnitConstants.UNIT_LAND &&
+				if (unit.IsVisible() && unit.MobileType == UnitConstants.UNIT_LAND &&
 				    unit.NationId != 0 && unit.NationId != NationId &&
 				    (unit.Loyalty >= 20 && unit.Loyalty <= 60 || unit.Loyalty <= 80 && unit.TargetLoyalty < 30) &&
 				    ownNation.get_relation(unit.NationId).status == NationBase.NATION_HOSTILE)
@@ -871,7 +872,7 @@ public class UnitGod : Unit
 			if (bestUnitCost < 100)
 			{
 				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[god_id].cast_power_range)
-					go_cast_power(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
+					GoCastPower(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
 					MoveTo(xLoc, yLoc);
 			}
@@ -944,7 +945,7 @@ public class UnitGod : Unit
 
 		if (bestRating != 0)
 		{
-			go_cast_power(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc, targetYLoc, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 

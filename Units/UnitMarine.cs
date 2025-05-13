@@ -73,19 +73,20 @@ public class UnitMarine : Unit
 		auto_mode = 1; // there should be no button to toggle it if the ship is only for trading
 	}
 
-	public override void init(int unitId, int nationRecno, int rankId, int unitLoyalty, int startX = -1, int startY = -1)
+	public override void Init(int unitType, int nationId, int rank, int unitLoyalty, int startLocX, int startLocY)
 	{
 		attack_mode_selected = 0; // for fix_attack_info() to set attack_info_array
 
-		base.init(unitId, nationRecno, rankId, unitLoyalty, startX, startY);
+		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
 		
 		extra_move_in_beach = NO_EXTRA_MOVE;
+		last_load_goods_date = Info.game_date;
 
 		int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
 		//splash.init(spriteId, cur_x_loc(), cur_y_loc());
 		//splash.cur_frame = 1;
 
-		UnitInfo unitInfo = UnitRes[unitId];
+		UnitInfo unitInfo = UnitRes[unitType];
 		carry_goods_capacity = unitInfo.carry_goods_capacity;
 		if (unitInfo.carry_unit_capacity == 0 && unitInfo.carry_goods_capacity > 0) // if this ship only carries goods
 			menu_mode = SHIP_MENU_GOODS;
@@ -102,11 +103,6 @@ public class UnitMarine : Unit
 		}
 
 		base.Deinit();
-	}
-
-	public override void init_derived()
-	{
-		last_load_goods_date = Info.game_date;
 	}
 
 	public void update_stop_list()
@@ -375,7 +371,7 @@ public class UnitMarine : Unit
 				if (curXLoc < firm.loc_x1 - moveStep || curXLoc > firm.loc_x2 + moveStep || curYLoc < firm.loc_y1 - moveStep ||
 				    curYLoc > firm.loc_y2 + moveStep)
 				{
-					if (!is_visible())
+					if (!IsVisible())
 						return; // may get here if player manually ordered ship to dock
 					//### begin alex 6/10 ###//
 					/*if((move_to_x_loc>=firm.loc_x1-moveStep || move_to_x_loc<=firm.loc_x2+moveStep) &&
@@ -542,7 +538,7 @@ public class UnitMarine : Unit
 
 		//TODO change %2 == 0
 		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(MobileType))
-			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
+			InitSprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
 			//---- the entering location is blocked, select another location to leave ----//
@@ -550,8 +546,8 @@ public class UnitMarine : Unit
 
 			if (appear_in_firm_surround(ref xLoc, ref yLoc, firm))
 			{
-				init_sprite(xLoc, yLoc);
-				stop();
+				InitSprite(xLoc, yLoc);
+				Stop();
 			}
 			else
 			{
@@ -657,7 +653,7 @@ public class UnitMarine : Unit
 			wait_count = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
 
 			ResetPath();
-			deinit_sprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
+			DeinitSprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
 
 			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
 
@@ -1396,7 +1392,7 @@ public class UnitMarine : Unit
 		//abs_y2 -= h;
 	}
 
-	public override double actual_damage()
+	public override double ActualDamage()
 	{
 		//-----------------------------------------//
 		// If there is units on the ship, the units leadership will increase the attacking damage.
@@ -1415,7 +1411,7 @@ public class UnitMarine : Unit
 			}
 		}
 
-		return base.actual_damage() * (100 + highestLeadership) / 100.0;
+		return base.ActualDamage() * (100 + highestLeadership) / 100.0;
 	}
 
 	public int wave_height(int phase = 0)
@@ -1444,7 +1440,7 @@ public class UnitMarine : Unit
 
 		UnitsOnBoard.Add(unitRecno);
 
-		unit.set_mode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
+		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
 
 		if (unit.SelectedFlag)
 		{
@@ -1452,7 +1448,7 @@ public class UnitMarine : Unit
 			UnitArray.selected_count--;
 		}
 
-		unit.deinit_sprite();
+		unit.DeinitSprite();
 
 		//--- if this marine unit is currently selected ---//
 
@@ -1540,8 +1536,8 @@ public class UnitMarine : Unit
 				{
 					regionId = loc.RegionId;
 
-					unit.init_sprite(checkXLoc, checkYLoc);
-					unit.set_mode(0);
+					unit.InitSprite(checkXLoc, checkYLoc);
+					unit.SetMode(0);
 
 					if (isAll && NationId ==
 					    NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
@@ -1894,7 +1890,7 @@ public class UnitMarine : Unit
 			}
 		}
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
-			stop2();
+			Stop2();
 
 		//-------------------------------------------------------//
 		// refresh stop info area
@@ -1931,7 +1927,7 @@ public class UnitMarine : Unit
 		}
 	}
 
-	public override bool is_ai_all_stop()
+	public override bool IsAIAllStop()
 	{
 		if (CurAction != SPRITE_IDLE || AIActionId != 0)
 			return false;
@@ -1947,7 +1943,7 @@ public class UnitMarine : Unit
 		return ActionMode == UnitConstants.ACTION_STOP && ActionMode2 == UnitConstants.ACTION_STOP;
 	}
 
-	public override bool can_resign()
+	public override bool CanResign()
 	{
 		return UnitsOnBoard.Count == 0;
 	}
@@ -2036,7 +2032,7 @@ public class UnitMarine : Unit
 
 	//------- ai functions --------//
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
 		//-- Think about removing stops whose owner nation is at war with us. --//
 
@@ -2049,7 +2045,7 @@ public class UnitMarine : Unit
 
 		if (Info.TotalDays % 15 == SpriteId % 15)
 		{
-			if (stop_defined_num < 2 && is_visible() && is_ai_all_stop())
+			if (stop_defined_num < 2 && IsVisible() && IsAIAllStop())
 				ai_sail_to_nearby_harbor();
 		}
 
@@ -2063,7 +2059,7 @@ public class UnitMarine : Unit
 	{
 		//---- only resign when the ship has stopped ----//
 
-		if (!is_ai_all_stop())
+		if (!IsAIAllStop())
 			return false;
 
 		//--- retire this ship if we have better ship technology available ---//
@@ -2075,7 +2071,7 @@ public class UnitMarine : Unit
 			{
 				if (!NationArray[NationId].ai_is_sea_travel_safe())
 				{
-					resign(InternalConstants.COMMAND_AI);
+					Resign(InternalConstants.COMMAND_AI);
 					return true;
 				}
 			}
@@ -2086,7 +2082,7 @@ public class UnitMarine : Unit
 
 	public void think_del_stop()
 	{
-		if (!is_visible()) // cannot del stop if the caravan is inside a market place.
+		if (!IsVisible()) // cannot del stop if the caravan is inside a market place.
 			return;
 
 		Nation nation = NationArray[NationId];
@@ -2116,7 +2112,7 @@ public class UnitMarine : Unit
 		FirmHarbor bestHarbor = null;
 		int bestRating = 0;
 		int curXLoc = CurLocX, curYLoc = CurLocY;
-		int curRegionId = region_id();
+		int curRegionId = RegionId();
 
 		for (int i = 0; i < ownNation.ai_harbor_array.Count; i++)
 		{
@@ -2137,7 +2133,7 @@ public class UnitMarine : Unit
 		}
 
 		if (bestHarbor != null)
-			assign(bestHarbor.loc_x1, bestHarbor.loc_y1);
+			Assign(bestHarbor.loc_x1, bestHarbor.loc_y1);
 	}
 
 	public void ai_ship_being_attacked(int attackerUnitRecno)
@@ -2188,7 +2184,7 @@ public class UnitMarine : Unit
 
 		foreach (var unitId in UnitsOnBoard)
 		{
-			if (UnitArray[unitId].is_own())
+			if (UnitArray[unitId].IsOwn())
 				return true;
 		}
 

@@ -107,12 +107,12 @@ public partial class Renderer
             if (overseer.Rank == Unit.RANK_KING)
             {
                 PutText(FontSan, "King", DetailsX1 + 111, DetailsY1 + 96);
-                PutText(FontSan, overseer.unit_name(0), DetailsX1 + 111, DetailsY1 + 126);
+                PutText(FontSan, overseer.GetUnitName(false), DetailsX1 + 111, DetailsY1 + 126);
                 PutText(FontSan, "Leadership: " + overseer.Skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 156);
             }
             else
             {
-                PutText(FontSan, overseer.unit_name(0), DetailsX1 + 111, DetailsY1 + 96);
+                PutText(FontSan, overseer.GetUnitName(false), DetailsX1 + 111, DetailsY1 + 96);
                 PutText(FontSan, "Leadership: " + overseer.Skill.get_skill(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 126);
                 PutText(FontSan, "Loyalty: " + overseer.Loyalty + " " + overseer.TargetLoyalty, DetailsX1 + 111, DetailsY1 + 156);
                 // TODO loyalty arrow

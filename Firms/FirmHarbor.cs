@@ -109,11 +109,11 @@ public class FirmHarbor : Firm
 
 		add_hosted_ship(unitRecno);
 
-		UnitArray[unitRecno].deinit_sprite();
+		UnitArray[unitRecno].DeinitSprite();
 
 		UnitMarine unit = (UnitMarine)UnitArray[unitRecno];
 		unit.extra_move_in_beach = UnitMarine.NO_EXTRA_MOVE;
-		unit.deinit_sprite();
+		unit.DeinitSprite();
 
 		//------------------------------------------------//
 
@@ -206,7 +206,7 @@ public class FirmHarbor : Firm
 			return;
 		}
 
-		unit.init_sprite(xLoc, yLoc);
+		unit.InitSprite(xLoc, yLoc);
 
 		del_hosted_ship(ship_recno_array[browseRecno - 1]);
 
@@ -227,7 +227,7 @@ public class FirmHarbor : Firm
 	{
 		//---- reset the unit_mode of the ship ----//
 
-		UnitArray[delUnitRecno].set_mode(0);
+		UnitArray[delUnitRecno].SetMode(0);
 
 		//-----------------------------------------//
 
@@ -575,7 +575,7 @@ public class FirmHarbor : Firm
 
 		//---- set the unit_mode of the ship ----//
 
-		UnitArray[shipRecno].set_mode(UnitConstants.UNIT_MODE_IN_HARBOR, firm_recno);
+		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, firm_recno);
 
 		//---------------------------------------//
 

@@ -44,8 +44,9 @@ public class UnitCaravan : Unit
 		Loyalty = 100;
 	}
 
-	public override void init_derived()
+	public override void Init(int unitType, int nationId, int rank, int unitLoyalty, int startLocX, int startLocY)
 	{
+		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
 		last_load_goods_date = Info.game_date;
 	}
 
@@ -199,7 +200,7 @@ public class UnitCaravan : Unit
 			}
 		}
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
-			stop2();
+			Stop2();
 
 		if (UnitArray.selected_recno == SpriteId)
 		{
@@ -548,7 +549,7 @@ public class UnitCaravan : Unit
 		Firm firm;
 
 		if (loc.CanMove(MobileType))
-			init_sprite(xLoc, yLoc); // appear in the location the unit disappeared before
+			InitSprite(xLoc, yLoc); // appear in the location the unit disappeared before
 		else
 		{
 			//---- the entering location is blocked, select another location to leave ----//
@@ -556,8 +557,8 @@ public class UnitCaravan : Unit
 
 			if (appear_in_firm_surround(ref xLoc, ref yLoc, firm))
 			{
-				init_sprite(xLoc, yLoc);
-				stop();
+				InitSprite(xLoc, yLoc);
+				Stop();
 			}
 			else
 			{
@@ -682,7 +683,7 @@ public class UnitCaravan : Unit
 			wait_count = GameConstants.MAX_CARAVAN_WAIT_TERM; // set waiting term
 
 			ResetPath();
-			deinit_sprite(true); // the caravan enters the market now. 1-keep it selected if it is currently selected
+			DeinitSprite(true); // the caravan enters the market now. 1-keep it selected if it is currently selected
 
 			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
 
@@ -715,7 +716,7 @@ public class UnitCaravan : Unit
 		if (HitPoints <= 0)
 		{
 			if (ActionMode != UnitConstants.ACTION_DIE)
-				set_die();
+				SetDie();
 
 			return;
 		}
@@ -735,7 +736,7 @@ public class UnitCaravan : Unit
 		if (stop_defined_num == 0)
 		{
 			if (journey_status != InternalConstants.NO_STOP_DEFINED)
-				stop(); // stop if no valid stop is defined
+				Stop(); // stop if no valid stop is defined
 
 			journey_status = InternalConstants.NO_STOP_DEFINED;
 			return;
@@ -878,7 +879,7 @@ public class UnitCaravan : Unit
 
 	//------- ai functions --------//
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
 		//-- Think about removing stops whose owner nation is at war with us. --//
 
@@ -899,14 +900,14 @@ public class UnitCaravan : Unit
 
 	public int think_resign()
 	{
-		if (!is_visible()) // can only resign when the caravan is not in a stop
+		if (!IsVisible()) // can only resign when the caravan is not in a stop
 			return 0;
 
 		//---- resign this caravan if it has only one stop ----//
 
 		if (stop_defined_num < 2)
 		{
-			resign(InternalConstants.COMMAND_AI);
+			Resign(InternalConstants.COMMAND_AI);
 			return 1;
 		}
 
@@ -925,7 +926,7 @@ public class UnitCaravan : Unit
 
 			//------ resign now --------//
 
-			resign(InternalConstants.COMMAND_AI);
+			Resign(InternalConstants.COMMAND_AI);
 			return 1;
 		}
 
@@ -959,7 +960,7 @@ public class UnitCaravan : Unit
 
 			//--- resign now if none of the linked markets have any direct supplies ---//
 
-			resign(InternalConstants.COMMAND_AI);
+			Resign(InternalConstants.COMMAND_AI);
 			return 1;
 		}
 
@@ -968,7 +969,7 @@ public class UnitCaravan : Unit
 
 	public bool think_del_stop()
 	{
-		if (!is_visible()) // cannot del stop if the caravan is inside a market place.
+		if (!IsVisible()) // cannot del stop if the caravan is inside a market place.
 			return false;
 
 		Firm firm;
@@ -1045,7 +1046,7 @@ public class UnitCaravan : Unit
 
 	public void think_set_pick_up_type()
 	{
-		if (!is_visible()) // cannot change pickup type if the caravan is inside a market place.
+		if (!IsVisible()) // cannot change pickup type if the caravan is inside a market place.
 			return;
 
 		if (stop_defined_num < 2)

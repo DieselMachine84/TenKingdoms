@@ -386,7 +386,7 @@ public class Nation : NationBase
 
 		//------- build the firm now ---------//
 
-		skilledUnit.build_firm(actionNode.action_x_loc, actionNode.action_y_loc, firmId, InternalConstants.COMMAND_AI);
+		skilledUnit.BuildFirm(actionNode.action_x_loc, actionNode.action_y_loc, firmId, InternalConstants.COMMAND_AI);
 
 		if (skilledUnit.ActionLocX == actionNode.action_x_loc && skilledUnit.ActionLocY == actionNode.action_y_loc)
 		{
@@ -397,7 +397,7 @@ public class Nation : NationBase
 		}
 		else
 		{
-			skilledUnit.stop2();
+			skilledUnit.Stop2();
 			return 0;
 		}
 	}
@@ -442,9 +442,9 @@ public class Nation : NationBase
 		//---------------------------------------------------------------------------//
 
 		if (skilledUnit.Rank == Unit.RANK_SOLDIER)
-			skilledUnit.set_rank(Unit.RANK_GENERAL);
+			skilledUnit.SetRank(Unit.RANK_GENERAL);
 
-		skilledUnit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
+		skilledUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		skilledUnit.AIActionId = actionNode.action_id;
 
 		actionNode.unit_recno = skilledUnit.SpriteId;
@@ -480,7 +480,7 @@ public class Nation : NationBase
 
 		//------------------------------------------------------------------//
 
-		skilledUnit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
+		skilledUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		skilledUnit.AIActionId = actionNode.action_id;
 
 		actionNode.unit_recno = skilledUnit.SpriteId;
@@ -579,7 +579,7 @@ public class Nation : NationBase
 		if (!World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc).IsFirm()) // firm exists, so assign
 			return -1;
 
-		unit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
+		unit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		unit.AIActionId = actionNode.action_id;
 
 		return 1;
@@ -704,7 +704,7 @@ public class Nation : NationBase
 
 		Unit unit = UnitArray[unitRecno];
 
-		unit.assign(actionNode.action_x_loc, actionNode.action_y_loc); // assign to the town
+		unit.Assign(actionNode.action_x_loc, actionNode.action_y_loc); // assign to the town
 		unit.AIActionId = actionNode.action_id;
 
 		return 1;
@@ -717,10 +717,10 @@ public class Nation : NationBase
 
 		Unit spyUnit = UnitArray[actionNode.unit_recno];
 
-		if (!spyUnit.is_visible()) // it's still under training, not available yet
+		if (!spyUnit.IsVisible()) // it's still under training, not available yet
 			return -1;
 
-		if (spyUnit.SpyId == 0 || spyUnit.true_nation_recno() != nation_recno)
+		if (spyUnit.SpyId == 0 || spyUnit.TrueNationId() != nation_recno)
 			return -1;
 
 		Spy spy = SpyArray[spyUnit.SpyId];
@@ -752,14 +752,14 @@ public class Nation : NationBase
 			if (location.IsTown())
 			{
 				Town targetTown = TownArray[location.TownId()];
-				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.true_nation_recno())
+				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.TrueNationId())
 				{
 					spy.notify_cloaked_nation_flag = 1;
 				}
 			}
 		}
 
-		if (!spyUnit.can_spy_change_nation()) // if the spy can't change nation recno now
+		if (!spyUnit.CanSpyChangeNation()) // if the spy can't change nation recno now
 		{
 			int destXLoc = spyUnit.NextLocX + Misc.Random(20) - 10;
 			int destYLoc = spyUnit.NextLocY + Misc.Random(20) - 10;
@@ -776,14 +776,14 @@ public class Nation : NationBase
 			return 0; // return now and try again later
 		}
 
-		spyUnit.spy_change_nation(actionNode.action_para, InternalConstants.COMMAND_AI);
+		spyUnit.SpyChangeNation(actionNode.action_para, InternalConstants.COMMAND_AI);
 
 		//------- assign the spy to the target -------//
 
 		if (spy.notify_cloaked_nation_flag == 0)
-			spyUnit.assign(actionNode.action_x_loc, actionNode.action_y_loc);
+			spyUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		else
-			spyUnit.ai_move_to_nearby_town();
+			spyUnit.AIMoveToNearbyTown();
 
 		//----------------------------------------------------------------//
 		// Since the spy has already changed its cloaked nation recno
@@ -2011,7 +2011,7 @@ public class Nation : NationBase
 			//-- this may happen when the unit is a spy and has just changed cloak --//
 			Unit unit = UnitArray[unitRecno];
 
-			if (!NationArray[unit.true_nation_recno()].is_ai() && !NationArray[unit.NationId].is_ai())
+			if (!NationArray[unit.TrueNationId()].is_ai() && !NationArray[unit.NationId].is_ai())
 			{
 				return null;
 			}
@@ -2020,7 +2020,7 @@ public class Nation : NationBase
 
 			actionNode.unit_recno = unitRecno;
 
-			if (unit.is_visible())
+			if (unit.IsVisible())
 			{
 				// have to execute this command immediately as the unit in unit_array[] may change
 				immediateProcess = true;
@@ -2434,8 +2434,8 @@ public class Nation : NationBase
 
 		//--------------------------------------------------//
 
-		unit.stop2();
-		unit.reset_action_misc_para();
+		unit.Stop2();
+		unit.ResetActionMiscParameters();
 	}
 
 	// check whether firm exists and belongs to our nation
@@ -2537,7 +2537,7 @@ public class Nation : NationBase
 
 		//------ if the unit is still in training -----//
 
-		if (!skilledUnit.is_visible())
+		if (!skilledUnit.IsVisible())
 		{
 			// continue processing this action after this date, this is used when training a unit for construction
 			actionNode.next_retry_date = Info.game_date.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
@@ -2570,14 +2570,14 @@ public class Nation : NationBase
 			if (unit.HomeCampId != 0)
 				continue;
 
-			if (unit.region_id() != destRegionId)
+			if (unit.RegionId() != destRegionId)
 				continue;
 
 			//----- if this is a mobile unit ------//
 
-			if (unit.is_visible())
+			if (unit.IsVisible())
 			{
-				if (!unit.is_ai_all_stop())
+				if (!unit.IsAIAllStop())
 					continue;
 
 				if (unit.Skill.skill_id == skillId && unit.CurAction != Sprite.SPRITE_ATTACK && unit.AIActionId == 0)
@@ -3043,7 +3043,7 @@ public class Nation : NationBase
 			if (unit.NationId != nation_recno || unit.RaceId == 0)
 				continue;
 
-			if (!unit.is_visible() && unit.UnitMode != UnitConstants.UNIT_MODE_OVERSEE)
+			if (!unit.IsVisible() && unit.UnitMode != UnitConstants.UNIT_MODE_OVERSEE)
 				continue;
 
 			int curRating = 0;
@@ -3109,17 +3109,17 @@ public class Nation : NationBase
 		{
 			//-- if the unit is in a command base or seat of power, mobilize it --//
 
-			if (!bestUnit.is_visible())
+			if (!bestUnit.IsVisible())
 			{
 				FirmArray[bestUnit.UnitModeParam].mobilize_overseer();
 			}
 
 			//---------- succeed the king -------------//
 
-			if (bestUnit.is_visible()) // it may still be not visible if there is no space for the unit to be mobilized
+			if (bestUnit.IsVisible()) // it may still be not visible if there is no space for the unit to be mobilized
 			{
 				// if this is a spy and he's our spy
-				if (bestUnit.SpyId != 0 && bestUnit.true_nation_recno() == nation_recno)
+				if (bestUnit.SpyId != 0 && bestUnit.TrueNationId() == nation_recno)
 					SpyArray[bestUnit.SpyId].drop_spy_identity(); // revert the spy to a normal unit
 
 				succeed_king(bestUnit);
@@ -3858,7 +3858,7 @@ public class Nation : NationBase
 				continue;
 
 			Unit unit = UnitArray[units[i]];
-			totalCombatLevel += unit.unit_power();
+			totalCombatLevel += unit.UnitPower();
 		}
 
 		// if targetRecno == nation_recno units and ourUnits are the same, so we already counted them
@@ -3873,7 +3873,7 @@ public class Nation : NationBase
 				// only units that are currently attacking or idle are counted, moving units may just be passing by
 				if (unit.CurAction == Sprite.SPRITE_ATTACK || unit.CurAction == Sprite.SPRITE_IDLE)
 				{
-					totalCombatLevel -= unit.unit_power();
+					totalCombatLevel -= unit.UnitPower();
 				}
 			}
 		}
@@ -3893,7 +3893,7 @@ public class Nation : NationBase
 			if (unitMarine.AttackCount == 0)
 				continue;
 
-			if (!unitMarine.is_ai_all_stop())
+			if (!unitMarine.IsAIAllStop())
 				continue;
 
 			//----- if the ship is in the harbor now -----//
@@ -3908,10 +3908,10 @@ public class Nation : NationBase
 				firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 			}
 
-			if (!unitMarine.is_visible()) // no space in the sea for placing the ship
+			if (!unitMarine.IsVisible()) // no space in the sea for placing the ship
 				continue;
 
-			if (unitMarine.region_id() != targetRegionId)
+			if (unitMarine.RegionId() != targetRegionId)
 				continue;
 
 			//------ order the ship to attack the target ------//
@@ -3948,16 +3948,16 @@ public class Nation : NationBase
 
 				//----- if this is our spy cloaked in another nation, reveal its true identity -----//
 
-				if (unit.NationId != nation_recno && unit.true_nation_recno() == nation_recno)
+				if (unit.NationId != nation_recno && unit.TrueNationId() == nation_recno)
 				{
-					unit.spy_change_nation(nation_recno, InternalConstants.COMMAND_AI);
+					unit.SpyChangeNation(nation_recno, InternalConstants.COMMAND_AI);
 				}
 
 				//--- if this is our own unit, order him to stay out of the building site ---//
 
 				if (unit.NationId == nation_recno)
 				{
-					unit.think_normal_human_action(); // send the unit to a firm or a town
+					unit.ThinkNormalHumanAction(); // send the unit to a firm or a town
 				}
 				else //--- if it is an enemy unit, attack it ------//
 				{
@@ -3968,7 +3968,7 @@ public class Nation : NationBase
 						enemyXLoc = xLoc;
 						enemyYLoc = yLoc;
 						enemyStatus = nationStatus;
-						enemyCombatLevel += unit.unit_power();
+						enemyCombatLevel += unit.UnitPower();
 					}
 				}
 			}
@@ -4913,7 +4913,7 @@ public class Nation : NationBase
 
 			//--- if this unit is idle and the region ids are matched ---//
 
-			if (unit.ActionMode != UnitConstants.ACTION_STOP || unit.region_id() != targetTown.RegionId)
+			if (unit.ActionMode != UnitConstants.ACTION_STOP || unit.RegionId() != targetTown.RegionId)
 			{
 				continue;
 			}
@@ -4921,7 +4921,7 @@ public class Nation : NationBase
 			//------- get the unit's influence index --------//
 
 			// influence of this unit if he is assigned as a commander of a military camp
-			int targetResistance = 100 - unit.CampInfluence();
+			int targetResistance = 100 - unit.LeaderInfluence();
 
 			//-- see if this unit's rating is higher than the current best --//
 
@@ -4961,7 +4961,7 @@ public class Nation : NationBase
 					bestTargetResistance = targetResistance;
 					int unitRecno = firmCamp.mobilize_worker(j + 1, InternalConstants.COMMAND_AI);
 					Unit unit = UnitArray[unitRecno];
-					unit.set_rank(Unit.RANK_GENERAL);
+					unit.SetRank(Unit.RANK_GENERAL);
 					return unitRecno;
 				}
 			}
@@ -5034,7 +5034,7 @@ public class Nation : NationBase
 			if (unitRecno == 0)
 				return 0;
 
-			UnitArray[unitRecno].set_rank(Unit.RANK_GENERAL);
+			UnitArray[unitRecno].SetRank(Unit.RANK_GENERAL);
 		}
 
 		return unitRecno;
@@ -6194,7 +6194,7 @@ public class Nation : NationBase
 			firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 		}
 
-		if (!unitMarine.is_visible()) // no space in the sea for placing the ship 
+		if (!unitMarine.IsVisible()) // no space in the sea for placing the ship 
 			return -1;
 
 		//------ 2. Assign the units to the ship -------//
@@ -6231,7 +6231,7 @@ public class Nation : NationBase
 
 		//--------------------------------------------------------//
 
-		unitMarine.ship_to_beach(actionNode.action_x_loc, actionNode.action_y_loc, out _, out _);
+		unitMarine.ShipToBeach(actionNode.action_x_loc, actionNode.action_y_loc, out _, out _);
 		unitMarine.AIActionId = actionNode.action_id;
 
 		return 1;
@@ -6302,7 +6302,7 @@ public class Nation : NationBase
 
 			case SEA_ACTION_BUILD_CAMP:
 				Unit unit = UnitArray[unitRecnoArray[0]];
-				unit.build_firm(destXLoc, destYLoc, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
+				unit.BuildFirm(destXLoc, destYLoc, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
 				unit.AIActionId = actionNode.action_id;
 				actionNode.processing_instance_count++;
 				break;
@@ -6371,13 +6371,13 @@ public class Nation : NationBase
 			else
 			{
 				//--------- if this ship is on the sea ----------//
-				if (!unitMarine.is_ai_all_stop())
+				if (!unitMarine.IsAIAllStop())
 					continue;
 
-				if (unitMarine.region_id() != seaRegionId)
+				if (unitMarine.RegionId() != seaRegionId)
 					continue;
 
-				if (!unitMarine.is_visible())
+				if (!unitMarine.IsVisible())
 					continue;
 			}
 
@@ -7401,12 +7401,12 @@ public class Nation : NationBase
 			if (unit.NationId != enemyNationRecno)
 				continue;
 
-			if (!unit.is_visible() || unit.MobileType != UnitConstants.UNIT_LAND) // only deal with land units now 
+			if (!unit.IsVisible() || unit.MobileType != UnitConstants.UNIT_LAND) // only deal with land units now 
 				continue;
 
 			//--- only attack if we have any base town in the enemy unit's region ---//
 
-			if (base_town_count_in_region(unit.region_id()) == 0)
+			if (base_town_count_in_region(unit.RegionId()) == 0)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
@@ -8816,7 +8816,7 @@ public class Nation : NationBase
 		if (unit.NationId == 0)
 			return false;
 
-		if (!unit.is_visible())
+		if (!unit.IsVisible())
 			return false;
 
 		//------ only attack if it's a common enemy to us and our ally -----//

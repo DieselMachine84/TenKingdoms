@@ -529,7 +529,7 @@ public class NewsArray
 
 		int xLoc, yLoc;
 
-		unit.get_cur_loc(out xLoc, out yLoc);
+		unit.GetNextLoc(out xLoc, out yLoc);
 
 		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
 	}

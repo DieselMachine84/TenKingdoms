@@ -6,6 +6,9 @@ namespace TenKingdoms;
 public class UnitMonster : Unit
 {
     public int monster_action_mode;
+    
+    public int MonsterId { get; set; }
+    public int MonsterSoldierId { get; set; }
 
     private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private SiteArray SiteArray => Sys.Instance.SiteArray;
@@ -29,26 +32,14 @@ public class UnitMonster : Unit
         monster_action_mode = UnitConstants.MONSTER_ACTION_STOP;
     }
 
-    public override string unit_name(int withTitle = 1)
+    public override string GetUnitName(bool withTitle = true)
     {
-        string str = String.Empty;
-
-        switch (Rank)
+        return Rank switch
         {
-            case RANK_KING:
-                str = monster_name_king[get_monster_id() - 1];
-                break;
-
-            case RANK_GENERAL:
-                str = monster_name_general[get_monster_id() - 1];
-                break;
-
-            default:
-                str = MonsterRes[get_monster_id()].name;
-                break;
-        }
-
-        return str;
+            RANK_KING => monster_name_king[MonsterId - 1],
+            RANK_GENERAL => monster_name_general[MonsterId - 1],
+            _ => MonsterRes[MonsterId].name
+        };
     }
 
     public void set_monster_action_mode(int monsterActionMode)
@@ -56,11 +47,11 @@ public class UnitMonster : Unit
         monster_action_mode = monsterActionMode;
     }
 
-    public override void process_ai()
+    public override void ProcessAI()
     {
         //----- when it is idle -------//
 
-        if (!is_visible() || !is_ai_all_stop())
+        if (!IsVisible() || !IsAIAllStop())
             return;
 
         if (Info.TotalDays % 15 == SpriteId % 15)
@@ -80,9 +71,9 @@ public class UnitMonster : Unit
         }
     }
 
-    public override void die()
+    public override void Die()
     {
-        if (!is_visible())
+        if (!IsVisible())
             return;
 
         //--- check if the location where the unit dies already has an item ---//
@@ -117,9 +108,9 @@ public class UnitMonster : Unit
 
         //--- when a general monster is killed, it leaves gold coins ---//
 
-        if (NationId == 0 && get_monster_id() != 0) // to skip monster_res[ get_monster_id() ] error in test game 2
+        if (NationId == 0 && MonsterId != 0) // to skip monster_res[ get_monster_id() ] error in test game 2
         {
-            MonsterInfo monsterInfo = MonsterRes[get_monster_id()];
+            MonsterInfo monsterInfo = MonsterRes[MonsterId];
 
             if (Rank == RANK_GENERAL)
             {
@@ -140,7 +131,7 @@ public class UnitMonster : Unit
         //---------- add news ----------//
 
         if (Rank == RANK_KING)
-            NewsArray.monster_king_killed(get_monster_id(), NextLocX, NextLocY);
+            NewsArray.monster_king_killed(MonsterId, NextLocX, NextLocY);
     }
 
     private int random_attack()

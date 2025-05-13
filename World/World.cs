@@ -359,12 +359,12 @@ public class World
 		}
 	}
 
-	public int CanBuildFirm(int locX1, int locY1, int firmId, int unitId = -1)
+	public int CanBuildFirm(int locX1, int locY1, int firmType, int unitId = -1)
 	{
 		if (!Misc.IsLocationValid(locX1, locY1))
 			return 0;
 
-		FirmInfo firmInfo = FirmRes[firmId];
+		FirmInfo firmInfo = FirmRes[firmType];
 		int locX2 = locX1 + firmInfo.loc_width - 1;
 		int locY2 = locY1 + firmInfo.loc_height - 1;
 		if (!Misc.IsLocationValid(locX2, locY2))
@@ -386,7 +386,7 @@ public class World
 							return 0;
 
 						// don't allow building any buildings other than mines on a location with a site
-						if (firmId != Firm.FIRM_MINE && location.HasSite())
+						if (firmType != Firm.FIRM_MINE && location.HasSite())
 							return 0;
 					}
 				}
@@ -1529,7 +1529,7 @@ public class World
 		foreach (Unit unit in UnitArray)
 		{
 			// no damage to air units, sea units and units inside camps and bases
-			if (unit.MobileType == UnitConstants.UNIT_AIR || unit.MobileType == UnitConstants.UNIT_SEA || !unit.is_visible())
+			if (unit.MobileType == UnitConstants.UNIT_AIR || unit.MobileType == UnitConstants.UNIT_SEA || !unit.IsVisible())
 				continue;
 
 			double damage = Weather.quake_rate(unit.CurLocX, unit.CurLocY) * unit.MaxHitPoints / 200.0;
@@ -1539,13 +1539,13 @@ public class World
 				damage = 5.0;
 
 			unit.HitPoints -= damage;
-			if (unit.is_own())
+			if (unit.IsOwn())
 				unitDamage++;
 
 			if (unit.HitPoints <= 0.0)
 			{
 				unit.HitPoints = 0.0;
-				if (unit.is_own())
+				if (unit.IsOwn())
 					unitsDied++;
 			}
 		}
@@ -1577,7 +1577,7 @@ public class World
 		foreach (Unit unit in UnitArray)
 		{
 			// no damage to units inside camps and bases
-			if (!unit.is_visible())
+			if (!unit.IsVisible())
 				continue;
 
 			if (unit.CurLocX <= locX + radius && unit.CurLocX + unit.SpriteInfo.LocWidth > locX - radius &&
@@ -1586,7 +1586,7 @@ public class World
 				unit.HitPoints -= (double)unit.SpriteInfo.LightningDamage / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
-				if (unit.is_own())
+				if (unit.IsOwn())
 					NewsArray.lightning_damage(unit.CurLocX, unit.CurLocY,
 						News.NEWS_LOC_UNIT, unit.SpriteId, unit.HitPoints <= 0.0 ? 1 : 0);
 

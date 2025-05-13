@@ -270,7 +270,7 @@ public class FirmCamp : Firm
 		{
 			Unit overseerUnit = UnitArray[overseerRecno];
 
-			if (overseerUnit.is_own())
+			if (overseerUnit.IsOwn())
 			{
 				SERes.sound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
 			}
@@ -328,7 +328,7 @@ public class FirmCamp : Firm
 			if (overseer_recno != 0)
 			{
 				unit.LeaderId = overseer_recno;
-				unit.update_loyalty(); // the unit is just assigned to a new leader, set its target loyalty
+				unit.UpdateLoyalty(); // the unit is just assigned to a new leader, set its target loyalty
 			}
 
 			if (nation_recno == NationArray.player_recno)
@@ -461,7 +461,7 @@ public class FirmCamp : Firm
 					Unit unit = UnitArray[defenseUnit.unit_recno];
 
 					//-------------- ignore this unit if it is dead --------------------//
-					if (unit.is_unit_dead())
+					if (unit.IsUnitDead())
 						continue;
 
 					if (!unit.in_auto_defense_mode())
@@ -520,7 +520,7 @@ public class FirmCamp : Firm
 			if (overseer_recno != 0)
 			{
 				unit.LeaderId = overseer_recno;
-				unit.update_loyalty(); // update target loyalty based on having a leader assigned
+				unit.UpdateLoyalty(); // update target loyalty based on having a leader assigned
 			}
 
 			defense_inside_camp(unitRecno, targetRecno);
@@ -670,8 +670,8 @@ public class FirmCamp : Firm
 				defenseUnit.unit_recno = 0;
 				defenseUnit.status = DefenseUnit.INSIDE_CAMP;
 				Unit unit = UnitArray[unitRecno];
-				unit.stop2();
-				unit.reset_action_misc_para();
+				unit.Stop2();
+				unit.ResetActionMiscParameters();
 			}
 			else
 			{
@@ -699,7 +699,7 @@ public class FirmCamp : Firm
 			else
 			{
 				Unit unit = UnitArray[unitRecno];
-				isPatrolUnit = (unit.is_visible() && unit.NationId == nation_recno);
+				isPatrolUnit = (unit.IsVisible() && unit.NationId == nation_recno);
 			}
 
 			if (!isPatrolUnit)
@@ -958,7 +958,7 @@ public class FirmCamp : Firm
 			{
 				overseerUnit.Skill.combat_level_minor -= 100;
 
-				overseerUnit.set_combat_level(overseerUnit.Skill.combat_level + 1);
+				overseerUnit.SetCombatLevel(overseerUnit.Skill.combat_level + 1);
 			}
 		}
 
@@ -1326,7 +1326,7 @@ public class FirmCamp : Firm
 			if (unitRecno != 0)
 			{
 				Unit unit = UnitArray[unitRecno];
-				unit.assign(loc_x1, loc_y1);
+				unit.Assign(loc_x1, loc_y1);
 				if (coming_unit_array.Count < MAX_WORKER)
 					coming_unit_array.Add(unitRecno);
 			}
@@ -1604,7 +1604,7 @@ public class FirmCamp : Firm
 			//--- as the current commander has been out to attack the town by ai_attack_target(), we need to assign him back to the camp for influencing the town and eventually capture it ---//
 
 			if (overseer_recno == 0 && targetTown.NationId != 0 && patrol_unit_array.Count > 0)
-				UnitArray[patrol_unit_array[0]].assign(loc_x1, loc_y1);
+				UnitArray[patrol_unit_array[0]].Assign(loc_x1, loc_y1);
 		}
 	}
 
@@ -1634,8 +1634,8 @@ public class FirmCamp : Firm
 			{
 				Unit unit = UnitArray[patrol_unit_array[i]];
 
-				if (unit.is_visible())
-					unit.assign(loc_x1, loc_y1);
+				if (unit.IsVisible())
+					unit.Assign(loc_x1, loc_y1);
 			}
 
 			ai_capture_town_recno = 0; // turn it on again after the capturing plan is finished
@@ -1695,7 +1695,7 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[overseer_recno];
 			if (unit.RaceId == raceId)
-				currentTargetResistance = 100 - unit.CampInfluence();
+				currentTargetResistance = 100 - unit.LeaderInfluence();
 		}
 
 		int targetResistance = 100;
@@ -2015,7 +2015,7 @@ public class FirmCamp : Firm
 
 		Unit unit = UnitArray[unitRecno];
 
-		unit.set_rank(Unit.RANK_GENERAL);
+		unit.SetRank(Unit.RANK_GENERAL);
 
 		//---- if there is already an existing but unprocessed one, delete it first ---//
 
@@ -2118,7 +2118,7 @@ public class FirmCamp : Firm
 				return;
 
 			Unit unit = UnitArray[unitRecno];
-			unit.assign(loc_x1, loc_y1);
+			unit.Assign(loc_x1, loc_y1);
 		}
 	}
 

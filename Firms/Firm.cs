@@ -617,7 +617,7 @@ public abstract class Firm : IIdObject
 			int originalXLoc = newOverseer.NextLocX;
 			int originalYLoc = newOverseer.NextLocY;
 
-			newOverseer.deinit_sprite();
+			newOverseer.DeinitSprite();
 
 			//----------------------------------------------------------------------------------------//
 			// There should be at least one location (occupied by the new overseer) for creating the old
@@ -647,8 +647,8 @@ public abstract class Firm : IIdObject
 				//------- set the unit to overseer mode and deinit the sprite ------//
 				overseer_recno = newOverseerRecno;
 				Unit overseer = UnitArray[overseer_recno];
-				overseer.set_mode(UnitConstants.UNIT_MODE_OVERSEE, firm_recno);
-				overseer.deinit_sprite(); // hide the unit from the world map
+				overseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, firm_recno);
+				overseer.DeinitSprite(); // hide the unit from the world map
 
 				//--------- if the unit is a spy -----------//
 
@@ -683,7 +683,7 @@ public abstract class Firm : IIdObject
 
 				overseer_recno = newOverseerRecno;
 				Unit overseer = UnitArray[overseer_recno];
-				overseer.set_mode(UnitConstants.UNIT_MODE_OVERSEE, firm_recno);
+				overseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, firm_recno);
 
 				//--------- if the unit is a spy -----------//
 
@@ -700,7 +700,7 @@ public abstract class Firm : IIdObject
 		//------- update loyalty -------//
 
 		if (newOverseerRecno != 0 && !UnitArray.IsDeleted(newOverseerRecno))
-			UnitArray[newOverseerRecno].update_loyalty();
+			UnitArray[newOverseerRecno].UpdateLoyalty();
 
 		//----------- refresh display if this firm is selected ----------//
 
@@ -715,7 +715,7 @@ public abstract class Firm : IIdObject
 
 		Unit unit = UnitArray[workerUnitRecno];
 
-		if (unit.true_nation_recno() != nation_recno && workers.Count == MAX_WORKER)
+		if (unit.TrueNationId() != nation_recno && workers.Count == MAX_WORKER)
 			return;
 
 		//---- if all worker space are full, resign the worst worker to release one worker space for the overseer ----//
@@ -743,7 +743,7 @@ public abstract class Firm : IIdObject
 			unitXLoc = unit.NextLocX;
 			unitYLoc = unit.NextLocY;
 
-			unit.deinit_sprite(); // free the location for creating the worst unit
+			unit.DeinitSprite(); // free the location for creating the worst unit
 
 			resign_worker(worstWorker);
 		}
@@ -760,8 +760,8 @@ public abstract class Firm : IIdObject
 			{
 				//--- the unit was deinit_sprite(), and now the assign settle action failed, we need to init_sprite() to restore it ---//
 
-				if (unitXLoc >= 0 && !unit.is_visible())
-					unit.init_sprite(unitXLoc, unitYLoc);
+				if (unitXLoc >= 0 && !unit.IsVisible())
+					unit.InitSprite(unitXLoc, unitYLoc);
 
 				return;
 			}
@@ -795,7 +795,7 @@ public abstract class Firm : IIdObject
 
 		if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			newWorker.extra_para = unit.get_weapon_version();
+			newWorker.extra_para = unit.WeaponVersion;
 		}
 		else if (unit.RaceId != 0)
 		{
@@ -1210,7 +1210,7 @@ public abstract class Firm : IIdObject
 		//------------------------------------------//
 
 		if (overseer_recno != 0 && UnitArray[overseer_recno].SpyId != 0)
-			UnitArray[overseer_recno].spy_change_nation(newNationRecno, InternalConstants.COMMAND_AUTO);
+			UnitArray[overseer_recno].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
 		else
 			change_nation(newNationRecno);
 	}
@@ -1233,7 +1233,7 @@ public abstract class Firm : IIdObject
 		{
 			Unit unit = UnitArray[builder_recno];
 
-			unit.change_nation(newNationRecno);
+			unit.ChangeNation(newNationRecno);
 
 			//--- if this is a spy, chance its cloak ----//
 
@@ -1604,7 +1604,7 @@ public abstract class Firm : IIdObject
 
 		if (builder_recno != 0)
 		{
-			if (UnitArray[builder_recno].true_nation_recno() == NationArray.player_recno)
+			if (UnitArray[builder_recno].TrueNationId() == NationArray.player_recno)
 				return true;
 		}
 
@@ -1634,10 +1634,10 @@ public abstract class Firm : IIdObject
 		if (builder_recno != 0)
 		{
 			Unit unit = UnitArray[builder_recno];
-			if (unit.is_visible()) // is visible if the unit is not inside the firm location
+			if (unit.IsVisible()) // is visible if the unit is not inside the firm location
 			{
 				builder_region_id = World.GetRegionId(unit.CurLocX, unit.CurLocY);
-				unit.deinit_sprite();
+				unit.DeinitSprite();
 
 				if (unit.SelectedFlag)
 				{
@@ -1646,7 +1646,7 @@ public abstract class Firm : IIdObject
 				}
 			}
 
-			unit.set_mode(UnitConstants.UNIT_MODE_CONSTRUCT, firm_recno);
+			unit.SetMode(UnitConstants.UNIT_MODE_CONSTRUCT, firm_recno);
 		}
 
 		if (oldBuilderRecno != 0)
@@ -1668,7 +1668,7 @@ public abstract class Firm : IIdObject
 			if (unit.Skill.skill_id != Skill.SKILL_CONSTRUCTION)
 				continue;
 
-			if (unit.is_visible() && unit.region_id() != region_id)
+			if (unit.IsVisible() && unit.RegionId() != region_id)
 				continue;
 
 			if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
@@ -1735,7 +1735,7 @@ public abstract class Firm : IIdObject
 			}
 		}
 
-		unit.assign(loc_x1, loc_y1);
+		unit.Assign(loc_x1, loc_y1);
 	}
 
 	public virtual void sell_firm(int remoteAction)
@@ -1809,7 +1809,7 @@ public abstract class Firm : IIdObject
 
 		if (FirmRes[firm_id].need_overseer)
 		{
-			return overseer_recno != 0 && UnitArray[overseer_recno].true_nation_recno() == captureNationRecno;
+			return overseer_recno != 0 && UnitArray[overseer_recno].TrueNationId() == captureNationRecno;
 		}
 
 		//--- if this firm doesn't need an overseer, can capture it if all the units in the firm are the player's spies ---//
@@ -2027,7 +2027,7 @@ public abstract class Firm : IIdObject
 
 			unitLoyalty = unit.Loyalty;
 			unitRaceId = unit.RaceId;
-			unitCommandPower = unit.commander_power();
+			unitCommandPower = unit.CommanderPower();
 			targetSpyRecno = unit.SpyId;
 		}
 
@@ -2265,7 +2265,7 @@ public abstract class Firm : IIdObject
 			    (firmInfo.firm_skill_id == 0 ||
 			     firmInfo.firm_skill_id == unit.Skill.skill_id)) // the builder with the skill required
 			{
-				unit.set_mode(0); // reset it from UNIT_MODE_CONSTRUCT
+				unit.SetMode(0); // reset it from UNIT_MODE_CONSTRUCT
 
 				needAssignUnit = true;
 			}
@@ -2293,7 +2293,7 @@ public abstract class Firm : IIdObject
 						    spriteInfo.LocWidth, spriteInfo.LocHeight))
 						UnitArray.disappear_in_firm(builder_recno); // kill the unit
 					else
-						unit.init_sprite(xLoc, yLoc); // restore the unit
+						unit.InitSprite(xLoc, yLoc); // restore the unit
 				}
 			}
 
@@ -2323,7 +2323,7 @@ public abstract class Firm : IIdObject
 		{
 			//---- if the construction worker is a spy, it will damage the building when the building is under attack ----//
 
-			if (unit.SpyId != 0 && unit.true_nation_recno() != nation_recno)
+			if (unit.SpyId != 0 && unit.TrueNationId() != nation_recno)
 			{
 				hit_points -= SpyArray[unit.SpyId].spy_skill / 30.0;
 
@@ -2627,8 +2627,8 @@ public abstract class Firm : IIdObject
 
 		if (spaceFound)
 		{
-			overseer.init_sprite(xLoc, yLoc);
-			overseer.set_mode(0); // reset overseen firm recno
+			overseer.InitSprite(xLoc, yLoc);
+			overseer.SetMode(0); // reset overseen firm recno
 		}
 		else
 		{
@@ -2644,7 +2644,7 @@ public abstract class Firm : IIdObject
 		//------- update loyalty -------//
 
 		if (overseerRecno != 0 && !UnitArray.IsDeleted(overseerRecno))
-			UnitArray[overseerRecno].update_loyalty();
+			UnitArray[overseerRecno].UpdateLoyalty();
 
 		return overseerRecno;
 	}
@@ -2666,9 +2666,9 @@ public abstract class Firm : IIdObject
 			return false;
 		}
 
-		unit.init_sprite(xLoc, yLoc);
-		unit.stop2(); // clear all previously defined action
-		unit.set_mode(0);
+		unit.InitSprite(xLoc, yLoc);
+		unit.Stop2(); // clear all previously defined action
+		unit.SetMode(0);
 
 		//--- set builder to non-aggressive, except ai ---//
 		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
@@ -2755,7 +2755,7 @@ public abstract class Firm : IIdObject
 		if (workerId == 0)
 		{
 			if (overseer_recno != 0)
-				UnitArray[overseer_recno].reward(nation_recno);
+				UnitArray[overseer_recno].Reward(nation_recno);
 		}
 		else
 		{
@@ -3236,7 +3236,7 @@ public abstract class Firm : IIdObject
 
 			if (unitRecno != 0)
 			{
-				UnitArray[unitRecno].assign(loc_x1, loc_y1);
+				UnitArray[unitRecno].Assign(loc_x1, loc_y1);
 				return true;
 			}
 		}
