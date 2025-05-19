@@ -179,7 +179,7 @@ public class FirmMonster : Firm
 		switch (unit.Rank)
 		{
 			case Unit.RANK_KING:
-				set_king(unit.MonsterId, unit.Skill.combat_level);
+				set_king(unit.MonsterId, unit.Skill.CombatLevel);
 				break;
 
 			case Unit.RANK_GENERAL:
@@ -226,7 +226,7 @@ public class FirmMonster : Firm
 
 		// contribution is used for storing the monster id. temporary
 		monsterInFirm.monster_id = unitPtr.MonsterId;
-		monsterInFirm.set_combat_level(unitPtr.Skill.combat_level);
+		monsterInFirm.set_combat_level(unitPtr.Skill.CombatLevel);
 		monsterInFirm.hit_points = (int)unitPtr.HitPoints;
 
 		if (monsterInFirm.hit_points == 0)

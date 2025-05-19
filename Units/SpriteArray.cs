@@ -11,10 +11,8 @@ public abstract class SpriteArray : DynArray<Sprite>
 
     protected void DeleteSprite(Sprite sprite)
     {
-	    // TODO do not change SpriteId
-	    int spriteId = sprite.SpriteId;
 	    sprite.Deinit();
-	    Delete(spriteId);
+	    Delete(sprite.SpriteId);
     }
 
     protected virtual void Die(int spriteId)
@@ -29,25 +27,22 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    if (sprite.RemainAttackDelay > 0)
 			    sprite.RemainAttackDelay--;
 
-		    if (sprite.CurX == -1) // cur_x == -1 if the unit has removed from the map and gone into a firm
+		    if (sprite.CurX == -1) // CurX == -1 if the unit has removed from the map and gone into a firm
 			    continue;
-
-		    // TODO do not change SpriteId
-		    int spriteId = sprite.SpriteId;
 
 		    sprite.PreProcess(); // it's actually calling Unit.PreProcess() and other derived Unit classes
 
 		    //-----------------------------------------------------//
-		    // note: for unit cur_x == -1, the unit is invisible and no pre_process is done.
+		    // note: for unit CurX == -1, the unit is invisible and no PreProcess is done.
 		    //
-		    //       for unit cur_x == -2, eg caravan, the unit is invisible but pre_process is still processed.
-		    //       However, sprite cur_action should be skipped.
+		    //       for unit CurX == -2, eg caravan, the unit is invisible but PreProcess is still processed.
+		    //       However, sprite CurAction should be skipped.
 		    //-----------------------------------------------------//
 
-		    if (IsDeleted(spriteId)) // in case pre_process() kills the current Sprite
+		    if (IsDeleted(sprite.SpriteId)) // in case PreProcess() kills the current Sprite
 			    continue;
 
-		    if (sprite.CurX < 0) //if( spritePtr->cur_x == -1 || spritePtr->cur_x==-2)
+		    if (sprite.CurX < 0) // if(sprite.CurX == -1 || sprite.CurX==-2)
 			    continue;
 
 		    switch (sprite.CurAction)
@@ -85,12 +80,12 @@ public abstract class SpriteArray : DynArray<Sprite>
 			    case Sprite.SPRITE_DIE:
 				    if (sprite.ProcessDie())
 				    {
-					    Die(spriteId);
+					    Die(sprite.SpriteId);
 				    }
 				    break;
 		    }
 
-		    if (!IsDeleted(spriteId))
+		    if (!IsDeleted(sprite.SpriteId))
 		    {
 			    if (sprite.GuardCount > 0)
 			    {

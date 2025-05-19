@@ -136,7 +136,7 @@ public class NationNew : NationBase
                 {
                     Unit overseer = UnitArray[firm.overseer_recno];
                     //TODO also take reputation into account
-                    if (overseer.Skill.skill_level > 50) // TODO constant should depend on preferences
+                    if (overseer.Skill.SkillLevel > 50) // TODO constant should depend on preferences
                     {
                         bool isCapturer = false;
                         foreach (CaptureIndependentTask task in captureIndependentTasks)
@@ -166,7 +166,7 @@ public class NationNew : NationBase
                 foreach (InnUnit innUnit in inn.inn_unit_array)
                 {
                     // TODO constant should depend on preferences
-                    if (innUnit.skill.skill_id == Skill.SKILL_LEADING && innUnit.skill.skill_level > 50 && ShouldHire(inn, innUnit))
+                    if (innUnit.skill.SkillId == Skill.SKILL_LEADING && innUnit.skill.SkillLevel > 50 && ShouldHire(inn, innUnit))
                         possibleCapturerInnUnits.Add((inn, innUnit));
                 }
             }

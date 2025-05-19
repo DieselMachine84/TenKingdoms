@@ -397,7 +397,7 @@ public class NationArray : DynArray<Nation>
 				addPoints += (unitInfo.weapon_power + unit.WeaponVersion - 1) * 30;
 
 			if (unit.LeaderId != 0 && !UnitArray.IsDeleted(unit.LeaderId))
-				addPoints += addPoints * UnitArray[unit.LeaderId].Skill.skill_level / 100;
+				addPoints += addPoints * UnitArray[unit.LeaderId].Skill.SkillLevel / 100;
 
 			// 20 is the base military points for a unit, so the nation that has many more units can be reflected in the military rating
 			nationCombatLevelArray[unit.NationId - 1] += addPoints + 20;

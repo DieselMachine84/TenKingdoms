@@ -964,8 +964,8 @@ public class NationBase : IIdObject
     {
         int newKingLeadership = 0;
 
-        if (newKing.Skill.skill_id == Skill.SKILL_LEADING)
-            newKingLeadership = newKing.Skill.skill_level;
+        if (newKing.Skill.SkillId == Skill.SKILL_LEADING)
+            newKingLeadership = newKing.Skill.SkillLevel;
 
         newKingLeadership = Math.Max(20, newKingLeadership); // give the king a minimum level of leadership
 
@@ -1064,10 +1064,10 @@ public class NationBase : IIdObject
 
         //--- if this unit currently has not have leadership ---//
 
-        if (kingUnit.Skill.skill_id != Skill.SKILL_LEADING)
+        if (kingUnit.Skill.SkillId != Skill.SKILL_LEADING)
         {
-            kingUnit.Skill.skill_id = Skill.SKILL_LEADING;
-            kingUnit.Skill.skill_level = 0;
+            kingUnit.Skill.SkillId = Skill.SKILL_LEADING;
+            kingUnit.Skill.SkillLevel = 0;
         }
 
         kingUnit.SetRank(Unit.RANK_KING);
@@ -1083,7 +1083,7 @@ public class NationBase : IIdObject
             nation_name_id = -nation_recno;
 
         race_id = kingUnit.RaceId;
-        king_leadership = kingUnit.Skill.skill_level;
+        king_leadership = kingUnit.Skill.SkillLevel;
     }
 
     public void hand_over_to(int handoverNationRecno)

@@ -122,7 +122,7 @@ public class FirmCamp : Firm
 
 			// divided by 150 instead of 100 because while the attacking ability of the unit is affected by the general,
 			// the hit points isn't, so we shouldn't do a direct multiplication.
-			totalCombatLevel += totalCombatLevel * unit.Skill.skill_level / 150;
+			totalCombatLevel += totalCombatLevel * unit.Skill.SkillLevel / 150;
 
 			//------ the leader's own hit points ------//
 
@@ -351,7 +351,7 @@ public class FirmCamp : Firm
 
 		//------- if this is a construction worker -------//
 
-		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;
@@ -852,9 +852,9 @@ public class FirmCamp : Firm
 			Unit unitCommander = UnitArray[overseer_recno];
 
 			if (unitCommander.RaceId == bestRaceId)
-				commanderLeadership = unitCommander.Skill.skill_level;
+				commanderLeadership = unitCommander.Skill.SkillLevel;
 			else
-				commanderLeadership = unitCommander.Skill.skill_level / 2; // divided by 2 if the race doesn't match
+				commanderLeadership = unitCommander.Skill.SkillLevel / 2; // divided by 2 if the race doesn't match
 		}
 
 		return commanderLeadership;
@@ -921,44 +921,44 @@ public class FirmCamp : Firm
 
 		Unit overseerUnit = UnitArray[overseer_recno];
 
-		if (overseerUnit.Skill.skill_id != Skill.SKILL_LEADING)
+		if (overseerUnit.Skill.SkillId != Skill.SKILL_LEADING)
 			return;
 
-		int overseerSkill = overseerUnit.Skill.skill_level;
+		int overseerSkill = overseerUnit.Skill.SkillLevel;
 		int incValue;
 
 		//------- increase the commander's leadership ---------//
 
-		if (workers.Count > 0 && overseerUnit.Skill.skill_level < 100)
+		if (workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
 		{
 			//-- the more soldiers this commander has, the higher the leadership will increase ---//
 
 			incValue = (int)(5.0 * workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
-				* (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
+				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-			overseerUnit.Skill.skill_level_minor += incValue;
+			overseerUnit.Skill.SkillLevelMinor += incValue;
 
-			if (overseerUnit.Skill.skill_level_minor >= 100)
+			if (overseerUnit.Skill.SkillLevelMinor >= 100)
 			{
-				overseerUnit.Skill.skill_level_minor -= 100;
-				overseerUnit.Skill.skill_level++;
+				overseerUnit.Skill.SkillLevelMinor -= 100;
+				overseerUnit.Skill.SkillLevel++;
 			}
 		}
 
 		//------- increase the commander's combat level ---------//
 
-		if (overseerUnit.Skill.combat_level < 100)
+		if (overseerUnit.Skill.CombatLevel < 100)
 		{
 			incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
-				* (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
+				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-			overseerUnit.Skill.combat_level_minor += incValue;
+			overseerUnit.Skill.CombatLevelMinor += incValue;
 
-			if (overseerUnit.Skill.combat_level_minor >= 100)
+			if (overseerUnit.Skill.CombatLevelMinor >= 100)
 			{
-				overseerUnit.Skill.combat_level_minor -= 100;
+				overseerUnit.Skill.CombatLevelMinor -= 100;
 
-				overseerUnit.SetCombatLevel(overseerUnit.Skill.combat_level + 1);
+				overseerUnit.SetCombatLevel(overseerUnit.Skill.CombatLevel + 1);
 			}
 		}
 
@@ -992,7 +992,7 @@ public class FirmCamp : Firm
 
 			if (worker.skill_potential > 0 && worker.skill_level < 100)
 			{
-				incValue = Math.Max(50, overseerUnit.Skill.skill_level - worker.skill_level)
+				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.skill_level)
 					* worker.hit_points / worker.max_hit_points()
 					* worker.skill_potential * 2 / 100;
 

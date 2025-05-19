@@ -2580,7 +2580,7 @@ public class Nation : NationBase
 				if (!unit.IsAIAllStop())
 					continue;
 
-				if (unit.Skill.skill_id == skillId && unit.CurAction != Sprite.SPRITE_ATTACK && unit.AIActionId == 0)
+				if (unit.Skill.SkillId == skillId && unit.CurAction != Sprite.SPRITE_ATTACK && unit.AIActionId == 0)
 				{
 					int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, destX, destY);
 
@@ -2694,7 +2694,7 @@ public class Nation : NationBase
 				InnUnit innUnit = firmInn.inn_unit_array[j];
 				Skill innUnitSkill = innUnit.skill;
 
-				if (innUnitSkill.skill_id == skillId && (raceId != 0 || UnitRes[innUnit.unit_id].race_id == raceId) &&
+				if (innUnitSkill.SkillId == skillId && (raceId != 0 || UnitRes[innUnit.unit_id].race_id == raceId) &&
 				    cash >= innUnit.hire_cost)
 				{
 					//----------------------------------------------//
@@ -2704,7 +2704,7 @@ public class Nation : NationBase
 					// -the skill level of the unit.
 					//----------------------------------------------//
 
-					int curRating = innUnitSkill.skill_level - (100 - 100 * curFirmDist / GameConstants.MapSize);
+					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / GameConstants.MapSize);
 
 					if (UnitRes[innUnit.unit_id].race_id == race_id)
 						curRating += 50;
@@ -3054,8 +3054,8 @@ public class Nation : NationBase
 			if (unit.Rank == Unit.RANK_GENERAL)
 				curRating += 50;
 
-			if (unit.Skill.skill_id == Skill.SKILL_LEADING)
-				curRating += unit.Skill.skill_level;
+			if (unit.Skill.SkillId == Skill.SKILL_LEADING)
+				curRating += unit.Skill.SkillLevel;
 
 			if (curRating > bestRating)
 			{
@@ -3687,7 +3687,7 @@ public class Nation : NationBase
 
 			//--- if if this is our own military unit ----//
 
-			if (unit.NationId != nation_recno || unit.Skill.skill_id != Skill.SKILL_LEADING)
+			if (unit.NationId != nation_recno || unit.Skill.SkillId != Skill.SKILL_LEADING)
 				continue;
 
 			//--------- if this unit is injured ----------//
@@ -4661,7 +4661,7 @@ public class Nation : NationBase
 				{
 					Unit unit = UnitArray[firm.overseer_recno];
 
-					if (unit.Skill.skill_level >= 70 && unit.RaceId == town.MajorityRace())
+					if (unit.Skill.SkillLevel >= 70 && unit.RaceId == town.MajorityRace())
 					{
 						break;
 					}
@@ -4994,7 +4994,7 @@ public class Nation : NationBase
 			{
 				InnUnit innUnit = firmInn.inn_unit_array[j];
 
-				if (innUnit.skill.skill_id == Skill.SKILL_LEADING && UnitRes[innUnit.unit_id].race_id == raceId && cash >= innUnit.hire_cost)
+				if (innUnit.skill.SkillId == Skill.SKILL_LEADING && UnitRes[innUnit.unit_id].race_id == raceId && cash >= innUnit.hire_cost)
 				{
 					//----------------------------------------------//
 					// evaluate a unit on:
@@ -5003,7 +5003,7 @@ public class Nation : NationBase
 					// -the skill level of the unit.
 					//----------------------------------------------//
 
-					int curRating = innUnit.skill.skill_level;
+					int curRating = innUnit.skill.SkillLevel;
 
 					if (curRating > bestRating)
 					{

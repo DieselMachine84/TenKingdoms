@@ -46,7 +46,7 @@ public class FirmBase : Firm
 
         //------- if this is a construction worker -------//
 
-        if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+        if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
         {
             set_builder(unitRecno);
             return;
@@ -193,23 +193,23 @@ public class FirmBase : Firm
             return;
 
         Unit overseerUnit = UnitArray[overseer_recno];
-        int overseerSkill = overseerUnit.Skill.skill_level;
+        int overseerSkill = overseerUnit.Skill.SkillLevel;
 
         //------- increase the commander's leadership ---------//
 
-        if (workers.Count > 0 && overseerUnit.Skill.skill_level < 100)
+        if (workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
         {
             //-- the more soldiers this commander has, the higher the leadership will increase ---//
 
             int incValue = (int)(3.0 * workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
-                * (100.0 + overseerUnit.Skill.skill_potential * 2.0) / 100.0);
+                * (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-            overseerUnit.Skill.skill_level_minor += incValue;
+            overseerUnit.Skill.SkillLevelMinor += incValue;
 
-            if (overseerUnit.Skill.skill_level_minor >= 100)
+            if (overseerUnit.Skill.SkillLevelMinor >= 100)
             {
-                overseerUnit.Skill.skill_level_minor -= 100;
-                overseerUnit.Skill.skill_level++;
+                overseerUnit.Skill.SkillLevelMinor -= 100;
+                overseerUnit.Skill.SkillLevel++;
             }
         }
 

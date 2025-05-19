@@ -180,7 +180,7 @@ public partial class Unit : Sprite
 
 		if (Misc.Random(10) == 0) // 1 out of 10 has a higher than normal potential in this skill
 		{
-			Skill.skill_potential = 50 + Misc.Random(51); // 50 to 100 potential
+			Skill.SkillPotential = 50 + Misc.Random(51); // 50 to 100 potential
 		}
 
 		//------ initialize the base Sprite class -------//
@@ -239,7 +239,7 @@ public partial class Unit : Sprite
 		//---- if this is a general, deinit its link with its soldiers ----//
 		//
 		// We do not use TeamInfo because monsters and rebels also use
-		// LeaderId and they do not use keep the member info in TeamInfo.
+		// LeaderId and they do not keep the member info in TeamInfo.
 		//
 		//-----------------------------------------------------------------//
 
@@ -270,7 +270,7 @@ public partial class Unit : Sprite
 		else if (UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 		{
 			// the ship may have been destroyed at the same time. Actually when the ship is destroyed,
-			// all firms onboard are killed and this function is called.
+			// all units onboard are killed and this function is called.
 			if (!FirmArray.IsDeleted(UnitModeParam))
 			{
 				FirmHarbor harbor = (FirmHarbor)FirmArray[UnitModeParam];
@@ -484,6 +484,8 @@ public partial class Unit : Sprite
 
 		if (SpyId != 0 && TrueNationId() != NationId)
 		{
+			// TODO there is no same code in InitUnitType(). Check this
+			
 			int trueNationId = TrueNationId();
 
 			if (Rank != RANK_KING)
@@ -521,6 +523,7 @@ public partial class Unit : Sprite
 
 		else if (UnitMode == UnitConstants.UNIT_MODE_MONSTER && UnitModeParam != 0)
 		{
+			// TODO is this condition correct? Check
 			if (((UnitMonster)this).monster_action_mode != UnitConstants.MONSTER_ACTION_DEFENSE)
 			{
 				if (!FirmArray.IsDeleted(UnitModeParam))
@@ -535,11 +538,11 @@ public partial class Unit : Sprite
 
 	public void InitFromWorker(Worker worker)
 	{
-		Skill.skill_id = worker.skill_id;
-		Skill.skill_level = worker.skill_level;
-		Skill.skill_level_minor = worker.skill_level_minor;
+		Skill.SkillId = worker.skill_id;
+		Skill.SkillLevel = worker.skill_level;
+		Skill.SkillLevelMinor = worker.skill_level_minor;
 		SetCombatLevel(worker.combat_level);
-		Skill.combat_level_minor = worker.combat_level_minor;
+		Skill.CombatLevelMinor = worker.combat_level_minor;
 		HitPoints = worker.hit_points;
 		Loyalty = worker.loyalty();
 		Rank = worker.rank_id;
@@ -568,8 +571,8 @@ public partial class Unit : Sprite
 
 		if (worker.spy_recno != 0)
 		{
-			Spy spy = SpyArray[worker.spy_recno];
 			SpyId = worker.spy_recno;
+			Spy spy = SpyArray[SpyId];
 			AIUnit = spy.cloaked_nation_recno != 0 && NationArray[spy.cloaked_nation_recno].is_ai();
 			SetName(spy.name_id);
 			spy.set_place(Spy.SPY_MOBILE, SpriteId);
@@ -791,7 +794,7 @@ public partial class Unit : Sprite
 							return; // not allow AI to change firm builder
 
 						ResetActionParameters2();
-						if (Skill.get_skill(Skill.SKILL_CONSTRUCTION) != 0 || Skill.get_skill(firm.firm_skill_id) != 0)
+						if (Skill.GetSkillLevel(Skill.SKILL_CONSTRUCTION) != 0 || Skill.GetSkillLevel(firm.firm_skill_id) != 0)
 							firm.set_builder(SpriteId);
 					}
 
@@ -1162,7 +1165,7 @@ public partial class Unit : Sprite
 			case UnitConstants.UNIT_CLASS_HUMAN:
 				if (NationId == firm.nation_recno)
 				{
-					if (Skill.skill_id == Skill.SKILL_CONSTRUCTION && firm.firm_id != Firm.FIRM_MONSTER)
+					if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firm.firm_id != Firm.FIRM_MONSTER)
 					{
 						return 3;
 					}
@@ -1175,7 +1178,7 @@ public partial class Unit : Sprite
 						case Firm.FIRM_BASE:
 							if (RaceId == firm.race_id)
 							{
-								if (Skill.skill_id == 0 || Skill.skill_id == Skill.SKILL_PRAYING) // non-skilled worker
+								if (Skill.SkillId == 0 || Skill.SkillId == Skill.SKILL_PRAYING) // non-skilled worker
 									return 1;
 								if (Rank != RANK_SOLDIER)
 									return 2;
@@ -2489,8 +2492,8 @@ public partial class Unit : Sprite
 			ThinkAggressiveAction();
 
 		// TODO why this code is here?
-		if (Skill.combat_level > 100)
-			Skill.combat_level = 100;
+		if (Skill.CombatLevel > 100)
+			Skill.CombatLevel = 100;
 	}
 
 
@@ -2882,7 +2885,7 @@ public partial class Unit : Sprite
 
 	public bool IsCivilian()
 	{
-		return RaceId > 0 && Skill.skill_id != Skill.SKILL_LEADING && UnitMode != UnitConstants.UNIT_MODE_REBEL;
+		return RaceId > 0 && Skill.SkillId != Skill.SKILL_LEADING && UnitMode != UnitConstants.UNIT_MODE_REBEL;
 	}
 
 	public bool IsOwn()
@@ -3183,18 +3186,18 @@ public partial class Unit : Sprite
 
 			//-- give additional increase if the leader has skill potential on leadership --//
 
-			if (leaderUnit.Skill.skill_potential > 0)
+			if (leaderUnit.Skill.SkillPotential > 0)
 			{
-				if (Misc.Random(10 - leaderUnit.Skill.skill_potential / 10) == 0)
+				if (Misc.Random(10 - leaderUnit.Skill.SkillPotential / 10) == 0)
 					leaderUnit.IncMinorSkillLevel(5);
 			}
 
 			//--- if this soldier has leadership potential and is led by a commander ---//
 			//--- he learns leadership by watching how the commander commands the troop --//
 
-			if (Skill.skill_potential > 0)
+			if (Skill.SkillPotential > 0)
 			{
-				if (Misc.Random(10 - Skill.skill_potential / 10) == 0)
+				if (Misc.Random(10 - Skill.SkillPotential / 10) == 0)
 					IncMinorSkillLevel(5);
 			}
 		}
@@ -3202,33 +3205,33 @@ public partial class Unit : Sprite
 
 	private void IncMinorCombatLevel(int incLevel)
 	{
-		Skill.combat_level_minor += incLevel;
+		Skill.CombatLevelMinor += incLevel;
 
-		if (Skill.combat_level_minor > 100)
+		if (Skill.CombatLevelMinor > 100)
 		{
-			if (Skill.combat_level < 100)
-				SetCombatLevel(Skill.combat_level + 1);
+			if (Skill.CombatLevel < 100)
+				SetCombatLevel(Skill.CombatLevel + 1);
 
-			Skill.combat_level_minor -= 100;
+			Skill.CombatLevelMinor -= 100;
 		}
 	}
 
 	private void IncMinorSkillLevel(int incLevel)
 	{
-		Skill.skill_level_minor += incLevel;
+		Skill.SkillLevelMinor += incLevel;
 
-		if (Skill.skill_level_minor > 100)
+		if (Skill.SkillLevelMinor > 100)
 		{
-			if (Skill.skill_level < 100)
-				Skill.skill_level++;
+			if (Skill.SkillLevel < 100)
+				Skill.SkillLevel++;
 
-			Skill.skill_level_minor -= 100;
+			Skill.SkillLevelMinor -= 100;
 		}
 	}
 
 	public void SetCombatLevel(int combatLevel)
 	{
-		Skill.combat_level = combatLevel;
+		Skill.CombatLevel = combatLevel;
 
 		UnitInfo unitInfo = UnitRes[UnitType];
 
@@ -3252,7 +3255,7 @@ public partial class Unit : Sprite
 			CanGuard = 0;
 		}
 
-		MaxPower = Skill.combat_level + 50;
+		MaxPower = Skill.CombatLevel + 50;
 		CurPower = Math.Min(CurPower, MaxPower);
 	}
 	
@@ -3408,7 +3411,7 @@ public partial class Unit : Sprite
 	{
 		Nation nation = NationArray[NationId];
 
-		int thisInfluence = Skill.get_skill(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
+		int thisInfluence = Skill.GetSkillLevel(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
 
 		if (RaceRes.is_same_race(nation.race_id, RaceId))
 			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
@@ -3428,7 +3431,7 @@ public partial class Unit : Sprite
 		//-------- pierce damage --------//
 
 		attackDamage += Misc.Random(3) + attackInfo.pierce_damage
-			* Misc.Random(Skill.combat_level - attackInfo.combat_level)
+			* Misc.Random(Skill.CombatLevel - attackInfo.combat_level)
 			/ (100 - attackInfo.combat_level);
 
 		//--- if this unit is led by a general, its attacking ability is influenced by the general ---//
@@ -3439,7 +3442,7 @@ public partial class Unit : Sprite
 		if (IsLeaderInRange())
 		{
 			Unit leaderUnit = UnitArray[LeaderId];
-			attackDamage += attackDamage * leaderUnit.Skill.skill_level / 100;
+			attackDamage += attackDamage * leaderUnit.Skill.SkillLevel / 100;
 		}
 
 		// lessen all attacking damages, thus slowing down all battles.
@@ -3625,7 +3628,7 @@ public partial class Unit : Sprite
 			//--- the king's leadership also affect the general's loyalty -----//
 
 			if (ownNation.king_unit_recno != 0)
-				targetLoyalty += UnitArray[ownNation.king_unit_recno].Skill.skill_level / 4;
+				targetLoyalty += UnitArray[ownNation.king_unit_recno].Skill.SkillLevel / 4;
 
 			//-- if the unit is rewarded less than the amount of contribution he made, he will become unhappy --//
 
@@ -3653,7 +3656,7 @@ public partial class Unit : Sprite
 
 				Unit leaderUnit = UnitArray[LeaderId];
 
-				int targetLoyalty = 30 + leaderUnit.Skill.get_skill(Skill.SKILL_LEADING);
+				int targetLoyalty = 30 + leaderUnit.Skill.GetSkillLevel(Skill.SKILL_LEADING);
 
 				//---------------------------------------------------//
 				//
@@ -3662,8 +3665,8 @@ public partial class Unit : Sprite
 				//
 				//---------------------------------------------------//
 
-				targetLoyalty -= Skill.combat_level / 2;
-				targetLoyalty -= Skill.skill_level;
+				targetLoyalty -= Skill.CombatLevel / 2;
+				targetLoyalty -= Skill.SkillLevel;
 
 				if (leaderUnit.Rank == RANK_KING)
 					targetLoyalty += 20;
@@ -3802,11 +3805,11 @@ public partial class Unit : Sprite
 		{
 			//--- set leadership if this unit does not have any now ----//
 
-			if (Skill.skill_id != Skill.SKILL_LEADING)
+			if (Skill.SkillId != Skill.SKILL_LEADING)
 			{
-				Skill.skill_id = Skill.SKILL_LEADING;
+				Skill.SkillId = Skill.SKILL_LEADING;
 				// TODO add random value?
-				Skill.skill_level = 10 + Misc.Random(40);
+				Skill.SkillLevel = 10 + Misc.Random(40);
 			}
 		}
 	}
@@ -4694,7 +4697,7 @@ public partial class Unit : Sprite
 		}
 		else if (Rank == RANK_GENERAL)
 		{
-			defend = (Skill.skill_level >= 30 + (100 - NationArray[NationId].pref_keep_general) / 2); // 30 to 80
+			defend = (Skill.SkillLevel >= 30 + (100 - NationArray[NationId].pref_keep_general) / 2); // 30 to 80
 			callIntervalDays = 15; // don't call too frequently
 		}
 
@@ -4875,7 +4878,7 @@ public partial class Unit : Sprite
 
 		//--- if the skill of the general and the number of soldiers he commands is not large enough to justify building a new camp ---//
 
-		else if (Skill.skill_level /* + team_info.member_count*4*/ < 40 + ownNation.pref_keep_general / 5) // 40 to 60
+		else if (Skill.SkillLevel /* + team_info.member_count*4*/ < 40 + ownNation.pref_keep_general / 5) // 40 to 60
 		{
 			rc = true;
 		}
@@ -4947,7 +4950,7 @@ public partial class Unit : Sprite
 			//-------------------------------------//
 
 			int curLeadership = firmCamp.cur_commander_leadership();
-			int newLeadership = firmCamp.new_commander_leadership(RaceId, Skill.skill_level);
+			int newLeadership = firmCamp.new_commander_leadership(RaceId, Skill.SkillLevel);
 
 			int curRating = newLeadership - curLeadership;
 
@@ -5020,12 +5023,12 @@ public partial class Unit : Sprite
 		Nation ownNation = NationArray[NationId];
 		Firm bestFirm = null;
 		int regionId = World.GetRegionId(NextLocX, NextLocY);
-		int skillId = Skill.skill_id;
-		int skillLevel = Skill.skill_level;
+		int skillId = Skill.SkillId;
+		int skillLevel = Skill.SkillLevel;
 		int bestRating = 0;
 		int curXLoc = NextLocX, curYLoc = NextLocY;
 
-		if (Skill.skill_id != 0)
+		if (Skill.SkillId != 0)
 		{
 			foreach (Firm firm in FirmArray)
 			{
@@ -5037,7 +5040,7 @@ public partial class Unit : Sprite
 
 				int curRating = 0;
 
-				if (Skill.skill_id == Skill.SKILL_CONSTRUCTION) // if this is a construction worker
+				if (Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if this is a construction worker
 				{
 					if (firm.builder_recno != 0) // assign the construction worker to this firm as an residental builder
 						continue;
@@ -5070,12 +5073,12 @@ public partial class Unit : Sprite
 
 							if (firm.majority_race() == RaceId)
 							{
-								if (Skill.skill_level < minSkill + 10)
+								if (Skill.SkillLevel < minSkill + 10)
 									continue;
 							}
 							else //-- for different race, only assign if the skill is significantly higher than the existing ones --//
 							{
-								if (Skill.skill_level < minSkill + 30)
+								if (Skill.SkillLevel < minSkill + 30)
 									continue;
 							}
 						}
@@ -5422,11 +5425,11 @@ public partial class Unit : Sprite
 		//----- otherwise only reward soldiers and generals ------//
 
 		//DieselMachine TODO do not reward generals that are not is the camps
-		else if (Skill.skill_id == Skill.SKILL_LEADING)
+		else if (Skill.SkillId == Skill.SKILL_LEADING)
 		{
 			//----- calculate the needed loyalty --------//
 
-			neededLoyalty = CommandedSoldierCount() * 5 + Skill.skill_level;
+			neededLoyalty = CommandedSoldierCount() * 5 + Skill.SkillLevel;
 
 			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE) // if this unit is an overseer
 			{

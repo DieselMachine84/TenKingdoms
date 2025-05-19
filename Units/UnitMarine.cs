@@ -1404,10 +1404,10 @@ public class UnitMarine : Unit
 		{
 			Unit unit = UnitArray[UnitsOnBoard[i]];
 
-			if (unit.Skill.skill_id == Skill.SKILL_LEADING)
+			if (unit.Skill.SkillId == Skill.SKILL_LEADING)
 			{
-				if (unit.Skill.skill_level > highestLeadership)
-					highestLeadership = unit.Skill.skill_level;
+				if (unit.Skill.SkillLevel > highestLeadership)
+					highestLeadership = unit.Skill.SkillLevel;
 			}
 		}
 

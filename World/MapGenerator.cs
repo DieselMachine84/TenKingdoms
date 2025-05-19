@@ -1643,14 +1643,14 @@ public class MapGenerator
 		switch (rankId)
 		{
 			case Unit.RANK_KING:
-				unit.Skill.set_skill(Skill.SKILL_LEADING);
-				unit.Skill.skill_level = 100;
+				unit.Skill.SkillId = Skill.SKILL_LEADING;
+				unit.Skill.SkillLevel = 100;
 				unit.SetCombatLevel(100);
 				break;
 
 			case Unit.RANK_GENERAL:
-				unit.Skill.set_skill(Skill.SKILL_LEADING);
-				unit.Skill.skill_level = 40 + Misc.Random(50); // 40 to 90
+				unit.Skill.SkillId = Skill.SKILL_LEADING;
+				unit.Skill.SkillLevel = 40 + Misc.Random(50); // 40 to 90
 				unit.SetCombatLevel(30 + Misc.Random(70)); // 30 to 100
 				break;
 
@@ -1666,8 +1666,8 @@ public class MapGenerator
 				}
 				else
 				{
-					unit.Skill.skill_id = skillId;
-					unit.Skill.skill_level = 30 + Misc.Random(70);
+					unit.Skill.SkillId = skillId;
+					unit.Skill.SkillLevel = 30 + Misc.Random(70);
 
 					if (skillId == Skill.SKILL_LEADING)
 						unit.SetCombatLevel(30 + Misc.Random(70));

@@ -13,22 +13,22 @@ public class InnUnit
 
 	public void set_hire_cost()
 	{
-		hire_cost = skill.combat_level + skill.skill_level * 2;
+		hire_cost = skill.CombatLevel + skill.SkillLevel * 2;
 
-		if (skill.skill_id == Skill.SKILL_LEADING) // the cost of a leader unit is higher
+		if (skill.SkillId == Skill.SKILL_LEADING) // the cost of a leader unit is higher
 		{
-			hire_cost += skill.skill_level * 2;
+			hire_cost += skill.SkillLevel * 2;
 
 			// increase the hiring cost with bigger steps when the skill level gets higher
 			for (int i = 10; i <= 100; i += 20)
 			{
-				if (i > skill.skill_level)
+				if (i > skill.SkillLevel)
 					hire_cost += i / 5;
 			}
 		}
-		else if (skill.skill_id == Skill.SKILL_SPYING) // the cost of a spy unit is higher
+		else if (skill.SkillId == Skill.SKILL_SPYING) // the cost of a spy unit is higher
 		{
-			hire_cost += skill.skill_level;
+			hire_cost += skill.SkillLevel;
 		}
 
 		hire_cost *= 2;
@@ -69,7 +69,7 @@ public class FirmInn : Firm
 	{
 		//------- if this is a construction worker -------//
 
-		if (UnitArray[unitRecno].Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 		}
@@ -97,17 +97,17 @@ public class FirmInn : Firm
 		//-------- set skills of the unit --------//
 
 		Unit unit = UnitArray[unitRecno];
-		unit.Skill.skill_id = innUnit.skill.skill_id;
-		unit.Skill.skill_level = innUnit.skill.skill_level;
-		unit.SetCombatLevel(innUnit.skill.combat_level);
+		unit.Skill.SkillId = innUnit.skill.SkillId;
+		unit.Skill.SkillLevel = innUnit.skill.SkillLevel;
+		unit.SetCombatLevel(innUnit.skill.CombatLevel);
 
 		//-------- if the unit's skill is spying -----//
 
-		if (unit.Skill.skill_id == Skill.SKILL_SPYING)
+		if (unit.Skill.SkillId == Skill.SKILL_SPYING)
 		{
-			Spy spy = SpyArray.AddSpy(unitRecno, unit.Skill.skill_level);
+			Spy spy = SpyArray.AddSpy(unitRecno, unit.Skill.SkillLevel);
 			unit.SpyId = spy.spy_recno;
-			unit.Skill.skill_id = 0; // reset its primary skill, its spying skill has been recorded in spy_array
+			unit.Skill.SkillId = 0; // reset its primary skill, its spying skill has been recorded in spy_array
 		}
 
 		//----------------------------------------//
@@ -154,11 +154,11 @@ public class FirmInn : Firm
 			InnUnit innUnit = inn_unit_array[recNo - 1];
 			if (innUnit.unit_id != unitId)
 				continue;
-			if (innUnit.skill.combat_level != combat_level)
+			if (innUnit.skill.CombatLevel != combat_level)
 				continue;
-			if (innUnit.skill.skill_id != skill_id)
+			if (innUnit.skill.SkillId != skill_id)
 				continue;
-			if (innUnit.skill.skill_level != skill_level)
+			if (innUnit.skill.SkillLevel != skill_level)
 				continue;
 			if (innUnit.hire_cost != hire_cost)
 				continue;
@@ -276,17 +276,17 @@ public class FirmInn : Firm
 		if (++next_skill_id > Skill.MAX_TRAINABLE_SKILL)
 			next_skill_id = 1;
 
-		innUnit.skill.skill_id = skillId;
+		innUnit.skill.SkillId = skillId;
 
 		if (skillId > 0)
-			innUnit.skill.skill_level = 30 + Misc.Random(70);
+			innUnit.skill.SkillLevel = 30 + Misc.Random(70);
 		else
-			innUnit.skill.skill_level = 0;
+			innUnit.skill.SkillLevel = 0;
 
 		if (skillId == 0 || skillId == Skill.SKILL_LEADING)
-			innUnit.skill.combat_level = 30 + Misc.Random(70);
+			innUnit.skill.CombatLevel = 30 + Misc.Random(70);
 		else
-			innUnit.skill.combat_level = 10;
+			innUnit.skill.CombatLevel = 10;
 
 		innUnit.set_hire_cost();
 
@@ -385,7 +385,7 @@ public class FirmInn : Firm
 		for (int i = 0; i < inn_unit_array.Count; i++)
 		{
 			InnUnit innUnit = inn_unit_array[i];
-			if (innUnit.skill.skill_id != Skill.SKILL_SPYING)
+			if (innUnit.skill.SkillId != Skill.SKILL_SPYING)
 				continue;
 
 			int raceId = UnitRes[innUnit.unit_id].race_id;
@@ -423,7 +423,7 @@ public class FirmInn : Firm
 		for (int i = 0; i < inn_unit_array.Count; i++)
 		{
 			InnUnit innUnit = inn_unit_array[i];
-			if (innUnit.skill.skill_id != Skill.SKILL_LEADING)
+			if (innUnit.skill.SkillId != Skill.SKILL_LEADING)
 				continue;
 
 			int raceId = UnitRes[innUnit.unit_id].race_id;
@@ -451,7 +451,7 @@ public class FirmInn : Firm
 				continue;
 
 			int curLeadership = firmCamp.cur_commander_leadership();
-			int newLeadership = firmCamp.new_commander_leadership(raceId, innUnit.skill.skill_level);
+			int newLeadership = firmCamp.new_commander_leadership(raceId, innUnit.skill.SkillLevel);
 
 			int curRating = newLeadership - curLeadership;
 

@@ -1713,7 +1713,7 @@ public partial class Unit
 						parentNation.enemy_civilian_killed++;
 					}
 				}
-				else if (targetUnit.IsCivilian() && targetUnit.Skill.combat_level < 20) //--- mobile civilian ---//
+				else if (targetUnit.IsCivilian() && targetUnit.Skill.CombatLevel < 20) //--- mobile civilian ---//
 				{
 					if (targetNationRecno != 0)
 					{
@@ -3456,12 +3456,12 @@ public partial class Unit
 	private bool can_attack_with(int i) // 0 to attack_count-1
 	{
 		AttackInfo attackInfo = AttackInfos[i];
-		return Skill.combat_level >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
+		return Skill.CombatLevel >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
 	}
 
 	private bool can_attack_with(AttackInfo attackInfo)
 	{
-		return Skill.combat_level >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
+		return Skill.CombatLevel >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
 	}
 
 	public bool can_attack()

@@ -279,7 +279,7 @@ public class Spy : IIdObject
 				if (unit.RaceId == race_id)
 				{
 					// a commander with a higher leadership skill will be less influenced by the spy's dissents
-					bool decLoyaltyChance = (Misc.Random(10 - spy_skill / 10 + 1 + unit.Skill.skill_level / 20) == 0);
+					bool decLoyaltyChance = (Misc.Random(10 - spy_skill / 10 + 1 + unit.Skill.SkillLevel / 20) == 0);
 					if (decLoyaltyChance && unit.Loyalty > 0)
 					{
 						unit.ChangeLoyalty(-1);
@@ -524,7 +524,7 @@ public class Spy : IIdObject
 
 			if (!FirmRes[firm.firm_id].live_in_town) // if the workers of the firm do not live in towns
 			{
-				int unitLeadership = unit.Skill.skill_level;
+				int unitLeadership = unit.Skill.SkillLevel;
 				int nationReputation = (int)NationArray[true_nation_recno].reputation;
 
 				for (int i = 0; i < firm.workers.Count; i++)
@@ -858,7 +858,7 @@ public class Spy : IIdObject
 				return FirmArray[spy_place_para].firm_skill_id;
 
 			case SPY_MOBILE:
-				return UnitArray[spy_place_para].Skill.skill_id;
+				return UnitArray[spy_place_para].Skill.SkillId;
 
 			default:
 				return 0;
@@ -1427,7 +1427,7 @@ public class Spy : IIdObject
 		Nation ownNation = NationArray[true_nation_recno];
 		Unit overseerUnit = UnitArray[firm.overseer_recno];
 
-		if (spy_skill < Math.Min(50, overseerUnit.Skill.skill_level) || !ownNation.ai_should_spend(30))
+		if (spy_skill < Math.Min(50, overseerUnit.Skill.SkillLevel) || !ownNation.ai_should_spend(30))
 		{
 			return false;
 		}

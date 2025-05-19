@@ -40,7 +40,7 @@ public partial class Renderer
                 case Unit.RANK_SOLDIER:
                     if (ShouldShowInfo(unit))
                     {
-                        title = unit.Skill.skill_id switch
+                        title = unit.Skill.SkillId switch
                         {
                             Skill.SKILL_LEADING => "Soldier",
                             Skill.SKILL_CONSTRUCTION => "Construction Worker",
@@ -53,7 +53,7 @@ public partial class Renderer
                     }
                     else
                     {
-                        if (unit.Skill.skill_id == Skill.SKILL_LEADING)
+                        if (unit.Skill.SkillId == Skill.SKILL_LEADING)
                             title = "Soldier";
                         if (unit.IsCivilian())
                             title = "Civilian";
@@ -89,17 +89,17 @@ public partial class Renderer
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 144);
         int combatPanelDY = 0;
 
-        if (unit.Skill.skill_id != 0)
+        if (unit.Skill.SkillId != 0)
         {
             DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149);
-            PutText(FontSan, unit.Skill.skill_des(), DetailsX1 + 13, DetailsY1 + 152, -1, true);
-            PutText(FontSan, unit.Skill.skill_level.ToString(), DetailsX1 + 113, DetailsY1 + 154, -1, true);
+            PutText(FontSan, unit.Skill.SkillDescription(), DetailsX1 + 13, DetailsY1 + 152, -1, true);
+            PutText(FontSan, unit.Skill.SkillLevel.ToString(), DetailsX1 + 113, DetailsY1 + 154, -1, true);
             combatPanelDY += 29;
         }
 
         DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149 + combatPanelDY);
         PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 152 + combatPanelDY, -1, true);
-        PutText(FontSan, unit.Skill.combat_level.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
+        PutText(FontSan, unit.Skill.CombatLevel.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
 
         if (unit.Rank != Unit.RANK_KING && !unit.IsCivilian())
         {

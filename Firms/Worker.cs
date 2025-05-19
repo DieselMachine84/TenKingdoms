@@ -62,7 +62,7 @@ public class Worker
             {
                 Unit overseerUnit = UnitArray[firmPtr.overseer_recno];
 
-                int overseerSkill = overseerUnit.Skill.get_skill(Skill.SKILL_LEADING);
+                int overseerSkill = overseerUnit.Skill.GetSkillLevel(Skill.SKILL_LEADING);
                 int targetLoyalty = 30 + overseerSkill / 2;
 
                 //---------------------------------------------------//

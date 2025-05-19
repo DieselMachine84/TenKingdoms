@@ -96,7 +96,7 @@ public class FirmHarbor : Firm
 	{
 		//------- if this is a construction worker -------//
 
-		if (UnitArray[unitRecno].Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;

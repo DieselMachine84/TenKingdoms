@@ -516,7 +516,7 @@ public abstract class Firm : IIdObject
 
 		//------- if this is a construction worker -------//
 
-		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			set_builder(unitRecno);
 			return;
@@ -545,10 +545,10 @@ public abstract class Firm : IIdObject
 		FirmInfo firmInfo = FirmRes[firm_id];
 
 		if (firmInfo.need_overseer && (overseer_recno == 0 ||
-		                               (unit.Skill.skill_id == firm_skill_id &&
-		                                UnitArray[overseer_recno].Skill.skill_id != firm_skill_id) ||
-		                               (unit.Skill.skill_id == firm_skill_id && unit.Skill.skill_level >
-			                               UnitArray[overseer_recno].Skill.skill_level)
+		                               (unit.Skill.SkillId == firm_skill_id &&
+		                                UnitArray[overseer_recno].Skill.SkillId != firm_skill_id) ||
+		                               (unit.Skill.SkillId == firm_skill_id && unit.Skill.SkillLevel >
+			                               UnitArray[overseer_recno].Skill.SkillLevel)
 		    ))
 		{
 			assign_overseer(unitRecno);
@@ -782,12 +782,12 @@ public abstract class Firm : IIdObject
 		newWorker.rank_id = unit.Rank;
 
 		newWorker.skill_id = firm_skill_id;
-		newWorker.skill_level = unit.Skill.get_skill(firm_skill_id);
+		newWorker.skill_level = unit.Skill.GetSkillLevel(firm_skill_id);
 
 		if (newWorker.skill_level == 0 && newWorker.race_id != 0)
 			newWorker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
 
-		newWorker.combat_level = unit.Skill.combat_level;
+		newWorker.combat_level = unit.Skill.CombatLevel;
 		newWorker.hit_points = (int)unit.HitPoints;
 
 		if (newWorker.hit_points == 0) // 0.? will become 0 in (float) to (int) conversion
@@ -1665,7 +1665,7 @@ public abstract class Firm : IIdObject
 			if (unit.NationId != nation_recno || unit.RaceId == 0)
 				continue;
 
-			if (unit.Skill.skill_id != Skill.SKILL_CONSTRUCTION)
+			if (unit.Skill.SkillId != Skill.SKILL_CONSTRUCTION)
 				continue;
 
 			if (unit.IsVisible() && unit.RegionId() != region_id)
@@ -2225,8 +2225,8 @@ public abstract class Firm : IIdObject
 
 		Unit unit = UnitArray[builder_recno];
 
-		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
-			hit_points += 1 + unit.Skill.skill_level / 30;
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+			hit_points += 1 + unit.Skill.SkillLevel / 30;
 		else
 			hit_points++;
 
@@ -2235,14 +2235,14 @@ public abstract class Firm : IIdObject
 
 		//----- increase skill level of the builder unit -----//
 
-		if (unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
 		{
-			if (++unit.Skill.skill_level_minor > 100)
+			if (++unit.Skill.SkillLevelMinor > 100)
 			{
-				unit.Skill.skill_level_minor = 0;
+				unit.Skill.SkillLevelMinor = 0;
 
-				if (unit.Skill.skill_level < 100)
-					unit.Skill.skill_level++;
+				if (unit.Skill.SkillLevel < 100)
+					unit.Skill.SkillLevel++;
 			}
 		}
 
@@ -2263,7 +2263,7 @@ public abstract class Firm : IIdObject
 
 			if ((firmInfo.need_overseer || firmInfo.need_worker) &&
 			    (firmInfo.firm_skill_id == 0 ||
-			     firmInfo.firm_skill_id == unit.Skill.skill_id)) // the builder with the skill required
+			     firmInfo.firm_skill_id == unit.Skill.SkillId)) // the builder with the skill required
 			{
 				unit.SetMode(0); // reset it from UNIT_MODE_CONSTRUCT
 
@@ -2340,7 +2340,7 @@ public abstract class Firm : IIdObject
 			return;
 
 		// repair once every 1 to 6 days, depending on the skill level of the construction worker
-		int dayInterval = (100 - unit.Skill.skill_level) / 20 + 1;
+		int dayInterval = (100 - unit.Skill.SkillLevel) / 20 + 1;
 
 		if (Info.TotalDays % dayInterval == firm_recno % dayInterval)
 		{
@@ -2590,7 +2590,7 @@ public abstract class Firm : IIdObject
 			UnitRes[unit.UnitType].dec_nation_unit_count(nation_recno);
 
 		//--- set non-military units to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.skill_id != Skill.SKILL_LEADING && !unit.AIUnit)
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
 			unit.AggressiveMode = false;
 
 		return unitRecno;
@@ -3183,7 +3183,7 @@ public abstract class Firm : IIdObject
 			for (int j = 0; j < firmInn.inn_unit_array.Count; j++)
 			{
 				InnUnit innUnit = firmInn.inn_unit_array[j];
-				if (innUnit.skill.skill_id != firm_skill_id)
+				if (innUnit.skill.SkillId != firm_skill_id)
 					continue;
 
 				//-------------------------------------------//
@@ -3197,7 +3197,7 @@ public abstract class Firm : IIdObject
 				curRating = World.DistanceRating(center_x, center_y,
 					firmInn.center_x, firmInn.center_y);
 
-				curRating += innUnit.skill.skill_level;
+				curRating += innUnit.skill.SkillLevel;
 
 				if (majorityRace == UnitRes[innUnit.unit_id].race_id)
 				{
@@ -3214,7 +3214,7 @@ public abstract class Firm : IIdObject
 
 					if (majorityRace != 0)
 					{
-						if (foreignRaceCount > 0 || prefTownHarmony > innUnit.skill.skill_level - 50)
+						if (foreignRaceCount > 0 || prefTownHarmony > innUnit.skill.SkillLevel - 50)
 							continue;
 					}
 				}

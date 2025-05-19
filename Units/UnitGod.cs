@@ -368,7 +368,7 @@ public class UnitGod : Unit
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
-			int newCombatLevel = unit.Skill.combat_level + changePoints / divider;
+			int newCombatLevel = unit.Skill.CombatLevel + changePoints / divider;
 
 			if (newCombatLevel > 100)
 				newCombatLevel = 100;
@@ -406,17 +406,17 @@ public class UnitGod : Unit
 			int changePoints = 30; // add 15 twice to avoid 130 becomes -126
 			if (divider > 2)
 			{
-				unit.Skill.skill_level += changePoints / divider;
-				if (unit.Skill.skill_level > 100)
-					unit.Skill.skill_level = 100;
+				unit.Skill.SkillLevel += changePoints / divider;
+				if (unit.Skill.SkillLevel > 100)
+					unit.Skill.SkillLevel = 100;
 			}
 			else
 			{
 				for (int t = 2; t > 0; --t)
 				{
-					unit.Skill.skill_level += changePoints / 2 / divider;
-					if (unit.Skill.skill_level > 100)
-						unit.Skill.skill_level = 100;
+					unit.Skill.SkillLevel += changePoints / 2 / divider;
+					if (unit.Skill.SkillLevel > 100)
+						unit.Skill.SkillLevel = 100;
 				}
 			}
 		}
@@ -560,7 +560,7 @@ public class UnitGod : Unit
 			{
 				Unit unit = UnitArray[firm.overseer_recno];
 
-				if (unit.RaceId == (int)Race.RACE_MAYA && unit.Skill.combat_level < 100)
+				if (unit.RaceId == (int)Race.RACE_MAYA && unit.Skill.CombatLevel < 100)
 					curRating += 10;
 			}
 
@@ -912,24 +912,24 @@ public class UnitGod : Unit
 			if (firm.overseer_recno != 0
 			    && (unit = UnitArray[firm.overseer_recno]) != null
 			    && unit.RaceId == (int)Race.RACE_ZULU // only consider ZULU leader
-			    && unit.Skill.skill_level <= 70)
+			    && unit.Skill.SkillLevel <= 70)
 			{
 				if (unit.Rank == RANK_KING)
 					curRating += 5000; // weak king need leadership very much
 
-				if (unit.Skill.skill_level >= 40)
-					curRating += 5000 - (unit.Skill.skill_level - 40) * 60; // strong leader need not be enhanced
+				if (unit.Skill.SkillLevel >= 40)
+					curRating += 5000 - (unit.Skill.SkillLevel - 40) * 60; // strong leader need not be enhanced
 				else
-					curRating += 5000 - (40 - unit.Skill.skill_level) * 80; // don't add weak leader
+					curRating += 5000 - (40 - unit.Skill.SkillLevel) * 80; // don't add weak leader
 
 				// calculate the benefits to his soldiers
 				for (int j = firm.workers.Count - 1; j >= 0; j--)
 				{
 					Worker worker = firm.workers[j];
 					if (worker.race_id == (int)Race.RACE_ZULU)
-						curRating += (unit.Skill.combat_level - worker.combat_level) * 2;
+						curRating += (unit.Skill.CombatLevel - worker.combat_level) * 2;
 					else
-						curRating += unit.Skill.combat_level - worker.combat_level;
+						curRating += unit.Skill.CombatLevel - worker.combat_level;
 				}
 
 				if (curRating > bestRating)

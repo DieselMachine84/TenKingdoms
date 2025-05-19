@@ -1128,7 +1128,7 @@ public class Town : IIdObject
 			//------ if this race is the overseer's race -------//
 
 			//TODO targetLoyalty should depend on overseer's nation reputation
-			int baseInfluence = overseer.Skill.get_skill(Skill.SKILL_LEADING) / 3; // 0 to 33
+			int baseInfluence = overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING) / 3; // 0 to 33
 
 			if (overseer.Rank == Unit.RANK_KING) // 20 points bonus for king
 				baseInfluence += 20;
@@ -1784,7 +1784,7 @@ public class Town : IIdObject
 		{
 			Unit unit = UnitArray[TrainUnitId];
 			// check whether the unit is already a spy before training
-			if (unit.SpyId != 0 && unit.Skill.skill_id != 0)
+			if (unit.SpyId != 0 && unit.Skill.SkillId != 0)
 			{
 				//TODO check
 				SpyArray[unit.SpyId].set_place(Spy.SPY_TOWN, TownId);
@@ -1834,7 +1834,7 @@ public class Town : IIdObject
 		if (amount > 0 && TrainUnitId != 0)
 		{
 			Unit unit = UnitArray[TrainUnitId];
-			if (unit.Skill.skill_id == skillId)
+			if (unit.Skill.SkillId == skillId)
 				CancelTrain();
 		}
 	}
@@ -2147,7 +2147,7 @@ public class Town : IIdObject
 				// if the unit is a town defender, skill.skill_level is temporarily used for storing the loyalty
 				// that will be added back to the town if the defender returns to the town
 
-				int loyaltyInc = unit.Skill.skill_level;
+				int loyaltyInc = unit.Skill.SkillLevel;
 
 				if (NationId != 0) // set the loyalty later for NationId != 0
 				{
@@ -2176,7 +2176,7 @@ public class Town : IIdObject
 
 		if (NationId == 0) // update the town people's combat level with this unit's combat level
 		{
-			TownCombatLevel = (TownCombatLevel * (Population - 1) + unit.Skill.combat_level) / Population;
+			TownCombatLevel = (TownCombatLevel * (Population - 1) + unit.Skill.CombatLevel) / Population;
 		}
 
 		//--------- delete the unit --------//
@@ -2346,8 +2346,8 @@ public class Town : IIdObject
 			}
 			else
 			{
-				unit.Skill.skill_id = trainSkillId;
-				unit.Skill.skill_level = GameConstants.TRAIN_SKILL_LEVEL;
+				unit.Skill.SkillId = trainSkillId;
+				unit.Skill.SkillLevel = GameConstants.TRAIN_SKILL_LEVEL;
 			}
 			
 			//---- training solider or skilled unit takes time ----//
@@ -3235,7 +3235,7 @@ public class Town : IIdObject
 		unit.SetMode(UnitConstants.UNIT_MODE_DEFEND_TOWN, TownId);
 
 		// if the unit is a town defender, this var is temporarily used for storing the loyalty that will be added back to the town if the defender returns to the town
-		unit.Skill.skill_level = (int)loyaltyDec;
+		unit.Skill.SkillLevel = (int)loyaltyDec;
 
 		int combatLevel = TownCombatLevel + Misc.Random(20) - 10; // -10 to +10 random difference
 		combatLevel = Math.Min(combatLevel, 100);
@@ -3710,8 +3710,8 @@ public class Town : IIdObject
 
 			unit.SetCombatLevel(Math.Min(combatLevel, 100));
 
-			unit.Skill.skill_id = Skill.SKILL_LEADING;
-			unit.Skill.skill_level = Math.Min(leadershipLevel, 100);
+			unit.Skill.SkillId = Skill.SKILL_LEADING;
+			unit.Skill.SkillLevel = Math.Min(leadershipLevel, 100);
 		}
 		else
 		{
@@ -3753,8 +3753,8 @@ public class Town : IIdObject
 		//-------- create the king --------//
 
 		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.nation_recno, Unit.RANK_KING, 100, locX, locY);
-		kingUnit.Skill.skill_id = Skill.SKILL_LEADING;
-		kingUnit.Skill.skill_level = 50 + Misc.Random(51);
+		kingUnit.Skill.SkillId = Skill.SKILL_LEADING;
+		kingUnit.Skill.SkillLevel = 50 + Misc.Random(51);
 		kingUnit.SetCombatLevel(70 + Misc.Random(31));
 
 		newNation.set_king(kingUnit.SpriteId, 1);
@@ -3804,8 +3804,8 @@ public class Town : IIdObject
 						skillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
 					} while (skillId == Skill.SKILL_SPYING);
 
-					unit.Skill.skill_id = skillId;
-					unit.Skill.skill_level = 50 + Misc.Random(50);
+					unit.Skill.SkillId = skillId;
+					unit.Skill.SkillLevel = 50 + Misc.Random(50);
 					unit.SetCombatLevel(50 + Misc.Random(50));
 				}
 				break;
@@ -4011,8 +4011,8 @@ public class Town : IIdObject
 				break;
 		}
 
-		unit.Skill.skill_id = skillId;
-		unit.Skill.skill_level = skillLevel;
+		unit.Skill.SkillId = skillId;
+		unit.Skill.SkillLevel = skillLevel;
 		unit.SetCombatLevel(combatLevel);
 
 		//------ change nation now --------//

@@ -318,8 +318,8 @@ public class FirmInfo
         {
             if (unit.Rank == Unit.RANK_GENERAL ||
                 unit.Rank == Unit.RANK_KING ||
-                unit.Skill.skill_id == Skill.SKILL_PRAYING ||
-                unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+                unit.Skill.SkillId == Skill.SKILL_PRAYING ||
+                unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
             {
                 //----- each nation can only build one seat of power -----//
 
@@ -339,7 +339,7 @@ public class FirmInfo
 
         if (firm_race_id == 0)
         {
-            if (unit.Rank == Unit.RANK_KING || unit.Skill.skill_id == Skill.SKILL_CONSTRUCTION)
+            if (unit.Rank == Unit.RANK_KING || unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
                 return true;
         }
 
@@ -350,7 +350,7 @@ public class FirmInfo
 
         //---- if the unit has the skill needed by the firm or the unit has general construction skill ----//
 
-        if (firm_skill_id != 0 && firm_skill_id == unit.Skill.skill_id)
+        if (firm_skill_id != 0 && firm_skill_id == unit.Skill.SkillId)
             return true;
 
         return false;
