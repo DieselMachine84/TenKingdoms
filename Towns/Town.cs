@@ -62,7 +62,7 @@ public class Town : IIdObject
 	// each bit n is representing this independent town will attack nation n.
 	private int _independentTownNationRelation;
 	private int _independentUnitJoinNationMinRating;
-	public int RebelId { get; set; } // whether this town is controlled by a rebel
+	public int RebelId { get; set; } // whether this town is controlled by rebels
 	private DateTime _lastRebelDate;
 
 	
@@ -3003,7 +3003,7 @@ public class Town : IIdObject
 
 		//------------- stop all actions to attack this town ------------//
 		UnitArray.stop_attack_town(TownId);
-		RebelArray.stop_attack_town(TownId);
+		RebelArray.StopAttackTown(TownId);
 
 		//--------- update AI town info ---------//
 
@@ -3055,7 +3055,7 @@ public class Town : IIdObject
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
-			if (NationId == 0) // independent town set up by rebel
+			if (NationId == 0) // independent town
 			{
 				RacesLoyalty[i] = 80; // this affect the no. of defender if you attack the independent town
 			}
@@ -3256,7 +3256,7 @@ public class Town : IIdObject
 		DefendersCount++;
 
 		if (RebelId != 0)
-			RebelArray[RebelId].mobile_rebel_count++; // increase the no. of mobile rebel units
+			RebelArray[RebelId].MobileRebelCount++; // increase the no. of mobile rebel units
 
 		return true;
 	}
@@ -3279,7 +3279,7 @@ public class Town : IIdObject
 			_independentTownNationRelation = 0;
 
 		if (RebelId != 0)
-			RebelArray[RebelId].mobile_rebel_count--; // decrease the no. of mobile rebel units
+			RebelArray[RebelId].MobileRebelCount--; // decrease the no. of mobile rebel units
 	}
 
 	public void AutoDefense(int targetId)
@@ -3302,7 +3302,7 @@ public class Town : IIdObject
 	public void BeingAttacked(int attackerUnitId, double attackDamage)
 	{
 		if (RebelId != 0)
-			RebelArray[RebelId].town_being_attacked(attackerUnitId);
+			RebelArray[RebelId].TownBeingAttacked(attackerUnitId);
 
 		if (Population == 0)
 			return;
@@ -3509,7 +3509,7 @@ public class Town : IIdObject
 		if (RebelId != 0)
 		{
 			Rebel rebel = RebelArray[RebelId];
-			if (rebel.mobile_rebel_count > 0)
+			if (rebel.MobileRebelCount > 0)
 				return;
 		}
 
@@ -3645,7 +3645,7 @@ public class Town : IIdObject
 				rebelUnit.GroupId = curGroupId;
 				rebelUnit.LeaderId = rebelLeader.SpriteId;
 
-				rebel.join(rebelUnit);
+				rebel.Join(rebelUnit);
 
 				rebelCount++;
 			}

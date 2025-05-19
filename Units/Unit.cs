@@ -2280,44 +2280,45 @@ public partial class Unit : Sprite
 	{
 		Rebel rebel = RebelArray[UnitModeParam];
 
-		switch (rebel.action_mode)
+		// TODO Rebel.REBEL_ATTACK_FIRM is not processed
+		switch (rebel.ActionMode)
 		{
 			case Rebel.REBEL_ATTACK_TOWN:
-				if (TownArray.IsDeleted(rebel.action_para))
+				if (TownArray.IsDeleted(rebel.ActionParam))
 				{
-					rebel.set_action(Rebel.REBEL_IDLE);
+					rebel.SetAction(Rebel.REBEL_IDLE);
 				}
 				else
 				{
-					Town town = TownArray[rebel.action_para];
+					Town town = TownArray[rebel.ActionParam];
 					attack_town(town.LocX1, town.LocY1);
 				}
 
 				break;
 
 			case Rebel.REBEL_SETTLE_NEW:
-				if (!World.CanBuildTown(rebel.action_para, rebel.action_para2, SpriteId))
+				if (!World.CanBuildTown(rebel.ActionParam, rebel.ActionParam2, SpriteId))
 				{
-					Location location = World.GetLoc(rebel.action_para, rebel.action_para2);
+					Location location = World.GetLoc(rebel.ActionParam, rebel.ActionParam2);
 
-					if (location.IsTown() && TownArray[location.TownId()].RebelId == rebel.rebel_recno)
+					if (location.IsTown() && TownArray[location.TownId()].RebelId == rebel.RebelId)
 					{
-						rebel.action_mode = Rebel.REBEL_SETTLE_TO;
+						rebel.ActionMode = Rebel.REBEL_SETTLE_TO;
 					}
 					else
 					{
-						rebel.action_mode = Rebel.REBEL_IDLE;
+						rebel.ActionMode = Rebel.REBEL_IDLE;
 					}
 				}
 				else
 				{
-					Settle(rebel.action_para, rebel.action_para2);
+					Settle(rebel.ActionParam, rebel.ActionParam2);
 				}
 
 				break;
 
 			case Rebel.REBEL_SETTLE_TO:
-				Assign(rebel.action_para, rebel.action_para2);
+				Assign(rebel.ActionParam, rebel.ActionParam2);
 				break;
 		}
 	}
@@ -2447,7 +2448,7 @@ public partial class Unit : Sprite
 	public virtual void Die()
 	{
 		if (UnitMode == UnitConstants.UNIT_MODE_REBEL)
-			RebelArray.drop_rebel_identity(SpriteId);
+			RebelArray.DropRebelIdentity(SpriteId);
 	}
 
 	public void NextDay()
@@ -3477,7 +3478,7 @@ public partial class Unit : Sprite
 					return false;
 
 				Rebel rebel = RebelArray[UnitModeParam];
-				return rebel.is_hostile_nation(targetNationId);
+				return rebel.IsHostileNation(targetNationId);
 
 			case UnitConstants.UNIT_MODE_MONSTER:
 				if (UnitModeParam == 0)
@@ -4198,7 +4199,7 @@ public partial class Unit : Sprite
 		if (SpyId != 0) // spies do not betray here, spy has its own functions for betrayal
 			return false;
 
-		//----- if the unit is in training or is constructing a building, do not rebel -------//
+		//----- if the unit is in training or is constructing a building, do not betray -------//
 
 		if (!IsVisible() && UnitMode != UnitConstants.UNIT_MODE_OVERSEE)
 			return false;
@@ -4589,15 +4590,15 @@ public partial class Unit : Sprite
 
 			//--- if the group this rebel belongs to already has a rebel town, assign to it now ---//
 
-			if (rebel.town_recno != 0)
+			if (rebel.TownId != 0)
 			{
-				if (!TownArray.IsDeleted(rebel.town_recno))
+				if (!TownArray.IsDeleted(rebel.TownId))
 				{
-					Town town = TownArray[rebel.town_recno];
+					Town town = TownArray[rebel.TownId];
 					Assign(town.LocX1, town.LocY1);
 				}
 
-				return; // don't do anything if the town has been destroyed, Rebel.next_day() will take care of it. 
+				return; // don't do anything if the town has been destroyed, Rebel.NextDay() will take care of it. 
 			}
 		}
 
@@ -4627,8 +4628,9 @@ public partial class Unit : Sprite
 		{
 			//--- drop its rebel identity and becomes a normal unit if he decides to settle to a town ---//
 
+			// TODO UNIT_MODE_REBEL already processed before
 			if (UnitMode == UnitConstants.UNIT_MODE_REBEL)
-				RebelArray.drop_rebel_identity(SpriteId);
+				RebelArray.DropRebelIdentity(SpriteId);
 
 			Assign(bestTown.LocX1, bestTown.LocY1);
 		}

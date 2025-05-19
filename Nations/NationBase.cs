@@ -1088,7 +1088,7 @@ public class NationBase : IIdObject
 
     public void hand_over_to(int handoverNationRecno)
     {
-        RebelArray.stop_attack_nation(nation_recno);
+        RebelArray.StopAttackNation(nation_recno);
         TownArray.StopAttackNation(nation_recno);
         UnitArray.stop_all_war(nation_recno);
         MonsterRes.stop_attack_nation(nation_recno);

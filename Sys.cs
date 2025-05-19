@@ -238,7 +238,7 @@ public class Sys
             Info.next_day();
             World.NextDay();
             SiteArray.NextDay();
-            RebelArray.next_day();
+            RebelArray.NextDay();
             SpyArray.NextDay();
             if (Config.weather_effect != 0)
                 SpriteRes.update_speed();

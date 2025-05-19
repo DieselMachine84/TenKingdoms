@@ -5,26 +5,24 @@ namespace TenKingdoms;
 public class RebelArray : DynArray<Rebel>
 {
     private UnitArray UnitArray => Sys.Instance.UnitArray;
-    private TownArray TownArray => Sys.Instance.TownArray;
 
     protected override Rebel CreateNewObject(int objectType)
     {
         return new Rebel();
     }
 
-    public Rebel AddRebel(Unit rebelUnit, int hostileNationRecno, int actionMode = Rebel.REBEL_IDLE, int actionPara = 0)
+    public Rebel AddRebel(Unit rebelUnit, int hostileNationId, int actionMode = Rebel.REBEL_IDLE, int actionParam = 0)
     {
-        //------------------------------------------//
-        //	See if there are a rebel group nearby
-        // with the same objectives, join the rebel
-        // group without creating a new one.
-        //------------------------------------------//
+        //---------------------------------------------------------------//
+        // See if there is a rebel group nearby with the same objectives,
+        // join the rebel group without creating a new one.
+        //---------------------------------------------------------------//
 
         foreach (Rebel rebel in EnumerateRandom())
         {
-            if (rebel.action_mode == actionMode && rebel.action_para == actionPara)
+            if (rebel.ActionMode == actionMode && rebel.ActionParam == actionParam)
             {
-                rebel.join(rebelUnit); // join the rebel group
+                rebel.Join(rebelUnit); // join the rebel group
                 return rebel;
             }
         }
@@ -32,38 +30,40 @@ public class RebelArray : DynArray<Rebel>
         //-------- create a new rebel group ---------//
 
         Rebel newRebel = CreateNew();
-        newRebel.Init(rebelUnit, hostileNationRecno, actionMode, actionPara);
-
+        newRebel.Init(rebelUnit, hostileNationId, actionMode, actionParam);
         return newRebel;
     }
 
     public void DeleteRebel(Rebel rebel)
     {
-        int rebelRecno = rebel.rebel_recno;
         rebel.Deinit();
-        Delete(rebelRecno);
-    }
-    public void DeleteRebel(int rebelRecno)
-    {
-        DeleteRebel(this[rebelRecno]);
+        Delete(rebel.RebelId);
     }
 
-    public void drop_rebel_identity(int unitRecno)
+    public void DeleteRebel(int rebelId)
     {
-        Unit unit = UnitArray[unitRecno];
+        DeleteRebel(this[rebelId]);
+    }
 
-        //---- decrease the unit count of the rebel group ----//
-
-        int rebelRecno = unit.UnitModeParam;
-        Rebel rebel = this[rebelRecno];
-
-        rebel.mobile_rebel_count--;
-
+    public void NextDay()
+    {
+        foreach (Rebel rebel in this)
+        {
+            rebel.NextDay();
+        }
+    }
+    
+    public void DropRebelIdentity(int unitId)
+    {
+        Unit unit = UnitArray[unitId];
+        int rebelId = unit.UnitModeParam;
+        Rebel rebel = this[rebelId];
+        rebel.MobileRebelCount--; // decrease the unit count of the rebel group
         unit.SetMode(0); // drop its rebel identity 
 
         //----- if all rebels are dead and the rebel doesn't occupy a town, del the rebel group ----//
 
-        if (rebel.mobile_rebel_count == 0 && rebel.town_recno == 0)
+        if (rebel.MobileRebelCount == 0 && rebel.TownId == 0)
         {
             DeleteRebel(rebel);
             return;
@@ -71,72 +71,62 @@ public class RebelArray : DynArray<Rebel>
 
         //----- when the rebel leader is killed -----//
 
-        if (rebel.leader_unit_recno == unitRecno)
-            rebel.process_leader_quit();
+        if (rebel.LeaderUnitId == unitId)
+            rebel.ProcessLeaderQuit();
     }
 
     public void SettleTown(Unit unit, Town town)
     {
-        //---- decrease the unit count of the rebel group ----//
-
-        int rebelRecno = unit.UnitModeParam;
-        Rebel rebel = this[rebelRecno];
-        rebel.mobile_rebel_count--;
+        int rebelId = unit.UnitModeParam;
+        Rebel rebel = this[rebelId];
+        rebel.MobileRebelCount--; // decrease the unit count of the rebel group
 
         //--------- settle in a town ----------//
 
-        if (rebel.town_recno == 0 && town.RebelId == 0)
+        if (rebel.TownId == 0 && town.RebelId == 0)
         {
-            rebel.town_recno = town.TownId;
-            town.RebelId = rebelRecno;
+            rebel.TownId = town.TownId;
+            town.RebelId = rebelId;
         }
     }
 
-    public void next_day()
+    public void StopAttackTown(int townId)
     {
         foreach (Rebel rebel in this)
         {
-            rebel.next_day();
-        }
-    }
-
-    public void stop_attack_town(int townRecno)
-    {
-        foreach (Rebel rebel in this)
-        {
-            if (rebel.action_mode == Rebel.REBEL_ATTACK_TOWN)
+            if (rebel.ActionMode == Rebel.REBEL_ATTACK_TOWN)
             {
-                if (rebel.action_para == townRecno)
+                if (rebel.ActionParam == townId)
                 {
-                    rebel.set_action(Rebel.REBEL_IDLE);
-                    rebel.stop_all_rebel_unit();
+                    rebel.SetAction(Rebel.REBEL_IDLE);
+                    rebel.StopAllRebelUnit();
                     break;
                 }
             }
         }
     }
 
-    public void stop_attack_firm(int firmRecno)
+    public void StopAttackFirm(int firmId)
     {
         foreach (Rebel rebel in this)
         {
-            if (rebel.action_mode == Rebel.REBEL_ATTACK_FIRM)
+            if (rebel.ActionMode == Rebel.REBEL_ATTACK_FIRM)
             {
-                if (rebel.action_para == firmRecno)
+                if (rebel.ActionParam == firmId)
                 {
-                    rebel.set_action(Rebel.REBEL_IDLE);
-                    rebel.stop_all_rebel_unit();
+                    rebel.SetAction(Rebel.REBEL_IDLE);
+                    rebel.StopAllRebelUnit();
                     return;
                 }
             }
         }
     }
 
-    public void stop_attack_nation(int nationRecno)
+    public void StopAttackNation(int nationId)
     {
         foreach (Rebel rebel in this)
         {
-            rebel.reset_hostile_nation(nationRecno);
+            rebel.ResetHostileNation(nationId);
         }
     }
 }

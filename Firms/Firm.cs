@@ -1222,7 +1222,7 @@ public abstract class Firm : IIdObject
 
 		//---------- stop all attack actions to this firm ----------//
 		UnitArray.stop_attack_firm(firm_recno);
-		RebelArray.stop_attack_firm(firm_recno);
+		RebelArray.StopAttackFirm(firm_recno);
 
 		Nation oldNation = NationArray[nation_recno];
 		Nation newNation = NationArray[newNationRecno];

@@ -11,22 +11,22 @@ public class Rebel : IIdObject
     public const int REBEL_SETTLE_NEW = 4; // Settle to a new town
     public const int REBEL_SETTLE_TO = 5; // Settle to an existing town 
 
-    public int rebel_recno; // recno of this rebel in rebel_array
-    public int leader_unit_recno;
-    public int action_mode;
-    public int action_para;
-    public int action_para2;
-    public int mobile_rebel_count; // no. of units in this rebel group
-    public int town_recno; // the town controlled by the rebel, one rebel can only control one town
-    public int hostile_nation_bits;
+    public int RebelId { get; private set; }
+    public int LeaderUnitId { get; private set; }
+    public int ActionMode { get; set; }
+    public int ActionParam { get; private set; }
+    public int ActionParam2 { get; private set; }
+    public int MobileRebelCount  { get; set; } // no. of units in this rebel group
+    public int TownId  { get; set; } // the town controlled by the rebel group, one rebel group can only control one town
+    private int HostileNationBits  { get; set; }
 
     private Info Info => Sys.Instance.Info;
     private World World => Sys.Instance.World;
-    private UnitArray UnitArray => Sys.Instance.UnitArray;
-    private RebelArray RebelArray => Sys.Instance.RebelArray;
     private NationArray NationArray => Sys.Instance.NationArray;
     private TownArray TownArray => Sys.Instance.TownArray;
     private FirmArray FirmArray => Sys.Instance.FirmArray;
+    private UnitArray UnitArray => Sys.Instance.UnitArray;
+    private RebelArray RebelArray => Sys.Instance.RebelArray;
 
     public Rebel()
     {
@@ -34,48 +34,48 @@ public class Rebel : IIdObject
     
     void IIdObject.SetId(int id)
     {
-        rebel_recno = id;
+        RebelId = id;
     }
 
-    public void Init(Unit unit, int hostileNationRecno, int actionMode, int actionPara)
+    public void Init(Unit unit, int hostileNationId, int actionMode, int actionParam)
     {
-        leader_unit_recno = unit.SpriteId;
-        action_mode = actionMode;
-        action_para = actionPara;
-        mobile_rebel_count = 1;
-        set_hostile_nation(hostileNationRecno);
+        LeaderUnitId = unit.SpriteId;
+        ActionMode = actionMode;
+        ActionParam = actionParam;
+        MobileRebelCount = 1;
+        SetHostileNation(hostileNationId);
 
-        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
+        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, RebelId);
     }
 
     public void Deinit()
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == RebelId)
             {
                 unit.SetMode(0);
             }
         }
     }
 
-    public void next_day()
+    public void NextDay()
     {
         //---- if the rebels has a town and this rebel is a defender from a town ----//
 
-        if (town_recno != 0)
+        if (TownId != 0)
         {
             //--- check if the rebel town is destroyed ----//
 
-            if (TownArray.IsDeleted(town_recno))
+            if (TownArray.IsDeleted(TownId))
             {
-                town_recno = 0;
+                TownId = 0;
 
                 //--- if the town has been destroyed, the rebel group becomes mobile again, and a new leader needs to be selected.
 
-                if (mobile_rebel_count > 0 && leader_unit_recno == 0)
+                if (MobileRebelCount > 0 && LeaderUnitId == 0)
                 {
-                    select_new_leader();
+                    SelectNewLeader();
                 }
             }
 
@@ -84,7 +84,7 @@ public class Rebel : IIdObject
 
         //------- no rebels left in the group --------//
 
-        if (town_recno == 0 && mobile_rebel_count == 0)
+        if (TownId == 0 && MobileRebelCount == 0)
         {
             RebelArray.DeleteRebel(this);
             return;
@@ -92,78 +92,76 @@ public class Rebel : IIdObject
 
         //---------------------------------------------//
 
-        if (mobile_rebel_count > 0) // if there are mobile rebel units on the map
+        if (MobileRebelCount > 0) // if there are mobile rebel units on the map
         {
-            if (action_mode == REBEL_IDLE)
-                think_new_action(); // think about a new action
+            if (ActionMode == REBEL_IDLE)
+                ThinkNewAction(); // think about a new action
             else
-                think_cur_action(); // think if there should be any changes to the current action
+                ThinkCurrentAction(); // think if there should be any changes to the current action
         }
         else // if there are no mobile rebel units
         {
-            if (town_recno > 0)
+            if (TownId > 0)
             {
-                if (Info.TotalDays % 30 == rebel_recno % 30) // if the rebel has a town
-                    think_town_action();
+                // TODO check if this code is executed
+                if (Info.TotalDays % 30 == RebelId % 30) // if the rebel group has a town
+                    ThinkTownAction();
             }
         }
     }
 
-    public void join(Unit unit)
+    public void SetAction(int actionMode, int actionParam = 0, int actionParam2 = 0)
     {
-        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, rebel_recno);
-
-        mobile_rebel_count++;
+        ActionMode = actionMode;
+        ActionParam = actionParam;
+        ActionParam2 = actionParam2;
     }
 
-    public void set_action(int actionMode, int actionPara = 0, int actionPara2 = 0)
+    public void Join(Unit unit)
     {
-        action_mode = actionMode;
-        action_para = actionPara;
-        action_para2 = actionPara2;
+        unit.SetMode(UnitConstants.UNIT_MODE_REBEL, RebelId);
+        MobileRebelCount++;
     }
 
-    public void town_being_attacked(int attackerUnitRecno)
+    public void TownBeingAttacked(int attackerUnitId)
     {
         //----------------------------------------------//
         //
-        // Set the hostile_nation_recno. So that if the rebel
-        // town is destroyed and there are rebel units left,
-        // they can form a rebel group again and battle with
-        // the attacking nation.
+        // Set the hostile nation. So that if the rebel town is destroyed and there are rebel units left,
+        // they can form a rebel group again and battle with the attacking nation.
         //
         //----------------------------------------------//
 
-        set_hostile_nation(UnitArray[attackerUnitRecno].NationId);
+        SetHostileNation(UnitArray[attackerUnitId].NationId);
     }
 
-    public void set_hostile_nation(int nationRecno)
+    private void SetHostileNation(int nationId)
     {
-        if (nationRecno == 0)
+        if (nationId == 0)
             return;
 
-        hostile_nation_bits |= (0x1 << nationRecno);
+        HostileNationBits |= (0x1 << nationId);
     }
 
-    public void reset_hostile_nation(int nationRecno)
+    public void ResetHostileNation(int nationId)
     {
-        if (nationRecno == 0)
+        if (nationId == 0)
             return;
 
-        hostile_nation_bits &= ~(0x1 << nationRecno);
+        HostileNationBits &= ~(0x1 << nationId);
     }
 
-    public bool is_hostile_nation(int nationRecno)
+    public bool IsHostileNation(int nationId)
     {
-        if (nationRecno == 0)
+        if (nationId == 0)
             return false;
 
-        return (hostile_nation_bits & (0x1 << nationRecno)) != 0;
+        return (HostileNationBits & (0x1 << nationId)) != 0;
     }
 
-    public void think_new_action()
+    private void ThinkNewAction()
     {
-        if (UnitArray.IsDeleted(leader_unit_recno))
+        if (UnitArray.IsDeleted(LeaderUnitId))
             return;
 
         bool rc = false;
@@ -171,115 +169,114 @@ public class Rebel : IIdObject
         switch (Misc.Random(4))
         {
             case 0:
-                rc = think_settle_new();
+                rc = ThinkSettleNew();
                 break;
 
             case 1:
-                rc = think_settle_to();
+                rc = ThinkSettleTo();
                 break;
 
             case 2:
-                rc = think_capture_attack_town();
+                rc = ThinkCaptureAttackTown();
                 break;
 
             case 3:
-                rc = think_attack_firm();
+                rc = ThinkAttackFirm();
                 break;
         }
 
         if (rc)
-            execute_new_action();
+            ExecuteNewAction();
     }
 
-    public void think_cur_action()
+    private void ThinkCurrentAction()
     {
         //------ if the rebel is attacking a town -------//
 
-        if (action_mode == REBEL_ATTACK_TOWN)
+        if (ActionMode == REBEL_ATTACK_TOWN)
         {
             //----- the town has already been captured -----//
 
-            if (TownArray.IsDeleted(action_para) || TownArray[action_para].NationId == 0)
+            if (TownArray.IsDeleted(ActionParam) || TownArray[ActionParam].NationId == 0)
             {
                 //--- stop all units that are still attacking the town ---//
 
-                stop_all_rebel_unit();
-                set_action(REBEL_IDLE);
+                StopAllRebelUnit();
+                SetAction(REBEL_IDLE);
             }
         }
 
         //----- if the rebel should be attacking a firm -----//
 
-        if (action_mode == REBEL_ATTACK_FIRM)
+        if (ActionMode == REBEL_ATTACK_FIRM)
         {
-            if (FirmArray.IsDeleted(action_para) || FirmArray[action_para].nation_recno == 0)
+            if (FirmArray.IsDeleted(ActionParam) || FirmArray[ActionParam].nation_recno == 0)
             {
                 //--- stop all units that are still attacking the firm ---//
 
-                stop_all_rebel_unit();
-
-                set_action(REBEL_IDLE);
+                StopAllRebelUnit();
+                SetAction(REBEL_IDLE);
             }
         }
     }
 
-    public void think_town_action()
+    private void ThinkTownAction()
     {
-        if (town_recno == 0 || mobile_rebel_count > 0) // only when all rebel units has settled in the town
+        if (TownId == 0 || MobileRebelCount > 0) // only when all rebel units has settled in the town
             return;
 
         //----- neutralize to an independent town -----//
 
         if (Misc.Random(10) == 0)
         {
-            turn_indepedent();
+            TurnIndependent();
         }
 
         //---------- form a nation ---------//
 
         else if (Misc.Random(10) == 0)
         {
-            if (TownArray[town_recno].Population >= 20 && NationArray.can_form_new_ai_nation())
+            if (TownArray[TownId].Population >= 20 && NationArray.can_form_new_ai_nation())
             {
-                TownArray[town_recno].FormNewNation();
+                TownArray[TownId].FormNewNation();
             }
         }
     }
 
-    public bool think_settle_new()
+    private bool ThinkSettleNew()
     {
         //------- get the leader unit's info -----------//
 
-        Unit leaderUnit = UnitArray[leader_unit_recno];
+        Unit leaderUnit = UnitArray[LeaderUnitId];
 
-        int leaderXLoc = leaderUnit.CurLocX;
-        int leaderYLoc = leaderUnit.CurLocY;
+        int leaderLocX = leaderUnit.CurLocX;
+        int leaderLocY = leaderUnit.CurLocY;
 
         //----------------------------------------------//
 
-        int xLoc2 = leaderXLoc + InternalConstants.TOWN_WIDTH - 1;
-        int yLoc2 = leaderYLoc + InternalConstants.TOWN_HEIGHT - 1;
+        int locX2 = leaderLocX + InternalConstants.TOWN_WIDTH - 1;
+        int locY2 = leaderLocY + InternalConstants.TOWN_HEIGHT - 1;
 
-        if (xLoc2 >= GameConstants.MapSize)
+        if (locX2 >= GameConstants.MapSize)
         {
-            xLoc2 = GameConstants.MapSize - 1;
-            leaderXLoc = xLoc2 - InternalConstants.TOWN_WIDTH + 1;
+            locX2 = GameConstants.MapSize - 1;
+            leaderLocX = locX2 - InternalConstants.TOWN_WIDTH + 1;
         }
 
-        if (yLoc2 >= GameConstants.MapSize)
+        if (locY2 >= GameConstants.MapSize)
         {
-            yLoc2 = GameConstants.MapSize - 1;
-            leaderYLoc = yLoc2 - InternalConstants.TOWN_HEIGHT + 1;
+            locY2 = GameConstants.MapSize - 1;
+            leaderLocY = locY2 - InternalConstants.TOWN_HEIGHT + 1;
         }
 
-        int regionId = World.GetRegionId(leaderXLoc, leaderYLoc);
+        int regionId = World.GetRegionId(leaderLocX, leaderLocY);
 
-        if (World.LocateSpace(ref leaderXLoc, ref leaderYLoc, xLoc2, yLoc2,
+        if (World.LocateSpace(ref leaderLocX, ref leaderLocY, locX2, locY2,
                 InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, regionId, true))
         {
-            action_mode = REBEL_SETTLE_NEW;
-            action_para = leaderXLoc;
-            action_para2 = leaderYLoc;
+            ActionMode = REBEL_SETTLE_NEW;
+            ActionParam = leaderLocX;
+            ActionParam2 = leaderLocY;
 
             return true;
         }
@@ -287,9 +284,9 @@ public class Rebel : IIdObject
         return false;
     }
 
-    public bool think_settle_to()
+    private bool ThinkSettleTo()
     {
-        Unit leaderUnit = UnitArray[leader_unit_recno];
+        Unit leaderUnit = UnitArray[LeaderUnitId];
         int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         foreach (Town town in TownArray.EnumerateRandom())
@@ -302,9 +299,9 @@ public class Rebel : IIdObject
 
             if (leaderUnit.RaceId == town.MajorityRace())
             {
-                action_mode = REBEL_SETTLE_TO;
-                action_para = town.LocX1;
-                action_para2 = town.LocY1;
+                ActionMode = REBEL_SETTLE_TO;
+                ActionParam = town.LocX1;
+                ActionParam2 = town.LocY1;
                 return true;
             }
         }
@@ -312,189 +309,183 @@ public class Rebel : IIdObject
         return false;
     }
 
-    public bool think_capture_attack_town()
+    private bool ThinkCaptureAttackTown()
     {
         //------- get the leader unit's info -----------//
 
-        Unit leaderUnit = UnitArray[leader_unit_recno];
-        int leaderXLoc = leaderUnit.CurLocX;
-        int leaderYLoc = leaderUnit.CurLocY;
+        Unit leaderUnit = UnitArray[LeaderUnitId];
+        int leaderLocX = leaderUnit.CurLocX;
+        int leaderLocY = leaderUnit.CurLocY;
         int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         //----------------------------------------------//
 
-        int actionMode = REBEL_ATTACK_TOWN;
-
-        int bestTownRecno = 0;
+        int bestTownId = 0;
         int closestTownDistance = Int32.MaxValue;
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
-            if (!is_hostile_nation(town.NationId))
+            if (!IsHostileNation(town.NationId))
                 continue;
 
             if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
-            int townDistance = Misc.rects_distance(leaderXLoc, leaderYLoc, leaderXLoc, leaderYLoc,
+            int townDistance = Misc.rects_distance(leaderLocX, leaderLocY, leaderLocX, leaderLocY,
                 town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
             if (townDistance < closestTownDistance)
             {
                 closestTownDistance = townDistance;
-                bestTownRecno = town.TownId;
+                bestTownId = town.TownId;
             }
         }
 
-        if (bestTownRecno != 0)
+        if (bestTownId != 0)
         {
-            action_mode = actionMode;
-            action_para = bestTownRecno; // attack this town
+            ActionMode = REBEL_ATTACK_TOWN;
+            ActionParam = bestTownId; // attack this town
             return true;
         }
 
         return false;
     }
 
-    public bool think_attack_firm()
+    private bool ThinkAttackFirm()
     {
         //------- get the leader unit's info -----------//
 
-        Unit leaderUnit = UnitArray[leader_unit_recno];
-        int leaderXLoc = leaderUnit.CurLocX;
-        int leaderYLoc = leaderUnit.CurLocY;
+        Unit leaderUnit = UnitArray[LeaderUnitId];
+        int leaderLocX = leaderUnit.CurLocX;
+        int leaderLocY = leaderUnit.CurLocY;
         int curRegionId = World.GetRegionId(leaderUnit.CurLocX, leaderUnit.CurLocY);
 
         //----------------------------------------------//
 
-        int bestFirmRecno = 0;
+        int bestFirmId = 0;
         int closestFirmDistance = Int32.MaxValue;
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {
-            if (!is_hostile_nation(firm.nation_recno))
+            if (!IsHostileNation(firm.nation_recno))
                 continue;
 
             if (World.GetRegionId(firm.loc_x1, firm.loc_y1) != curRegionId)
                 continue;
 
-            int firmDistance = Misc.points_distance(leaderXLoc, leaderYLoc, firm.center_x, firm.center_y);
+            int firmDistance = Misc.points_distance(leaderLocX, leaderLocY, firm.center_x, firm.center_y);
 
             if (firmDistance < closestFirmDistance)
             {
                 closestFirmDistance = firmDistance;
-                bestFirmRecno = firm.firm_recno;
+                bestFirmId = firm.firm_recno;
             }
         }
 
-        if (bestFirmRecno != 0)
+        if (bestFirmId != 0)
         {
-            action_mode = REBEL_ATTACK_FIRM;
-            action_para = bestFirmRecno; // attack this town
+            ActionMode = REBEL_ATTACK_FIRM;
+            ActionParam = bestFirmId; // attack this firm
             return true;
         }
 
         return false;
     }
 
-    public void execute_new_action()
+    private void ExecuteNewAction()
     {
-        //----- create an recno array of the rebel units ----//
-
-        List<int> rebelRecnoArray = new List<int>();
+        List<int> rebelUnits = new List<int>();
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == RebelId)
             {
-                rebelRecnoArray.Add(unit.SpriteId);
+                rebelUnits.Add(unit.SpriteId);
             }
         }
 
-        if (rebelRecnoArray.Count == 0)
+        if (rebelUnits.Count == 0)
             return; // all rebel units are dead
 
         //-------- execute the new action now --------//
 
-        switch (action_mode)
+        // TODO why different remote action is used?
+        switch (ActionMode)
         {
             case REBEL_ATTACK_TOWN:
-                Town town = TownArray[action_para];
-                UnitArray.attack(town.LocX1, town.LocY1, false, rebelRecnoArray,
-                    InternalConstants.COMMAND_AI, 0);
+                Town town = TownArray[ActionParam];
+                UnitArray.attack(town.LocX1, town.LocY1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
                 break;
 
             case REBEL_ATTACK_FIRM:
-                Firm firm = FirmArray[action_para];
-                UnitArray.attack(firm.loc_x1, firm.loc_y1, false, rebelRecnoArray,
-                    InternalConstants.COMMAND_AI, 0);
+                Firm firm = FirmArray[ActionParam];
+                UnitArray.attack(firm.loc_x1, firm.loc_y1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
                 break;
 
             case REBEL_SETTLE_NEW:
-                UnitArray.settle(action_para, action_para2, false, 1, rebelRecnoArray);
+                UnitArray.settle(ActionParam, ActionParam2, false, 1, rebelUnits);
                 break;
 
             case REBEL_SETTLE_TO:
-                UnitArray.assign(action_para, action_para2, false, 1, rebelRecnoArray);
+                UnitArray.assign(ActionParam, ActionParam2, false, 1, rebelUnits);
                 break;
         }
     }
 
-    public void stop_all_rebel_unit()
+    public void StopAllRebelUnit()
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == RebelId)
             {
                 unit.Stop();
             }
         }
     }
 
-    public void turn_indepedent()
+    private void TurnIndependent()
     {
-        TownArray[town_recno].RebelId = 0;
+        TownArray[TownId].RebelId = 0;
 
         RebelArray.DeleteRebel(this);
     }
 
-    public int select_new_leader()
+    private void SelectNewLeader()
     {
-        if (mobile_rebel_count == 0)
-            return 0;
+        if (MobileRebelCount == 0)
+            return;
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == RebelId)
             {
                 unit.SetRank(Unit.RANK_GENERAL);
-                leader_unit_recno = unit.SpriteId;
+                LeaderUnitId = unit.SpriteId;
                 break;
             }
         }
 
-        if (leader_unit_recno == 0)
-            return 0;
+        if (LeaderUnitId == 0)
+            return;
 
-        //--- update the leader_unit_renco of all units in this rebel group ---//
+        //--- update the LeaderUnitId of all units in this rebel group ---//
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == rebel_recno)
+            if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == RebelId)
             {
-                unit.LeaderId = leader_unit_recno;
+                unit.LeaderId = LeaderUnitId;
             }
         }
 
-        return 0;
+        return;
     }
 
-    public void process_leader_quit()
+    public void ProcessLeaderQuit()
     {
         //-------------------------------------------//
         //
-        // When the rebel leader gets killed, a new rebel unit
-        // in the group is elected as the new leader.
+        // When the rebel leader gets killed, a new rebel unit in the group is elected as the new leader.
         //
         // Some the rebel units leave the rebel group to:
         // surrender to a nation (moving into a town as town people)
@@ -503,47 +494,49 @@ public class Rebel : IIdObject
 
         //----- select a new unit as the leader ------//
 
-        leader_unit_recno = 0;
+        LeaderUnitId = 0;
 
-        if (mobile_rebel_count > 0) // it must at least be 2: the dying leader + one rebel soldier
+        if (MobileRebelCount > 0) // it must at least be 2: the dying leader + one rebel soldier
         {
-            select_new_leader();
+            SelectNewLeader();
         }
         else
         {
-            // if mobile_label_count is 0, the rebel group must have a town
+            // if MobileRebelCount is 0, the rebel group must have a town
 
-            // if the rebel has a town, leader_unit_recno can be 0
+            // if the rebel has a town, LeaderUnitId can be 0
         }
 
         //------ some the rebel units leave the rebel group -----//
 
-        if (mobile_rebel_count > 1)
+        if (MobileRebelCount > 1)
         {
             //---- surrender to a nation ----//
 
-            int maxReputation = 0, bestNationRecno = 0;
+            int maxReputation = 0, bestNationId = 0;
 
             foreach (Nation nation in NationArray)
             {
                 if (nation.reputation > maxReputation)
                 {
                     maxReputation = (int)nation.reputation;
-                    bestNationRecno = nation.nation_recno;
+                    bestNationId = nation.nation_recno;
                 }
             }
 
-            if (bestNationRecno == 0) // no nation has a positive reputation
+            if (bestNationId == 0) // no nation has a positive reputation
                 return;
 
             //------- process the rebel units -------//
 
             foreach (Unit unit in UnitArray)
             {
-                if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == leader_unit_recno)
+                // TODO unit.UnitModeParam has RebelId
+                
+                if (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL && unit.UnitModeParam == LeaderUnitId)
                 {
                     unit.SetMode(0);
-                    unit.ChangeNation(bestNationRecno);
+                    unit.ChangeNation(bestNationId);
                 }
             }
         }
