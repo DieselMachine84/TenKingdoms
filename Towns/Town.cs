@@ -3268,8 +3268,8 @@ public class Town : IIdObject
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.in_defend_town_mode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.ActionMiscParam == TownId)
-				unit.clear_town_defend_mode(); // note: maybe, unit.NationId != NationId
+			if (unit.InDefendTownMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.ActionMiscParam == TownId)
+				unit.ClearTownDefendMode(); // note: maybe, unit.NationId != NationId
 		}
 	}
 

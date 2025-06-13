@@ -261,7 +261,7 @@ public class Bullet : Sprite
 			}
 		}
 
-		targetUnit.hit_target(parentUnit, targetUnit, attackDamage, nation_recno);
+		targetUnit.HitTarget(parentUnit, targetUnit, attackDamage, nation_recno);
 	}
 
 	public void hit_building(int x, int y)
@@ -310,7 +310,7 @@ public class Bullet : Sprite
 			virtualUnit = parentUnit = UnitArray[parent_recno];
 		}
 
-		virtualUnit.hit_building(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
+		virtualUnit.HitBuilding(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
 	}
 
 	public void hit_wall(int x, int y)
@@ -346,7 +346,7 @@ public class Bullet : Sprite
 			virtualUnit = parentUnit = UnitArray[parent_recno];
 		}
 
-		virtualUnit.hit_wall(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
+		virtualUnit.HitWall(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
 	}
 
 	public double attenuated_damage(int curX, int curY)

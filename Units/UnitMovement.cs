@@ -897,9 +897,9 @@ public partial class Unit
 			//--------------- different territory ------------------//
 			int targetWidth = targetUnit.SpriteInfo.LocWidth;
 			int targetHeight = targetUnit.SpriteInfo.LocHeight;
-			int maxRange = max_attack_range();
+			int maxRange = MaxAttackRange();
 
-			if (possible_place_for_range_attack(targetXLoc, targetYLoc, targetWidth, targetHeight, maxRange))
+			if (PossiblePlaceForRangeAttack(targetXLoc, targetYLoc, targetWidth, targetHeight, maxRange))
 			{
 				//---------------------------------------------------------------------------------//
 				// space is found, attack target now
@@ -1157,7 +1157,7 @@ public partial class Unit
 						{
 							SetDir(NextX, NextY, unit.NextX, unit.NextY);
 							if (IsDirCorrect())
-								attack_unit(ActionParam, 0, 0, true);
+								AttackUnit(ActionParam, 0, 0, true);
 							else
 								SetTurn();
 							CurFrame = 1;
@@ -1589,7 +1589,7 @@ public partial class Unit
 				Firm firm = FirmArray[ActionParam];
 				FirmInfo firmInfo = FirmRes[firm.firm_id];
 
-				if (space_for_attack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
+				if (SpaceForAttack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
 					    firmInfo.loc_width, firmInfo.loc_height))
 				{
 					//------------ found surrounding place to attack the firm -------------//
@@ -1597,7 +1597,7 @@ public partial class Unit
 						SetMoveToSurround(firm.loc_x1, firm.loc_y1,
 							firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 					else
-						attack_firm(firm.loc_x1, firm.loc_y1);
+						AttackFirm(firm.loc_x1, firm.loc_y1);
 				}
 				else // no surrounding place found, stop now
 					Stop(UnitConstants.KEEP_PRESERVE_ACTION);
@@ -1616,7 +1616,7 @@ public partial class Unit
 			Location loc = World.GetLoc(ActionLocX, ActionLocY);
 			if (!loc.IsTown())
 				Stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since town is deleted
-			else if (space_for_attack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
+			else if (SpaceForAttack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
 				         InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 			{
 				//------------ found surrounding place to attack the town -------------//
@@ -1626,7 +1626,7 @@ public partial class Unit
 						SetMoveToSurround(town.LocX1, town.LocY1,
 							InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 					else
-						attack_town(town.LocX1, town.LocY1);
+						AttackTown(town.LocX1, town.LocY1);
 				}
 			}
 			else // no surrounding place found, stop now
@@ -1644,14 +1644,14 @@ public partial class Unit
 			Location loc = World.GetLoc(ActionLocX, ActionLocY);
 			if (!loc.IsWall())
 				Stop2(UnitConstants.KEEP_DEFENSE_MODE); // stop since wall is deleted
-			else if (space_for_attack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1))
+			else if (SpaceForAttack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1))
 			{
 				//------------ found surrounding place to attack the wall -------------//
 				// search for a unit only, not for a group
 				if (MobileType == UnitConstants.UNIT_LAND)
 					SetMoveToSurround(ActionLocX, ActionLocY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 				else
-					attack_wall(ActionLocX, ActionLocY);
+					AttackWall(ActionLocX, ActionLocY);
 			}
 			else // no surrounding place found, stop now
 				Stop(UnitConstants.KEEP_PRESERVE_ACTION); // no space available, so stop to wait for space to attack the wall
@@ -1671,15 +1671,15 @@ public partial class Unit
 		// this unit is now waiting and the unit pointed by unit
 		// is attacking the unit pointed by target
 		//----------------------------------------------------------//
-		if (space_for_attack(ActionLocX, ActionLocY, target.MobileType,
+		if (SpaceForAttack(ActionLocX, ActionLocY, target.MobileType,
 			    target.SpriteInfo.LocWidth, target.SpriteInfo.LocHeight))
 		{
 			SearchOrStop(MoveToLocX, MoveToLocY, 1, SeekPath.SEARCH_MODE_TO_ATTACK, target.SpriteId);
 			//search(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_TO_ATTACK, target.sprite_recno);
 		}
-		else if (in_any_defense_mode())
+		else if (InAnyDefenseMode())
 		{
-			general_defend_mode_detect_target();
+			GeneralDefendModeDetectTarget();
 		}
 		else if (Misc.points_distance(NextLocX, NextLocY, ActionLocX, ActionLocY) < UnitConstants.ATTACK_DETECT_DISTANCE)
 		{

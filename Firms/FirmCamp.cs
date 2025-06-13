@@ -426,7 +426,7 @@ public class FirmCamp : Firm
 					    unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
 					    unit.ActionMiscParam == firm_recno)
 					{
-						unit.clear_unit_defense_mode();
+						unit.ClearUnitDefenseMode();
 					}
 				}
 			}
@@ -464,7 +464,7 @@ public class FirmCamp : Firm
 					if (unit.IsUnitDead())
 						continue;
 
-					if (!unit.in_auto_defense_mode())
+					if (!unit.InAutoDefenseMode())
 						continue; // the unit is ordered by the player to do other thing, so cannot control it afterwards
 
 					//--------------- the unit is in defense mode ----------------//
@@ -552,11 +552,11 @@ public class FirmCamp : Firm
 	public void defense_inside_camp(int unitRecno, int targetRecno)
 	{
 		Unit unit = UnitArray[unitRecno];
-		unit.defense_attack_unit(targetRecno);
+		unit.DefenseAttackUnit(targetRecno);
 
 		if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
 		    unit.ActionLocX == -1 && unit.ActionLocY == -1)
-			unit.defense_detect_target();
+			unit.DefenseDetectTarget();
 	}
 
 	public void defense_outside_camp(int unitRecno, int targetRecno)
@@ -569,11 +569,11 @@ public class FirmCamp : Firm
 		     unit.CurAction == Sprite.SPRITE_IDLE))
 		{
 			//----------------- attack new target now -------------------//
-			unit.defense_attack_unit(targetRecno);
+			unit.DefenseAttackUnit(targetRecno);
 
 			if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
 			    unit.ActionLocX == -1 && unit.ActionLocY == -1)
-				unit.defense_detect_target();
+				unit.DefenseDetectTarget();
 		}
 	}
 
@@ -584,9 +584,9 @@ public class FirmCamp : Firm
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.in_auto_defense_mode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
+			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
 			    unit.ActionMiscParam == firmRecno)
-				unit.clear_unit_defense_mode();
+				unit.ClearUnitDefenseMode();
 		}
 
 		defense_array.Clear();

@@ -75,17 +75,17 @@ public class UnitExpCart : Unit
 						Location location = World.GetLoc(x, y);
 						if (location.HasUnit(UnitConstants.UNIT_LAND))
 						{
-							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
+							HitTarget(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
 								GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.HasUnit(UnitConstants.UNIT_SEA))
 						{
-							hit_target(this, UnitArray[location.UnitId(UnitConstants.UNIT_SEA)],
+							HitTarget(this, UnitArray[location.UnitId(UnitConstants.UNIT_SEA)],
 								GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.IsWall())
 						{
-							hit_wall(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
+							HitWall(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.IsPlant())
 						{
@@ -94,7 +94,7 @@ public class UnitExpCart : Unit
 						}
 						else
 						{
-							hit_building(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
+							HitBuilding(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 					}
 				}

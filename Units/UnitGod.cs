@@ -539,7 +539,7 @@ public class UnitGod : Unit
 		int targetXLoc, targetYLoc;
 
 		if (think_god_attack_target(out targetXLoc, out targetYLoc))
-			attack_firm(targetXLoc, targetYLoc);
+			AttackFirm(targetXLoc, targetYLoc);
 	}
 
 	private void think_maya_god()
@@ -663,7 +663,7 @@ public class UnitGod : Unit
 		int targetXLoc, targetYLoc;
 
 		if (think_god_attack_target(out targetXLoc, out targetYLoc))
-			attack_firm(targetXLoc, targetYLoc);
+			AttackFirm(targetXLoc, targetYLoc);
 	}
 
 	private void think_japanese_god()

@@ -3711,7 +3711,7 @@ public class Nation : NationBase
 
 				//---------- attack now -----------//
 
-				unit.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
+				unit.AttackUnit(targetXLoc, targetYLoc, 0, 0, true);
 
 				targetCombatLevel -= (int)unit.HitPoints; // reduce the target combat level
 			}
@@ -3916,7 +3916,7 @@ public class Nation : NationBase
 
 			//------ order the ship to attack the target ------//
 
-			unitMarine.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
+			unitMarine.AttackUnit(targetXLoc, targetYLoc, 0, 0, true);
 			result = true;
 		}
 

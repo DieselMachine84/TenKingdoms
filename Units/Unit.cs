@@ -77,7 +77,13 @@ public partial class Unit : Sprite
 	public int AttackDirection { get; private set; }
 	public int CurPower { get; private set; } // power for power attack
 	public int MaxPower { get; private set; }
-	protected bool CanAttack { get; set; } // true able to attack, false unable to attack no matter what AttackCount is
+
+	private bool _canAttack;
+	protected bool CanAttack
+	{
+		get => _canAttack && AttackCount > 0;
+		set => _canAttack = value;
+	} // true able to attack, false unable to attack no matter what AttackCount is
 	private int CanGuard { get; set; } // bit0 = standing guard, bit1 = moving guard
 	public bool CanStandGuard => (CanGuard & 1) != 0;
 	public bool CanMoveGuard => (CanGuard & 2) != 0;
@@ -614,34 +620,34 @@ public partial class Unit : Sprite
 				{
 					if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
 					{
-						if (!defense_follow_target()) // false if abort attacking
+						if (!DefenseFollowTarget()) // false if abort attacking
 							break; // cancel attack and go back to military camp
 					}
 					else if (ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET)
 					{
-						if (!defend_town_follow_target())
+						if (!DefendTownFollowTarget())
 							break;
 					}
 					else if (ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 					{
-						if (!monster_defend_follow_target())
+						if (!MonsterDefendFollowTarget())
 							break;
 					}
 				}
 
-				process_attack_unit();
+				ProcessAttackUnit();
 				break;
 
 			case UnitConstants.ACTION_ATTACK_FIRM:
-				process_attack_firm();
+				ProcessAttackFirm();
 				break;
 
 			case UnitConstants.ACTION_ATTACK_TOWN:
-				process_attack_town();
+				ProcessAttackTown();
 				break;
 
 			case UnitConstants.ACTION_ATTACK_WALL:
-				process_attack_wall();
+				ProcessAttackWall();
 				break;
 
 			case UnitConstants.ACTION_ASSIGN_TO_FIRM:
@@ -1144,10 +1150,10 @@ public partial class Unit : Sprite
 			if (CurFrame == attackInfo.bullet_out_frame)
 			{
 				// add effect
-				add_close_attack_effect();
+				AddCloseAttackEffect();
 
 				unitGod.cast_power(ActionLocX2, ActionLocY2);
-				set_remain_attack_delay();
+				SetRemainAttackDelay();
 			}
 
 			if (CurFrame == 1 && RemainAttackDelay == 0) // last frame of delaying
@@ -1989,7 +1995,7 @@ public partial class Unit : Sprite
 		if (ActionMode != UnitConstants.ACTION_STOP || ActionMode2 != UnitConstants.ACTION_STOP)
 			return;
 
-		if (!can_attack())
+		if (!CanAttack)
 			return;
 
 		//--- only detect attack if in aggressive mode or the unit is a monster ---//
@@ -2000,7 +2006,7 @@ public partial class Unit : Sprite
 		{
 			//----------- detect target to attack -----------//
 
-			if (idle_detect_attack())
+			if (IdleDetectAttack())
 				return; // target detected
 
 		}
@@ -2052,9 +2058,9 @@ public partial class Unit : Sprite
 					Unit unit = UnitArray[ActionPara2];
 					SpriteInfo spriteInfo = unit.SpriteInfo;
 
-					if (space_for_attack(ActionLocX2, ActionLocY2, unit.MobileType, spriteInfo.LocWidth, spriteInfo.LocHeight))
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, unit.MobileType, spriteInfo.LocWidth, spriteInfo.LocHeight))
 					{
-						attack_unit(ActionPara2, 0, 0, false);
+						AttackUnit(ActionPara2, 0, 0, false);
 						hasSearch = true;
 						returnFlag = true;
 					}
@@ -2071,9 +2077,9 @@ public partial class Unit : Sprite
 					Firm firm = FirmArray[ActionPara2];
 					FirmInfo firmInfo = FirmRes[firm.firm_id];
 
-					if (space_for_attack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
 					{
-						attack_firm(ActionLocX2, ActionLocY2, 0, 0, 0);
+						AttackFirm(ActionLocX2, ActionLocY2, 0, 0, 0);
 						hasSearch = true;
 						returnFlag = true;
 					}
@@ -2087,10 +2093,10 @@ public partial class Unit : Sprite
 					Stop2(); // stop since target is deleted
 				else
 				{
-					if (space_for_attack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND,
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND,
 						    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					{
-						attack_town(ActionLocX2, ActionLocY2, 0, 0, 0);
+						AttackTown(ActionLocX2, ActionLocY2, 0, 0, 0);
 						hasSearch = true;
 						returnFlag = true;
 					}
@@ -2104,9 +2110,9 @@ public partial class Unit : Sprite
 					Stop2(); // stop since target doesn't exist
 				else
 				{
-					if (space_for_attack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, 1, 1))
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, 1, 1))
 					{
-						attack_wall(ActionLocX2, ActionLocY2, 0, 0, 0);
+						AttackWall(ActionLocX2, ActionLocY2, 0, 0, 0);
 						hasSearch = true;
 						returnFlag = true;
 					}
@@ -2166,55 +2172,55 @@ public partial class Unit : Sprite
 
 			case UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET:
 				//---------- resume action -----------//
-				process_auto_defense_attack_target();
+				ProcessAutoDefenseAttackTarget();
 				hasSearch = true;
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET:
-				process_auto_defense_detect_target();
+				ProcessAutoDefenseDetectTarget();
 				//TODO hasSearch = true;?
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP:
-				process_auto_defense_back_camp();
+				ProcessAutoDefenseBackCamp();
 				hasSearch = true;
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET:
-				process_defend_town_attack_target();
+				ProcessDefendTownAttackTarget();
 				hasSearch = true;
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET:
-				process_defend_town_detect_target();
+				ProcessDefendTownDetectTarget();
 				//TODO hasSearch = true;?
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN:
-				process_defend_town_back_town();
+				ProcessDefendTownBackTown();
 				hasSearch = true;
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET:
-				process_monster_defend_attack_target();
+				ProcessMonsterDefendAttackTarget();
 				hasSearch = true;
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET:
-				process_monster_defend_detect_target();
+				ProcessMonsterDefendDetectTarget();
 				//TODO hasSearch = true;?
 				returnFlag = true;
 				break;
 
 			case UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM:
-				process_monster_defend_back_firm();
+				ProcessMonsterDefendBackFirm();
 				hasSearch = true;
 				returnFlag = true;
 				break;
@@ -2256,7 +2262,7 @@ public partial class Unit : Sprite
 				//TODO check
 
 				if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_SHIP || ActionMode2 == UnitConstants.ACTION_SHIP_TO_BEACH ||
-				    in_any_defense_mode())
+				    InAnyDefenseMode())
 					return true;
 
 				//------- number of nodes is not enough to find the destination -------//
@@ -2294,7 +2300,7 @@ public partial class Unit : Sprite
 				else
 				{
 					Town town = TownArray[rebel.ActionParam];
-					attack_town(town.LocX1, town.LocY1);
+					AttackTown(town.LocX1, town.LocY1);
 				}
 
 				break;
@@ -2646,7 +2652,7 @@ public partial class Unit : Sprite
 
 	private void ResetActionParameters2(int keepMode = 0)
 	{
-		if (keepMode != UnitConstants.KEEP_DEFENSE_MODE || !in_any_defense_mode())
+		if (keepMode != UnitConstants.KEEP_DEFENSE_MODE || !InAnyDefenseMode())
 		{
 			ActionMode2 = UnitConstants.ACTION_STOP;
 			ActionLocX2 = ActionLocY2 = -1;
@@ -2658,17 +2664,17 @@ public partial class Unit : Sprite
 			{
 				case UnitConstants.UNIT_MODE_DEFEND_TOWN:
 					if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET)
-						defend_town_detect_target();
+						DefendTownDetectTarget();
 					break;
 
 				case UnitConstants.UNIT_MODE_REBEL:
 					if (ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET)
-						defense_detect_target();
+						DefenseDetectTarget();
 					break;
 
 				case UnitConstants.UNIT_MODE_MONSTER:
 					if (ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET)
-						monster_defend_detect_target();
+						MonsterDefendDetectTarget();
 					break;
 			}
 		}
@@ -4306,7 +4312,7 @@ public partial class Unit : Sprite
 
 		//---- if the unit is in defense mode now, don't do anything ----//
 
-		if (in_any_defense_mode())
+		if (InAnyDefenseMode())
 			return false;
 
 		//----------------------------------------------------//
@@ -4525,14 +4531,14 @@ public partial class Unit : Sprite
 				if (UnitArray.IsDeleted(unitId))
 					continue;
 
-				if (UnitArray[unitId].NationId != NationId && idle_detect_unit_checking(unitId))
+				if (UnitArray[unitId].NationId != NationId && IdleDetectUnitChecking(unitId))
 				{
 					SaveOriginalAction();
 
 					OriginalTargetLocX = locX;
 					OriginalTargetLocY = locY;
 
-					attack_unit(locX, locY, 0, 0, true);
+					AttackUnit(locX, locY, 0, 0, true);
 					return true;
 				}
 			}

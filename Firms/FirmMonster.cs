@@ -506,11 +506,11 @@ public class FirmMonster : Firm
 
 			//------ reset the monster's defense mode -----//
 
-			if (unit.in_monster_defend_mode() &&
+			if (unit.InMonsterDefendMode() &&
 			    unit.ActionMisc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO &&
 			    unit.ActionMiscParam == firm_recno)
 			{
-				unit.clear_monster_defend_mode();
+				unit.ClearMonsterDefendMode();
 				((UnitMonster)unit).set_monster_action_mode(UnitConstants.MONSTER_ACTION_STOP);
 			}
 

@@ -311,10 +311,10 @@ public class UnitArray : SpriteArray
 		    if (unit.NationId == oldNationRecno)
 		    {
 			    //------ stop all attacking unit with nation_recno = oldNationRecno -----//
-			    if (unit.is_action_attack())
+			    if (unit.IsAttackAction())
 				    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 		    }
-		    else if (unit.is_action_attack())
+		    else if (unit.IsAttackAction())
 		    {
 			    int targetType;
 			    int targetRecno;
@@ -384,7 +384,7 @@ public class UnitArray : SpriteArray
 		    if (unit.NationId != nationRecno1 && unit.NationId != nationRecno2)
 			    continue;
 
-		    if (unit.is_action_attack())
+		    if (unit.IsAttackAction())
 		    {
 			    int targetType;
 			    int targetRecno;
@@ -1536,7 +1536,7 @@ public class UnitArray : SpriteArray
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
 		    selectedUnit.GroupId = cur_group_id++;
-		    selectedUnit.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
+		    selectedUnit.AttackUnit(targetXLoc, targetYLoc, 0, 0, true);
 		    return;
 	    }
 
@@ -1556,7 +1556,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit selectedUnit = this[selectedUnits[i]];
-			    selectedUnit.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
+			    selectedUnit.AttackUnit(targetXLoc, targetYLoc, 0, 0, true);
 		    }
 
 		    return;
@@ -1709,7 +1709,7 @@ public class UnitArray : SpriteArray
 
 			    //TODO remove
 			    //SeekPath.set_status(SeekPath.PATH_WAIT);
-			    unit.attack_unit(targetXLoc, targetYLoc, xOffset, yOffset, true);
+			    unit.AttackUnit(targetXLoc, targetYLoc, xOffset, yOffset, true);
 
 			    //------------------------------------------------------------//
 			    // store the unit sprite_recno in the array
@@ -1748,7 +1748,7 @@ public class UnitArray : SpriteArray
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
 		    selectedUnit.GroupId = cur_group_id++;
-		    selectedUnit.attack_firm(targetXLoc, targetYLoc);
+		    selectedUnit.AttackFirm(targetXLoc, targetYLoc);
 		    return;
 	    }
 
@@ -1766,7 +1766,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit selectedUnit = this[selectedUnits[i]];
-			    selectedUnit.attack_firm(targetXLoc, targetYLoc);
+			    selectedUnit.AttackFirm(targetXLoc, targetYLoc);
 		    }
 
 		    return;
@@ -1917,7 +1917,7 @@ public class UnitArray : SpriteArray
 
 			    //TODO remove
 			    //SeekPath.set_status(SeekPath.PATH_WAIT);
-			    unit.attack_firm(targetXLoc, targetYLoc, xOffset, yOffset);
+			    unit.AttackFirm(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
@@ -1951,7 +1951,7 @@ public class UnitArray : SpriteArray
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
 		    selectedUnit.GroupId = cur_group_id++;
-		    selectedUnit.attack_town(targetXLoc, targetYLoc);
+		    selectedUnit.AttackTown(targetXLoc, targetYLoc);
 		    return;
 	    }
 
@@ -1969,7 +1969,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit selectedUnit = this[selectedUnits[i]];
-			    selectedUnit.attack_town(targetXLoc, targetYLoc);
+			    selectedUnit.AttackTown(targetXLoc, targetYLoc);
 		    }
 
 		    return;
@@ -2119,7 +2119,7 @@ public class UnitArray : SpriteArray
 
 			    //TODO remove
 			    //SeekPath.set_status(SeekPath.PATH_WAIT);
-			    unit.attack_town(targetXLoc, targetYLoc, xOffset, yOffset);
+			    unit.AttackTown(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
@@ -2153,7 +2153,7 @@ public class UnitArray : SpriteArray
 	    {
 		    Unit selectedUnit = this[selectedUnits[0]];
 		    selectedUnit.GroupId = cur_group_id++;
-		    selectedUnit.attack_wall(targetXLoc, targetYLoc);
+		    selectedUnit.AttackWall(targetXLoc, targetYLoc);
 		    return;
 	    }
 
@@ -2171,7 +2171,7 @@ public class UnitArray : SpriteArray
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
 			    Unit selectedUnit = this[selectedUnits[i]];
-			    selectedUnit.attack_wall(targetXLoc, targetYLoc);
+			    selectedUnit.AttackWall(targetXLoc, targetYLoc);
 		    }
 
 		    return;
@@ -2315,7 +2315,7 @@ public class UnitArray : SpriteArray
 
 			    //TODO remove
 			    //SeekPath.set_status(SeekPath.PATH_WAIT);
-			    unit.attack_wall(targetXLoc, targetYLoc, xOffset, yOffset);
+			    unit.AttackWall(targetXLoc, targetYLoc, xOffset, yOffset);
 
 			    //------------------------------------------------------------//
 			    // set the flag if unreachable
@@ -3048,19 +3048,19 @@ public class UnitArray : SpriteArray
 				switch (targetType)
 				{
 					case 0:
-						unit.attack_wall(xLoc1, yLoc1);
+						unit.AttackWall(xLoc1, yLoc1);
 						break;
 
 					case 1:
-						unit.attack_unit(xLoc1, yLoc1, 0, 0, true);
+						unit.AttackUnit(xLoc1, yLoc1, 0, 0, true);
 						break;
 
 					case 2:
-						unit.attack_firm(xLoc1, yLoc1);
+						unit.AttackFirm(xLoc1, yLoc1);
 						break;
 
 					case 3:
-						unit.attack_town(xLoc1, yLoc1);
+						unit.AttackTown(xLoc1, yLoc1);
 						break;
 				}
 
@@ -3445,19 +3445,19 @@ public class UnitArray : SpriteArray
 			switch (targetType)
 			{
 				case 0:
-					first.attack_wall(targetXLoc, targetYLoc);
+					first.AttackWall(targetXLoc, targetYLoc);
 					break;
 
 				case 1:
-					first.attack_unit(targetXLoc, targetYLoc, 0, 0, true);
+					first.AttackUnit(targetXLoc, targetYLoc, 0, 0, true);
 					break;
 
 				case 2:
-					first.attack_firm(targetXLoc, targetYLoc);
+					first.AttackFirm(targetXLoc, targetYLoc);
 					break;
 
 				case 3:
-					first.attack_town(targetXLoc, targetYLoc);
+					first.AttackTown(targetXLoc, targetYLoc);
 					break;
 			}
 
