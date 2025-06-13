@@ -602,7 +602,7 @@ public partial class Unit : Sprite
 			}
 		}
 
-		//--------- process action corresponding to action_mode ----------//
+		//--------- process action corresponding to ActionMode ----------//
 
 		switch (ActionMode)
 		{
@@ -2412,8 +2412,7 @@ public partial class Unit : Sprite
 		int nextLocX = nextX >> InternalConstants.CellWidthShift;
 		int nextLocY = nextY >> InternalConstants.CellHeightShift;
 		Location location = World.GetLoc(nextLocX, nextLocY);
-		bool blocked = !location.IsAccessible(MobileType) ||
-		               (location.HasUnit(MobileType) && location.UnitId(MobileType) != SpriteId);
+		bool blocked = !location.IsAccessible(MobileType) || (location.HasUnit(MobileType) && location.UnitId(MobileType) != SpriteId);
 
 		if (!blocked || MoveActionCallFlag)
 		{
@@ -2878,6 +2877,26 @@ public partial class Unit : Sprite
 		return CurX >= 0;
 	}
 
+	private bool IsInSurrounding(int checkLocX, int checkLocY, int width, int targetLocX, int targetLocY, int targetWidth, int targetHeight)
+	{
+		switch (MoveStepCoeff())
+		{
+			case 1:
+				if (checkLocX >= targetLocX - width && checkLocX <= targetLocX + targetWidth &&
+				    checkLocY >= targetLocY - width && checkLocY <= targetLocY + targetHeight)
+					return true;
+				break;
+
+			case 2:
+				if (checkLocX >= targetLocX - width - 1 && checkLocX <= targetLocX + targetWidth + 1 &&
+				    checkLocY >= targetLocY - width - 1 && checkLocY <= targetLocY + targetHeight + 1)
+					return true;
+				break;
+		}
+
+		return false;
+	}
+	
 	public override bool IsStealth()
 	{
 		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[UnitType].stealth;
@@ -3882,7 +3901,7 @@ public partial class Unit : Sprite
 			SpyArray[SpyId].change_loyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 		}
 
-		//--- if this spy's nation_recno & true_nation_recno() are both == rewardNationRecno,
+		//--- if this spy's NationId & TrueNationId() are both == rewardNationId,
 		//it's true loyalty and cloaked loyalty will both be increased ---//
 
 		if (NationId == rewardNationId)
@@ -4158,26 +4177,6 @@ public partial class Unit : Sprite
 			return dispX;
 
 		return (dispX >= dispY) ? dispX : dispY;
-	}
-
-	private bool IsInSurrounding(int checkLocX, int checkLocY, int width, int targetLocX, int targetLocY, int targetWidth, int targetHeight)
-	{
-		switch (MoveStepCoeff())
-		{
-			case 1:
-				if (checkLocX >= targetLocX - width && checkLocX <= targetLocX + targetWidth &&
-				    checkLocY >= targetLocY - width && checkLocY <= targetLocY + targetHeight)
-					return true;
-				break;
-
-			case 2:
-				if (checkLocX >= targetLocX - width - 1 && checkLocX <= targetLocX + targetWidth + 1 &&
-				    checkLocY >= targetLocY - width - 1 && checkLocY <= targetLocY + targetHeight + 1)
-					return true;
-				break;
-		}
-
-		return false;
 	}
 
 	private void KingDie()
