@@ -374,7 +374,7 @@ public class Sprite : IIdObject
 		SpriteAttack spriteAttack = CurSpriteAttack();
 		if (++CurFrame > spriteAttack.frameCount)
 		{
-			((Unit)this).cycle_eqv_attack(); // assume only unit can attack
+			((Unit)this).CycleEqvAttack(); // assume only unit can attack
 			CurFrame = 1;
 			return 1;
 		}
