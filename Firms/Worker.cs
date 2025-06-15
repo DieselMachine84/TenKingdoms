@@ -102,7 +102,7 @@ public class Worker
     public bool is_nation(int firmRecno, int nationRecno, bool checkSpy = false)
     {
         if (checkSpy && spy_recno != 0)
-            return SpyArray[spy_recno].true_nation_recno == nationRecno;
+            return SpyArray[spy_recno].TrueNationId == nationRecno;
 
         if (town_recno != 0)
             return TownArray[town_recno].NationId == nationRecno;

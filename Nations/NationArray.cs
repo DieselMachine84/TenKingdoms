@@ -239,7 +239,7 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Spy spy in SpyArray)
 		{
-			this[spy.true_nation_recno].total_spy_count++;
+			this[spy.TrueNationId].total_spy_count++;
 		}
 
 		//--- update nation rating (this must be called after the above code, which update vars like total_population ---//

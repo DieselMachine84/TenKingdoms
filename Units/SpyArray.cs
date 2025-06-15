@@ -25,76 +25,74 @@ public class SpyArray : DynArray<Spy>
         if (base.IsDeleted(recNo))
             return true;
 
-        return this[recNo].spy_recno == 0;
+        return this[recNo].SpyId == 0;
     }
 
-    public Spy AddSpy(int unitRecno, int spySkill)
+    public Spy AddSpy(int unitId, int spySkill)
     {
         Spy spy = CreateNew();
-        spy.Init(unitRecno, spySkill);
-
+        spy.Init(unitId, spySkill);
         return spy;
     }
 
     public void DeleteSpy(Spy spy)
     {
-        int spyRecno = spy.spy_recno;
         spy.Deinit();
-        Delete(spyRecno);
+        Delete(spy.SpyId);
     }
 
     public void NextDay()
     {
         foreach (Spy spy in this)
         {
-            spy.next_day();
+            spy.NextDay();
 
-            if (IsDeleted(spy.spy_recno))
+            if (IsDeleted(spy.SpyId))
                 continue;
 
-            if (NationArray[spy.true_nation_recno].is_ai())
-                spy.process_ai();
+            if (NationArray[spy.TrueNationId].is_ai())
+                spy.ProcessAI();
         }
 
         if (Info.TotalDays % 15 == 0)
-            process_sabotage();
+            ProcessSabotage();
     }
 
-    public int find_town_spy(int townRecno, int raceId, int spySeq)
+    public int FindTownSpy(int townId, int raceId, int spySeq)
     {
         int matchCount = 0;
 
         foreach (Spy spy in this)
         {
-            if (spy.spy_place == Spy.SPY_TOWN && spy.spy_place_para == townRecno && spy.race_id == raceId)
+            if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == townId && spy.RaceId == raceId)
             {
                 matchCount++;
                 if (matchCount == spySeq)
-                    return spy.spy_recno;
+                    return spy.SpyId;
             }
         }
 
         return 0;
     }
 
-    public void process_sabotage()
+    private void ProcessSabotage()
     {
-        //-------- reset firms' sabotage_level -------//
+        //-------- reset firms' SabotageLevel -------//
 
         foreach (Firm firm in FirmArray)
         {
             firm.sabotage_level = 0;
         }
 
-        //------- increase firms' sabotage_level -----//
+        //------- increase firms' SabotageLevel -----//
 
         foreach (Spy spy in this)
         {
-            if (spy.action_mode == Spy.SPY_SABOTAGE)
+            if (spy.ActionMode == Spy.SPY_SABOTAGE)
             {
-                Firm firm = FirmArray[spy.spy_place_para];
+                Firm firm = FirmArray[spy.SpyPlaceId];
 
-                firm.sabotage_level += spy.spy_skill / 2;
+                firm.sabotage_level += spy.SpySkill / 2;
 
                 if (firm.sabotage_level > 100)
                     firm.sabotage_level = 100;
@@ -102,114 +100,94 @@ public class SpyArray : DynArray<Spy>
         }
     }
 
-    public void mobilize_all_spy(int spyPlace, int spyPlacePara, int nationRecno)
+    public void UpdateFirmSpyCount(int firmRecno)
     {
-        foreach (Spy spy in this)
-        {
-            if (spy.spy_place == spyPlace && spy.spy_place_para == spyPlacePara && spy.true_nation_recno == nationRecno)
-            {
-                if (spy.spy_place == Spy.SPY_TOWN)
-                    spy.mobilize_town_spy();
-
-                else if (spy.spy_place == Spy.SPY_FIRM)
-                    spy.mobilize_firm_spy();
-            }
-        }
-    }
-
-    public void update_firm_spy_count(int firmRecno)
-    {
-        //---- recalculate Firm::player_spy_count -----//
-
         Firm firm = FirmArray[firmRecno];
 
         firm.player_spy_count = 0;
 
         foreach (Spy spy in this)
         {
-            if (spy.spy_place == Spy.SPY_FIRM &&
-                spy.spy_place_para == firmRecno &&
-                spy.true_nation_recno == NationArray.player_recno)
+            if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmRecno && spy.TrueNationId == NationArray.player_recno)
             {
                 firm.player_spy_count++;
             }
         }
     }
 
-    public void change_cloaked_nation(int spyPlace, int spyPlacePara, int fromNationRecno, int toNationRecno)
+    public void ChangeCloakedNation(int spyPlace, int spyPlaceId, int fromNationId, int toNationId)
     {
         foreach (Spy spy in this)
         {
-            if (spy.cloaked_nation_recno != fromNationRecno)
+            if (spy.CloakedNationId != fromNationId)
                 continue;
 
-            if (spy.spy_place != spyPlace)
+            if (spy.SpyPlace != spyPlace)
                 continue;
 
             //--- check if the spy is in the specific firm or town ---//
 
-            // only check spy_place_para when spyPlace is SPY_TOWN or SPY_FIRM
+            // only check spyPlacePara when spyPlace is SPY_TOWN or SPY_FIRM
             if (spyPlace == Spy.SPY_FIRM || spyPlace == Spy.SPY_TOWN)
             {
-                if (spy.spy_place_para != spyPlacePara)
+                if (spy.SpyPlaceId != spyPlaceId)
                     continue;
             }
 
-            if (spyPlace == spy.spy_place && spyPlacePara == spy.spy_place_para &&
-                spy.true_nation_recno == toNationRecno)
-                spy.set_action_mode(Spy.SPY_IDLE);
+            if (spyPlace == spy.SpyPlace && spyPlaceId == spy.SpyPlaceId && spy.TrueNationId == toNationId)
+                spy.ActionMode = Spy.SPY_IDLE;
 
-            //----- if the spy is associated with a unit (mobile or firm overseer), we call Unit.spy_change_nation() ---//
+            //----- if the spy is associated with a unit (mobile or firm overseer), we call Unit.SpyChangeNation() ---//
 
             if (spyPlace == Spy.SPY_FIRM)
             {
-                int firmOverseerRecno = FirmArray[spy.spy_place_para].overseer_recno;
+                int firmOverseerId = FirmArray[spy.SpyPlaceId].overseer_recno;
 
-                if (firmOverseerRecno != 0 && UnitArray[firmOverseerRecno].SpyId == spy.spy_recno)
+                if (firmOverseerId != 0 && UnitArray[firmOverseerId].SpyId == spy.SpyId)
                 {
-                    UnitArray[firmOverseerRecno].SpyChangeNation(toNationRecno, InternalConstants.COMMAND_AUTO);
+                    UnitArray[firmOverseerId].SpyChangeNation(toNationId, InternalConstants.COMMAND_AUTO);
                     continue;
                 }
             }
             else if (spyPlace == Spy.SPY_MOBILE)
             {
-                UnitArray[spy.spy_place_para].SpyChangeNation(toNationRecno, InternalConstants.COMMAND_AUTO);
+                UnitArray[spy.SpyPlaceId].SpyChangeNation(toNationId, InternalConstants.COMMAND_AUTO);
                 continue;
             }
 
             //---- otherwise, just change the spy cloak ----//
 
-            spy.cloaked_nation_recno = toNationRecno;
+            spy.CloakedNationId = toNationId;
         }
     }
 
-    public void set_action_mode(int spyPlace, int spyPlacePara, int actionMode)
+    public void SetActionMode(int spyPlace, int spyPlacePara, int actionMode)
     {
         foreach (Spy spy in this)
         {
-            if (spy.spy_place == spyPlace && spy.spy_place_para == spyPlacePara)
+            if (spy.SpyPlace == spyPlace && spy.SpyPlaceId == spyPlacePara)
             {
-                spy.set_action_mode(actionMode);
+                spy.ActionMode = actionMode;
             }
         }
     }
 
-    public bool catch_spy(int spyPlace, int spyPlacePara)
+    public bool CatchSpy(int spyPlace, int spyPlaceId)
     {
-        int nationRecno = 0, totalPop = 0;
+        int nationId = 0, totalPop = 0;
 
         if (spyPlace == Spy.SPY_TOWN)
         {
-            Town town = TownArray[spyPlacePara];
+            Town town = TownArray[spyPlaceId];
 
-            nationRecno = town.NationId;
+            nationId = town.NationId;
             totalPop = town.Population;
         }
         else if (spyPlace == Spy.SPY_FIRM)
         {
-            Firm firm = FirmArray[spyPlacePara];
+            Firm firm = FirmArray[spyPlaceId];
 
-            nationRecno = firm.nation_recno;
+            nationId = firm.nation_recno;
             totalPop = firm.workers.Count + (firm.overseer_recno != 0 ? 1 : 0);
         }
 
@@ -219,10 +197,10 @@ public class SpyArray : DynArray<Spy>
 
         foreach (Spy spy in this)
         {
-            if (spy.spy_place == spyPlace && spy.spy_place_para == spyPlacePara)
+            if (spy.SpyPlace == spyPlace && spy.SpyPlaceId == spyPlaceId)
             {
-                if (spy.true_nation_recno == nationRecno)
-                    counterSpySkill += spy.spy_skill;
+                if (spy.TrueNationId == nationId)
+                    counterSpySkill += spy.SpySkill;
                 else
                     enemySpyCount++;
             }
@@ -237,19 +215,19 @@ public class SpyArray : DynArray<Spy>
 
         foreach (Spy spy in this)
         {
-            if (spy.action_mode == Spy.SPY_IDLE) // it is very hard to get caught in sleep mode
+            if (spy.ActionMode == Spy.SPY_IDLE) // it is very hard to get caught in sleep mode
                 continue;
 
             // doesn't get caught in sleep mode
-            if (spy.spy_place == spyPlace && spy.spy_place_para == spyPlacePara && spy.true_nation_recno != nationRecno)
+            if (spy.SpyPlace == spyPlace && spy.SpyPlaceId == spyPlaceId && spy.TrueNationId != nationId)
             {
-                int escapeChance = 100 + spy.spy_skill - counterSpySkill;
+                int escapeChance = 100 + spy.SpySkill - counterSpySkill;
 
-                escapeChance = Math.Max(spy.spy_skill / 10, escapeChance);
+                escapeChance = Math.Max(spy.SpySkill / 10, escapeChance);
 
                 if (Misc.Random(escapeChance) == 0)
                 {
-                    spy.get_killed(); // only catch one spy per calling
+                    spy.GetKilled(); // only catch one spy per calling
                     return true;
                 }
             }
@@ -258,7 +236,7 @@ public class SpyArray : DynArray<Spy>
         return false;
     }
 
-    public int total_spy_skill_level(int spyPlace, int spyPlacePara, int spyNationRecno, out int spyCount)
+    public int TotalSpySkillLevel(int spyPlace, int spyPlaceId, int spyNationId, out int spyCount)
     {
         spyCount = 0;
 
@@ -266,46 +244,44 @@ public class SpyArray : DynArray<Spy>
 
         foreach (Spy spy in this)
         {
-            if (spy.true_nation_recno != spyNationRecno)
+            if (spy.TrueNationId != spyNationId)
                 continue;
 
-            if (spy.spy_place != spyPlace)
+            if (spy.SpyPlace != spyPlace)
                 continue;
 
-            if (spy.spy_place_para != spyPlacePara)
+            if (spy.SpyPlaceId != spyPlaceId)
                 continue;
 
             spyCount++;
 
-            totalSpyLevel += spy.spy_skill;
+            totalSpyLevel += spy.SpySkill;
         }
 
         return totalSpyLevel;
     }
 
-    public int needed_view_secret_skill(int viewMode)
+    public int NeededViewSecretSkill(int viewMode)
     {
         //TODO rewrite
 
         return 0;
     }
 
-    public void ai_spy_town_rebel(int townRecno)
+    public void AISpyTownRebel(int townId)
     {
         foreach (Spy spy in this)
         {
-            if (spy.spy_place == Spy.SPY_TOWN &&
-                spy.spy_place_para == townRecno &&
-                NationArray[spy.true_nation_recno].is_ai())
+            if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == townId && NationArray[spy.TrueNationId].is_ai())
             {
                 //-------- mobilize the spy ----------//
 
-                Unit unit = spy.mobilize_town_spy();
+                Unit unit = spy.MobilizeTownSpy();
 
                 //----- think new action for the spy ------//
 
                 if (unit != null)
-                    spy.think_mobile_spy_new_action();
+                    spy.ThinkMobileSpyNewAction();
             }
         }
     }

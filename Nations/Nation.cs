@@ -745,8 +745,8 @@ public class Nation : NationBase
 		}
 
 		doublebreak:
-		spy.notify_cloaked_nation_flag = 0;
-		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.cloaked_nation_recno == 0)
+		spy.NotifyCloakedNation = 0;
+		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.CloakedNationId == 0)
 		{
 			Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
 			if (location.IsTown())
@@ -754,7 +754,7 @@ public class Nation : NationBase
 				Town targetTown = TownArray[location.TownId()];
 				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.TrueNationId())
 				{
-					spy.notify_cloaked_nation_flag = 1;
+					spy.NotifyCloakedNation = 1;
 				}
 			}
 		}
@@ -780,7 +780,7 @@ public class Nation : NationBase
 
 		//------- assign the spy to the target -------//
 
-		if (spy.notify_cloaked_nation_flag == 0)
+		if (spy.NotifyCloakedNation == 0)
 			spyUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		else
 			spyUnit.AIMoveToNearbyTown();
@@ -3120,7 +3120,7 @@ public class Nation : NationBase
 			{
 				// if this is a spy and he's our spy
 				if (bestUnit.SpyId != 0 && bestUnit.TrueNationId() == nation_recno)
-					SpyArray[bestUnit.SpyId].drop_spy_identity(); // revert the spy to a normal unit
+					SpyArray[bestUnit.SpyId].DropSpyIdentity(); // revert the spy to a normal unit
 
 				succeed_king(bestUnit);
 				return true;
@@ -6706,7 +6706,7 @@ public class Nation : NationBase
 			if (town.MajorityRace() != raceId)
 				continue;
 
-			int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, town.TownId,
+			int curSpyLevel = SpyArray.TotalSpySkillLevel(Spy.SPY_TOWN, town.TownId,
 				nation_recno, out _);
 			int neededSpyLevel = town.NeededAntiSpyLevel();
 
@@ -6774,18 +6774,18 @@ public class Nation : NationBase
 
 		foreach (Spy spy in SpyArray)
 		{
-			if (spy.true_nation_recno != nation_recno || spy.cloaked_nation_recno != nation_recno)
+			if (spy.TrueNationId != nation_recno || spy.CloakedNationId != nation_recno)
 				continue;
 
-			if (spy.spy_skill < worstSkill)
+			if (spy.SpySkill < worstSkill)
 			{
 				worstSpy = spy;
-				worstSkill = spy.spy_skill;
+				worstSkill = spy.SpySkill;
 			}
 		}
 
 		if (worstSpy != null)
-			worstSpy.drop_spy_identity();
+			worstSpy.DropSpyIdentity();
 	}
 
 	public void ai_start_spy_new_mission(Unit spyUnit, int loc_x1, int loc_y1, int cloakedNationRecno)

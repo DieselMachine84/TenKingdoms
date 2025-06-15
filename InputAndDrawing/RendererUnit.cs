@@ -114,7 +114,7 @@ public partial class Renderer
             {
                 DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
-                PutText(FontSan, SpyArray[unit.SpyId].spy_loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 154, -1, true);
+                PutText(FontSan, SpyArray[unit.SpyId].SpyLoyalty.ToString(), DetailsX1 + 307, DetailsY1 + 154, -1, true);
             }
             else
             {
@@ -131,7 +131,7 @@ public partial class Renderer
         {
             DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 178);
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);
-            PutText(FontSan, SpyArray[unit.SpyId].spy_skill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
+            PutText(FontSan, SpyArray[unit.SpyId].SpySkill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }
         
         if (unit.IsOwnSpy())

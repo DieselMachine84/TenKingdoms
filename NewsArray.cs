@@ -444,15 +444,15 @@ public class NewsArray
 
 		//---------- your spy is killed in an enemy nation ---------//
 
-		if (spy.true_nation_recno == NationArray.player_recno)
+		if (spy.TrueNationId == NationArray.player_recno)
 		{
 			news = add_news(News.NEWS_YOUR_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.player_recno, spy.cloaked_nation_recno);
+				NationArray.player_recno, spy.CloakedNationId);
 		}
 		else //----- an enemy spy in your nation is uncovered and executed ----//
 		{
 			news = add_news(News.NEWS_ENEMY_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.player_recno, spy.true_nation_recno);
+				NationArray.player_recno, spy.TrueNationId);
 		}
 
 		if (news == null) // only news of nations that have contact with the player are added
@@ -460,29 +460,29 @@ public class NewsArray
 
 		//-------------------------------------------//
 
-		news.short_para3 = spy.spy_place;
+		news.short_para3 = spy.SpyPlace;
 
-		if (spy.spy_place == Spy.SPY_FIRM)
+		if (spy.SpyPlace == Spy.SPY_FIRM)
 		{
-			Firm firm = FirmArray[spy.spy_place_para];
+			Firm firm = FirmArray[spy.SpyPlaceId];
 
 			news.short_para1 = firm.firm_id;
 			news.short_para2 = firm.get_closest_town_name_id();
 
 			news.set_loc(firm.center_x, firm.center_y, News.NEWS_LOC_FIRM, firm.firm_recno);
 		}
-		else if (spy.spy_place == Spy.SPY_TOWN)
+		else if (spy.SpyPlace == Spy.SPY_TOWN)
 		{
-			Town town = TownArray[spy.spy_place_para];
+			Town town = TownArray[spy.SpyPlaceId];
 
 			news.short_para1 = 0;
 			news.short_para2 = town.TownNameId;
 
 			news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 		}
-		else if (spy.spy_place == Spy.SPY_MOBILE)
+		else if (spy.SpyPlace == Spy.SPY_MOBILE)
 		{
-			Unit unit = UnitArray[spy.spy_place_para];
+			Unit unit = UnitArray[spy.SpyPlaceId];
 
 			news.short_para1 = unit.RaceId;
 			news.short_para2 = unit.NameId;
@@ -547,7 +547,7 @@ public class NewsArray
 
 		int xLoc, yLoc;
 
-		SpyArray[spyRecno].get_loc(out xLoc, out yLoc);
+		SpyArray[spyRecno].GetSpyLocation(out xLoc, out yLoc);
 
 		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
 	}

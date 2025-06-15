@@ -113,7 +113,7 @@ public partial class Renderer
                 {
                     if (unit.selected_flag)
                     {
-                        if (unit.true_nation_recno() == 1)
+                        if (unit.TrueNationId() == 1)
                         {
                             unit.MoveTo(locX, locY);
                         }

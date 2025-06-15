@@ -827,8 +827,8 @@ public class NationBase : IIdObject
             // so there  will be no more spies of this nation. 
             //-----------------------------------------------------//
 
-            if (spy.true_nation_recno == nation_recno) // retire counter-spies immediately
-                spy.drop_spy_identity();
+            if (spy.TrueNationId == nation_recno) // retire counter-spies immediately
+                spy.DropSpyIdentity();
 
             //-----------------------------------------------------//
             // For spies of other nation cloaked as this nation,
@@ -836,21 +836,21 @@ public class NationBase : IIdObject
             // to their original nation. 
             //-----------------------------------------------------//
 
-            else if (spy.cloaked_nation_recno == nation_recno)
+            else if (spy.CloakedNationId == nation_recno)
             {
                 // changing cloak is normally only allowed when mobile
 
-                if (spy.spy_place == Spy.SPY_FIRM)
+                if (spy.SpyPlace == Spy.SPY_FIRM)
                 {
                     // at least try to return spoils before it goes poof
-                    if (!spy.can_capture_firm() || !spy.capture_firm())
-                        spy.mobilize_firm_spy();
+                    if (!spy.CanCaptureFirm() || !spy.CaptureFirm())
+                        spy.MobilizeFirmSpy();
                 }
-                else if (spy.spy_place == Spy.SPY_TOWN)
-                    spy.mobilize_town_spy();
+                else if (spy.SpyPlace == Spy.SPY_TOWN)
+                    spy.MobilizeTownSpy();
 
-                if (spy.spy_place == Spy.SPY_MOBILE) // what about on transport??
-                    spy.change_cloaked_nation(spy.true_nation_recno);
+                if (spy.SpyPlace == Spy.SPY_MOBILE) // what about on transport??
+                    spy.ChangeCloakedNation(spy.TrueNationId);
             }
         }
 
@@ -1050,9 +1050,9 @@ public class NationBase : IIdObject
             Spy spy = SpyArray[newKing.SpyId];
 
             if (newKing.TrueNationId() == nation_recno) // if this is your spy
-                spy.drop_spy_identity();
+                spy.DropSpyIdentity();
             else
-                spy.think_become_king();
+                spy.ThinkBecomeKing();
         }
     }
 
@@ -1157,8 +1157,8 @@ public class NationBase : IIdObject
 
         foreach (Spy spy in SpyArray)
         {
-            if (spy.true_nation_recno == nation_recno)
-                spy.change_true_nation(handoverNationRecno);
+            if (spy.TrueNationId == nation_recno)
+                spy.ChangeTrueNation(handoverNationRecno);
         }
 
         //------- delete this nation from NationArray -------//

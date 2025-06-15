@@ -653,7 +653,7 @@ public abstract class Firm : IIdObject
 				//--------- if the unit is a spy -----------//
 
 				if (overseer.SpyId != 0)
-					SpyArray[overseer.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
+					SpyArray[overseer.SpyId].SetPlace(Spy.SPY_FIRM, firm_recno);
 				/*
 				//------ capture the firm if the overseer is from another nation ---//
 				if(UnitArray[overseer_recno].nation_recno != nation_recno)
@@ -688,7 +688,7 @@ public abstract class Firm : IIdObject
 				//--------- if the unit is a spy -----------//
 
 				if (overseer.SpyId != 0)
-					SpyArray[overseer.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
+					SpyArray[overseer.SpyId].SetPlace(Spy.SPY_FIRM, firm_recno);
 				/*
 				//------ capture the firm if the overseer is from another nation ---//
 				if(UnitArray[overseer_recno].nation_recno != nation_recno)
@@ -812,7 +812,7 @@ public abstract class Firm : IIdObject
 
 		if (unit.SpyId != 0)
 		{
-			SpyArray[unit.SpyId].set_place(Spy.SPY_FIRM, firm_recno);
+			SpyArray[unit.SpyId].SetPlace(Spy.SPY_FIRM, firm_recno);
 
 			newWorker.spy_recno = unit.SpyId;
 			unit.SpyId = 0; // reset it now so Unit::deinit() won't delete the Spy in SpyArray
@@ -836,7 +836,7 @@ public abstract class Firm : IIdObject
 		Unit overseer = UnitArray[overseer_recno];
 
 		if (overseer.SpyId != 0)
-			SpyArray[overseer.SpyId].set_place(Spy.SPY_UNDEFINED, 0);
+			SpyArray[overseer.SpyId].SetPlace(Spy.SPY_UNDEFINED, 0);
 
 		//-- no need to del the spy here, UnitArray.del() will del the spy --//
 
@@ -873,7 +873,7 @@ public abstract class Firm : IIdObject
 		if (worker.spy_recno != 0)
 		{
 			Spy spy = SpyArray[worker.spy_recno];
-			spy.set_place(Spy.SPY_UNDEFINED, 0);
+			spy.SetPlace(Spy.SPY_UNDEFINED, 0);
 			SpyArray.DeleteSpy(spy);
 		}
 
@@ -1028,11 +1028,11 @@ public abstract class Firm : IIdObject
 				if (spyCount >= Misc.Random(recruitableCount) + 1)
 				{
 					// the 3rd parameter is which spy to recruit
-					int spyRecno = SpyArray.find_town_spy(townRecno, raceId, Misc.Random(spyCount) + 1);
+					int spyRecno = SpyArray.FindTownSpy(townRecno, raceId, Misc.Random(spyCount) + 1);
 
 					worker.spy_recno = spyRecno;
 
-					SpyArray[spyRecno].set_place(Spy.SPY_FIRM, firm_recno);
+					SpyArray[spyRecno].SetPlace(Spy.SPY_FIRM, firm_recno);
 				}
 
 				return true;
@@ -1238,7 +1238,7 @@ public abstract class Firm : IIdObject
 			//--- if this is a spy, chance its cloak ----//
 
 			if (unit.SpyId != 0)
-				SpyArray[unit.SpyId].cloaked_nation_recno = newNationRecno;
+				SpyArray[unit.SpyId].CloakedNationId = newNationRecno;
 		}
 
 		//---------- stop all actions attacking this firm --------//
@@ -1273,12 +1273,12 @@ public abstract class Firm : IIdObject
 
 		//------- update player_spy_count -------//
 
-		SpyArray.update_firm_spy_count(firm_recno);
+		SpyArray.UpdateFirmSpyCount(firm_recno);
 
 		//--- update the cloaked_nation_recno of all spies in the firm ---//
 
 		// check the cloaked nation recno of all spies in the firm
-		SpyArray.change_cloaked_nation(Spy.SPY_FIRM, firm_recno, nation_recno, newNationRecno);
+		SpyArray.ChangeCloakedNation(Spy.SPY_FIRM, firm_recno, nation_recno, newNationRecno);
 
 		//-----------------------------------------//
 
@@ -1319,7 +1319,7 @@ public abstract class Firm : IIdObject
 		//---- reset the action mode of all spies in this town ----//
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
-		SpyArray.set_action_mode(Spy.SPY_FIRM, firm_recno, Spy.SPY_IDLE);
+		SpyArray.SetActionMode(Spy.SPY_FIRM, firm_recno, Spy.SPY_IDLE);
 		
 		//-- refresh display if this firm is currently selected --//
 
@@ -1818,7 +1818,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in workers)
 		{
-			if (worker.spy_recno != 0 && SpyArray[worker.spy_recno].true_nation_recno == captureNationRecno)
+			if (worker.spy_recno != 0 && SpyArray[worker.spy_recno].TrueNationId == captureNationRecno)
 			{
 				captureUnitCount++;
 			}
@@ -1918,7 +1918,7 @@ public abstract class Firm : IIdObject
 		if (spyRecno != 0)
 		{
 			// only when the unit is not yet a spy of the player. Still display the bribe button when it's a spy of another nation
-			canBribe = SpyArray[spyRecno].true_nation_recno != briberNationRecno;
+			canBribe = SpyArray[spyRecno].TrueNationId != briberNationRecno;
 		}
 		else
 		{
@@ -1934,14 +1934,14 @@ public abstract class Firm : IIdObject
 	public int spy_bribe(int bribeAmount, int briberSpyRecno, int workerId)
 	{
 		// this can happen in multiplayer as there is a one frame delay when the message is sent and when it is processed
-		if (!can_spy_bribe(workerId, SpyArray[briberSpyRecno].true_nation_recno))
+		if (!can_spy_bribe(workerId, SpyArray[briberSpyRecno].TrueNationId))
 			return 0;
 
 		//---------------------------------------//
 
 		int succeedChance = spy_bribe_succeed_chance(bribeAmount, briberSpyRecno, workerId);
 
-		NationArray[SpyArray[briberSpyRecno].true_nation_recno].add_expense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
+		NationArray[SpyArray[briberSpyRecno].TrueNationId].add_expense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
 
 		//------ if the bribe succeeds ------//
 
@@ -1950,36 +1950,36 @@ public abstract class Firm : IIdObject
 			Spy briber = SpyArray[briberSpyRecno];
 			Spy newSpy = SpyArray.AddSpy(0, 10); // add a new Spy record
 
-			newSpy.action_mode = Spy.SPY_IDLE;
-			newSpy.spy_loyalty = Math.Min(100, Math.Max(30, succeedChance)); // within the 30-100 range
+			newSpy.ActionMode = Spy.SPY_IDLE;
+			newSpy.SpyLoyalty = Math.Min(100, Math.Max(30, succeedChance)); // within the 30-100 range
 
-			newSpy.true_nation_recno = briber.true_nation_recno;
-			newSpy.cloaked_nation_recno = briber.cloaked_nation_recno;
+			newSpy.TrueNationId = briber.TrueNationId;
+			newSpy.CloakedNationId = briber.CloakedNationId;
 
 			if (workerId != 0)
 			{
 				Worker worker = workers[workerId - 1];
-				worker.spy_recno = newSpy.spy_recno;
-				newSpy.race_id = worker.race_id;
-				newSpy.name_id = worker.name_id;
+				worker.spy_recno = newSpy.SpyId;
+				newSpy.RaceId = worker.race_id;
+				newSpy.NameId = worker.name_id;
 
 				// if this worker does not have a name, give him one now as a spy must reserve a name (see below on use_name_id() for reasons)
-				if (newSpy.name_id == 0)
-					newSpy.name_id = RaceRes[newSpy.race_id].get_new_name_id();
+				if (newSpy.NameId == 0)
+					newSpy.NameId = RaceRes[newSpy.RaceId].get_new_name_id();
 			}
 			else if (overseer_recno != 0)
 			{
 				Unit unit = UnitArray[overseer_recno];
-				unit.SpyId = newSpy.spy_recno;
-				newSpy.race_id = unit.RaceId;
-				newSpy.name_id = unit.NameId;
+				unit.SpyId = newSpy.SpyId;
+				newSpy.RaceId = unit.RaceId;
+				newSpy.NameId = unit.NameId;
 			}
 
-			newSpy.set_place(Spy.SPY_FIRM, firm_recno);
+			newSpy.SetPlace(Spy.SPY_FIRM, firm_recno);
 
 			//-- Spy always registers its name twice as his name will be freed up in deinit(). Keep an additional right because when a spy is assigned to a town, the normal program will free up the name id., so we have to keep an additional copy
 
-			RaceRes[newSpy.race_id].use_name_id(newSpy.name_id);
+			RaceRes[newSpy.RaceId].use_name_id(newSpy.NameId);
 
 			bribe_result = Spy.BRIBE_SUCCEED;
 
@@ -1987,11 +1987,11 @@ public abstract class Firm : IIdObject
 			//if( firm_recno == FirmArray.selected_recno )
 			//info.disp();
 
-			return newSpy.spy_recno;
+			return newSpy.SpyId;
 		}
 		else //------- if the bribe fails --------//
 		{
-			SpyArray[briberSpyRecno].get_killed(0); // the spy gets killed when the action failed.
+			SpyArray[briberSpyRecno].GetKilled(0); // the spy gets killed when the action failed.
 			// 0 - don't display new message for the spy being killed, so we already display the msg on the interface
 			bribe_result = Spy.BRIBE_FAIL;
 
@@ -2041,15 +2041,15 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			succeedChance = spy.spy_skill - unitLoyalty - unitCommandPower
-			                + (int)NationArray[spy.true_nation_recno].reputation
+			succeedChance = spy.SpySkill - unitLoyalty - unitCommandPower
+			                + (int)NationArray[spy.TrueNationId].reputation
 			                + 200 * bribeAmount / GameConstants.MAX_BRIBE_AMOUNT;
 
 			//-- the chance is higher if the spy or the spy's king is racially homongenous to the bribe target,
 
-			int spyKingRaceId = NationArray[spy.true_nation_recno].race_id;
+			int spyKingRaceId = NationArray[spy.TrueNationId].race_id;
 
-			succeedChance += (RaceRes.is_same_race(spy.race_id, unitRaceId) ? 1 : 0) * 10 +
+			succeedChance += (RaceRes.is_same_race(spy.RaceId, unitRaceId) ? 1 : 0) * 10 +
 			                 (RaceRes.is_same_race(spyKingRaceId, unitRaceId) ? 1 : 0) * 10;
 
 			if (unitLoyalty > 60) // harder for bribe units with over 60 loyalty
@@ -2074,12 +2074,12 @@ public abstract class Firm : IIdObject
 	public bool validate_cur_bribe()
 	{
 		if (SpyArray.IsDeleted(action_spy_recno) ||
-		    SpyArray[action_spy_recno].true_nation_recno != NationArray.player_recno)
+		    SpyArray[action_spy_recno].TrueNationId != NationArray.player_recno)
 		{
 			return false;
 		}
 
-		return can_spy_bribe(selected_worker_id, SpyArray[action_spy_recno].true_nation_recno);
+		return can_spy_bribe(selected_worker_id, SpyArray[action_spy_recno].TrueNationId);
 	}
 
 	//------------------- defense --------------------//
@@ -2325,7 +2325,7 @@ public abstract class Firm : IIdObject
 
 			if (unit.SpyId != 0 && unit.TrueNationId() != nation_recno)
 			{
-				hit_points -= SpyArray[unit.SpyId].spy_skill / 30.0;
+				hit_points -= SpyArray[unit.SpyId].SpySkill / 30.0;
 
 				if (hit_points < 0)
 					hit_points = 0.0;
@@ -2420,7 +2420,7 @@ public abstract class Firm : IIdObject
 		//------ catching spies -------//
 
 		if (Info.TotalDays % 30 == firm_recno % 30)
-			SpyArray.catch_spy(Spy.SPY_FIRM, firm_recno);
+			SpyArray.CatchSpy(Spy.SPY_FIRM, firm_recno);
 
 		//----- process workers from other town -----//
 
@@ -2610,7 +2610,7 @@ public abstract class Firm : IIdObject
 		//-------- if the overseer is a spy -------//
 
 		if (overseer.SpyId != 0)
-			SpyArray[overseer.SpyId].set_place(Spy.SPY_MOBILE, overseer.SpriteId);
+			SpyArray[overseer.SpyId].SetPlace(Spy.SPY_MOBILE, overseer.SpriteId);
 
 		//---- cancel the overseer's presence in the town -----//
 
@@ -2717,7 +2717,7 @@ public abstract class Firm : IIdObject
 			//------ put the spy in the town -------//
 
 			if (worker.spy_recno != 0)
-				SpyArray[worker.spy_recno].set_place(Spy.SPY_TOWN, worker.town_recno);
+				SpyArray[worker.spy_recno].SetPlace(Spy.SPY_TOWN, worker.town_recno);
 		}
 		else
 		{

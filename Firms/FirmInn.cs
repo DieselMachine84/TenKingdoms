@@ -106,7 +106,7 @@ public class FirmInn : Firm
 		if (unit.Skill.SkillId == Skill.SKILL_SPYING)
 		{
 			Spy spy = SpyArray.AddSpy(unitRecno, unit.Skill.SkillLevel);
-			unit.SpyId = spy.spy_recno;
+			unit.SpyId = spy.SpyId;
 			unit.Skill.SkillId = 0; // reset its primary skill, its spying skill has been recorded in spy_array
 		}
 
@@ -127,7 +127,7 @@ public class FirmInn : Firm
 		unitLoyalty = Math.Min(100, unitLoyalty);
 
 		if (unit.SpyId != 0)
-			SpyArray[unit.SpyId].spy_loyalty = unitLoyalty;
+			SpyArray[unit.SpyId].SpyLoyalty = unitLoyalty;
 		else
 			unit.Loyalty = unitLoyalty;
 

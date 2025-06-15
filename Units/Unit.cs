@@ -579,9 +579,9 @@ public partial class Unit : Sprite
 		{
 			SpyId = worker.spy_recno;
 			Spy spy = SpyArray[SpyId];
-			AIUnit = spy.cloaked_nation_recno != 0 && NationArray[spy.cloaked_nation_recno].is_ai();
-			SetName(spy.name_id);
-			spy.set_place(Spy.SPY_MOBILE, SpriteId);
+			AIUnit = spy.CloakedNationId != 0 && NationArray[spy.CloakedNationId].is_ai();
+			SetName(spy.NameId);
+			spy.SetPlace(Spy.SPY_MOBILE, SpriteId);
 		}
 	}
 
@@ -2920,7 +2920,7 @@ public partial class Unit : Sprite
 
 	public bool IsOwnSpy()
 	{
-		return SpyId != 0 && SpyArray[SpyId].true_nation_recno == NationArray.player_recno;
+		return SpyId != 0 && SpyArray[SpyId].TrueNationId == NationArray.player_recno;
 	}
 
 	public bool BelongsToNation(int nationId)
@@ -2928,7 +2928,7 @@ public partial class Unit : Sprite
 		if (NationId == nationId)
 			return true;
 
-		if (SpyId != 0 && SpyArray[SpyId].true_nation_recno == nationId)
+		if (SpyId != 0 && SpyArray[SpyId].TrueNationId == nationId)
 			return true;
 
 		return false;
@@ -2936,7 +2936,7 @@ public partial class Unit : Sprite
 
 	public int TrueNationId()
 	{
-		return SpyId != 0 ? SpyArray[SpyId].true_nation_recno : NationId;
+		return SpyId != 0 ? SpyArray[SpyId].TrueNationId : NationId;
 	}
 	
 	public int RegionId()
@@ -3593,7 +3593,7 @@ public partial class Unit : Sprite
 
 		if (IsVisible() && NationId != 0)
 		{
-			if (SpyId == 0 || SpyArray[SpyId].notify_cloaked_nation_flag != 0)
+			if (SpyId == 0 || SpyArray[SpyId].NotifyCloakedNation != 0)
 			{
 				// generals shouldn't automatically be assigned to camps, they should just move near your villages
 				if (Rank == RANK_GENERAL)
@@ -3904,7 +3904,7 @@ public partial class Unit : Sprite
 
 		if (SpyId != 0 && TrueNationId() == rewardNationId) // if the spy's own nation rewards the spy
 		{
-			SpyArray[SpyId].change_loyalty(GameConstants.REWARD_LOYALTY_INCREASE);
+			SpyArray[SpyId].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 		}
 
 		//--- if this spy's NationId & TrueNationId() are both == rewardNationId,
@@ -4057,7 +4057,7 @@ public partial class Unit : Sprite
 		//--- when a spy change cloak to another nation, he can't cloak as a general, he must become a soldier first ---//
 
 		// if the spy is a commander in a camp, don't set its rank to soldier
-		if (IsVisible() && Rank == RANK_GENERAL && newNationId != spy.true_nation_recno)
+		if (IsVisible() && Rank == RANK_GENERAL && newNationId != spy.TrueNationId)
 		{
 			SetRank(RANK_SOLDIER);
 		}
@@ -4070,10 +4070,10 @@ public partial class Unit : Sprite
 		//---------------------------------------------------//
 
 		// only send news message if he is not the player's own spy
-		if (spy.true_nation_recno != NationArray.player_recno)
+		if (spy.TrueNationId != NationArray.player_recno)
 		{
 			if (Rank == RANK_GENERAL || UnitMode == UnitConstants.UNIT_MODE_OVERSEE ||
-			    (spy.notify_cloaked_nation_flag != 0 && groupDefect == 0))
+			    (spy.NotifyCloakedNation != 0 && groupDefect == 0))
 			{
 				//-- if this spy's cloaked nation is the player's nation, the player will be notified --//
 
@@ -4083,7 +4083,7 @@ public partial class Unit : Sprite
 
 			//---- send news to the cloaked nation if notify flag is on ---//
 
-			if (spy.notify_cloaked_nation_flag != 0 && groupDefect == 0)
+			if (spy.NotifyCloakedNation != 0 && groupDefect == 0)
 			{
 				if (newNationId == NationArray.player_recno) // cloaked as the player's nation
 					NewsArray.unit_betray(SpriteId, newNationId);
@@ -4092,7 +4092,7 @@ public partial class Unit : Sprite
 
 		//--------- change nation now --------//
 
-		spy.cloaked_nation_recno = newNationId;
+		spy.CloakedNationId = newNationId;
 
 		// call the betray function to change nation. There is no difference between a spy changing nation and a unit truly betrays
 		if (groupDefect == 0)
@@ -4141,7 +4141,7 @@ public partial class Unit : Sprite
 				{
 					if (otherUnit.SpyId != 0 && SpyId != 0)
 					{
-						if (SpyArray[otherUnit.SpyId].spy_skill >= SpyArray[SpyId].spy_skill)
+						if (SpyArray[otherUnit.SpyId].SpySkill >= SpyArray[SpyId].SpySkill)
 						{
 							continue;
 						}
@@ -4583,7 +4583,7 @@ public partial class Unit : Sprite
 			//
 			//---------------------------------------------//
 
-			if (SpyArray[SpyId].notify_cloaked_nation_flag == 0)
+			if (SpyArray[SpyId].NotifyCloakedNation == 0)
 				return;
 
 			if (Info.TotalDays % 5 != SpriteId % 5)
@@ -4734,7 +4734,7 @@ public partial class Unit : Sprite
 
 		//--- if it's a spy from other nation, don't control it ---//
 
-		if (SpyId != 0 && TrueNationId() != NationId && SpyArray[SpyId].notify_cloaked_nation_flag == 0 && Info.TotalDays % 60 != SpriteId % 60)
+		if (SpyId != 0 && TrueNationId() != NationId && SpyArray[SpyId].NotifyCloakedNation == 0 && Info.TotalDays % 60 != SpriteId % 60)
 		{
 			return;
 		}

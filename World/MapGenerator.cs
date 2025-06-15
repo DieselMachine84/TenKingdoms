@@ -1681,7 +1681,7 @@ public class MapGenerator
 				if (spyFlag)
 				{
 					int spySkill = 20 + Misc.Random(80); // 20 to 100
-					unit.SpyId = SpyArray.AddSpy(unit.SpriteId, spySkill).spy_recno;
+					unit.SpyId = SpyArray.AddSpy(unit.SpriteId, spySkill).SpyId;
 				}
 
 				break;

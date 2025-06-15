@@ -333,7 +333,7 @@ public class Town : IIdObject
 		}*/
 
 		if (Info.TotalDays % 30 == TownId % 30)
-			SpyArray.catch_spy(Spy.SPY_TOWN, TownId);
+			SpyArray.CatchSpy(Spy.SPY_TOWN, TownId);
 
 		if (TownArray.IsDeleted(TownId))
 			return;
@@ -760,9 +760,9 @@ public class Town : IIdObject
 			{
 				int spySeqId = Misc.Random(RacesSpyCount[raceId - 1]) + 1; // randomly pick one of the spies
 
-				int spyId = SpyArray.find_town_spy(TownId, raceId, spySeqId);
+				int spyId = SpyArray.FindTownSpy(TownId, raceId, spySeqId);
 
-				SpyArray[spyId].spy_place_para = destTown.TownId; // set the place_para of the spy
+				SpyArray[spyId].SpyPlaceId = destTown.TownId; // set the place_para of the spy
 
 				RacesSpyCount[raceId - 1]--;
 				destTown.RacesSpyCount[raceId - 1]++;
@@ -1787,7 +1787,7 @@ public class Town : IIdObject
 			if (unit.SpyId != 0 && unit.Skill.SkillId != 0)
 			{
 				//TODO check
-				SpyArray[unit.SpyId].set_place(Spy.SPY_TOWN, TownId);
+				SpyArray[unit.SpyId].SetPlace(Spy.SPY_TOWN, TownId);
 				unit.SpyId = 0; // reset it so Unit::deinit() won't delete the spy
 			}
 
@@ -2168,7 +2168,7 @@ public class Town : IIdObject
 
 		if (unit.SpyId > 0)
 		{
-			SpyArray[unit.SpyId].set_place(Spy.SPY_TOWN, TownId);
+			SpyArray[unit.SpyId].SetPlace(Spy.SPY_TOWN, TownId);
 			unit.SpyId = 0; // reset it so Unit::deinit() won't delete the spy
 		}
 
@@ -2273,14 +2273,14 @@ public class Town : IIdObject
 			//--- if all remaining units are spies, when you try to train one, all of them will become mobilized ---//
 			else
 			{
-				int spyId = SpyArray.find_town_spy(TownId, raceId, 1);
+				int spyId = SpyArray.FindTownSpy(TownId, raceId, 1);
 
 				Spy spy = SpyArray[spyId];
 
-				if (spy.mobilize_town_spy() == null)
+				if (spy.MobilizeTownSpy() == null)
 					return 0;
 
-				spy.change_cloaked_nation(spy.true_nation_recno);
+				spy.ChangeCloakedNation(spy.TrueNationId);
 
 				return 0;
 			}
@@ -2307,18 +2307,18 @@ public class Town : IIdObject
 
 				foreach (Spy spy in SpyArray.EnumerateRandom())
 				{
-					if (spy.spy_place == Spy.SPY_TOWN && spy.spy_place_para == TownId && spy.race_id == raceId)
+					if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == TownId && spy.RaceId == raceId)
 					{
 						// only mobilize spies from other nations, don't mobilize spies of our own nation
 						// TODO never train our spy into another skill
 						if (mobileNationType == 1)
 						{
-							if (spy.true_nation_recno == NationId)
+							if (spy.TrueNationId == NationId)
 								continue;
 						}
 
 						// the parameter is whether decreasing the population immediately, decrease immediately in recruit mode, not in training mode
-						unit = spy.mobilize_town_spy(trainSkillId == -1);
+						unit = spy.MobilizeTownSpy(trainSkillId == -1);
 						break;
 					}
 				}
@@ -2342,7 +2342,7 @@ public class Town : IIdObject
 		{
 			if (trainSkillId == Skill.SKILL_SPYING)
 			{
-				unit.SpyId = SpyArray.AddSpy(unit.SpriteId, GameConstants.TRAIN_SKILL_LEVEL).spy_recno;
+				unit.SpyId = SpyArray.AddSpy(unit.SpriteId, GameConstants.TRAIN_SKILL_LEVEL).SpyId;
 			}
 			else
 			{
@@ -2540,7 +2540,7 @@ public class Town : IIdObject
 
 		if (Misc.Random(RecruitableRacePopulation(raceId, true)) < RacesSpyCount[raceId - 1])
 		{
-			int spyId = SpyArray.find_town_spy(TownId, raceId, Misc.Random(RacesSpyCount[raceId - 1]) + 1);
+			int spyId = SpyArray.FindTownSpy(TownId, raceId, Misc.Random(RacesSpyCount[raceId - 1]) + 1);
 			SpyArray.DeleteSpy(SpyArray[spyId]);
 		}
 
@@ -2984,7 +2984,7 @@ public class Town : IIdObject
 
 		foreach (Spy spy in SpyArray)
 		{
-			if (spy.spy_place == Spy.SPY_TOWN && spy.spy_place_para == TownId && spy.true_nation_recno == NationArray.player_recno)
+			if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == TownId && spy.TrueNationId == NationArray.player_recno)
 			{
 				return true;
 			}
@@ -3022,7 +3022,7 @@ public class Town : IIdObject
 		World.RestorePower(LocX1, LocY1, LocX2, LocY2, TownId, 0); // restore power of the old nation
 		World.SetPower(LocX1, LocY1, LocX2, LocY2, newNationId); // set power of the new nation
 
-		SpyArray.change_cloaked_nation(Spy.SPY_TOWN, TownId, NationId, newNationId);
+		SpyArray.ChangeCloakedNation(Spy.SPY_TOWN, TownId, NationId, newNationId);
 
 		NationId = newNationId;
 
@@ -3102,7 +3102,7 @@ public class Town : IIdObject
 		//---- reset the action mode of all spies in this town ----//
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
-		SpyArray.set_action_mode(Spy.SPY_TOWN, TownId, Spy.SPY_IDLE);
+		SpyArray.SetActionMode(Spy.SPY_TOWN, TownId, Spy.SPY_IDLE);
 		
 		if (TownArray.SelectedTownId == TownId)
 			Info.disp();
@@ -3663,7 +3663,7 @@ public class Town : IIdObject
 
 		//--- tell the AI spies in the town that a rebellion is happening ---//
 
-		SpyArray.ai_spy_town_rebel(TownId);
+		SpyArray.AISpyTownRebel(TownId);
 	}
 	
 	private Unit CreateRebelUnit(int raceId, bool isLeader)
@@ -5255,32 +5255,32 @@ public class Town : IIdObject
 		if (!ownNation.ai_should_create_new_spy(0)) //0 means take into account all spies
 			return false;
 
-		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out _);
+		int curSpyLevel = SpyArray.TotalSpySkillLevel(Spy.SPY_TOWN, TownId, NationId, out _);
 		int neededSpyLevel = NeededAntiSpyLevel();
 
 		if (curSpyLevel > neededSpyLevel + 30)
 		{
 			foreach (Spy spy in SpyArray)
 			{
-				if (spy.true_nation_recno != NationId)
+				if (spy.TrueNationId != NationId)
 					continue;
 
-				if (spy.spy_place != Spy.SPY_TOWN)
+				if (spy.SpyPlace != Spy.SPY_TOWN)
 					continue;
 
-				if (spy.spy_place_para != TownId)
+				if (spy.SpyPlaceId != TownId)
 					continue;
 
-				if (spy.spy_skill > 50)
+				if (spy.SpySkill > 50)
 				{
 					int xLoc, yLoc;
 					int cloakedNationRecno;
 
-					bool hasNewMission = ownNation.think_spy_new_mission(spy.race_id, RegionId, out xLoc, out yLoc, out cloakedNationRecno);
+					bool hasNewMission = ownNation.think_spy_new_mission(spy.RaceId, RegionId, out xLoc, out yLoc, out cloakedNationRecno);
 
 					if (hasNewMission)
 					{
-						Unit unit = spy.mobilize_town_spy();
+						Unit unit = spy.MobilizeTownSpy();
 						if (unit != null)
 						{
 							ownNation.ai_start_spy_new_mission(unit, xLoc, yLoc, cloakedNationRecno);
@@ -5306,7 +5306,7 @@ public class Town : IIdObject
 
 		//------- check if we need additional spies ------//
 
-		int curSpyLevel = SpyArray.total_spy_skill_level(Spy.SPY_TOWN, TownId, NationId, out _);
+		int curSpyLevel = SpyArray.TotalSpySkillLevel(Spy.SPY_TOWN, TownId, NationId, out _);
 		int neededSpyLevel = NeededAntiSpyLevel();
 
 		if (neededSpyLevel > curSpyLevel + 30)
