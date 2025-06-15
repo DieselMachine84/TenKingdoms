@@ -20,14 +20,6 @@ public class SpyArray : DynArray<Spy>
         return new Spy();
     }
 
-    public override bool IsDeleted(int recNo)
-    {
-        if (base.IsDeleted(recNo))
-            return true;
-
-        return this[recNo].SpyId == 0;
-    }
-
     public Spy AddSpy(int unitId, int spySkill)
     {
         Spy spy = CreateNew();
