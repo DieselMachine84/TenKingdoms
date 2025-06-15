@@ -21,11 +21,11 @@ public class Spy : IIdObject
 	public const int ASSASSINATE_SUCCEED_AT_LARGE = 1;
 	public const int ASSASSINATE_SUCCEED_KILLED = 2;
 
-	public int SpyId { get; set; }
-	public int SpyPlace { get; set; } // either SPY_TOWN or SPY_FIRM
+	public int SpyId { get; private set; }
+	public int SpyPlace { get; private set; } // either SPY_TOWN or SPY_FIRM
 	public int SpyPlaceId { get; set; } // it can be TownId, FirmId or UnitId depending on what SpyPlace is
 
-	public int SpySkill { get; set; }
+	public int SpySkill { get; private set; }
 	public int SpyLoyalty { get; set; } // the spy's loyalty to his true home nation
 
 	public int TrueNationId { get; set; }
