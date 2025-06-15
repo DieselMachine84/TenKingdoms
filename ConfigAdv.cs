@@ -63,7 +63,6 @@ public class ConfigAdv
     public bool unit_finish_attack_move;
     public bool unit_loyalty_require_local_leader;
     public bool unit_allow_path_power_mode;
-    public bool unit_spy_fixed_target_loyalty;
     public bool unit_target_move_range_cycle;
 
     // vga settings
@@ -121,7 +120,6 @@ public class ConfigAdv
         unit_allow_path_power_mode = false;
         unit_finish_attack_move = true;
         unit_loyalty_require_local_leader = true;
-        unit_spy_fixed_target_loyalty = false;
         unit_target_move_range_cycle = false;
 
         vga_allow_highdpi = false;

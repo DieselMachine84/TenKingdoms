@@ -3620,20 +3620,6 @@ public partial class Unit : Sprite
 		if (UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 			return;
 
-		// The following never really worked that well, since it created a dead give away due to the constant loyalty.
-		//----- if this unit is a spy, set its fake loyalty ------//
-
-		if (ConfigAdv.unit_spy_fixed_target_loyalty && SpyId != 0) // a spy's loyalty is always >= 70
-		{
-			// TODO check spy loyalty code
-			if (Loyalty < 70)
-				Loyalty = 70 + Misc.Random(20); // initialize it to be a number between 70 and 90
-
-			TargetLoyalty = Loyalty;
-			return;
-		}
-
-
 		if (Rank == RANK_GENERAL)
 		{
 			//----- the general's power affect his loyalty ----//
