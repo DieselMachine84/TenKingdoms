@@ -40,7 +40,6 @@ public partial class Renderer : IRenderer
 
     private int _topLeftLocX;
     private int _topLeftLocY;
-    private long _lastFrame;
     public bool NeedFullRedraw { get; set; }
     private int _screenSquareFrameCount = 0;
     private int _screenSquareFrameStep = 1;
@@ -131,10 +130,6 @@ public partial class Renderer : IRenderer
             DrawSiteDetails(SiteArray[_selectedSiteId]);
         }
 
-        if (_lastFrame == Sys.Instance.FrameNumber && Sys.Instance.Speed != 0)
-            return;
-
-        _lastFrame = Sys.Instance.FrameNumber;
         DrawMainView();
         DrawMiniMap();
     }
@@ -193,7 +188,6 @@ public partial class Renderer : IRenderer
     
     public void Reset()
     {
-        _lastFrame = 0;
         _screenSquareFrameCount = 0;
         _screenSquareFrameStep = 1;
         ResetSelection();

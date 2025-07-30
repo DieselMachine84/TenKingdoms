@@ -260,7 +260,7 @@ public class Sys
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         while (true)
         {
-            bool hasEvent = false;
+            bool eventProcessed = false;
             bool nextFrameReady = false;
             SDL.SDL_Event sdlEvent = default;
             if (Speed > 0)
@@ -269,13 +269,12 @@ public class Sys
                 long currentMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
                 if (currentMilliseconds < nextFrameTime)
                 {
-                    hasEvent = (SDL.SDL_WaitEventTimeout(out sdlEvent, (int)(nextFrameTime - currentMilliseconds)) == 1);
-                    if (hasEvent)
+                    if (SDL.SDL_WaitEventTimeout(out sdlEvent, (int)(nextFrameTime - currentMilliseconds)) == 1)
                     {
                         if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                             return;
 
-                        ProcessEvent(sdlEvent);
+                        eventProcessed = ProcessEvent(sdlEvent);
                     }
                 }
                 else
@@ -287,20 +286,19 @@ public class Sys
             }
             else
             {
-                hasEvent = (SDL.SDL_WaitEvent(out sdlEvent) == 1);
-                if (hasEvent)
+                if (SDL.SDL_WaitEvent(out sdlEvent) == 1)
                 {
                     if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                         return;
                 
-                    ProcessEvent(sdlEvent);
+                    eventProcessed = ProcessEvent(sdlEvent);
                 }
             }
 
             if (nextFrameReady)
                 Process();
 
-            if (hasEvent || nextFrameReady)
+            if (eventProcessed || nextFrameReady)
             {
                 Renderer.DrawFrame();
                 Graphics.Render();
@@ -308,17 +306,21 @@ public class Sys
         }
     }
 
-    private void ProcessEvent(SDL.SDL_Event sdlEvent)
+    private bool ProcessEvent(SDL.SDL_Event sdlEvent)
     {
         if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
         {
             ProcessKeyboardEvent(sdlEvent.key);
+            return true;
         }
 
         if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN || sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
         {
             ProcessMouseButtonEvent(sdlEvent.button);
+            return true;
         }
+
+        return false;
     }
 
     private void ProcessKeyboardEvent(SDL.SDL_KeyboardEvent keyboardEvent)
