@@ -93,15 +93,15 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 	
-	public void MoveToUnitSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToUnitSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destXLoc, destYLoc);
+		Location loc = World.GetLoc(destLocX, destLocY);
 		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
-			MoveTo(destXLoc, destYLoc);
+			MoveTo(destLocX, destLocY);
 			return;
 		}
 
@@ -117,7 +117,7 @@ public partial class Unit
 		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
 		{
 			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destXLoc && ActionLocY2 == destYLoc)
+			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
 			{
 				//-------- equal order --------//
 				ActionLocX = ActionLocX2;
@@ -132,12 +132,12 @@ public partial class Unit
 					}
 
 					return;
-				} //else action is hold due to some problems, re-activiate again
+				} //else action is hold due to some problems, reactivate again
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destXLoc : destXLoc - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
+		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
+		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
 
 		Unit unit = UnitArray[miscNo];
 		SpriteInfo spriteInfo = unit.SpriteInfo;
@@ -153,19 +153,19 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 	
-	public void MoveToFirmSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToFirmSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destXLoc, destYLoc);
+		Location loc = World.GetLoc(destLocX, destLocY);
 		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
 		{
 			Firm firm = FirmArray[loc.FirmId()];
 			FirmHarbor harbor = (FirmHarbor)firm;
 			if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.sea_region_id)
 			{
-				MoveTo(destXLoc, destYLoc);
+				MoveTo(destLocX, destLocY);
 				return;
 			}
 		}
@@ -173,7 +173,7 @@ public partial class Unit
 		{
 			if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 			{
-				MoveTo(destXLoc, destYLoc);
+				MoveTo(destLocX, destLocY);
 				return;
 			}
 		}
@@ -190,7 +190,7 @@ public partial class Unit
 		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
 		{
 			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destXLoc && ActionLocY2 == destYLoc)
+			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
 			{
 				//-------- equal order --------//
 				ActionLocX = ActionLocX2;
@@ -205,12 +205,12 @@ public partial class Unit
 					}
 
 					return;
-				} //else action is hold due to some problems, re-activiate again
+				} //else action is hold due to some problems, reactivate again
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destXLoc : destXLoc - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
+		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
+		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
 
 		FirmInfo firmInfo = FirmRes[miscNo];
 		Stop();
@@ -225,15 +225,15 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 
-	public void MoveToTownSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToTownSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destXLoc, destYLoc);
+		Location loc = World.GetLoc(destLocX, destLocY);
 		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
-			MoveTo(destXLoc, destYLoc);
+			MoveTo(destLocX, destLocY);
 			return;
 		}
 
@@ -249,7 +249,7 @@ public partial class Unit
 		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
 		{
 			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destXLoc && ActionLocY2 == destYLoc)
+			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
 			{
 				//-------- equal order --------//
 				ActionLocX = ActionLocX2;
@@ -264,12 +264,12 @@ public partial class Unit
 					}
 
 					return;
-				} //else action is hold due to some problems, re-activiate again
+				} //else action is hold due to some problems, reactivate again
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destXLoc : destXLoc - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destYLoc : destYLoc - height + 1));
+		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
+		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
 
 		Stop();
 		SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
@@ -283,15 +283,15 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 
-	public void MoveToWallSurround(int destXLoc, int destYLoc, int width, int height, int miscNo = 0, int readyDist = 0)
+	public void MoveToWallSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
 	{
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destXLoc, destYLoc);
+		Location loc = World.GetLoc(destLocX, destLocY);
 		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 		{
-			MoveTo(destXLoc, destYLoc);
+			MoveTo(destLocX, destLocY);
 			return;
 		}
 
@@ -307,7 +307,7 @@ public partial class Unit
 		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
 		{
 			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destXLoc && ActionLocY2 == destYLoc)
+			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
 			{
 				//-------- equal order --------//
 				ActionLocX = ActionLocX2;
@@ -322,12 +322,12 @@ public partial class Unit
 					}
 
 					return;
-				} //else action is hold due to some problems, re-activiate again
+				} //else action is hold due to some problems, reactivate again
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, (width > 1) ? destXLoc : destXLoc - width + 1);
-		int destY = Math.Max(0, (height > 1) ? destYLoc : destYLoc - height + 1);
+		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
 
 		Stop();
 		SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
@@ -341,7 +341,7 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 	
-	private int SetMoveToSurround(int buildLocX, int buildLocY, int width, int height, int buildingType,
+	private bool SetMoveToSurround(int buildLocX, int buildLocY, int width, int height, int buildingType,
 		int miscNo = 0, int readyDist = 0, int curProcessUnitNum = 1)
 	{
 		//--------------------------------------------------------------//
@@ -350,87 +350,16 @@ public partial class Unit
 		// 0 for inside, 1 for surrounding, >1 for the rest
 		int distance = CalcDistance(buildLocX, buildLocY, width, height);
 
-		//--------------------------------------------------------------//
-		// inside the building
-		//--------------------------------------------------------------//
-		if (distance == 0)
+		if (distance == 0) // inside the building
 		{
 			ResetPath();
 			if (CurX == NextX && CurY == NextY)
 				SetIdle();
 
-			return 1;
+			return true;
 		}
 
-		if (distance > 1)
-		{
-			//--------------------------------------------------------------//
-			// the searching is divided into 2 parts.
-			//
-			// part 1 using the firm_type and firm_id to find a shortest path.
-			// 
-			// part 2
-			// if the width and height is the actual width and height of the
-			// firm, the unit moves to the surrounding of the firm.
-			//
-			// if the width and height > the actual width and height of the
-			// firm, the unit moves to a location far away from the surrounding
-			// of the firm.
-			//--------------------------------------------------------------//
-
-			//====================================================================//
-			// part 1
-			//====================================================================//
-
-			Location location = World.GetLoc(buildLocX, buildLocY);
-			int searchResult = 0;
-
-			switch (buildingType)
-			{
-				case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
-					Firm targetFirm = FirmArray[location.FirmId()];
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.firm_id, curProcessUnitNum);
-					break;
-
-				case UnitConstants.BUILDING_TYPE_FIRM_BUILD: // (build firm) no firm on the location
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
-					break;
-
-				case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
-					Town targetTown = TownArray[location.TownId()];
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, targetTown.TownId, curProcessUnitNum);
-					break;
-
-				case UnitConstants.BUILDING_TYPE_SETTLE: // (settle, first unit) no town on the location
-					//---------------------------------------------------------------------//
-					// the record number sent to the searching algorithm is used to determine
-					// the width and the height of the building. However, the standard
-					// dimension for settling is used and the building built is a type of
-					// town. Thus, passing -1 as the miscNo to show that "settle" is processed
-					//---------------------------------------------------------------------//
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
-					break;
-
-				case UnitConstants.BUILDING_TYPE_VEHICLE:
-					searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.CargoId);
-					break;
-
-				case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
-					searchResult = Search(buildLocX, buildLocY, 1,
-						miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
-					break;
-			}
-
-			if (searchResult == 0)
-				return 0; // incomplete searching
-
-			//====================================================================//
-			// part 2
-			//====================================================================//
-			return PathNodes.Count > 0 ? EditPathToSurround(buildLocX, buildLocY,
-					buildLocX + width - 1, buildLocY + height - 1, readyDist) : 0;
-		}
-		else // in the surrounding, no need to move
+		if (distance == 1) // in the surrounding, no need to move
 		{
 			ResetPath();
 
@@ -444,14 +373,79 @@ public partial class Unit
 				SetDir(MoveToLocX, MoveToLocY, buildLocX + width / 2, buildLocY + height / 2);
 			}
 
-			return 1;
+			return true;
 		}
+
+		//--------------------------------------------------------------//
+		// the searching is divided into 2 parts.
+		//
+		// part 1 using the firm_type and firm_id to find a shortest path.
+		// 
+		// part 2
+		// if the width and height is the actual width and height of the firm,
+		// the unit moves to the surrounding of the firm.
+		//
+		// if the width and height > the actual width and height of the firm,
+		// the unit moves to a location far away from the surrounding of the firm.
+		//--------------------------------------------------------------//
+
+		//====================================================================//
+		// part 1
+		//====================================================================//
+
+		Location location = World.GetLoc(buildLocX, buildLocY);
+		int searchResult = 0;
+
+		switch (buildingType)
+		{
+			case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
+				Firm targetFirm = FirmArray[location.FirmId()];
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.firm_id, curProcessUnitNum);
+				break;
+
+			case UnitConstants.BUILDING_TYPE_FIRM_BUILD: // (build firm) no firm on the location
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, miscNo);
+				break;
+
+			case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO: // (assign) town is on the location
+				Town targetTown = TownArray[location.TownId()];
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, targetTown.TownId, curProcessUnitNum);
+				break;
+
+			case UnitConstants.BUILDING_TYPE_SETTLE: // (settle, first unit) no town on the location
+				//---------------------------------------------------------------------//
+				// the record number sent to the searching algorithm is used to determine
+				// the width and the height of the building. However, the standard
+				// dimension for settling is used and the building built is a type of town.
+				// Thus, passing -1 as the miscNo to show that "settle" is processed
+				//---------------------------------------------------------------------//
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_TOWN, -1, curProcessUnitNum);
+				break;
+
+			case UnitConstants.BUILDING_TYPE_VEHICLE:
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.CargoId);
+				break;
+
+			case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
+				searchResult = Search(buildLocX, buildLocY, 1,
+					miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
+				break;
+		}
+
+		if (searchResult == 0)
+			return false; // incomplete searching
+
+		//====================================================================//
+		// part 2
+		//====================================================================//
+		return PathNodes.Count > 0 && EditPathToSurround(buildLocX, buildLocY,
+			buildLocX + width - 1, buildLocY + height - 1, readyDist);
 	}
 	
-	private int EditPathToSurround(int objectXLoc1, int objectYLoc1, int objectXLoc2, int objectYLoc2, int readyDist)
+	private bool EditPathToSurround(int object1LocX, int object1LocY, int object2LocX, int object2LocY, int readyDist)
 	{
 		if (PathNodes.Count < 2)
-			return 0;
+			return false;
 
 		//----------------------------------------------------------------------------//
 		// At this moment, the unit generally has a path to the location inside the object,
@@ -460,75 +454,74 @@ public partial class Unit
 
 		//------- calculate the surrounding top-left and bottom-right points ------//
 		int moveScale = MoveStepCoeff();
-		int xLoc1 = objectXLoc1 - readyDist - 1;
-		int yLoc1 = objectYLoc1 - readyDist - 1;
-		int xLoc2 = objectXLoc2 + readyDist + 1;
-		int yLoc2 = objectYLoc2 + readyDist + 1;
+		int locX1 = object1LocX - readyDist - 1;
+		int locY1 = object1LocY - readyDist - 1;
+		int locX2 = object2LocX + readyDist + 1;
+		int locY2 = object2LocY + readyDist + 1;
 
-		//------------------- boundary checking -------------------//
-		if (xLoc1 < 0)
-			xLoc1 = 0;
-		if (yLoc1 < 0)
-			yLoc1 = 0;
-		if (xLoc2 >= GameConstants.MapSize)
-			yLoc1 = GameConstants.MapSize - moveScale;
-		if (yLoc2 >= GameConstants.MapSize)
-			xLoc2 = GameConstants.MapSize - moveScale;
+		Misc.BoundLocation(ref locX1, ref locY1);
+		// TODO: strange conditions, check
+		if (locX2 >= GameConstants.MapSize)
+			locY1 = GameConstants.MapSize - moveScale;
+		if (locY2 >= GameConstants.MapSize)
+			locX2 = GameConstants.MapSize - moveScale;
 
 		//--------------- adjust for air and sea units -----------------//
 		if (MobileType != UnitConstants.UNIT_LAND)
 		{
 			//------ assume even x, y coordinate is used for UnitConstants.UNIT_SEA and UnitConstants.UNIT_AIR -------//
-			if (xLoc1 % 2 != 0)
-				xLoc1--;
-			if (yLoc1 % 2 != 0)
-				yLoc1--;
-			if (xLoc2 % 2 != 0)
-				xLoc2++;
-			if (yLoc2 % 2 != 0)
-				yLoc2++;
+			if (locX1 % 2 != 0)
+				locX1--;
+			if (locY1 % 2 != 0)
+				locY1--;
+			if (locX2 % 2 != 0)
+				locX2++;
+			if (locY2 % 2 != 0)
+				locY2++;
 
-			if (xLoc2 > GameConstants.MapSize - moveScale)
-				xLoc2 = GameConstants.MapSize - moveScale;
-			if (yLoc2 > GameConstants.MapSize - moveScale)
-				yLoc2 = GameConstants.MapSize - moveScale;
+			// TODO: strange conditions, check
+			if (locX2 > GameConstants.MapSize - moveScale)
+				locX2 = GameConstants.MapSize - moveScale;
+			if (locY2 > GameConstants.MapSize - moveScale)
+				locY2 = GameConstants.MapSize - moveScale;
 		}
 
-		int checkXLoc = NextLocX;
-		int checkYLoc = NextLocY;
+		int checkLocX = NextLocX;
+		int checkLocY = NextLocY;
 		int editNode1Index = 0;
 		int editNode2Index = 1;
-		int editNode1 = PathNodes[editNode1Index]; // alias the unit's result_node_array
+		int editNode1 = PathNodes[editNode1Index];
 		World.GetLocXAndLocY(editNode1, out int editNode1LocX, out int editNode1LocY);
-		int editNode2 = PathNodes[editNode2Index]; // ditto
+		int editNode2 = PathNodes[editNode2Index];
 		World.GetLocXAndLocY(editNode2, out int editNode2LocX, out int editNode2LocY);
 
 		int hasMoveStep = 0;
-		if (checkXLoc != editNode1LocX || checkYLoc != editNode1LocY)
+		if (checkLocX != editNode1LocX || checkLocY != editNode1LocY)
 		{
 			hasMoveStep += moveScale;
-			checkXLoc = editNode1LocX;
-			checkYLoc = editNode1LocY;
+			checkLocX = editNode1LocX;
+			checkLocY = editNode1LocY;
 		}
 
-		int i, j;
-		// pathDist - counts the disitance of the generated path, found - whether a path to the surrounding is found
-		int pathDist = 0, found = 0;
-		int vecX, vecY, xMagn, yMagn, magn;
+		// pathDist - counts the distance of the generated path, found - whether a path to the surrounding is found
+		int pathDist = 0;
+		bool found = false;
 
 		//------- find the first node that is on the surrounding of the object -------//
-		for (i = 1; i < PathNodes.Count; i++, editNode1Index++, editNode2Index++)
+		for (int i = 1; i < PathNodes.Count; i++, editNode1Index++, editNode2Index++)
 		{
-			editNode1 = PathNodes[editNode1Index]; // alias the unit's result_node_array
+			editNode1 = PathNodes[editNode1Index];
 			World.GetLocXAndLocY(editNode1, out editNode1LocX, out editNode1LocY);
-			editNode2 = PathNodes[editNode2Index]; // ditto
+			editNode2 = PathNodes[editNode2Index];
 			World.GetLocXAndLocY(editNode2, out editNode2LocX, out editNode2LocY);
 
 			//------------ calculate parameters for checking ------------//
-			vecX = editNode2LocX - editNode1LocX;
-			vecY = editNode2LocY - editNode1LocY;
+			int vecX = editNode2LocX - editNode1LocX;
+			int vecY = editNode2LocY - editNode1LocY;
 
-			magn = ((xMagn = Math.Abs(vecX)) > (yMagn = Math.Abs(vecY))) ? xMagn : yMagn;
+			int xMagn = Math.Abs(vecX);
+			int yMagn = Math.Abs(vecY);
+			int magn = (xMagn >= yMagn) ? xMagn : yMagn;
 			if (xMagn != 0)
 			{
 				vecX /= xMagn;
@@ -542,14 +535,15 @@ public partial class Unit
 			}
 
 			//------------- check each location between editNode1 and editNode2 -------------//
+			int j = 0;
 			for (j = 0; j < magn; j += moveScale)
 			{
-				checkXLoc += vecX;
-				checkYLoc += vecY;
+				checkLocX += vecX;
+				checkLocY += vecY;
 
-				if (checkXLoc >= xLoc1 && checkXLoc <= xLoc2 && checkYLoc >= yLoc1 && checkYLoc <= yLoc2)
+				if (checkLocX >= locX1 && checkLocX <= locX2 && checkLocY >= locY1 && checkLocY <= locY2)
 				{
-					found++;
+					found = true;
 					break;
 				}
 			}
@@ -557,17 +551,17 @@ public partial class Unit
 			//-------------------------------------------------------------------------------//
 			// a path is found, then set unit's parameters for its movement
 			//-------------------------------------------------------------------------------//
-			if (found != 0)
+			if (found)
 			{
-				PathNodes[editNode2Index] = World.GetMatrixIndex(checkXLoc, checkYLoc);
+				PathNodes[editNode2Index] = World.GetMatrixIndex(checkLocX, checkLocY);
 
 				if (i == 1) // first editing
 				{
 					World.GetLocXAndLocY(PathNodes[0], out int firstNodeLocX, out int firstNodeLocY);
 					if (CurX == firstNodeLocX * InternalConstants.CellWidth && CurY == firstNodeLocY * InternalConstants.CellHeight)
 					{
-						GoX = checkXLoc * InternalConstants.CellWidth;
-						GoY = checkYLoc * InternalConstants.CellHeight;
+						GoX = checkLocX * InternalConstants.CellWidth;
+						GoY = checkLocY * InternalConstants.CellHeight;
 					}
 				}
 
@@ -578,8 +572,8 @@ public partial class Unit
 					PathNodes.RemoveAt(PathNodes.Count - 1);
 				}
 				_pathNodeDistance = pathDist;
-				MoveToLocX = checkXLoc;
-				MoveToLocY = checkYLoc;
+				MoveToLocX = checkLocX;
+				MoveToLocY = checkLocY;
 				break;
 			}
 			else
@@ -589,6 +583,47 @@ public partial class Unit
 		}
 
 		return found;
+	}
+
+	public void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
+	{
+		int curLocX = NextLocX;
+		int curLocY = NextLocY;
+
+		Location loc = World.GetLoc(curLocX, curLocY);
+		int regionId = loc.RegionId;
+		int xStep = destLocX - curLocX;
+		int yStep = destLocY - curLocY;
+		int absXStep = Math.Abs(xStep);
+		int absYStep = Math.Abs(yStep);
+		int count = (absXStep >= absYStep) ? absXStep : absYStep;
+
+		int sameTerr = 0;
+
+		//------------------------------------------------------------------------------//
+		// draw a line from the unit location to the destination,
+		// find the last location with the same region id.
+		//------------------------------------------------------------------------------//
+		for (int i = 1; i <= count; i++)
+		{
+			int locX = curLocX + (i * xStep) / count;
+			int locY = curLocY + (i * yStep) / count;
+
+			loc = World.GetLoc(locX, locY);
+			if (loc.RegionId == regionId)
+				sameTerr = i;
+		}
+
+		if (sameTerr != 0 && count != 0)
+		{
+			destLocX = curLocX + (sameTerr * xStep) / count;
+			destLocY = curLocY + (sameTerr * yStep) / count;
+		}
+		else
+		{
+			destLocX = curLocX;
+			destLocY = curLocY;
+		}
 	}
 
 	protected void NextMove()
@@ -603,7 +638,7 @@ public partial class Unit
 			ResetPath();
 			SetIdle();
 
-			if (ActionMode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
+			if (ActionMode2 == UnitConstants.ACTION_MOVE) //--------- used to terminate ActionMode == ACTION_MOVE
 			{
 				ForceMove = false;
 
@@ -638,114 +673,6 @@ public partial class Unit
 		SetIdle();
 	}
 
-	private void MoveToMyLoc(Unit unit)
-	{
-		int unitDestX, unitDestY;
-		if (unit.ActionMode2 == UnitConstants.ACTION_MOVE)
-		{
-			unitDestX = unit.ActionLocX2;
-			unitDestY = unit.ActionLocY2;
-		}
-		else
-		{
-			unitDestX = unit.MoveToLocX;
-			unitDestY = unit.MoveToLocY;
-		}
-
-		//--------------- init parameters ---------------//
-		int unitCurX = unit.NextLocX;
-		int unitCurY = unit.NextLocY;
-		int destX = ActionLocX2;
-		int destY = ActionLocY2;
-		int curX = NextLocX;
-		int curY = NextLocY;
-		int moveScale = MoveStepCoeff();
-
-		//------------------------------------------------------------------//
-		// setting for unit pointed by unit
-		//------------------------------------------------------------------//
-		if (PathNodes.Count == 0) //************BUGHERE
-		{
-			unit.MoveTo(destX, destY, 1); // unit pointed by unit is idle before calling searching
-		}
-		else
-		{
-			//TODO check
-			unit.PathNodes.Clear();
-			if (GoX != unit.NextX || GoY != unit.NextY)
-			{
-				unit.PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
-			}
-			for (int i = PathNodeIndex; i < PathNodes.Count; i++)
-			{
-				unit.PathNodes.Add(PathNodes[i]);
-			}
-
-			//--------------- set unit action ---------------//
-			// unit is idle now
-			if (unit.ActionMode2 == UnitConstants.ACTION_STOP || unit.ActionMode2 == UnitConstants.ACTION_MOVE)
-			{
-				//---------- activate unit pointed by unit now ------------//
-				unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_MOVE;
-				unit.ActionParam = unit.ActionPara2 = 0;
-				if (destX != -1 && destY != -1)
-				{
-					unit.ActionLocX = unit.ActionLocX2 = destX;
-					unit.ActionLocY = unit.ActionLocY2 = destY;
-				}
-				else
-				{
-					World.GetLocXAndLocY(unit.PathNodes[^1], out int lastNodeLocX, out int lastNodeLocY);
-					unit.ActionLocX = unit.ActionLocX2 = lastNodeLocX;
-					unit.ActionLocY = unit.ActionLocY2 = lastNodeLocY;
-				}
-			}
-
-			//----------------- set unit movement parameters -----------------//
-			unit.PathNodeIndex = 0;
-			unit._pathNodeDistance = _pathNodeDistance - moveScale;
-			unit.MoveToLocX = MoveToLocX;
-			unit.MoveToLocY = MoveToLocY;
-			unit.NextMove();
-		}
-
-		//------------------------------------------------------------------//
-		// setting for this unit
-		//------------------------------------------------------------------//
-		int shouldWait = 0;
-		if (NextX == unit.CurX && NextY == unit.CurY)
-		{
-			ResetPath();
-			_pathNodeDistance = 0;
-		}
-		else
-		{
-			TerminateMove();
-			shouldWait++;
-			_pathNodeDistance = moveScale;
-		}
-
-		GoX = unit.CurX;
-		GoY = unit.CurY;
-		MoveToLocX = unitCurX;
-		MoveToLocY = unitCurY;
-
-		if (ActionMode2 == UnitConstants.ACTION_MOVE)
-		{
-			ActionLocX = ActionLocX2 = unitDestX;
-			ActionLocY = ActionLocY2 = unitDestY;
-		}
-
-		//---------- note: the cur_dir is already the correct direction ---------------//
-		PathNodes.Clear();
-		PathNodes.Add(World.GetMatrixIndex(curX, curY));
-		PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
-		//TODO check this
-		PathNodeIndex = 1;
-		if (shouldWait != 0)
-			SetWait(); // wait for the blocking unit to move first
-	}
-	
 	private int MoveToRangeAttack(int targetXLoc, int targetYLoc, int miscNo, int searchMode, int maxRange)
 	{
 		//---------------------------------------------------------------------------------//
@@ -932,45 +859,112 @@ public partial class Unit
 		return 0;
 	}
 	
-	public void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
+	private void MoveToMyLoc(Unit unit)
 	{
-		int curLocX = NextLocX;
-		int curLocY = NextLocY;
-
-		Location loc = World.GetLoc(curLocX, curLocY);
-		int regionId = loc.RegionId;
-		int xStep = destLocX - curLocX;
-		int yStep = destLocY - curLocY;
-		int absXStep = Math.Abs(xStep);
-		int absYStep = Math.Abs(yStep);
-		int count = (absXStep >= absYStep) ? absXStep : absYStep;
-
-		int sameTerr = 0;
-
-		//------------------------------------------------------------------------------//
-		// draw a line from the unit location to the destination, find the last location
-		// with the same region id.
-		//------------------------------------------------------------------------------//
-		for (int i = 1; i <= count; i++)
+		int unitDestX, unitDestY;
+		if (unit.ActionMode2 == UnitConstants.ACTION_MOVE)
 		{
-			int locX = curLocX + (i * xStep) / count;
-			int locY = curLocY + (i * yStep) / count;
-
-			loc = World.GetLoc(locX, locY);
-			if (loc.RegionId == regionId)
-				sameTerr = i;
-		}
-
-		if (sameTerr != 0 && count != 0)
-		{
-			destLocX = curLocX + (sameTerr * xStep) / count;
-			destLocY = curLocY + (sameTerr * yStep) / count;
+			unitDestX = unit.ActionLocX2;
+			unitDestY = unit.ActionLocY2;
 		}
 		else
 		{
-			destLocX = curLocX;
-			destLocY = curLocY;
+			unitDestX = unit.MoveToLocX;
+			unitDestY = unit.MoveToLocY;
 		}
+
+		//--------------- init parameters ---------------//
+		int unitCurX = unit.NextLocX;
+		int unitCurY = unit.NextLocY;
+		int destX = ActionLocX2;
+		int destY = ActionLocY2;
+		int curX = NextLocX;
+		int curY = NextLocY;
+		int moveScale = MoveStepCoeff();
+
+		//------------------------------------------------------------------//
+		// setting for unit pointed by unit
+		//------------------------------------------------------------------//
+		if (PathNodes.Count == 0) //************BUGHERE
+		{
+			unit.MoveTo(destX, destY, 1); // unit pointed by unit is idle before calling searching
+		}
+		else
+		{
+			//TODO check
+			unit.PathNodes.Clear();
+			if (GoX != unit.NextX || GoY != unit.NextY)
+			{
+				unit.PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
+			}
+			for (int i = PathNodeIndex; i < PathNodes.Count; i++)
+			{
+				unit.PathNodes.Add(PathNodes[i]);
+			}
+
+			//--------------- set unit action ---------------//
+			// unit is idle now
+			if (unit.ActionMode2 == UnitConstants.ACTION_STOP || unit.ActionMode2 == UnitConstants.ACTION_MOVE)
+			{
+				//---------- activate unit pointed by unit now ------------//
+				unit.ActionMode = unit.ActionMode2 = UnitConstants.ACTION_MOVE;
+				unit.ActionParam = unit.ActionPara2 = 0;
+				if (destX != -1 && destY != -1)
+				{
+					unit.ActionLocX = unit.ActionLocX2 = destX;
+					unit.ActionLocY = unit.ActionLocY2 = destY;
+				}
+				else
+				{
+					World.GetLocXAndLocY(unit.PathNodes[^1], out int lastNodeLocX, out int lastNodeLocY);
+					unit.ActionLocX = unit.ActionLocX2 = lastNodeLocX;
+					unit.ActionLocY = unit.ActionLocY2 = lastNodeLocY;
+				}
+			}
+
+			//----------------- set unit movement parameters -----------------//
+			unit.PathNodeIndex = 0;
+			unit._pathNodeDistance = _pathNodeDistance - moveScale;
+			unit.MoveToLocX = MoveToLocX;
+			unit.MoveToLocY = MoveToLocY;
+			unit.NextMove();
+		}
+
+		//------------------------------------------------------------------//
+		// setting for this unit
+		//------------------------------------------------------------------//
+		int shouldWait = 0;
+		if (NextX == unit.CurX && NextY == unit.CurY)
+		{
+			ResetPath();
+			_pathNodeDistance = 0;
+		}
+		else
+		{
+			TerminateMove();
+			shouldWait++;
+			_pathNodeDistance = moveScale;
+		}
+
+		GoX = unit.CurX;
+		GoY = unit.CurY;
+		MoveToLocX = unitCurX;
+		MoveToLocY = unitCurY;
+
+		if (ActionMode2 == UnitConstants.ACTION_MOVE)
+		{
+			ActionLocX = ActionLocX2 = unitDestX;
+			ActionLocY = ActionLocY2 = unitDestY;
+		}
+
+		//---------- note: the cur_dir is already the correct direction ---------------//
+		PathNodes.Clear();
+		PathNodes.Add(World.GetMatrixIndex(curX, curY));
+		PathNodes.Add(World.GetMatrixIndex(unitCurX, unitCurY));
+		//TODO check this
+		PathNodeIndex = 1;
+		if (shouldWait != 0)
+			SetWait(); // wait for the blocking unit to move first
 	}
 
 	private void HandleBlockedMove(Location blockedLoc)
@@ -2307,7 +2301,7 @@ public partial class Unit
 		WayPoints.Clear();
 	}
 
-	public void ProcessWayPoint()
+	private void ProcessWayPoint()
 	{
 		int destX, destY;
 		if (WayPoints.Count > 1)

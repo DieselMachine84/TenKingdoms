@@ -1146,7 +1146,7 @@ public partial class Unit
 		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance) // need to move to target
 		{
-			int searchResult = 1;
+			bool pathEdited = true;
 
 			if (xOffset != 0 || yOffset != 0)
 			{
@@ -1179,7 +1179,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory of this unit.
 					//--------------------------------------------------------------------------------//
-					searchResult = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height,
+					pathEdited = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height,
 						UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, 0, 0);
 				}
 			}
@@ -1187,7 +1187,7 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// initialize parameters for blocked edge handling in attacking
 			//---------------------------------------------------------------//
-			if (searchResult != 0)
+			if (pathEdited)
 			{
 				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)
@@ -1358,7 +1358,7 @@ public partial class Unit
 		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
-			int searchResult = 1;
+			bool pathEdited = true;
 
 			if (xOffset != 0 || yOffset != 0)
 			{
@@ -1391,7 +1391,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					searchResult = SetMoveToSurround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
+					pathEdited = SetMoveToSurround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO, 0, 0);
 				}
 			}
@@ -1399,7 +1399,7 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// initialize parameters for blocked edge handling in attacking
 			//---------------------------------------------------------------//
-			if (searchResult != 0)
+			if (pathEdited)
 			{
 				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)
@@ -1546,7 +1546,7 @@ public partial class Unit
 		AttackInfo attackInfo = AttackInfos[CurAttack];
 		if (attackInfo.attack_range < attackDistance)
 		{
-			int searchResult = 1;
+			bool pathEdited = true;
 
 			if (xOffset != 0 || yOffset != 0)
 			{
@@ -1579,7 +1579,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					searchResult = SetMoveToSurround(wallXLoc, wallYLoc, 1, 1,
+					pathEdited = SetMoveToSurround(wallXLoc, wallYLoc, 1, 1,
 						UnitConstants.BUILDING_TYPE_WALL, 0, 0);
 				}
 			}
@@ -1587,7 +1587,7 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			// initialize parameters for blocked edge handling in attacking
 			//---------------------------------------------------------------//
-			if (searchResult != 0)
+			if (pathEdited)
 			{
 				WaitingTerm = 0;
 				if (resetBlockedEdge != 0)

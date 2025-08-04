@@ -4156,19 +4156,19 @@ public partial class Unit : Sprite
 	{
 		int curLocX = NextLocX;
 		int curLocY = NextLocY;
-		int dispX, dispY;
+		int distX, distY;
 
 		if (curLocX < targetLocX)
-			dispX = (targetLocX - curLocX - SpriteInfo.LocWidth) + 1;
-		else if ((dispX = curLocX - targetLocX - targetWidth + 1) < 0)
-			dispX = 0;
+			distX = (targetLocX - curLocX - SpriteInfo.LocWidth) + 1;
+		else if ((distX = curLocX - targetLocX - targetWidth + 1) < 0)
+			distX = 0;
 
 		if (curLocY < targetLocY)
-			dispY = (targetLocY - curLocY - SpriteInfo.LocHeight) + 1;
-		else if ((dispY = curLocY - targetLocY - targetHeight + 1) < 0)
-			return dispX;
+			distY = (targetLocY - curLocY - SpriteInfo.LocHeight) + 1;
+		else if ((distY = curLocY - targetLocY - targetHeight + 1) < 0)
+			return distX;
 
-		return (dispX >= dispY) ? dispX : dispY;
+		return (distX >= distY) ? distX : distY;
 	}
 
 	private void KingDie()
