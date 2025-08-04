@@ -1688,22 +1688,20 @@ public partial class Unit
 			SetWait(); // set wait to stop the movement
 	}
 
-	private bool ShipToBeachPathEdit(ref int resultXLoc, ref int resultYLoc, int regionId)
+	private bool ShipToBeachPathEdit(ref int resultLocX, ref int resultYLoc, int regionId)
 	{
-		int curXLoc = NextLocX;
-		int curYLoc = NextLocY;
-		if (Math.Abs(curXLoc - resultXLoc) <= 1 && Math.Abs(curYLoc - resultYLoc) <= 1)
+		int curLocX = NextLocX;
+		int curLocY = NextLocY;
+		if (Math.Abs(curLocX - resultLocX) <= 1 && Math.Abs(curLocY - resultYLoc) <= 1)
 			return true;
 
 		//--------------- find a path to land area -------------------//
-		UnitMarine ship = (UnitMarine)this;
-		int result = Search(resultXLoc, resultYLoc, 1, SeekPath.SEARCH_MODE_TO_LAND_FOR_SHIP, regionId);
+		int result = Search(resultLocX, resultYLoc, 1, SeekPath.SEARCH_MODE_TO_LAND_FOR_SHIP, regionId);
 		if (result == 0)
 			return true;
 
-		//----------- update cur location --------//
-		curXLoc = NextLocX;
-		curYLoc = NextLocY;
+		curLocX = NextLocX;
+		curLocY = NextLocY;
 
 		//------------------------------------------------------------------------------//
 		// edit the result path to get a location for embarking
@@ -1723,8 +1721,8 @@ public partial class Unit
 			int i, j, found, pathDist;
 
 			int preXLoc = -1, preYLoc = -1;
-			int checkXLoc = curXLoc;
-			int checkYLoc = curYLoc;
+			int checkXLoc = curLocX;
+			int checkYLoc = curLocY;
 			int hasMoveStep = 0;
 			if (checkXLoc != curNodeLocX || checkYLoc != curNodeLocY)
 			{
@@ -1736,8 +1734,6 @@ public partial class Unit
 			//-----------------------------------------------------------------//
 			// find the pair of points that one is in ocean and one in land
 			//-----------------------------------------------------------------//
-			int xMagn, yMagn, magn;
-
 			for (pathDist = 0, found = 0, i = 1; i < nodeCount; ++i, curNodeIndex++, nextNodeIndex++)
 			{
 				curNode = PathNodes[curNodeIndex];
@@ -1746,7 +1742,9 @@ public partial class Unit
 				World.GetLocXAndLocY(nextNode, out nextNodeLocX, out nextNodeLocY);
 				int vecX = nextNodeLocX - curNodeLocX;
 				int vecY = nextNodeLocY - curNodeLocY;
-				magn = ((xMagn = Math.Abs(vecX)) > (yMagn = Math.Abs(vecY))) ? xMagn : yMagn;
+				int xMagn = Math.Abs(vecX);
+				int yMagn = Math.Abs(vecY);
+				int magn = (xMagn > yMagn) ? xMagn : yMagn;
 				if (xMagn != 0)
 				{
 					vecX /= xMagn;
@@ -1777,7 +1775,6 @@ public partial class Unit
 
 				if (found != 0)
 				{
-					//------------ a soln is found ---------------//
 					if (j == 0) // end node should be curNode pointed at
 					{
 						pathDist -= hasMoveStep;
@@ -1815,28 +1812,30 @@ public partial class Unit
 					loc = World.GetLoc((preXLoc + checkXLoc) / 2, (preYLoc + checkYLoc) / 2);
 					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
 					{
-						resultXLoc = (preXLoc + checkXLoc) / 2;
+						resultLocX = (preXLoc + checkXLoc) / 2;
 						resultYLoc = (preYLoc + checkYLoc) / 2;
 					}
 					else
 					{
-						resultXLoc = checkXLoc;
+						resultLocX = checkXLoc;
 						resultYLoc = checkYLoc;
 					}
 
 					break;
 				}
 				else
+				{
 					pathDist += magn;
+				}
 			}
 
 			if (found == 0)
 			{
 				World.GetLocXAndLocY(PathNodes[^1], out int endNodeLocX, out int endNodeLocY);
-				if (Math.Abs(endNodeLocX - resultXLoc) > 1 || Math.Abs(endNodeLocY - resultYLoc) > 1)
+				if (Math.Abs(endNodeLocX - resultLocX) > 1 || Math.Abs(endNodeLocY - resultYLoc) > 1)
 				{
 					//TODO: preserveAction should be 1?
-					MoveTo(resultXLoc, resultYLoc, -1);
+					MoveTo(resultLocX, resultYLoc, -1);
 					return false;
 				}
 			}
@@ -1846,22 +1845,20 @@ public partial class Unit
 			//------------- scan for the surrounding for a land location -----------//
 			for (int i = 2; i <= 9; ++i)
 			{
-				int xShift, yShift;
-				Misc.cal_move_around_a_point(i, 3, 3, out xShift, out yShift);
-				int checkXLoc = curXLoc + xShift;
-				int checkYLoc = curYLoc + yShift;
-				if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+				Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+				int checkLocX = curLocX + xShift;
+				int checkLocY = curLocY + yShift;
+				if (!Misc.IsLocationValid(checkLocX, checkLocY))
 					continue;
 
-				Location loc = World.GetLoc(checkXLoc, checkYLoc);
+				Location loc = World.GetLoc(checkLocX, checkLocY);
 				if (loc.RegionId != regionId)
 					continue;
 
-				if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN &&
-				    loc.CanMove(UnitConstants.UNIT_LAND))
+				if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(UnitConstants.UNIT_LAND))
 				{
-					resultXLoc = checkXLoc;
-					resultYLoc = checkYLoc;
+					resultLocX = checkLocX;
+					resultYLoc = checkLocY;
 					return true;
 				}
 			}
@@ -1872,44 +1869,45 @@ public partial class Unit
 		return true;
 	}
 
-	private void ShipLeaveBeach(int shipOldXLoc, int shipOldYLoc)
+	private void ShipLeaveBeach(int shipOldLocX, int shipOldLocY)
 	{
 		//--------------------------------------------------------------------------------//
 		// scan for location to leave the beach
 		//--------------------------------------------------------------------------------//
-		int curXLoc = NextLocX;
-		int curYLoc = NextLocY;
-		int xShift, yShift, checkXLoc = -1, checkYLoc = -1, found = 0;
+		int curLocX = NextLocX;
+		int curLocY = NextLocY;
+		int checkLocX = -1, checkLocY = -1;
+		bool found = false;
 
 		//------------- find a location to leave the beach ------------//
 		for (int i = 2; i <= 9; i++)
 		{
-			Misc.cal_move_around_a_point(i, 3, 3, out xShift, out yShift);
-			checkXLoc = curXLoc + xShift;
-			checkYLoc = curYLoc + yShift;
+			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+			checkLocX = curLocX + xShift;
+			checkLocY = curLocY + yShift;
 
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (!Misc.IsLocationValid(checkLocX, checkLocY))
 				continue;
 
-			if (checkXLoc % 2 != 0 || checkYLoc % 2 != 0)
+			if (checkLocX % 2 != 0 || checkLocY % 2 != 0)
 				continue;
 
-			Location loc = World.GetLoc(checkXLoc, checkYLoc);
+			Location loc = World.GetLoc(checkLocX, checkLocY);
 			if (TerrainRes[loc.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(MobileType))
 			{
-				found++;
+				found = true;
 				break;
 			}
 		}
 
-		if (found == 0)
+		if (!found)
 			return; // no suitable location, wait until finding suitable location
 
 		//---------------- leave now --------------------//
-		SetDir(shipOldXLoc, shipOldYLoc, checkXLoc, checkYLoc);
+		SetDir(shipOldLocX, shipOldLocY, checkLocX, checkLocY);
 		SetShipExtraMove();
-		GoX = checkXLoc * InternalConstants.CellWidth;
-		GoY = checkYLoc * InternalConstants.CellHeight;
+		GoX = checkLocX * InternalConstants.CellWidth;
+		GoY = checkLocY * InternalConstants.CellHeight;
 	}
 
 	private void BurnPathEdit(int burnLocX, int burnLocY)
@@ -1971,13 +1969,10 @@ public partial class Unit
 			MoveToLocY = lastNode1LocY;
 		}
 
-		//--------------------------------------------------------------//
-		// reduce the result_path_dist by 1
-		//--------------------------------------------------------------//
 		_pathNodeDistance--;
 	}
 
-	public void SelectSearchSubMode(int sx, int sy, int dx, int dy, int nationRecno, int searchMode)
+	public void SelectSearchSubMode(int sx, int sy, int dx, int dy, int nationId)
 	{
 		if (!ConfigAdv.unit_allow_path_power_mode)
 		{
@@ -2000,7 +1995,7 @@ public partial class Unit
 		//--------------------------------------------------------------------------------//
 		Location startLoc = World.GetLoc(sx, sy);
 		Location destLoc = World.GetLoc(dx, dy);
-		Nation nation = NationArray[nationRecno];
+		Nation nation = NationArray[nationId];
 
 		bool subModeOn = (startLoc.PowerNationId == 0 || nation.get_relation_passable(startLoc.PowerNationId)) &&
 		                 (destLoc.PowerNationId == 0 || nation.get_relation_passable(destLoc.PowerNationId));
@@ -2018,8 +2013,7 @@ public partial class Unit
 
 	private int Search(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPaths = 1)
 	{
-		if (destLocX < 0 || destLocX >= GameConstants.MapSize || destLocY < 0 || destLocY >= GameConstants.MapSize ||
-		    HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
+		if (!Misc.IsLocationValid(destLocX, destLocY) || IsUnitDead())
 		{
 			//TODO check, this code should be never executed
 			Stop2(UnitConstants.KEEP_DEFENSE_MODE); //-********** BUGHERE, err_handling for retailed version
@@ -2081,7 +2075,6 @@ public partial class Unit
 		}
 
 		//------------------------ find the shortest path --------------------------//
-		//
 		// decide the searching to use according to the unit size
 		// assume the unit size is always 1x1, 2x2, 3x3 and so on
 		// i.e. sprite_info.loc_width == sprite_info.loc_height
@@ -2092,9 +2085,8 @@ public partial class Unit
 		SeekPath.SetNationId(NationId);
 
 		if (MobileType == UnitConstants.UNIT_LAND)
-			SelectSearchSubMode(startLocX, startLocY, destLocX, destLocY, NationId, searchMode);
-		int seekResult = SeekPath.Seek(startLocX, startLocY, destLocX, destLocY, GroupId,
-			MobileType, searchMode, miscNo, numOfPaths);
+			SelectSearchSubMode(startLocX, startLocY, destLocX, destLocY, NationId);
+		int seekResult = SeekPath.Seek(startLocX, startLocY, destLocX, destLocY, GroupId, MobileType, searchMode, miscNo, numOfPaths);
 
 		PathNodes.AddRange(SeekPath.GetResult(out _pathNodeDistance));
 		SeekPath.SetSubMode(); // reset sub_mode searching
@@ -2130,7 +2122,7 @@ public partial class Unit
 
 		//-----------------------------------------------------------------------//
 		// if closest node is returned, the destination should not be the real
-		// location to go to.  Thus, move_to_?_loc should be adjusted
+		// location to go to. Thus, move_to_?_loc should be adjusted
 		//-----------------------------------------------------------------------//
 		if (PathNodes.Count > 0)
 		{
@@ -2151,7 +2143,7 @@ public partial class Unit
 		}
 		else // stay in the current location
 		{
-			MoveToLocX = startLocX; // adjust move_to_?_loc
+			MoveToLocX = startLocX;
 			MoveToLocY = startLocY;
 
 			if (CurX != NextX || CurY != NextY)
@@ -2160,31 +2152,19 @@ public partial class Unit
 				SetIdle();
 		}
 
-		//-------------------------------------------------------//
-		// PATH_NODE_USED_UP happens when:
-		// Exceed the object's MAX's node limitation, the closest path
-		// is returned. Get to the closest path first and continue
-		// to seek the path in the background.
-		//-------------------------------------------------------//
-
 		return 1;
 	}
 
-	private void SearchOrStop(int destX, int destY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
+	private void SearchOrStop(int destLocX, int destLocY, int preserveAction = 0, int searchMode = 1, int miscNo = 0)
 	{
-		Location loc = World.GetLoc(destX, destY);
+		Location loc = World.GetLoc(destLocX, destLocY);
 		if (!loc.CanMove(MobileType))
 		{
 			Stop(UnitConstants.KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
-			//waiting_term = MAX_SEARCH_OT_STOP_WAIT_TERM;
 		}
 		else
 		{
-			Search(destX, destY, preserveAction, searchMode, miscNo);
-			/*if(mobile_type==UnitRes.UNIT_LAND)
-				search(destX, destY, preserveAction, searchMode, miscNo);
-			else
-				waiting_term = 0;*/
+			Search(destLocX, destLocY, preserveAction, searchMode, miscNo);
 		}
 	}
 
@@ -2195,71 +2175,67 @@ public partial class Unit
 		const int SQUARE3 = 49;
 		const int DIMENSION = 7;
 
-		int curXLoc = NextLocX, curYLoc = NextLocY;
+		int curLocX = NextLocX, curLocY = NextLocY;
 		int[] surrArray = new int[SQUARE3];
-		int xShift, yShift, checkXLoc, checkYLoc, hasFree, i, shouldWait;
-		int unitRecno;
-		Unit unit;
-		Location loc;
+		bool hasFree = false;
+		bool shouldWait = false;
 
 		//----------------------------------------------------------------------------//
 		// wait if the unit is totally blocked.  Otherwise, call searching
 		//----------------------------------------------------------------------------//
-		for (shouldWait = 0, hasFree = 0, i = 2; i <= SQUARE3; i++)
+		for (int i = 2; i <= SQUARE3; i++)
 		{
 			if (i == SQUARE1 || i == SQUARE2 || i == SQUARE3)
 			{
-				if (hasFree == 0)
+				if (!hasFree)
 				{
-					shouldWait++;
+					shouldWait = true;
 					break;
 				}
-				else
-					hasFree = 0;
+				
+				hasFree = false;
 			}
 
-			Misc.cal_move_around_a_point(i, DIMENSION, DIMENSION, out xShift, out yShift);
-			checkXLoc = curXLoc + xShift;
-			checkYLoc = curYLoc + yShift;
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			Misc.cal_move_around_a_point(i, DIMENSION, DIMENSION, out int xShift, out int yShift);
+			int checkLocX = curLocX + xShift;
+			int checkLocY = curLocY + yShift;
+			if (!Misc.IsLocationValid(checkLocX, checkLocY))
 				continue;
 
-			loc = World.GetLoc(checkXLoc, checkYLoc);
-			if (!loc.HasUnit(MobileType))
+			Location location = World.GetLoc(checkLocX, checkLocY);
+			if (!location.HasUnit(MobileType))
 			{
-				hasFree++;
+				hasFree = true;
 				continue;
 			}
 
-			unitRecno = loc.UnitId(MobileType);
-			if (UnitArray.IsDeleted(unitRecno))
+			int unitId = location.UnitId(MobileType);
+			if (UnitArray.IsDeleted(unitId))
 				continue;
 
-			unit = UnitArray[unitRecno];
+			Unit unit = UnitArray[unitId];
 			if (unit.NationId == NationId && unit.GroupId == GroupId &&
-			    ((unit.CurAction == SPRITE_WAIT && unit.WaitingTerm > 1) || unit.CurAction == SPRITE_TURN ||
-			     unit.CurAction == SPRITE_MOVE))
+			    ((unit.CurAction == SPRITE_WAIT && unit.WaitingTerm > 1) || unit.CurAction == SPRITE_TURN || unit.CurAction == SPRITE_MOVE))
 			{
-				surrArray[i - 2] = unitRecno;
+				surrArray[i - 2] = unitId;
 				unit.GroupId++;
 			}
 		}
 
 		//------------------- call searching if should not wait --------------------//
-		if (shouldWait == 0)
+		if (!shouldWait)
 			Search(MoveToLocX, MoveToLocY, 1, SeekPath.SEARCH_MODE_IN_A_GROUP);
-		//search_or_stop(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_IN_A_GROUP);
 
-		for (i = 0; i < SQUARE3; i++)
+		for (int i = 0; i < SQUARE3; i++)
 		{
 			if (surrArray[i] != 0)
 			{
-				unit = UnitArray[surrArray[i]];
+				Unit unit = UnitArray[surrArray[i]];
 				unit.GroupId--;
 			}
 		}
 
-		if (shouldWait == 1)
+		if (shouldWait)
 			SetWait();
 	}
 	
@@ -2295,29 +2271,24 @@ public partial class Unit
 	{
 		//------------------------------------------------------------------------------------//
 		// There are only two conditions to reset the wayPoints
-		// 1) action_mode2!=ACTION_MOVE in Unit::stop()
-		// 2) dest? != node_? in the first node of wayPoints in calling Unit::move_to()
+		// 1) ActionMode2 != ACTION_MOVE in Unit.Stop()
+		// 2) Dest? != Node? in the first node of wayPoints in calling Unit.MoveTo()
 		//------------------------------------------------------------------------------------//
 		WayPoints.Clear();
 	}
 
 	private void ProcessWayPoint()
 	{
-		int destX, destY;
 		if (WayPoints.Count > 1)
 		{
 			World.GetLocXAndLocY(WayPoints[1], out int wayPointLocX, out int wayPointLocY);
-			destX = wayPointLocX;
-			destY = wayPointLocY;
 			WayPoints.RemoveAt(1);
+			MoveTo(wayPointLocX, wayPointLocY);
 		}
 		else // only one unprocessed node
 		{
 			World.GetLocXAndLocY(WayPoints[0], out int wayPointLocX, out int wayPointLocY);
-			destX = wayPointLocX;
-			destY = wayPointLocY;
+			MoveTo(wayPointLocX, wayPointLocY);
 		}
-
-		MoveTo(destX, destY);
 	}
 }

@@ -39,15 +39,15 @@ public class SeekPath
 	private int _searchMode;
 	private int _mobileType;
 	private int _seekNationId;
-	private int _attackRange; // used in search_mode = SEARCH_MODE_ATTACK_UNIT_BY_RANGE
+	private int _attackRange; // used in _searchMode = SEARCH_MODE_ATTACK_UNIT_BY_RANGE
 
-	// used in search_mode = SEARCH_MODE_TO_ATTACK or SEARCH_MODE_TO_VEHICLE, get from miscNo
+	// used in _searchMode = SEARCH_MODE_TO_ATTACK or SEARCH_MODE_TO_VEHICLE, get from miscNo
 	private int _targetId;
-	private int _regionId; // used in search_mode = SEARCH_MODE_TO_LAND_FOR_SHIP
-	private int _buildingId; // used in search_mode = SEARCH_MODE_TO_FIRM or SEARCH_MODE_TO_TOWN, get from miscNo
+	private int _regionId; // used in _searchMode = SEARCH_MODE_TO_LAND_FOR_SHIP
+	private int _buildingId; // used in _searchMode = SEARCH_MODE_TO_FIRM or SEARCH_MODE_TO_TOWN, get from miscNo
 	private int _buildingX1, _buildingY1, _buildingX2, _buildingY2;
 
-	private int _finalDestX; //	in search_mode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
+	private int _finalDestX; //	in _searchMode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
 	private int _finalDestY; // i.e. the value used finally may not be the real dest_? given.
 
 	private static UnitArray UnitArray => Sys.Instance.UnitArray;
@@ -98,7 +98,7 @@ public class SeekPath
 				if (_searchSubMode == SEARCH_SUB_MODE_PASSABLE && (powerNationId != 0) && !_nationPassable[powerNationId])
 					return false;
 
-				if (_searchMode < SEARCH_MODE_TO_FIRM) //------ be careful for the checking for search_mode>=SEARCH_MODE_TO_FIRM
+				if (_searchMode < SEARCH_MODE_TO_FIRM) //------ be careful for the checking for search_mode >= SEARCH_MODE_TO_FIRM
 				{
 					if (!location.Walkable())
 						return false;
@@ -110,7 +110,6 @@ public class SeekPath
 					switch (_searchMode)
 					{
 						case SEARCH_MODE_IN_A_GROUP: // group move
-						//case SEARCH_MODE_REUSE: // path-reuse
 							break;
 
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
@@ -127,8 +126,7 @@ public class SeekPath
 						//TODO looks like unused
 						//case SEARCH_MODE_BLOCKING: // 2x2 unit blocking
 							//unit = UnitArray[cargoId];
-							//return unit.unit_group_id == _groupId &&
-							       //(unit.cur_action == Sprite.SPRITE_MOVE || unit.cur_action == Sprite.SPRITE_READY_TO_MOVE);
+							//return unit.unit_group_id == _groupId && (unit.cur_action == Sprite.SPRITE_MOVE || unit.cur_action == Sprite.SPRITE_READY_TO_MOVE);
 					}
 				}
 				else
@@ -139,7 +137,7 @@ public class SeekPath
 					switch (_searchMode)
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
-						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
+						case SEARCH_MODE_TO_TOWN: // move to a town, (location may be not walkable)
 							if (!location.Walkable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
@@ -188,7 +186,6 @@ public class SeekPath
 					switch (_searchMode)
 					{
 						case SEARCH_MODE_IN_A_GROUP: // group move
-						//case SEARCH_MODE_REUSE: // path-reuse
 							break;
 
 						case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
@@ -208,7 +205,7 @@ public class SeekPath
 					switch (_searchMode)
 					{
 						case SEARCH_MODE_TO_FIRM: // move to a firm, (location may be not walkable)
-						case SEARCH_MODE_TO_TOWN: // move to a town zone, (location may be not walkable)
+						case SEARCH_MODE_TO_TOWN: // move to a town, (location may be not walkable)
 							if (!location.Sailable())
 								return (locX >= _buildingX1 && locX <= _buildingX2 && locY >= _buildingY1 && locY <= _buildingY2);
 							break;
@@ -264,7 +261,6 @@ public class SeekPath
 				switch (_searchMode)
 				{
 					case SEARCH_MODE_IN_A_GROUP:
-					//case SEARCH_MODE_REUSE:
 					case SEARCH_MODE_TO_ATTACK:
 					case SEARCH_MODE_TO_FIRM:
 					case SEARCH_MODE_TO_TOWN:
@@ -490,7 +486,7 @@ public class SeekPath
 				}
 			}
 			
-			if (loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 && CheckTargetInaccessable(loopCount / 2))
+			if (loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 && CheckTargetInaccessible(loopCount / 2))
 				break;
 
 			oldChangedNodesX.Clear();
@@ -503,7 +499,7 @@ public class SeekPath
 		return PathStatus;
 	}
 
-	private bool CheckTargetInaccessable(int size)
+	private bool CheckTargetInaccessible(int size)
 	{
 		if (size % 2 == 0)
 			size++;

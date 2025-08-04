@@ -785,15 +785,13 @@ public class UnitArray : SpriteArray
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
@@ -830,15 +828,13 @@ public class UnitArray : SpriteArray
 							{
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 							else
 							{
 								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y,
-										unit.NationId, SeekPath.SEARCH_MODE_IN_A_GROUP);
+									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
 								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
 							}
 						}
