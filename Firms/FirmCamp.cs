@@ -252,13 +252,13 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[overseer_recno];
 			// set it to the same team as the soldiers which are defined in mobilize_all_worker()
-			unit.TeamId = UnitArray.cur_team_id - 1;
+			unit.TeamId = UnitArray.CurTeamId - 1;
 
 			if (nation_recno == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
-				UnitArray.selected_recno = overseer_recno;
-				UnitArray.selected_count++;
+				UnitArray.SelectedUnitId = overseer_recno;
+				UnitArray.SelectedCount++;
 			}
 		}
 
@@ -323,7 +323,7 @@ public class FirmCamp : Firm
 
 			Unit unit = UnitArray[unitRecno];
 
-			unit.TeamId = UnitArray.cur_team_id; // define it as a team
+			unit.TeamId = UnitArray.CurTeamId; // define it as a team
 
 			if (overseer_recno != 0)
 			{
@@ -334,14 +334,14 @@ public class FirmCamp : Firm
 			if (nation_recno == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
-				UnitArray.selected_count++;
+				UnitArray.SelectedCount++;
 				// set the first soldier as selected; this is also the soldier with the highest leadership (because of sorting)
-				if (UnitArray.selected_recno == 0)
-					UnitArray.selected_recno = unitRecno;
+				if (UnitArray.SelectedUnitId == 0)
+					UnitArray.SelectedUnitId = unitRecno;
 			}
 		}
 
-		UnitArray.cur_team_id++;
+		UnitArray.CurTeamId++;
 		return true;
 	}
 
@@ -513,7 +513,7 @@ public class FirmCamp : Firm
 				break;
 
 			Unit unit = UnitArray[unitRecno];
-			unit.TeamId = UnitArray.cur_team_id; // define it as a team
+			unit.TeamId = UnitArray.CurTeamId; // define it as a team
 			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
 			unit.ActionMiscParam = firm_recno; // store the firm_recno for going back camp
 
@@ -546,7 +546,7 @@ public class FirmCamp : Firm
 			def.status = OUTSIDE_CAMP;
 		}*/
 
-		UnitArray.cur_team_id++;
+		UnitArray.CurTeamId++;
 	}
 
 	public void defense_inside_camp(int unitRecno, int targetRecno)
@@ -1217,7 +1217,7 @@ public class FirmCamp : Firm
 
 				//---- order the unit to move to this camp now ---//
 
-				UnitArray.assign(loc_x1, loc_y1, false,
+				UnitArray.Assign(loc_x1, loc_y1, false,
 					InternalConstants.COMMAND_AI, bestCamp.patrol_unit_array);
 
 				//------ delete the camp as it no longer has any use ----//
@@ -1369,7 +1369,7 @@ public class FirmCamp : Firm
 
 				List<int> selectedUnits = new List<int>(1);
 				selectedUnits.Add(attackerUnit.SpriteId);
-				UnitArray.attack(unit.NextLocX, unit.NextLocY, false, selectedUnits,
+				UnitArray.Attack(unit.NextLocX, unit.NextLocY, false, selectedUnits,
 					InternalConstants.COMMAND_AI, unit.SpriteId);
 				break;
 			}
@@ -1443,7 +1443,7 @@ public class FirmCamp : Firm
 
 			if (patrol_unit_array.Count > 0)
 			{
-				UnitArray.attack(enemyXLoc, enemyYLoc, false, patrol_unit_array, InternalConstants.COMMAND_AI,
+				UnitArray.Attack(enemyXLoc, enemyYLoc, false, patrol_unit_array, InternalConstants.COMMAND_AI,
 					World.GetLoc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND));
 				return true;
 			}
@@ -1764,7 +1764,7 @@ public class FirmCamp : Firm
 
 			List<int> selectedUnits = new List<int>(1);
 			selectedUnits.Add(patrol_unit_array[Misc.Random(patrol_unit_array.Count)]);
-			UnitArray.attack(town.LocX1, town.LocY1, false, selectedUnits,
+			UnitArray.Attack(town.LocX1, town.LocY1, false, selectedUnits,
 				InternalConstants.COMMAND_AI, 0);
 		}
 	}

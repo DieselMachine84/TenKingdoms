@@ -414,20 +414,20 @@ public class Rebel : IIdObject
         {
             case REBEL_ATTACK_TOWN:
                 Town town = TownArray[ActionParam];
-                UnitArray.attack(town.LocX1, town.LocY1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
+                UnitArray.Attack(town.LocX1, town.LocY1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
                 break;
 
             case REBEL_ATTACK_FIRM:
                 Firm firm = FirmArray[ActionParam];
-                UnitArray.attack(firm.loc_x1, firm.loc_y1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
+                UnitArray.Attack(firm.loc_x1, firm.loc_y1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
                 break;
 
             case REBEL_SETTLE_NEW:
-                UnitArray.settle(ActionParam, ActionParam2, false, 1, rebelUnits);
+                UnitArray.Settle(ActionParam, ActionParam2, false, 1, rebelUnits);
                 break;
 
             case REBEL_SETTLE_TO:
-                UnitArray.assign(ActionParam, ActionParam2, false, 1, rebelUnits);
+                UnitArray.Assign(ActionParam, ActionParam2, false, 1, rebelUnits);
                 break;
         }
     }

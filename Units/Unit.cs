@@ -144,7 +144,7 @@ public partial class Unit : Sprite
 
 		InitUnitType(unitType);
 
-		GroupId = UnitArray.cur_group_id++;
+		GroupId = UnitArray.CurGroupId++;
 		RaceId = UnitRes[UnitType].race_id;
 
 		if (RaceId != 0)
@@ -413,9 +413,9 @@ public partial class Unit : Sprite
 
 		if (!keepSelected)
 		{
-			if (UnitArray.selected_recno == SpriteId)
+			if (UnitArray.SelectedUnitId == SpriteId)
 			{
-				UnitArray.selected_recno = 0;
+				UnitArray.SelectedUnitId = 0;
 				Info.disp();
 			}
 
@@ -809,7 +809,7 @@ public partial class Unit : Sprite
 					if (SelectedFlag)
 					{
 						SelectedFlag = false;
-						UnitArray.selected_count--;
+						UnitArray.SelectedCount--;
 					}
 				}
 				else if (loc.IsTown() && loc.TownId() == ActionParam)
@@ -832,7 +832,7 @@ public partial class Unit : Sprite
 					if (SelectedFlag)
 					{
 						SelectedFlag = false;
-						UnitArray.selected_count--;
+						UnitArray.SelectedCount--;
 					}
 
 					//-------------- assign the unit to the town -----------------//
@@ -849,7 +849,7 @@ public partial class Unit : Sprite
 					if (SelectedFlag)
 					{
 						SelectedFlag = false;
-						UnitArray.selected_count--;
+						UnitArray.SelectedCount--;
 					}
 
 					//----------------- load the unit to the marine -----------------//
@@ -1533,7 +1533,7 @@ public partial class Unit : Sprite
 				}
 			}
 
-			if (sameTerr != 0)
+			if (sameTerr != 0 && count != 0)
 			{
 				resultLocX = destLocX + (sameTerr * xStep) / count;
 				resultLocY = destLocY + (sameTerr * yStep) / count;
@@ -1974,9 +1974,9 @@ public partial class Unit : Sprite
 					isAllZero = false;
 			}
 
-			if (UnitArray.idle_blocked_unit_reset_count != 0 && !isAllZero)
+			if (UnitArray.IdleBlockedUnitResetCount != 0 && !isAllZero)
 			{
-				UnitArray.idle_blocked_unit_reset_count = 0;
+				UnitArray.IdleBlockedUnitResetCount = 0;
 				for (int i = 0; i < BlockedEdges.Length; i++)
 				{
 					BlockedEdges[i] = 0;
@@ -3565,7 +3565,7 @@ public partial class Unit : Sprite
 
 		//--- if this unit is a general, change nation for the units he commands ---//
 
-		int newTeamId = UnitArray.cur_team_id++;
+		int newTeamId = UnitArray.CurTeamId++;
 
 		if (Rank == RANK_GENERAL)
 		{
@@ -3916,14 +3916,14 @@ public partial class Unit : Sprite
 
 		//-- if the player is giving a command to this unit, cancel the command --//
 
-		if (NationId == NationArray.player_recno && SpriteId == UnitArray.selected_recno && Power.command_id != 0)
+		if (NationId == NationArray.player_recno && SpriteId == UnitArray.SelectedUnitId && Power.command_id != 0)
 		{
 			Power.command_id = 0;
 		}
 
 		//---------- stop all action to attack this unit ------------//
 
-		UnitArray.stop_attack_unit(SpriteId);
+		UnitArray.StopAttackUnit(SpriteId);
 
 		//---- update nation_unit_count_array[] ----//
 
@@ -3935,7 +3935,7 @@ public partial class Unit : Sprite
 
 		//---------------- update vars ----------------//
 
-		GroupId = UnitArray.cur_group_id++; // separate from the current group
+		GroupId = UnitArray.CurGroupId++; // separate from the current group
 		NationId = newNationId;
 
 		HomeCampId = 0;
@@ -4380,7 +4380,7 @@ public partial class Unit : Sprite
 		{
 			if (location.TownId() == OriginalActionParam && TownArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
 			}
 		}
 
@@ -4390,7 +4390,7 @@ public partial class Unit : Sprite
 		{
 			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].nation_recno == NationId)
 			{
-				UnitArray.assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
 			}
 		}
 
@@ -4410,7 +4410,7 @@ public partial class Unit : Sprite
 		{
 			if (World.CanBuildTown(OriginalActionLocX, OriginalActionLocY, SpriteId))
 			{
-				UnitArray.settle(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
 			}
 		}
 
@@ -4476,7 +4476,7 @@ public partial class Unit : Sprite
 			List<int> selectedArray = new List<int>();
 			selectedArray.Add(SpriteId);
 
-			UnitArray.attack(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AI, 0);
+			UnitArray.Attack(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AI, 0);
 		}
 
 		OriginalActionMode = 0;
@@ -4985,7 +4985,7 @@ public partial class Unit : Sprite
 		{
 			ValidateTeam();
 
-			UnitArray.assign(bestCamp.loc_x1, bestCamp.loc_y1, false, InternalConstants.COMMAND_AI, TeamInfo.Members);
+			UnitArray.Assign(bestCamp.loc_x1, bestCamp.loc_y1, false, InternalConstants.COMMAND_AI, TeamInfo.Members);
 			return true;
 		}
 		else //--- otherwise assign the general only ---//

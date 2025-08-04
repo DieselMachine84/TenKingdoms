@@ -1002,7 +1002,7 @@ public class TalkRes
                 break;
 
             case TalkMsg.TALK_REQUEST_CEASE_WAR:
-                UnitArray.stop_war_between(talkMsg.to_nation_recno, talkMsg.from_nation_recno);
+                UnitArray.StopWarBetween(talkMsg.to_nation_recno, talkMsg.from_nation_recno);
                 toNation.set_relation_status(talkMsg.from_nation_recno, NationBase.NATION_TENSE);
 
                 fromRelation.last_talk_reject_date_array[TalkMsg.TALK_DECLARE_WAR - 1] = Info.game_date;

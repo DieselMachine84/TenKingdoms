@@ -216,8 +216,8 @@ public class FirmHarbor : Firm
 		{
 			Power.reset_selection();
 			unit.SelectedFlag = true;
-			UnitArray.selected_recno = unit.SpriteId;
-			UnitArray.selected_count = 1;
+			UnitArray.SelectedUnitId = unit.SpriteId;
+			UnitArray.SelectedCount = 1;
 
 			Info.disp();
 		}

@@ -823,7 +823,7 @@ public abstract class Firm : IIdObject
 		if (!FirmRes[firm_id].live_in_town) // if the unit does not live in town, increase the unit count now
 			UnitRes[unit.UnitType].inc_nation_unit_count(nation_recno);
 
-		UnitArray.disappear_in_firm(workerUnitRecno);
+		UnitArray.DisappearInFirm(workerUnitRecno);
 	}
 
 	public void kill_overseer()
@@ -1221,7 +1221,7 @@ public abstract class Firm : IIdObject
 			return;
 
 		//---------- stop all attack actions to this firm ----------//
-		UnitArray.stop_attack_firm(firm_recno);
+		UnitArray.StopAttackFirm(firm_recno);
 		RebelArray.StopAttackFirm(firm_recno);
 
 		Nation oldNation = NationArray[nation_recno];
@@ -1240,10 +1240,6 @@ public abstract class Firm : IIdObject
 			if (unit.SpyId != 0)
 				SpyArray[unit.SpyId].CloakedNationId = newNationRecno;
 		}
-
-		//---------- stop all actions attacking this firm --------//
-
-		UnitArray.stop_attack_firm(firm_recno);
 
 		//------ clear defense mode for military camp -----//
 
@@ -1642,7 +1638,7 @@ public abstract class Firm : IIdObject
 				if (unit.SelectedFlag)
 				{
 					unit.SelectedFlag = false;
-					UnitArray.selected_count--;
+					UnitArray.SelectedCount--;
 				}
 			}
 
@@ -2291,7 +2287,7 @@ public abstract class Firm : IIdObject
 					SpriteInfo spriteInfo = unit.SpriteInfo;
 					if (!locate_space(remove_firm, ref xLoc, ref yLoc, loc_x2, loc_y2,
 						    spriteInfo.LocWidth, spriteInfo.LocHeight))
-						UnitArray.disappear_in_firm(builder_recno); // kill the unit
+						UnitArray.DisappearInFirm(builder_recno); // kill the unit
 					else
 						unit.InitSprite(xLoc, yLoc); // restore the unit
 				}
@@ -2501,18 +2497,18 @@ public abstract class Firm : IIdObject
 				break; // keep the rest workers as there is no space for creating the unit
 
 			Unit unit = UnitArray[unitRecno];
-			unit.TeamId = UnitArray.cur_team_id;
+			unit.TeamId = UnitArray.CurTeamId;
 
 			if (nation_recno == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
-				UnitArray.selected_count++;
-				if (UnitArray.selected_recno == 0)
-					UnitArray.selected_recno = unitRecno; // set first worker as selected
+				UnitArray.SelectedCount++;
+				if (UnitArray.SelectedUnitId == 0)
+					UnitArray.SelectedUnitId = unitRecno; // set first worker as selected
 			}
 		}
 
-		UnitArray.cur_team_id++;
+		UnitArray.CurTeamId++;
 
 		// for player, mobilize_all_workers can only be called when the player presses the button.
 		//TODO drawing

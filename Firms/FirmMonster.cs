@@ -193,7 +193,7 @@ public class FirmMonster : Firm
 
 		//--------- the unit disappear in firm -----//
 
-		UnitArray.disappear_in_firm(unitRecno);
+		UnitArray.DisappearInFirm(unitRecno);
 	}
 
 	public bool can_assign_monster(int unitRecno)
@@ -361,7 +361,7 @@ public class FirmMonster : Firm
 			return 0;
 
 		UnitMonster generalUnit = (UnitMonster)UnitArray[generalUnitRecno];
-		generalUnit.TeamId = UnitArray.cur_team_id;
+		generalUnit.TeamId = UnitArray.CurTeamId;
 		generalUnit.MonsterSoldierId = monsterInFirm.soldier_monster_id;
 
 		int mobilizedCount = 1;
@@ -385,7 +385,7 @@ public class FirmMonster : Firm
 
 				if (unitRecno != 0)
 				{
-					UnitArray[unitRecno].TeamId = UnitArray.cur_team_id;
+					UnitArray[unitRecno].TeamId = UnitArray.CurTeamId;
 					UnitArray[unitRecno].LeaderId = generalUnitRecno;
 					mobilizedCount++;
 
@@ -414,7 +414,7 @@ public class FirmMonster : Firm
 
 		monsterGenerals.Remove(monsterInFirm);
 
-		UnitArray.cur_team_id++;
+		UnitArray.CurTeamId++;
 
 		//TODO drawing
 		//if( FirmArray.selected_recno == firm_recno )
@@ -753,7 +753,7 @@ public class FirmMonster : Firm
 		if (patrolUnits.Count > 0)
 		{
 			set_hostile_nation(targetNation);
-			UnitArray.attack(xLoc, yLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
+			UnitArray.Attack(xLoc, yLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
 			return 1;
 		}
 		else
@@ -886,7 +886,7 @@ public class FirmMonster : Firm
 		if (patrolUnits.Count > 0)
 		{
 			set_hostile_nation(targetNationRecno);
-			UnitArray.attack(targetXLoc, targetYLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
+			UnitArray.Attack(targetXLoc, targetYLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
 			return 1;
 		}
 		else

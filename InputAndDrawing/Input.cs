@@ -44,7 +44,7 @@ public partial class Renderer
                 {
                     ResetSelection();
                     _selectedUnitId = location.UnitId(UnitConstants.UNIT_LAND);
-                    UnitArray[_selectedUnitId].selected_flag = !UnitArray[_selectedUnitId].selected_flag;
+                    UnitArray[_selectedUnitId].SelectedFlag = !UnitArray[_selectedUnitId].SelectedFlag;
                 }
 
                 if (location.HasSite())
@@ -111,7 +111,7 @@ public partial class Renderer
 
                 foreach (Unit unit in UnitArray)
                 {
-                    if (unit.selected_flag)
+                    if (unit.SelectedFlag)
                     {
                         if (unit.TrueNationId() == 1)
                         {

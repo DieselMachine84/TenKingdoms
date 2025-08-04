@@ -491,7 +491,7 @@ public class UnitMarine : Unit
 				break;
 		}
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			//TODO
 			/*if (nation_recno == NationArray.player_recno || Config.show_ai_info)
@@ -514,7 +514,7 @@ public class UnitMarine : Unit
 		if (cur_firm_recno != 0 && FirmArray.IsDeleted(cur_firm_recno))
 		{
 			HitPoints = 0.0; // ship also die if the harbor is deleted
-			UnitArray.disappear_in_firm(SpriteId); // ship also die if the harnor is deleted
+			UnitArray.DisappearInFirm(SpriteId); // ship also die if the harnor is deleted
 			return;
 		}
 
@@ -1445,14 +1445,14 @@ public class UnitMarine : Unit
 		if (unit.SelectedFlag)
 		{
 			unit.SelectedFlag = false;
-			UnitArray.selected_count--;
+			UnitArray.SelectedCount--;
 		}
 
 		unit.DeinitSprite();
 
 		//--- if this marine unit is currently selected ---//
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
 				//disp_info(INFO_UPDATE);
@@ -1543,10 +1543,10 @@ public class UnitMarine : Unit
 					    NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
 					{
 						unit.SelectedFlag = true; // mark selected if unload all
-						UnitArray.selected_count++;
+						UnitArray.SelectedCount++;
 
-						if (UnitArray.selected_recno == 0)
-							UnitArray.selected_recno = unit.SpriteId;
+						if (UnitArray.SelectedUnitId == 0)
+							UnitArray.SelectedUnitId = unit.SpriteId;
 					}
 
 					unprocess--;
@@ -1895,7 +1895,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		// refresh stop info area
 		//-------------------------------------------------------//
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			if (NationId == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -1920,7 +1920,7 @@ public class UnitMarine : Unit
 		stop_defined_num--;
 		update_stop_list();
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
 				//Info.disp();

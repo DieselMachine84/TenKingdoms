@@ -286,11 +286,11 @@ public class UnitMonster : Unit
 
         if (actionType == 1) // attack
         {
-            UnitArray.attack(destXLoc, destYLoc, false, unitOrderedArray, InternalConstants.COMMAND_AI, 0);
+            UnitArray.Attack(destXLoc, destYLoc, false, unitOrderedArray, InternalConstants.COMMAND_AI, 0);
         }
         else
         {
-            UnitArray.assign(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitOrderedArray);
+            UnitArray.Assign(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitOrderedArray);
         }
     }
 

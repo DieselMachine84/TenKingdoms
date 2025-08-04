@@ -167,9 +167,9 @@ public class World
 
 		//--- if the selected one is a unit ----//
 
-		if (UnitArray.selected_recno != 0)
+		if (UnitArray.SelectedUnitId != 0)
 		{
-			UnitArray.disp_next(seekDir, sameNation);
+			UnitArray.DisplayNext(seekDir, sameNation);
 		}
 
 		//--- if the selected one is a natural resource site ----//

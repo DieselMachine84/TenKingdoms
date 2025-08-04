@@ -1090,7 +1090,7 @@ public class NationBase : IIdObject
     {
         RebelArray.StopAttackNation(nation_recno);
         TownArray.StopAttackNation(nation_recno);
-        UnitArray.stop_all_war(nation_recno);
+        UnitArray.StopAllWar(nation_recno);
         MonsterRes.stop_attack_nation(nation_recno);
 
         nation_hand_over_flag = nation_recno;

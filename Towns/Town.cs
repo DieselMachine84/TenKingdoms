@@ -2116,7 +2116,7 @@ public class Town : IIdObject
 			// codes for handle_blocked_move set unit_group_id to a different value 
 			// s.t. the members in this group will not be blocked by this unit.
 			//----------------------------------------------------------------------//
-			unit.GroupId = UnitArray.cur_group_id++;
+			unit.GroupId = UnitArray.CurGroupId++;
 			return;
 		}
 
@@ -3002,7 +3002,7 @@ public class Town : IIdObject
 		ClearDefenseMode();
 
 		//------------- stop all actions to attack this town ------------//
-		UnitArray.stop_attack_town(TownId);
+		UnitArray.StopAttackTown(TownId);
 		RebelArray.StopAttackTown(TownId);
 
 		//--------- update AI town info ---------//
@@ -3608,7 +3608,7 @@ public class Town : IIdObject
 		if (rebelLeader == null)
 			return;
 
-		int curGroupId = UnitArray.cur_group_id++;
+		int curGroupId = UnitArray.CurGroupId++;
 		rebelLeader.GroupId = curGroupId;
 
 		if (oneRebelOnly) // if there was just one unit in the town and he rebels

@@ -3579,7 +3579,7 @@ public class Nation : NationBase
 							firmCamp.validate_patrol_unit();
 							if (firmCamp.patrol_unit_array.Count > 0)
 							{
-								UnitArray.assign_to_camp(firmCamp.loc_x1, firmCamp.loc_y1,
+								UnitArray.AssignToCamp(firmCamp.loc_x1, firmCamp.loc_y1,
 									InternalConstants.COMMAND_AI, firmCamp.patrol_unit_array);
 							}
 						}
@@ -3641,7 +3641,7 @@ public class Nation : NationBase
 
 						//---------- attack now -----------//
 
-						UnitArray.attack(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
+						UnitArray.Attack(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
 							firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI, 0);
 					}
 				}
@@ -6201,7 +6201,7 @@ public class Nation : NationBase
 
 		unitMarine.AIActionId = actionNode.action_id;
 
-		UnitArray.assign_to_ship(unitMarine.NextLocX, unitMarine.NextLocY, false,
+		UnitArray.AssignToShip(unitMarine.NextLocX, unitMarine.NextLocY, false,
 			actionNode.group_unit_array, InternalConstants.COMMAND_AI, unitMarine.SpriteId);
 
 		for (int i = 0; i < actionNode.instance_count; i++)
@@ -6291,11 +6291,11 @@ public class Nation : NationBase
 				if (location.IsTown() && TownArray[location.TownId()].NationId == nation_recno)
 				{
 					Town town = TownArray[location.TownId()];
-					UnitArray.assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
 				{
-					UnitArray.settle(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Settle(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				}
 
 				break;
@@ -6309,7 +6309,7 @@ public class Nation : NationBase
 
 			case SEA_ACTION_ASSIGN_TO_FIRM:
 				if (check_firm_ready(destXLoc, destYLoc))
-					UnitArray.assign(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Assign(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
 				break;
 
 			case SEA_ACTION_MOVE:

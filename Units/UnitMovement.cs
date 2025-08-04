@@ -29,13 +29,13 @@ public partial class Unit
 		//-----------------------------------------------------------------------------------//
 		// The codes here is used to check for equal action in movement.
 		//
-		// mainly checked by action_mode2. If previous action is ACTION_MOVE, action_mode2,
-		// action_para2, action_x_loc2 and action_x_loc2 need to be kept for this checking.
+		// mainly checked by ActionMode2. If previous action is ACTION_MOVE,
+		// ActionMode2, ActionPara2, ActionLocX2 and ActionLocY2 need to be kept for this checking.
 		//
-		// If calling from UnitArray.MoveTo(), action_mode is set to ACTION_MOVE, action_para
-		// is set to 0 while action_x_loc and action_y_loc are kept as original value for checking.
-		// Meanwhile, action_mode2, action_para2, action_x_loc2 and action_y_loc2 are kept if
-		// the condition is fulfilled (action_mode2==ACTION_MOVE)
+		// If calling from UnitArray.MoveTo(), ActionMode is set to ACTION_MOVE, ActionPara is set to 0
+		// while ActionLocX and ActionLocY are kept as original value for checking.
+		// Meanwhile, ActionMode2, ActionPara2, ActionLocX2 and ActionLocY2 are kept
+		// if the condition is fulfilled (ActionMode2 == ACTION_MOVE)
 		//-----------------------------------------------------------------------------------//
 		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
 		{
@@ -72,7 +72,7 @@ public partial class Unit
 					}
 
 					return;
-				} //else action is hold due to some problems, re-activiate again
+				} //else action is hold due to some problems, reactivate again
 			}
 		} //else, new order or searching is required
 
@@ -932,15 +932,15 @@ public partial class Unit
 		return 0;
 	}
 	
-	public void DifferentTerritoryDestination(ref int destX, ref int destY)
+	public void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
 	{
-		int curXLoc = NextLocX;
-		int curYLoc = NextLocY;
+		int curLocX = NextLocX;
+		int curLocY = NextLocY;
 
-		Location loc = World.GetLoc(curXLoc, curYLoc);
+		Location loc = World.GetLoc(curLocX, curLocY);
 		int regionId = loc.RegionId;
-		int xStep = destX - curXLoc;
-		int yStep = destY - curYLoc;
+		int xStep = destLocX - curLocX;
+		int yStep = destLocY - curLocY;
 		int absXStep = Math.Abs(xStep);
 		int absYStep = Math.Abs(yStep);
 		int count = (absXStep >= absYStep) ? absXStep : absYStep;
@@ -953,23 +953,23 @@ public partial class Unit
 		//------------------------------------------------------------------------------//
 		for (int i = 1; i <= count; i++)
 		{
-			int x = curXLoc + (i * xStep) / count;
-			int y = curYLoc + (i * yStep) / count;
+			int locX = curLocX + (i * xStep) / count;
+			int locY = curLocY + (i * yStep) / count;
 
-			loc = World.GetLoc(x, y);
+			loc = World.GetLoc(locX, locY);
 			if (loc.RegionId == regionId)
 				sameTerr = i;
 		}
 
 		if (sameTerr != 0 && count != 0)
 		{
-			destX = curXLoc + (sameTerr * xStep) / count;
-			destY = curYLoc + (sameTerr * yStep) / count;
+			destLocX = curLocX + (sameTerr * xStep) / count;
+			destLocY = curLocY + (sameTerr * yStep) / count;
 		}
 		else
 		{
-			destX = curXLoc;
-			destY = curYLoc;
+			destLocX = curLocX;
+			destLocY = curLocY;
 		}
 	}
 
@@ -1084,8 +1084,7 @@ public partial class Unit
 						if (ActionMode2 == UnitConstants.ACTION_SHIP_TO_BEACH &&
 						    ActionLocX2 == unit.ActionLocX2 && ActionLocY2 == unit.ActionLocY2)
 						{
-							int tempX, tempY;
-							ShipToBeach(ActionLocX2, ActionLocY2, out tempX, out tempY);
+							ShipToBeach(ActionLocX2, ActionLocY2, out _, out _);
 						}
 						else
 						{
@@ -1842,6 +1841,7 @@ public partial class Unit
 				World.GetLocXAndLocY(PathNodes[^1], out int endNodeLocX, out int endNodeLocY);
 				if (Math.Abs(endNodeLocX - resultXLoc) > 1 || Math.Abs(endNodeLocY - resultYLoc) > 1)
 				{
+					//TODO: preserveAction should be 1?
 					MoveTo(resultXLoc, resultYLoc, -1);
 					return false;
 				}

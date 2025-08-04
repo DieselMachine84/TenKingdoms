@@ -202,7 +202,7 @@ public class UnitCaravan : Unit
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
 			Stop2();
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			if (NationId == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -229,7 +229,7 @@ public class UnitCaravan : Unit
 
 		update_stop_list();
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			if ( /*!remote.is_enable() ||*/ NationId == NationArray.player_recno || Config.show_ai_info)
 				Info.disp();
@@ -484,7 +484,7 @@ public class UnitCaravan : Unit
 				break;
 		}
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 		{
 			//TODO
 			//if (nation_recno == NationArray.player_recno || Config.show_ai_info)
@@ -526,7 +526,7 @@ public class UnitCaravan : Unit
 		if (FirmArray.IsDeleted(ActionParam))
 		{
 			HitPoints = 0.0; // caravan also die if the market is deleted
-			UnitArray.disappear_in_firm(SpriteId); // caravan also die if the market is deleted
+			UnitArray.DisappearInFirm(SpriteId); // caravan also die if the market is deleted
 			return;
 		}
 
@@ -1493,7 +1493,7 @@ public class UnitCaravan : Unit
 			}
 		}
 
-		if (UnitArray.selected_recno == SpriteId)
+		if (UnitArray.SelectedUnitId == SpriteId)
 			Info.disp();
 
 		return processed > 0 || moreToUnload;
