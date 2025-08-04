@@ -937,7 +937,6 @@ public partial class Unit
 		if (NextX == unit.CurX && NextY == unit.CurY)
 		{
 			ResetPath();
-			_pathNodeDistance = 0;
 		}
 		else
 		{

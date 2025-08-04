@@ -626,7 +626,6 @@ public class SeekPath
 		int pathX = resultX;
 		int pathY = resultY;
 		int pathValue = _nodeMatrix[resultIndex];
-		pathDist = pathValue / 2;
 
 		List<int> reversedPath = new List<int>(pathValue);
 		reversedPath.Add(resultIndex);
@@ -666,6 +665,7 @@ public class SeekPath
 		}
 		
 		reversedPath.Reverse();
+		pathDist = reversedPath.Count - 1;
 		return reversedPath;
 	}
 }

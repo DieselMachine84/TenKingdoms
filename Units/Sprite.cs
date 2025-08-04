@@ -259,7 +259,7 @@ public class Sprite : IIdObject
 		UpdateAbsPos();
 	}
 
-	protected virtual void SetNext(int nextX, int nextY, int para = 0, int blockedChecked = 0)
+	protected virtual void SetNext(int nextX, int nextY, int param = 0, int blockedChecked = 0)
 	{
 		NextX = nextX;
 		NextY = nextY;
