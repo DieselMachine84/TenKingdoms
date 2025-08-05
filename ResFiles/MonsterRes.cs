@@ -161,7 +161,7 @@ public class MonsterRes
             }
         }
         
-        return _goldCoinTextures[_goldCoinTextures.Count % value];
+        return _goldCoinTextures[value % _goldCoinTextures.Count];
     }
 
     private FirmArray FirmArray => Sys.Instance.FirmArray;
