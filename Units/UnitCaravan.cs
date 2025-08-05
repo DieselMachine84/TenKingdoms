@@ -1011,13 +1011,13 @@ public class UnitCaravan : Unit
 				int j;
 				for (j = TradeStop.PICK_UP_RAW_FIRST; j <= TradeStop.PICK_UP_RAW_LAST; j++)
 				{
-					if (tradeStop.pick_up_array[j])
+					if (tradeStop.pick_up_array[j - 1])
 						hasPickUp = true;
 				}
 
 				for (j = TradeStop.PICK_UP_PRODUCT_FIRST; j <= TradeStop.PICK_UP_PRODUCT_LAST; j++)
 				{
-					if (tradeStop.pick_up_array[j])
+					if (tradeStop.pick_up_array[j - 1])
 						hasPickUp = true;
 				}
 
