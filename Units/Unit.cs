@@ -1247,7 +1247,7 @@ public partial class Unit : Sprite
 		if (loc.IsFirm())
 		{
 			Firm firm = FirmArray[loc.FirmId()];
-			bool quit = false;
+			bool differentRegions = false;
 
 			if (firm.firm_id == Firm.FIRM_HARBOR)
 			{
@@ -1256,31 +1256,33 @@ public partial class Unit : Sprite
 				{
 					case UnitConstants.UNIT_CLASS_HUMAN:
 						if (unitRegionId != harbor.land_region_id)
-							quit = true;
+							differentRegions = true;
 						break;
 
 					case UnitConstants.UNIT_CLASS_SHIP:
 						if (unitRegionId != harbor.sea_region_id)
-							quit = true;
+							differentRegions = true;
 						break;
 				}
 			}
 			else if (unitRegionId != loc.RegionId)
 			{
-				quit = true;
+				differentRegions = true;
 			}
 
-			if (quit)
+			if (differentRegions)
 			{
 				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
 				return;
 			}
 		}
-		else if (unitRegionId != loc.RegionId)
+		else if (loc.IsTown())
 		{
-			if (loc.IsTown())
+			if (unitRegionId != loc.RegionId)
+			{
 				MoveToTownSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
-			return;
+				return;
+			}
 		}
 
 		//---------------- define parameters --------------------//
@@ -1437,8 +1439,7 @@ public partial class Unit : Sprite
 			//-------- find a suitable location since no offset location is given ---------//
 			if (Math.Abs(shipLocX - ActionLocX2) <= 1 && Math.Abs(shipLocY - ActionLocY2) <= 1)
 			{
-				Location location = World.GetLoc(NextLocX, NextLocY);
-				int regionId = location.RegionId;
+				int regionId = World.GetLoc(NextLocX, NextLocY).RegionId;
 				for (int i = 2; i <= 9; i++)
 				{
 					Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
@@ -1447,8 +1448,7 @@ public partial class Unit : Sprite
 					if (!Misc.IsLocationValid(checkLocX, checkLocY))
 						continue;
 
-					location = World.GetLoc(checkLocX, checkLocY);
-					if (location.RegionId != regionId)
+					if (World.GetLoc(checkLocX, checkLocY).RegionId != regionId)
 						continue;
 
 					resultLocX = checkLocX;

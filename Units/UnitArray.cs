@@ -430,9 +430,9 @@ public class UnitArray : SpriteArray
     {
 	    int curGroupId = CurGroupId++;
 
-	    for (int j = 0; j < selectedUnits.Count; j++)
+	    for (int i = 0; i < selectedUnits.Count; i++)
 	    {
-		    Unit unit = this[selectedUnits[j]];
+		    Unit unit = this[selectedUnits[i]];
 
 		    unit.GroupId = curGroupId;
 
@@ -1392,9 +1392,9 @@ public class UnitArray : SpriteArray
 	    //{
 		    if (!divided)
 		    {
-			    for (int j = 0; j < selectedUnits.Count; j++)
+			    for (int i = 0; i < selectedUnits.Count; i++)
 			    {
-				    int unitId = selectedUnits[j];
+				    int unitId = selectedUnits[i];
 
 				    if (IsDeleted(unitId))
 					    continue;
@@ -1452,7 +1452,7 @@ public class UnitArray : SpriteArray
 							    unit.SpriteInfo.LocHeight, loc.UnitId(UnitConstants.UNIT_LAND));
 				    }
 			    }
-			    else // for more than one unit selecting, call group_assign() to take care of it
+			    else // for more than one unit selecting, call GroupAssign() to take care of it
 			    {
 				    SetGroupId(selectedUnits);
 				    GroupAssign(destLocX, destLocY, selectedUnits);

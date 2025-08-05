@@ -98,16 +98,12 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destLocX, destLocY);
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
 		{
 			MoveTo(destLocX, destLocY);
 			return;
 		}
 
-		//----------------------------------------------------------------//
-		// return if the unit is dead
-		//----------------------------------------------------------------//
 		if (IsUnitDead())
 			return;
 
@@ -136,8 +132,8 @@ public partial class Unit
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
+		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
 
 		Unit unit = UnitArray[miscNo];
 		SpriteInfo spriteInfo = unit.SpriteInfo;
@@ -178,9 +174,6 @@ public partial class Unit
 			}
 		}
 
-		//----------------------------------------------------------------//
-		// return if the unit is dead
-		//----------------------------------------------------------------//
 		if (IsUnitDead())
 			return;
 
@@ -209,8 +202,8 @@ public partial class Unit
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
+		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
 
 		FirmInfo firmInfo = FirmRes[miscNo];
 		Stop();
@@ -230,16 +223,12 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destLocX, destLocY);
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
 		{
 			MoveTo(destLocX, destLocY);
 			return;
 		}
 
-		//----------------------------------------------------------------//
-		// return if the unit is dead
-		//----------------------------------------------------------------//
 		if (IsUnitDead())
 			return;
 
@@ -268,8 +257,8 @@ public partial class Unit
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, ((width > 1) ? destLocX : destLocX - width + 1));
-		int destY = Math.Max(0, ((height > 1) ? destLocY : destLocY - height + 1));
+		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
 
 		Stop();
 		SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
@@ -288,16 +277,12 @@ public partial class Unit
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destLocX, destLocY);
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
 		{
 			MoveTo(destLocX, destLocY);
 			return;
 		}
 
-		//----------------------------------------------------------------//
-		// return if the unit is dead
-		//----------------------------------------------------------------//
 		if (IsUnitDead())
 			return;
 
