@@ -717,6 +717,8 @@ public class NationBase : IIdObject
 
     public NationBase()
     {
+        for (int i = 0; i < relation_array.Length; i++)
+            relation_array[i] = new NationRelation();
     }
 
     void IIdObject.SetId(int id)
@@ -881,8 +883,7 @@ public class NationBase : IIdObject
     public void init_relation(NationBase otherNation)
     {
         int otherNationRecno = otherNation.nation_recno;
-        NationRelation nationRelation = new NationRelation();
-        relation_array[otherNationRecno - 1] = nationRelation;
+        NationRelation nationRelation = relation_array[otherNationRecno - 1];
 
         set_relation_should_attack(otherNationRecno, otherNationRecno != nation_recno, InternalConstants.COMMAND_AUTO);
 
