@@ -1273,7 +1273,7 @@ public class FirmMarket : Firm
 		//---- think about building factories to manufacture goods using raw materials in the market place ---//
 
 		// always set it to 2, so think_build_factory() will start to build a market as soon as there is a need
-		AiShouldBuildFactoryCount = 2;
+		AIShouldBuildFactoryCount = 2;
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{

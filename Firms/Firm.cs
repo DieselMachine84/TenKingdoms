@@ -19,87 +19,76 @@ public abstract class Firm : IIdObject
 
 	public const int MAX_WORKER = 8;
 	public const int MAX_CARGO = 9;
-	public const int MIN_MIGRATE_ATTRACT_LEVEL = 30;
 
 	public const int FIRM_WITHOUT_ACTION = 0;
 	public const int FACTORY_RELOCATE = 1;
 	public const int MARKET_FOR_SELL = 2;
 	public const int CAMP_IN_DEFENSE = 3;
 
-	public int FirmType { get; set; }
-	public int FirmBuildId { get; set; }
-	public int FirmId { get; private set; } // record no. of this firm in the firm_array
-	public bool AIFirm  { get; set; } // whether Computer AI control this firm or not
+
+	public int FirmType { get; private set; }
+	public int FirmBuildId { get; private set; }
+	public int FirmId { get; private set; }
+	public int NationId { get; private set; }
+	public int RaceId { get; private set; }
+	protected DateTime SetupDate { get; private set; }
+
+	public int LocX1 { get; private set; }
+	public int LocY1 { get; private set; }
+	public int LocX2 { get; private set; }
+	public int LocY2 { get; private set; }
+	public int LocCenterX { get; private set; }
+	public int LocCenterY { get; private set; }
+	public int RegionId { get; protected set; }
+	
+	public int ClosestTownNameId { get; private set; }
+	private int FirmNameInstanceId { get; set; }
+	public int FirmSkillId { get; protected set; }
+	public int OverseerId { get; protected set; }
+	public int OverseerTownId { get; private set; }
+	public int BuilderId { get; set; }
+	private int BuilderRegionId { get; set; }
+	public double HitPoints { get; set; }
+	public double MaxHitPoints { get; private set; }
+	public double Productivity { get; private set; }
+	public bool UnderConstruction { get; set; }
+	public double LastYearIncome { get; set; }
+	public double CurYearIncome { get; set; }
+	public bool NoNeighborSpace { get; protected set; }
+	public DateTime LastAttackedDate { get; private set; }
+	public List<Worker> Workers { get; } = new List<Worker>();
+	public int SelectedWorkerId { get; set; }
+	public bool ShouldSetPower { get; private set; }
+	public int PlayerSpyCount { get; set; }
+	public int SabotageLevel { get; set; } // 0-100 for counter productivity
+	private bool RemoveFirm { get; set; }
+	public int CurFrame { get; private set; }
+	private int RemainFrameDelay { get; set; }
+	
+	
+	public List<int> LinkedFirms { get; } = new List<int>();
+	public List<int> LinkedTowns { get; } = new List<int>();
+	public List<int> LinkedFirmsEnable { get; } = new List<int>();
+	public List<int> LinkedTownsEnable { get; } = new List<int>();
+
+	
+	public bool AIFirm  { get; private set; } // whether Computer AI control this firm or not
 
 	// some ai actions are processed once only in the processing day. To prevent multiple checking in the processing day
 	public bool AIProcessed { get; set; }
-	public int AIStatus { get; set; }
+	public int AIStatus { get; protected set; }
 
-	// AI checks firms and towns location by links, disable checking by setting this parameter to 1
+	// AI checks firms and towns location by links, disable checking by setting this parameter to true
 	public bool AiLinkChecked { get; set; }
+	public bool ShouldCloseFlag { get; protected set; }
+	public int AIShouldBuildFactoryCount { get; set; }
 
-	public int RaceId { get; set; }
-	public int NationId { get; set; }
-
-	public int ClosestTownNameId { get; set; }
-
-	public int FirmNameInstanceId { get; set; }
-
-	public int LocX1 { get; set; }
-	public int LocY1 { get; set; }
-	public int LocX2 { get; set; }
-	public int LocY2 { get; set; }
-	public int LocCenterX { get; set; }
-	public int LocCenterY { get; set; }
-	public int RegionId { get; set; }
-
-	public int CurFrame { get; set; }
-	public int RemainFrameDelay { get; set; }
-	private bool RemoveFirm { get; set; }
-
-	public double HitPoints { get; set; }
-	public double MaxHitPoints { get; set; }
-	public bool UnderConstruction { get; set; }
-
-	public int FirmSkillId { get; set; }
-	public int OverseerId { get; set; }
-	public int OverseerTownId { get; set; }
-	public int BuilderId { get; set; }
-	public int BuilderRegionId { get; set; }
-	public double Productivity { get; set; }
-
-	public List<Worker> Workers { get; } = new List<Worker>();
-	public int SelectedWorkerId { get; set; }
-
-	public int PlayerSpyCount { get; set; }
-	public int SabotageLevel { get; set; } // 0-100 for counter productivity
-
-	//------ inter-relationship -------//
-
-	public List<int> LinkedFirms = new List<int>();
-	public List<int> LinkedTowns = new List<int>();
-
-	public List<int> LinkedFirmsEnable = new List<int>();
-	public List<int> LinkedTownsEnable = new List<int>();
-
-	public double LastYearIncome { get; set; }
-	public double CurYearIncome { get; set; }
-
-	public DateTime SetupDate { get; set; }
-
-	public bool ShouldSetPower { get; set; }
-	public DateTime LastAttackedDate { get; set; }
-
-	//----------- AI vars ------------//
-
-	public bool ShouldCloseFlag { get; set; }
-	public bool NoNeighborSpace { get; set; } // no space to build firms/towns next to this town
-	public int AiShouldBuildFactoryCount { get; set; }
 
 	// id of the spy that is doing the bribing or viewing secret reports of other nations
 	public static int ActionSpyId { get; set; }
 	public static int BribeResult { get; set; }
 	public static int AssassinateResult { get; set; }
+	
 
 	protected TownRes TownRes => Sys.Instance.TownRes;
 	protected FirmRes FirmRes => Sys.Instance.FirmRes;
@@ -114,15 +103,15 @@ public abstract class Firm : IIdObject
 	protected Power Power => Sys.Instance.Power;
 	protected World World => Sys.Instance.World;
 	protected NationArray NationArray => Sys.Instance.NationArray;
-	protected UnitArray UnitArray => Sys.Instance.UnitArray;
-	protected RebelArray RebelArray => Sys.Instance.RebelArray;
-	protected SpyArray SpyArray => Sys.Instance.SpyArray;
 	protected FirmArray FirmArray => Sys.Instance.FirmArray;
 	protected FirmDieArray FirmDieArray => Sys.Instance.FirmDieArray;
 	protected TownArray TownArray => Sys.Instance.TownArray;
+	protected UnitArray UnitArray => Sys.Instance.UnitArray;
+	protected RebelArray RebelArray => Sys.Instance.RebelArray;
+	protected SpyArray SpyArray => Sys.Instance.SpyArray;
 	protected NewsArray NewsArray => Sys.Instance.NewsArray;
 
-	public Firm()
+	protected Firm()
 	{
 	}
 
@@ -323,6 +312,106 @@ public abstract class Firm : IIdObject
 	{
 	}
 
+	public void SetWorldMatrix()
+	{
+		//--- if a nation set up a firm in a location that the player has explored, contact between the nation and the player is established ---//
+
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		{
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			{
+				World.GetLoc(xLoc, yLoc).SetFirm(FirmId);
+			}
+		}
+
+		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
+
+		EstablishContactWithPlayer();
+
+		//------------ reveal new land ----------//
+
+		if (NationId == NationArray.player_recno ||
+		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		{
+			World.Unveil(LocX1, LocY1, LocX2, LocY2);
+			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
+		}
+
+		//-------- set should_set_power --------//
+
+		ShouldSetPower = GetShouldSetPower();
+
+		//---- set this town's influence on the map ----//
+
+		if (ShouldSetPower)
+			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
+
+		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
+
+		//TODO drawing
+		//if( is_in_zoom_win() )
+		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
+	}
+
+	public void RestoreWorldMatrix()
+	{
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		{
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			{
+				World.GetLoc(xLoc, yLoc).RemoveFirm();
+			}
+		}
+
+		//---- restore this town's influence on the map ----//
+
+		if (ShouldSetPower) // no power region for harbor as it build on coast which cannot be set with power region
+			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
+
+		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
+
+		//TODO drawing
+		//if( is_in_zoom_win() )
+		//sys.zoom_need_redraw = 1;
+	}
+	
+	public void EstablishContactWithPlayer()
+	{
+		if (NationId == 0)
+			return;
+
+		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		{
+			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			{
+				Location location = World.GetLoc(xLoc, yLoc);
+
+				location.SetFirm(FirmId);
+
+				if (location.IsExplored() && NationArray.player_recno != 0)
+				{
+					NationRelation relation = NationArray.player.get_relation(NationId);
+
+					//if( !remote.is_enable() )
+					//{
+					relation.has_contact = true;
+					//}
+					//else
+					//{
+					//if( !relation.has_contact && !relation.contact_msg_flag )
+					//{
+					//// packet structure : <player nation> <explored nation>
+					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
+					//*shortPtr = NationArray.player_recno;
+					//shortPtr[1] = nation_recno;
+					//relation.contact_msg_flag = 1;
+					//}
+					//}
+				}
+			}
+		}
+	}
+
 	public void InitName()
 	{
 		// if this firm does not have any short name, display the full name without displaying the town name together
@@ -379,6 +468,102 @@ public abstract class Firm : IIdObject
 
 		return str;
 	}
+
+	public virtual void NextDay()
+	{
+		if (NationId == 0)
+			return;
+
+		//------ think about updating link status -------//
+		//
+		// This part must be done here instead of in
+		// process_ai() because it will be too late to do
+		// it in process_ai() as the next_day() will call
+		// first and some wrong goods may be input to markets.
+		//
+		//-----------------------------------------------//
+
+		if (AIFirm)
+		{
+			// once 30 days or when the link has been changed.
+			if (Info.TotalDays % 30 == FirmId % 30 || !AiLinkChecked)
+			{
+				AIUpdateLinkStatus();
+				AiLinkChecked = true;
+			}
+		}
+
+		//-------- pay expenses ----------//
+
+		PayExpense();
+
+		//------- update loyalty --------//
+
+		if (Info.TotalDays % 30 == FirmId % 30)
+			UpdateLoyalty();
+
+		//-------- consume food --------//
+
+		if (!FirmRes[FirmType].live_in_town && Workers.Count > 0)
+			ConsumeFood();
+
+		//------ think worker migration -------//
+
+		if (Info.TotalDays % 30 == FirmId % 30)
+			ThinkWorkerMigrate();
+
+		//--------- repairing ----------//
+
+		ProcessRepair();
+
+		//------ catching spies -------//
+
+		if (Info.TotalDays % 30 == FirmId % 30)
+			SpyArray.CatchSpy(Spy.SPY_FIRM, FirmId);
+
+		//----- process workers from other town -----//
+
+		if (FirmRes[FirmType].live_in_town)
+		{
+			ProcessIndependentTownWorker();
+		}
+
+		//--- recheck no_neighbor_space after a period, there may be new space available now ---//
+
+		if (NoNeighborSpace && Info.TotalDays % 10 == FirmId % 10)
+		{
+			// whether it's FIRM_INN or not really doesn't matter, just any firm type will do
+			if (NationArray[NationId].find_best_firm_loc(FIRM_INN, LocX1, LocY1, out _, out _))
+				NoNeighborSpace = false;
+		}
+	}
+
+	public virtual void NextMonth()
+	{
+		//------ update nation power recno ------//
+
+		bool newShouldSetPower = GetShouldSetPower();
+
+		if (newShouldSetPower == ShouldSetPower)
+			return;
+
+		if (ShouldSetPower)
+			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
+
+		ShouldSetPower = newShouldSetPower;
+
+		if (ShouldSetPower)
+			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
+	}
+
+	public virtual void NextYear()
+	{
+		//------- post income data --------//
+
+		LastYearIncome = CurYearIncome;
+		CurYearIncome = 0.0;
+	}
+	
 
 	public int GetClosestTownNameId()
 	{
@@ -477,6 +662,7 @@ public abstract class Firm : IIdObject
 
 		return totalExpense;
 	}
+
 
 	public virtual void AssignUnit(int unitRecno)
 	{
@@ -1005,69 +1191,6 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 
-	public void SetWorldMatrix()
-	{
-		//--- if a nation set up a firm in a location that the player has explored, contact between the nation and the player is established ---//
-
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
-		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
-			{
-				World.GetLoc(xLoc, yLoc).SetFirm(FirmId);
-			}
-		}
-
-		//--- if a nation set up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
-		EstablishContactWithPlayer();
-
-		//------------ reveal new land ----------//
-
-		if (NationId == NationArray.player_recno ||
-		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
-		{
-			World.Unveil(LocX1, LocY1, LocX2, LocY2);
-			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
-		}
-
-		//-------- set should_set_power --------//
-
-		ShouldSetPower = GetShouldSetPower();
-
-		//---- set this town's influence on the map ----//
-
-		if (ShouldSetPower)
-			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
-	}
-
-	public void RestoreWorldMatrix()
-	{
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
-		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
-			{
-				World.GetLoc(xLoc, yLoc).RemoveFirm();
-			}
-		}
-
-		//---- restore this town's influence on the map ----//
-
-		if (ShouldSetPower) // no power region for harbor as it build on coast which cannot be set with power region
-			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;
-	}
-
 	public bool GetShouldSetPower()
 	{
 		bool shouldSetPower = true;
@@ -1097,43 +1220,6 @@ public abstract class Firm : IIdObject
 		}
 
 		return shouldSetPower;
-	}
-
-	public void EstablishContactWithPlayer()
-	{
-		if (NationId == 0)
-			return;
-
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
-		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
-			{
-				Location location = World.GetLoc(xLoc, yLoc);
-
-				location.SetFirm(FirmId);
-
-				if (location.IsExplored() && NationArray.player_recno != 0)
-				{
-					NationRelation relation = NationArray.player.get_relation(NationId);
-
-					//if( !remote.is_enable() )
-					//{
-					relation.has_contact = true;
-					//}
-					//else
-					//{
-					//if( !relation.has_contact && !relation.contact_msg_flag )
-					//{
-					//// packet structure : <player nation> <explored nation>
-					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-					//*shortPtr = NationArray.player_recno;
-					//shortPtr[1] = nation_recno;
-					//relation.contact_msg_flag = 1;
-					//}
-					//}
-				}
-			}
-		}
 	}
 
 	public void CompleteConstruction()
@@ -1277,6 +1363,7 @@ public abstract class Firm : IIdObject
 		if (FirmArray.selected_recno == FirmId)
 			Info.disp();
 	}
+
 
 	public void SetupLink()
 	{
@@ -1511,6 +1598,154 @@ public abstract class Firm : IIdObject
 
 		return FirmRes[FirmType].is_linkable_to_firm(firm.FirmType);
 	}
+
+	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
+	{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <firm recno> <link Id> <toggle Flag>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_FIRM, 3*sizeof(short));
+		//shortPtr[0] = firm_recno;
+		//shortPtr[1] = linkId;
+		//shortPtr[2] = toggleFlag;
+		//return;
+		//}
+
+		int linkedNationRecno = FirmArray[LinkedFirms[linkId - 1]].NationId;
+
+		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
+		bool sameNation = linkedNationRecno == NationId || linkedNationRecno == 0 || NationId == 0;
+
+		if (toggleFlag)
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1)
+				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
+			else
+				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;
+		}
+		else
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1)
+				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_DD;
+			else
+				LinkedFirmsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
+		}
+
+		//---------- if this firm is harbor, set FirmHarbor's parameter link_checked to 0
+
+		if (FirmType == FIRM_HARBOR)
+		{
+			FirmHarbor harbor = (FirmHarbor)this;
+			harbor.link_checked = false;
+		}
+
+		//------ set the linked flag of the opposite firm -----//
+
+		Firm firm = FirmArray[LinkedFirms[linkId - 1]];
+
+		//---------- if firm is harbor, set FirmHarbor's parameter link_checked to 0
+
+		if (firm.FirmType == FIRM_HARBOR)
+		{
+			FirmHarbor harbor = (FirmHarbor)firm;
+			harbor.link_checked = false;
+		}
+
+		for (int i = 0; i < firm.LinkedFirms.Count; i++)
+		{
+			if (firm.LinkedFirms[i] == FirmId)
+			{
+				if (toggleFlag)
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						firm.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
+					else
+						firm.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
+				}
+				else
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						firm.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
+					else
+						firm.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
+				}
+
+				break;
+			}
+		}
+	}
+
+	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
+	{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <firm recno> <link Id> <toggle Flag>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_TOWN, 3*sizeof(short));
+		//shortPtr[0] = firm_recno;
+		//shortPtr[1] = linkId;
+		//shortPtr[2] = toggleFlag;
+		//return;
+		//}
+
+		int linkedNationRecno = TownArray[LinkedTowns[linkId - 1]].NationId;
+
+		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
+		// town cannot decide whether it wants to link to Command Base or not, it is the Command Base which influences the town.
+		bool sameNation = linkedNationRecno == NationId || FirmType == FIRM_BASE;
+
+		if (toggleFlag)
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1)
+				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_EE;
+			else
+				LinkedTownsEnable[linkId - 1] |= InternalConstants.LINK_ED;
+		}
+		else
+		{
+			if ((sameNation && setBoth == 0) || setBoth == 1)
+				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_DD;
+			else
+				LinkedTownsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
+		}
+
+		//------ set the linked flag of the opposite town -----//
+
+		Town town = TownArray[LinkedTowns[linkId - 1]];
+
+		for (int i = 0; i < town.LinkedFirms.Count; i++)
+		{
+			if (town.LinkedFirms[i] == FirmId)
+			{
+				if (toggleFlag)
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						town.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
+					else
+						town.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
+				}
+				else
+				{
+					if ((sameNation && setBoth == 0) || setBoth == 1)
+						town.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
+					else
+						town.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
+				}
+
+				break;
+			}
+		}
+
+		//-------- update the town's influence --------//
+
+		if (town.NationId == 0)
+			town.UpdateTargetResistance();
+
+		//--- redistribute demand if a link to market place has been toggled ---//
+
+		if (FirmType == FIRM_MARKET)
+			TownArray.DistributeDemand();
+	}
+
 
 	public int FindSettleTown()
 	{
@@ -2318,101 +2553,6 @@ public abstract class Firm : IIdObject
 
 	public abstract void ProcessAI();
 
-	public virtual void NextDay()
-	{
-		if (NationId == 0)
-			return;
-
-		//------ think about updating link status -------//
-		//
-		// This part must be done here instead of in
-		// process_ai() because it will be too late to do
-		// it in process_ai() as the next_day() will call
-		// first and some wrong goods may be input to markets.
-		//
-		//-----------------------------------------------//
-
-		if (AIFirm)
-		{
-			// once 30 days or when the link has been changed.
-			if (Info.TotalDays % 30 == FirmId % 30 || !AiLinkChecked)
-			{
-				AIUpdateLinkStatus();
-				AiLinkChecked = true;
-			}
-		}
-
-		//-------- pay expenses ----------//
-
-		PayExpense();
-
-		//------- update loyalty --------//
-
-		if (Info.TotalDays % 30 == FirmId % 30)
-			UpdateLoyalty();
-
-		//-------- consume food --------//
-
-		if (!FirmRes[FirmType].live_in_town && Workers.Count > 0)
-			ConsumeFood();
-
-		//------ think worker migration -------//
-
-		if (Info.TotalDays % 30 == FirmId % 30)
-			ThinkWorkerMigrate();
-
-		//--------- repairing ----------//
-
-		ProcessRepair();
-
-		//------ catching spies -------//
-
-		if (Info.TotalDays % 30 == FirmId % 30)
-			SpyArray.CatchSpy(Spy.SPY_FIRM, FirmId);
-
-		//----- process workers from other town -----//
-
-		if (FirmRes[FirmType].live_in_town)
-		{
-			ProcessIndependentTownWorker();
-		}
-
-		//--- recheck no_neighbor_space after a period, there may be new space available now ---//
-
-		if (NoNeighborSpace && Info.TotalDays % 10 == FirmId % 10)
-		{
-			// whether it's FIRM_INN or not really doesn't matter, just any firm type will do
-			if (NationArray[NationId].find_best_firm_loc(FIRM_INN, LocX1, LocY1, out _, out _))
-				NoNeighborSpace = false;
-		}
-	}
-
-	public virtual void NextMonth()
-	{
-		//------ update nation power recno ------//
-
-		bool newShouldSetPower = GetShouldSetPower();
-
-		if (newShouldSetPower == ShouldSetPower)
-			return;
-
-		if (ShouldSetPower)
-			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
-
-		ShouldSetPower = newShouldSetPower;
-
-		if (ShouldSetPower)
-			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
-	}
-
-	public virtual void NextYear()
-	{
-		//------- post income data --------//
-
-		LastYearIncome = CurYearIncome;
-		CurYearIncome = 0.0;
-	}
-
 	public void MobilizeAllWorkers(int remoteAction)
 	{
 		//if( !remoteAction && remote.is_enable() )
@@ -2713,155 +2853,6 @@ public abstract class Firm : IIdObject
 		//}
 	}
 
-	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <link Id> <toggle Flag>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_FIRM, 3*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = linkId;
-		//shortPtr[2] = toggleFlag;
-		//return;
-		//}
-
-		int linkedNationRecno = FirmArray[LinkedFirms[linkId - 1]].NationId;
-
-		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
-		bool sameNation = linkedNationRecno == NationId || linkedNationRecno == 0 || NationId == 0;
-
-		if (toggleFlag)
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
-				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
-			else
-				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;
-		}
-		else
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
-				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_DD;
-			else
-				LinkedFirmsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
-		}
-
-		//---------- if this firm is harbor, set FirmHarbor's parameter link_checked to 0
-
-		if (FirmType == FIRM_HARBOR)
-		{
-			FirmHarbor harbor = (FirmHarbor)this;
-			harbor.link_checked = false;
-		}
-
-		//------ set the linked flag of the opposite firm -----//
-
-		Firm firm = FirmArray[LinkedFirms[linkId - 1]];
-
-		//---------- if firm is harbor, set FirmHarbor's parameter link_checked to 0
-
-		if (firm.FirmType == FIRM_HARBOR)
-		{
-			FirmHarbor harbor = (FirmHarbor)firm;
-			harbor.link_checked = false;
-		}
-
-		for (int i = 0; i < firm.LinkedFirms.Count; i++)
-		{
-			if (firm.LinkedFirms[i] == FirmId)
-			{
-				if (toggleFlag)
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
-					else
-						firm.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
-				}
-				else
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						firm.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
-					else
-						firm.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
-				}
-
-				break;
-			}
-		}
-	}
-
-	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, int setBoth = 0)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <link Id> <toggle Flag>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_TOWN, 3*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = linkId;
-		//shortPtr[2] = toggleFlag;
-		//return;
-		//}
-
-		int linkedNationRecno = TownArray[LinkedTowns[linkId - 1]].NationId;
-
-		// if one of the linked end is an indepdendent firm/nation, consider this link as a single nation link
-		// town cannot decide whether it wants to link to Command Base or not, it is the Command Base which influences the town.
-		bool sameNation = linkedNationRecno == NationId || FirmType == FIRM_BASE;
-
-		if (toggleFlag)
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
-				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_EE;
-			else
-				LinkedTownsEnable[linkId - 1] |= InternalConstants.LINK_ED;
-		}
-		else
-		{
-			if ((sameNation && setBoth == 0) || setBoth == 1)
-				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_DD;
-			else
-				LinkedTownsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
-		}
-
-		//------ set the linked flag of the opposite town -----//
-
-		Town town = TownArray[LinkedTowns[linkId - 1]];
-
-		for (int i = 0; i < town.LinkedFirms.Count; i++)
-		{
-			if (town.LinkedFirms[i] == FirmId)
-			{
-				if (toggleFlag)
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						town.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
-					else
-						town.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
-				}
-				else
-				{
-					if ((sameNation && setBoth == 0) || setBoth == 1)
-						town.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
-					else
-						town.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
-				}
-
-				break;
-			}
-		}
-
-		//-------- update the town's influence --------//
-
-		if (town.NationId == 0)
-			town.UpdateTargetResistance();
-
-		//--- redistribute demand if a link to market place has been toggled ---//
-
-		if (FirmType == FIRM_MARKET)
-			TownArray.DistributeDemand();
-	}
-
-	//---------- AI functions ----------//
-
 	public void ThinkRepair()
 	{
 		Nation ownNation = NationArray[NationId];
@@ -3029,7 +3020,7 @@ public abstract class Firm : IIdObject
 
 		//--- only when we have checked it three times and all say it needs a factory, we then build a factory ---//
 
-		if (++AiShouldBuildFactoryCount >= 3)
+		if (++AIShouldBuildFactoryCount >= 3)
 		{
 			int buildXLoc, buildYLoc;
 
@@ -3041,7 +3032,7 @@ public abstract class Firm : IIdObject
 
 			nation.add_action(buildXLoc, buildYLoc, LocX1, LocY1, Nation.ACTION_AI_BUILD_FIRM, FIRM_FACTORY);
 
-			AiShouldBuildFactoryCount = 0;
+			AIShouldBuildFactoryCount = 0;
 		}
 
 		return true;
@@ -3620,14 +3611,14 @@ public abstract class Firm : IIdObject
 
 				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
 
-				if (targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL)
+				if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
 					continue;
 
 				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
 				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.loyalty() - 40);
 
 				if (ConfigAdv.firm_migrate_stricter_rules
-					    ? targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL / 2
+					    ? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
 					    : targetAttractLevel > curAttractLevel)
 				{
 					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);

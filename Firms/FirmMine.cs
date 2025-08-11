@@ -150,7 +150,7 @@ public class FirmMine : Firm
         if (rc)
         {
             if (!ThinkBuildFactory(raw_id))
-                AiShouldBuildFactoryCount = 0; // reset the counter
+                AIShouldBuildFactoryCount = 0; // reset the counter
 
             think_build_market(); // don't build it in FirmMine, when it builds a factory the factory will build a mine.
         }
