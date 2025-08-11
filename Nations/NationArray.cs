@@ -361,12 +361,12 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.nation_recno == 0 || firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.NationId == 0 || firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			// 20 is the base military points for a unit, so the nation that has many more units can be reflected in the military rating
-			nationCombatLevelArray[firm.nation_recno - 1] += ((FirmCamp)firm).total_combat_level() +
-			                                                 ((firm.overseer_recno > 0 ? 1 : 0) + firm.workers.Count) *
+			nationCombatLevelArray[firm.NationId - 1] += ((FirmCamp)firm).total_combat_level() +
+			                                                 ((firm.OverseerId > 0 ? 1 : 0) + firm.Workers.Count) *
 			                                                 20;
 		}
 
@@ -419,16 +419,16 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.nation_recno == 0)
+			if (firm.NationId == 0)
 				continue;
 
-			if (firm.firm_id == Firm.FIRM_CAMP || firm.firm_id == Firm.FIRM_BASE)
+			if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
 			{
-				for (int j = firm.workers.Count - 1; j >= 0; j--)
+				for (int j = firm.Workers.Count - 1; j >= 0; j--)
 				{
-					if (firm.workers[j].race_id != 0)
+					if (firm.Workers[j].race_id != 0)
 					{
-						totalHumanCountArray[firm.nation_recno - 1]++;
+						totalHumanCountArray[firm.NationId - 1]++;
 					}
 				}
 			}

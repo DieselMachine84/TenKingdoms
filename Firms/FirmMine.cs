@@ -22,10 +22,10 @@ public class FirmMine : Firm
 
     public FirmMine()
     {
-        firm_skill_id = Skill.SKILL_MINING;
+        FirmSkillId = Skill.SKILL_MINING;
     }
 
-    protected override void init_derived()
+    protected override void InitDerived()
     {
         //---- scan for raw site in this firm's building location ----//
 
@@ -53,10 +53,10 @@ public class FirmMine : Firm
         //-------- increase AI raw count --------//
 
         if (raw_id != 0)
-            NationArray[nation_recno].raw_count_array[raw_id - 1]++;
+            NationArray[NationId].raw_count_array[raw_id - 1]++;
     }
 
-    protected override void deinit_derived()
+    protected override void DeinitDerived()
     {
         if (site_recno != 0)
         {
@@ -77,87 +77,87 @@ public class FirmMine : Firm
         //-------- decrease AI raw count --------//
 
         if (raw_id != 0)
-            NationArray[nation_recno].raw_count_array[raw_id - 1]--;
+            NationArray[NationId].raw_count_array[raw_id - 1]--;
     }
 
-    public override void change_nation(int newNationRecno)
+    public override void ChangeNation(int newNationRecno)
     {
         if (raw_id != 0)
         {
-            NationArray[nation_recno].raw_count_array[raw_id - 1]--;
+            NationArray[NationId].raw_count_array[raw_id - 1]--;
             NationArray[newNationRecno].raw_count_array[raw_id - 1]++;
         }
 
         //-------- change the nation of this firm now ----------//
 
-        base.change_nation(newNationRecno);
+        base.ChangeNation(newNationRecno);
     }
 
-    public override void next_day()
+    public override void NextDay()
     {
-        base.next_day();
+        base.NextDay();
 
         //----------- update population -------------//
 
-        recruit_worker();
+        RecruitWorker();
 
         //-------- train up the skill ------------//
 
-        update_worker();
+        UpdateWorker();
 
         //---------------------------------------//
 
         // produce raw materials once every 3 days
-        if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == firm_recno % GameConstants.PROCESS_GOODS_INTERVAL)
+        if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == FirmId % GameConstants.PROCESS_GOODS_INTERVAL)
         {
             produce_raw();
             set_next_output_firm(); // set next output firm
         }
     }
 
-    public override void next_month()
+    public override void NextMonth()
     {
         last_month_production = cur_month_production;
         cur_month_production = 0.0;
     }
 
-    public override void process_ai()
+    public override void ProcessAI()
     {
         //---- if the reserve has exhaust ----//
 
         if (raw_id == 0 || reserve_qty == 0)
         {
-            ai_del_firm();
+            AIDelFirm();
             return;
         }
 
         //------- recruit workers ---------//
 
-        if (Info.TotalDays % 15 == firm_recno % 15)
+        if (Info.TotalDays % 15 == FirmId % 15)
         {
-            if (workers.Count < MAX_WORKER)
-                ai_recruit_worker();
+            if (Workers.Count < MAX_WORKER)
+                AIRecruitWorker();
         }
 
         //---- think about building factory and market place to link to ----//
 
-        bool rc = Info.TotalDays % 30 == firm_recno % 30;
+        bool rc = Info.TotalDays % 30 == FirmId % 30;
 
         // if the nation doesn't have any factories yet, give building factory a higher priority
-        if (NationArray[nation_recno].ai_factory_array.Count == 0)
-            rc = Info.TotalDays % 5 == firm_recno % 5;
+        if (NationArray[NationId].ai_factory_array.Count == 0)
+            rc = Info.TotalDays % 5 == FirmId % 5;
 
         if (rc)
         {
-            if (!think_build_factory(raw_id))
-                ai_should_build_factory_count = 0; // reset the counter
+            if (!ThinkBuildFactory(raw_id))
+                AiShouldBuildFactoryCount = 0; // reset the counter
 
             think_build_market(); // don't build it in FirmMine, when it builds a factory the factory will build a mine.
         }
 
         //---- think about ways to increase productivity ----//
 
-        if (Info.TotalDays % 30 == firm_recno % 30)
+        if (Info.TotalDays % 30 == FirmId % 30)
             think_inc_productivity();
     }
 
@@ -166,23 +166,23 @@ public class FirmMine : Firm
         return last_month_production * (30 - Info.game_day) / 30 + cur_month_production;
     }
 
-    public override bool is_operating()
+    public override bool IsOperating()
     {
-        return productivity > 0 && reserve_qty > 0;
+        return Productivity > 0 && reserve_qty > 0;
     }
 
-    public override bool ai_has_excess_worker()
+    public override bool AIHasExcessWorker()
     {
         //--- if the actual production is lower than the productivity, than the firm must be under-capacity.
 
-        if (workers.Count > 4) // at least keep 4 workers
+        if (Workers.Count > 4) // at least keep 4 workers
         {
             // take 25 days instead of 30 days so there will be small chance of errors.
-            return stock_qty > max_stock_qty * 0.9 && production_30days() < productivity * 25;
+            return stock_qty > max_stock_qty * 0.9 && production_30days() < Productivity * 25;
         }
-        else if (workers.Count > 1)
+        else if (Workers.Count > 1)
         {
-            return reserve_qty < workers.Count * 200;
+            return reserve_qty < Workers.Count * 200;
         }
         else // don't leave if there is only one miner there
         {
@@ -199,11 +199,11 @@ public class FirmMine : Firm
 
         //------- calculate the productivity of the workers -----------//
 
-        calc_productivity();
+        CalcProductivity();
 
         //-------- mine raw materials -------//
 
-        double produceQty = 100.0 * productivity / 100.0;
+        double produceQty = 100.0 * Productivity / 100.0;
 
         produceQty = Math.Min(produceQty, reserve_qty);
         produceQty = Math.Min(produceQty, max_stock_qty - stock_qty);
@@ -228,8 +228,8 @@ public class FirmMine : Firm
             SiteArray.DeleteSite(site);
             site_recno = 0;
 
-            if (nation_recno == NationArray.player_recno)
-                NewsArray.raw_exhaust(raw_id, center_x, center_y);
+            if (NationId == NationArray.player_recno)
+                NewsArray.raw_exhaust(raw_id, LocCenterX, LocCenterY);
         }
     }
 
@@ -237,9 +237,9 @@ public class FirmMine : Firm
     {
         //---- scan for raw site in this firm's building location ----//
 
-        for (int yLoc = loc_y1; yLoc <= loc_y2; yLoc++)
+        for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
         {
-            for (int xLoc = loc_x1; xLoc <= loc_x2; xLoc++)
+            for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
             {
                 Location location = World.GetLoc(xLoc, yLoc);
 
@@ -255,15 +255,15 @@ public class FirmMine : Firm
 
     private void set_next_output_firm()
     {
-        for (int i = 0; i < linked_firm_array.Count; i++) // MAX tries
+        for (int i = 0; i < LinkedFirms.Count; i++) // MAX tries
         {
-            if (++next_output_link_id > linked_firm_array.Count) // next firm in the link
+            if (++next_output_link_id > LinkedFirms.Count) // next firm in the link
                 next_output_link_id = 1;
 
-            if (linked_firm_enable_array[next_output_link_id - 1] == InternalConstants.LINK_EE)
+            if (LinkedFirmsEnable[next_output_link_id - 1] == InternalConstants.LINK_EE)
             {
-                int firmRecno = linked_firm_array[next_output_link_id - 1];
-                int firmId = FirmArray[firmRecno].firm_id;
+                int firmRecno = LinkedFirms[next_output_link_id - 1];
+                int firmId = FirmArray[firmRecno].FirmType;
 
                 if (firmId == FIRM_FACTORY || firmId == FIRM_MARKET)
                 {
@@ -280,10 +280,10 @@ public class FirmMine : Firm
 
     private bool think_build_market()
     {
-        if (no_neighbor_space) // if there is no space in the neighbor area for building a new firm.
+        if (NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
             return false;
 
-        Nation nation = NationArray[nation_recno];
+        Nation nation = NationArray[NationId];
 
         //-- only build a new market when the mine has a larger supply than the demands from factories and market places
 
@@ -297,16 +297,16 @@ public class FirmMine : Firm
 
         //-- only build one market place next to this mine, check if there is any existing one --//
 
-        for (int i = 0; i < linked_firm_array.Count; i++)
+        for (int i = 0; i < LinkedFirms.Count; i++)
         {
-            Firm firm = FirmArray[linked_firm_array[i]];
-            if (firm.firm_id != FIRM_MARKET)
+            Firm firm = FirmArray[LinkedFirms[i]];
+            if (firm.FirmType != FIRM_MARKET)
                 continue;
 
             //------ if this market is our own one ------//
             // if it already has a raw material market, then no need to build a new one
             FirmMarket firmMarket = (FirmMarket)firm;
-            if (firmMarket.nation_recno == nation_recno && firmMarket.is_raw_market())
+            if (firmMarket.NationId == NationId && firmMarket.is_raw_market())
             {
                 return false;
             }
@@ -316,13 +316,13 @@ public class FirmMine : Firm
 
         int buildXLoc, buildYLoc;
 
-        if (!nation.find_best_firm_loc(FIRM_MARKET, loc_x1, loc_y1, out buildXLoc, out buildYLoc))
+        if (!nation.find_best_firm_loc(FIRM_MARKET, LocX1, LocY1, out buildXLoc, out buildYLoc))
         {
-            no_neighbor_space = true;
+            NoNeighborSpace = true;
             return false;
         }
 
-        nation.add_action(buildXLoc, buildYLoc, loc_x1, loc_y1, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
+        nation.add_action(buildXLoc, buildYLoc, LocX1, LocY1, Nation.ACTION_AI_BUILD_FIRM, FIRM_MARKET);
 
         return true;
     }

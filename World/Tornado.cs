@@ -107,12 +107,12 @@ public class Tornado : Sprite
         if (location.IsFirm())
         {
             Firm firm = FirmArray[location.FirmId()];
-            firm.hit_points -= attack_damage * 2;
-            if (firm.hit_points <= 0)
+            firm.HitPoints -= attack_damage * 2;
+            if (firm.HitPoints <= 0)
             {
-                firm.hit_points = 0.0;
+                firm.HitPoints = 0.0;
 
-                SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DIE");
+                SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 
                 FirmArray.DeleteFirm(location.FirmId());
             }

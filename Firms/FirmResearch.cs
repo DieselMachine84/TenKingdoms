@@ -9,47 +9,47 @@ public class FirmResearch : Firm
 
     public FirmResearch()
     {
-        firm_skill_id = Skill.SKILL_RESEARCH;
+        FirmSkillId = Skill.SKILL_RESEARCH;
     }
 
-    protected override void deinit_derived()
+    protected override void DeinitDerived()
     {
         terminate_research();
     }
 
-    public override void next_day()
+    public override void NextDay()
     {
-        base.next_day();
+        base.NextDay();
 
         //----------- update population -------------//
 
-        recruit_worker();
+        RecruitWorker();
 
         //-------- train up the skill ------------//
 
-        update_worker();
+        UpdateWorker();
 
         //--------- calculate productivity ----------//
 
-        calc_productivity();
+        CalcProductivity();
 
         //--------- process research ----------//
 
         process_research();
     }
 
-    public override void change_nation(int newNationRecno)
+    public override void ChangeNation(int newNationRecno)
     {
         terminate_research();
 
         //-------- change the nation of this firm now ----------//
 
-        base.change_nation(newNationRecno);
+        base.ChangeNation(newNationRecno);
     }
 
-    public override bool is_operating()
+    public override bool IsOperating()
     {
-        return productivity > 0 && tech_id != 0;
+        return Productivity > 0 && tech_id != 0;
     }
 
     public void start_research(int techId, int remoteAction)
@@ -76,7 +76,7 @@ public class FirmResearch : Firm
 
         //------- set TechRes parameters -------//
 
-        techInfo.inc_nation_is_researching(nation_recno);
+        techInfo.inc_nation_is_researching(NationId);
     }
 
     public void process_research()
@@ -89,12 +89,12 @@ public class FirmResearch : Firm
         TechInfo techInfo = TechRes[tech_id];
         double progressPoint;
 
-        if (Config.fast_build && nation_recno == NationArray.player_recno)
-            progressPoint = productivity / 100.0 + 0.5;
+        if (Config.fast_build && NationId == NationArray.player_recno)
+            progressPoint = Productivity / 100.0 + 0.5;
         else
-            progressPoint = productivity / 300.0;
+            progressPoint = Productivity / 300.0;
 
-        int newLevel = techInfo.get_nation_tech_level(nation_recno) + 1;
+        int newLevel = techInfo.get_nation_tech_level(NationId) + 1;
         double levelDivider = (newLevel + 1) / 2.0; // from 1.0 to 2.0
 
         // more complex and higher level technology will take longer to research
@@ -103,7 +103,7 @@ public class FirmResearch : Firm
         // techInfo.progress() will reset tech_id if the current research level is the MAX tech level, so we have to save it now
         int techId1 = tech_id;
 
-        if (techInfo.progress(nation_recno, progressPoint))
+        if (techInfo.progress(NationId, progressPoint))
         {
             if (tech_id != 0) // techInfo.progress() may have called terminate_research() if the tech level reaches the maximum
             {
@@ -113,13 +113,13 @@ public class FirmResearch : Firm
 
                 //----- research next level technology automatically -----//
 
-                if (!firm_ai) // for player's firm only
+                if (!AIFirm) // for player's firm only
                 {
-                    if (techInfo.get_nation_tech_level(nation_recno) < techInfo.max_tech_level)
+                    if (techInfo.get_nation_tech_level(NationId) < techInfo.max_tech_level)
                     {
                         start_research(techId2, InternalConstants.COMMAND_AUTO);
 
-                        if (firm_recno == FirmArray.selected_recno)
+                        if (FirmId == FirmArray.selected_recno)
                             Info.disp();
                     }
                 }
@@ -127,13 +127,13 @@ public class FirmResearch : Firm
 
             //--------- add news ---------//
 
-            if (own_firm())
+            if (OwnFirm())
             {
-                NewsArray.tech_researched(techId1, TechRes[techId1].get_nation_tech_level(nation_recno));
+                NewsArray.tech_researched(techId1, TechRes[techId1].get_nation_tech_level(NationId));
 
-                SERes.far_sound(center_x, center_y, 1, 'F', firm_id, "FINS", 'S',
+                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
                     UnitRes[TechRes[techId1].unit_id].sprite_id);
-                if (firm_recno == FirmArray.selected_recno)
+                if (FirmId == FirmArray.selected_recno)
                     Info.disp();
             }
         }
@@ -144,7 +144,7 @@ public class FirmResearch : Firm
         if (tech_id == 0)
             return;
 
-        TechRes[tech_id].dec_nation_is_researching(nation_recno);
+        TechRes[tech_id].dec_nation_is_researching(NationId);
 
         tech_id = 0; // reset parameters
         complete_percent = 0.0;
@@ -154,13 +154,13 @@ public class FirmResearch : Firm
     {
         int techId = tech_id; // backup tech_id
 
-        TechRes[tech_id].dec_nation_is_researching(nation_recno);
+        TechRes[tech_id].dec_nation_is_researching(NationId);
 
         tech_id = 0; // reset parameters
         complete_percent = 0.0;
     }
 
-    public override void process_ai()
+    public override void ProcessAI()
     {
         //---- think about which technology to research ----//
 
@@ -170,15 +170,15 @@ public class FirmResearch : Firm
         //------- recruit workers ---------//
 
         //TODO do not recruit workers. Sell firm if it is not linked to a village
-        if (Info.TotalDays % 15 == firm_recno % 15)
+        if (Info.TotalDays % 15 == FirmId % 15)
         {
-            if (workers.Count < MAX_WORKER)
-                ai_recruit_worker();
+            if (Workers.Count < MAX_WORKER)
+                AIRecruitWorker();
         }
 
         //----- think about closing down this firm -----//
 
-        if (Info.TotalDays % 30 == firm_recno % 30)
+        if (Info.TotalDays % 30 == FirmId % 30)
         {
             if (think_del())
                 return;
@@ -195,9 +195,9 @@ public class FirmResearch : Firm
         {
             TechInfo techInfo = TechRes[techId];
 
-            if (techInfo.can_research(nation_recno))
+            if (techInfo.can_research(NationId))
             {
-                int curRating = 100 + (techInfo.is_nation_researching(nation_recno) ? 1 : 0) * 20;
+                int curRating = 100 + (techInfo.is_nation_researching(NationId) ? 1 : 0) * 20;
 
                 if (curRating > bestRating || (curRating == bestRating && Misc.Random(2) == 0))
                 {
@@ -218,28 +218,28 @@ public class FirmResearch : Firm
         //----- if all technologies have been researched -----//
 
         // all technologies have been researched
-        if (NationArray[nation_recno].total_tech_level() == TechRes.total_tech_level)
+        if (NationArray[NationId].total_tech_level() == TechRes.total_tech_level)
         {
-            ai_del_firm();
+            AIDelFirm();
             return true;
         }
 
         //----------------------------------------------// 
 
-        if (workers.Count > 0)
+        if (Workers.Count > 0)
             return false;
 
         //-- check whether the firm is linked to any towns or not --//
 
-        for (int i = 0; i < linked_town_array.Count; i++)
+        for (int i = 0; i < LinkedTowns.Count; i++)
         {
-            if (linked_town_enable_array[i] == InternalConstants.LINK_EE)
+            if (LinkedTownsEnable[i] == InternalConstants.LINK_EE)
                 return false;
         }
 
         //------------------------------------------------//
 
-        ai_del_firm();
+        AIDelFirm();
 
         return true;
     }

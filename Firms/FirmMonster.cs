@@ -69,7 +69,7 @@ public class FirmMonster : Firm
 	{
 	}
 
-	protected override void init_derived()
+	protected override void InitDerived()
 	{
 		monster_king = new MonsterInFirm();
 
@@ -92,7 +92,7 @@ public class FirmMonster : Firm
 		monster_aggressiveness = 20 + Misc.Random(50); // 20 to 70
 	}
 
-	protected override void deinit_derived()
+	protected override void DeinitDerived()
 	{
 		//-------- mobilize all monsters in the firm --------//
 
@@ -109,11 +109,11 @@ public class FirmMonster : Firm
 
 		int goldAmount = 800 * (MonsterRes[monster_id].level * 30 + Misc.Random(50)) / 100;
 
-		SiteArray.AddSite(center_x, center_y, Site.SITE_GOLD_COIN, goldAmount);
+		SiteArray.AddSite(LocCenterX, LocCenterY, Site.SITE_GOLD_COIN, goldAmount);
 		SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
 	}
 
-	public override string firm_name()
+	public override string FirmName()
 	{
 		return MonsterFirmName[monster_id - 1];
 	}
@@ -123,25 +123,25 @@ public class FirmMonster : Firm
 		return defending_king_count + defending_general_count + defending_soldier_count;
 	}
 
-	public override void next_day()
+	public override void NextDay()
 	{
 		validate_patrol_unit();
 
 		//---- the monster boss recruit new monsters ----//
 
-		if (Info.TotalDays % 10 == firm_recno % 10)
+		if (Info.TotalDays % 10 == FirmId % 10)
 			recruit_soldier();
 
 		//----- monsters recover hit points -------//
 
-		if (Info.TotalDays % 15 == firm_recno % 15) // once a week
+		if (Info.TotalDays % 15 == FirmId % 15) // once a week
 			recover_hit_points();
 
 		//------ monster thinks about expansion -------//
 
 		if (Config.monster_type == Config.OPTION_MONSTER_OFFENSIVE)
 		{
-			if (Info.TotalDays % 30 == firm_recno % 30 && Misc.Random(3) == 0)
+			if (Info.TotalDays % 30 == FirmId % 30 && Misc.Random(3) == 0)
 				recruit_general();
 			/*
 			if( info.game_date%90 == firm_recno%90 )
@@ -152,7 +152,7 @@ public class FirmMonster : Firm
 
 			// only start attacking 3 years after the game starts so the human can build up things
 			if (Info.game_date > Info.game_start_date.AddDays(1000.0) &&
-			    Info.TotalDays % 30 == firm_recno % 30 && fryhtan_random_attack())
+			    Info.TotalDays % 30 == FirmId % 30 && fryhtan_random_attack())
 			{
 				think_attack_human();
 			}
@@ -160,7 +160,7 @@ public class FirmMonster : Firm
 			//--------- think expansion ---------//
 
 			// it will expand slower when there are already a lot of the monster structures on the map
-			if (Info.TotalDays % 180 == firm_recno % 180 &&
+			if (Info.TotalDays % 180 == FirmId % 180 &&
 			    Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * 10) == 0)
 			{
 				think_expansion();
@@ -168,11 +168,11 @@ public class FirmMonster : Firm
 		}
 	}
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
 	}
 
-	public override void assign_unit(int unitRecno)
+	public override void AssignUnit(int unitRecno)
 	{
 		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
 
@@ -201,7 +201,7 @@ public class FirmMonster : Firm
 		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
 
 		// can assign if the build code are the same
-		return FirmRes.get_build(firm_build_id).build_code == MonsterRes[unit.MonsterId].firm_build_code;
+		return FirmRes.get_build(FirmBuildId).build_code == MonsterRes[unit.MonsterId].firm_build_code;
 	}
 
 	public void set_king(int monsterId, int combatLevel)
@@ -440,7 +440,7 @@ public class FirmMonster : Firm
 		return totalCombatLevel;
 	}
 
-	public override void being_attacked(int attackerUnitRecno)
+	public override void BeingAttacked(int attackerUnitRecno)
 	{
 		int attackerNationRecno = UnitArray[attackerUnitRecno].NationId;
 
@@ -508,7 +508,7 @@ public class FirmMonster : Firm
 
 			if (unit.InMonsterDefendMode() &&
 			    unit.ActionMisc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO &&
-			    unit.ActionMiscParam == firm_recno)
+			    unit.ActionMiscParam == FirmId)
 			{
 				unit.ClearMonsterDefendMode();
 				((UnitMonster)unit).set_monster_action_mode(UnitConstants.MONSTER_ACTION_STOP);
@@ -516,7 +516,7 @@ public class FirmMonster : Firm
 
 			//--- if this unit belongs to this firm, reset its association with this firm ---//
 
-			if (unit.UnitMode == UnitConstants.UNIT_MODE_MONSTER && unit.UnitModeParam == firm_recno)
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_MONSTER && unit.UnitModeParam == FirmId)
 			{
 				unit.UnitModeParam = 0;
 			}
@@ -625,7 +625,7 @@ public class FirmMonster : Firm
 
 		//------- locate a space first --------//
 
-		int xLoc = center_x, yLoc = center_y;
+		int xLoc = LocCenterX, yLoc = LocCenterY;
 		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
 
 		if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
@@ -640,7 +640,7 @@ public class FirmMonster : Firm
 
 		UnitMonster monster = (UnitMonster)unit;
 
-		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, firm_recno);
+		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, FirmId);
 		monster.SetCombatLevel(combatLevel);
 		monster.MonsterId = monsterId;
 		monster.set_monster_action_mode(current_monster_action_mode);
@@ -653,14 +653,14 @@ public class FirmMonster : Firm
 		//-----------------------------------------------------//
 		// enable unit defend mode
 		//-----------------------------------------------------//
-		if (firm_recno != 0) // 0 when firm is ready to be deleted
+		if (FirmId != 0) // 0 when firm is ready to be deleted
 		{
 			monster.Stop2();
 			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
 			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
 
 			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
-			monster.ActionMiscParam = firm_recno;
+			monster.ActionMiscParam = FirmId;
 		}
 
 		return monster.SpriteId;
@@ -692,9 +692,9 @@ public class FirmMonster : Firm
 		//------ look for neighbors to attack ------//
 
 		int xOffset = 0, yOffset = 0;
-		int xLoc = center_x, yLoc = center_y;
+		int xLoc = LocCenterX, yLoc = LocCenterY;
 		int attackFlag = 0;
-		FirmInfo firmInfo = FirmRes[firm_id];
+		FirmInfo firmInfo = FirmRes[FirmType];
 
 		int scanLocWidth = GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE * 2;
 		int scanLocHeight = GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE * 2;
@@ -705,8 +705,8 @@ public class FirmMonster : Firm
 		{
 			Misc.cal_move_around_a_point(i, scanLocWidth, scanLocHeight, out xOffset, out yOffset);
 
-			xLoc = center_x + xOffset;
-			yLoc = center_y + yOffset;
+			xLoc = LocCenterX + xOffset;
+			yLoc = LocCenterY + yOffset;
 
 			xLoc = Math.Max(0, xLoc);
 			xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
@@ -719,12 +719,12 @@ public class FirmMonster : Firm
 			if (location.IsFirm())
 			{
 				Firm firm = FirmArray[location.FirmId()];
-				if (firm.nation_recno != 0)
+				if (firm.NationId != 0)
 				{
-					targetNation = firm.nation_recno;
+					targetNation = firm.NationId;
 					attackFlag = 1;
-					xLoc = firm.loc_x1;
-					yLoc = firm.loc_y1;
+					xLoc = firm.LocX1;
+					yLoc = firm.LocY1;
 					break;
 				}
 			}
@@ -816,7 +816,7 @@ public class FirmMonster : Firm
 		List<Firm> targetFirms = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.nation_recno != targetNationRecno || firm.region_id != region_id)
+			if (firm.NationId != targetNationRecno || firm.RegionId != RegionId)
 				continue;
 
 			targetFirms.Add(firm);
@@ -826,8 +826,8 @@ public class FirmMonster : Firm
 		{
 			int selectedFirmIndex = Misc.Random(targetFirms.Count);
 			Firm selectedFirm = targetFirms[selectedFirmIndex];
-			targetXLoc = selectedFirm.loc_x1;
-			targetYLoc = selectedFirm.loc_y1;
+			targetXLoc = selectedFirm.LocX1;
+			targetYLoc = selectedFirm.LocY1;
 		}
 
 		//------ look for neighbors to attack ------//
@@ -922,10 +922,10 @@ public class FirmMonster : Firm
 		MonsterInfo monsterInfo = MonsterRes[monster_king.monster_id];
 		FirmInfo firmInfo = FirmRes[FIRM_MONSTER];
 		int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
-		int xLoc1 = Math.Max(0, loc_x1 - GameConstants.EXPAND_FIRM_DISTANCE);
-		int yLoc1 = Math.Max(0, loc_y1 - GameConstants.EXPAND_FIRM_DISTANCE);
-		int xLoc2 = Math.Min(GameConstants.MapSize - 1, loc_x2 + GameConstants.EXPAND_FIRM_DISTANCE);
-		int yLoc2 = Math.Min(GameConstants.MapSize - 1, loc_y2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int xLoc1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
+		int yLoc1 = Math.Max(0, LocY1 - GameConstants.EXPAND_FIRM_DISTANCE);
+		int xLoc2 = Math.Min(GameConstants.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int yLoc2 = Math.Min(GameConstants.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
 
 		if (!World.LocateSpaceRandom(ref xLoc1, ref yLoc1, xLoc2, yLoc2,
 			    firmInfo.loc_width + GameConstants.FREE_SPACE_DISTANCE * 2,

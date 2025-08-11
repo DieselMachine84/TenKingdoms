@@ -74,7 +74,7 @@ public class FirmArray : DynArray<Firm>
 		//---------- create and build the firm -------------//
 
 		Firm firm = CreateNew(firmId);
-		firm.init(nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
+		firm.Init(nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
 
 		//------ pay the land cost to the nation that owns the land ------//
 
@@ -83,13 +83,13 @@ public class FirmArray : DynArray<Firm>
 			NationArray[nationRecno].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmId].setup_cost);
 		}
 
-		return firm.firm_recno;
+		return firm.FirmId;
 	}
 
 	public void DeleteFirm(Firm firm)
 	{
-		firm.deinit(); // we must call deinit() first
-		Delete(firm.firm_recno);
+		firm.Deinit(); // we must call deinit() first
+		Delete(firm.FirmId);
 	}
 
 	public void DeleteFirm(int recno)
@@ -109,30 +109,30 @@ public class FirmArray : DynArray<Firm>
 		{
 			//-------- process visibility -----------//
 
-			if (firm.nation_recno == NationArray.player_recno ||
-			    (firm.nation_recno != 0 && NationArray[firm.nation_recno].is_allied_with_player))
+			if (firm.NationId == NationArray.player_recno ||
+			    (firm.NationId != 0 && NationArray[firm.NationId].is_allied_with_player))
 			{
-				World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2,
+				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
 					GameConstants.EXPLORE_RANGE - 1);
 			}
 
 			//--------- process and process_ai firms ----------//
 
-			if (firm.under_construction)
+			if (firm.UnderConstruction)
 			{
-				firm.process_construction();
+				firm.ProcessConstruction();
 			}
 			else
 			{
 				// only process each firm once per day
-				if (firm.firm_recno % InternalConstants.FRAMES_PER_DAY ==
+				if (firm.FirmId % InternalConstants.FRAMES_PER_DAY ==
 				    Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
 				{
-					firm.next_day();
+					firm.NextDay();
 
 					//-- if the hit points drop to zero, the firm should be deleted --//
 
-					if (firm.hit_points <= 0.0)
+					if (firm.HitPoints <= 0.0)
 					{
 						firmsToDelete.Add(firm);
 						continue;
@@ -140,30 +140,30 @@ public class FirmArray : DynArray<Firm>
 
 					//--------- process AI ------------//
 
-					if (firm.firm_ai)
+					if (firm.AIFirm)
 					{
-						firm.process_common_ai();
+						firm.ProcessCommonAI();
 
-						firm.process_ai();
+						firm.ProcessAI();
 
-						if (IsDeleted(firm.firm_recno)) // the firm may have been deleted in process_ai()
+						if (IsDeleted(firm.FirmId)) // the firm may have been deleted in process_ai()
 							continue;
 					}
 
 					//--- think about having other nations capturing this firm ----//
 
 					// this is not limited to ai firms only, it is called on all firms as AI can capture other player's firm
-					if (Info.TotalDays % 60 == firm.firm_recno % 60)
-						firm.think_capture();
+					if (Info.TotalDays % 60 == firm.FirmId % 60)
+						firm.ThinkCapture();
 				}
 			}
 
-			firm.process_animation();
+			firm.ProcessAnimation();
 		}
 
 		foreach (Firm firm in firmsToDelete)
 		{
-			SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DEST");
+			SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DEST");
 			DeleteFirm(firm);
 		}
 	}
@@ -172,9 +172,9 @@ public class FirmArray : DynArray<Firm>
 	{
 		foreach (Firm firm in this)
 		{
-			if (!firm.under_construction)
+			if (!firm.UnderConstruction)
 			{
-				firm.next_month();
+				firm.NextMonth();
 			}
 		}
 	}
@@ -183,9 +183,9 @@ public class FirmArray : DynArray<Firm>
 	{
 		foreach (Firm firm in this)
 		{
-			if (!firm.under_construction)
+			if (!firm.UnderConstruction)
 			{
-				firm.next_year();
+				firm.NextYear();
 			}
 		}
 	}
@@ -195,7 +195,7 @@ public class FirmArray : DynArray<Firm>
 		if (selected_recno == 0)
 			return;
 
-		int nationRecno = this[selected_recno].nation_recno;
+		int nationRecno = this[selected_recno].NationId;
 		var enumerator = (seekDir >= 0) ? EnumerateAll(selected_recno, true) : EnumerateAll(selected_recno, false);
 
 		foreach (int recNo in enumerator)
@@ -204,21 +204,21 @@ public class FirmArray : DynArray<Firm>
 
 			//-------- if are of the same nation --------//
 
-			if (sameNation && firm.nation_recno != nationRecno)
+			if (sameNation && firm.NationId != nationRecno)
 				continue;
 
 			//--- check if the location of this town has been explored ---//
 
-			if (!World.GetLoc(firm.center_x, firm.center_y).IsExplored())
+			if (!World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsExplored())
 				continue;
 
 			//---------------------------------//
 
 			Power.reset_selection();
-			selected_recno = firm.firm_recno;
-			firm.sort_worker();
+			selected_recno = firm.FirmId;
+			firm.SortWorkers();
 
-			World.GoToLocation(firm.center_x, firm.center_y);
+			World.GoToLocation(firm.LocCenterX, firm.LocCenterY);
 			return;
 		}
 	}

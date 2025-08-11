@@ -220,7 +220,7 @@ public class News
 			{
 				Firm firm = FirmArray[loc_type_para];
 
-				rc = firm.center_x == loc_x && firm.center_y == loc_y;
+				rc = firm.LocCenterX == loc_x && firm.LocCenterY == loc_y;
 			}
 		}
 		else if (loc_type == NEWS_LOC_UNIT)

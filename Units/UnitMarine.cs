@@ -132,7 +132,7 @@ public class UnitMarine : Unit
 
 			Firm firm = FirmArray[stop.firm_recno];
 
-			if (!can_set_stop(firm.firm_recno) || firm.loc_x1 != stop.firm_loc_x1 || firm.loc_y1 != stop.firm_loc_y1)
+			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
 			{
 				stop.firm_recno = 0;
 				stop_defined_num--;
@@ -238,7 +238,7 @@ public class UnitMarine : Unit
 		{
 			stop = stop_array[i];
 			Firm firm = FirmArray[stop.firm_recno];
-			if (firm.nation_recno == NationId)
+			if (firm.NationId == NationId)
 			{
 				ourFirmExist = true;
 				break;
@@ -274,7 +274,7 @@ public class UnitMarine : Unit
 			else
 			{
 				Firm firm = FirmArray[stop.firm_recno];
-				int dist = Misc.points_distance(xLoc, yLoc, firm.center_x, firm.center_y);
+				int dist = Misc.points_distance(xLoc, yLoc, firm.LocCenterX, firm.LocCenterY);
 
 				if (dist < minDist)
 				{
@@ -302,7 +302,7 @@ public class UnitMarine : Unit
 		{
 			Firm firm = FirmArray[stop.firm_recno];
 
-			if (!can_set_stop(firm.firm_recno) || firm.loc_x1 != stop.firm_loc_x1 || firm.loc_y1 != stop.firm_loc_y1)
+			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
 			{
 				needUpdate = true;
 			}
@@ -359,7 +359,7 @@ public class UnitMarine : Unit
 				}
 
 				Firm firm = FirmArray[stop.firm_recno];
-				if (firm.loc_x1 != stop.firm_loc_x1 || firm.loc_y1 != stop.firm_loc_y1)
+				if (firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
 				{
 					update_stop_list();
 					return;
@@ -368,8 +368,8 @@ public class UnitMarine : Unit
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
 				int moveStep = MoveStepCoeff();
-				if (curXLoc < firm.loc_x1 - moveStep || curXLoc > firm.loc_x2 + moveStep || curYLoc < firm.loc_y1 - moveStep ||
-				    curYLoc > firm.loc_y2 + moveStep)
+				if (curXLoc < firm.LocX1 - moveStep || curXLoc > firm.LocX2 + moveStep || curYLoc < firm.LocY1 - moveStep ||
+				    curYLoc > firm.LocY2 + moveStep)
 				{
 					if (!IsVisible())
 						return; // may get here if player manually ordered ship to dock
@@ -381,7 +381,7 @@ public class UnitMarine : Unit
 					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
 					journey_status = ON_WAY_TO_FIRM;*/
 					if (CurAction == SPRITE_IDLE)
-						MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
+						MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 					else
 						journey_status = InternalConstants.ON_WAY_TO_FIRM;
 					//#### end alex 6/10 ####//
@@ -391,7 +391,7 @@ public class UnitMarine : Unit
 					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
 					{
 						journey_status = InternalConstants.SURROUND_FIRM;
-						if (NationArray[NationId].get_relation(firm.nation_recno).trade_treaty)
+						if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
 						{
 							if (wait_count <= 0)
 							{
@@ -572,7 +572,7 @@ public class UnitMarine : Unit
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
 
 		if (autoMode != 0) // move to next firm only if autoMode is on
-			MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+			MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 	}
 
 	public void ship_on_way()
@@ -588,12 +588,12 @@ public class UnitMarine : Unit
 			if (!FirmArray.IsDeleted(shipStop.firm_recno))
 			{
 				firm = FirmArray[shipStop.firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				nextXLoc = NextLocX;
 				nextYLoc = NextLocY;
 				moveStep = MoveStepCoeff();
-				if (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
-				    nextYLoc <= firm.loc_y2 + moveStep)
+				if (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
+				    nextYLoc <= firm.LocY2 + moveStep)
 					journey_status = InternalConstants.SURROUND_FIRM;
 
 				return;
@@ -610,7 +610,7 @@ public class UnitMarine : Unit
 			if (stop_defined_num != 0) // move to next stop
 			{
 				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 			}
 
 			return;
@@ -624,8 +624,8 @@ public class UnitMarine : Unit
 		moveStep = MoveStepCoeff();
 		if (journey_status == InternalConstants.SURROUND_FIRM ||
 		    (nextXLoc == MoveToLocX && nextYLoc == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
-		     (nextXLoc >= firm.loc_x1 - moveStep && nextXLoc <= firm.loc_x2 + moveStep && nextYLoc >= firm.loc_y1 - moveStep &&
-		      nextYLoc <= firm.loc_y2 + moveStep)))
+		     (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
+		      nextYLoc <= firm.LocY2 + moveStep)))
 		{
 			extra_move_in_beach = NO_EXTRA_MOVE; // since the ship may enter the firm in odd location		
 
@@ -636,7 +636,7 @@ public class UnitMarine : Unit
 			//-------------------------------------------------------//
 			cur_firm_recno = shipStop.firm_recno;
 
-			if (NationArray[NationId].get_relation(firm.nation_recno).trade_treaty)
+			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
 			{
 				get_harbor_linked_firm_info();
 				harbor_unload_goods();
@@ -667,7 +667,7 @@ public class UnitMarine : Unit
 				// blocked by something, go to the destination again
 				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
 				//----------------------------------------------------//
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -689,8 +689,8 @@ public class UnitMarine : Unit
 		for (int i = 0; i < countLimit; i++)
 		{
 			Misc.cal_move_around_a_point(count, firmWidth, firmHeight, out int xOffset, out int yOffset);
-			checkXLoc = firm.loc_x1 + xOffset;
-			checkYLoc = firm.loc_y1 + yOffset;
+			checkXLoc = firm.LocX1 + xOffset;
+			checkYLoc = firm.LocY1 + yOffset;
 
 			//TODO %2 == 0
 			if (checkXLoc % 2 != 0 || checkYLoc % 2 != 0 ||
@@ -779,10 +779,10 @@ public class UnitMarine : Unit
 			{
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				if (market.nation_recno != NationId)
+				if (market.NationId != NationId)
 					continue; // don't unload goods to market of other nation
 
-				if (market.ai_status == Firm.MARKET_FOR_SELL)
+				if (market.AIStatus == Firm.MARKET_FOR_SELL)
 					continue; // clearing the market stock, so no unloading
 
 				//---------- check the demand of this goods in the market ---------//
@@ -881,10 +881,10 @@ public class UnitMarine : Unit
 			{
 				factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
 
-				if (factory.nation_recno != NationId)
+				if (factory.NationId != NationId)
 					continue; // don't unload goods to factory of other nation
 
-				if (factory.ai_status == Firm.FACTORY_RELOCATE)
+				if (factory.AIStatus == Firm.FACTORY_RELOCATE)
 					continue; // clearing the factory stock, so no unloading
 
 				if (factory.product_raw_id - 1 == i)
@@ -902,10 +902,10 @@ public class UnitMarine : Unit
 			{
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				if (market.nation_recno != NationId)
+				if (market.NationId != NationId)
 					continue; // don't unload goods to market of other nation
 
-				if (market.ai_status == Firm.MARKET_FOR_SELL)
+				if (market.AIStatus == Firm.MARKET_FOR_SELL)
 					continue; // clearing the market stock, so no unloading
 
 				//---------- check the demand of this goods in the market ---------//
@@ -1087,12 +1087,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (factory.nation_recno != NationId)
+				if (factory.NationId != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (factory.nation_recno == NationId)
+				if (factory.NationId == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1123,12 +1123,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (market.nation_recno != NationId)
+				if (market.NationId != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (market.nation_recno == NationId)
+				if (market.NationId == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1164,11 +1164,11 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)(factory.stock_qty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (factory.nation_recno != NationId)
+			if (factory.NationId != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.nation_recno, loadQty * GameConstants.PRODUCT_PRICE);
+					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
 			factory.stock_qty -= loadQty;
@@ -1197,11 +1197,11 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)marketProduct.stock_qty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (market.nation_recno != NationId)
+			if (market.NationId != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, market.nation_recno, loadQty * GameConstants.PRODUCT_PRICE);
+					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
 			marketProduct.stock_qty -= loadQty;
@@ -1249,12 +1249,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (mine.nation_recno != NationId)
+				if (mine.NationId != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (mine.nation_recno == NationId)
+				if (mine.NationId == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1285,12 +1285,12 @@ public class UnitMarine : Unit
 
 			if (considerMode != 0)
 			{
-				if (market.nation_recno != NationId)
+				if (market.NationId != NationId)
 					continue; // not our market
 			}
 			else
 			{
-				if (market.nation_recno == NationId)
+				if (market.NationId == NationId)
 					continue; // not consider our market for this mode
 			}
 
@@ -1326,11 +1326,11 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)(mine.stock_qty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (mine.nation_recno != NationId)
+			if (mine.NationId != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_RAW, mine.nation_recno, loadQty * GameConstants.RAW_PRICE);
+					nation.import_goods(NationBase.IMPORT_RAW, mine.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
 			mine.stock_qty -= loadQty;
@@ -1359,11 +1359,11 @@ public class UnitMarine : Unit
 			loadQty = Math.Max((int)marketRaw.stock_qty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
-			if (market.nation_recno != NationId)
+			if (market.NationId != NationId)
 			{
 				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_RAW, market.nation_recno, loadQty * GameConstants.RAW_PRICE);
+					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
 			marketRaw.stock_qty -= loadQty;
@@ -1599,13 +1599,13 @@ public class UnitMarine : Unit
 	{
 		Firm firm = FirmArray[firmRecno];
 
-		if (firm.under_construction)
+		if (firm.UnderConstruction)
 			return false;
 
-		if (firm.firm_id != Firm.FIRM_HARBOR)
+		if (firm.FirmType != Firm.FIRM_HARBOR)
 			return false;
 
-		return NationArray[NationId].get_relation(firm.nation_recno).trade_treaty;
+		return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
 	}
 
 	public void extra_move()
@@ -1764,7 +1764,7 @@ public class UnitMarine : Unit
 			return;
 
 		Firm firm = FirmArray[loc.FirmId()];
-		if (!can_set_stop(firm.firm_recno))
+		if (!can_set_stop(firm.FirmId))
 			return;
 
 		//-------------------------------------------------------//
@@ -1795,15 +1795,15 @@ public class UnitMarine : Unit
 		// set the station recno of the stop
 		//-------------------------------------------------------//
 		ShipStop shipStop = stop_array[stopId - 1];
-		if (shipStop.firm_recno == firm.firm_recno)
+		if (shipStop.firm_recno == firm.FirmId)
 		{
 			return; // same stop as before
 		}
 
 		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].firm_recno : 0;
-		shipStop.firm_recno = firm.firm_recno;
-		shipStop.firm_loc_x1 = firm.loc_x1;
-		shipStop.firm_loc_y1 = firm.loc_y1;
+		shipStop.firm_recno = firm.FirmId;
+		shipStop.firm_loc_x1 = firm.LocX1;
+		shipStop.firm_loc_y1 = firm.LocY1;
 
 		//-------------------------------------------------------//
 		// set pick up selection based on availability
@@ -1811,12 +1811,12 @@ public class UnitMarine : Unit
 		shipStop.pick_up_set_auto();
 
 		int goodsId = 0, goodsNum = 0;
-		for (int i = harbor.linked_firm_array.Count - 1; i >= 0 && goodsNum < 2; --i)
+		for (int i = harbor.LinkedFirms.Count - 1; i >= 0 && goodsNum < 2; --i)
 		{
 			int id = 0;
-			firm = FirmArray[harbor.linked_firm_array[i]];
+			firm = FirmArray[harbor.LinkedFirms[i]];
 
-			switch (firm.firm_id)
+			switch (firm.FirmType)
 			{
 				case Firm.FIRM_MINE:
 					id = ((FirmMine)firm).raw_id;
@@ -1885,7 +1885,7 @@ public class UnitMarine : Unit
 			if (newStopFirmRecno != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.loc_x1, firm.loc_y1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -2097,7 +2097,7 @@ public class UnitMarine : Unit
 
 			//----------------------------------------------//
 
-			int nationRecno = FirmArray[stop_array[i - 1].firm_recno].nation_recno;
+			int nationRecno = FirmArray[stop_array[i - 1].firm_recno].NationId;
 
 			if (nation.get_relation_status(nationRecno) == NationBase.NATION_HOSTILE)
 			{
@@ -2121,7 +2121,7 @@ public class UnitMarine : Unit
 			if (firmHarbor.sea_region_id != curRegionId)
 				continue;
 
-			int curRating = World.DistanceRating(curXLoc, curYLoc, firmHarbor.center_x, firmHarbor.center_y);
+			int curRating = World.DistanceRating(curXLoc, curYLoc, firmHarbor.LocCenterX, firmHarbor.LocCenterY);
 
 			curRating += (GameConstants.MAX_SHIP_IN_HARBOR - firmHarbor.ship_recno_array.Count) * 100;
 
@@ -2133,7 +2133,7 @@ public class UnitMarine : Unit
 		}
 
 		if (bestHarbor != null)
-			Assign(bestHarbor.loc_x1, bestHarbor.loc_y1);
+			Assign(bestHarbor.LocX1, bestHarbor.LocY1);
 	}
 
 	public void ai_ship_being_attacked(int attackerUnitRecno)

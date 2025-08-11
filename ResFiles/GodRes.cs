@@ -103,7 +103,7 @@ public class GodInfo
 
         //---------- add the god unit now -----------//
 
-        Unit unit = UnitArray.AddUnit(unit_id, firmBase.nation_recno, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
+        Unit unit = UnitArray.AddUnit(unit_id, firmBase.NationId, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
 
         //------- set vars of the God unit ----------//
 

@@ -385,7 +385,7 @@ public partial class Unit
 		{
 			case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO: // (assign) firm is on the location
 				Firm targetFirm = FirmArray[location.FirmId()];
-				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.firm_id, curProcessUnitNum);
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_FIRM, targetFirm.FirmType, curProcessUnitNum);
 				break;
 
 			case UnitConstants.BUILDING_TYPE_FIRM_BUILD: // (build firm) no firm on the location
@@ -1564,17 +1564,17 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[ActionParam];
-				FirmInfo firmInfo = FirmRes[firm.firm_id];
+				FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 				if (SpaceForAttack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
 					    firmInfo.loc_width, firmInfo.loc_height))
 				{
 					//------------ found surrounding place to attack the firm -------------//
 					if (MobileType == UnitConstants.UNIT_LAND)
-						SetMoveToSurround(firm.loc_x1, firm.loc_y1,
+						SetMoveToSurround(firm.LocX1, firm.LocY1,
 							firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 					else
-						AttackFirm(firm.loc_x1, firm.loc_y1);
+						AttackFirm(firm.LocX1, firm.LocY1);
 				}
 				else // no surrounding place found, stop now
 					Stop(UnitConstants.KEEP_PRESERVE_ACTION);

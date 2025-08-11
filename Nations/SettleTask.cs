@@ -23,10 +23,10 @@ public class SettleTask : AITask
             return true;
 
         Firm firm = FirmArray[FirmId];
-        if (firm.nation_recno != Nation.nation_recno)
+        if (firm.NationId != Nation.nation_recno)
             return true;
 
-        foreach (int townId in firm.linked_town_array)
+        foreach (int townId in firm.LinkedTowns)
         {
             Town town = TownArray[townId];
             if (town.NationId == Nation.nation_recno)
@@ -51,11 +51,11 @@ public class SettleTask : AITask
 
             foreach (Town town in TownArray)
             {
-                if (town.NationId != firm.nation_recno)
+                if (town.NationId != firm.NationId)
                     continue;
 
                 // TODO other region
-                if (town.RegionId != firm.region_id)
+                if (town.RegionId != firm.RegionId)
                     continue;
 
                 // TODO do not recruit if population is low
@@ -69,7 +69,7 @@ public class SettleTask : AITask
 
                 // TODO check not only distance but also which race we are going to settle
                 int townDistance = Misc.PointsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-                    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
+                    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
                 if (townDistance < minTownDistance)
                 {
                     minTownDistance = townDistance;
@@ -92,21 +92,21 @@ public class SettleTask : AITask
         
         if (!_settlerSent)
         {
-            Location firmLocation = World.GetLoc(firm.loc_x1, firm.loc_y1);
+            Location firmLocation = World.GetLoc(firm.LocX1, firm.LocY1);
             int minRating = Int32.MaxValue;
             int bestSettleLocX = -1;
             int bestSettleLocY = -1;
             
             // TODO use better bounds
-            for (int settleLocX = firm.loc_x1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
-                 settleLocX < firm.loc_x2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
+            for (int settleLocX = firm.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
+                 settleLocX < firm.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
                  settleLocX++)
             {
                 if (!Misc.IsLocationValid(settleLocX, 0))
                     continue;
                 
-                for (int settleLocY = firm.loc_y1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
-                     settleLocY < firm.loc_y2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
+                for (int settleLocY = firm.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
+                     settleLocY < firm.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
                      settleLocY++)
                 {
                     if (!Misc.IsLocationValid(0, settleLocY))
@@ -115,7 +115,7 @@ public class SettleTask : AITask
                     int settleLocX2 = settleLocX + InternalConstants.TOWN_WIDTH - 1;
                     int settleLocY2 = settleLocY + InternalConstants.TOWN_HEIGHT - 1;
                     if (Misc.rects_distance(settleLocX, settleLocY, settleLocX2, settleLocY2,
-                            firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+                            firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
                     {
                         continue;
                     }
@@ -128,7 +128,7 @@ public class SettleTask : AITask
                         continue;
 
                     int rating = Misc.PointsDistance(settleLocX, settleLocY, settleLocX2, settleLocY2,
-                        firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
+                        firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(settleLocX, settleLocY, settleLocX2, settleLocY2, 1))
                     {
                         Location nearLocation = World.GetLoc(locXlocY.Item1, locXlocY.Item2);

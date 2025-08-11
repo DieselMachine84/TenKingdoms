@@ -181,21 +181,21 @@ public class UnitGod : Unit
 		else if (location.IsFirm())
 		{
 			Firm firm = FirmArray[location.FirmId()];
-			int divider = (firm.loc_x2 - firm.loc_x1 + 1) * (firm.loc_y2 - firm.loc_y1 + 1);
+			int divider = (firm.LocX2 - firm.LocX1 + 1) * (firm.LocY2 - firm.LocY1 + 1);
 			if (god_id == GodRes.GOD_ZULU)
 				divider = 1; // range of zulu god is 1, no need to divide
 
-			if (firm.overseer_recno != 0)
+			if (firm.OverseerId != 0)
 			{
-				cast_on_unit(firm.overseer_recno, divider);
+				cast_on_unit(firm.OverseerId, divider);
 			}
 
-			if (!FirmRes[firm.firm_id].live_in_town)
+			if (!FirmRes[firm.FirmType].live_in_town)
 			{
-				for (int i = 0; i < firm.workers.Count; i++)
+				for (int i = 0; i < firm.Workers.Count; i++)
 				{
-					Worker worker = firm.workers[i];
-					cast_on_worker(worker, firm.nation_recno, divider);
+					Worker worker = firm.Workers[i];
+					cast_on_worker(worker, firm.NationId, divider);
 				}
 			}
 		}
@@ -556,18 +556,18 @@ public class UnitGod : Unit
 
 			int curRating = 0;
 
-			if (firm.overseer_recno != 0)
+			if (firm.OverseerId != 0)
 			{
-				Unit unit = UnitArray[firm.overseer_recno];
+				Unit unit = UnitArray[firm.OverseerId];
 
 				if (unit.RaceId == (int)Race.RACE_MAYA && unit.Skill.CombatLevel < 100)
 					curRating += 10;
 			}
 
 
-			for (int j = firm.workers.Count - 1; j >= 0; j--)
+			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
-				Worker worker = firm.workers[j];
+				Worker worker = firm.Workers[j];
 				if (worker.race_id == (int)Race.RACE_MAYA && worker.combat_level < 100)
 					curRating += 5;
 			}
@@ -575,8 +575,8 @@ public class UnitGod : Unit
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				targetXLoc = firm.center_x;
-				targetYLoc = firm.center_y;
+				targetXLoc = firm.LocCenterX;
+				targetYLoc = firm.LocCenterY;
 			}
 		}
 
@@ -623,9 +623,9 @@ public class UnitGod : Unit
 			int totalHitPoints = 0;
 			int totalMaxHitPoints = 0;
 
-			for (int j = 0; j < firm.workers.Count; j++)
+			for (int j = 0; j < firm.Workers.Count; j++)
 			{
-				Worker worker = firm.workers[j];
+				Worker worker = firm.Workers[j];
 				totalHitPoints += worker.hit_points;
 				totalMaxHitPoints += worker.max_hit_points();
 			}
@@ -637,7 +637,7 @@ public class UnitGod : Unit
 
 			//---- if the king is the commander of this camp -----//
 
-			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].Rank == RANK_KING)
+			if (firm.OverseerId != 0 && UnitArray[firm.OverseerId].Rank == RANK_KING)
 			{
 				curRating += 20;
 			}
@@ -645,8 +645,8 @@ public class UnitGod : Unit
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				targetXLoc = firm.center_x;
-				targetYLoc = firm.center_y;
+				targetXLoc = firm.LocCenterX;
+				targetYLoc = firm.LocCenterY;
 			}
 		}
 
@@ -682,12 +682,12 @@ public class UnitGod : Unit
 			{
 				//------- only cast on camps ---------//
 
-				if (firm.firm_id != Firm.FIRM_CAMP)
+				if (firm.FirmType != Firm.FIRM_CAMP)
 					continue;
 
 				//------ only cast on hostile and tense nations ------//
 
-				if (ownNation.get_relation(firm.nation_recno).status > NationBase.NATION_TENSE)
+				if (ownNation.get_relation(firm.NationId).status > NationBase.NATION_TENSE)
 					continue;
 
 				//------ calculate the rating of the firm -------//
@@ -697,8 +697,8 @@ public class UnitGod : Unit
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					targetXLoc = firm.center_x;
-					targetYLoc = firm.center_y;
+					targetXLoc = firm.LocCenterX;
+					targetYLoc = firm.LocCenterY;
 				}
 			}
 		}
@@ -909,8 +909,8 @@ public class UnitGod : Unit
 			int curRating = 0;
 
 			Unit unit;
-			if (firm.overseer_recno != 0
-			    && (unit = UnitArray[firm.overseer_recno]) != null
+			if (firm.OverseerId != 0
+			    && (unit = UnitArray[firm.OverseerId]) != null
 			    && unit.RaceId == (int)Race.RACE_ZULU // only consider ZULU leader
 			    && unit.Skill.SkillLevel <= 70)
 			{
@@ -923,9 +923,9 @@ public class UnitGod : Unit
 					curRating += 5000 - (40 - unit.Skill.SkillLevel) * 80; // don't add weak leader
 
 				// calculate the benefits to his soldiers
-				for (int j = firm.workers.Count - 1; j >= 0; j--)
+				for (int j = firm.Workers.Count - 1; j >= 0; j--)
 				{
-					Worker worker = firm.workers[j];
+					Worker worker = firm.Workers[j];
 					if (worker.race_id == (int)Race.RACE_ZULU)
 						curRating += (unit.Skill.CombatLevel - worker.combat_level) * 2;
 					else
@@ -935,8 +935,8 @@ public class UnitGod : Unit
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					targetXLoc = firm.center_x;
-					targetYLoc = firm.center_y;
+					targetXLoc = firm.LocCenterX;
+					targetYLoc = firm.LocCenterY;
 				}
 			}
 		}
@@ -957,23 +957,23 @@ public class UnitGod : Unit
 
 		foreach (Firm firm in FirmArray.EnumerateRandom())
 		{
-			if (firm.firm_id == Firm.FIRM_MONSTER)
+			if (firm.FirmType == Firm.FIRM_MONSTER)
 				continue;
 
 			//-------- only attack enemies ----------//
 
-			if (ownNation.get_relation(firm.nation_recno).status != NationBase.NATION_HOSTILE)
+			if (ownNation.get_relation(firm.NationId).status != NationBase.NATION_HOSTILE)
 				continue;
 
 			//---- only attack enemy base and camp ----//
 
-			if (firm.firm_id != Firm.FIRM_BASE && firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.FirmType != Firm.FIRM_BASE && firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			//------- attack now --------//
 
-			targetXLoc = firm.loc_x1;
-			targetYLoc = firm.loc_y1;
+			targetXLoc = firm.LocX1;
+			targetYLoc = firm.LocY1;
 
 			return true;
 		}
@@ -982,10 +982,10 @@ public class UnitGod : Unit
 
 		foreach (Firm firm in FirmArray.EnumerateRandom())
 		{
-			if (firm.firm_id == Firm.FIRM_MONSTER)
+			if (firm.FirmType == Firm.FIRM_MONSTER)
 			{
-				targetXLoc = firm.loc_x1;
-				targetYLoc = firm.loc_y1;
+				targetXLoc = firm.LocX1;
+				targetYLoc = firm.LocY1;
 
 				return true;
 			}

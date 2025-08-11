@@ -45,33 +45,33 @@ public class FirmInn : Firm
 	{
 	}
 
-	protected override void init_derived()
+	protected override void InitDerived()
 	{
 		next_skill_id = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
 	}
 
-	public override void next_day()
+	public override void NextDay()
 	{
-		base.next_day();
+		base.NextDay();
 
 		//------------ update the hire list ------------//
 
 		int updateInterval = 10 + Info.year_passed * 2; // there will be less and less units to hire as the game passes
 
-		if (Info.TotalDays % updateInterval == firm_recno % updateInterval)
+		if (Info.TotalDays % updateInterval == FirmId % updateInterval)
 			update_add_hire_list();
 
-		if (Info.TotalDays % 10 == firm_recno % 10)
+		if (Info.TotalDays % 10 == FirmId % 10)
 			update_del_hire_list();
 	}
 
-	public override void assign_unit(int unitRecno)
+	public override void AssignUnit(int unitRecno)
 	{
 		//------- if this is a construction worker -------//
 
 		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
-			set_builder(unitRecno);
+			SetBuilder(unitRecno);
 		}
 	}
 
@@ -79,7 +79,7 @@ public class FirmInn : Firm
 	{
 		//--------- first check if you have enough money to hire ------//
 
-		Nation nation = NationArray[nation_recno];
+		Nation nation = NationArray[NationId];
 
 		InnUnit innUnit = inn_unit_array[recNo - 1];
 
@@ -88,7 +88,7 @@ public class FirmInn : Firm
 
 		//---------- add the unit now -----------//
 
-		int unitRecno = create_unit(innUnit.unit_id);
+		int unitRecno = CreateUnit(innUnit.unit_id);
 		if (unitRecno == 0)
 			return 0; // no space for creating the unit
 
@@ -135,7 +135,7 @@ public class FirmInn : Firm
 
 		del_inn_unit(recNo);
 
-		if (firm_recno == FirmArray.selected_recno && nation_recno == NationArray.player_recno)
+		if (FirmId == FirmArray.selected_recno && NationId == NationArray.player_recno)
 		{
 			//TODO drawing
 			//put_info(INFO_UPDATE);
@@ -173,13 +173,13 @@ public class FirmInn : Firm
 		return hire(recNo);
 	}
 
-	public override void auto_defense(int targetRecno)
+	public override void AutoDefense(int targetRecno)
 	{
 		//---------- the area to check -----------//
-		int xLoc1 = center_x - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int yLoc1 = center_y - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int xLoc2 = center_x + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int yLoc2 = center_y + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+		int xLoc1 = LocCenterX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+		int yLoc1 = LocCenterY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+		int xLoc2 = LocCenterX + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+		int yLoc2 = LocCenterY + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
 
 		//----------- boundary checking ----------//
 		if (xLoc1 < 0)
@@ -221,10 +221,10 @@ public class FirmInn : Firm
 
 				Town town = TownArray[location.TownId()];
 
-				if (town.NationId != nation_recno)
+				if (town.NationId != NationId)
 					continue;
 
-				int dist = Misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
+				int dist = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
 					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 				if (dist <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 					town.AutoDefense(targetRecno);
@@ -232,15 +232,15 @@ public class FirmInn : Firm
 		}
 	}
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
-		if (Info.TotalDays % 30 == firm_recno % 30)
+		if (Info.TotalDays % 30 == FirmId % 30)
 		{
 			if (think_del())
 				return;
 		}
 
-		if (Info.TotalDays % 30 == firm_recno % 30)
+		if (Info.TotalDays % 30 == FirmId % 30)
 		{
 			think_hire_spy();
 			think_hire_general();
@@ -251,10 +251,10 @@ public class FirmInn : Firm
 	{
 		int totalInnUnit = inn_unit_array.Count;
 
-		for (int i = 0; i < linked_firm_array.Count; i++)
+		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			// links between inns are stored in linked_firm_array[] for quick scan only
-			FirmInn firmInn = (FirmInn)FirmArray[linked_firm_array[i]];
+			FirmInn firmInn = (FirmInn)FirmArray[LinkedFirms[i]];
 
 			totalInnUnit += firmInn.inn_unit_array.Count;
 		}
@@ -326,7 +326,7 @@ public class FirmInn : Firm
 			{
 				del_inn_unit(i + 1);
 
-				if (firm_recno == FirmArray.selected_recno && should_show_info())
+				if (FirmId == FirmArray.selected_recno && ShouldShowInfo())
 				{
 					//TODO drawing
 					//if( browse_hire.recno() > i && browse_hire.recno() > 1 )
@@ -340,18 +340,18 @@ public class FirmInn : Firm
 
 	private bool think_del()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		if (ownNation.cash < 500.0 + 500.0 * ownNation.pref_cash_reserve / 100.0 && ownNation.profit_365days() < 0)
 		{
-			ai_del_firm();
+			AIDelFirm();
 			return true;
 		}
 
 		// if the current number of inns is more than the number the nation can support plus 2, then destroy the current one
 		if (ownNation.ai_inn_array.Count > ownNation.ai_supported_inn_count() + 2)
 		{
-			ai_del_firm();
+			AIDelFirm();
 			return true;
 		}
 
@@ -359,23 +359,23 @@ public class FirmInn : Firm
 
 		foreach (Town town in TownArray)
 		{
-			if (town.NationId == nation_recno)
+			if (town.NationId == NationId)
 			{
 				if (Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-					    loc_x1, loc_y1, loc_x2, loc_y2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+					    LocX1, LocY1, LocX2, LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
 					return false;
 				}
 			}
 		}
 
-		ai_del_firm();
+		AIDelFirm();
 		return true;
 	}
 
 	private bool think_hire_spy()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		if (!ownNation.ai_should_create_new_spy(0)) //0 means take into account all spies
 			return false;
@@ -392,7 +392,7 @@ public class FirmInn : Firm
 			int loc_x1 = 0;
 			int loc_y1 = 0;
 			int cloakedNationRecno = 0;
-			if (ownNation.think_spy_new_mission(raceId, region_id, out loc_x1, out loc_y1, out cloakedNationRecno))
+			if (ownNation.think_spy_new_mission(raceId, RegionId, out loc_x1, out loc_y1, out cloakedNationRecno))
 			{
 				int unitRecno = hire(i + 1);
 				if (unitRecno != 0)
@@ -413,7 +413,7 @@ public class FirmInn : Firm
 
 	private bool think_hire_general()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		if (!ownNation.ai_should_spend(ownNation.pref_military_development / 2))
 			return false;
@@ -437,7 +437,7 @@ public class FirmInn : Firm
 
 	private bool think_assign_general_to(int raceId, InnUnit innUnit)
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		int bestRating = 30; // the new one needs to be at least 30 points better than the existing one
 		FirmCamp bestCamp = null;
 
@@ -447,7 +447,7 @@ public class FirmInn : Firm
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[ownNation.ai_camp_array[i]];
 
-			if (firmCamp.region_id != region_id)
+			if (firmCamp.RegionId != RegionId)
 				continue;
 
 			int curLeadership = firmCamp.cur_commander_leadership();
@@ -461,7 +461,7 @@ public class FirmInn : Firm
 			{
 				//--- if there is already somebody being assigned to it ---//
 
-				if (ownNation.get_action(firmCamp.loc_x1, firmCamp.loc_y1,
+				if (ownNation.get_action(firmCamp.LocX1, firmCamp.LocY1,
 					    -1, -1, Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP) != null)
 				{
 					continue;
@@ -479,7 +479,7 @@ public class FirmInn : Firm
 
 		int unitRecno = hire(inn_unit_array.IndexOf(innUnit) + 1);
 
-		ownNation.add_action(bestCamp.loc_x1, bestCamp.loc_y1, -1, -1,
+		ownNation.add_action(bestCamp.LocX1, bestCamp.LocY1, -1, -1,
 			Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, unitRecno);
 
 		return true;

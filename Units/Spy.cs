@@ -156,7 +156,7 @@ public class Spy : IIdObject
 			else if (SpyPlace == SPY_FIRM)
 			{
 				Firm firm = FirmArray[SpyPlaceId];
-				World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
 			}
 			else if (SpyPlace == SPY_MOBILE)
 			{
@@ -164,7 +164,7 @@ public class Spy : IIdObject
 				if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 				{
 					Firm firm = FirmArray[unit.UnitModeParam];
-					World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+					World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
 				}
 				else if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 				{
@@ -172,7 +172,7 @@ public class Spy : IIdObject
 					if (ship.UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 					{
 						Firm firm = FirmArray[ship.UnitModeParam];
-						World.Visit(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, GameConstants.EXPLORE_RANGE - 1);
+						World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
 					}
 					else
 					{
@@ -199,7 +199,7 @@ public class Spy : IIdObject
 				//---- if the spy is in a firm or town of its own nation ---//
 
 				if ((SpyPlace == SPY_TOWN && TownArray[SpyPlaceId].NationId == TrueNationId) ||
-				    (SpyPlace == SPY_FIRM && FirmArray[SpyPlaceId].nation_recno == TrueNationId))
+				    (SpyPlace == SPY_FIRM && FirmArray[SpyPlaceId].NationId == TrueNationId))
 				{
 					return "Counter-Spy";
 				}
@@ -262,9 +262,9 @@ public class Spy : IIdObject
 		{
 			//---- decrease the loyalty of the overseer if there is any -----//
 
-			if (firm.overseer_recno != 0)
+			if (firm.OverseerId != 0)
 			{
-				Unit unit = UnitArray[firm.overseer_recno];
+				Unit unit = UnitArray[firm.OverseerId];
 
 				if (unit.RaceId == RaceId)
 				{
@@ -281,9 +281,9 @@ public class Spy : IIdObject
 			//----- decrease the loyalty of the workers in the firm -----//
 
 
-			for (int i = 0; i < firm.workers.Count; i++)
+			for (int i = 0; i < firm.Workers.Count; i++)
 			{
-				Worker worker = firm.workers[i];
+				Worker worker = firm.Workers[i];
 				if (worker.race_id != RaceId)
 					continue;
 
@@ -336,7 +336,7 @@ public class Spy : IIdObject
 		{
 			Firm firm = FirmArray[SpyPlaceId];
 
-			if (firm.nation_recno == TrueNationId && firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == SpyId)
+			if (firm.NationId == TrueNationId && firm.OverseerId != 0 && UnitArray[firm.OverseerId].SpyId == SpyId)
 			{
 				inOwnFirm = true;
 			}
@@ -392,9 +392,9 @@ public class Spy : IIdObject
 		{
 			Firm firm = FirmArray[SpyPlaceId];
 
-			if (firm.overseer_recno != 0)
+			if (firm.OverseerId != 0)
 			{
-				Unit unit = UnitArray[firm.overseer_recno];
+				Unit unit = UnitArray[firm.OverseerId];
 
 				if (unit.SpyId == SpyId)
 				{
@@ -402,7 +402,7 @@ public class Spy : IIdObject
 				}
 			}
 
-			foreach (var worker in firm.workers)
+			foreach (var worker in firm.Workers)
 			{
 				if (worker.spy_recno == SpyId)
 				{
@@ -450,9 +450,9 @@ public class Spy : IIdObject
 		{
 			Firm firm = FirmArray[SpyPlaceId];
 
-			if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == SpyId)
+			if (firm.OverseerId != 0 && UnitArray[firm.OverseerId].SpyId == SpyId)
 			{
-				UnitArray[firm.overseer_recno].SpyChangeNation(newNationId, InternalConstants.COMMAND_AUTO);
+				UnitArray[firm.OverseerId].SpyChangeNation(newNationId, InternalConstants.COMMAND_AUTO);
 			}
 		}
 	}
@@ -489,7 +489,7 @@ public class Spy : IIdObject
 
 		//------- if the spy is the overseer of the firm --------//
 
-		if (FirmRes[firm.firm_id].need_overseer)
+		if (FirmRes[firm.FirmType].need_overseer)
 		{
 			//---------------------------------------------------//
 			//
@@ -501,16 +501,16 @@ public class Spy : IIdObject
 			//
 			//---------------------------------------------------//
 
-			Unit unit = UnitArray[firm.overseer_recno];
+			Unit unit = UnitArray[firm.OverseerId];
 
-			if (!FirmRes[firm.firm_id].live_in_town) // if the workers of the firm do not live in towns
+			if (!FirmRes[firm.FirmType].live_in_town) // if the workers of the firm do not live in towns
 			{
 				int unitLeadership = unit.Skill.SkillLevel;
 				int nationReputation = (int)NationArray[TrueNationId].reputation;
 
-				for (int i = 0; i < firm.workers.Count; i++)
+				for (int i = 0; i < firm.Workers.Count; i++)
 				{
-					Worker worker = firm.workers[i];
+					Worker worker = firm.Workers[i];
 
 					//-- if this worker is a spy, it will stay with you --//
 
@@ -534,19 +534,19 @@ public class Spy : IIdObject
 					//--- if the worker does not obey, it is mobilized and attack the base ---//
 
 					else
-						firm.mobilize_worker(i + 1, InternalConstants.COMMAND_AUTO);
+						firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 				}
 			}
 
 			//--------- add news message --------//
 
-			if (firm.nation_recno == NationArray.player_recno)
+			if (firm.NationId == NationArray.player_recno)
 				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
 
-			if (firm.firm_ai)
-				firm.ai_firm_captured(TrueNationId);
+			if (firm.AIFirm)
+				firm.AIFirmCaptured(TrueNationId);
 
 			//----- the spy change nation and capture the firm -------//
 
@@ -558,16 +558,16 @@ public class Spy : IIdObject
 
 			//--------- add news message --------//
 
-			if (firm.nation_recno == NationArray.player_recno)
+			if (firm.NationId == NationArray.player_recno)
 				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
 
-			if (firm.firm_ai)
-				firm.ai_firm_captured(TrueNationId);
+			if (firm.AIFirm)
+				firm.AIFirmCaptured(TrueNationId);
 
 			// the firm changes nation and the spies inside the firm will have their cloaked nation changed
-			firm.change_nation(TrueNationId);
+			firm.ChangeNation(TrueNationId);
 		}
 
 		return true;
@@ -582,7 +582,7 @@ public class Spy : IIdObject
 
 		//------- if the spy is the overseer of the firm --------//
 
-		if (FirmRes[firm.firm_id].need_overseer)
+		if (FirmRes[firm.FirmType].need_overseer)
 		{
 			//-----------------------------------------------------//
 			//
@@ -590,7 +590,7 @@ public class Spy : IIdObject
 			// captured if the spy is the overseer of the firm.
 			//
 			//-----------------------------------------------------//
-			return firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == SpyId;
+			return firm.OverseerId != 0 && UnitArray[firm.OverseerId].SpyId == SpyId;
 		}
 
 		//------ otherwise the spy is a worker of the firm -------//
@@ -600,7 +600,7 @@ public class Spy : IIdObject
 
 			//---- check whether it's true that the only units in the firms are our spies ---//
 
-			foreach (var worker in firm.workers)
+			foreach (var worker in firm.Workers)
 			{
 				if (worker.spy_recno == 0) // this worker is not a spy
 					return false;
@@ -694,11 +694,11 @@ public class Spy : IIdObject
 
 		//---- check if the spy is the overseer of the firm -----//
 
-		if (firm.overseer_recno != 0)
+		if (firm.OverseerId != 0)
 		{
-			Unit unit = UnitArray[firm.overseer_recno];
+			Unit unit = UnitArray[firm.OverseerId];
 			if (unit.SpyId == SpyId)
-				spyUnitId = firm.mobilize_overseer();
+				spyUnitId = firm.MobilizeOverseer();
 		}
 
 		//---- check if the spy is one of the workers of the firm ----//
@@ -706,16 +706,16 @@ public class Spy : IIdObject
 		if (spyUnitId == 0)
 		{
 			int i;
-			for (i = 0; i < firm.workers.Count; i++)
+			for (i = 0; i < firm.Workers.Count; i++)
 			{
-				if (firm.workers[i].spy_recno == SpyId)
+				if (firm.Workers[i].spy_recno == SpyId)
 					break;
 			}
 
 			//---------- create a mobile unit ---------//
 
 			// note: MobilizeWorker() will decrease Firm.PlayerSpyCount
-			spyUnitId = firm.mobilize_worker(i + 1, InternalConstants.COMMAND_AUTO);
+			spyUnitId = firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 		}
 
 		return spyUnitId;
@@ -784,7 +784,7 @@ public class Spy : IIdObject
 	private bool CanSabotage()
 	{
 		// no sabotage action for military camp
-		return SpyPlace == SPY_FIRM && FirmArray[SpyPlaceId].firm_id != Firm.FIRM_CAMP;
+		return SpyPlace == SPY_FIRM && FirmArray[SpyPlaceId].FirmType != Firm.FIRM_CAMP;
 	}
 
 	public int CloakedRankId()
@@ -798,7 +798,7 @@ public class Spy : IIdObject
 			{
 				Firm firm = FirmArray[SpyPlaceId];
 
-				if (firm.overseer_recno != 0 && UnitArray[firm.overseer_recno].SpyId == SpyId)
+				if (firm.OverseerId != 0 && UnitArray[firm.OverseerId].SpyId == SpyId)
 				{
 					return Unit.RANK_GENERAL;
 				}
@@ -824,7 +824,7 @@ public class Spy : IIdObject
 				return 0;
 
 			case SPY_FIRM:
-				return FirmArray[SpyPlaceId].firm_skill_id;
+				return FirmArray[SpyPlaceId].FirmSkillId;
 
 			case SPY_MOBILE:
 				return UnitArray[SpyPlaceId].Skill.SkillId;
@@ -844,7 +844,7 @@ public class Spy : IIdObject
 			{
 				if (!FirmArray.IsDeleted(SpyPlaceId))
 				{
-					FirmArray[SpyPlaceId].player_spy_count--;
+					FirmArray[SpyPlaceId].PlayerSpyCount--;
 				}
 			}
 		}
@@ -869,13 +869,13 @@ public class Spy : IIdObject
 		if (SpyPlace == SPY_FIRM)
 		{
 			if (TrueNationId == NationArray.player_recno)
-				FirmArray[SpyPlaceId].player_spy_count++;
+				FirmArray[SpyPlaceId].PlayerSpyCount++;
 
-			CloakedNationId = FirmArray[SpyPlaceId].nation_recno;
+			CloakedNationId = FirmArray[SpyPlaceId].NationId;
 
 			// when a spy has been assigned to a firm, its notification flag should be set to 1,
 			// so the nation can control it as it is one of its own units
-			if (FirmArray[SpyPlaceId].nation_recno != TrueNationId)
+			if (FirmArray[SpyPlaceId].NationId != TrueNationId)
 				NotifyCloakedNation = 1;
 		}
 		else if (SpyPlace == SPY_TOWN)
@@ -901,7 +901,7 @@ public class Spy : IIdObject
 			return TownArray[SpyPlaceId].NationId;
 
 		if (SpyPlace == SPY_FIRM)
-			return FirmArray[SpyPlaceId].nation_recno;
+			return FirmArray[SpyPlaceId].NationId;
 
 		return 0;
 	}
@@ -916,8 +916,8 @@ public class Spy : IIdObject
 			case SPY_FIRM:
 				if (!FirmArray.IsDeleted(SpyPlaceId))
 				{
-					locX = FirmArray[SpyPlaceId].center_x;
-					locY = FirmArray[SpyPlaceId].center_y;
+					locX = FirmArray[SpyPlaceId].LocCenterX;
+					locY = FirmArray[SpyPlaceId].LocCenterY;
 				}
 
 				break;
@@ -976,7 +976,7 @@ public class Spy : IIdObject
 
 		Firm firm = FirmArray[targetUnit.UnitModeParam];
 
-		if (firm.firm_recno != SpyPlaceId)
+		if (firm.FirmId != SpyPlaceId)
 			return 0;
 
 		//---- get the attack and defense rating ----//
@@ -1000,7 +1000,7 @@ public class Spy : IIdObject
 			if (targetUnit.NationId == NationArray.player_recno)
 				NewsArray.unit_assassinated(targetUnit.SpriteId, spyKillFlag);
 
-			firm.kill_overseer();
+			firm.KillOverseer();
 
 			//-----------------------------------------------------//
 			// If there are other defenders in the firm and
@@ -1035,7 +1035,7 @@ public class Spy : IIdObject
 
 		//--- if this firm is the selected firm and the spy is the player's spy ---//
 
-		if (trueNationRecno == NationArray.player_recno && firm.firm_recno == FirmArray.selected_recno)
+		if (trueNationRecno == NationArray.player_recno && firm.FirmId == FirmArray.selected_recno)
 		{
 			//TODO drawing
 			//Firm.assassinate_result = rc;
@@ -1064,14 +1064,14 @@ public class Spy : IIdObject
 
 		Firm firm = FirmArray[targetUnit.UnitModeParam];
 
-		if (firm.firm_recno != SpyPlaceId)
+		if (firm.FirmId != SpyPlaceId)
 			return false;
 
 		//------ get the hit points of the spy ----//
 
 		int spyHitPoints = 0;
 
-		foreach (var worker in firm.workers)
+		foreach (var worker in firm.Workers)
 		{
 			if (worker.spy_recno == SpyId)
 			{
@@ -1091,9 +1091,9 @@ public class Spy : IIdObject
 		if (targetUnit.Rank == Unit.RANK_KING)
 			defenseRating += 50;
 
-		for (int i = 0; i < firm.workers.Count; i++)
+		for (int i = 0; i < firm.Workers.Count; i++)
 		{
-			int spyId = firm.workers[i].spy_recno;
+			int spyId = firm.Workers[i].spy_recno;
 
 			//------ if this worker is a spy ------//
 
@@ -1105,7 +1105,7 @@ public class Spy : IIdObject
 				{
 					attackRating += spy.SpySkill / 4;
 				}
-				else if (spy.TrueNationId == firm.nation_recno) // enemy spy
+				else if (spy.TrueNationId == firm.NationId) // enemy spy
 				{
 					defenseRating += spy.SpySkill / 2;
 					defenderCount++;
@@ -1113,7 +1113,7 @@ public class Spy : IIdObject
 			}
 			else //----- if this worker is not a spy ------//
 			{
-				defenseRating += 4 + firm.workers[i].hit_points / 30;
+				defenseRating += 4 + firm.Workers[i].hit_points / 30;
 				defenderCount++;
 			}
 		}
@@ -1155,17 +1155,17 @@ public class Spy : IIdObject
 		{
 			Firm firm = FirmArray[SpyPlaceId];
 
-			hostNationId = firm.nation_recno;
+			hostNationId = firm.NationId;
 
 			//------- check if the overseer is the spy -------//
 
-			if (firm.overseer_recno != 0)
+			if (firm.OverseerId != 0)
 			{
-				Unit unit = UnitArray[firm.overseer_recno];
+				Unit unit = UnitArray[firm.OverseerId];
 
 				if (unit.SpyId == SpyId)
 				{
-					firm.kill_overseer();
+					firm.KillOverseer();
 					// TODO too early return?
 					return;
 				}
@@ -1173,12 +1173,12 @@ public class Spy : IIdObject
 
 			//---- check if any of the workers is the spy ----//
 
-			for (int i = firm.workers.Count - 1; i >= 0; i--)
+			for (int i = firm.Workers.Count - 1; i >= 0; i--)
 			{
-				Worker worker = firm.workers[i];
+				Worker worker = firm.Workers[i];
 				if (worker.spy_recno == SpyId)
 				{
-					firm.kill_worker(worker);
+					firm.KillWorker(worker);
 					// TODO too early return?
 					return;
 				}
@@ -1290,7 +1290,7 @@ public class Spy : IIdObject
 	{
 		Firm firm = FirmArray[SpyPlaceId];
 
-		if (firm.nation_recno == TrueNationId) // anti-spy
+		if (firm.NationId == TrueNationId) // anti-spy
 			return;
 
 		bool isHumanPlayer = false;
@@ -1326,7 +1326,7 @@ public class Spy : IIdObject
 		{
 			ActionMode = SPY_IDLE;
 		}
-		else if (Misc.Random(2) == 0 && CanSabotage() && firm.is_operating() && firm.productivity >= 20)
+		else if (Misc.Random(2) == 0 && CanSabotage() && firm.IsOperating() && firm.Productivity >= 20)
 		{
 			ActionMode = SPY_SABOTAGE;
 		}
@@ -1361,23 +1361,23 @@ public class Spy : IIdObject
 
 		//--- only bribe enemies in military camps ---//
 
-		if (firm.firm_id != Firm.FIRM_CAMP)
+		if (firm.FirmType != Firm.FIRM_CAMP)
 			return false;
 
 		//----- only if there is an overseer in the camp -----//
 
-		if (firm.overseer_recno == 0)
+		if (firm.OverseerId == 0)
 			return false;
 
 		//---- see if the overseer can be bribe (kings and your own spies can't be bribed) ----//
 
-		if (!firm.can_spy_bribe(0, TrueNationId)) // 0-bribe the overseer
+		if (!firm.CanSpyBribe(0, TrueNationId)) // 0-bribe the overseer
 			return false;
 
 		//------ first check our financial status ------//
 
 		Nation ownNation = NationArray[TrueNationId];
-		Unit overseerUnit = UnitArray[firm.overseer_recno];
+		Unit overseerUnit = UnitArray[firm.OverseerId];
 
 		if (SpySkill < Math.Min(50, overseerUnit.Skill.SkillLevel) || !ownNation.ai_should_spend(30))
 		{
@@ -1388,11 +1388,11 @@ public class Spy : IIdObject
 
 		int firmImportance = 0;
 
-		for (int i = firm.linked_town_array.Count - 1; i >= 0; i--)
+		for (int i = firm.LinkedTowns.Count - 1; i >= 0; i--)
 		{
-			Town town = TownArray[firm.linked_town_array[i]];
+			Town town = TownArray[firm.LinkedTowns[i]];
 
-			if (town.NationId == firm.nation_recno)
+			if (town.NationId == firm.NationId)
 				firmImportance += town.Population * 2;
 			else
 				firmImportance += town.Population;
@@ -1403,7 +1403,7 @@ public class Spy : IIdObject
 		//-- first get the succeedChange if the bribe amount is zero --//
 
 		// first 0 - $0 bribe amount, 3rd 0 - bribe the overseer
-		int succeedChange = firm.spy_bribe_succeed_chance(0, SpyId, 0);
+		int succeedChange = firm.SpyBribeSucceedChance(0, SpyId, 0);
 
 		//-- then based on it, figure out how much we have to offer to bribe successfully --//
 
@@ -1418,7 +1418,7 @@ public class Spy : IIdObject
 
 		//------- try to bribe the commander ----//
 
-		int newSpyId = firm.spy_bribe(bribeAmount, SpyId, 0);
+		int newSpyId = firm.SpyBribe(bribeAmount, SpyId, 0);
 
 		if (newSpyId == 0) // bribing failed
 			return true; // return 1 as the spy has been killed
@@ -1439,18 +1439,18 @@ public class Spy : IIdObject
 
 		//--- only bribe enemies in military camps ---//
 
-		if (firm.firm_id != Firm.FIRM_CAMP)
+		if (firm.FirmType != Firm.FIRM_CAMP)
 			return false;
 
 		//----- only if there is an overseer in the camp -----//
 
-		if (firm.overseer_recno == 0)
+		if (firm.OverseerId == 0)
 			return false;
 
 		//---- get the attack and defense rating ----//
 
 		// return 0 if assassination is not possible
-		if (!GetAssassinateRating(firm.overseer_recno, out int attackRating, out int defenseRating, out int otherDefenderCount))
+		if (!GetAssassinateRating(firm.OverseerId, out int attackRating, out int defenseRating, out int otherDefenderCount))
 			return false;
 
 		Nation trueNation = NationArray[TrueNationId];
@@ -1458,7 +1458,7 @@ public class Spy : IIdObject
 		// the random number is to increase the chance of attempting assassination
 		if (attackRating + Misc.Random(20 + trueNation.pref_spy / 2) > defenseRating)
 		{
-			Assassinate(firm.overseer_recno, InternalConstants.COMMAND_AI);
+			Assassinate(firm.OverseerId, InternalConstants.COMMAND_AI);
 			return true;
 		}
 

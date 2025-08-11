@@ -235,10 +235,10 @@ public class World
 				if (location.IsFirm())
 				{
 					Firm firm = FirmArray[location.FirmId()];
-					if (firm.nation_recno != 0 && NationArray.player_recno != 0)
+					if (firm.NationId != 0 && NationArray.player_recno != 0)
 					{
-						relation = NationArray.player.get_relation(firm.nation_recno);
-						nationId = firm.nation_recno;
+						relation = NationArray.player.get_relation(firm.NationId);
+						nationId = firm.NationId;
 					}
 				}
 
@@ -733,8 +733,8 @@ public class World
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.nation_recno != 0 && firm.should_set_power)
-				SetPower(firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2, firm.nation_recno);
+			if (firm.NationId != 0 && firm.ShouldSetPower)
+				SetPower(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, firm.NationId);
 		}
 	}
 
@@ -786,7 +786,7 @@ public class World
 
 		if (firmId != 0)
 		{
-			nationRecno = FirmArray[firmId].nation_recno;
+			nationRecno = FirmArray[firmId].NationId;
 			//FirmArray[firmRecno].nation_recno = 0;
 		}
 
@@ -1344,14 +1344,14 @@ public class World
 						if (targetUnit.HitPoints <= 0.0)
 							targetUnit.HitPoints = 0.0;
 					}
-					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].firm_id].buildable)
+					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].FirmType].buildable)
 					{
 						Firm targetFirm = FirmArray[location.FirmId()];
-						targetFirm.hit_points -= flameDamage;
-						if (targetFirm.hit_points <= 0.0)
+						targetFirm.HitPoints -= flameDamage;
+						if (targetFirm.HitPoints <= 0.0)
 						{
-							targetFirm.hit_points = 0.0;
-							SERes.sound(targetFirm.center_x, targetFirm.center_y, 1, 'F', targetFirm.firm_id, "DIE");
+							targetFirm.HitPoints = 0.0;
+							SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 							FirmArray.DeleteFirm(targetFirm);
 						}
 					}
@@ -1491,20 +1491,20 @@ public class World
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (!FirmRes[firm.firm_id].buildable)
+			if (!FirmRes[firm.FirmType].buildable)
 				continue;
 
-			int locX = firm.center_x;
-			int locY = firm.center_y;
-			firm.hit_points -= Weather.quake_rate(locX, locY);
-			if (firm.own_firm())
+			int locX = firm.LocCenterX;
+			int locY = firm.LocCenterY;
+			firm.HitPoints -= Weather.quake_rate(locX, locY);
+			if (firm.OwnFirm())
 				firmDamage++;
-			if (firm.hit_points <= 0.0)
+			if (firm.HitPoints <= 0.0)
 			{
-				firm.hit_points = 0.0;
-				if (firm.own_firm())
+				firm.HitPoints = 0.0;
+				if (firm.OwnFirm())
 					firmDie++;
-				SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DIE");
+				SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 				FirmArray.DeleteFirm(firm);
 			}
 		}
@@ -1598,27 +1598,27 @@ public class World
 		List<Firm> firmsToDelete = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (!FirmRes[firm.firm_id].buildable)
+			if (!FirmRes[firm.FirmType].buildable)
 				continue;
 
-			if (firm.loc_x1 <= locX + radius && firm.loc_x2 >= locX - radius && firm.loc_y1 <= locY + radius && firm.loc_y2 >= locY - radius)
+			if (firm.LocX1 <= locX + radius && firm.LocX2 >= locX - radius && firm.LocY1 <= locY + radius && firm.LocY2 >= locY - radius)
 			{
-				firm.hit_points -= 50.0 / InternalConstants.ATTACK_SLOW_DOWN;
+				firm.HitPoints -= 50.0 / InternalConstants.ATTACK_SLOW_DOWN;
 
 				// ---- add news -------//
-				if (firm.own_firm())
-					NewsArray.lightning_damage(firm.center_x, firm.center_y,
-						News.NEWS_LOC_FIRM, firm.firm_recno, firm.hit_points <= 0.0 ? 1 : 0);
+				if (firm.OwnFirm())
+					NewsArray.lightning_damage(firm.LocCenterX, firm.LocCenterY,
+						News.NEWS_LOC_FIRM, firm.FirmId, firm.HitPoints <= 0.0 ? 1 : 0);
 
 				// ---- add a fire on it ------//
-				Location location = GetLoc(firm.center_x, firm.center_y);
+				Location location = GetLoc(firm.LocCenterX, firm.LocCenterY);
 				if (location.CanSetFire() && location.FireStrength() < 5)
 					location.SetFireStrength(5);
 
-				if (firm.hit_points <= 0.0)
+				if (firm.HitPoints <= 0.0)
 				{
-					firm.hit_points = 0.0;
-					SERes.sound(firm.center_x, firm.center_y, 1, 'F', firm.firm_id, "DIE");
+					firm.HitPoints = 0.0;
+					SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 					firmsToDelete.Add(firm);
 				}
 			}

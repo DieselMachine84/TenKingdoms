@@ -58,9 +58,9 @@ public class Worker
         {
             Firm firmPtr = FirmArray[firmRecno];
 
-            if (firmPtr.overseer_recno != 0)
+            if (firmPtr.OverseerId != 0)
             {
-                Unit overseerUnit = UnitArray[firmPtr.overseer_recno];
+                Unit overseerUnit = UnitArray[firmPtr.OverseerId];
 
                 int overseerSkill = overseerUnit.Skill.GetSkillLevel(Skill.SKILL_LEADING);
                 int targetLoyalty = 30 + overseerSkill / 2;
@@ -107,7 +107,7 @@ public class Worker
         if (town_recno != 0)
             return TownArray[town_recno].NationId == nationRecno;
         else
-            return FirmArray[firmRecno].nation_recno == nationRecno;
+            return FirmArray[firmRecno].NationId == nationRecno;
     }
 
     public void init_potential()

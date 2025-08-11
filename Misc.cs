@@ -110,13 +110,13 @@ public class Misc
     public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {
         return rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-            firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+            firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
     }
 
     public static bool AreFirmsLinked(Firm firm1, Firm firm2)
     {
-        return rects_distance(firm1.loc_x1, firm1.loc_y1, firm1.loc_x2, firm2.loc_y2,
-            firm2.loc_x1, firm2.loc_y1, firm2.loc_x2, firm2.loc_y2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
+        return rects_distance(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm2.LocY2,
+            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
     }
 
     // Given two lengths in x and y coordination, then find the diagonal

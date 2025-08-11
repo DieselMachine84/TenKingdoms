@@ -6,19 +6,19 @@ public partial class Renderer
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
         int firmNameX1 = DetailsX1 + 2;
-        if (firm.nation_recno != 0)
+        if (firm.NationId != 0)
         {
             firmNameX1 += 8 + _colorSquareWidth * 2;
-            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.nation_recno], false);
+            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.NationId], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
-        PutTextCenter(FontSan, firm.firm_name(), firmNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+        PutTextCenter(FontSan, firm.FirmName(), firmNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
         // TODO display sell, destroy, repair and request repair buttons
         // TODO display hit points
         
-        if (firm.under_construction)
+        if (firm.UnderConstruction)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 96);
             PutTextCenter(FontSan, "Under construction", DetailsX1 + 2, DetailsY1 + 96, DetailsX2 - 4, DetailsY1 + 96 + 42);
@@ -31,16 +31,16 @@ public partial class Renderer
     {
         DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 192);
 
-        if (_selectedWorkerId > firm.workers.Count)
+        if (_selectedWorkerId > firm.Workers.Count)
             _selectedWorkerId = 0;
 
-        for (int i = 0; i < firm.workers.Count; i++)
+        for (int i = 0; i < firm.Workers.Count; i++)
         {
-            Worker worker = firm.workers[i];
+            Worker worker = firm.Workers[i];
             UnitInfo unitInfo = UnitRes[worker.unit_id];
             Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.rank_id), DetailsX1 + 12 + 100 * (i % 4), DetailsY1 + 199 + 50 * (i / 4),
                 unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
-            PutText(FontSan, firm.firm_id == Firm.FIRM_CAMP ? worker.combat_level.ToString() : worker.skill_level.ToString(),
+            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.combat_level.ToString() : worker.skill_level.ToString(),
                 DetailsX1 + 64 + 100 * (i % 4), DetailsY1 + 205 + 50 * (i / 4));
             
             // TODO worker hit points bar
@@ -51,7 +51,7 @@ public partial class Renderer
 
     private bool IsCampPatrolEnabled(Firm firm, Unit overseer)
     {
-        return overseer != null || firm.workers.Count > 0;
+        return overseer != null || firm.Workers.Count > 0;
     }
 
     private bool IsCampRewardEnabled(Unit overseer)
@@ -62,7 +62,7 @@ public partial class Renderer
 
     private bool IsFirmSpyListEnabled(Firm firm)
     {
-        return firm.player_spy_count > 0;
+        return firm.PlayerSpyCount > 0;
     }
 
     public void DrawMineDetails(FirmMine mine)
@@ -85,8 +85,8 @@ public partial class Renderer
     {
         DrawOverseerPanel(DetailsX1 + 2, DetailsY1 + 96);
         Unit overseer = null;
-        if (camp.overseer_recno != 0)
-            overseer = UnitArray[camp.overseer_recno];
+        if (camp.OverseerId != 0)
+            overseer = UnitArray[camp.OverseerId];
         
         if (overseer != null)
         {
@@ -148,7 +148,7 @@ public partial class Renderer
             // TODO draw worker details
         }
 
-        if (camp.own_firm())
+        if (camp.OwnFirm())
         {
             if (IsCampPatrolEnabled(camp, overseer))
             {
@@ -255,8 +255,8 @@ public partial class Renderer
     public void HandleCampDetailsInput(FirmCamp camp)
     {
         Unit overseer = null;
-        if (camp.overseer_recno != 0)
-            overseer = UnitArray[camp.overseer_recno];
+        if (camp.OverseerId != 0)
+            overseer = UnitArray[camp.OverseerId];
 
         bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsCampY + 2 && _mouseButtonY <= ButtonsCampY + ButtonHeight;
@@ -267,7 +267,7 @@ public partial class Renderer
         bool button4Pressed = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
                               _mouseButtonY >= ButtonsCampY + 2 && _mouseButtonY <= ButtonsCampY + ButtonHeight;
 
-        if (camp.own_firm())
+        if (camp.OwnFirm())
         {
             if (button1Pressed && IsCampPatrolEnabled(camp, overseer))
             {
@@ -285,7 +285,7 @@ public partial class Renderer
             
             if (button2Pressed && IsCampRewardEnabled(overseer))
             {
-                camp.reward(_selectedWorkerId, InternalConstants.COMMAND_PLAYER);
+                camp.Reward(_selectedWorkerId, InternalConstants.COMMAND_PLAYER);
                 SECtrl.immediate_sound("TURN_ON");
 
             }

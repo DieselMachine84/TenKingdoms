@@ -13,21 +13,21 @@ public class FirmBase : Firm
 
     public FirmBase()
     {
-        firm_skill_id = Skill.SKILL_PRAYING;
+        FirmSkillId = Skill.SKILL_PRAYING;
     }
 
-    protected override void init_derived()
+    protected override void InitDerived()
     {
         pray_points = 0.0;
 
-        NationArray[nation_recno].base_count_array[race_id - 1]++;
+        NationArray[NationId].base_count_array[RaceId - 1]++;
 
         god_id = 0;
         god_unit_recno = 0;
 
         for (int i = 1; i <= GodRes.god_info_array.Length; i++)
         {
-            if (GodRes[i].race_id == race_id && GodRes[i].is_nation_know(nation_recno))
+            if (GodRes[i].race_id == RaceId && GodRes[i].is_nation_know(NationId))
             {
                 god_id = i;
                 break;
@@ -35,12 +35,12 @@ public class FirmBase : Firm
         }
     }
 
-    protected override void deinit_derived()
+    protected override void DeinitDerived()
     {
-        NationArray[nation_recno].base_count_array[race_id-1]--;
+        NationArray[NationId].base_count_array[RaceId-1]--;
     }
 
-    public override void assign_unit(int unitRecno)
+    public override void AssignUnit(int unitRecno)
     {
         Unit unit = UnitArray[unitRecno];
 
@@ -48,13 +48,13 @@ public class FirmBase : Firm
 
         if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
         {
-            set_builder(unitRecno);
+            SetBuilder(unitRecno);
             return;
         }
 
         //------ only assign units of the right race ------//
 
-        if (unit.RaceId != race_id)
+        if (unit.RaceId != RaceId)
             return;
 
         //-------- assign the unit ----------//
@@ -63,15 +63,15 @@ public class FirmBase : Firm
 
         if (rankId == Unit.RANK_GENERAL || rankId == Unit.RANK_KING)
         {
-            assign_overseer(unitRecno);
+            AssignOverseer(unitRecno);
         }
         else
         {
-            assign_worker(unitRecno);
+            AssignWorker(unitRecno);
         }
     }
 
-    public override void assign_overseer(int overseerRecno)
+    public override void AssignOverseer(int overseerRecno)
     {
         //---- reset the team member count of the general ----//
 
@@ -84,23 +84,23 @@ public class FirmBase : Firm
 
         //----- assign the overseer now -------//
 
-        base.assign_overseer(overseerRecno);
+        base.AssignOverseer(overseerRecno);
     }
 
-    public override void change_nation(int newNationRecno)
+    public override void ChangeNation(int newNationRecno)
     {
         //--- update the UnitInfo vars of the workers in this firm ---//
 
-        foreach (Worker worker in workers)
+        foreach (Worker worker in Workers)
         {
-            UnitRes[worker.unit_id].unit_change_nation(newNationRecno, nation_recno, worker.rank_id);
+            UnitRes[worker.unit_id].unit_change_nation(newNationRecno, NationId, worker.rank_id);
         }
 
         //------ update base_count_array[] --------//
 
-        NationArray[nation_recno].base_count_array[race_id - 1]--;
+        NationArray[NationId].base_count_array[RaceId - 1]--;
 
-        NationArray[newNationRecno].base_count_array[race_id - 1]++;
+        NationArray[newNationRecno].base_count_array[RaceId - 1]++;
 
         //----- change the nation recno of the god invoked by the base if there is any ----//
 
@@ -109,20 +109,20 @@ public class FirmBase : Firm
 
         //-------- change the nation of this firm now ----------//
 
-        base.change_nation(newNationRecno);
+        base.ChangeNation(newNationRecno);
     }
 
-    public override void next_day()
+    public override void NextDay()
     {
-        base.next_day();
+        base.NextDay();
 
         //--------------------------------------//
 
-        calc_productivity();
+        CalcProductivity();
 
         //--------------------------------------//
 
-        if (Info.TotalDays % 15 == firm_recno % 15) // once a week
+        if (Info.TotalDays % 15 == FirmId % 15) // once a week
         {
             train_unit();
             recover_hit_point();
@@ -130,12 +130,12 @@ public class FirmBase : Firm
 
         //------- increase pray points --------//
 
-        if (overseer_recno != 0 && pray_points < GameConstants.MAX_PRAY_POINTS)
+        if (OverseerId != 0 && pray_points < GameConstants.MAX_PRAY_POINTS)
         {
             if (Config.fast_build)
-                pray_points += productivity / 10;
+                pray_points += Productivity / 10;
             else
-                pray_points += productivity / 100;
+                pray_points += Productivity / 100;
 
             if (pray_points > GameConstants.MAX_PRAY_POINTS)
                 pray_points = GameConstants.MAX_PRAY_POINTS;
@@ -150,7 +150,7 @@ public class FirmBase : Firm
         }
     }
 
-    public override void process_ai()
+    public override void ProcessAI()
     {
         think_assign_unit();
 
@@ -168,13 +168,13 @@ public class FirmBase : Firm
 
         // one base can only support one god
         // there must be at least 10% of the maximum pray points to cast a creature
-        return god_unit_recno == 0 && overseer_recno != 0 &&
+        return god_unit_recno == 0 && OverseerId != 0 &&
                pray_points >= GameConstants.MAX_PRAY_POINTS / 10.0;
     }
 
     public void invoke_god()
     {
-        god_unit_recno = GodRes[god_id].invoke(firm_recno, center_x, center_y);
+        god_unit_recno = GodRes[god_id].invoke(FirmId, LocCenterX, LocCenterY);
     }
 
     //-------------- multiplayer checking codes ---------------//
@@ -189,19 +189,19 @@ public class FirmBase : Firm
 
     private void train_unit()
     {
-        if (overseer_recno == 0)
+        if (OverseerId == 0)
             return;
 
-        Unit overseerUnit = UnitArray[overseer_recno];
+        Unit overseerUnit = UnitArray[OverseerId];
         int overseerSkill = overseerUnit.Skill.SkillLevel;
 
         //------- increase the commander's leadership ---------//
 
-        if (workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
+        if (Workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
         {
             //-- the more soldiers this commander has, the higher the leadership will increase ---//
 
-            int incValue = (int)(3.0 * workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+            int incValue = (int)(3.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
                 * (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
             overseerUnit.Skill.SkillLevelMinor += incValue;
@@ -216,7 +216,7 @@ public class FirmBase : Firm
         //------- increase the prayer's skill level ------//
 
 
-        foreach (Worker worker in workers)
+        foreach (Worker worker in Workers)
         {
             //------- increase prayer skill -----------//
 
@@ -242,7 +242,7 @@ public class FirmBase : Firm
 
     private void recover_hit_point()
     {
-        foreach (Worker worker in workers)
+        foreach (Worker worker in Workers)
         {
             if (worker.hit_points < worker.max_hit_points())
                 worker.hit_points++;
@@ -253,26 +253,26 @@ public class FirmBase : Firm
 
     private void think_assign_unit()
     {
-        Nation nation = NationArray[nation_recno];
+        Nation nation = NationArray[NationId];
 
         //-------- assign overseer ---------//
 
         // do not call too often because when an AI action is queued, it will take a while to carry it out
-        if (Info.TotalDays % 15 == firm_recno % 15)
+        if (Info.TotalDays % 15 == FirmId % 15)
         {
-            if (overseer_recno == 0)
+            if (OverseerId == 0)
             {
-                nation.add_action(loc_x1, loc_y1, -1, -1,
+                nation.add_action(LocX1, LocY1, -1, -1,
                     Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_BASE);
             }
         }
 
         //------- recruit workers ---------//
 
-        if (Info.TotalDays % 15 == firm_recno % 15)
+        if (Info.TotalDays % 15 == FirmId % 15)
         {
-            if (workers.Count < MAX_WORKER)
-                ai_recruit_worker();
+            if (Workers.Count < MAX_WORKER)
+                AIRecruitWorker();
         }
     }
 

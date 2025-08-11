@@ -73,7 +73,7 @@ public class SpyArray : DynArray<Spy>
 
         foreach (Firm firm in FirmArray)
         {
-            firm.sabotage_level = 0;
+            firm.SabotageLevel = 0;
         }
 
         //------- increase firms' SabotageLevel -----//
@@ -84,10 +84,10 @@ public class SpyArray : DynArray<Spy>
             {
                 Firm firm = FirmArray[spy.SpyPlaceId];
 
-                firm.sabotage_level += spy.SpySkill / 2;
+                firm.SabotageLevel += spy.SpySkill / 2;
 
-                if (firm.sabotage_level > 100)
-                    firm.sabotage_level = 100;
+                if (firm.SabotageLevel > 100)
+                    firm.SabotageLevel = 100;
             }
         }
     }
@@ -96,13 +96,13 @@ public class SpyArray : DynArray<Spy>
     {
         Firm firm = FirmArray[firmRecno];
 
-        firm.player_spy_count = 0;
+        firm.PlayerSpyCount = 0;
 
         foreach (Spy spy in this)
         {
             if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmRecno && spy.TrueNationId == NationArray.player_recno)
             {
-                firm.player_spy_count++;
+                firm.PlayerSpyCount++;
             }
         }
     }
@@ -133,7 +133,7 @@ public class SpyArray : DynArray<Spy>
 
             if (spyPlace == Spy.SPY_FIRM)
             {
-                int firmOverseerId = FirmArray[spy.SpyPlaceId].overseer_recno;
+                int firmOverseerId = FirmArray[spy.SpyPlaceId].OverseerId;
 
                 if (firmOverseerId != 0 && UnitArray[firmOverseerId].SpyId == spy.SpyId)
                 {
@@ -179,8 +179,8 @@ public class SpyArray : DynArray<Spy>
         {
             Firm firm = FirmArray[spyPlaceId];
 
-            nationId = firm.nation_recno;
-            totalPop = firm.workers.Count + (firm.overseer_recno != 0 ? 1 : 0);
+            nationId = firm.NationId;
+            totalPop = firm.Workers.Count + (firm.OverseerId != 0 ? 1 : 0);
         }
 
         //--- calculate the total of anti-spy skill in this town ----//

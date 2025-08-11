@@ -215,7 +215,7 @@ public class NewsArray
 		news.short_para4 = migratedCount;
 
 		if (firmRecno != 0)
-			news.short_para5 = FirmArray[firmRecno].firm_id;
+			news.short_para5 = FirmArray[firmRecno].FirmType;
 		else
 			news.short_para5 = 0;
 
@@ -276,17 +276,17 @@ public class NewsArray
 		Firm firm = FirmArray[firmRecno];
 
 		News news = add_news(News.NEWS_FIRM_DESTROYED, News.NEWS_NORMAL,
-			firm.nation_recno, destroyerNationRecno);
+			firm.NationId, destroyerNationRecno);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.firm_id;
+		news.short_para1 = firm.FirmType;
 
-		if (firm.closest_town_name_id != 0)
-			news.short_para2 = firm.closest_town_name_id;
+		if (firm.ClosestTownNameId != 0)
+			news.short_para2 = firm.ClosestTownNameId;
 		else
-			news.short_para2 = firm.get_closest_town_name_id();
+			news.short_para2 = firm.GetClosestTownNameId();
 
 		//-------- set destroyer type ------//
 
@@ -306,7 +306,7 @@ public class NewsArray
 				news.short_para3 = News.DESTROYER_MONSTER;
 		}
 
-		news.set_loc(firm.center_x, firm.center_y, News.NEWS_LOC_ANY);
+		news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_ANY);
 	}
 
 	public void firm_captured(int firmRecno, int takeoverNationRecno, int spyTakeover)
@@ -314,23 +314,23 @@ public class NewsArray
 		Firm firm = FirmArray[firmRecno];
 
 		News news = add_news(News.NEWS_FIRM_CAPTURED, News.NEWS_NORMAL,
-			firm.nation_recno, takeoverNationRecno);
+			firm.NationId, takeoverNationRecno);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.firm_id;
+		news.short_para1 = firm.FirmType;
 
-		if (firm.closest_town_name_id != 0)
-			news.short_para2 = firm.closest_town_name_id;
+		if (firm.ClosestTownNameId != 0)
+			news.short_para2 = firm.ClosestTownNameId;
 		else
-			news.short_para2 = firm.get_closest_town_name_id();
+			news.short_para2 = firm.GetClosestTownNameId();
 
 		news.short_para3 = spyTakeover;
 
 		//--------- set location ---------//
 
-		news.set_loc(firm.center_x, firm.center_y, News.NEWS_LOC_FIRM, firmRecno);
+		news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firmRecno);
 	}
 
 	public void town_destroyed(int townNameId, int xLoc, int yLoc, Unit attackUnit, int destroyerNationRecno)
@@ -466,10 +466,10 @@ public class NewsArray
 		{
 			Firm firm = FirmArray[spy.SpyPlaceId];
 
-			news.short_para1 = firm.firm_id;
-			news.short_para2 = firm.get_closest_town_name_id();
+			news.short_para1 = firm.FirmType;
+			news.short_para2 = firm.GetClosestTownNameId();
 
-			news.set_loc(firm.center_x, firm.center_y, News.NEWS_LOC_FIRM, firm.firm_recno);
+			news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
 		}
 		else if (spy.SpyPlace == Spy.SPY_TOWN)
 		{
@@ -614,8 +614,8 @@ public class NewsArray
 				news.short_para4 = UnitArray[recno].Rank;
 				break;
 			case News.NEWS_LOC_FIRM:
-				news.short_para2 = FirmArray[recno].firm_id;
-				news.short_para3 = FirmArray[recno].closest_town_name_id;
+				news.short_para2 = FirmArray[recno].FirmType;
+				news.short_para3 = FirmArray[recno].ClosestTownNameId;
 				break;
 			case News.NEWS_LOC_TOWN:
 				news.short_para3 = TownArray[recno].TownNameId;
@@ -686,17 +686,17 @@ public class NewsArray
 	{
 		Firm firm = FirmArray[firmRecno];
 
-		News news = add_news(News.NEWS_FIRM_WORN_OUT, News.NEWS_NORMAL, firm.nation_recno);
+		News news = add_news(News.NEWS_FIRM_WORN_OUT, News.NEWS_NORMAL, firm.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.firm_id;
+		news.short_para1 = firm.FirmType;
 
-		if (firm.closest_town_name_id != 0)
-			news.short_para2 = firm.closest_town_name_id;
+		if (firm.ClosestTownNameId != 0)
+			news.short_para2 = firm.ClosestTownNameId;
 		else
-			news.short_para2 = firm.get_closest_town_name_id();
+			news.short_para2 = firm.GetClosestTownNameId();
 	}
 
 	public void chat_msg(int fromNationRecno, string chatStr)

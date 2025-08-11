@@ -128,22 +128,22 @@ public class RegionStat
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.region_id != RegionId)
+			if (firm.RegionId != RegionId)
 				continue;
 
-			if (firm.nation_recno == 0) // monster firms
+			if (firm.NationId == 0) // monster firms
 				continue;
 
-			_firmNationCounts[firm.nation_recno - 1]++;
+			_firmNationCounts[firm.NationId - 1]++;
 
-			if (firm.firm_id == Firm.FIRM_CAMP)
-				CampNationCounts[firm.nation_recno - 1]++;
+			if (firm.FirmType == Firm.FIRM_CAMP)
+				CampNationCounts[firm.NationId - 1]++;
 
-			if (firm.firm_id == Firm.FIRM_HARBOR)
-				HarborNationCounts[firm.nation_recno - 1]++;
+			if (firm.FirmType == Firm.FIRM_HARBOR)
+				HarborNationCounts[firm.NationId - 1]++;
 
-			if (firm.firm_id == Firm.FIRM_MINE)
-				MineNationCounts[firm.nation_recno - 1]++;
+			if (firm.FirmType == Firm.FIRM_MINE)
+				MineNationCounts[firm.NationId - 1]++;
 		}
 
 		foreach (Town town in TownArray)

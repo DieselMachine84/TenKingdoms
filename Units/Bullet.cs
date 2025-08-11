@@ -271,7 +271,7 @@ public class Bullet : Sprite
 		if (location.IsFirm())
 		{
 			Firm firm = FirmArray[location.FirmId()];
-			if (!NationArray.should_attack(nation_recno, firm.nation_recno))
+			if (!NationArray.should_attack(nation_recno, firm.NationId))
 				return;
 		}
 		else if (location.IsTown())

@@ -86,7 +86,7 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[targetUnit.ActionParam];
-				AttackFirm(firm.loc_x1, firm.loc_y1);
+				AttackFirm(firm.LocX1, firm.LocY1);
 			}
 
 			return;
@@ -163,7 +163,7 @@ public partial class Unit
 		{
 			targetFirm = FirmArray[ActionParam];
 
-			if (!CanAttackNation(targetFirm.nation_recno)) // cannot attack this nation
+			if (!CanAttackNation(targetFirm.NationId)) // cannot attack this nation
 				clearOrder++;
 		}
 
@@ -218,7 +218,7 @@ public partial class Unit
 					    RangeAttackLocX, RangeAttackLocY, UnitConstants.UNIT_LAND,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
+					FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
 					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
@@ -280,9 +280,9 @@ public partial class Unit
 					return;
 			}
 
-			FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
-			int targetXLoc = targetFirm.loc_x1;
-			int targetYLoc = targetFirm.loc_y1;
+			FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
+			int targetXLoc = targetFirm.LocX1;
+			int targetYLoc = targetFirm.LocY1;
 
 			int attackDistance = CalcDistance(targetXLoc, targetYLoc, firmInfo.loc_width, firmInfo.loc_height);
 			int curXLoc = NextLocX;
@@ -327,19 +327,19 @@ public partial class Unit
 					SetCur(NextX, NextY);
 					TerminateMove();
 
-					if (targetFirm.firm_id != Firm.FIRM_RESEARCH)
-						SetAttackDir(curXLoc, curYLoc, targetFirm.center_x, targetFirm.center_y);
+					if (targetFirm.FirmType != Firm.FIRM_RESEARCH)
+						SetAttackDir(curXLoc, curYLoc, targetFirm.LocCenterX, targetFirm.LocCenterY);
 					else // FIRM_RESEARCH with size 2x3
 					{
-						int hitXLoc = (curXLoc > targetFirm.loc_x1) ? targetFirm.loc_x2 : targetFirm.loc_x1;
+						int hitXLoc = (curXLoc > targetFirm.LocX1) ? targetFirm.LocX2 : targetFirm.LocX1;
 
 						int hitYLoc;
-						if (curYLoc < targetFirm.center_y)
-							hitYLoc = targetFirm.loc_y1;
-						else if (curYLoc == targetFirm.center_y)
-							hitYLoc = targetFirm.center_y;
+						if (curYLoc < targetFirm.LocCenterY)
+							hitYLoc = targetFirm.LocY1;
+						else if (curYLoc == targetFirm.LocCenterY)
+							hitYLoc = targetFirm.LocCenterY;
 						else
-							hitYLoc = targetFirm.loc_y2;
+							hitYLoc = targetFirm.LocY2;
 
 						SetAttackDir(curXLoc, curYLoc, hitXLoc, hitYLoc);
 					}
@@ -747,7 +747,7 @@ public partial class Unit
 		}
 		else if (loc.IsFirm())
 		{
-			targetNationRecno = FirmArray[loc.FirmId()].nation_recno;
+			targetNationRecno = FirmArray[loc.FirmId()].NationId;
 		}
 		else if (loc.IsTown())
 		{
@@ -1073,7 +1073,7 @@ public partial class Unit
 		// cannot attack this nation
 		//------------------------------------------------------------//
 		Firm firm = FirmArray[loc.FirmId()];
-		if (!CanAttackNation(firm.nation_recno))
+		if (!CanAttackNation(firm.NationId))
 		{
 			Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			return;
@@ -1082,7 +1082,7 @@ public partial class Unit
 		//------------------------------------------------------------------------------------//
 		// move there if cannot reach the effective attacking region
 		//------------------------------------------------------------------------------------//
-		FirmInfo firmInfo = FirmRes[firm.firm_id];
+		FirmInfo firmInfo = FirmRes[firm.FirmType];
 		int maxRange = 0;
 		bool diffTerritoryAttack = false;
 		if (MobileType != UnitConstants.UNIT_AIR && World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
@@ -1113,7 +1113,7 @@ public partial class Unit
 		     ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET ||
 		     ActionMode2 == UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET ||
 		     ActionMode2 == UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET) &&
-		    ActionPara2 == firm.firm_recno && ActionLocX2 == firmXLoc && ActionLocY2 == firmYLoc)
+		    ActionPara2 == firm.FirmId && ActionLocX2 == firmXLoc && ActionLocY2 == firmYLoc)
 		{
 			//-------------- old order -------------//
 			if (CurAction != SPRITE_IDLE)
@@ -1129,7 +1129,7 @@ public partial class Unit
 			    ActionMode2 != UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET)
 				ActionMode2 = UnitConstants.ACTION_ATTACK_FIRM;
 
-			ActionPara2 = firm.firm_recno;
+			ActionPara2 = firm.FirmId;
 			ActionLocX2 = firmXLoc;
 			ActionLocY2 = firmYLoc;
 		}
@@ -1170,7 +1170,7 @@ public partial class Unit
 					// 1) different type from target, target located in different territory from this unit.
 					//		But able to attack this target by range attacking
 					//--------------------------------------------------------------------------------//
-					MoveToRangeAttack(firmXLoc, firmYLoc, firm.firm_id, SeekPath.SEARCH_MODE_ATTACK_FIRM_BY_RANGE, maxRange);
+					MoveToRangeAttack(firmXLoc, firmYLoc, firm.FirmType, SeekPath.SEARCH_MODE_ATTACK_FIRM_BY_RANGE, maxRange);
 				}
 				else
 				{
@@ -1209,24 +1209,24 @@ public partial class Unit
 			//---------------------------------------------------------------//
 			SetCur(NextX, NextY);
 
-			if (firm.firm_id != Firm.FIRM_RESEARCH)
+			if (firm.FirmType != Firm.FIRM_RESEARCH)
 			{
-				SetAttackDir(NextLocX, NextLocY, firm.center_x, firm.center_y);
+				SetAttackDir(NextLocX, NextLocY, firm.LocCenterX, firm.LocCenterY);
 			}
 			else // FIRM_RESEARCH with size 2x3
 			{
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
 
-				int hitXLoc = (curXLoc > firm.loc_x1) ? firm.loc_x2 : firm.loc_x1;
+				int hitXLoc = (curXLoc > firm.LocX1) ? firm.LocX2 : firm.LocX1;
 
 				int hitYLoc;
-				if (curYLoc < firm.center_y)
-					hitYLoc = firm.loc_y1;
-				else if (curYLoc == firm.center_y)
-					hitYLoc = firm.center_y;
+				if (curYLoc < firm.LocCenterY)
+					hitYLoc = firm.LocY1;
+				else if (curYLoc == firm.LocCenterY)
+					hitYLoc = firm.LocCenterY;
 				else
-					hitYLoc = firm.loc_y2;
+					hitYLoc = firm.LocY2;
 
 				SetAttackDir(curXLoc, curYLoc, hitXLoc, hitYLoc);
 			}
@@ -1244,7 +1244,7 @@ public partial class Unit
 		}
 
 		ActionMode = UnitConstants.ACTION_ATTACK_FIRM;
-		ActionParam = firm.firm_recno;
+		ActionParam = firm.FirmId;
 		ActionLocX = firmXLoc;
 		ActionLocY = firmYLoc;
 	}
@@ -1643,7 +1643,7 @@ public partial class Unit
 			if (!FirmArray.IsDeleted(targetUnit.ActionMiscParam))
 			{
 				Firm firm = FirmArray[targetUnit.ActionMiscParam];
-				if (firm.firm_id == Firm.FIRM_CAMP)
+				if (firm.FirmType == Firm.FIRM_CAMP)
 				{
 					FirmCamp camp = (FirmCamp)firm;
 					camp.defense(parentUnit.SpriteId);
@@ -2071,61 +2071,61 @@ public partial class Unit
 		//------------------------------------------------------------------------------//
 		// the target and the attacker's nations are different
 		// (it's possible that when a unit who has just changed nation has its bullet hitting its own nation)
-		if (attackUnit != null && attackUnit.CurAction != SPRITE_DIE && targetFirm.nation_recno != attackNationRecno)
+		if (attackUnit != null && attackUnit.CurAction != SPRITE_DIE && targetFirm.NationId != attackNationRecno)
 		{
-			if (attackNation != null && targetFirm.nation_recno != 0)
+			if (attackNation != null && targetFirm.NationId != 0)
 			{
 				attackNation.set_at_war_today();
-				NationArray[targetFirm.nation_recno].set_at_war_today(attackUnit.SpriteId);
+				NationArray[targetFirm.NationId].set_at_war_today(attackUnit.SpriteId);
 			}
 
-			if (targetFirm.nation_recno != 0)
-				NationArray[targetFirm.nation_recno].being_attacked(attackNationRecno);
+			if (targetFirm.NationId != 0)
+				NationArray[targetFirm.NationId].being_attacked(attackNationRecno);
 
 			//------------ auto defense -----------------//
 			if (attackUnit.IsVisible())
-				targetFirm.auto_defense(attackUnit.SpriteId);
+				targetFirm.AutoDefense(attackUnit.SpriteId);
 
-			if (attackNationRecno != targetFirm.nation_recno)
+			if (attackNationRecno != targetFirm.NationId)
 				attackUnit.GainExperience(); // gain experience to increase combat level
 
-			targetFirm.being_attacked(attackUnit.SpriteId);
+			targetFirm.BeingAttacked(attackUnit.SpriteId);
 
 			//------ increase battling fryhtan score -------//
 
-			if (attackNation != null && targetFirm.firm_id == Firm.FIRM_MONSTER)
+			if (attackNation != null && targetFirm.FirmType == Firm.FIRM_MONSTER)
 				attackNation.kill_monster_score += 0.01;
 		}
 
 		//---------- add indicator on the map ----------//
 
-		if (NationArray.player_recno != 0 && targetFirm.own_firm())
-			WarPointArray.AddPoint(targetFirm.center_x, targetFirm.center_y);
+		if (NationArray.player_recno != 0 && targetFirm.OwnFirm())
+			WarPointArray.AddPoint(targetFirm.LocCenterX, targetFirm.LocCenterY);
 
 		//---------- damage to the firm ------------//
 
-		targetFirm.hit_points -= attackDamage / 3.0; // /3 so that it takes longer to destroy a firm
+		targetFirm.HitPoints -= attackDamage / 3.0; // /3 so that it takes longer to destroy a firm
 
-		if (targetFirm.hit_points <= 0.0)
+		if (targetFirm.HitPoints <= 0.0)
 		{
-			targetFirm.hit_points = 0.0;
+			targetFirm.HitPoints = 0.0;
 
-			SERes.sound(targetFirm.center_x, targetFirm.center_y, 1, 'F', targetFirm.firm_id, "DIE");
+			SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 
-			if (targetFirm.nation_recno == NationArray.player_recno)
-				NewsArray.firm_destroyed(targetFirm.firm_recno, attackUnit, attackNationRecno);
+			if (targetFirm.NationId == NationArray.player_recno)
+				NewsArray.firm_destroyed(targetFirm.FirmId, attackUnit, attackNationRecno);
 
-			if (targetFirm.nation_recno != 0)
+			if (targetFirm.NationId != 0)
 			{
 				if (attackNation != null)
 					attackNation.enemy_firm_destroyed++;
 
-				NationArray[targetFirm.nation_recno].own_firm_destroyed++;
+				NationArray[targetFirm.NationId].own_firm_destroyed++;
 			}
 
-			else if (targetFirm.firm_id == Firm.FIRM_MONSTER)
+			else if (targetFirm.FirmType == Firm.FIRM_MONSTER)
 			{
-				NewsArray.monster_firm_destroyed(((FirmMonster)targetFirm).monster_id, targetFirm.center_x, targetFirm.center_y);
+				NewsArray.monster_firm_destroyed(((FirmMonster)targetFirm).monster_id, targetFirm.LocCenterX, targetFirm.LocCenterY);
 			}
 
 			FirmArray.DeleteFirm(targetFirm);
@@ -3621,7 +3621,7 @@ public partial class Unit
 				{
 					firm = FirmArray[ActionPara2];
 
-					if (!CanAttackNation(firm.nation_recno)) // cannot attack this nation
+					if (!CanAttackNation(firm.NationId)) // cannot attack this nation
 						clearToDetect++;
 				}
 
@@ -3687,7 +3687,7 @@ public partial class Unit
 					break;
 
 				case UnitConstants.ACTION_ATTACK_FIRM:
-					FirmInfo firmInfo = FirmRes[firm.firm_id];
+					FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 					//-----------------------------------------------------------------//
 					// attack the target if able to reach the target surrounding, otherwise continue to wait
@@ -3751,7 +3751,7 @@ public partial class Unit
 			}
 
 			Firm firm = FirmArray[ActionMiscParam];
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
+			if (firm.FirmType != Firm.FIRM_CAMP || firm.NationId != NationId)
 			{
 				ProcessAutoDefenseBackCamp();
 				return;
@@ -3765,7 +3765,7 @@ public partial class Unit
 			}
 
 			Unit target = UnitArray[camp.defend_target_recno];
-			if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != camp.firm_recno)
+			if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != camp.FirmId)
 			{
 				ProcessAutoDefenseBackCamp();
 				return;
@@ -3823,11 +3823,11 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[ActionMiscParam];
-				if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
+				if (firm.FirmType != Firm.FIRM_CAMP || firm.NationId != NationId)
 					clearDefenseMode++;
 				else
 				{
-					DefenseBackCamp(firm.loc_x1, firm.loc_y1); // go back to the military camp
+					DefenseBackCamp(firm.LocX1, firm.LocY1); // go back to the military camp
 					return;
 				}
 			}
@@ -3839,7 +3839,7 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[ActionMiscParam];
-				DefenseBackCamp(firm.loc_x1, firm.loc_y1);
+				DefenseBackCamp(firm.LocX1, firm.LocY1);
 				return;
 			}
 		}
@@ -4138,7 +4138,7 @@ public partial class Unit
 				else
 				{
 					Unit target = UnitArray[firmMonster.defend_target_recno];
-					if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != firmMonster.firm_recno)
+					if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != firmMonster.FirmId)
 						back++;
 				}
 			}
@@ -4201,11 +4201,11 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[ActionMiscParam];
-				if (firm.firm_id != Firm.FIRM_MONSTER || firm.nation_recno != NationId)
+				if (firm.FirmType != Firm.FIRM_MONSTER || firm.NationId != NationId)
 					clearDefendMode++;
 				else
 				{
-					MonsterDefendBackFirm(firm.loc_x1, firm.loc_y1); // go back to the military camp
+					MonsterDefendBackFirm(firm.LocX1, firm.LocY1); // go back to the military camp
 					return;
 				}
 			}
@@ -4217,7 +4217,7 @@ public partial class Unit
 			else
 			{
 				Firm firm = FirmArray[ActionMiscParam];
-				MonsterDefendBackFirm(firm.loc_x1, firm.loc_y1);
+				MonsterDefendBackFirm(firm.LocX1, firm.LocY1);
 				return;
 			}
 		}
@@ -4254,12 +4254,12 @@ public partial class Unit
 		int curYLoc = NextLocY;
 
 		Firm firm = FirmArray[ActionMiscParam];
-		if ((curXLoc < firm.center_x - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
-		    (curXLoc > firm.center_x + UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
-		    (curYLoc < firm.center_y - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
-		    (curYLoc > firm.center_y + UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE))
+		if ((curXLoc < firm.LocCenterX - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
+		    (curXLoc > firm.LocCenterX + UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
+		    (curYLoc < firm.LocCenterY - UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE) ||
+		    (curYLoc > firm.LocCenterY + UnitConstants.MONSTER_DEFEND_FIRM_DISTANCE))
 		{
-			MonsterDefendBackFirm(firm.loc_x1, firm.loc_y1);
+			MonsterDefendBackFirm(firm.LocX1, firm.LocY1);
 			return false;
 		}
 
@@ -4417,7 +4417,7 @@ public partial class Unit
 				else if (IdleDetectHasFirm)
 				{
 					Firm targetFirm = FirmArray[IdleDetectTargetFirmId];
-					DefenseAttackFirm(targetFirm.loc_x1, targetFirm.loc_y1);
+					DefenseAttackFirm(targetFirm.LocX1, targetFirm.LocY1);
 				}
 				/*else if(idle_detect_has_town)
 				{
@@ -4451,7 +4451,7 @@ public partial class Unit
 				else if (IdleDetectHasFirm)
 				{
 					Firm targetFirm = FirmArray[IdleDetectTargetFirmId];
-					MonsterDefendAttackFirm(targetFirm.loc_x1, targetFirm.loc_y1);
+					MonsterDefendAttackFirm(targetFirm.LocX1, targetFirm.LocY1);
 				}
 				/*else if(idle_detect_has_town)
 				{
@@ -4500,7 +4500,7 @@ public partial class Unit
 			else if (IdleDetectHasFirm)
 			{
 				Firm targetFirm = FirmArray[IdleDetectTargetFirmId];
-				AttackFirm(targetFirm.loc_x1, targetFirm.loc_y1);
+				AttackFirm(targetFirm.LocX1, targetFirm.LocY1);
 			}
 			/*else if(idle_detect_has_town)
 			{
@@ -4666,7 +4666,7 @@ public partial class Unit
 		Firm firm = FirmArray[targetRecno];
 
 		//------------ code to select firm for attacking -----------//
-		switch (firm.firm_id)
+		switch (firm.FirmType)
 		{
 			case Firm.FIRM_CAMP:
 			case Firm.FIRM_BASE:
@@ -4678,7 +4678,7 @@ public partial class Unit
 		}
 
 		Nation nation = NationId != 0 ? NationArray[NationId] : null;
-		int targetNationRecno = firm.nation_recno;
+		int targetNationRecno = firm.NationId;
 		int targetMobileType = MobileType == UnitConstants.UNIT_SEA ? UnitConstants.UNIT_SEA : UnitConstants.UNIT_LAND;
 
 		//-------------------------------------------------------------------------------//
@@ -4714,8 +4714,8 @@ public partial class Unit
 		else if (!CanIndependentUnitAttackNation(targetNationRecno)) // independent town
 			return 0;
 
-		FirmInfo firmInfo = FirmRes[firm.firm_id];
-		if (SpaceForAttack(firm.loc_x1, firm.loc_y1, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
+		FirmInfo firmInfo = FirmRes[firm.FirmType];
+		if (SpaceForAttack(firm.LocX1, firm.LocY1, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
 			return 1;
 		else
 			return 0;

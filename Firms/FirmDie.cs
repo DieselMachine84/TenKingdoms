@@ -32,13 +32,13 @@ public class FirmDie : IIdObject
 
     public void Init(Firm firm)
     {
-        firm_id = firm.firm_id;
-        firm_build_id = firm.firm_build_id;
-        nation_recno = firm.nation_recno;
-        loc_x1 = firm.loc_x1;
-        loc_y1 = firm.loc_y1;
-        loc_x2 = firm.loc_x2;
-        loc_y2 = firm.loc_y2;
+        firm_id = firm.FirmType;
+        firm_build_id = firm.FirmBuildId;
+        nation_recno = firm.NationId;
+        loc_x1 = firm.LocX1;
+        loc_y1 = firm.LocY1;
+        loc_x2 = firm.LocX2;
+        loc_y2 = firm.LocY2;
         frame = 1;
     }
 

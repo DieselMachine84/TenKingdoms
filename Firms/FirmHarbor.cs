@@ -31,40 +31,40 @@ public class FirmHarbor : Firm
 	{
 	}
 
-	public override void init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
+	public override void Init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
 	{
 		// ignore raceId and find north, south, west or east harbor
 
 		if (World.GetLoc(xLoc + 1, yLoc + 2).CanBuildHarbor(1))
 		{
 			// check north harbour
-			base.init(nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
+			base.Init(nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
 		}
 		else if (World.GetLoc(xLoc + 1, yLoc).CanBuildHarbor(1))
 		{
 			// check south harbour
-			base.init(nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
+			base.Init(nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
 		}
 		else if (World.GetLoc(xLoc + 2, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check west harbour
-			base.init(nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
+			base.Init(nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
 			land_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
 			sea_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
 		}
 		else if (World.GetLoc(xLoc, yLoc + 1).CanBuildHarbor(1))
 		{
 			// check east harbour
-			base.init(nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
+			base.Init(nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
 			land_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
 			sea_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
 		}
 
-		region_id = land_region_id; // set region_id to land_region_id
+		RegionId = land_region_id; // set region_id to land_region_id
 
 		//------- update the harbor count of the regions ------//
 
@@ -72,7 +72,7 @@ public class FirmHarbor : Firm
 		RegionArray.UpdateRegionStat();
 	}
 
-	protected override void deinit_derived()
+	protected override void DeinitDerived()
 	{
 		for (int i = ship_recno_array.Count - 1; i >= 0; i--)
 		{
@@ -92,13 +92,13 @@ public class FirmHarbor : Firm
 		}
 	}
 
-	public override void assign_unit(int unitRecno)
+	public override void AssignUnit(int unitRecno)
 	{
 		//------- if this is a construction worker -------//
 
 		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
-			set_builder(unitRecno);
+			SetBuilder(unitRecno);
 			return;
 		}
 
@@ -122,9 +122,9 @@ public class FirmHarbor : Firm
 		//info.disp();
 	}
 
-	public override void next_day()
+	public override void NextDay()
 	{
-		base.next_day();
+		base.NextDay();
 
 		//------- process building -------//
 
@@ -139,7 +139,7 @@ public class FirmHarbor : Firm
 		return linked_mine_array.Count + linked_factory_array.Count + linked_market_array.Count;
 	}
 
-	public override bool is_operating()
+	public override bool IsOperating()
 	{
 		return true;
 	}
@@ -154,7 +154,7 @@ public class FirmHarbor : Firm
 		if (ship_recno_array.Count >= GameConstants.MAX_SHIP_IN_HARBOR)
 			return;
 
-		Nation nation = NationArray[nation_recno];
+		Nation nation = NationArray[NationId];
 
 		if (nation.cash < UnitRes[unitId].build_cost)
 			return;
@@ -197,10 +197,10 @@ public class FirmHarbor : Firm
 		Unit unit = UnitArray[unitRecno];
 
 		SpriteInfo spriteInfo = unit.SpriteInfo;
-		int xLoc = loc_x1; // xLoc & yLoc are used for returning results
-		int yLoc = loc_y1;
+		int xLoc = LocX1; // xLoc & yLoc are used for returning results
+		int yLoc = LocY1;
 
-		if (!World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
+		if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_SEA, sea_region_id))
 		{
 			return;
@@ -212,7 +212,7 @@ public class FirmHarbor : Firm
 
 		//-------- selected the ship --------//
 
-		if (FirmArray.selected_recno == firm_recno && nation_recno == NationArray.player_recno)
+		if (FirmArray.selected_recno == FirmId && NationId == NationArray.player_recno)
 		{
 			Power.reset_selection();
 			unit.SelectedFlag = true;
@@ -271,27 +271,27 @@ public class FirmHarbor : Firm
 		linked_factory_array.Clear();
 		linked_market_array.Clear();
 
-		for (int i = linked_firm_array.Count - 1; i >= 0; i--)
+		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
 		{
-			if (linked_firm_enable_array[i] != InternalConstants.LINK_EE)
+			if (LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
 				continue;
 
-			Firm firm = FirmArray[linked_firm_array[i]];
-			if (!NationArray[nation_recno].get_relation(firm.nation_recno).trade_treaty)
+			Firm firm = FirmArray[LinkedFirms[i]];
+			if (!NationArray[NationId].get_relation(firm.NationId).trade_treaty)
 				continue;
 
-			switch (firm.firm_id)
+			switch (firm.FirmType)
 			{
 				case FIRM_MINE:
-					linked_mine_array.Add(firm.firm_recno);
+					linked_mine_array.Add(firm.FirmId);
 					break;
 
 				case FIRM_FACTORY:
-					linked_factory_array.Add(firm.firm_recno);
+					linked_factory_array.Add(firm.FirmId);
 					break;
 
 				case FIRM_MARKET:
-					linked_market_array.Add(firm.firm_recno);
+					linked_market_array.Add(firm.FirmId);
 					break;
 			}
 		}
@@ -299,9 +299,9 @@ public class FirmHarbor : Firm
 
 	//----------- AI functions -------------//
 
-	public override void process_ai()
+	public override void ProcessAI()
 	{
-		if (Info.TotalDays % 30 == firm_recno % 30)
+		if (Info.TotalDays % 30 == FirmId % 30)
 			think_build_ship();
 
 		/*
@@ -321,7 +321,7 @@ public class FirmHarbor : Firm
 		if (!can_build_ship()) // full, cannot build anymore
 			return;
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		if (!ownNation.ai_should_spend(50 + ownNation.pref_use_marine / 4))
 			return;
@@ -343,7 +343,7 @@ public class FirmHarbor : Firm
 		int enemyShipCount = ownNation.max_human_battle_ship_count();
 		int aiShipCount = ownNation.ai_ship_array.Count;
 
-		if (UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(nation_recno) > 0)
+		if (UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
 		{
 			buildId = UnitConstants.UNIT_GALLEON;
 
@@ -352,7 +352,7 @@ public class FirmHarbor : Firm
 			else
 				rc = enemyShipCount > aiShipCount;
 		}
-		else if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(nation_recno) > 0)
+		else if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(NationId) > 0)
 		{
 			buildId = UnitConstants.UNIT_CARAVEL;
 
@@ -377,7 +377,7 @@ public class FirmHarbor : Firm
 
 	public void think_build_firm()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		if (ownNation.cash < 2000) // don't build if the cash is too low
 			return;
@@ -396,7 +396,7 @@ public class FirmHarbor : Firm
 		//----- think about building camps ------//
 
 		if (ownNation.pref_military_development / 2 +
-		    (linked_firm_array.Count + ownNation.ai_ship_array.Count + ship_recno_array.Count) * 10 +
+		    (LinkedFirms.Count + ownNation.ai_ship_array.Count + ship_recno_array.Count) * 10 +
 		    ownNation.total_jobless_population * 2 > 150)
 		{
 			ai_build_firm(FIRM_CAMP);
@@ -405,10 +405,10 @@ public class FirmHarbor : Firm
 
 	public bool ai_build_firm(int firmId)
 	{
-		if (no_neighbor_space) // if there is no space in the neighbor area for building a new firm.
+		if (NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
 			return false;
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		//--- check whether the AI can build a new firm next this firm ---//
 
@@ -435,16 +435,16 @@ public class FirmHarbor : Firm
 				return 0;
 		}*/
 
-		for (int i = 0; i < linked_firm_array.Count; i++)
+		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
-			Firm firm = FirmArray[linked_firm_array[i]];
+			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != firmId)
+			if (firm.FirmType != firmId)
 				continue;
 
 			//------ if this market is our own one ------//
 
-			if (firm.nation_recno == nation_recno)
+			if (firm.NationId == NationId)
 				return false;
 		}
 		//#### end alex 24/9 ####//
@@ -453,13 +453,13 @@ public class FirmHarbor : Firm
 
 		int buildXLoc, buildYLoc;
 
-		if (!ownNation.find_best_firm_loc(firmId, loc_x1, loc_y1, out buildXLoc, out buildYLoc))
+		if (!ownNation.find_best_firm_loc(firmId, LocX1, LocY1, out buildXLoc, out buildYLoc))
 		{
-			no_neighbor_space = true;
+			NoNeighborSpace = true;
 			return false;
 		}
 
-		ownNation.add_action(buildXLoc, buildYLoc, loc_x1, loc_y1,
+		ownNation.add_action(buildXLoc, buildYLoc, LocX1, LocY1,
 			Nation.ACTION_AI_BUILD_FIRM, firmId);
 
 		return true;
@@ -469,7 +469,7 @@ public class FirmHarbor : Firm
 	{
 		//---- see if we have any free ship available ----//
 
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 		UnitMarine unitMarine = ai_get_free_trade_ship();
 
 		if (unitMarine == null)
@@ -486,7 +486,7 @@ public class FirmHarbor : Firm
 		FirmHarbor toHarbor = null;
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.firm_id != FIRM_HARBOR)
+			if (firm.FirmType != FIRM_HARBOR)
 				continue;
 
 			FirmHarbor firmHarbor = (FirmHarbor)firm;
@@ -495,7 +495,7 @@ public class FirmHarbor : Firm
 				continue;
 
 			// if there has been any ships trading between these two harbors yet
-			if (!ownNation.has_trade_ship(firm_recno, firmHarbor.firm_recno))
+			if (!ownNation.has_trade_ship(FirmId, firmHarbor.FirmId))
 			{
 				hasTradeShip = true;
 				toHarbor = firmHarbor;
@@ -508,8 +508,8 @@ public class FirmHarbor : Firm
 
 		//------ try to set up a sea trade now ------//
 
-		unitMarine.set_stop(1, loc_x1, loc_y1, InternalConstants.COMMAND_AI);
-		unitMarine.set_stop(2, toHarbor.loc_x1, toHarbor.loc_y1, InternalConstants.COMMAND_AI);
+		unitMarine.set_stop(1, LocX1, LocY1, InternalConstants.COMMAND_AI);
+		unitMarine.set_stop(2, toHarbor.LocX1, toHarbor.LocY1, InternalConstants.COMMAND_AI);
 
 		unitMarine.set_stop_pick_up(1, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AI);
 		unitMarine.set_stop_pick_up(2, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AI);
@@ -519,7 +519,7 @@ public class FirmHarbor : Firm
 
 	public UnitMarine ai_get_free_trade_ship()
 	{
-		Nation ownNation = NationArray[nation_recno];
+		Nation ownNation = NationArray[NationId];
 
 		for (int i = ownNation.ai_ship_array.Count - 1; i >= 0; i--)
 		{
@@ -542,7 +542,7 @@ public class FirmHarbor : Firm
 	{
 		build_unit_id = 0;
 
-		if (FirmArray.selected_recno == firm_recno)
+		if (FirmArray.selected_recno == FirmId)
 		{
 			//TODO drawing
 			//disable_refresh = 1;
@@ -553,7 +553,7 @@ public class FirmHarbor : Firm
 
 	private bool should_show_harbor_info()
 	{
-		if (should_show_info())
+		if (ShouldShowInfo())
 			return true;
 
 		//--- if any of the ships in the harbor has the spies of the player ---//
@@ -575,7 +575,7 @@ public class FirmHarbor : Firm
 
 		//---- set the unit_mode of the ship ----//
 
-		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, firm_recno);
+		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, FirmId);
 
 		//---------------------------------------//
 
@@ -591,17 +591,17 @@ public class FirmHarbor : Firm
 
 		if ((Sys.Instance.FrameNumber - start_build_frame_no) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
 		{
-			Unit unit = UnitArray.AddUnit(build_unit_id, nation_recno);
+			Unit unit = UnitArray.AddUnit(build_unit_id, NationId);
 
 			add_hosted_ship(unit.SpriteId);
 
-			if (own_firm())
-				SERes.far_sound(center_x, center_y, 1, 'F', firm_id,
+			if (OwnFirm())
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType,
 					"FINS", 'S', UnitRes[build_unit_id].sprite_id);
 
 			build_unit_id = 0;
 
-			if (FirmArray.selected_recno == firm_recno)
+			if (FirmArray.selected_recno == FirmId)
 			{
 				//TODO drawing
 				//disable_refresh = 1;
@@ -658,7 +658,7 @@ public class FirmHarbor : Firm
 
 			build_ship(build_queue.Dequeue(), InternalConstants.COMMAND_AUTO);
 
-			if (FirmArray.selected_recno == firm_recno)
+			if (FirmArray.selected_recno == FirmId)
 			{
 				//TODO drawing
 				//disable_refresh = 1;

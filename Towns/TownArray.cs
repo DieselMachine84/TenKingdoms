@@ -103,7 +103,7 @@ public class TownArray : DynArray<Town>
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.firm_id == Firm.FIRM_MARKET)
+			if (firm.FirmType == Firm.FIRM_MARKET)
 			{
 				FirmMarket firmMarket = (FirmMarket)firm;
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
@@ -302,7 +302,7 @@ public class TownArray : DynArray<Town>
 			foreach (Firm firm in FirmArray)
 			{
 				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-					    firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2) < GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE)
+					    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE)
 				{
 					canBuildFlag = false;
 					break;

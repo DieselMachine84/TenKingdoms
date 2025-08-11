@@ -1726,7 +1726,7 @@ public class MapGenerator
 				break;
 			}
 
-			FirmArray[firmRecno].complete_construction();
+			FirmArray[firmRecno].CompleteConstruction();
 
 			//--------- create units ----------//
 
@@ -1737,7 +1737,7 @@ public class MapGenerator
 			if (king != null)
 			{
 				nation.set_king(king.SpriteId, 1);
-				FirmArray[firmRecno].assign_overseer(king.SpriteId);
+				FirmArray[firmRecno].AssignOverseer(king.SpriteId);
 			}
 			else
 			{

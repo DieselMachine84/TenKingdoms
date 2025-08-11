@@ -261,7 +261,7 @@ public class UnitArray : SpriteArray
 					    return;
 
 				    Firm targetFirm = FirmArray[targetId];
-				    if (targetFirm.nation_recno == targetNationId)
+				    if (targetFirm.NationId == targetNationId)
 					    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 				    break;
 
@@ -1347,8 +1347,8 @@ public class UnitArray : SpriteArray
 	    if (location.IsFirm())
 	    {
 		    Firm firm = FirmArray[location.FirmId()];
-		    destLocX = firm.loc_x1;
-		    destLocY = firm.loc_y1;
+		    destLocX = firm.LocX1;
+		    destLocY = firm.LocY1;
 	    }
 
 	    //---- if there is a town on this location -----//
@@ -1414,7 +1414,7 @@ public class UnitArray : SpriteArray
 				    if (loc.IsFirm())
 				    {
 					    Firm firm = FirmArray[loc.FirmId()];
-					    if (firm.firm_id == Firm.FIRM_HARBOR) // recursive call
+					    if (firm.FirmType == Firm.FIRM_HARBOR) // recursive call
 						    Assign(destLocX, destLocY, true, remoteAction, _selectedSeaUnits);
 					    else
 						    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
@@ -1479,7 +1479,7 @@ public class UnitArray : SpriteArray
 	    else if (loc.IsFirm())
 	    {
 		    assignType = ASSIGN_TYPE_FIRM;
-		    miscNo = FirmArray[loc.FirmId()].firm_id;
+		    miscNo = FirmArray[loc.FirmId()].FirmType;
 	    }
 	    else if (loc.IsTown())
 	    {
@@ -1808,9 +1808,9 @@ public class UnitArray : SpriteArray
 		    {
 			    Firm firm = FirmArray[location.FirmId()];
 
-			    targetLocX = firm.loc_x1;
-			    targetLocY = firm.loc_y1;
-			    targetNationId = firm.nation_recno;
+			    targetLocX = firm.LocX1;
+			    targetLocY = firm.LocY1;
+			    targetNationId = firm.NationId;
 		    }
 
 		    //---- if there is a town on this location -----//
@@ -1899,10 +1899,10 @@ public class UnitArray : SpriteArray
 	    else if (loc.IsFirm())
 	    {
 		    Firm firm = FirmArray[loc.FirmId()];
-		    if (firm.hit_points <= 0.0)
+		    if (firm.HitPoints <= 0.0)
 			    return;
 
-		    AttackFirm(targetXLoc, targetYLoc, firm.firm_recno, selectedUnits);
+		    AttackFirm(targetXLoc, targetYLoc, firm.FirmId, selectedUnits);
 	    }
 	    else if (loc.IsTown())
 	    {
@@ -2158,7 +2158,7 @@ public class UnitArray : SpriteArray
 
 	    //----------- initialize local parameters ------------//
 	    Firm firm = FirmArray[firmRecno];
-	    FirmInfo firmInfo = FirmRes[firm.firm_id];
+	    FirmInfo firmInfo = FirmRes[firm.FirmType];
 	    int firmWidth = firmInfo.loc_width;
 	    int firmHeight = firmInfo.loc_height;
 	    int targetXLoc2 = targetLocX + firmWidth - 1; // the lower right corner of the firm

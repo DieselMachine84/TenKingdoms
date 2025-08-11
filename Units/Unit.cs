@@ -288,7 +288,7 @@ public partial class Unit : Sprite
 
 		else if (UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 		{
-			FirmArray[UnitModeParam].builder_recno = 0;
+			FirmArray[UnitModeParam].BuilderId = 0;
 		}
 
 		//-------- if this is a spy ---------//
@@ -704,7 +704,7 @@ public partial class Unit : Sprite
 					else
 					{
 						Firm firm = FirmArray[ActionParam];
-						if (firm.nation_recno != NationId && !firm.can_assign_capture())
+						if (firm.NationId != NationId && !firm.CanAssignCapture())
 						{
 							Stop2();
 							return;
@@ -744,7 +744,7 @@ public partial class Unit : Sprite
 				{
 					//---------------- a firm on the location -----------------//
 					Firm firm = FirmArray[ActionParam];
-					FirmInfo firmInfo = FirmRes[firm.firm_id];
+					FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 					//---------- resume action if the unit has not reached the firm surrounding ----------//
 					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
@@ -757,7 +757,7 @@ public partial class Unit : Sprite
 					}
 
 					//------------ in the firm surrounding ------------//
-					if (!firm.under_construction)
+					if (!firm.UnderConstruction)
 					{
 						//-------------------------------------------------------//
 						// if in defense mode, update parameters in military camp
@@ -778,7 +778,7 @@ public partial class Unit : Sprite
 
 						ResetActionParameters2();
 
-						firm.assign_unit(SpriteId);
+						firm.AssignUnit(SpriteId);
 
 						//----------------------------------------------------------//
 						// firm.AssignUnit() must be done first.  Then a town will be created
@@ -796,12 +796,12 @@ public partial class Unit : Sprite
 					else
 					{
 						//---------- change the builder ------------//
-						if (AIUnit && firm.under_construction)
+						if (AIUnit && firm.UnderConstruction)
 							return; // not allow AI to change firm builder
 
 						ResetActionParameters2();
-						if (Skill.GetSkillLevel(Skill.SKILL_CONSTRUCTION) != 0 || Skill.GetSkillLevel(firm.firm_skill_id) != 0)
-							firm.set_builder(SpriteId);
+						if (Skill.GetSkillLevel(Skill.SKILL_CONSTRUCTION) != 0 || Skill.GetSkillLevel(firm.FirmSkillId) != 0)
+							firm.SetBuilder(SpriteId);
 					}
 
 					//------------ update UnitArray's selected parameters ------------//
@@ -1164,25 +1164,25 @@ public partial class Unit : Sprite
 	private int CanAssignToFirm(int firmId)
 	{
 		Firm firm = FirmArray[firmId];
-		FirmInfo firmInfo = FirmRes[firm.firm_id];
+		FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 		switch (UnitRes[UnitType].unit_class)
 		{
 			case UnitConstants.UNIT_CLASS_HUMAN:
-				if (NationId == firm.nation_recno)
+				if (NationId == firm.NationId)
 				{
-					if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firm.firm_id != Firm.FIRM_MONSTER)
+					if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firm.FirmType != Firm.FIRM_MONSTER)
 					{
 						return 3;
 					}
 
-					switch (firm.firm_id)
+					switch (firm.FirmType)
 					{
 						case Firm.FIRM_CAMP:
 							return Rank == RANK_SOLDIER ? 1 : 2;
 
 						case Firm.FIRM_BASE:
-							if (RaceId == firm.race_id)
+							if (RaceId == firm.RaceId)
 							{
 								if (Skill.SkillId == 0 || Skill.SkillId == Skill.SKILL_PRAYING) // non-skilled worker
 									return 1;
@@ -1200,17 +1200,17 @@ public partial class Unit : Sprite
 				break;
 
 			case UnitConstants.UNIT_CLASS_WEAPON:
-				if (firm.firm_id == Firm.FIRM_CAMP && NationId == firm.nation_recno)
+				if (firm.FirmType == Firm.FIRM_CAMP && NationId == firm.NationId)
 					return 1;
 				break;
 
 			case UnitConstants.UNIT_CLASS_SHIP:
-				if (firm.firm_id == Firm.FIRM_HARBOR && NationId == firm.nation_recno)
+				if (firm.FirmType == Firm.FIRM_HARBOR && NationId == firm.NationId)
 					return 1;
 				break;
 
 			case UnitConstants.UNIT_CLASS_MONSTER:
-				if (firm.firm_id == Firm.FIRM_MONSTER && MobileType == UnitConstants.UNIT_LAND)
+				if (firm.FirmType == Firm.FIRM_MONSTER && MobileType == UnitConstants.UNIT_LAND)
 				{
 					// BUGHERE : suppose only land monster can assign
 					return Rank == RANK_SOLDIER ? 1 : 2;
@@ -1249,7 +1249,7 @@ public partial class Unit : Sprite
 			Firm firm = FirmArray[loc.FirmId()];
 			bool differentRegions = false;
 
-			if (firm.firm_id == Firm.FIRM_HARBOR)
+			if (firm.FirmType == Firm.FIRM_HARBOR)
 			{
 				FirmHarbor harbor = (FirmHarbor)firm;
 				switch (UnitRes[UnitType].unit_class)
@@ -1272,7 +1272,7 @@ public partial class Unit : Sprite
 
 			if (differentRegions)
 			{
-				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
+				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 				return;
 			}
 		}
@@ -1315,11 +1315,11 @@ public partial class Unit : Sprite
 			}
 
 			Firm firm = FirmArray[firmId];
-			FirmInfo firmInfo = FirmRes[firm.firm_id];
+			FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 			if (CanAssignToFirm(firmId) == 0)
 			{
-				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.firm_id);
+				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 				return;
 			}
 
@@ -1920,7 +1920,7 @@ public partial class Unit : Sprite
 						{
 							//-------- return to monster firm -----------//
 							Firm monsterFirm = FirmArray[UnitModeParam];
-							Assign(monsterFirm.loc_x1, monsterFirm.loc_y1);
+							Assign(monsterFirm.LocX1, monsterFirm.LocY1);
 							return;
 						}
 						else
@@ -2075,7 +2075,7 @@ public partial class Unit : Sprite
 				else
 				{
 					Firm firm = FirmArray[ActionPara2];
-					FirmInfo firmInfo = FirmRes[firm.firm_id];
+					FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
 					{
@@ -2948,7 +2948,7 @@ public partial class Unit : Sprite
 		else
 		{
 			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE || UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
-				return FirmArray[UnitModeParam].region_id;
+				return FirmArray[UnitModeParam].RegionId;
 		}
 
 		return 0;
@@ -3044,21 +3044,21 @@ public partial class Unit : Sprite
 		{
 			Firm firm = FirmArray[UnitModeParam];
 
-			if (firm.firm_id == Firm.FIRM_CAMP)
+			if (firm.FirmType == Firm.FIRM_CAMP)
 			{
-				for (int i = firm.linked_town_array.Count - 1; i >= 0; i--)
+				for (int i = firm.LinkedTowns.Count - 1; i >= 0; i--)
 				{
-					if (firm.linked_town_enable_array[i] == InternalConstants.LINK_EE)
+					if (firm.LinkedTownsEnable[i] == InternalConstants.LINK_EE)
 					{
-						Town town = TownArray[firm.linked_town_array[i]];
+						Town town = TownArray[firm.LinkedTowns[i]];
 
 						commanderPower += town.Population / town.LinkedActiveCampCount();
 					}
 				}
 
-				commanderPower += firm.workers.Count * 3; // 0 to 24
+				commanderPower += firm.Workers.Count * 3; // 0 to 24
 			}
-			else if (firm.firm_id == Firm.FIRM_BASE)
+			else if (firm.FirmType == Firm.FIRM_BASE)
 			{
 				commanderPower = 60;
 			}
@@ -3103,8 +3103,8 @@ public partial class Unit : Sprite
 		else if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE || UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT || UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 		{
 			Firm firm = FirmArray[UnitModeParam];
-			locX = firm.center_x;
-			locY = firm.center_y;
+			locX = firm.LocCenterX;
+			locY = firm.LocCenterY;
 		}
 		else if (UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 		{
@@ -3117,8 +3117,8 @@ public partial class Unit : Sprite
 			else
 			{
 				Firm firm = FirmArray[ship.UnitModeParam];
-				locX = firm.center_x;
-				locY = firm.center_y;
+				locX = firm.LocCenterX;
+				locY = firm.LocCenterY;
 			}
 		}
 		else
@@ -3142,8 +3142,8 @@ public partial class Unit : Sprite
 		else if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE || UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT || UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 		{
 			Firm firm = FirmArray[UnitModeParam];
-			locX = firm.center_x;
-			locY = firm.center_y;
+			locX = firm.LocCenterX;
+			locY = firm.LocCenterY;
 		}
 		else if (UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 		{
@@ -3156,8 +3156,8 @@ public partial class Unit : Sprite
 			else
 			{
 				Firm firm = FirmArray[ship.UnitModeParam];
-				locX = firm.center_x;
-				locY = firm.center_y;
+				locX = firm.LocCenterX;
+				locY = firm.LocCenterY;
 			}
 		}
 		else
@@ -3305,7 +3305,7 @@ public partial class Unit : Sprite
 			if (IsVisible()) // the cost will be deducted in SpyArray
 				return;
 
-			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE && FirmArray[UnitModeParam].nation_recno == TrueNationId())
+			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE && FirmArray[UnitModeParam].NationId == TrueNationId())
 				return;
 		}
 
@@ -3984,7 +3984,7 @@ public partial class Unit : Sprite
 		//------ if this unit oversees a firm -----//
 
 		if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE)
-			FirmArray[UnitModeParam].change_nation(newNationId);
+			FirmArray[UnitModeParam].ChangeNation(newNationId);
 
 		//----- this unit was defending the town before it gets killed ----//
 
@@ -4388,7 +4388,7 @@ public partial class Unit : Sprite
 
 		else if (OriginalActionMode == UnitConstants.ACTION_ASSIGN_TO_FIRM && location.IsFirm())
 		{
-			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].nation_recno == NationId)
+			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].NationId == NationId)
 			{
 				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
 			}
@@ -4450,7 +4450,7 @@ public partial class Unit : Sprite
 		{
 			int firmId = location.FirmId();
 			if (firmId == OriginalActionParam)
-				targetNationId = FirmArray[firmId].nation_recno;
+				targetNationId = FirmArray[firmId].NationId;
 		}
 		else if (OriginalActionMode == UnitConstants.ACTION_ATTACK_TOWN && location.IsTown())
 		{
@@ -4540,10 +4540,10 @@ public partial class Unit : Sprite
 
 		Firm firm = FirmArray[HomeCampId];
 
-		if (firm.region_id != RegionId())
+		if (firm.RegionId != RegionId())
 			return false;
 
-		Assign(firm.loc_x1, firm.loc_y1);
+		Assign(firm.LocX1, firm.LocY1);
 
 		ForceMove = true;
 
@@ -4791,9 +4791,9 @@ public partial class Unit : Sprite
 			bool rc;
 
 			if (Rank == RANK_SOLDIER)
-				rc = firmCamp.workers.Count < Firm.MAX_WORKER;
+				rc = firmCamp.Workers.Count < Firm.MAX_WORKER;
 			else
-				rc = (firmCamp.overseer_recno == 0);
+				rc = (firmCamp.OverseerId == 0);
 
 			if (rc)
 			{
@@ -4925,12 +4925,12 @@ public partial class Unit : Sprite
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[nation.ai_camp_array[i]];
 
-			if (firmCamp.region_id != curRegionId)
+			if (firmCamp.RegionId != curRegionId)
 				continue;
 
 			//--- if the commander of this camp is the king, never replace him ---//
 
-			if (firmCamp.overseer_recno == nation.king_unit_recno)
+			if (firmCamp.OverseerId == nation.king_unit_recno)
 				continue;
 
 			//--- we have separate logic for choosing generals of capturing camps ---//
@@ -4955,7 +4955,7 @@ public partial class Unit : Sprite
 
 				if (Rank != RANK_KING) // don't check this if the current unit is the king
 				{
-					actionNode = nation.get_action(firmCamp.loc_x1, firmCamp.loc_y1,
+					actionNode = nation.get_action(firmCamp.LocX1, firmCamp.LocY1,
 						-1, -1, Nation.ACTION_AI_ASSIGN_OVERSEER, Firm.FIRM_CAMP);
 
 					if (actionNode != null && actionNode.processing_instance_count > 0)
@@ -4981,16 +4981,16 @@ public partial class Unit : Sprite
 		//-- if there is room in the camp to host all soldiers led by this general --//
 
 		int memberCount = TeamInfo.Members.Count;
-		if (memberCount > 0 && memberCount - 1 <= Firm.MAX_WORKER - bestCamp.workers.Count)
+		if (memberCount > 0 && memberCount - 1 <= Firm.MAX_WORKER - bestCamp.Workers.Count)
 		{
 			ValidateTeam();
 
-			UnitArray.Assign(bestCamp.loc_x1, bestCamp.loc_y1, false, InternalConstants.COMMAND_AI, TeamInfo.Members);
+			UnitArray.Assign(bestCamp.LocX1, bestCamp.LocY1, false, InternalConstants.COMMAND_AI, TeamInfo.Members);
 			return true;
 		}
 		else //--- otherwise assign the general only ---//
 		{
-			return nation.add_action(bestCamp.loc_x1, bestCamp.loc_y1, -1, -1,
+			return nation.add_action(bestCamp.LocX1, bestCamp.LocY1, -1, -1,
 				Nation.ACTION_AI_ASSIGN_OVERSEER, Firm.FIRM_CAMP, 1, SpriteId) != null;
 		}
 
@@ -5023,46 +5023,46 @@ public partial class Unit : Sprite
 		{
 			foreach (Firm firm in FirmArray)
 			{
-				if (firm.nation_recno != NationId)
+				if (firm.NationId != NationId)
 					continue;
 
-				if (firm.region_id != regionId)
+				if (firm.RegionId != regionId)
 					continue;
 
 				int curRating = 0;
 
 				if (Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if this is a construction worker
 				{
-					if (firm.builder_recno != 0) // assign the construction worker to this firm as an residental builder
+					if (firm.BuilderId != 0) // assign the construction worker to this firm as an residental builder
 						continue;
 				}
 				else
 				{
-					if (firm.workers.Count == 0 || firm.firm_skill_id != skillId)
+					if (firm.Workers.Count == 0 || firm.FirmSkillId != skillId)
 					{
 						continue;
 					}
 
 					//----- if the firm is full of worker ------//
 
-					if (firm.is_worker_full())
+					if (firm.IsWorkerFull())
 					{
-						if (firm.firm_id != Firm.FIRM_CAMP)
+						if (firm.FirmType != Firm.FIRM_CAMP)
 						{
 							//---- get the lowest skill worker of the firm -----//
 
 							int minSkill = 1000;
 
-							for (int j = 0; j < firm.workers.Count; j++)
+							for (int j = 0; j < firm.Workers.Count; j++)
 							{
-								Worker worker = firm.workers[j];
+								Worker worker = firm.Workers[j];
 								if (worker.skill_level < minSkill)
 									minSkill = worker.skill_level;
 							}
 
 							//------------------------------//
 
-							if (firm.majority_race() == RaceId)
+							if (firm.MajorityRace() == RaceId)
 							{
 								if (Skill.SkillLevel < minSkill + 10)
 									continue;
@@ -5081,13 +5081,13 @@ public partial class Unit : Sprite
 							int minMaxHitPointsOtherRace = 1000;
 							bool hasOtherRace = false;
 
-							for (int j = 0; j < firm.workers.Count; j++)
+							for (int j = 0; j < firm.Workers.Count; j++)
 							{
-								Worker worker = firm.workers[j];
+								Worker worker = firm.Workers[j];
 								if (worker.max_hit_points() < minMaxHitPoints)
 									minMaxHitPoints = worker.max_hit_points();
 
-								if (worker.race_id != firm.majority_race())
+								if (worker.race_id != firm.MajorityRace())
 								{
 									hasOtherRace = true;
 									if (worker.max_hit_points() < minMaxHitPointsOtherRace)
@@ -5095,7 +5095,7 @@ public partial class Unit : Sprite
 								}
 							}
 
-							if (firm.majority_race() == RaceId)
+							if (firm.MajorityRace() == RaceId)
 							{
 								if ((!hasOtherRace && (minMaxHitPoints > MaxHitPoints - 10)) ||
 								    (hasOtherRace && (minMaxHitPointsOtherRace > MaxHitPoints + 30)))
@@ -5117,12 +5117,12 @@ public partial class Unit : Sprite
 
 				//-------- calculate the rating ---------//
 
-				curRating += World.DistanceRating(curXLoc, curYLoc, firm.center_x, firm.center_y);
+				curRating += World.DistanceRating(curXLoc, curYLoc, firm.LocCenterX, firm.LocCenterY);
 
-				if (firm.majority_race() == RaceId)
+				if (firm.MajorityRace() == RaceId)
 					curRating += 70;
 
-				curRating += (Firm.MAX_WORKER - firm.workers.Count) * 10;
+				curRating += (Firm.MAX_WORKER - firm.Workers.Count) * 10;
 
 				//-------------------------------------//
 
@@ -5135,14 +5135,14 @@ public partial class Unit : Sprite
 
 			if (bestFirm != null)
 			{
-				if (bestFirm.firm_id == Firm.FIRM_CAMP && bestFirm.workers.Count == Firm.MAX_WORKER &&
-				    Misc.points_distance(curXLoc, curYLoc, bestFirm.loc_x1, bestFirm.loc_y1) < 5)
+				if (bestFirm.FirmType == Firm.FIRM_CAMP && bestFirm.Workers.Count == Firm.MAX_WORKER &&
+				    Misc.points_distance(curXLoc, curYLoc, bestFirm.LocX1, bestFirm.LocY1) < 5)
 				{
 					int minMaxHitPointsOtherRace = 1000;
 					int bestWorkerId = -1;
-					for (int j = 0; j < bestFirm.workers.Count; j++)
+					for (int j = 0; j < bestFirm.Workers.Count; j++)
 					{
-						Worker worker = bestFirm.workers[j];
+						Worker worker = bestFirm.Workers[j];
 						if (worker.race_id != RaceId)
 						{
 							if (worker.max_hit_points() < minMaxHitPointsOtherRace)
@@ -5156,9 +5156,9 @@ public partial class Unit : Sprite
 					if (bestWorkerId == -1)
 					{
 						int minMaxHitPoints = 1000;
-						for (int j = 0; j < bestFirm.workers.Count; j++)
+						for (int j = 0; j < bestFirm.Workers.Count; j++)
 						{
-							Worker worker = bestFirm.workers[j];
+							Worker worker = bestFirm.Workers[j];
 							if (worker.max_hit_points() < minMaxHitPoints)
 							{
 								minMaxHitPoints = worker.max_hit_points();
@@ -5169,12 +5169,12 @@ public partial class Unit : Sprite
 
 					if (bestWorkerId != -1)
 					{
-						bestFirm.mobilize_worker(bestWorkerId, InternalConstants.COMMAND_AI);
+						bestFirm.MobilizeWorker(bestWorkerId, InternalConstants.COMMAND_AI);
 					}
 				}
 
-				Assign(bestFirm.loc_x1, bestFirm.loc_y1);
-				if (bestFirm.firm_id == Firm.FIRM_CAMP)
+				Assign(bestFirm.LocX1, bestFirm.LocY1);
+				if (bestFirm.FirmType == Firm.FIRM_CAMP)
 				{
 					FirmCamp firmCamp = (FirmCamp)bestFirm;
 					if (firmCamp.coming_unit_array.Count < Firm.MAX_WORKER)
@@ -5303,11 +5303,11 @@ public partial class Unit : Sprite
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[nation.ai_camp_array[i]];
 
-			if (firmCamp.region_id != regionId || firmCamp.is_worker_full())
+			if (firmCamp.RegionId != regionId || firmCamp.IsWorkerFull())
 				continue;
 
-			int curRating = World.DistanceRating(curXLoc, curYLoc, firmCamp.center_x, firmCamp.center_y);
-			curRating += (Firm.MAX_WORKER - firmCamp.workers.Count) * 10;
+			int curRating = World.DistanceRating(curXLoc, curYLoc, firmCamp.LocCenterX, firmCamp.LocCenterY);
+			curRating += (Firm.MAX_WORKER - firmCamp.Workers.Count) * 10;
 
 			if (curRating > bestRating)
 			{
@@ -5318,7 +5318,7 @@ public partial class Unit : Sprite
 
 		if (bestCamp != null)
 		{
-			Assign(bestCamp.loc_x1, bestCamp.loc_y1);
+			Assign(bestCamp.LocX1, bestCamp.LocY1);
 			return true;
 		}
 
@@ -5379,8 +5379,8 @@ public partial class Unit : Sprite
 			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE)
 			{
 				Firm firm = FirmArray[UnitModeParam];
-				if (firm.firm_id == Firm.FIRM_CAMP) // it can be an overseer of a seat of power
-					soldierCount = firm.workers.Count;
+				if (firm.FirmType == Firm.FIRM_CAMP) // it can be an overseer of a seat of power
+					soldierCount = firm.Workers.Count;
 			}
 		}
 
@@ -5501,17 +5501,17 @@ public partial class Unit : Sprite
 				{
 					FirmCamp firmCamp = (FirmCamp)FirmArray[ownNation.ai_camp_array[i]];
 
-					if (firmCamp.region_id != curRegionId)
+					if (firmCamp.RegionId != curRegionId)
 						continue;
 
 					// if there is already a commander in this camp. However if this is the king, than ignore this
-					if (firmCamp.overseer_recno != 0 && Rank != RANK_KING)
+					if (firmCamp.OverseerId != 0 && Rank != RANK_KING)
 						continue;
 
 					if (firmCamp.ai_is_capturing_independent_village())
 						continue;
 
-					int curRating = World.DistanceRating(curLocX, curLocY, firmCamp.center_x, firmCamp.center_y);
+					int curRating = World.DistanceRating(curLocX, curLocY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 
 					if (curRating > bestRating)
 					{
@@ -5531,7 +5531,7 @@ public partial class Unit : Sprite
 				if (Config.ai_aggressiveness > Config.OPTION_LOW)
 					ForceMove = true;
 
-				Assign(bestCamp.loc_x1, bestCamp.loc_y1);
+				Assign(bestCamp.LocX1, bestCamp.LocY1);
 			}
 			else // if the king is neither under attack or has a home camp, then call the standard ThinkLeaderAction()
 			{
@@ -5577,13 +5577,13 @@ public partial class Unit : Sprite
 				{
 					FirmCamp firmCamp = (FirmCamp)FirmArray[ownNation.ai_camp_array[i]];
 
-					if (firmCamp.region_id != curRegionId)
+					if (firmCamp.RegionId != curRegionId)
 						continue;
 
 					if (firmCamp.ai_is_capturing_independent_village())
 						continue;
 
-					int curRating = World.DistanceRating(curLocX, curLocY, firmCamp.center_x, firmCamp.center_y);
+					int curRating = World.DistanceRating(curLocX, curLocY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 
 					if (curRating > bestRating)
 					{
@@ -5601,16 +5601,16 @@ public partial class Unit : Sprite
 			if (bestCamp != null)
 			{
 				// if there is already an overseer there, just move close to the camp for protection
-				if (bestCamp.overseer_recno != 0)
+				if (bestCamp.OverseerId != 0)
 				{
 					if (Config.ai_aggressiveness > Config.OPTION_LOW)
 						ForceMove = true;
 
-					MoveTo(bestCamp.loc_x1, bestCamp.loc_y1);
+					MoveTo(bestCamp.LocX1, bestCamp.LocY1);
 				}
 				else
 				{
-					Assign(bestCamp.loc_x1, bestCamp.loc_y1);
+					Assign(bestCamp.LocX1, bestCamp.LocY1);
 				}
 			}
 			else // if the general is neither under attack or has a home camp, then call the standard ThinkLeaderAction()
@@ -5763,7 +5763,7 @@ public partial class Unit : Sprite
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[ownNation.ai_camp_array[i]];
 
-			if (firmCamp.region_id != curRegionId)
+			if (firmCamp.RegionId != curRegionId)
 				continue;
 
 			int curRating = firmCamp.total_combat_level();
@@ -5780,10 +5780,10 @@ public partial class Unit : Sprite
 
 		//--------- settle a new town now ---------//
 
-		int xLoc = bestCamp.loc_x1;
-		int yLoc = bestCamp.loc_y1;
+		int xLoc = bestCamp.LocX1;
+		int yLoc = bestCamp.LocY1;
 
-		if (World.LocateSpace(ref xLoc, ref yLoc, bestCamp.loc_x2, bestCamp.loc_y2,
+		if (World.LocateSpace(ref xLoc, ref yLoc, bestCamp.LocX2, bestCamp.LocY2,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, curRegionId, true))
 		{
 			Settle(xLoc, yLoc);

@@ -38,17 +38,17 @@ public class BuildMineTask : AITask
             Firm bestFirm = null;
             foreach (Firm firm in FirmArray)
             {
-                if (firm.nation_recno != Nation.nation_recno)
+                if (firm.NationId != Nation.nation_recno)
                     continue;
 
                 // TODO other region
-                if (firm.region_id != site.RegionId)
+                if (firm.RegionId != site.RegionId)
                     continue;
 
                 // TODO use pref
-                if (firm.builder_recno != 0 && firm.hit_points > firm.max_hit_points / 2.0)
+                if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0)
                 {
-                    int firmDistance = Misc.points_distance(firm.loc_x1, firm.loc_y1, site.LocX, site.LocY);
+                    int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, site.LocX, site.LocY);
                     if (firmDistance < minFirmDistance)
                     {
                         //TODO prefer firms at the same region
@@ -94,7 +94,7 @@ public class BuildMineTask : AITask
             {
                 if (bestFirm != null && bestTown != null)
                 {
-                    if (Misc.PointsDistance(bestFirm.loc_x1, bestFirm.loc_y1, bestFirm.loc_x2, bestFirm.loc_y2,
+                    if (Misc.PointsDistance(bestFirm.LocX1, bestFirm.LocY1, bestFirm.LocX2, bestFirm.LocY2,
                             bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2) < 10)
                     {
                         bestTown = null;
@@ -108,8 +108,8 @@ public class BuildMineTask : AITask
 
             if (bestFirm != null)
             {
-                _builderId = bestFirm.builder_recno;
-                if (!bestFirm.mobilize_builder(_builderId))
+                _builderId = bestFirm.BuilderId;
+                if (!bestFirm.MobilizeBuilder(_builderId))
                     _builderId = 0;
             }
 

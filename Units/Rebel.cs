@@ -210,7 +210,7 @@ public class Rebel : IIdObject
 
         if (ActionMode == REBEL_ATTACK_FIRM)
         {
-            if (FirmArray.IsDeleted(ActionParam) || FirmArray[ActionParam].nation_recno == 0)
+            if (FirmArray.IsDeleted(ActionParam) || FirmArray[ActionParam].NationId == 0)
             {
                 //--- stop all units that are still attacking the firm ---//
 
@@ -367,18 +367,18 @@ public class Rebel : IIdObject
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {
-            if (!IsHostileNation(firm.nation_recno))
+            if (!IsHostileNation(firm.NationId))
                 continue;
 
-            if (World.GetRegionId(firm.loc_x1, firm.loc_y1) != curRegionId)
+            if (World.GetRegionId(firm.LocX1, firm.LocY1) != curRegionId)
                 continue;
 
-            int firmDistance = Misc.points_distance(leaderLocX, leaderLocY, firm.center_x, firm.center_y);
+            int firmDistance = Misc.points_distance(leaderLocX, leaderLocY, firm.LocCenterX, firm.LocCenterY);
 
             if (firmDistance < closestFirmDistance)
             {
                 closestFirmDistance = firmDistance;
-                bestFirmId = firm.firm_recno;
+                bestFirmId = firm.FirmId;
             }
         }
 
@@ -419,7 +419,7 @@ public class Rebel : IIdObject
 
             case REBEL_ATTACK_FIRM:
                 Firm firm = FirmArray[ActionParam];
-                UnitArray.Attack(firm.loc_x1, firm.loc_y1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
+                UnitArray.Attack(firm.LocX1, firm.LocY1, false, rebelUnits, InternalConstants.COMMAND_AI, 0);
                 break;
 
             case REBEL_SETTLE_NEW:

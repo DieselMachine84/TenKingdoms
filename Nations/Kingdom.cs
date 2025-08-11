@@ -127,14 +127,14 @@ public class NationNew : NationBase
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno != nation_recno)
+            if (firm.NationId != nation_recno)
                 continue;
 
-            if (firm.firm_id == Firm.FIRM_CAMP || firm.firm_id == Firm.FIRM_BASE)
+            if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
             {
-                if (firm.overseer_recno != 0)
+                if (firm.OverseerId != 0)
                 {
-                    Unit overseer = UnitArray[firm.overseer_recno];
+                    Unit overseer = UnitArray[firm.OverseerId];
                     //TODO also take reputation into account
                     if (overseer.Skill.SkillLevel > 50) // TODO constant should depend on preferences
                     {
@@ -153,14 +153,14 @@ public class NationNew : NationBase
                     }
                 }
 
-                foreach (Worker worker in firm.workers)
+                foreach (Worker worker in firm.Workers)
                 {
                     if (worker.skill_id == Skill.SKILL_LEADING && worker.skill_level > 50) // TODO constant should depend on preferences
                         possibleCapturerSoldiers.Add((firm, worker));
                 }
             }
 
-            if (firm.firm_id == Firm.FIRM_INN)
+            if (firm.FirmType == Firm.FIRM_INN)
             {
                 FirmInn inn = (FirmInn)firm;
                 foreach (InnUnit innUnit in inn.inn_unit_array)
@@ -294,11 +294,11 @@ public class NationNew : NationBase
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno != nation_recno || firm.firm_id != Firm.FIRM_MINE)
+            if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_MINE)
                 continue;
 
             bool linkedToOurTown = false;
-            foreach (int townId in firm.linked_town_array)
+            foreach (int townId in firm.LinkedTowns)
             {
                 Town town = TownArray[townId];
                 if (town.NationId == nation_recno)
@@ -310,12 +310,12 @@ public class NationNew : NationBase
                 bool hasSettleTask = false;
                 foreach (SettleTask settleTask in _settleTasks)
                 {
-                    if (settleTask.FirmId == firm.firm_recno)
+                    if (settleTask.FirmId == firm.FirmId)
                         hasSettleTask = true;
                 }
                 
                 if (!hasSettleTask)
-                    _settleTasks.Add(new SettleTask(this, firm.firm_recno));
+                    _settleTasks.Add(new SettleTask(this, firm.FirmId));
             }
         }
     }

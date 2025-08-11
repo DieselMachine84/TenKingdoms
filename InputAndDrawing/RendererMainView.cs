@@ -252,18 +252,18 @@ public partial class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.loc_x2 < _topLeftLocX || firm.loc_x1 > _topLeftLocX + MainViewWidthInCells)
+            if (firm.LocX2 < _topLeftLocX || firm.LocX1 > _topLeftLocX + MainViewWidthInCells)
                 continue;
-            if (firm.loc_y2 < _topLeftLocY || firm.loc_y1 > _topLeftLocY + MainViewHeightInCells)
+            if (firm.LocY2 < _topLeftLocY || firm.LocY1 > _topLeftLocY + MainViewHeightInCells)
                 continue;
 
-            int firmX = MainViewX + (firm.loc_x1 - _topLeftLocX) * CellTextureWidth;
-            int firmY = MainViewY + (firm.loc_y1 - _topLeftLocY) * CellTextureHeight;
+            int firmX = MainViewX + (firm.LocX1 - _topLeftLocX) * CellTextureWidth;
+            int firmY = MainViewY + (firm.LocY1 - _topLeftLocY) * CellTextureHeight;
 
-            FirmBuild firmBuild = FirmRes.get_build(firm.firm_build_id);
+            FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
             // if in construction, don't draw ground unless the last construction frame
             if (firmBuild.ground_bitmap_recno != 0 &&
-                (!firm.under_construction || firm.construction_frame() >= firmBuild.under_construction_bitmap_count - 1))
+                (!firm.UnderConstruction || firm.ConstructionFrame() >= firmBuild.under_construction_bitmap_count - 1))
             {
                 FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
                 int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
@@ -278,11 +278,11 @@ public partial class Renderer
             }
             else
             {
-                if (firm.under_construction)
+                if (firm.UnderConstruction)
                 {
                     DrawFirmFullSize(firm, firmX, firmY, displayLayer);
                 }
-                else if (!firm.is_operating())
+                else if (!firm.IsOperating())
                 {
                     if (FirmRes.get_bitmap(firmBuild.idle_bitmap_recno) != null)
                         DrawFirmFullSize(firm, firmX, firmY, displayLayer);
@@ -296,7 +296,7 @@ public partial class Renderer
                 {
                     // the first frame is the common frame for multi-segment bitmaps
                     DrawFirmFrame(firm, firmX, firmY, 1, displayLayer);
-                    DrawFirmFrame(firm, firmX, firmY, firm.cur_frame, displayLayer);
+                    DrawFirmFrame(firm, firmX, firmY, firm.CurFrame, displayLayer);
                 }
             }
         }
@@ -304,25 +304,25 @@ public partial class Renderer
 
     private void DrawFirmFullSize(Firm firm, int firmX, int firmY, int displayLayer)
     {
-        FirmBuild firmBuild = FirmRes.get_build(firm.firm_build_id);
-        if (firm.under_construction)
+        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
+        if (firm.UnderConstruction)
         {
             //TODO
         }
 
         FirmBitmap firmBitmap;
-        if (firm.under_construction)
+        if (firm.UnderConstruction)
         {
-            int buildFraction = firm.construction_frame();
+            int buildFraction = firm.ConstructionFrame();
             firmBitmap = FirmRes.get_bitmap(firmBuild.under_construction_bitmap_recno + buildFraction);
         }
-        else if (!firm.is_operating())
+        else if (!firm.IsOperating())
         {
             firmBitmap = FirmRes.get_bitmap(firmBuild.idle_bitmap_recno);
         }
         else
         {
-            firmBitmap = FirmRes.get_bitmap(firmBuild.first_bitmap(firm.cur_frame));
+            firmBitmap = FirmRes.get_bitmap(firmBuild.first_bitmap(firm.CurFrame));
         }
 
         // ------ check if the display layer is correct ---------//
@@ -331,10 +331,10 @@ public partial class Renderer
 
         int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
         int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-        Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.nation_recno, false), firmBitmapX, firmBitmapY,
+        Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.NationId, false), firmBitmapX, firmBitmapY,
             Scale(firmBitmap.bitmapWidth), Scale(firmBitmap.bitmapHeight));
 
-        if (firm.under_construction)
+        if (firm.UnderConstruction)
         {
             //TODO
         }
@@ -342,7 +342,7 @@ public partial class Renderer
 
     private void DrawFirmFrame(Firm firm, int firmX, int firmY, int frameId, int displayLayer)
     {
-        FirmBuild firmBuild = FirmRes.get_build(firm.firm_build_id);
+        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
         int firstBitmap = firmBuild.first_bitmap(frameId);
         int bitmapCount = firmBuild.bitmap_count(frameId);
 
@@ -351,7 +351,7 @@ public partial class Renderer
             FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapRecno);
             int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
             int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-            Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.nation_recno, false), firmBitmapX, firmBitmapY,
+            Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.NationId, false), firmBitmapX, firmBitmapY,
                 Scale(firmBitmap.bitmapWidth), Scale(firmBitmap.bitmapHeight));
         }
     }

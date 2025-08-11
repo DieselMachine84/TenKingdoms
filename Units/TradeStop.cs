@@ -42,7 +42,7 @@ public class TradeStop
 		{
 			pick_up_array[index] = false;
 
-			int firmId = FirmArray[firm_recno].firm_id;
+			int firmId = FirmArray[firm_recno].FirmType;
 			if (firmId == Firm.FIRM_MARKET || firmId == Firm.FIRM_HARBOR)
 			{
 				bool allZero = true;
@@ -88,7 +88,7 @@ public class CaravanStop : TradeStop
 		int firstGoodsId = 0;
 		int id;
 
-		switch (firm.firm_id)
+		switch (firm.FirmType)
 		{
 			case Firm.FIRM_MINE:
 				id = ((FirmMine)firm).raw_id + PICK_UP_RAW_FIRST - 1;
@@ -178,11 +178,11 @@ public class ShipStop : TradeStop
 		int firstGoodsId = 0;
 		int id;
 
-		for (int i = harbor.linked_firm_array.Count - 1; i >= 0; --i)
+		for (int i = harbor.LinkedFirms.Count - 1; i >= 0; --i)
 		{
-			Firm firm = FirmArray[harbor.linked_firm_array[i]];
+			Firm firm = FirmArray[harbor.LinkedFirms[i]];
 
-			switch (firm.firm_id)
+			switch (firm.FirmType)
 			{
 				case Firm.FIRM_MINE:
 					if ((id = ((FirmMine)firm).raw_id) != 0) // 1-3

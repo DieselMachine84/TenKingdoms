@@ -78,7 +78,7 @@ public class BulletArray : SpriteArray
 		if (location.IsFirm())
 		{
 			Firm targetFirm = FirmArray[location.FirmId()];
-			FirmInfo firmInfo = FirmRes[targetFirm.firm_id];
+			FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
 			width = firmInfo.loc_width;
 			height = firmInfo.loc_height;
 		}

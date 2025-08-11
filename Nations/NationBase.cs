@@ -912,7 +912,7 @@ public class NationBase : IIdObject
         List<Firm> firmsToDelete = new List<Firm>();
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno == nation_recno)
+            if (firm.NationId == nation_recno)
             {
                 firmsToDelete.Add(firm);
             }
@@ -1000,14 +1000,14 @@ public class NationBase : IIdObject
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno != nation_recno)
+            if (firm.NationId != nation_recno)
                 continue;
 
             //------ process military camps and seat of power -------//
 
-            if (firm.firm_id == Firm.FIRM_CAMP || firm.firm_id == Firm.FIRM_BASE)
+            if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
             {
-                foreach (Worker worker in firm.workers)
+                foreach (Worker worker in firm.Workers)
                 {
                     //--------- update loyalty change ----------//
 
@@ -1133,9 +1133,9 @@ public class NationBase : IIdObject
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno == nation_recno)
+            if (firm.NationId == nation_recno)
             {
-                firm.change_nation(handoverNationRecno);
+                firm.ChangeNation(handoverNationRecno);
             }
         }
 
@@ -1567,14 +1567,14 @@ public class NationBase : IIdObject
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.nation_recno != nation_recno)
+            if (firm.NationId != nation_recno)
                 continue;
 
             //------ process military camps and seat of power -------//
 
-            if (firm.firm_id == Firm.FIRM_CAMP || firm.firm_id == Firm.FIRM_BASE)
+            if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
             {
-                foreach (Worker worker in firm.workers)
+                foreach (Worker worker in firm.Workers)
                 {
                     if (raceId == 0 || worker.race_id == raceId)
                         worker.change_loyalty((int)loyaltyChange);

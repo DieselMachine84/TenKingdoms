@@ -86,7 +86,7 @@ public class MonsterInfo
 
         foreach (Firm firm in FirmArray)
         {
-            if (Misc.points_distance(xLoc, yLoc, firm.center_x, firm.center_y) <
+            if (Misc.points_distance(xLoc, yLoc, firm.LocCenterX, firm.LocCenterY) <
                 GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;
@@ -108,11 +108,11 @@ public class MonsterInfo
         FirmMonster firmMonster = (FirmMonster)FirmArray[firmRecno];
 
         if (fullHitPoints != 0)
-            firmMonster.complete_construction();
+            firmMonster.CompleteConstruction();
         else
         {
-            firmMonster.hit_points = 0.1;
-            firmMonster.under_construction = true;
+            firmMonster.HitPoints = 0.1;
+            firmMonster.UnderConstruction = true;
         }
 
         firmMonster.set_king(monster_id, 100);
@@ -223,7 +223,7 @@ public class MonsterRes
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.firm_id != Firm.FIRM_MONSTER)
+            if (firm.FirmType != Firm.FIRM_MONSTER)
                 continue;
 
             FirmMonster firmMonster = (FirmMonster)firm;

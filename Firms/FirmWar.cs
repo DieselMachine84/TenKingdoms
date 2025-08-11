@@ -17,10 +17,10 @@ public class FirmWar : Firm
 
     public FirmWar()
     {
-        firm_skill_id = Skill.SKILL_MFT;
+        FirmSkillId = Skill.SKILL_MFT;
     }
 
-    public override void change_nation(int newNationRecno)
+    public override void ChangeNation(int newNationRecno)
     {
         //--- empty the build queue ---//
 
@@ -32,24 +32,24 @@ public class FirmWar : Firm
 
         //-------- change the nation of this firm now ----------//
 
-        base.change_nation(newNationRecno);
+        base.ChangeNation(newNationRecno);
     }
 
-    public override void next_day()
+    public override void NextDay()
     {
-        base.next_day();
+        base.NextDay();
 
         //----------- update population -------------//
 
-        recruit_worker();
+        RecruitWorker();
 
         //-------- train up the skill ------------//
 
-        update_worker();
+        UpdateWorker();
 
         //--------- calculate productivity ----------//
 
-        calc_productivity();
+        CalcProductivity();
 
         //--------- process building weapon -------//
 
@@ -59,12 +59,12 @@ public class FirmWar : Firm
             process_queue();
     }
 
-    public override bool is_operating()
+    public override bool IsOperating()
     {
-        return productivity > 0 && build_unit_id != 0;
+        return Productivity > 0 && build_unit_id != 0;
     }
 
-    public override void process_ai()
+    public override void ProcessAI()
     {
         //---- think about which technology to research ----//
 
@@ -74,15 +74,15 @@ public class FirmWar : Firm
         //------- recruit workers ---------//
 
         //TODO do not recruit workers. Sell firm if it is not linked to a village
-        if (Info.TotalDays % 15 == firm_recno % 15)
+        if (Info.TotalDays % 15 == FirmId % 15)
         {
-            if (workers.Count < MAX_WORKER)
-                ai_recruit_worker();
+            if (Workers.Count < MAX_WORKER)
+                AIRecruitWorker();
         }
 
         //----- think about closing down this firm -----//
 
-        if (Info.TotalDays % 30 == firm_recno % 30)
+        if (Info.TotalDays % 30 == FirmId % 30)
         {
             if (think_del())
                 return;
@@ -135,7 +135,7 @@ public class FirmWar : Firm
 
         //--- first check if the nation has enough money to build the weapon ---//
 
-        Nation nation = NationArray[nation_recno];
+        Nation nation = NationArray[NationId];
 
         if (nation.cash < UnitRes[build_unit_id].build_cost)
         {
@@ -152,7 +152,7 @@ public class FirmWar : Firm
         last_process_build_frame_no = Sys.Instance.FrameNumber;
         build_progress_days = 0.0;
 
-        if (FirmArray.selected_recno == firm_recno)
+        if (FirmArray.selected_recno == FirmId)
         {
             //TODO drawing 
             //disable_refresh = 1;
@@ -165,7 +165,7 @@ public class FirmWar : Firm
     {
         build_unit_id = 0;
 
-        if (FirmArray.selected_recno == firm_recno)
+        if (FirmArray.selected_recno == FirmId)
         {
             //TODO drawing
             //disable_refresh = 1;
@@ -180,29 +180,29 @@ public class FirmWar : Firm
         int totalBuildDays = unitInfo.build_days;
 
         //TODO DieselMachine strange formula
-        build_progress_days += (workers.Count * 6 + productivity / 2.0) / 100.0;
+        build_progress_days += (Workers.Count * 6 + Productivity / 2.0) / 100.0;
 
         last_process_build_frame_no = Sys.Instance.FrameNumber;
 
-        if (Config.fast_build && nation_recno == NationArray.player_recno)
+        if (Config.fast_build && NationId == NationArray.player_recno)
             build_progress_days += 2.0;
 
         if (build_progress_days > totalBuildDays)
         {
             SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
-            int xLoc = loc_x1; // xLoc & yLoc are used for returning results
-            int yLoc = loc_y1;
+            int xLoc = LocX1; // xLoc & yLoc are used for returning results
+            int yLoc = LocY1;
 
-            if (!World.LocateSpace(ref xLoc, ref yLoc, loc_x2, loc_y2,
+            if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
                     spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
             {
                 build_progress_days = totalBuildDays + 1;
                 return;
             }
 
-            UnitArray.AddUnit(build_unit_id, nation_recno, 0, 0, xLoc, yLoc);
+            UnitArray.AddUnit(build_unit_id, NationId, 0, 0, xLoc, yLoc);
 
-            if (FirmArray.selected_recno == firm_recno)
+            if (FirmArray.selected_recno == FirmId)
             {
                 //TODO drawing
                 //disable_refresh = 1;
@@ -210,8 +210,8 @@ public class FirmWar : Firm
                 //disable_refresh = 0;
             }
 
-            if (own_firm())
-                SERes.far_sound(center_x, center_y, 1, 'F', firm_id, "FINS", 'S',
+            if (OwnFirm())
+                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
                     UnitRes[build_unit_id].sprite_id);
 
             build_unit_id = 0;
@@ -236,7 +236,7 @@ public class FirmWar : Firm
             UnitInfo unitInfo = UnitRes[unitId];
 
             if (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON ||
-                unitInfo.get_nation_tech_level(nation_recno) == 0)
+                unitInfo.get_nation_tech_level(NationId) == 0)
             {
                 continue;
             }
@@ -245,7 +245,7 @@ public class FirmWar : Firm
                 continue;
 
             weaponTypeCount++;
-            totalWeaponCount += unitInfo.nation_unit_count_array[nation_recno - 1];
+            totalWeaponCount += unitInfo.nation_unit_count_array[NationId - 1];
         }
 
         if (weaponTypeCount == 0) // none of weapon technologies is available
@@ -264,7 +264,7 @@ public class FirmWar : Firm
             if (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON)
                 continue;
 
-            int techLevel = unitInfo.get_nation_tech_level(nation_recno);
+            int techLevel = unitInfo.get_nation_tech_level(NationId);
 
             if (techLevel == 0)
                 continue;
@@ -273,7 +273,7 @@ public class FirmWar : Firm
             if (unitId == UnitConstants.UNIT_EXPLOSIVE_CART)
                 continue;
 
-            int unitCount = unitInfo.nation_unit_count_array[nation_recno - 1];
+            int unitCount = unitInfo.nation_unit_count_array[NationId - 1];
 
             int curRating = averageWeaponCount - unitCount + techLevel * 3;
 
@@ -294,7 +294,7 @@ public class FirmWar : Firm
     {
         //----- first see if we have enough money to build & support the weapon ----//
 
-        Nation nation = NationArray[nation_recno];
+        Nation nation = NationArray[NationId];
 
         if (nation.true_profit_365days() < 0) // don't build new weapons if we are currently losing money
             return false;
@@ -313,10 +313,10 @@ public class FirmWar : Firm
         {
             Firm firm = FirmArray[campRecno];
 
-            if (firm.region_id != region_id)
+            if (firm.RegionId != RegionId)
                 continue;
 
-            if (firm.workers.Count < MAX_WORKER) // there is space in this firm
+            if (firm.Workers.Count < MAX_WORKER) // there is space in this firm
                 return true;
         }
 
@@ -325,20 +325,20 @@ public class FirmWar : Firm
 
     private bool think_del()
     {
-        if (workers.Count > 0)
+        if (Workers.Count > 0)
             return false;
 
         //-- check whether the firm is linked to any towns or not --//
 
-        for (int i = 0; i < linked_town_array.Count; i++)
+        for (int i = 0; i < LinkedTowns.Count; i++)
         {
-            if (linked_town_enable_array[i] == InternalConstants.LINK_EE)
+            if (LinkedTownsEnable[i] == InternalConstants.LINK_EE)
                 return false;
         }
 
         //------------------------------------------------//
 
-        ai_del_firm();
+        AIDelFirm();
 
         return true;
     }

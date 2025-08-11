@@ -1116,14 +1116,14 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
+			if (firm.FirmType != Firm.FIRM_CAMP || firm.OverseerId == 0)
 				continue;
 
 			//-------- get nation and commander info ------------//
 
-			Unit overseer = UnitArray[firm.overseer_recno];
+			Unit overseer = UnitArray[firm.OverseerId];
 
-			Nation baseNation = NationArray[firm.nation_recno];
+			Nation baseNation = NationArray[firm.NationId];
 
 			//------ if this race is the overseer's race -------//
 
@@ -1154,7 +1154,7 @@ public class Town : IIdObject
 
 				//------------------------------------------//
 
-				if (firm.nation_recno == NationId) // if the command base belongs to the same nation
+				if (firm.NationId == NationId) // if the command base belongs to the same nation
 				{
 					//TODO thisInfluence should be lesser with each other camp 
 					int targetLoyalty = RacesTargetLoyalty[j] + thisInfluence;
@@ -1193,7 +1193,7 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			//------------------------------------------//
@@ -1202,7 +1202,7 @@ public class Town : IIdObject
 			// enable all links to enemy camps.
 			//------------------------------------------//
 
-			if (firm.nation_recno != NationId)
+			if (firm.NationId != NationId)
 				ToggleFirmLink(i + 1, !HasLinkedOwnCamp, InternalConstants.COMMAND_AUTO);
 		}
 	}
@@ -1294,12 +1294,12 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
+			if (firm.FirmType != Firm.FIRM_CAMP || firm.OverseerId == 0)
 				continue;
 
 			//-------- get nation and commander info ------------//
 
-			Unit overseer = UnitArray[firm.overseer_recno];
+			Unit overseer = UnitArray[firm.OverseerId];
 
 			int curValue = RacesTargetResistance[overseer.RaceId - 1, overseer.NationId - 1];
 			int newValue = 100 - overseer.LeaderInfluence();
@@ -1532,7 +1532,7 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[linkedFirmId]];
 
-			if (firm.firm_id != Firm.FIRM_MARKET)
+			if (firm.FirmType != Firm.FIRM_MARKET)
 				continue;
 
 			if (LinkedFirmsEnable[linkedFirmId] != InternalConstants.LINK_EE)
@@ -1552,7 +1552,7 @@ public class Town : IIdObject
 				marketGoodsInfo.TotalSupply += thisSupply;
 
 				// vars for later use, so that towns will always try to buy goods from their own markets first.
-				if (firm.nation_recno == NationId)
+				if (firm.NationId == NationId)
 					marketGoodsInfo.TotalOwnSupply += thisSupply;
 			}
 		}
@@ -1596,7 +1596,7 @@ public class Town : IIdObject
 
 						double ownShareDemand = Math.Min(townDemand, marketGoodsInfo.TotalOwnSupply);
 
-						if (market.nation_recno == NationId)
+						if (market.NationId == NationId)
 						{
 							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
 							if (marketGoodsInfo.TotalOwnSupply > 0.0)
@@ -1624,7 +1624,7 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno != NationId || firm.firm_id != Firm.FIRM_MARKET)
+			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_MARKET)
 				continue;
 
 			FirmMarket firmMarket = (FirmMarket)firm;
@@ -1655,7 +1655,7 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_MARKET)
+			if (firm.FirmType != Firm.FIRM_MARKET)
 				continue;
 
 			FirmMarket firmMarket = (FirmMarket)firm;
@@ -1899,7 +1899,7 @@ public class Town : IIdObject
 
 				//---- only for firms whose workers live in towns ----//
 
-				if (!FirmRes[firm.firm_id].live_in_town)
+				if (!FirmRes[firm.FirmType].live_in_town)
 					continue;
 
 				//---- if the target town is within the effective range of this firm ----//
@@ -1909,7 +1909,7 @@ public class Town : IIdObject
 
 				//------- scan for workers -----------//
 
-				foreach (Worker worker in firm.workers)
+				foreach (Worker worker in firm.Workers)
 				{
 					//--- if the worker lives in this town ----//
 
@@ -2471,9 +2471,9 @@ public class Town : IIdObject
 
 			//------- scan for workers -----------//
 
-			for (int j = firm.workers.Count - 1; j >= 0; j--)
+			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
-				Worker worker = firm.workers[j];
+				Worker worker = firm.Workers[j];
 				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
 					continue;
 
@@ -2481,7 +2481,7 @@ public class Town : IIdObject
 
 				if (worker.race_id == raceId && worker.town_recno == TownId)
 				{
-					if (firm.resign_worker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
+					if (firm.ResignWorker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
 						return false;
 
 					return RacesJoblessPopulation[raceId - 1] == racesJoblessPop + 1;
@@ -2499,17 +2499,17 @@ public class Town : IIdObject
 
 				//------- scan for overseer -----------//
 
-				if (firm.overseer_recno != 0)
+				if (firm.OverseerId != 0)
 				{
 					//--- if the overseer lives in this town ----//
 
-					Unit overseerUnit = UnitArray[firm.overseer_recno];
+					Unit overseerUnit = UnitArray[firm.OverseerId];
 
-					if (overseerUnit.RaceId == raceId && firm.overseer_town_recno == TownId)
+					if (overseerUnit.RaceId == raceId && firm.OverseerTownId == TownId)
 					{
-						int overseerId = firm.overseer_recno;
+						int overseerId = firm.OverseerId;
 						Unit overseer = UnitArray[overseerId];
-						firm.assign_overseer(0);
+						firm.AssignOverseer(0);
 						if (!UnitArray.IsDeleted(overseerId) && overseer.IsVisible())
 							UnitArray.DisappearInTown(overseer, this);
 
@@ -2571,7 +2571,7 @@ public class Town : IIdObject
 
 		foreach (Firm firm in FirmArray)
 		{
-			FirmInfo firmInfo = FirmRes[firm.firm_id];
+			FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 			if (!firmInfo.is_linkable_to_town)
 				continue;
@@ -2583,22 +2583,22 @@ public class Town : IIdObject
 
 			//------ check if both are on the same terrain type ------//
 
-			if (World.GetLoc(firm.center_x, firm.center_y).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
+			if (World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
 			{
 				continue;
 			}
 
 			//------- determine the default link status ------//
 
-			var defaultLinkStatus = firm.nation_recno == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
+			var defaultLinkStatus = firm.NationId == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
 
 			//----- a town cannot disable a camp's link to it ----//
-			if (firm.firm_id == Firm.FIRM_CAMP) // for capturing the town
+			if (firm.FirmType == Firm.FIRM_CAMP) // for capturing the town
 				defaultLinkStatus = InternalConstants.LINK_EE;
 
 			//-------- add the link now -------//
 
-			LinkedFirms.Add(firm.firm_recno);
+			LinkedFirms.Add(firm.FirmId);
 			LinkedFirmsEnable.Add(defaultLinkStatus);
 
 			// now link from the firm's side
@@ -2610,11 +2610,11 @@ public class Town : IIdObject
 			else if (defaultLinkStatus == InternalConstants.LINK_DE)
 				defaultLinkStatus = InternalConstants.LINK_ED;*/
 
-			firm.linked_town_array.Add(TownId);
-			firm.linked_town_enable_array.Add(defaultLinkStatus);
+			firm.LinkedTowns.Add(TownId);
+			firm.LinkedTownsEnable.Add(defaultLinkStatus);
 
-			if (firm.firm_ai)
-				firm.ai_link_checked = false;
+			if (firm.AIFirm)
+				firm.AiLinkChecked = false;
 		}
 
 		//----- build town-to-town link relationship -------//
@@ -2672,10 +2672,10 @@ public class Town : IIdObject
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
-			firm.release_town_link(TownId);
+			firm.ReleaseTownLink(TownId);
 
-			if (firm.firm_ai)
-				firm.ai_link_checked = false;
+			if (firm.AIFirm)
+				firm.AiLinkChecked = false;
 		}
 
 		//------ release linked towns ------//
@@ -2734,12 +2734,12 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			switch (firm.firm_id)
+			switch (firm.FirmType)
 			{
 				//-- you can only toggle a link to a camp if the camp is yours --//
 
 				case Firm.FIRM_CAMP:
-					return firm.nation_recno == NationId;
+					return firm.NationId == NationId;
 
 				//--- town to market link is governed by trade treaty and cannot be toggled ---//
 
@@ -2747,7 +2747,7 @@ public class Town : IIdObject
 					return false;
 
 				default:
-					return FirmRes[firm.firm_id].is_linkable_to_town;
+					return FirmRes[firm.FirmType].is_linkable_to_town;
 			}
 		}
 
@@ -2767,7 +2767,7 @@ public class Town : IIdObject
 		//}
 
 		Firm linkedFirm = FirmArray[LinkedFirms[linkId - 1]];
-		int linkedNationId = linkedFirm.nation_recno;
+		int linkedNationId = linkedFirm.NationId;
 
 		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
 		bool sameNation = (linkedNationId == NationId || linkedNationId == 0 || NationId == 0);
@@ -2789,23 +2789,23 @@ public class Town : IIdObject
 
 		//------ set the linked flag of the opposite firm -----//
 
-		for (int i = linkedFirm.linked_town_array.Count - 1; i >= 0; i--)
+		for (int i = linkedFirm.LinkedTowns.Count - 1; i >= 0; i--)
 		{
-			if (linkedFirm.linked_town_array[i] == TownId)
+			if (linkedFirm.LinkedTowns[i] == TownId)
 			{
 				if (toggleFlag)
 				{
 					if ((sameNation && !setBoth) || setBoth)
-						linkedFirm.linked_town_enable_array[i] = InternalConstants.LINK_EE;
+						linkedFirm.LinkedTownsEnable[i] = InternalConstants.LINK_EE;
 					else
-						linkedFirm.linked_town_enable_array[i] |= InternalConstants.LINK_DE;
+						linkedFirm.LinkedTownsEnable[i] |= InternalConstants.LINK_DE;
 				}
 				else
 				{
 					if ((sameNation && !setBoth) || setBoth)
-						linkedFirm.linked_town_enable_array[i] = InternalConstants.LINK_DD;
+						linkedFirm.LinkedTownsEnable[i] = InternalConstants.LINK_DD;
 					else
-						linkedFirm.linked_town_enable_array[i] &= ~InternalConstants.LINK_DE;
+						linkedFirm.LinkedTownsEnable[i] &= ~InternalConstants.LINK_DE;
 				}
 
 				break;
@@ -2819,7 +2819,7 @@ public class Town : IIdObject
 
 		//--- redistribute demand if a link to market place has been toggled ---//
 
-		if (linkedFirm.firm_id == Firm.FIRM_MARKET)
+		if (linkedFirm.FirmType == Firm.FIRM_MARKET)
 			TownArray.DistributeDemand();
 	}
 
@@ -2839,7 +2839,7 @@ public class Town : IIdObject
 			{
 				Firm firm = FirmArray[LinkedFirms[i]];
 
-				if (firm.firm_id == Firm.FIRM_CAMP && firm.overseer_recno != 0)
+				if (firm.FirmType == Firm.FIRM_CAMP && firm.OverseerId != 0)
 				{
 					linkedCount++;
 				}
@@ -2856,15 +2856,15 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[firmIndex]];
 
-			if (firm.nation_recno != NationId || firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			FirmCamp firmCamp = (FirmCamp)firm;
 
 			int linkedTownsCount = 0;
-			for (int townIndex = 0; townIndex < firmCamp.linked_town_array.Count; townIndex++)
+			for (int townIndex = 0; townIndex < firmCamp.LinkedTowns.Count; townIndex++)
 			{
-				Town firmTown = TownArray[firmCamp.linked_town_array[townIndex]];
+				Town firmTown = TownArray[firmCamp.LinkedTowns[townIndex]];
 
 				if (firmTown.NationId != NationId)
 					continue;
@@ -2874,7 +2874,7 @@ public class Town : IIdObject
 
 			if (linkedTownsCount > 0)
 			{
-				townSoldiersCount += (double)(firmCamp.workers.Count + firmCamp.patrol_unit_array.Count + firmCamp.coming_unit_array.Count)
+				townSoldiersCount += (double)(firmCamp.Workers.Count + firmCamp.patrol_unit_array.Count + firmCamp.coming_unit_array.Count)
 				                     / (double)linkedTownsCount;
 			}
 		}
@@ -2890,12 +2890,12 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			//--- don't set it if the town and camp both belong to a human player, the player will set it himself ---//
 
-			if (firm.nation_recno == NationId && NationId != 0 && !NationArray[NationId].is_ai())
+			if (firm.NationId == NationId && NationId != 0 && !NationArray[NationId].is_ai())
 			{
 				continue;
 			}
@@ -2915,10 +2915,10 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.overseer_recno == 0)
+			if (firm.FirmType != Firm.FIRM_CAMP || firm.OverseerId == 0)
 				continue;
 
-			if (firm.nation_recno == NationId)
+			if (firm.NationId == NationId)
 				HasLinkedOwnCamp = true;
 			else
 				HasLinkedEnemyCamp = true;
@@ -2931,9 +2931,9 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id == Firm.FIRM_CAMP && firm.nation_recno == nationId)
+			if (firm.FirmType == Firm.FIRM_CAMP && firm.NationId == nationId)
 			{
-				if (!needOverseer || firm.overseer_recno != 0)
+				if (!needOverseer || firm.OverseerId != 0)
 					return true;
 			}
 		}
@@ -2950,11 +2950,11 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP || firm.nation_recno != NationId)
+			if (firm.FirmType != Firm.FIRM_CAMP || firm.NationId != NationId)
 				continue;
 
 			int curDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
-				firm.loc_x1, firm.loc_y1, firm.loc_x2, firm.loc_y2);
+				firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
 
 			if (curDistance < minDistance)
 			{
@@ -3290,7 +3290,7 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno != NationId || firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			FirmCamp camp = (FirmCamp)firm;
@@ -3481,15 +3481,15 @@ public class Town : IIdObject
 
 			//---- if this is an enemy camp ----//
 
-			if (firm.firm_id == Firm.FIRM_CAMP && firm.nation_recno != NationId && firm.nation_recno != 0 && firm.overseer_recno != 0)
+			if (firm.FirmType == Firm.FIRM_CAMP && firm.NationId != NationId && firm.NationId != 0 && firm.OverseerId != 0)
 			{
-				Unit overseer = UnitArray[firm.overseer_recno];
+				Unit overseer = UnitArray[firm.OverseerId];
 				int curRating = overseer.LeaderInfluence();
 
 				if (curRating > bestRating)
 				{
 					bestRating = curRating;
-					bestNationId = firm.nation_recno;
+					bestNationId = firm.NationId;
 				}
 			}
 		}
@@ -3559,7 +3559,7 @@ public class Town : IIdObject
 				for (int j = 0; j < LinkedFirms.Count; j++)
 				{
 					Firm firm = FirmArray[LinkedFirms[j]];
-					foreach (Worker worker in firm.workers)
+					foreach (Worker worker in firm.Workers)
 					{
 						if (worker.spy_recno != 0 && worker.town_recno == TownId)
 							restrictRebelCount[i]++;
@@ -3853,14 +3853,14 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id == Firm.FIRM_CAMP) // a town cannot change its status with a military camp
+			if (firm.FirmType == Firm.FIRM_CAMP) // a town cannot change its status with a military camp
 				continue;
 
 			//---- think about the link status ----//
 
-			bool linkStatus = (firm.nation_recno == 0); // if the firm is also an independent firm
+			bool linkStatus = (firm.NationId == 0); // if the firm is also an independent firm
 
-			if (AverageResistance(firm.nation_recno) <= GameConstants.INDEPENDENT_LINK_RESISTANCE)
+			if (AverageResistance(firm.NationId) <= GameConstants.INDEPENDENT_LINK_RESISTANCE)
 				linkStatus = true;
 
 			//---- set the link status -------//
@@ -4288,7 +4288,7 @@ public class Town : IIdObject
 
 			//---- if there is one firm of this type near the town already ----//
 
-			if (firm.firm_id == firmId && firm.nation_recno == NationId)
+			if (firm.FirmType == firmId && firm.NationId == NationId)
 			{
 				if (++firmCount >= maxFirm)
 					return false;
@@ -4334,14 +4334,14 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_MARKET)
+			if (firm.FirmType != Firm.FIRM_MARKET)
 				continue;
 
 			FirmMarket firmMarket = (FirmMarket)firm;
 
 			//------ if this market is our own one ------//
 
-			if (firmMarket.nation_recno == NationId && firmMarket.is_retail_market())
+			if (firmMarket.NationId == NationId && firmMarket.is_retail_market())
 				return false;
 		}
 
@@ -4376,16 +4376,16 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			FirmCamp firmCamp = (FirmCamp)firm;
 
-			if (firmCamp.nation_recno != NationId)
+			if (firmCamp.NationId != NationId)
 				continue;
 
 			// if this camp is still trying to recruit soldiers
-			if (firmCamp.under_construction || firmCamp.ai_recruiting_soldier || firmCamp.workers.Count < Firm.MAX_WORKER)
+			if (firmCamp.UnderConstruction || firmCamp.ai_recruiting_soldier || firmCamp.Workers.Count < Firm.MAX_WORKER)
 				return false;
 
 			campCount++;
@@ -4484,10 +4484,10 @@ public class Town : IIdObject
 		{
 			FirmResearch firmResearch = (FirmResearch)FirmArray[nation.ai_research_array[i]];
 
-			if (firmResearch.region_id != RegionId)
+			if (firmResearch.RegionId != RegionId)
 				continue;
 
-			if (firmResearch.workers.Count < Firm.MAX_WORKER)
+			if (firmResearch.Workers.Count < Firm.MAX_WORKER)
 				return false;
 		}
 		//------- queue building a war factory -------//
@@ -4534,11 +4534,11 @@ public class Town : IIdObject
 		{
 			FirmWar firmWar = (FirmWar)FirmArray[nation.ai_war_array[i]];
 
-			if (firmWar.region_id != RegionId)
+			if (firmWar.RegionId != RegionId)
 				continue;
 
 			//TODO this code is different from the same in think_build_research()
-			if (firmWar.workers.Count < Firm.MAX_WORKER || firmWar.build_unit_id == 0)
+			if (firmWar.Workers.Count < Firm.MAX_WORKER || firmWar.build_unit_id == 0)
 				return false;
 		}
 
@@ -4923,28 +4923,28 @@ public class Town : IIdObject
 
 					//------- if this is a monster firm ------//
 
-					if (firm.firm_id == Firm.FIRM_MONSTER) // don't attack monster here, OAI_MONS.CPP will handle that
+					if (firm.FirmType == Firm.FIRM_MONSTER) // don't attack monster here, OAI_MONS.CPP will handle that
 						continue;
 
 					//------- if this is a firm of our enemy -------//
 
-					if (nation.get_relation_status(firm.nation_recno) == NationBase.NATION_HOSTILE)
+					if (nation.get_relation_status(firm.NationId) == NationBase.NATION_HOSTILE)
 					{
-						if (firm.workers.Count == 0)
+						if (firm.Workers.Count == 0)
 							enemyCombatLevel += 50; // empty firm
 						else
 						{
-							for (int i = 0; i < firm.workers.Count; i++)
+							for (int i = 0; i < firm.Workers.Count; i++)
 							{
-								Worker worker = firm.workers[i];
+								Worker worker = firm.Workers[i];
 								enemyCombatLevel += worker.hit_points;
 							}
 						}
 
 						if (enemyXLoc == -1 || Misc.Random(5) == 0)
 						{
-							enemyXLoc = firm.loc_x1;
-							enemyYLoc = firm.loc_y1;
+							enemyXLoc = firm.LocX1;
+							enemyYLoc = firm.LocY1;
 						}
 					}
 				}
@@ -4973,15 +4973,15 @@ public class Town : IIdObject
 
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno == NationId)
+			if (firm.NationId == NationId)
 				continue;
 
-			if (firm.should_close_flag) // if this camp is about to close
+			if (firm.ShouldCloseFlag) // if this camp is about to close
 				continue;
 
 			//--- only attack AI firms when they belong to a hostile nation ---//
 
-			if (firm.firm_ai && ownNation.get_relation_status(firm.nation_recno) != NationBase.NATION_HOSTILE)
+			if (firm.AIFirm && ownNation.get_relation_status(firm.NationId) != NationBase.NATION_HOSTILE)
 			{
 				continue;
 			}
@@ -4989,24 +4989,24 @@ public class Town : IIdObject
 			//---- if this is a camp -----//
 
 			int targetCombatLevel;
-			if (firm.firm_id == Firm.FIRM_CAMP)
+			if (firm.FirmType == Firm.FIRM_CAMP)
 			{
 				//----- if we are friendly with the target nation ------//
 
-				int nationStatus = ownNation.get_relation_status(firm.nation_recno);
+				int nationStatus = ownNation.get_relation_status(firm.NationId);
 
 				if (nationStatus >= NationBase.NATION_FRIENDLY)
 				{
-					if (!ownNation.ai_should_attack_friendly(firm.nation_recno, 100))
+					if (!ownNation.ai_should_attack_friendly(firm.NationId, 100))
 						continue;
 
-					ownNation.ai_end_treaty(firm.nation_recno);
+					ownNation.ai_end_treaty(firm.NationId);
 				}
 				else if (nationStatus == NationBase.NATION_NEUTRAL)
 				{
 					//-- if the link is off and the nation's military strength is bigger than us, don't attack --//
 
-					if (NationArray[firm.nation_recno].military_rank_rating() > ownNation.military_rank_rating())
+					if (NationArray[firm.NationId].military_rank_rating() > ownNation.military_rank_rating())
 					{
 						continue;
 					}
@@ -5014,9 +5014,9 @@ public class Town : IIdObject
 
 				//--- don't attack when the trade rating is high ----//
 
-				int tradeRating = ownNation.trade_rating(firm.nation_recno);
+				int tradeRating = ownNation.trade_rating(firm.NationId);
 
-				if (tradeRating > 50 || tradeRating + ownNation.ai_trade_with_rating(firm.nation_recno) > 100)
+				if (tradeRating > 50 || tradeRating + ownNation.ai_trade_with_rating(firm.NationId) > 100)
 				{
 					continue;
 				}
@@ -5027,7 +5027,7 @@ public class Town : IIdObject
 			{
 				//--- only attack other types of firm when the status is hostile ---//
 
-				if (ownNation.get_relation_status(firm.nation_recno) != NationBase.NATION_HOSTILE)
+				if (ownNation.get_relation_status(firm.NationId) != NationBase.NATION_HOSTILE)
 					continue;
 
 				targetCombatLevel = 50;
@@ -5035,7 +5035,7 @@ public class Town : IIdObject
 
 			//--------- attack now ----------//
 
-			ownNation.ai_attack_target(firm.loc_x1, firm.loc_y1, targetCombatLevel);
+			ownNation.ai_attack_target(firm.LocX1, firm.LocY1, targetCombatLevel);
 
 			return true;
 		}
@@ -5051,12 +5051,12 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno == NationId) // this is our own firm
+			if (firm.NationId == NationId) // this is our own firm
 				continue;
 
-			if (firm.can_worker_capture(NationId)) // if we can capture this firm, capture it now
+			if (firm.CanWorkerCapture(NationId)) // if we can capture this firm, capture it now
 			{
-				firm.capture_firm(NationId);
+				firm.CaptureFirm(NationId);
 			}
 		}
 	}
@@ -5150,7 +5150,7 @@ public class Town : IIdObject
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
-			if (FirmArray[LinkedFirms[i]].firm_id == Firm.FIRM_MINE)
+			if (FirmArray[LinkedFirms[i]].FirmType == Firm.FIRM_MINE)
 				return true;
 		}
 
@@ -5164,7 +5164,7 @@ public class Town : IIdObject
 				Town town = TownArray[ownNation.ai_town_array[i]];
 				for (int j = 0; j < town.LinkedFirms.Count; j++)
 				{
-					if (FirmArray[town.LinkedFirms[j]].firm_id == Firm.FIRM_MINE)
+					if (FirmArray[town.LinkedFirms[j]].FirmType == Firm.FIRM_MINE)
 					{
 						townWithMinePopulation = town.Population;
 					}
@@ -5364,20 +5364,20 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno != NationId)
+			if (firm.NationId != NationId)
 				continue;
 
 			//----- if this is a camp, add combat level points -----//
 
-			if (firm.firm_id == Firm.FIRM_MARKET)
+			if (firm.FirmType == Firm.FIRM_MARKET)
 			{
 				protectionNeeded += ((FirmMarket)firm).stock_value_index() * 2;
 			}
 			else
 			{
-				protectionNeeded += (int)firm.productivity * 2;
+				protectionNeeded += (int)firm.Productivity * 2;
 
-				if (firm.firm_id == Firm.FIRM_MINE) // more protection for mines
+				if (firm.FirmType == Firm.FIRM_MINE) // more protection for mines
 					protectionNeeded += 600;
 			}
 		}
@@ -5393,17 +5393,17 @@ public class Town : IIdObject
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			if (firm.nation_recno != NationId)
+			if (firm.NationId != NationId)
 				continue;
 
 			//----- if this is a camp, add combat level points -----//
 
-			if (firm.firm_id == Firm.FIRM_CAMP)
+			if (firm.FirmType == Firm.FIRM_CAMP)
 			{
 				int linkedTownsCount = 0;
-				for (int townIndex = 0; townIndex < firm.linked_town_array.Count; townIndex++)
+				for (int townIndex = 0; townIndex < firm.LinkedTowns.Count; townIndex++)
 				{
-					Town firmTown = TownArray[firm.linked_town_array[townIndex]];
+					Town firmTown = TownArray[firm.LinkedTowns[townIndex]];
 					if (firmTown.NationId == NationId)
 						linkedTownsCount++;
 				}
@@ -5431,23 +5431,23 @@ public class Town : IIdObject
 			int firmRecno = LinkedFirms[i];
 			Firm firm = FirmArray[firmRecno];
 
-			if (firm.nation_recno != NationId)
+			if (firm.NationId != NationId)
 				continue;
 
-			if (firm.firm_id != Firm.FIRM_CAMP)
+			if (firm.FirmType != Firm.FIRM_CAMP)
 				continue;
 
 			//DieselMachine TODO if there is a battle going on, all linked camps should be protection camps
 			FirmCamp firmCamp = (FirmCamp)firm;
-			if (firmCamp.overseer_recno == 0 || firmCamp.workers.Count == 0 || firmCamp.patrol_unit_array.Count > 0)
+			if (firmCamp.OverseerId == 0 || firmCamp.Workers.Count == 0 || firmCamp.patrol_unit_array.Count > 0)
 				continue;
 
-			if (firmCamp.overseer_recno == ownNation.king_unit_recno)
+			if (firmCamp.OverseerId == ownNation.king_unit_recno)
 			{
 				thisTownProtectionCamps.Add(firmRecno);
 			}
 
-			Unit overseer = UnitArray[firmCamp.overseer_recno];
+			Unit overseer = UnitArray[firmCamp.OverseerId];
 			if (majorRaceCampRecno == 0 && overseer.RaceId == MajorityRace())
 			{
 				majorRaceCampRecno = firmRecno;
@@ -5462,9 +5462,9 @@ public class Town : IIdObject
 				}
 
 				int lowHitPointsSoldiersCount = 0;
-				for (int j = 0; j < firmCamp.workers.Count; j++)
+				for (int j = 0; j < firmCamp.Workers.Count; j++)
 				{
-					Worker worker = firmCamp.workers[j];
+					Worker worker = firmCamp.Workers[j];
 					if (worker.hit_points < 50.0)
 					{
 						lowHitPointsSoldiersCount++;
@@ -5521,10 +5521,10 @@ public class Town : IIdObject
 
 				Firm firm = FirmArray[firmRecno];
 
-				if (firm.nation_recno != NationId)
+				if (firm.NationId != NationId)
 					continue;
 
-				if (firm.firm_id != Firm.FIRM_CAMP)
+				if (firm.FirmType != Firm.FIRM_CAMP)
 					continue;
 
 				FirmCamp firmCamp = (FirmCamp)firm;

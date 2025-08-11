@@ -192,15 +192,15 @@ public partial class Renderer
         //Draw shadows first
         foreach (Firm firm in FirmArray)
         {
-            int locX1 = firm.loc_x1;
-            int locX2 = firm.loc_x2;
-            int locY1 = firm.loc_y1;
-            int locY2 = firm.loc_y2;
+            int locX1 = firm.LocX1;
+            int locX2 = firm.LocX2;
+            int locY1 = firm.LocY1;
+            int locY2 = firm.LocY2;
             
             if (IsExplored(locX1, locX2, locY1, locY2))
             {
                 //Monster lairs has the same size as villages but should look different on mini-map
-                if (firm.firm_id == Firm.FIRM_MONSTER)
+                if (firm.FirmType == Firm.FIRM_MONSTER)
                 {
                     locX2--;
                     locY2--;
@@ -225,19 +225,19 @@ public partial class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            byte nationColor = (firm.last_attacked_date == default) || (Info.game_date - firm.last_attacked_date).Days > 2
-                ? nationColorArray[firm.nation_recno]
-                : excitedColorArray[ColorRemap.ColorSchemes[firm.nation_recno], Sys.Instance.FrameNumber % excitedColorCount];
+            byte nationColor = (firm.LastAttackedDate == default) || (Info.game_date - firm.LastAttackedDate).Days > 2
+                ? nationColorArray[firm.NationId]
+                : excitedColorArray[ColorRemap.ColorSchemes[firm.NationId], Sys.Instance.FrameNumber % excitedColorCount];
 
-            int locX1 = firm.loc_x1;
-            int locX2 = firm.loc_x2;
-            int locY1 = firm.loc_y1;
-            int locY2 = firm.loc_y2;
+            int locX1 = firm.LocX1;
+            int locX2 = firm.LocX2;
+            int locY1 = firm.LocY1;
+            int locY2 = firm.LocY2;
             
             if (IsExplored(locX1, locX2, locY1, locY2))
             {
                 //Monster lairs has the same size as villages but should look different on mini-map
-                if (firm.firm_id == Firm.FIRM_MONSTER)
+                if (firm.FirmType == Firm.FIRM_MONSTER)
                 {
                     locX2--;
                     locY2--;

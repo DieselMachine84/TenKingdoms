@@ -217,14 +217,14 @@ public class UnitMonster : Unit
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {
-            if (firm.region_id != regionId)
+            if (firm.RegionId != regionId)
                 continue;
 
-            if (firm.firm_id == Firm.FIRM_MONSTER)
+            if (firm.FirmType == Firm.FIRM_MONSTER)
             {
                 if (((FirmMonster)firm).can_assign_monster(SpriteId))
                 {
-                    group_order_monster(firm.loc_x1, firm.loc_y1, 2); // 2-the action is assign
+                    group_order_monster(firm.LocX1, firm.LocY1, 2); // 2-the action is assign
                     return 1;
                 }
             }

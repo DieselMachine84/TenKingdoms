@@ -190,7 +190,7 @@ public class TechInfo
 
             foreach (Firm firm in FirmArray)
             {
-                if (firm.firm_id == Firm.FIRM_RESEARCH && firm.nation_recno == nationRecno)
+                if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == nationRecno)
                 {
                     FirmResearch firmResearch = (FirmResearch)firm;
                     if (firmResearch.tech_id == tech_id)
