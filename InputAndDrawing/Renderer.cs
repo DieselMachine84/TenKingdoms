@@ -58,6 +58,7 @@ public partial class Renderer : IRenderer
     private Font FontStd { get; }
     private Font FontMid { get; }
     private Font FontSmall { get; }
+    private Font FontBible { get; }
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
@@ -94,6 +95,7 @@ public partial class Renderer : IRenderer
         FontStd = new Font("STD", 2, 0);
         FontMid = new Font("MID", 1, 0);
         FontSmall = new Font("SMAL", 1, 0);
+        FontBible = new Font("CASA", 1, 1);
         
         CreateUITextures();
         CreateAnimatedSegments();
@@ -184,6 +186,7 @@ public partial class Renderer : IRenderer
     private void ResetSelection()
     {
         _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedWorkerId = 0;
+        TownDetailsMode = TownDetailsMode.Normal;
     }
     
     public void Reset()

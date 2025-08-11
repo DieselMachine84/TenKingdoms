@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+
 namespace TenKingdoms;
 
 public partial class Renderer
 {
     private bool _leftMousePressed;
+    private bool _leftMouseReleased;
     private bool _rightMousePressed;
+    private bool _rightMouseReleased;
     private int _mouseButtonX;
     private int _mouseButtonY;
 
@@ -19,6 +23,7 @@ public partial class Renderer
         if (eventType == InputConstants.LeftMouseUp)
         {
             _leftMousePressed = false;
+            _leftMouseReleased = true;
             _mouseButtonX = screenX;
             _mouseButtonY = screenY;
             
@@ -93,33 +98,37 @@ public partial class Renderer
                 if (_selectedUnitId != 0)
                     HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
             }
+
+            _leftMouseReleased = false;
         }
 
         if (eventType == InputConstants.RightMouseDown)
         {
             _rightMousePressed = true;
+            _mouseButtonX = screenX;
+            _mouseButtonY = screenY;
         }
 
         if (eventType == InputConstants.RightMouseUp)
         {
             _rightMousePressed = false;
+            _rightMouseReleased = true;
+            _mouseButtonX = screenX;
+            _mouseButtonY = screenY;
             
             if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
             {
                 int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
                 int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
-
-                foreach (Unit unit in UnitArray)
-                {
-                    if (unit.SelectedFlag)
-                    {
-                        if (unit.TrueNationId() == 1)
-                        {
-                            unit.MoveTo(locX, locY);
-                        }
-                    }
-                }
             }
+            
+            if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
+            {
+                if (_selectedTownId != 0)
+                    HandleTownDetailsInput(TownArray[_selectedTownId]);
+            }
+
+            _rightMouseReleased = false;
         }
     }
 }

@@ -73,7 +73,7 @@ public class Town : IIdObject
 	public DateTime LastBeingAttackedDate { get; private set; }
 
 
-	private readonly List<int> _trainSkillQueue = new List<int>(); // it stores the skill id.
+	public List<int> TrainSkillQueue { get; } = new List<int>(); // it stores the skill id.
 	private readonly List<int> _trainRaceQueue = new List<int>(); // it stores the race id.
 	public int TrainUnitId { get; private set; } // race id. of the unit the town is currently training, 0-if currently not training any
 	public int TrainUnitActionId { get; set; } // id. of the action to be assigned to this unit when it is finished training.
@@ -1801,12 +1801,12 @@ public class Town : IIdObject
 		if (amount <= 0)
 			return;
 
-		int queueSpace = InternalConstants.TOWN_MAX_TRAIN_QUEUE - _trainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
+		int queueSpace = InternalConstants.TOWN_MAX_TRAIN_QUEUE - TrainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
 		int enqueueAmount = Math.Min(queueSpace, amount);
 
 		for (int i = 0; i < enqueueAmount; i++)
 		{
-			_trainSkillQueue.Add(skillId);
+			TrainSkillQueue.Add(skillId);
 			_trainRaceQueue.Add(raceId);
 		}
 
@@ -1819,13 +1819,15 @@ public class Town : IIdObject
 		if (amount <= 0)
 			return;
 
-		for (int i = _trainSkillQueue.Count - 1; i >= 0; i--)
+		for (int i = TrainSkillQueue.Count - 1; i >= 0; i--)
 		{
-			if (_trainSkillQueue[i] == skillId)
+			if (TrainSkillQueue[i] == skillId)
 			{
-				_trainSkillQueue.RemoveAt(i);
+				TrainSkillQueue.RemoveAt(i);
 				_trainRaceQueue.RemoveAt(i);
 				amount--;
+				if (amount == 0)
+					return;
 			}
 		}
 
@@ -1841,19 +1843,19 @@ public class Town : IIdObject
 
 	private void ProcessQueue()
 	{
-		if (_trainSkillQueue.Count == 0)
+		if (TrainSkillQueue.Count == 0)
 			return;
 
 		if (JoblessPopulation == 0)
 			return;
 
-		for (int i = 0; i < _trainSkillQueue.Count; i++)
+		for (int i = 0; i < TrainSkillQueue.Count; i++)
 		{
 			if (CanTrain(_trainRaceQueue[i]))
 			{
-				int skillId = _trainSkillQueue[i];
+				int skillId = TrainSkillQueue[i];
 				int raceId = _trainRaceQueue[i];
-				_trainSkillQueue.RemoveAt(i);
+				TrainSkillQueue.RemoveAt(i);
 				_trainRaceQueue.RemoveAt(i);
 				i--;
 				Recruit(skillId, raceId, InternalConstants.COMMAND_AUTO);

@@ -635,6 +635,8 @@ public class FirmHarbor : Firm
 			{
 				newQueue.RemoveAt(i);
 				amount--;
+				if (amount == 0)
+					break;
 			}
 		}
 

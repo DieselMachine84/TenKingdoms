@@ -92,6 +92,14 @@ public partial class Renderer
 	private IntPtr _fieldPanel2Texture;
 	private int _fieldPanel2Width;
 	private int _fieldPanel2Height;
+	private IntPtr _skillPanelUpTexture;
+	private IntPtr _skillPanelDownTexture;
+	private int _skillPanelWidth;
+	private int _skillPanelHeight;
+	private IntPtr _numberPanelUpTexture;
+	private IntPtr _numberPanelDownTexture;
+	private int _numberPanelWidth;
+	private int _numberPanelHeight;
 
 	private IntPtr _listBoxPanelTexture;
 	private int _listBoxPanelWidth;
@@ -153,6 +161,25 @@ public partial class Renderer
 	private IntPtr _buttonDefenseOffTexture;
 	private int _buttonDefenseOffWidth;
 	private int _buttonDefenseOffHeight;
+
+	private IntPtr _buttonConstructionSkillTexture;
+	private int _buttonConstructionSkillWidth;
+	private int _buttonConstructionSkillHeight;
+	private IntPtr _buttonLeadershipSkillTexture;
+	private int _buttonLeadershipSkillWidth;
+	private int _buttonLeadershipSkillHeight;
+	private IntPtr _buttonMineSkillTexture;
+	private int _buttonMineSkillWidth;
+	private int _buttonMineSkillHeight;
+	private IntPtr _buttonManufactureSkillTexture;
+	private int _buttonManufactureSkillWidth;
+	private int _buttonManufactureSkillHeight;
+	private IntPtr _buttonResearchSkillTexture;
+	private int _buttonResearchSkillWidth;
+	private int _buttonResearchSkillHeight;
+	private IntPtr _buttonSpySkillTexture;
+	private int _buttonSpySkillWidth;
+	private int _buttonSpySkillHeight;
 	
 	private void CreateUITextures()
 	{
@@ -297,6 +324,18 @@ public partial class Renderer
 		_fieldPanel2Height = 18;
 		byte[] fieldPanel2Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel2Width, _fieldPanel2Height);
 		_fieldPanel2Texture = Graphics.CreateTextureFromBmp(fieldPanel2Bitmap, _fieldPanel2Width, _fieldPanel2Height, 32);
+		_skillPanelWidth = _smallPanelWidth;
+		_skillPanelHeight = 40;
+		byte[] skillPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _skillPanelWidth, _skillPanelHeight);
+		_skillPanelUpTexture = Graphics.CreateTextureFromBmp(skillPanelUpBitmap, _skillPanelWidth, _skillPanelHeight, 32);
+		byte[] skillPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _skillPanelWidth, _skillPanelHeight);
+		_skillPanelDownTexture = Graphics.CreateTextureFromBmp(skillPanelDownBitmap, _skillPanelWidth, _skillPanelHeight, 32);
+		_numberPanelWidth = 30;
+		_numberPanelHeight = _smallPanelHeight;
+		byte[] numberPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _numberPanelWidth, _numberPanelHeight);
+		_numberPanelUpTexture = Graphics.CreateTextureFromBmp(numberPanelUpBitmap, _numberPanelWidth, _numberPanelHeight, 32);
+		byte[] numberPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _numberPanelWidth, _numberPanelHeight);
+		_numberPanelDownTexture = Graphics.CreateTextureFromBmp(numberPanelDownBitmap, _numberPanelWidth, _numberPanelHeight, 32);
 	}
 
 	private void CreateListBoxPanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
@@ -409,6 +448,37 @@ public partial class Renderer
 		_buttonDefenseOffHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDefenseOffWidth, _buttonDefenseOffHeight);
 		_buttonDefenseOffTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDefenseOffWidth, _buttonDefenseOffHeight);
+
+		buttonData = buttonImages.Read("U_CONS");
+		_buttonConstructionSkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonConstructionSkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonConstructionSkillWidth, _buttonConstructionSkillHeight);
+		_buttonConstructionSkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonConstructionSkillWidth, _buttonConstructionSkillHeight);
+		buttonData = buttonImages.Read("U_LEAD");
+		_buttonLeadershipSkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonLeadershipSkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonLeadershipSkillWidth, _buttonLeadershipSkillHeight);
+		_buttonLeadershipSkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonLeadershipSkillWidth, _buttonLeadershipSkillHeight);
+		buttonData = buttonImages.Read("U_MINE");
+		_buttonMineSkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonMineSkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonMineSkillWidth, _buttonMineSkillHeight);
+		_buttonMineSkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonMineSkillWidth, _buttonMineSkillHeight);
+		buttonData = buttonImages.Read("U_MANU");
+		_buttonManufactureSkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonManufactureSkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonManufactureSkillWidth, _buttonManufactureSkillHeight);
+		_buttonManufactureSkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonManufactureSkillWidth, _buttonManufactureSkillHeight);
+		buttonData = buttonImages.Read("U_RESE");
+		_buttonResearchSkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonResearchSkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonResearchSkillWidth, _buttonResearchSkillHeight);
+		_buttonResearchSkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonResearchSkillWidth, _buttonResearchSkillHeight);
+		buttonData = buttonImages.Read("U_SPY");
+		_buttonSpySkillWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpySkillHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpySkillWidth, _buttonSpySkillHeight);
+		_buttonSpySkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpySkillWidth, _buttonSpySkillHeight);
 	}
 
 	private byte[] CreateDisabledButtonTexture(byte[] buttonData, int width, int height)
@@ -557,6 +627,26 @@ public partial class Renderer
 	private void DrawFieldPanel2(int x, int y)
 	{
 		Graphics.DrawBitmap(_fieldPanel2Texture, x, y, Scale(_fieldPanel2Width), Scale(_fieldPanel2Height));
+	}
+
+	private void DrawSkillPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmap(_skillPanelUpTexture, x, y, Scale(_skillPanelWidth), Scale(_skillPanelHeight));
+	}
+
+	private void DrawSkillPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmap(_skillPanelDownTexture, x, y, Scale(_skillPanelWidth), Scale(_skillPanelHeight));
+	}
+
+	private void DrawNumberPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmap(_numberPanelUpTexture, x, y, Scale(_numberPanelWidth), Scale(_numberPanelHeight));
+	}
+
+	private void DrawNumberPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmap(_numberPanelDownTexture, x, y, Scale(_numberPanelWidth), Scale(_numberPanelHeight));
 	}
 	
 	private void DrawListBoxPanel(int x, int y)

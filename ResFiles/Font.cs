@@ -16,8 +16,8 @@ public class FontInfo // info for each character
     {
 	    if (_texture == default)
 	    {
-		    int origWidth = width / 2;
-		    int origHeight = height / 2;
+		    int origWidth = BitConverter.ToInt16(bitmaps, bitmap_offset);
+		    int origHeight = BitConverter.ToInt16(bitmaps, bitmap_offset + 2);
 		    byte[] bitmap = bitmaps.Skip(bitmap_offset + 2 * sizeof(Int16)).Take(origWidth * origHeight).ToArray();
 		    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, origWidth, origHeight);
 		    byte[] scaledBitmap = new byte[decompressedBitmap.Length * 4];

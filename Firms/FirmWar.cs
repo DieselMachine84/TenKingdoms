@@ -113,6 +113,8 @@ public class FirmWar : Firm
             {
                 newQueue.RemoveAt(i);
                 amount--;
+                if (amount == 0)
+                    break;
             }
         }
 
