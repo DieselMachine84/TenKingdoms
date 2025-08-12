@@ -356,9 +356,9 @@ public abstract class Firm : IIdObject
 		usedNumbers.Sort();
 
 		int unusedNumber = usedNumbers.Count + 1;
-		for (int i = 1; i <= usedNumbers.Count; i++)
+		for (int i = 0; i < usedNumbers.Count; i++)
 		{
-			if (usedNumbers[i] != i)
+			if (usedNumbers[i] != i + 1)
 			{
 				unusedNumber = i;
 				break;
