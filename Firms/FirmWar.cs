@@ -99,10 +99,9 @@ public class FirmWar : Firm
         if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
             return;
 
-        nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitId].build_cost);
-
         BuildUnitId = BuildQueue[0];
         BuildQueue.RemoveAt(0);
+        nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitId].build_cost);
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
         BuildProgressInDays = 0.0;
