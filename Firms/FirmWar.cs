@@ -96,12 +96,8 @@ public class FirmWar : Firm
         //--- first check if the nation has enough money to build the weapon ---//
 
         Nation nation = NationArray[NationId];
-
-        if (nation.cash < UnitRes[BuildUnitId].build_cost)
-        {
-            BuildUnitId = 0;
+        if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
             return;
-        }
 
         nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitId].build_cost);
 
