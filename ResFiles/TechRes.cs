@@ -4,8 +4,8 @@ namespace TenKingdoms;
 
 public class TechClassRec
 {
-    public const int CODE_LEN=8;
-    public const int ICON_NAME_LEN=8;
+    public const int CODE_LEN = 8;
+    public const int ICON_NAME_LEN = 8;
 
     public char[] class_code = new char[CODE_LEN];
     public char[] icon_name = new char[ICON_NAME_LEN];
@@ -193,8 +193,8 @@ public class TechInfo
                 if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == nationRecno)
                 {
                     FirmResearch firmResearch = (FirmResearch)firm;
-                    if (firmResearch.tech_id == tech_id)
-                        firmResearch.terminate_research();
+                    if (firmResearch.TechId == tech_id)
+                        firmResearch.TerminateResearch();
                 }
             }
         }
@@ -289,28 +289,28 @@ public class TechRes
         LoadTechInfo();
     }
 
-    public void init_nation_tech(int nationRecno)
+    public void init_nation_tech(int nationId)
     {
         foreach (var techInfo in tech_info_array)
         {
-            techInfo.set_nation_tech_level(nationRecno, 0);
+            techInfo.set_nation_tech_level(nationId, 0);
         }
     }
 
-    public void inc_all_tech_level(int nationRecno)
+    public void inc_all_tech_level(int nationId)
     {
         foreach (var techInfo in tech_info_array)
         {
-            int curTechLevel = techInfo.get_nation_tech_level(nationRecno);
+            int curTechLevel = techInfo.get_nation_tech_level(nationId);
 
             if (curTechLevel < techInfo.max_tech_level)
-                techInfo.set_nation_tech_level(nationRecno, curTechLevel + 1);
+                techInfo.set_nation_tech_level(nationId, curTechLevel + 1);
         }
     }
 
     public TechInfo this[int techId] => tech_info_array[techId - 1];
 
-    public TechClass tech_class(int techClassId)
+    private TechClass GetTechClass(int techClassId)
     {
         return tech_class_array[techClassId - 1];
     }
@@ -363,7 +363,7 @@ public class TechRes
 
             if (techClassId != techInfo.class_id)
             {
-                techClass = tech_class(techInfo.class_id);
+                techClass = GetTechClass(techInfo.class_id);
                 techClassId = techInfo.class_id;
 
                 techClass.first_tech_id = i + 1;

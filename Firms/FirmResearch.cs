@@ -2,8 +2,7 @@ namespace TenKingdoms;
 
 public class FirmResearch : Firm
 {
-    public int tech_id; // the id. of the tech this firm is currently researching
-    public double complete_percent; // percent completed on researching the current technology
+    public int TechId { get; private set; } // the id. of the tech this firm is currently researching
 
     private TechRes TechRes => Sys.Instance.TechRes;
 
@@ -14,81 +13,66 @@ public class FirmResearch : Firm
 
     protected override void DeinitDerived()
     {
-        terminate_research();
+        TerminateResearch();
     }
 
     public override void NextDay()
     {
         base.NextDay();
 
-        //----------- update population -------------//
-
         RecruitWorker();
-
-        //-------- train up the skill ------------//
 
         UpdateWorker();
 
-        //--------- calculate productivity ----------//
-
         CalcProductivity();
 
-        //--------- process research ----------//
-
-        process_research();
+        ProcessResearch();
     }
 
-    public override void ChangeNation(int newNationRecno)
+    public override void ChangeNation(int newNationId)
     {
-        terminate_research();
+        TerminateResearch();
 
-        //-------- change the nation of this firm now ----------//
-
-        base.ChangeNation(newNationRecno);
+        base.ChangeNation(newNationId);
     }
 
     public override bool IsOperating()
     {
-        return Productivity > 0 && tech_id != 0;
+        return Productivity > 0 && TechId != 0;
     }
 
-    public void start_research(int techId, int remoteAction)
+    public void StartResearch(int techId, int remoteAction)
     {
         TechInfo techInfo = TechRes[techId];
 
-        //if( !remoteAction && remote.is_enable())
+        //if (!remoteAction && remote.is_enable())
         //{
-        //// packet structure : <firm recno> <tech Id>
-        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_RESEARCH_START, 2*sizeof(short) );
-        //shortPtr[0] = firm_recno;
-        //shortPtr[1] = (short) techId;
-        //return;
+            //// packet structure : <firm recno> <tech Id>
+            //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_RESEARCH_START, 2*sizeof(short) );
+            //shortPtr[0] = firm_recno;
+            //shortPtr[1] = (short) techId;
+            //return;
         //}
 
         //---- if the firm currently is already researching something ---//
 
-        if (tech_id != 0)
-            terminate_research();
+        if (TechId != 0)
+            TerminateResearch();
 
-        //-------- set self parameters ---------//
-
-        tech_id = techId;
-
-        //------- set TechRes parameters -------//
-
+        TechId = techId;
         techInfo.inc_nation_is_researching(NationId);
     }
 
-    public void process_research()
+    private void ProcessResearch()
     {
-        if (tech_id == 0)
+        if (TechId == 0)
             return;
 
         //------- make a progress with the research ------//
 
-        TechInfo techInfo = TechRes[tech_id];
-        double progressPoint;
+        TechInfo techInfo = TechRes[TechId];
 
+        double progressPoint;
         if (Config.fast_build && NationId == NationArray.player_recno)
             progressPoint = Productivity / 100.0 + 0.5;
         else
@@ -100,67 +84,53 @@ public class FirmResearch : Firm
         // more complex and higher level technology will take longer to research
         progressPoint = progressPoint * 30.0 / techInfo.complex_level / levelDivider;
 
-        // techInfo.progress() will reset tech_id if the current research level is the MAX tech level, so we have to save it now
-        int techId1 = tech_id;
+        // techInfo.Progress() will reset TechId if the current research level is the MAX tech level, so we have to save it now
+        int techIdCopy = TechId;
 
         if (techInfo.progress(NationId, progressPoint))
         {
-            if (tech_id != 0) // techInfo.progress() may have called terminate_research() if the tech level reaches the maximum
+            if (TechId != 0) // techInfo.Progress() may have called TerminateResearch() if the tech level reaches the maximum
             {
-                int techId2 = tech_id;
+                TerminateResearch();
 
-                research_complete();
+                //----- research next level technology automatically for player's firm only -----//
 
-                //----- research next level technology automatically -----//
-
-                if (!AIFirm) // for player's firm only
+                if (!AIFirm)
                 {
                     if (techInfo.get_nation_tech_level(NationId) < techInfo.max_tech_level)
                     {
-                        start_research(techId2, InternalConstants.COMMAND_AUTO);
+                        StartResearch(techIdCopy, InternalConstants.COMMAND_AUTO);
                     }
                 }
             }
 
-            //--------- add news ---------//
-
             if (OwnFirm())
             {
-                NewsArray.tech_researched(techId1, TechRes[techId1].get_nation_tech_level(NationId));
+                NewsArray.tech_researched(techIdCopy, TechRes[techIdCopy].get_nation_tech_level(NationId));
 
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
-                    UnitRes[TechRes[techId1].unit_id].sprite_id);
+                    UnitRes[TechRes[techIdCopy].unit_id].sprite_id);
             }
         }
     }
 
-    public void terminate_research()
+    public void TerminateResearch()
     {
-        if (tech_id == 0)
-            return;
-
-        TechRes[tech_id].dec_nation_is_researching(NationId);
-
-        tech_id = 0; // reset parameters
-        complete_percent = 0.0;
+        if (TechId != 0)
+        {
+            TechRes[TechId].dec_nation_is_researching(NationId);
+            TechId = 0;
+        }
     }
 
-    public void research_complete()
-    {
-        int techId = tech_id; // backup tech_id
-
-        TechRes[tech_id].dec_nation_is_researching(NationId);
-
-        tech_id = 0; // reset parameters
-        complete_percent = 0.0;
-    }
+    #region Old AI Functions    
 
     public override void ProcessAI()
     {
         //---- think about which technology to research ----//
 
-        if (tech_id == 0)
-            think_new_research();
+        if (TechId == 0)
+            ThinkNewResearch();
 
         //------- recruit workers ---------//
 
@@ -175,14 +145,12 @@ public class FirmResearch : Firm
 
         if (Info.TotalDays % 30 == FirmId % 30)
         {
-            if (think_del())
+            if (ThinkDel())
                 return;
         }
     }
 
-    //-------- AI actions ---------//
-
-    private void think_new_research()
+    private void ThinkNewResearch()
     {
         int bestTechId = 0, bestRating = 0;
 
@@ -202,24 +170,19 @@ public class FirmResearch : Firm
             }
         }
 
-        //------------------------------------//
-
         if (bestTechId != 0)
-            start_research(bestTechId, InternalConstants.COMMAND_AI);
+            StartResearch(bestTechId, InternalConstants.COMMAND_AI);
     }
 
-    private bool think_del()
+    private bool ThinkDel()
     {
         //----- if all technologies have been researched -----//
 
-        // all technologies have been researched
         if (NationArray[NationId].total_tech_level() == TechRes.total_tech_level)
         {
             AIDelFirm();
             return true;
         }
-
-        //----------------------------------------------// 
 
         if (Workers.Count > 0)
             return false;
@@ -232,12 +195,11 @@ public class FirmResearch : Firm
                 return false;
         }
 
-        //------------------------------------------------//
-
         AIDelFirm();
-
         return true;
     }
+    
+    #endregion
     
     public override void DrawDetails(IRenderer renderer)
     {

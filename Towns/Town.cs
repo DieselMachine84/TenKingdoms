@@ -1828,8 +1828,8 @@ public class Town : IIdObject
 			}
 		}
 
-		// If there were less trained of skillId in the queue than were requested to be removed then
-		// also cancel currently trained unit
+		// If there were less trained of skillId in the queue than were requested to be removed
+		// then also cancel currently trained unit
 		if (amount > 0 && TrainUnitId != 0)
 		{
 			Unit unit = UnitArray[TrainUnitId];
@@ -1854,7 +1854,6 @@ public class Town : IIdObject
 				int raceId = _trainRaceQueue[i];
 				TrainSkillQueue.RemoveAt(i);
 				_trainRaceQueue.RemoveAt(i);
-				i--;
 				Recruit(skillId, raceId, InternalConstants.COMMAND_AUTO);
 				break;
 			}
@@ -4526,7 +4525,7 @@ public class Town : IIdObject
 				continue;
 
 			//TODO this code is different from the same in think_build_research()
-			if (firmWar.Workers.Count < Firm.MAX_WORKER || firmWar.build_unit_id == 0)
+			if (firmWar.Workers.Count < Firm.MAX_WORKER || firmWar.BuildUnitId == 0)
 				return false;
 		}
 
