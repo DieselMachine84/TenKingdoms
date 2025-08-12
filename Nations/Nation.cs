@@ -731,11 +731,13 @@ public class Nation : NationBase
 		{
 			for (int y = spyUnit.NextLocY - 1; y <= spyUnit.NextLocY + 1; y++)
 			{
-				x = Math.Max(0, x);
-				x = Math.Min(GameConstants.MapSize - 1, x);
-				y = Math.Max(0, y);
-				y = Math.Min(GameConstants.MapSize - 1, y);
-				Location location = World.GetLoc(x, y);
+				int xCopy = x;
+				int yCopy = y;
+				xCopy = Math.Max(0, xCopy);
+				xCopy = Math.Min(GameConstants.MapSize - 1, xCopy);
+				yCopy = Math.Max(0, yCopy);
+				yCopy = Math.Min(GameConstants.MapSize - 1, yCopy);
+				Location location = World.GetLoc(xCopy, yCopy);
 				if (location.IsTown())
 				{
 					nearbyTown = TownArray[location.TownId()];
