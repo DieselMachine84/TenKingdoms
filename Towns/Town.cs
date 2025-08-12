@@ -350,7 +350,7 @@ public class Town : IIdObject
 		if (NoNeighborSpace && Info.TotalDays % 10 == TownId % 10)
 		{
 			// for independent town, since we can't call FindBestFirmLoc(), we just set NoNeighborSpace to false every 10 days,
-			// if it still has no space, then no_neighbor_space will be set 1 again
+			// if it still has no space, then NoNeighborSpace will be set 1 again
 
 			// check for FIRM_RESEARCH because it has the smallest size
 			if (NationId == 0 || NationArray[NationId].find_best_firm_loc(Firm.FIRM_RESEARCH, LocX1, LocY1, out _, out _))
@@ -384,11 +384,11 @@ public class Town : IIdObject
 	
 	private void SetWorldMatrix()
 	{
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				Location location = World.GetLoc(xLoc, yLoc);
+				Location location = World.GetLoc(locX, locY);
 
 				if (location.CargoId == 0) // skip the location where the settle unit is standing
 					location.SetTown(TownId);
@@ -415,11 +415,11 @@ public class Town : IIdObject
 
 	private void RestoreWorldMatrix()
 	{
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				World.GetLoc(xLoc, yLoc).RemoveTown();
+				World.GetLoc(locX, locY).RemoveTown();
 			}
 		}
 
@@ -434,32 +434,29 @@ public class Town : IIdObject
 		if (NationId == 0)
 			return;
 
-		//--- if a nation sets up a town in a location that the player has explored, contact between the nation and the player is established ---//
-
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				Location location = World.GetLoc(xLoc, yLoc);
-
+				Location location = World.GetLoc(locX, locY);
 				if (location.IsExplored() && NationArray.player_recno != 0)
 				{
 					NationRelation relation = NationArray.player.get_relation(NationId);
 
-					//if( !remote.is_enable() )
+					//if (remote.is_enable())
 					//{
-					relation.has_contact = true;
+						//if( !relation->contact_msg_flag && !relation->has_contact )
+						//{
+							// packet structure : <player nation> <explored nation>
+							//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
+							//*shortPtr = nation_array.player_recno;
+							//shortPtr[1] = nation_recno;
+							//relation->contact_msg_flag = 1;
+						//}
 					//}
 					//else
 					//{
-					//if( !relation->contact_msg_flag && !relation->has_contact )
-					//{
-					// packet structure : <player nation> <explored nation>
-					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-					//*shortPtr = nation_array.player_recno;
-					//shortPtr[1] = nation_recno;
-					//relation->contact_msg_flag = 1;
-					//}
+						relation.has_contact = true;
 					//}
 				}
 			}
@@ -2377,12 +2374,6 @@ public class Town : IIdObject
 
 		//--- DecPopulation() will delete the current town if population goes down to 0 ---//
 
-		if (TownId == TownArray.SelectedTownId)
-		{
-			if (TownArray.IsDeleted(TownId))
-				Info.disp();
-		}
-
 		return unit.SpriteId;
 	}
 
@@ -2614,7 +2605,7 @@ public class Town : IIdObject
 			firm.LinkedTownsEnable.Add(defaultLinkStatus);
 
 			if (firm.AIFirm)
-				firm.AiLinkChecked = false;
+				firm.AILinkChecked = false;
 		}
 
 		//----- build town-to-town link relationship -------//
@@ -2675,7 +2666,7 @@ public class Town : IIdObject
 			firm.ReleaseTownLink(TownId);
 
 			if (firm.AIFirm)
-				firm.AiLinkChecked = false;
+				firm.AILinkChecked = false;
 		}
 
 		//------ release linked towns ------//
@@ -3105,9 +3096,6 @@ public class Town : IIdObject
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
 		SpyArray.SetActionMode(Spy.SPY_TOWN, TownId, Spy.SPY_IDLE);
-		
-		if (TownArray.SelectedTownId == TownId)
-			Info.disp();
 	}
 
 	private void SetHostileNation(int nationId)

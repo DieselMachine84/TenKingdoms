@@ -61,7 +61,7 @@ public abstract class Firm : IIdObject
 	public bool ShouldSetPower { get; private set; }
 	public int PlayerSpyCount { get; set; }
 	public int SabotageLevel { get; set; } // 0-100 for counter productivity
-	private bool RemoveFirm { get; set; }
+	private bool IsDeleting { get; set; }
 	public int CurFrame { get; private set; }
 	private int RemainFrameDelay { get; set; }
 	
@@ -79,7 +79,7 @@ public abstract class Firm : IIdObject
 	public int AIStatus { get; protected set; }
 
 	// AI checks firms and towns location by links, disable checking by setting this parameter to true
-	public bool AiLinkChecked { get; set; }
+	public bool AILinkChecked { get; set; }
 	public bool ShouldCloseFlag { get; protected set; }
 	public int AIShouldBuildFactoryCount { get; set; }
 
@@ -120,32 +120,25 @@ public abstract class Firm : IIdObject
 		FirmId = id;
 	}
 
-	public virtual void Init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
+	public virtual void Init(int nationId, int firmType, int locX, int locY, string buildCode = "", int builderId = 0)
 	{
-		FirmInfo firmInfo = FirmRes[firmId];
-
-		FirmType = firmId;
+		FirmType = firmType;
+		FirmInfo firmInfo = FirmRes[firmType];
 
 		if (!String.IsNullOrEmpty(buildCode))
 			FirmBuildId = firmInfo.get_build_id(buildCode);
 		else
 			FirmBuildId = firmInfo.first_build_id;
 
-		//----------- set vars -------------//
-
-		NationId = nationRecno;
+		NationId = nationId;
 		SetupDate = Info.game_date;
-
-		OverseerId = 0;
-
-		//----- set the firm's absolute positions on the map -----//
 
 		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
 
 		RaceId = firmBuild.race_id;
 
-		LocX1 = xLoc;
-		LocY1 = yLoc;
+		LocX1 = locX;
+		LocY1 = locY;
 		LocX2 = LocX1 + firmBuild.loc_width - 1;
 		LocY2 = LocY1 + firmBuild.loc_height - 1;
 
@@ -154,8 +147,6 @@ public abstract class Firm : IIdObject
 
 		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
 
-		//--------- set animation frame vars ---------//
-
 		if (firmBuild.animate_full_size)
 			CurFrame = 1;
 		else
@@ -163,46 +154,28 @@ public abstract class Firm : IIdObject
 
 		RemainFrameDelay = firmBuild.frame_delay(CurFrame);
 
-		//--------- initialize gaming vars ----------//
-
+		OverseerId = 0;
 		HitPoints = 0.0;
 		MaxHitPoints = firmInfo.max_hit_points;
+		UnderConstruction = firmInfo.buildable;
 
-		//------ set construction and builder -------//
-
-		UnderConstruction =
-			firmInfo.buildable; // whether the firm is under construction, if the firm is not buildable it is completed in the first place
-
-		if (!UnderConstruction) // if this firm doesn't been to be constructed, set its hit points to the maximum
+		if (!UnderConstruction)
 			HitPoints = MaxHitPoints;
 
-		if (builderRecno != 0)
-			SetBuilder(builderRecno);
+		if (builderId != 0)
+			SetBuilder(builderId);
 		else
 			BuilderId = 0;
-
-		//------ update firm counter -------//
 
 		firmInfo.total_firm_count++;
 
 		if (NationId != 0)
-			firmInfo.inc_nation_firm_count(NationId);
-
-		//-------------------------------------------//
-
-		if (NationId > 0)
 		{
+			firmInfo.inc_nation_firm_count(NationId);
 			Nation nation = NationArray[NationId];
-
 			AIFirm = nation.is_ai();
 			AIProcessed = true;
-
-			//--------- increase firm counter -----------//
-
 			nation.nation_firm_count++;
-
-			//-------- update last build date ------------//
-
 			nation.last_build_firm_date = Info.game_date;
 		}
 		else
@@ -212,9 +185,7 @@ public abstract class Firm : IIdObject
 		}
 
 		AIStatus = FIRM_WITHOUT_ACTION;
-		AiLinkChecked = true; // check the connected firms if ai_link_checked = 0;
-
-		//--------------------------------------------//
+		AILinkChecked = true;
 
 		SetupLink();
 
@@ -222,14 +193,10 @@ public abstract class Firm : IIdObject
 
 		InitName();
 
-		//----------- init AI -----------//
-
 		if (AIFirm)
 			NationArray[NationId].add_firm_info(FirmType, FirmId);
 
-		//-------- init derived ---------//
-
-		InitDerived(); // init_derived() before set_world_matrix() so that init_derived has access to the original land info.
+		InitDerived();
 	}
 
 	protected virtual void InitDerived()
@@ -240,9 +207,7 @@ public abstract class Firm : IIdObject
 	{
 		DeinitDerived();
 
-		RemoveFirm = true; // set static parameter
-
-		//------- delete AI info ----------//
+		IsDeleting = true;
 
 		if (AIFirm)
 		{
@@ -254,17 +219,11 @@ public abstract class Firm : IIdObject
 			nation.del_firm_info(FirmType, FirmId);
 		}
 
-		//--------- clean up related stuff -----------//
-
 		RestoreWorldMatrix();
 		ReleaseLink();
 
-		//------ all workers and the overseer resign ------//
-
 		if (!UnderConstruction)
 		{
-			// -------- create a firm die record ------//
-			// can be called as soon as restore_world_matrix
 			FirmDieArray.Add(this);
 		}
 
@@ -276,51 +235,34 @@ public abstract class Firm : IIdObject
 		if (BuilderId != 0)
 			MobilizeBuilder(BuilderId);
 
-		//--------- decrease firm counter -----------//
-
-		if (NationId != 0)
-			NationArray[NationId].nation_firm_count--;
-
-		//------ update firm counter -------//
-
 		FirmInfo firmInfo = FirmRes[FirmType];
-
 		firmInfo.total_firm_count--;
 
 		if (NationId != 0)
+		{
 			firmInfo.dec_nation_firm_count(NationId);
-
-		//------- update town border ---------//
+			NationArray[NationId].nation_firm_count--;
+		}
 
 		LocX1 = -1; // mark deleted
 
-		//------- if the current firm is the selected -----//
+		if (FirmArray.SelectedFirmId == FirmId)
+			FirmArray.SelectedFirmId = 0;
 
-		if (FirmArray.selected_recno == FirmId)
-		{
-			FirmArray.selected_recno = 0;
-			//TODO drawing
-			//info.disp();
-		}
-
-		//-------------------------------------------------//
-
-		RemoveFirm = false; // reset static parameter
+		IsDeleting = false;
 	}
 
 	protected virtual void DeinitDerived()
 	{
 	}
 
-	public void SetWorldMatrix()
+	private void SetWorldMatrix()
 	{
-		//--- if a nation set up a firm in a location that the player has explored, contact between the nation and the player is established ---//
-
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				World.GetLoc(xLoc, yLoc).SetFirm(FirmId);
+				World.GetLoc(locX, locY).SetFirm(FirmId);
 			}
 		}
 
@@ -328,145 +270,125 @@ public abstract class Firm : IIdObject
 
 		EstablishContactWithPlayer();
 
-		//------------ reveal new land ----------//
-
-		if (NationId == NationArray.player_recno ||
-		    (NationId != 0 && NationArray[NationId].is_allied_with_player))
-		{
-			World.Unveil(LocX1, LocY1, LocX2, LocY2);
-			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
-		}
-
-		//-------- set should_set_power --------//
-
 		ShouldSetPower = GetShouldSetPower();
 
-		//---- set this town's influence on the map ----//
+		//---- set this firm's influence on the map ----//
 
 		if (ShouldSetPower)
 			World.SetPower(LocX1, LocY1, LocX2, LocY2, NationId);
 
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
+		//------------ reveal new land ----------//
 
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;  // set the flag on so it will be redrawn in the next frame
+		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		{
+			World.Unveil(LocX1, LocY1, LocX2, LocY2);
+			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
+		}
 	}
 
-	public void RestoreWorldMatrix()
+	private void RestoreWorldMatrix()
 	{
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				World.GetLoc(xLoc, yLoc).RemoveFirm();
+				World.GetLoc(locX, locY).RemoveFirm();
 			}
 		}
 
-		//---- restore this town's influence on the map ----//
+		//---- restore this firm's influence on the map ----//
 
 		if (ShouldSetPower) // no power region for harbor as it build on coast which cannot be set with power region
 			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
-
-		//---- if the newly built firm is visual in the zoom window, redraw the zoom buffer ----//
-
-		//TODO drawing
-		//if( is_in_zoom_win() )
-		//sys.zoom_need_redraw = 1;
 	}
 	
-	public void EstablishContactWithPlayer()
+	private void EstablishContactWithPlayer()
 	{
 		if (NationId == 0)
 			return;
 
-		for (int yLoc = LocY1; yLoc <= LocY2; yLoc++)
+		for (int locY = LocY1; locY <= LocY2; locY++)
 		{
-			for (int xLoc = LocX1; xLoc <= LocX2; xLoc++)
+			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
-				Location location = World.GetLoc(xLoc, yLoc);
-
-				location.SetFirm(FirmId);
-
+				Location location = World.GetLoc(locX, locY);
 				if (location.IsExplored() && NationArray.player_recno != 0)
 				{
 					NationRelation relation = NationArray.player.get_relation(NationId);
 
-					//if( !remote.is_enable() )
+					//if (remote.is_enable())
 					//{
-					relation.has_contact = true;
+						//if( !relation.has_contact && !relation.contact_msg_flag )
+						//{
+							//// packet structure : <player nation> <explored nation>
+							//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
+							//*shortPtr = NationArray.player_recno;
+							//shortPtr[1] = nation_recno;
+							//relation.contact_msg_flag = 1;
+						//}
 					//}
 					//else
 					//{
-					//if( !relation.has_contact && !relation.contact_msg_flag )
-					//{
-					//// packet structure : <player nation> <explored nation>
-					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
-					//*shortPtr = NationArray.player_recno;
-					//shortPtr[1] = nation_recno;
-					//relation.contact_msg_flag = 1;
-					//}
+						relation.has_contact = true;
 					//}
 				}
 			}
 		}
 	}
 
-	public void InitName()
+	private void InitName()
 	{
 		// if this firm does not have any short name, display the full name without displaying the town name together
 		if (String.IsNullOrEmpty(FirmRes[FirmType].short_name))
 			return;
 
-		//---- find the closest town and set closest_town_name_id -----//
-
 		ClosestTownNameId = GetClosestTownNameId();
 
-		//--------- set firm_name_instance_id -----------//
-
-		bool[] usedInstanceArray = new bool[256];
-
+		List<int> usedNumbers = new List<int>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.FirmType == FirmType &&
-			    firm.ClosestTownNameId == ClosestTownNameId &&
-			    firm.FirmNameInstanceId != 0)
+			if (firm.FirmType == FirmType && firm.ClosestTownNameId == ClosestTownNameId && firm.FirmNameInstanceId != 0)
 			{
-				usedInstanceArray[firm.FirmNameInstanceId - 1] = true;
+				usedNumbers.Add(firm.FirmNameInstanceId);
 			}
 		}
+		
+		usedNumbers.Sort();
 
-		for (int i = 0; i < usedInstanceArray.Length; i++) // get the smallest id. which are not used by existing firms
+		int unusedNumber = usedNumbers.Count + 1;
+		for (int i = 1; i <= usedNumbers.Count; i++)
 		{
-			if (!usedInstanceArray[i])
+			if (usedNumbers[i] != i)
 			{
-				FirmNameInstanceId = i + 1;
+				unusedNumber = i;
 				break;
 			}
 		}
+
+		FirmNameInstanceId = unusedNumber;
 	}
 
 	public virtual string FirmName()
 	{
-		string str = String.Empty;
+		string result = String.Empty;
 
 		if (ClosestTownNameId == 0)
 		{
-			str = FirmRes[FirmType].name;
+			result = FirmRes[FirmType].name;
 		}
 		else
 		{
 			// display number when there are multiple linked firms of the same type
 			// TRANSLATORS: <Town> <Short Firm Name> <Firm #>
 			// This is the name of the firm when there are multiple linked firms to a town.
-			str = TownRes.GetName(ClosestTownNameId) + " " + FirmRes[FirmType].short_name;
+			result = TownRes.GetName(ClosestTownNameId) + " " + FirmRes[FirmType].short_name;
 			if (FirmNameInstanceId > 1)
 			{
-				str += " " + FirmNameInstanceId;
+				result += " " + FirmNameInstanceId;
 			}
 		}
 
-		return str;
+		return result;
 	}
 
 	public virtual void NextDay()
@@ -476,72 +398,52 @@ public abstract class Firm : IIdObject
 
 		//------ think about updating link status -------//
 		//
-		// This part must be done here instead of in
-		// process_ai() because it will be too late to do
-		// it in process_ai() as the next_day() will call
-		// first and some wrong goods may be input to markets.
+		// This part must be done here instead of in ProcessAI() because it will be too late to do it
+		// in ProcessAI() as the NextDay() will call first and some wrong goods may be input to markets.
 		//
 		//-----------------------------------------------//
 
 		if (AIFirm)
 		{
 			// once 30 days or when the link has been changed.
-			if (Info.TotalDays % 30 == FirmId % 30 || !AiLinkChecked)
+			if (Info.TotalDays % 30 == FirmId % 30 || !AILinkChecked)
 			{
 				AIUpdateLinkStatus();
-				AiLinkChecked = true;
+				AILinkChecked = true;
 			}
 		}
 
-		//-------- pay expenses ----------//
-
 		PayExpense();
-
-		//------- update loyalty --------//
 
 		if (Info.TotalDays % 30 == FirmId % 30)
 			UpdateLoyalty();
 
-		//-------- consume food --------//
-
 		if (!FirmRes[FirmType].live_in_town && Workers.Count > 0)
 			ConsumeFood();
-
-		//------ think worker migration -------//
 
 		if (Info.TotalDays % 30 == FirmId % 30)
 			ThinkWorkerMigrate();
 
-		//--------- repairing ----------//
-
 		ProcessRepair();
-
-		//------ catching spies -------//
 
 		if (Info.TotalDays % 30 == FirmId % 30)
 			SpyArray.CatchSpy(Spy.SPY_FIRM, FirmId);
-
-		//----- process workers from other town -----//
 
 		if (FirmRes[FirmType].live_in_town)
 		{
 			ProcessIndependentTownWorker();
 		}
 
-		//--- recheck no_neighbor_space after a period, there may be new space available now ---//
-
 		if (NoNeighborSpace && Info.TotalDays % 10 == FirmId % 10)
 		{
-			// whether it's FIRM_INN or not really doesn't matter, just any firm type will do
-			if (NationArray[NationId].find_best_firm_loc(FIRM_INN, LocX1, LocY1, out _, out _))
+			// use FIRM_RESEARCH because of its smallest size
+			if (NationArray[NationId].find_best_firm_loc(FIRM_RESEARCH, LocX1, LocY1, out _, out _))
 				NoNeighborSpace = false;
 		}
 	}
 
 	public virtual void NextMonth()
 	{
-		//------ update nation power recno ------//
-
 		bool newShouldSetPower = GetShouldSetPower();
 
 		if (newShouldSetPower == ShouldSetPower)
@@ -558,22 +460,225 @@ public abstract class Firm : IIdObject
 
 	public virtual void NextYear()
 	{
-		//------- post income data --------//
-
 		LastYearIncome = CurYearIncome;
 		CurYearIncome = 0.0;
 	}
+
+	public void ProcessConstruction()
+	{
+		if (FirmType == FIRM_MONSTER)
+		{
+			//--------- process construction for monster firm ----------//
+			HitPoints++;
+
+			if (HitPoints >= MaxHitPoints)
+			{
+				HitPoints = MaxHitPoints;
+				UnderConstruction = false;
+			}
+
+			return;
+		}
+
+		if (!UnderConstruction)
+			return;
+
+		//--- can only do construction when the firm is not under attack ---//
+
+		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
+			return;
+
+		if (Sys.Instance.FrameNumber % 2 != 0) // one build every 2 frames
+			return;
+
+		//------ increase the construction progress ------//
+
+		Unit unit = UnitArray[BuilderId];
+
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+			HitPoints += 1 + unit.Skill.SkillLevel / 30;
+		else
+			HitPoints++;
+
+		if (Config.fast_build && NationId == NationArray.player_recno)
+			HitPoints += 10;
+
+		//----- increase skill level of the builder unit -----//
+
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
+		{
+			unit.Skill.SkillLevelMinor++;
+			if (unit.Skill.SkillLevelMinor > 100)
+			{
+				unit.Skill.SkillLevelMinor = 0;
+
+				if (unit.Skill.SkillLevel < 100)
+					unit.Skill.SkillLevel++;
+			}
+		}
+
+		//------- when the construction is complete ----------//
+
+		if (HitPoints >= MaxHitPoints)
+		{
+			HitPoints = MaxHitPoints;
+			UnderConstruction = false;
+
+			bool needAssignUnit = false;
+
+			if (NationId == NationArray.player_recno)
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'S', unit.SpriteResId, "FINS", 'F', FirmType);
+
+			FirmInfo firmInfo = FirmRes[FirmType];
+
+			if ((firmInfo.need_overseer || firmInfo.need_worker) &&
+			    (firmInfo.firm_skill_id == 0 || firmInfo.firm_skill_id == unit.Skill.SkillId)) // the builder with the skill required
+			{
+				unit.SetMode(0); // reset it from UNIT_MODE_CONSTRUCT
+				needAssignUnit = true;
+			}
+			else
+			{
+				SetBuilder(0);
+			}
+
+			//---------------------------------------------------------------------------------------//
+			// should call AssignUnit() first before calling ActionFinished(...UNDER_CONSTRUCTION)
+			//---------------------------------------------------------------------------------------//
+
+			if (needAssignUnit)
+			{
+				AssignUnit(BuilderId);
+
+				//------------------------------------------------------------------------------//
+				// Note: there may be chance the unit cannot be assigned into the firm
+				//------------------------------------------------------------------------------//
+				if (OverseerId == 0 && Workers.Count == 0) // no assignment, can't assign
+				{
+					//------- init_sprite or delete the builder ---------//
+					int locX = LocX1, locY = LocY1;
+					SpriteInfo spriteInfo = unit.SpriteInfo;
+					if (!LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
+						UnitArray.DisappearInFirm(BuilderId); // kill the unit
+					else
+						unit.InitSprite(locX, locY); // restore the unit
+				}
+			}
+
+			BuilderId = 0;
+		}
+	}
+
+	public void CompleteConstruction()
+	{
+		if (UnderConstruction)
+		{
+			HitPoints = MaxHitPoints;
+			UnderConstruction = false;
+		}
+	}
 	
+	public void CancelConstruction(int remoteAction)
+	{
+		//if( !remoteAction && remote.is_enable())
+		//{
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_CANCEL, sizeof(short));
+			//shortPtr[0] = firm_recno;
+			//return;
+		//}
+
+		//------ get half of the construction cost back -------//
+
+		Nation nation = NationArray[NationId];
+		nation.add_expense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].setup_cost / 2.0);
+
+		FirmArray.DeleteFirm(this);
+	}
+	
+	private void ProcessRepair()
+	{
+		if (BuilderId == 0)
+			return;
+
+		if (NationArray[NationId].cash < 0) // if you don't have cash, the repair workers will not work
+			return;
+
+		Unit unit = UnitArray[BuilderId];
+
+		//--- can only do repair when the firm is not under attack ---//
+
+		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
+		{
+			//---- if the construction worker is a spy, it will damage the building when the building is under attack ----//
+
+			if (unit.SpyId != 0 && unit.TrueNationId() != NationId)
+			{
+				HitPoints -= SpyArray[unit.SpyId].SpySkill / 30.0;
+
+				if (HitPoints < 0.0)
+					HitPoints = 0.0;
+			}
+
+			return;
+		}
+
+		//------- repair now - only process once every 3 days -----//
+
+		if (HitPoints >= MaxHitPoints)
+			return;
+
+		// repair once every 1 to 6 days, depending on the skill level of the construction worker
+		int dayInterval = (100 - unit.Skill.SkillLevel) / 20 + 1;
+
+		if (Info.TotalDays % dayInterval == FirmId % dayInterval)
+		{
+			HitPoints++;
+
+			if (HitPoints > MaxHitPoints)
+				HitPoints = MaxHitPoints;
+		}
+	}
+	
+
+	private bool GetShouldSetPower()
+	{
+		bool shouldSetPower = true;
+
+		if (FirmType == FIRM_HARBOR) // don't set power for harbors
+		{
+			shouldSetPower = false;
+		}
+		else if (FirmType == FIRM_MARKET)
+		{
+			//--- don't set power for a market if it's linked to another nation's town ---//
+
+			shouldSetPower = false;
+
+			//--- only set the shouldSetPower to true if the market is linked to a firm of ours ---//
+
+			for (int i = 0; i < LinkedTowns.Count; i++)
+			{
+				Town town = TownArray[LinkedTowns[i]];
+
+				if (town.NationId == NationId)
+				{
+					shouldSetPower = true;
+					break;
+				}
+			}
+		}
+
+		return shouldSetPower;
+	}
 
 	public int GetClosestTownNameId()
 	{
-		//---- find the closest town and set closest_town_name_id -----//
-
-		int townDistance, minTownDistance = Int32.MaxValue;
+		int minTownDistance = Int32.MaxValue;
 		int closestTownNameId = 0;
+
 		foreach (Town town in TownArray)
 		{
-			townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, LocCenterX, LocCenterY);
+			int townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, LocCenterX, LocCenterY);
 
 			if (townDistance < minTownDistance)
 			{
@@ -587,7 +692,7 @@ public abstract class Firm : IIdObject
 
 	public int MajorityRace() // the race that has the majority of the population
 	{
-		//--- if there is a overseer, return the overseer's race ---//
+		//--- if there is an overseer, return the overseer's race ---//
 
 		if (OverseerId != 0)
 			return UnitArray[OverseerId].RaceId;
@@ -741,10 +846,10 @@ public abstract class Firm : IIdObject
 			int xLoc = LocX1;
 			int yLoc = LocY1;
 
-			if (!LocateSpace(RemoveFirm, ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.LocWidth,
+			if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.LocWidth,
 				    spriteInfo.LocHeight))
 			{
-				if (RemoveFirm)
+				if (IsDeleting)
 					KillOverseer();
 			}
 			else
@@ -855,12 +960,6 @@ public abstract class Firm : IIdObject
 
 		if (newOverseerRecno != 0 && !UnitArray.IsDeleted(newOverseerRecno))
 			UnitArray[newOverseerRecno].UpdateLoyalty();
-
-		//----------- refresh display if this firm is selected ----------//
-
-		//TODO drawing
-		//if (FirmArray.selected_recno == firm_recno)
-		//info.disp();
 	}
 
 	public virtual void AssignWorker(int workerUnitRecno)
@@ -1045,6 +1144,7 @@ public abstract class Firm : IIdObject
 		UnitArray.DeleteUnit(UnitArray[builderRecno]);
 	}
 
+
 	public virtual void BeingAttacked(int attackerUnitRecno)
 	{
 		LastAttackedDate = Info.game_date;
@@ -1191,46 +1291,6 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 
-	public bool GetShouldSetPower()
-	{
-		bool shouldSetPower = true;
-
-		if (FirmType == FIRM_HARBOR) // don't set power for harbors
-		{
-			shouldSetPower = false;
-		}
-		else if (FirmType == FIRM_MARKET)
-		{
-			//--- don't set power for a market if it's linked to another nation's town ---//
-
-			shouldSetPower = false;
-
-			//--- only set the shouldSetPower to 1 if the market is linked to a firm of ours ---//
-
-			for (int i = 0; i < LinkedTowns.Count; i++)
-			{
-				Town town = TownArray[LinkedTowns[i]];
-
-				if (town.NationId == NationId)
-				{
-					shouldSetPower = true;
-					break;
-				}
-			}
-		}
-
-		return shouldSetPower;
-	}
-
-	public void CompleteConstruction()
-	{
-		if (UnderConstruction)
-		{
-			HitPoints = MaxHitPoints;
-			UnderConstruction = false;
-		}
-	}
-
 	public void CaptureFirm(int newNationRecno)
 	{
 		if (NationId == NationArray.player_recno)
@@ -1357,22 +1417,17 @@ public abstract class Firm : IIdObject
 
 		// we need to reset it. e.g. when we have captured an enemy town, SPY_SOW_DISSENT action must be reset to SPY_IDLE
 		SpyArray.SetActionMode(Spy.SPY_FIRM, FirmId, Spy.SPY_IDLE);
-		
-		//-- refresh display if this firm is currently selected --//
-
-		if (FirmArray.selected_recno == FirmId)
-			Info.disp();
 	}
 
 
-	public void SetupLink()
+	private void SetupLink()
 	{
 		//-----------------------------------------------------------------------------//
 		// check the connected firms location and structure if ai_link_checked is true
 		//-----------------------------------------------------------------------------//
 
 		if (AIFirm)
-			AiLinkChecked = false;
+			AILinkChecked = false;
 
 		//----- build firm-to-firm link relationship -------//
 
@@ -1437,7 +1492,7 @@ public abstract class Firm : IIdObject
 			firm.LinkedFirmsEnable.Add(defaultLinkStatus);
 
 			if (firm.AIFirm)
-				firm.AiLinkChecked = false;
+				firm.AILinkChecked = false;
 
 			if (firm.FirmType == FIRM_HARBOR)
 			{
@@ -1515,7 +1570,7 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public void ReleaseLink()
+	private void ReleaseLink()
 	{
 		//------ release linked firms ------//
 
@@ -1525,7 +1580,7 @@ public abstract class Firm : IIdObject
 			firm.ReleaseFirmLink(FirmId);
 
 			if (firm.AIFirm)
-				firm.AiLinkChecked = false;
+				firm.AILinkChecked = false;
 		}
 
 		//------ release linked towns ------//
@@ -1546,7 +1601,7 @@ public abstract class Firm : IIdObject
 		// check the connected firms location and structure if ai_link_checked is true
 		//-----------------------------------------------------------------------------//
 		if (AIFirm)
-			AiLinkChecked = false;
+			AILinkChecked = false;
 
 		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
 		{
@@ -1566,7 +1621,7 @@ public abstract class Firm : IIdObject
 		//-----------------------------------------------------------------------------//
 
 		if (AIFirm)
-			AiLinkChecked = false;
+			AILinkChecked = false;
 
 		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
 		{
@@ -1959,23 +2014,6 @@ public abstract class Firm : IIdObject
 		FirmArray.DeleteFirm(this);
 	}
 
-	public void CancelConstruction(int remoteAction)
-	{
-		//if( !remoteAction && remote.is_enable())
-		//{
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_CANCEL, sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//return;
-		//}
-		//------ get half of the construction cost back -------//
-
-		Nation nation = NationArray[NationId];
-
-		nation.add_expense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].setup_cost / 2.0);
-
-		FirmArray.DeleteFirm(this);
-	}
-
 	public bool CanAssignCapture()
 	{
 		return OverseerId == 0 && Workers.Count == 0;
@@ -2167,10 +2205,6 @@ public abstract class Firm : IIdObject
 
 			BribeResult = Spy.BRIBE_SUCCEED;
 
-			//TODO drawing
-			//if( firm_recno == FirmArray.selected_recno )
-			//info.disp();
-
 			return newSpy.SpyId;
 		}
 		else //------- if the bribe fails --------//
@@ -2178,11 +2212,6 @@ public abstract class Firm : IIdObject
 			SpyArray[briberSpyRecno].GetKilled(0); // the spy gets killed when the action failed.
 			// 0 - don't display new message for the spy being killed, so we already display the msg on the interface
 			BribeResult = Spy.BRIBE_FAIL;
-
-			//TODO drawing
-			//if( firm_recno == FirmArray.selected_recno )
-			//info.disp();
-
 			return 0;
 		}
 	}
@@ -2377,163 +2406,6 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public void ProcessConstruction()
-	{
-		if (FirmType == FIRM_MONSTER)
-		{
-			//--------- process construction for monster firm ----------//
-			HitPoints++;
-
-			if (HitPoints >= MaxHitPoints)
-			{
-				HitPoints = MaxHitPoints;
-				UnderConstruction = false;
-			}
-
-			return;
-		}
-
-		if (!UnderConstruction)
-			return;
-
-		//--- can only do construction when the firm is not under attack ---//
-
-		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
-			return;
-
-		if (Sys.Instance.FrameNumber % 2 != 0) // one build every 2 frames
-			return;
-
-		//------ increase the construction progress ------//
-
-		Unit unit = UnitArray[BuilderId];
-
-		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
-			HitPoints += 1 + unit.Skill.SkillLevel / 30;
-		else
-			HitPoints++;
-
-		if (Config.fast_build && NationId == NationArray.player_recno)
-			HitPoints += 10;
-
-		//----- increase skill level of the builder unit -----//
-
-		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
-		{
-			if (++unit.Skill.SkillLevelMinor > 100)
-			{
-				unit.Skill.SkillLevelMinor = 0;
-
-				if (unit.Skill.SkillLevel < 100)
-					unit.Skill.SkillLevel++;
-			}
-		}
-
-		//------- when the construction is complete ----------//
-
-		if (HitPoints >= MaxHitPoints) // finished construction
-		{
-			HitPoints = MaxHitPoints;
-
-			bool needAssignUnit = false;
-
-			UnderConstruction = false;
-
-			if (NationId == NationArray.player_recno)
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'S', unit.SpriteResId, "FINS", 'F', FirmType);
-
-			FirmInfo firmInfo = FirmRes[FirmType];
-
-			if ((firmInfo.need_overseer || firmInfo.need_worker) &&
-			    (firmInfo.firm_skill_id == 0 ||
-			     firmInfo.firm_skill_id == unit.Skill.SkillId)) // the builder with the skill required
-			{
-				unit.SetMode(0); // reset it from UNIT_MODE_CONSTRUCT
-
-				needAssignUnit = true;
-			}
-			else
-			{
-				SetBuilder(0);
-			}
-
-			//---------------------------------------------------------------------------------------//
-			// should call assign_unit() first before calling action_finished(...UNDER_CONSTRUCTION)
-			//---------------------------------------------------------------------------------------//
-
-			if (needAssignUnit)
-			{
-				AssignUnit(BuilderId);
-				//------------------------------------------------------------------------------//
-				// Note: there may be chance the unit cannot be assigned into the firm
-				//------------------------------------------------------------------------------//
-				if (Workers.Count == 0 && OverseerId == 0) // no assignment, can't assign
-				{
-					//------- init_sprite or delete the builder ---------//
-					int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
-					SpriteInfo spriteInfo = unit.SpriteInfo;
-					if (!LocateSpace(RemoveFirm, ref xLoc, ref yLoc, LocX2, LocY2,
-						    spriteInfo.LocWidth, spriteInfo.LocHeight))
-						UnitArray.DisappearInFirm(BuilderId); // kill the unit
-					else
-						unit.InitSprite(xLoc, yLoc); // restore the unit
-				}
-			}
-
-			// ##### begin Gilbert 10/10 #######//
-			//if( nation_recno == NationArray.player_recno )
-			//	se_res.far_sound(center_x, center_y, 1, 'S', unit.sprite_id,
-			//		"FINS", 'F',  firm_id);
-			// ##### end Gilbert 10/10 #######//
-
-			BuilderId = 0;
-		}
-	}
-
-	public void ProcessRepair()
-	{
-		if (NationArray[NationId].cash < 0) // if you don't have cash, the repair workers will not work
-			return;
-
-		if (BuilderId == 0)
-			return;
-
-		Unit unit = UnitArray[BuilderId];
-
-		//--- can only do construction when the firm is not under attack ---//
-
-		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
-		{
-			//---- if the construction worker is a spy, it will damage the building when the building is under attack ----//
-
-			if (unit.SpyId != 0 && unit.TrueNationId() != NationId)
-			{
-				HitPoints -= SpyArray[unit.SpyId].SpySkill / 30.0;
-
-				if (HitPoints < 0)
-					HitPoints = 0.0;
-			}
-
-			return;
-		}
-
-		//------- repair now - only process once every 3 days -----//
-
-		if (HitPoints >= MaxHitPoints)
-			return;
-
-		// repair once every 1 to 6 days, depending on the skill level of the construction worker
-		int dayInterval = (100 - unit.Skill.SkillLevel) / 20 + 1;
-
-		if (Info.TotalDays % dayInterval == FirmId % dayInterval)
-		{
-			HitPoints++;
-
-			if (HitPoints > MaxHitPoints)
-				HitPoints = MaxHitPoints;
-		}
-	}
-
 	public void ProcessCommonAI()
 	{
 		if (Info.TotalDays % 30 == FirmId % 30)
@@ -2600,11 +2472,6 @@ public abstract class Firm : IIdObject
 		}
 
 		UnitArray.CurTeamId++;
-
-		// for player, mobilize_all_workers can only be called when the player presses the button.
-		//TODO drawing
-		//if( nation_recno == NationArray.player_recno )
-		//info.disp();
 	}
 
 	public virtual int MobilizeWorker(int workerId, int remoteAction)
@@ -2709,7 +2576,7 @@ public abstract class Firm : IIdObject
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.UnitType].sprite_id];
 		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
-		bool spaceFound = LocateSpace(RemoveFirm, ref xLoc, ref yLoc, LocX2, LocY2,
+		bool spaceFound = LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
 			spriteInfo.LocWidth, spriteInfo.LocHeight);
 
 		if (spaceFound)
@@ -2744,7 +2611,7 @@ public abstract class Firm : IIdObject
 		SpriteInfo spriteInfo = unit.SpriteInfo;
 		int xLoc = LocX1, yLoc = LocY1;
 
-		if (!LocateSpace(RemoveFirm, ref xLoc, ref yLoc, LocX2, LocY2,
+		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId) &&
 		    !World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
@@ -3687,7 +3554,7 @@ public abstract class Firm : IIdObject
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
 		int xLoc = LocX1, yLoc = LocY1;
 
-		if (!LocateSpace(RemoveFirm, ref xLoc, ref yLoc, LocX2, LocY2,
+		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return 0;
 

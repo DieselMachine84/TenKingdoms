@@ -160,9 +160,9 @@ public class World
 
 		//--- if the selected one is a firm ----//
 
-		if (FirmArray.selected_recno != 0)
+		if (FirmArray.SelectedFirmId != 0)
 		{
-			FirmArray.disp_next(seekDir, sameNation);
+			FirmArray.DisplayNext(seekDir, sameNation);
 		}
 
 		//--- if the selected one is a unit ----//

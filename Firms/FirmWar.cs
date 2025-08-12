@@ -151,27 +151,11 @@ public class FirmWar : Firm
 
         last_process_build_frame_no = Sys.Instance.FrameNumber;
         build_progress_days = 0.0;
-
-        if (FirmArray.selected_recno == FirmId)
-        {
-            //TODO drawing 
-            //disable_refresh = 1;
-            //info.disp();
-            //disable_refresh = 0;
-        }
     }
 
     public void cancel_build_unit()
     {
         build_unit_id = 0;
-
-        if (FirmArray.selected_recno == FirmId)
-        {
-            //TODO drawing
-            //disable_refresh = 1;
-            //info.disp();
-            //disable_refresh = 0;
-        }
     }
 
     private void process_build()
@@ -201,14 +185,6 @@ public class FirmWar : Firm
             }
 
             UnitArray.AddUnit(build_unit_id, NationId, 0, 0, xLoc, yLoc);
-
-            if (FirmArray.selected_recno == FirmId)
-            {
-                //TODO drawing
-                //disable_refresh = 1;
-                //info.disp();
-                //disable_refresh = 0;
-            }
 
             if (OwnFirm())
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',

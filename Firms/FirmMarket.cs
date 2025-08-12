@@ -270,9 +270,6 @@ public class FirmMarket : Firm
 			marketGoods.product_raw_id = goodsId;
 			market_product_array[goodsId - 1] = marketGoods;
 		}
-
-		if (FirmArray.selected_recno == FirmId)
-			Info.disp();
 	}
 
 	public void clear_market_goods(int position)
@@ -390,8 +387,6 @@ public class FirmMarket : Firm
 	{
 		if (++restock_type > RESTOCK_NONE)
 			restock_type = RESTOCK_ANY;
-		if (FirmArray.selected_recno == FirmId)
-			Info.disp();
 	}
 
 	private void input_goods(int maxInputQty)

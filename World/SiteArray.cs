@@ -70,7 +70,7 @@ public class SiteArray : DynArray<Site>
 		site.Deinit();
 		Delete(site.SiteId);
 
-		if (site.SiteId == SelectedSiteId)
+		if (SelectedSiteId == site.SiteId)
 			SelectedSiteId = 0;
 	}
 

@@ -118,9 +118,6 @@ public class FirmResearch : Firm
                     if (techInfo.get_nation_tech_level(NationId) < techInfo.max_tech_level)
                     {
                         start_research(techId2, InternalConstants.COMMAND_AUTO);
-
-                        if (FirmId == FirmArray.selected_recno)
-                            Info.disp();
                     }
                 }
             }
@@ -133,8 +130,6 @@ public class FirmResearch : Firm
 
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
                     UnitRes[TechRes[techId1].unit_id].sprite_id);
-                if (FirmId == FirmArray.selected_recno)
-                    Info.disp();
             }
         }
     }

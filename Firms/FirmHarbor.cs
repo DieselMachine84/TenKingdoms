@@ -31,37 +31,35 @@ public class FirmHarbor : Firm
 	{
 	}
 
-	public override void Init(int nationRecno, int firmId, int xLoc, int yLoc, string buildCode = "", int builderRecno = 0)
+	public override void Init(int nationId, int firmType, int locX, int locY, string buildCode = "", int builderId = 0)
 	{
-		// ignore raceId and find north, south, west or east harbor
-
-		if (World.GetLoc(xLoc + 1, yLoc + 2).CanBuildHarbor(1))
+		if (World.GetLoc(locX + 1, locY + 2).CanBuildHarbor(1))
 		{
 			// check north harbour
-			base.Init(nationRecno, firmId, xLoc, yLoc, "N", builderRecno);
-			land_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
-			sea_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
+			base.Init(nationId, firmType, locX, locY, "N", builderId);
+			land_region_id = World.GetLoc(locX + 1, locY + 2).RegionId;
+			sea_region_id = World.GetLoc(locX + 1, locY).RegionId;
 		}
-		else if (World.GetLoc(xLoc + 1, yLoc).CanBuildHarbor(1))
+		else if (World.GetLoc(locX + 1, locY).CanBuildHarbor(1))
 		{
 			// check south harbour
-			base.Init(nationRecno, firmId, xLoc, yLoc, "S", builderRecno);
-			land_region_id = World.GetLoc(xLoc + 1, yLoc).RegionId;
-			sea_region_id = World.GetLoc(xLoc + 1, yLoc + 2).RegionId;
+			base.Init(nationId, firmType, locX, locY, "S", builderId);
+			land_region_id = World.GetLoc(locX + 1, locY).RegionId;
+			sea_region_id = World.GetLoc(locX + 1, locY + 2).RegionId;
 		}
-		else if (World.GetLoc(xLoc + 2, yLoc + 1).CanBuildHarbor(1))
+		else if (World.GetLoc(locX + 2, locY + 1).CanBuildHarbor(1))
 		{
 			// check west harbour
-			base.Init(nationRecno, firmId, xLoc, yLoc, "W", builderRecno);
-			land_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
-			sea_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
+			base.Init(nationId, firmType, locX, locY, "W", builderId);
+			land_region_id = World.GetLoc(locX + 2, locY + 1).RegionId;
+			sea_region_id = World.GetLoc(locX, locY + 1).RegionId;
 		}
-		else if (World.GetLoc(xLoc, yLoc + 1).CanBuildHarbor(1))
+		else if (World.GetLoc(locX, locY + 1).CanBuildHarbor(1))
 		{
 			// check east harbour
-			base.Init(nationRecno, firmId, xLoc, yLoc, "E", builderRecno);
-			land_region_id = World.GetLoc(xLoc, yLoc + 1).RegionId;
-			sea_region_id = World.GetLoc(xLoc + 2, yLoc + 1).RegionId;
+			base.Init(nationId, firmType, locX, locY, "E", builderId);
+			land_region_id = World.GetLoc(locX, locY + 1).RegionId;
+			sea_region_id = World.GetLoc(locX + 2, locY + 1).RegionId;
 		}
 
 		RegionId = land_region_id; // set region_id to land_region_id
@@ -114,12 +112,6 @@ public class FirmHarbor : Firm
 		UnitMarine unit = (UnitMarine)UnitArray[unitRecno];
 		unit.extra_move_in_beach = UnitMarine.NO_EXTRA_MOVE;
 		unit.DeinitSprite();
-
-		//------------------------------------------------//
-
-		//TODO drawing
-		//if( FirmArray.selected_recno == firm_recno )
-		//info.disp();
 	}
 
 	public override void NextDay()
@@ -212,14 +204,12 @@ public class FirmHarbor : Firm
 
 		//-------- selected the ship --------//
 
-		if (FirmArray.selected_recno == FirmId && NationId == NationArray.player_recno)
+		if (FirmArray.SelectedFirmId == FirmId && NationId == NationArray.player_recno)
 		{
 			Power.reset_selection();
 			unit.SelectedFlag = true;
 			UnitArray.SelectedUnitId = unit.SpriteId;
 			UnitArray.SelectedCount = 1;
-
-			Info.disp();
 		}
 	}
 
@@ -541,14 +531,6 @@ public class FirmHarbor : Firm
 	public void cancel_build_unit()
 	{
 		build_unit_id = 0;
-
-		if (FirmArray.selected_recno == FirmId)
-		{
-			//TODO drawing
-			//disable_refresh = 1;
-			//info.disp();
-			//disable_refresh = 0;
-		}
 	}
 
 	private bool should_show_harbor_info()
@@ -600,14 +582,6 @@ public class FirmHarbor : Firm
 					"FINS", 'S', UnitRes[build_unit_id].sprite_id);
 
 			build_unit_id = 0;
-
-			if (FirmArray.selected_recno == FirmId)
-			{
-				//TODO drawing
-				//disable_refresh = 1;
-				//info.disp();
-				//disable_refresh = 0;
-			}
 		}
 	}
 
@@ -657,14 +631,6 @@ public class FirmHarbor : Firm
 			// remove the queue no matter build_ship success or not
 
 			build_ship(build_queue.Dequeue(), InternalConstants.COMMAND_AUTO);
-
-			if (FirmArray.selected_recno == FirmId)
-			{
-				//TODO drawing
-				//disable_refresh = 1;
-				//info.disp();
-				//disable_refresh = 0;
-			}
 		}
 	}
 

@@ -141,11 +141,6 @@ public class Info
     {
         //TODO
     }
-
-    public void disp()
-    {
-        //TODO
-    }
     
     public void set_rank_data(bool onlyHasContact)
     {

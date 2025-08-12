@@ -201,12 +201,6 @@ public class UnitCaravan : Unit
 		}
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
 			Stop2();
-
-		if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			if (NationId == NationArray.player_recno || Config.show_ai_info)
-				Info.disp();
-		}
 	}
 
 	public void del_stop(int stopId, int remoteAction)
@@ -228,12 +222,6 @@ public class UnitCaravan : Unit
 		stop_defined_num--;
 
 		update_stop_list();
-
-		if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			if ( /*!remote.is_enable() ||*/ NationId == NationArray.player_recno || Config.show_ai_info)
-				Info.disp();
-		}
 	}
 
 	public void update_stop_list()
@@ -1492,9 +1480,6 @@ public class UnitCaravan : Unit
 				break;
 			}
 		}
-
-		if (UnitArray.SelectedUnitId == SpriteId)
-			Info.disp();
 
 		return processed > 0 || moreToUnload;
 	}

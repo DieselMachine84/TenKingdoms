@@ -1577,9 +1577,6 @@ public class UnitMarine : Unit
 			i++;
 		}
 
-		if (NationId == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
-			Info.disp();
-
 		return true;
 	}
 
@@ -1891,15 +1888,6 @@ public class UnitMarine : Unit
 		}
 		else if (journey_status != InternalConstants.INSIDE_FIRM)
 			Stop2();
-
-		//-------------------------------------------------------//
-		// refresh stop info area
-		//-------------------------------------------------------//
-		if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			if (NationId == NationArray.player_recno || Config.show_ai_info)
-				Info.disp();
-		}
 	}
 
 	public void del_stop(int stopId, int remoteAction)
@@ -1919,12 +1907,6 @@ public class UnitMarine : Unit
 		stop_array[stopId - 1].firm_recno = 0;
 		stop_defined_num--;
 		update_stop_list();
-
-		if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
-				//Info.disp();
-		}
 	}
 
 	public override bool IsAIAllStop()

@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class FirmArray : DynArray<Firm>
 {
-	public int selected_recno;
+	public int SelectedFirmId { get; set; }
 
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private SERes SERes => Sys.Instance.SERes;
@@ -56,67 +56,55 @@ public class FirmArray : DynArray<Firm>
 		throw new NotSupportedException();
 	}
 
-	public int BuildFirm(int xLoc, int yLoc, int nationRecno, int firmId, string buildCode = "", int builderRecno = 0)
+	public int BuildFirm(int locX, int locY, int nationId, int firmType, string buildCode = "", int builderId = 0)
 	{
-		if (World.CanBuildFirm(xLoc, yLoc, firmId) == 0)
+		if (World.CanBuildFirm(locX, locY, firmType) == 0)
 			return 0;
 
-		//--------- check if there is enough cash ----------//
+		if (nationId != 0 && NationArray[nationId].cash < FirmRes[firmType].setup_cost)
+			return 0;
 
-		if (nationRecno != 0)
-		{
-			if (NationArray[nationRecno].cash < FirmRes[firmId].setup_cost)
-			{
-				return 0;
-			}
-		}
+		Firm firm = CreateNew(firmType);
+		firm.Init(nationId, firmType, locX, locY, buildCode, builderId);
 
-		//---------- create and build the firm -------------//
-
-		Firm firm = CreateNew(firmId);
-		firm.Init(nationRecno, firmId, xLoc, yLoc, buildCode, builderRecno);
-
-		//------ pay the land cost to the nation that owns the land ------//
-
-		if (nationRecno != 0)
-		{
-			NationArray[nationRecno].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmId].setup_cost);
-		}
+		if (nationId != 0)
+			NationArray[nationId].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmType].setup_cost);
 
 		return firm.FirmId;
 	}
 
 	public void DeleteFirm(Firm firm)
 	{
-		firm.Deinit(); // we must call deinit() first
+		firm.Deinit();
 		Delete(firm.FirmId);
+		
+		if (SelectedFirmId == firm.FirmId)
+			SelectedFirmId = 0;
 	}
 
-	public void DeleteFirm(int recno)
+	public void DeleteFirm(int firmId)
 	{
-		if (IsDeleted(recno))
+		if (IsDeleted(firmId))
 			return;
 		
-		DeleteFirm(this[recno]);
+		DeleteFirm(this[firmId]);
 	}
 
 	public void Process()
 	{
 		List<Firm> firmsToDelete = new List<Firm>();
+		var dayFrameNumber = Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY;
 
-		//----- each time process some firm only ------//
 		foreach (Firm firm in this)
 		{
 			//-------- process visibility -----------//
 
-			if (firm.NationId == NationArray.player_recno ||
-			    (firm.NationId != 0 && NationArray[firm.NationId].is_allied_with_player))
+			if (firm.NationId == NationArray.player_recno || (firm.NationId != 0 && NationArray[firm.NationId].is_allied_with_player))
 			{
-				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
-					GameConstants.EXPLORE_RANGE - 1);
+				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
 			}
 
-			//--------- process and process_ai firms ----------//
+			//--------- process and process AI firms ----------//
 
 			if (firm.UnderConstruction)
 			{
@@ -125,8 +113,7 @@ public class FirmArray : DynArray<Firm>
 			else
 			{
 				// only process each firm once per day
-				if (firm.FirmId % InternalConstants.FRAMES_PER_DAY ==
-				    Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
+				if (firm.FirmId % InternalConstants.FRAMES_PER_DAY == dayFrameNumber)
 				{
 					firm.NextDay();
 
@@ -146,7 +133,7 @@ public class FirmArray : DynArray<Firm>
 
 						firm.ProcessAI();
 
-						if (IsDeleted(firm.FirmId)) // the firm may have been deleted in process_ai()
+						if (IsDeleted(firm.FirmId)) // the firm may have been deleted in ProcessAI()
 							continue;
 					}
 
@@ -190,32 +177,26 @@ public class FirmArray : DynArray<Firm>
 		}
 	}
 	
-	public void disp_next(int seekDir, bool sameNation)
+	public void DisplayNext(int seekDir, bool sameNation)
 	{
-		if (selected_recno == 0)
+		if (SelectedFirmId == 0)
 			return;
 
-		int nationRecno = this[selected_recno].NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(selected_recno, true) : EnumerateAll(selected_recno, false);
+		int nationId = this[SelectedFirmId].NationId;
+		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedFirmId, true) : EnumerateAll(SelectedFirmId, false);
 
 		foreach (int recNo in enumerator)
 		{
 			Firm firm = this[recNo];
 
-			//-------- if are of the same nation --------//
-
-			if (sameNation && firm.NationId != nationRecno)
+			if (sameNation && firm.NationId != nationId)
 				continue;
-
-			//--- check if the location of this town has been explored ---//
 
 			if (!World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsExplored())
 				continue;
 
-			//---------------------------------//
-
 			Power.reset_selection();
-			selected_recno = firm.FirmId;
+			SelectedFirmId = firm.FirmId;
 			firm.SortWorkers();
 
 			World.GoToLocation(firm.LocCenterX, firm.LocCenterY);

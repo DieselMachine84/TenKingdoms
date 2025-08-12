@@ -287,12 +287,6 @@ public class FirmCamp : Firm
 				overseerUnit.TeamInfo.Members.Add(patrol_unit_array[i]);
 			}
 		}
-
-		//-------- display info --------//
-
-		// for player's camp, patrol() can only be called when the player presses the button.
-		if (NationId == NationArray.player_recno)
-			Info.disp();
 	}
 
 	public bool patrol_all_soldier()

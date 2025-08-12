@@ -414,10 +414,7 @@ public partial class Unit : Sprite
 		if (!keepSelected)
 		{
 			if (UnitArray.SelectedUnitId == SpriteId)
-			{
 				UnitArray.SelectedUnitId = 0;
-				Info.disp();
-			}
 
 			//TODO rewrite
 			//if (Power.command_unit_recno == sprite_recno)
@@ -4009,11 +4006,6 @@ public partial class Unit : Sprite
 				TeamId = 0;
 			}
 		}
-
-		//------ if it is currently selected -------//
-
-		if (SelectedFlag)
-			Info.disp();
 	}
 
 	public void SpyChangeNation(int newNationId, int remoteAction, int groupDefect = 0)

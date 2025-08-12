@@ -135,7 +135,7 @@ public class FirmInn : Firm
 
 		del_inn_unit(recNo);
 
-		if (FirmId == FirmArray.selected_recno && NationId == NationArray.player_recno)
+		if (FirmId == FirmArray.SelectedFirmId && NationId == NationArray.player_recno)
 		{
 			//TODO drawing
 			//put_info(INFO_UPDATE);
@@ -326,7 +326,7 @@ public class FirmInn : Firm
 			{
 				del_inn_unit(i + 1);
 
-				if (FirmId == FirmArray.selected_recno && ShouldShowInfo())
+				if (FirmId == FirmArray.SelectedFirmId && ShouldShowInfo())
 				{
 					//TODO drawing
 					//if( browse_hire.recno() > i && browse_hire.recno() > 1 )
