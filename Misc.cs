@@ -119,6 +119,12 @@ public class Misc
             firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
     }
 
+    public static bool AreTownsLinked(Town town1, Town town2)
+    {
+        return Misc.rects_distance(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2,
+            town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
+    }
+
     // Given two lengths in x and y coordination, then find the diagonal
     // distance between them
     // result = the square root of X*X + Y*Y

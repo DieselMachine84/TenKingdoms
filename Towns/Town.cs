@@ -2574,9 +2574,7 @@ public class Town : IIdObject
 			//------ check if both are on the same terrain type ------//
 
 			if (World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
-			{
 				continue;
-			}
 
 			//------- determine the default link status ------//
 
@@ -2616,18 +2614,13 @@ public class Town : IIdObject
 
 			//------ check if the town is close enough to this town -------//
 
-			if (Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-				    LocX1, LocY1, LocX2, LocY2) > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
-			{
+			if (!Misc.AreTownsLinked(this, town))
 				continue;
-			}
 
 			//------ check if both are on the same terrain type ------//
 
 			if (World.GetLoc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
-			{
 				continue;
-			}
 
 			//------- determine the default link status ------//
 
@@ -2657,27 +2650,20 @@ public class Town : IIdObject
 
 	private void ReleaseLink()
 	{
-		//------ release linked firms ------//
-
-		for (int i = 0; i < LinkedFirms.Count; i++)
+		foreach (var linkedFirm in LinkedFirms)
 		{
-			Firm firm = FirmArray[LinkedFirms[i]];
-			firm.ReleaseTownLink(TownId);
-
-			if (firm.AIFirm)
-				firm.AILinkChecked = false;
+			FirmArray[linkedFirm].ReleaseTownLink(TownId);
 		}
 
-		//------ release linked towns ------//
-
-		for (int i = 0; i < LinkedTowns.Count; i++)
+		foreach (var linkedTown in LinkedTowns)
 		{
-			Town town = TownArray[LinkedTowns[i]];
-			town.ReleaseTownLink(TownId);
-
-			if (town.AITown)
-				town.AILinkChecked = false;
+			TownArray[linkedTown].ReleaseTownLink(TownId);
 		}
+		
+		LinkedFirms.Clear();
+		LinkedFirmsEnable.Clear();
+		LinkedTowns.Clear();
+		LinkedTownsEnable.Clear();
 	}
 
 	public void ReleaseFirmLink(int releaseFirmId)
@@ -2748,12 +2734,12 @@ public class Town : IIdObject
 	{
 		//if( !remoteAction && remote.is_enable() )
 		//{
-		//// packet structure : <town recno> <link Id> <toggle Flag>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TOGGLE_LINK_FIRM, 3*sizeof(short));
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = linkId;
-		//shortPtr[2] = toggleFlag;
-		//return;
+			//// packet structure : <town recno> <link Id> <toggle Flag>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TOGGLE_LINK_FIRM, 3*sizeof(short));
+			//shortPtr[0] = town_recno;
+			//shortPtr[1] = linkId;
+			//shortPtr[2] = toggleFlag;
+			//return;
 		//}
 
 		Firm linkedFirm = FirmArray[LinkedFirms[linkId - 1]];
@@ -2818,6 +2804,7 @@ public class Town : IIdObject
 		// Function is unused, and not updated to support town networks.
 		return;
 	}
+
 
 	public int LinkedActiveCampCount()
 	{

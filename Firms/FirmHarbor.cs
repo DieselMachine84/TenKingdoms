@@ -20,7 +20,6 @@ public class FirmHarbor : Firm
 
 	//----------- for harbor trading ------------//
 
-	public bool link_checked; // similar to ai_link_checked, but this parameter can be used for players' nation
 	public List<int> linked_mine_array = new List<int>();
 	public List<int> linked_factory_array = new List<int>();
 	public List<int> linked_market_array = new List<int>();
@@ -254,9 +253,6 @@ public class FirmHarbor : Firm
 
 	public void update_linked_firm_info()
 	{
-		if (link_checked)
-			return; // no need to check again
-
 		linked_mine_array.Clear();
 		linked_factory_array.Clear();
 		linked_market_array.Clear();

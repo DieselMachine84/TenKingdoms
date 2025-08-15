@@ -572,11 +572,10 @@ public class FirmMarket : Firm
 			if (firm.FirmType != FIRM_HARBOR)
 				continue;
 
-			bool tradeTreaty = ownNation.get_relation(firm.NationId).trade_treaty ||
-			                   firm.NationId == NationId;
+			bool tradeTreaty = ownNation.get_relation(firm.NationId).trade_treaty || firm.NationId == NationId;
 
 			if (LinkedFirmsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
-				ToggleFirmLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, 1); // 1-toggle both side
+				ToggleFirmLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
 		}
 
 		//------ update links to towns -----//
@@ -588,11 +587,10 @@ public class FirmMarket : Firm
 			if (town.NationId == 0)
 				continue;
 
-			bool tradeTreaty = ownNation.get_relation(town.NationId).trade_treaty ||
-			                   town.NationId == NationId;
+			bool tradeTreaty = ownNation.get_relation(town.NationId).trade_treaty || town.NationId == NationId;
 
 			if (LinkedTownsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
-				ToggleTownLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, 1); // 1-toggle both side
+				ToggleTownLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
 		}
 	}
 
