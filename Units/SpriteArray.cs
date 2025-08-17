@@ -22,7 +22,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 
     public virtual void Process()
     {
-	    foreach (Sprite sprite in this)
+	    foreach (Sprite sprite in EnumerateWithDeleted())
 	    {
 		    if (sprite.RemainAttackDelay > 0)
 			    sprite.RemainAttackDelay--;
@@ -38,9 +38,6 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    //       for unit CurX == -2, eg caravan, the unit is invisible but PreProcess is still processed.
 		    //       However, sprite CurAction should be skipped.
 		    //-----------------------------------------------------//
-
-		    if (IsDeleted(sprite.SpriteId)) // in case PreProcess() kills the current Sprite
-			    continue;
 
 		    if (sprite.CurX < 0) // if(sprite.CurX == -1 || sprite.CurX==-2)
 			    continue;

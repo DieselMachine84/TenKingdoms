@@ -89,6 +89,18 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         return GetEnumerator();
     }
 
+    protected IEnumerable<T> EnumerateWithDeleted()
+    {
+        List<int> keys = _idIndexes.Keys.ToList();
+        for (int i = 0; i < keys.Count; i++)
+        {
+            if (_idIndexes.ContainsKey(keys[i]))
+            {
+                yield return _list[_idIndexes[keys[i]]];
+            }
+        }
+    }
+
     public IEnumerable<T> EnumerateRandom()
     {
         List<int> keys = _idIndexes.Keys.ToList();
