@@ -3473,7 +3473,6 @@ public partial class Unit
 			AttackInfos = Array.Empty<AttackInfo>();
 		}
 
-		int oldAttackCount = AttackCount;
 		int techLevel = WeaponVersion;
 		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON && techLevel > 0)
 		{
@@ -3493,11 +3492,10 @@ public partial class Unit
 
 			if (AttackCount > 0)
 			{
-				//TODO check this
 				AttackInfos = new AttackInfo[AttackCount];
 				for (int i = 0; i < AttackCount; i++)
 				{
-					AttackInfos[i] = UnitRes.attack_info_array[oldAttackCount + (techLevel - 1) * AttackCount + i];
+					AttackInfos[i] = UnitRes.attack_info_array[unitInfo.first_attack - 1 + (techLevel - 1) * AttackCount + i];
 				}
 			}
 			else
@@ -3510,26 +3508,23 @@ public partial class Unit
 	
 	public bool IsAttackAction()
 	{
-		switch (ActionMode2)
+		return ActionMode2 switch
 		{
-			case UnitConstants.ACTION_ATTACK_UNIT:
-			case UnitConstants.ACTION_ATTACK_FIRM:
-			case UnitConstants.ACTION_ATTACK_TOWN:
-			case UnitConstants.ACTION_ATTACK_WALL:
-			case UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET:
-			case UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET:
-			case UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP:
-			case UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET:
-			case UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET:
-			case UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN:
-			case UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET:
-			case UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET:
-			case UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM:
-				return true;
-
-			default:
-				return false;
-		}
+			UnitConstants.ACTION_ATTACK_UNIT => true,
+			UnitConstants.ACTION_ATTACK_FIRM => true,
+			UnitConstants.ACTION_ATTACK_TOWN => true,
+			UnitConstants.ACTION_ATTACK_WALL => true,
+			UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET => true,
+			UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET => true,
+			UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP => true,
+			UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET => true,
+			UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET => true,
+			UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN => true,
+			UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET => true,
+			UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET => true,
+			UnitConstants.ACTION_MONSTER_DEFEND_BACK_FIRM => true,
+			_ => false
+		};
 	}
 	
 	public void DefenseAttackUnit(int targetRecno)
