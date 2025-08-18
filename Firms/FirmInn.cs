@@ -65,16 +65,6 @@ public class FirmInn : Firm
 			update_del_hire_list();
 	}
 
-	public override void AssignUnit(int unitRecno)
-	{
-		//------- if this is a construction worker -------//
-
-		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
-		{
-			SetBuilder(unitRecno);
-		}
-	}
-
 	public int hire(int recNo)
 	{
 		//--------- first check if you have enough money to hire ------//

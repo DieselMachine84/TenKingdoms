@@ -769,212 +769,121 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public virtual void AssignUnit(int unitRecno)
+	public virtual void AssignUnit(int unitId)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		//------- if this is a construction worker -------//
 
 		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
-			SetBuilder(unitRecno);
+			SetBuilder(unitId);
 			return;
-		}
-
-		//---- if the unit does not belong to the firm's nation ----//
-
-		if (unit.NationId != NationId)
-		{
-			// can no longer capture a firm with a normal unit - must use spy  
-
-			//----- capture this firm if there is nobody here -----//
-/*
-		if( worker_array && worker_count==0 && overseer_recno==0 &&		// if the firm is empty, assign to take over the firm
-			 unit.skill.skill_id == firm_skill_id )						// the takeover unit must have the skill of this firm
-		{
-			change_nation(unit.nation_recno);
-		}
-		else
-*/
-			return; // if cannot capture, the nations are not the same, return now. This will happen if the unit's nation was changed during his moving to the firm.
 		}
 
 		//-- if there isn't any overseer in this firm or this unit's skill is higher than the current overseer's skill --//
 
 		FirmInfo firmInfo = FirmRes[FirmType];
 
-		if (firmInfo.need_overseer && (OverseerId == 0 ||
-		                               (unit.Skill.SkillId == FirmSkillId &&
-		                                UnitArray[OverseerId].Skill.SkillId != FirmSkillId) ||
-		                               (unit.Skill.SkillId == FirmSkillId && unit.Skill.SkillLevel >
-			                               UnitArray[OverseerId].Skill.SkillLevel)
-		    ))
+		if (firmInfo.need_overseer &&
+		    (OverseerId == 0 || (unit.Skill.SkillId == FirmSkillId && UnitArray[OverseerId].Skill.SkillId != FirmSkillId) ||
+		     (unit.Skill.SkillId == FirmSkillId && unit.Skill.SkillLevel > UnitArray[OverseerId].Skill.SkillLevel)))
 		{
-			AssignOverseer(unitRecno);
+			AssignOverseer(unitId);
 		}
 		else if (firmInfo.need_worker)
 		{
-			AssignWorker(unitRecno);
-			SortWorkers();
+			AssignWorker(unitId);
 		}
 	}
 
-	public virtual void AssignOverseer(int newOverseerRecno)
+	public virtual void AssignOverseer(int newOverseerId)
 	{
 		if (!FirmRes[FirmType].need_overseer)
 			return;
 
-		if (newOverseerRecno == 0 && OverseerId == 0)
+		if (newOverseerId == 0 && OverseerId == 0)
 			return;
 
 		//--- if the new overseer's nation is not the same as the firm's nation, don't assign ---//
 
-		if (newOverseerRecno != 0 && UnitArray[newOverseerRecno].NationId != NationId)
+		if (newOverseerId != 0 && UnitArray[newOverseerId].NationId != NationId)
 			return;
 
-		//------------------------------------------//
-
-		int oldOverseerRecno = OverseerId;
-
-		if (newOverseerRecno == 0)
+		if (newOverseerId == 0)
 		{
 			//------------------------------------------------------------------------------------------------//
-			// the old overseer may be kept in firm or killed if remove_firm is true
+			// the old overseer may be kept in firm or killed if IsDeleting is true
 			//------------------------------------------------------------------------------------------------//
 			Unit oldUnit = UnitArray[OverseerId];
 			SpriteInfo spriteInfo = SpriteRes[UnitRes[oldUnit.UnitType].sprite_id];
-			int xLoc = LocX1;
-			int yLoc = LocY1;
+			int locX = LocX1;
+			int locY = LocY1;
 
-			if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2, spriteInfo.LocWidth,
-				    spriteInfo.LocHeight))
+			if (!LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			{
 				if (IsDeleting)
 					KillOverseer();
 			}
 			else
 			{
-				//------ there should be space for creating the overseer -----//
-
 				MobilizeOverseer();
-				/*
-				//-- if the overseer is resigned without successor, mobilize a worker as overseer --//
-				if(!newOverseerRecno && worker_array)
-				{
-					int bestWorkerId = best_worker_id();      // find the most skilled worker
-					if( bestWorkerId )
-						newOverseerRecno = mobilize_worker(bestWorkerId,1);
-				}
-				*/
 			}
 		}
 		else
 		{
-			//----------- there should be space for creating the overseer ---------//
-			Unit newOverseer = UnitArray[newOverseerRecno];
-
-			int originalXLoc = newOverseer.NextLocX;
-			int originalYLoc = newOverseer.NextLocY;
-
-			newOverseer.DeinitSprite();
-
 			//----------------------------------------------------------------------------------------//
-			// There should be at least one location (occupied by the new overseer) for creating the old
-			//	overseer.
+			// There should be at least one location (occupied by the new overseer) for creating the old overseer.
 			//
-			// 1) If a town is already created, the new overseer settle down there, free its space for
-			//		creating the new overseer.
-			// 2) If the overseer and the workers live in the firm, no town will be created.  Thus, the
-			//		space occupied by the old overseer is free for creating the new overseer.
+			// 1) If a town is already created, the new overseer settles down there,
+			//		free its space for creating the new overseer.
+			// 2) If the overseer and the workers live in the firm, no town will be created.
+			//		Thus, the space occupied by the old overseer is free for creating the new overseer.
 			// 3) If the overseer and the workers need live in town, and a town is created.  i.e. there
 			//		is no overseer or worker in the firm, so just assign the new overseer in the firm
 			//----------------------------------------------------------------------------------------//
 
-			if (OverseerId == 0 && Workers.Count == 0)
+			Unit newOverseer = UnitArray[newOverseerId];
+
+			if (FirmRes[FirmType].live_in_town)
 			{
-				//------------------------------------------------------------------------------------------------//
-				// the firm is empty
-				//------------------------------------------------------------------------------------------------//
-				if (FirmRes[FirmType].live_in_town)
-				{
-					// the overseer settles down
-					OverseerTownId = AssignSettle(newOverseer.RaceId, newOverseer.Loyalty, 1);
-					if (OverseerTownId == 0)
-						return; // no space for creating the town, just return without assigning
-				}
-
-				//------- set the unit to overseer mode and deinit the sprite ------//
-				OverseerId = newOverseerRecno;
-				Unit overseer = UnitArray[OverseerId];
-				overseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, FirmId);
-				overseer.DeinitSprite(); // hide the unit from the world map
-
-				//--------- if the unit is a spy -----------//
-
-				if (overseer.SpyId != 0)
-					SpyArray[overseer.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
-				/*
-				//------ capture the firm if the overseer is from another nation ---//
-				if(UnitArray[overseer_recno].nation_recno != nation_recno)
-					change_nation(UnitArray[overseer_recno].nation_recno);
-				*/
+				// the overseer settles down
+				OverseerTownId = AssignSettle(newOverseer.RaceId, newOverseer.Loyalty);
+				if (OverseerTownId == 0)
+					return; // no space for creating the town or reach MAX population, just return without assigning
 			}
-			else
-			{
-				//------------------------------------------------------------------------------------------------//
-				// a town should exist if the overseer need live in town
-				//------------------------------------------------------------------------------------------------//
-				if (FirmRes[FirmType].live_in_town)
-				{
-					// the overseer settles down
-					OverseerTownId = AssignSettle(newOverseer.RaceId, newOverseer.Loyalty, 1);
 
-					if (OverseerTownId == 0)
-						return; // reach MAX population and no space to create town, return without assigning
-				}
+			newOverseer.DeinitSprite(); // hide the unit from the world map
+			
+			if (OverseerId != 0)
+				MobilizeOverseer();
+			
+			OverseerId = newOverseerId;
+			newOverseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, FirmId);
 
-				//Unit *unit = UnitArray[newOverseerRecno];
-				//TODO check as deinit_sprite was already called
-				//unit.deinit_sprite();
+			//--------- if the unit is a spy -----------//
 
-				if (OverseerId != 0)
-					MobilizeOverseer();
-
-				OverseerId = newOverseerRecno;
-				Unit overseer = UnitArray[OverseerId];
-				overseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, FirmId);
-
-				//--------- if the unit is a spy -----------//
-
-				if (overseer.SpyId != 0)
-					SpyArray[overseer.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
-				/*
-				//------ capture the firm if the overseer is from another nation ---//
-				if(UnitArray[overseer_recno].nation_recno != nation_recno)
-					change_nation(UnitArray[overseer_recno].nation_recno);
-				*/
-			}
+			if (newOverseer.SpyId != 0)
+				SpyArray[newOverseer.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
 		}
 
-		//------- update loyalty -------//
-
-		if (newOverseerRecno != 0 && !UnitArray.IsDeleted(newOverseerRecno))
-			UnitArray[newOverseerRecno].UpdateLoyalty();
+		if (newOverseerId != 0 && !UnitArray.IsDeleted(newOverseerId))
+			UnitArray[newOverseerId].UpdateLoyalty();
 	}
 
-	public virtual void AssignWorker(int workerUnitRecno)
+	protected virtual void AssignWorker(int workerUnitId)
 	{
 		//-- if the unit is a spy, only allow assign when there is room in the firm --//
 
-		Unit unit = UnitArray[workerUnitRecno];
+		Unit unit = UnitArray[workerUnitId];
 
 		if (unit.TrueNationId() != NationId && Workers.Count == MAX_WORKER)
 			return;
 
-		//---- if all worker space are full, resign the worst worker to release one worker space for the overseer ----//
+		//---- if all worker space are full, resign the worst worker to release one worker space for the worker ----//
 
-		int unitXLoc = -1;
-		int unitYLoc = -1;
+		int unitLocX = -1;
+		int unitLocY = -1;
 
 		if (Workers.Count == MAX_WORKER)
 		{
@@ -992,9 +901,8 @@ public abstract class Firm : IIdObject
 				}
 			}
 
-			// save the location for later init_sprite() if the assign settle action failed
-			unitXLoc = unit.NextLocX;
-			unitYLoc = unit.NextLocY;
+			unitLocX = unit.NextLocX;
+			unitLocY = unit.NextLocY;
 
 			unit.DeinitSprite(); // free the location for creating the worst unit
 
@@ -1007,14 +915,14 @@ public abstract class Firm : IIdObject
 
 		if (FirmRes[FirmType].live_in_town)
 		{
-			newWorker.town_recno = AssignSettle(unit.RaceId, unit.Loyalty, 0); // the worker settles down
+			newWorker.town_recno = AssignSettle(unit.RaceId, unit.Loyalty); // the worker settles down
 
 			if (newWorker.town_recno == 0)
 			{
-				//--- the unit was deinit_sprite(), and now the assign settle action failed, we need to init_sprite() to restore it ---//
+				//--- the unit was DeinitSprite(), and now the assign settle action failed, we need to InitSprite() to restore it ---//
 
-				if (unitXLoc >= 0 && !unit.IsVisible())
-					unit.InitSprite(unitXLoc, unitYLoc);
+				if (unitLocX >= 0 && !unit.IsVisible())
+					unit.InitSprite(unitLocX, unitLocY);
 
 				return;
 			}
@@ -1043,7 +951,7 @@ public abstract class Firm : IIdObject
 		newWorker.combat_level = unit.Skill.CombatLevel;
 		newWorker.hit_points = (int)unit.HitPoints;
 
-		if (newWorker.hit_points == 0) // 0.? will become 0 in (float) to (int) conversion
+		if (newWorker.hit_points == 0) // 0.? will become 0 in (double) to (int) conversion
 			newWorker.hit_points = 1;
 
 		if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
@@ -1068,32 +976,93 @@ public abstract class Firm : IIdObject
 			SpyArray[unit.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
 
 			newWorker.spy_recno = unit.SpyId;
-			unit.SpyId = 0; // reset it now so Unit::deinit() won't delete the Spy in SpyArray
+			unit.SpyId = 0; // reset it now so Unit.Deinit() won't delete the Spy in SpyArray
 		}
-
-		//--------- the unit disappear in firm -----//
+		
+		SortWorkers();
 
 		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
 			UnitRes[unit.UnitType].inc_nation_unit_count(NationId);
 
-		UnitArray.DisappearInFirm(workerUnitRecno);
+		UnitArray.DisappearInFirm(workerUnitId);
 	}
 
+	private int AssignSettle(int raceId, int unitLoyalty)
+	{
+		//--- if there is a town of our nation within the effective distance ---//
+
+		int townId = FindSettleTown();
+
+		if (townId != 0)
+		{
+			TownArray[townId].IncPopulation(raceId, true, unitLoyalty);
+			return townId;
+		}
+
+		//--- should create a town near this firm, if there is no other town in the map ---//
+
+		int locX = LocX1, locY = LocY1;
+
+		// the town must be in the same region as this firm.
+		if (World.LocateSpace(ref locX, ref locY, LocX2, LocY2,
+			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, RegionId, true))
+		{
+			if (Misc.rects_distance(locX, locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
+				    LocX1, LocY1, LocX2, LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+			{
+				Town town = TownArray.AddTown(NationId, raceId, locX, locY);
+				town.InitPopulation(raceId, 1, unitLoyalty, true, false);
+				town.AutoSetLayout();
+				return town.TownId;
+			}
+		}
+
+		//---- not able to find a space for a new town within the effective distance ----//
+
+		return 0;
+	}
+
+	private int FindSettleTown()
+	{
+		int minDistance = Int32.MaxValue;
+		int nearestTownId = 0;
+
+		//-------- scan for our own town first -----------//
+
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			Town town = TownArray[LinkedTowns[i]];
+
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
+				continue;
+
+			if (town.NationId != NationId)
+				continue;
+
+			int townDistance = Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+				LocX1, LocY1, LocX2, LocY2);
+
+			if (townDistance < minDistance)
+			{
+				minDistance = townDistance;
+				nearestTownId = town.TownId;
+			}
+		}
+
+		return nearestTownId;
+	}
+	
 	public void KillOverseer()
 	{
 		if (OverseerId == 0)
 			return;
-
-		//-------- if the overseer is a spy -------//
 
 		Unit overseer = UnitArray[OverseerId];
 
 		if (overseer.SpyId != 0)
 			SpyArray[overseer.SpyId].SetPlace(Spy.SPY_UNDEFINED, 0);
 
-		//-- no need to del the spy here, UnitArray.del() will del the spy --//
-
-		//-----------------------------------------//
+		//-- no need to del the spy here, UnitArray.DeleteUnit() will del the spy --//
 
 		if (OverseerTownId != 0)
 			TownArray[OverseerTownId].DecPopulation(UnitArray[OverseerId].RaceId, true);
@@ -1110,8 +1079,8 @@ public abstract class Firm : IIdObject
 		if (worker.race_id != 0 && worker.name_id != 0)
 			RaceRes[worker.race_id].free_name_id(worker.name_id);
 
-		if (worker.town_recno != 0) // town_recno is 0 if the workers in the firm do not live in towns
-			TownArray[worker.town_recno].DecPopulation(worker.race_id, true); // 1-has job
+		if (worker.town_recno != 0)
+			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
 
 		//-------- if this worker is a spy ---------//
 
@@ -1124,10 +1093,8 @@ public abstract class Firm : IIdObject
 
 		//--- decrease the nation unit count as the Unit has already increased it ----//
 
-		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
+		if (!FirmRes[FirmType].live_in_town)
 			UnitRes[worker.unit_id].dec_nation_unit_count(NationId);
-
-		//------- delete the record from the worker_array ------//
 
 		Workers.Remove(worker);
 
@@ -1137,11 +1104,6 @@ public abstract class Firm : IIdObject
 
 		if (Workers.Count == 0)
 			SelectedWorkerId = 0;
-	}
-
-	public void KillBuilder(int builderRecno)
-	{
-		UnitArray.DeleteUnit(UnitArray[builderRecno]);
 	}
 
 
@@ -1721,36 +1683,6 @@ public abstract class Firm : IIdObject
 			TownArray.DistributeDemand();
 	}
 
-
-	public int FindSettleTown()
-	{
-		int minDistance = Int32.MaxValue;
-		int nearestTownRecno = 0;
-
-		//-------- scan for our own town first -----------//
-
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			Town town = TownArray[LinkedTowns[i]];
-
-			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
-				continue;
-
-			if (town.NationId != NationId)
-				continue;
-
-			int townDistance = Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-				LocX1, LocY1, LocX2, LocY2);
-
-			if (townDistance < minDistance)
-			{
-				minDistance = townDistance;
-				nearestTownRecno = town.TownId;
-			}
-		}
-
-		return nearestTownRecno;
-	}
 
 	public bool ShouldShowInfo()
 	{
@@ -2536,7 +2468,7 @@ public abstract class Firm : IIdObject
 		    !World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
 		{
-			KillBuilder(recno);
+			UnitArray.DeleteUnit(UnitArray[recno]);
 			return false;
 		}
 
@@ -3073,44 +3005,6 @@ public abstract class Firm : IIdObject
 			if (PullTownPeople(town.TownId, InternalConstants.COMMAND_AUTO))
 				return;
 		}
-	}
-
-	protected int AssignSettle(int raceId, int unitLoyalty, int isOverseer)
-	{
-		//--- if there is a town of our nation within the effective distance ---//
-
-		int townRecno = FindSettleTown();
-
-		if (townRecno != 0)
-		{
-			TownArray[townRecno].IncPopulation(raceId, true, unitLoyalty);
-			return townRecno;
-		}
-
-		//--- should create a town near the this firm, if there is no other town in the map ---//
-
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
-
-		// the town must be in the same region as this firm.
-		if (World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
-			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, RegionId, true))
-		{
-			if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
-				    LocX1, LocY1, LocX2, LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-			{
-				Town town = TownArray.AddTown(NationId, raceId, xLoc, yLoc);
-
-				town.InitPopulation(raceId, 1, unitLoyalty, true, false);
-
-				town.AutoSetLayout();
-
-				return town.TownId;
-			}
-		}
-
-		//---- not able to find a space for a new town within the effective distance ----//
-
-		return 0;
 	}
 
 	protected void CalcProductivity()

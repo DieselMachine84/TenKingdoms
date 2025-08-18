@@ -172,9 +172,9 @@ public class FirmMonster : Firm
 	{
 	}
 
-	public override void AssignUnit(int unitRecno)
+	public override void AssignUnit(int unitId)
 	{
-		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
+		UnitMonster unit = (UnitMonster)UnitArray[unitId];
 
 		switch (unit.Rank)
 		{
@@ -183,7 +183,7 @@ public class FirmMonster : Firm
 				break;
 
 			case Unit.RANK_GENERAL:
-				add_general(unitRecno);
+				add_general(unitId);
 				break;
 
 			case Unit.RANK_SOLDIER:
@@ -191,9 +191,7 @@ public class FirmMonster : Firm
 				break;
 		}
 
-		//--------- the unit disappear in firm -----//
-
-		UnitArray.DisappearInFirm(unitRecno);
+		UnitArray.DisappearInFirm(unitId);
 	}
 
 	public bool can_assign_monster(int unitRecno)

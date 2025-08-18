@@ -40,15 +40,15 @@ public class FirmBase : Firm
         NationArray[NationId].base_count_array[RaceId-1]--;
     }
 
-    public override void AssignUnit(int unitRecno)
+    public override void AssignUnit(int unitId)
     {
-        Unit unit = UnitArray[unitRecno];
+        Unit unit = UnitArray[unitId];
 
         //------- if this is a construction worker -------//
 
         if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
         {
-            SetBuilder(unitRecno);
+            SetBuilder(unitId);
             return;
         }
 
@@ -59,32 +59,26 @@ public class FirmBase : Firm
 
         //-------- assign the unit ----------//
 
-        int rankId = unit.Rank;
-
-        if (rankId == Unit.RANK_GENERAL || rankId == Unit.RANK_KING)
+        if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
         {
-            AssignOverseer(unitRecno);
+            AssignOverseer(unitId);
         }
         else
         {
-            AssignWorker(unitRecno);
+            AssignWorker(unitId);
         }
     }
 
-    public override void AssignOverseer(int overseerRecno)
+    public override void AssignOverseer(int newOverseerId)
     {
         //---- reset the team member count of the general ----//
 
-        if (overseerRecno != 0)
+        if (newOverseerId != 0)
         {
-            Unit unit = UnitArray[overseerRecno];
-
-            unit.TeamInfo.Members.Clear();
+            UnitArray[newOverseerId].TeamInfo.Members.Clear();
         }
 
-        //----- assign the overseer now -------//
-
-        base.AssignOverseer(overseerRecno);
+        base.AssignOverseer(newOverseerId);
     }
 
     public override void ChangeNation(int newNationRecno)

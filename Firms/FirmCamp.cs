@@ -339,63 +339,53 @@ public class FirmCamp : Firm
 		return true;
 	}
 
-	public override void AssignUnit(int unitRecno)
+	public override void AssignUnit(int unitId)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		//------- if this is a construction worker -------//
 
 		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
-			SetBuilder(unitRecno);
+			SetBuilder(unitId);
 			return;
 		}
 
 		//-------- assign the unit ----------//
 
-		int rankId = UnitArray[unitRecno].Rank;
-
-		if (rankId == Unit.RANK_GENERAL || rankId == Unit.RANK_KING)
+		if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
 		{
-			AssignOverseer(unitRecno);
+			AssignOverseer(unitId);
 		}
 		else
 		{
-			AssignWorker(unitRecno);
+			AssignWorker(unitId);
 		}
 	}
 
-	public override void AssignOverseer(int overseerRecno)
+	public override void AssignOverseer(int newOverseerId)
 	{
 		//---- reset the team member count of the general ----//
 
-		if (overseerRecno != 0)
+		if (newOverseerId != 0)
 		{
-			Unit unit = UnitArray[overseerRecno];
+			Unit unit = UnitArray[newOverseerId];
 			unit.TeamInfo.Members.Clear();
 			unit.HomeCampId = 0;
 		}
 
-		//----- assign the overseer now -------//
-
-		base.AssignOverseer(overseerRecno);
-
-		//------------- update influence -----------//
+		base.AssignOverseer(newOverseerId);
 
 		update_influence();
 	}
 
-	public override void AssignWorker(int workerUnitRecno)
+	protected override void AssignWorker(int workerUnitId)
 	{
-		base.AssignWorker(workerUnitRecno);
+		base.AssignWorker(workerUnitId);
 
 		//--- remove the unit from patrol_unit_array when it returns to the base ---//
 
 		validate_patrol_unit();
-
-		//-------- sort soldiers ---------//
-
-		SortWorkers();
 	}
 
 	public void defense(int targetRecno, bool useRangeAttack = false)
