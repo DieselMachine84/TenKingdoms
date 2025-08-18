@@ -690,6 +690,233 @@ public abstract class Firm : IIdObject
 		return closestTownNameId;
 	}
 
+	public bool OwnFirm() // whether the firm is controlled by the current player
+	{
+		return NationArray.player_recno != 0 && NationId == NationArray.player_recno;
+	}
+
+	public bool ShouldShowInfo()
+	{
+		if (Config.show_ai_info || NationId == NationArray.player_recno || PlayerSpyCount > 0)
+		{
+			return true;
+		}
+
+		//------ if the builder is a spy of the player ------//
+
+		if (BuilderId != 0)
+		{
+			if (UnitArray[BuilderId].TrueNationId() == NationArray.player_recno)
+				return true;
+		}
+
+		//----- if any of the workers belong to the player, show the info of this firm -----//
+
+		if (HaveOwnWorkers(true))
+			return true;
+
+		//---- if there is a phoenix of the player over this firm ----//
+
+		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(LocX1, LocY1))
+			return true;
+
+		return false;
+	}
+
+	private bool HaveOwnWorkers(bool checkSpy = false)
+	{
+		foreach (Worker worker in Workers)
+		{
+			if (worker.is_nation(FirmId, NationArray.player_recno, checkSpy))
+				return true;
+		}
+
+		return false;
+	}
+
+	public virtual bool IsWorkerFull()
+	{
+		return Workers.Count == MAX_WORKER;
+	}
+
+	protected void CalcProductivity()
+	{
+		Productivity = 0.0;
+
+		//------- calculate the productivity of the workers -----------//
+
+		double totalSkill = 0.0;
+
+		foreach (Worker worker in Workers)
+		{
+			totalSkill += Convert.ToDouble(worker.skill_level * worker.hit_points)
+			              / Convert.ToDouble(worker.max_hit_points());
+		}
+
+		//----- include skill in the calculation ------//
+
+		Productivity = totalSkill / MAX_WORKER - SabotageLevel;
+
+		if (Productivity < 0)
+			Productivity = 0.0;
+	}
+
+	protected void AddIncome(int incomeType, double incomeAmt)
+	{
+		CurYearIncome += incomeAmt;
+
+		NationArray[NationId].add_income(incomeType, incomeAmt, true);
+	}
+
+	public double Income365Days()
+	{
+		return LastYearIncome * (365 - Info.year_day) / 365 + CurYearIncome;
+	}
+
+	protected void PayExpense()
+	{
+		if (NationId == 0)
+			return;
+
+		Nation nation = NationArray[NationId];
+
+		//-------- fixed expenses ---------//
+
+		double dayExpense = FirmRes[FirmType].year_cost / 365.0;
+
+		if (nation.cash >= dayExpense)
+		{
+			nation.add_expense(NationBase.EXPENSE_FIRM, dayExpense, true);
+		}
+		else
+		{
+			if (HitPoints > 0)
+				HitPoints--;
+
+			if (HitPoints < 0)
+				HitPoints = 0.0;
+
+			//--- when the hit points drop to zero and the firm is destroyed ---//
+
+			if (HitPoints == 0 && NationId == NationArray.player_recno)
+				NewsArray.firm_worn_out(FirmId);
+		}
+
+		//----- paying salary to workers from other nations -----//
+
+		if (FirmRes[FirmType].live_in_town)
+		{
+			int townNationRecno, payWorkerCount = 0;
+
+			for (int i = Workers.Count - 1; i >= 0; i--)
+			{
+				Worker worker = Workers[i];
+				townNationRecno = TownArray[worker.town_recno].NationId;
+
+				if (townNationRecno != NationId)
+				{
+					//--- if we don't have cash to pay the foreign workers, resign them ---//
+
+					if (nation.cash < 0.0)
+					{
+						ResignWorker(worker);
+					}
+					else //----- pay salaries to the foreign workers now -----//
+					{
+						payWorkerCount++;
+
+						if (townNationRecno != 0) // the nation of the worker will get income
+							NationArray[townNationRecno].add_income(NationBase.INCOME_FOREIGN_WORKER,
+								(double)GameConstants.WORKER_YEAR_SALARY / 365.0, true);
+					}
+				}
+			}
+
+			nation.add_expense(NationBase.EXPENSE_FOREIGN_WORKER,
+				(double)GameConstants.WORKER_YEAR_SALARY * payWorkerCount / 365.0, true);
+		}
+	}
+
+	public int YearExpense()
+	{
+		int totalExpense = FirmRes[FirmType].year_cost;
+
+		//---- pay salary to workers from foreign towns ----//
+
+		if (FirmRes[FirmType].live_in_town)
+		{
+			int payWorkerCount = 0;
+
+			foreach (Worker worker in Workers)
+			{
+				if (TownArray[worker.town_recno].NationId != NationId)
+					payWorkerCount++;
+			}
+
+			totalExpense += GameConstants.WORKER_YEAR_SALARY * payWorkerCount;
+		}
+
+		return totalExpense;
+	}
+
+	protected void ConsumeFood()
+	{
+		if (NationArray[NationId].food > 0)
+		{
+			int humanUnitCount = 0;
+
+			foreach (Worker worker in Workers)
+			{
+				if (worker.race_id != 0)
+					humanUnitCount++;
+			}
+
+			NationArray[NationId].consume_food(
+				Convert.ToDouble(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+		}
+		else //--- decrease loyalty if the food has been run out ---//
+		{
+			// decrease 1 loyalty point every 2 days
+			if (Info.TotalDays % GameConstants.NO_FOOD_LOYALTY_DECREASE_INTERVAL == 0)
+			{
+				foreach (Worker worker in Workers)
+				{
+					if (worker.race_id != 0)
+						worker.change_loyalty(-1);
+				}
+			}
+		}
+	}
+
+	protected void UpdateLoyalty()
+	{
+		if (FirmRes[FirmType].live_in_town) // only for those who do not live in town
+			return;
+
+		//----- update loyalty of the soldiers -----//
+
+		foreach (Worker worker in Workers)
+		{
+			int targetLoyalty = worker.target_loyalty(FirmId);
+
+			if (targetLoyalty > worker.worker_loyalty)
+			{
+				int incValue = (targetLoyalty - worker.worker_loyalty) / 10;
+
+				int newLoyalty = (int)worker.worker_loyalty + Math.Max(1, incValue);
+
+				if (newLoyalty > targetLoyalty)
+					newLoyalty = targetLoyalty;
+
+				worker.worker_loyalty = newLoyalty;
+			}
+			else if (targetLoyalty < worker.worker_loyalty)
+			{
+				worker.worker_loyalty--;
+			}
+		}
+	}
+
 	public int MajorityRace() // the race that has the majority of the population
 	{
 		//--- if there is an overseer, return the overseer's race ---//
@@ -725,12 +952,7 @@ public abstract class Firm : IIdObject
 
 		return mostRaceId;
 	}
-
-	public bool OwnFirm() // whether the firm is controlled by the current player
-	{
-		return NationArray.player_recno != 0 && NationId == NationArray.player_recno;
-	}
-
+	
 	public bool CanSell()
 	{
 		return HitPoints >= MaxHitPoints * GameConstants.CAN_SELL_HIT_POINTS_PERCENT / 100.0;
@@ -740,34 +962,7 @@ public abstract class Firm : IIdObject
 	{
 		return Productivity > 0;
 	}
-
-	public double Income365Days()
-	{
-		return LastYearIncome * (365 - Info.year_day) / 365 + CurYearIncome;
-	}
-
-	public int YearExpense()
-	{
-		int totalExpense = FirmRes[FirmType].year_cost;
-
-		//---- pay salary to workers from foreign towns ----//
-
-		if (FirmRes[FirmType].live_in_town)
-		{
-			int payWorkerCount = 0;
-
-			foreach (Worker worker in Workers)
-			{
-				if (TownArray[worker.town_recno].NationId != NationId)
-					payWorkerCount++;
-			}
-
-			totalExpense += GameConstants.WORKER_YEAR_SALARY * payWorkerCount;
-		}
-
-		return totalExpense;
-	}
-
+	
 
 	public virtual void AssignUnit(int unitId)
 	{
@@ -1107,262 +1302,6 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public virtual void BeingAttacked(int attackerUnitRecno)
-	{
-		LastAttackedDate = Info.game_date;
-
-		if (NationId != 0 && AIFirm)
-		{
-			// this can happen when the unit has just changed nation
-			if (UnitArray[attackerUnitRecno].NationId == NationId)
-				return;
-
-			NationArray[NationId].ai_defend(attackerUnitRecno);
-		}
-	}
-
-	public virtual bool PullTownPeople(int townRecno, int remoteAction, int raceId = 0, bool forcePull = false)
-	{
-		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
-		if (Workers.Count == MAX_WORKER)
-			return false;
-
-		//if(!remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <town recno> <race Id or 0> <force Pull>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_PULL_TOWN_PEOPLE, 4*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = townRecno;
-		//shortPtr[2] = raceId;	
-		//// if raceId == 0, let each player choose the race by random number, to sychronize the random number
-		//shortPtr[3] = forcePull;
-		//return 0;
-		//}
-
-		//---- people in the town go to work for the firm ---//
-
-		Town town = TownArray[townRecno];
-		int popAdded = 0;
-
-		//---- if doesn't specific a race, randomly pick one ----//
-
-		if (raceId == 0)
-			raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
-
-		//----------- scan the races -----------//
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++) // maximum 8 tries
-		{
-			//---- see if there is any population of this race to move to the firm ----//
-
-			int recruitableCount = town.RecruitableRacePopulation(raceId, true); // 1-allow recruiting spies
-
-			if (recruitableCount > 0)
-			{
-				//----- if the unit is forced to move to the firm ---//
-
-				if (forcePull) // right-click to force pulling a worker from the village
-				{
-					if (town.RacesLoyalty[raceId - 1] <
-					    GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
-						return false;
-
-					town.RecruitDecLoyalty(raceId);
-				}
-				else //--- see if the unit will voluntarily move to the firm ---//
-				{
-					//--- the higher the loyalty is, the higher the chance of working for the firm ---//
-
-					if (town.NationId != 0)
-					{
-						if (Misc.Random((100 - Convert.ToInt32(town.RacesLoyalty[raceId - 1])) / 10) > 0)
-							return false;
-					}
-					else
-					{
-						if (Misc.Random(Convert.ToInt32(town.RacesResistance[raceId - 1, NationId - 1]) / 10) > 0)
-							return false;
-					}
-				}
-
-				//----- get the chance of getting people to your command base is higher when the loyalty is higher ----//
-
-				if (FirmRes[FirmType].live_in_town)
-				{
-					town.RacesJoblessPopulation[raceId - 1]--; // decrease the town's population
-					town.JoblessPopulation--;
-				}
-				else
-				{
-					town.DecPopulation(raceId, false);
-				}
-
-				//------- add the worker to the firm -----//
-
-				Worker worker = new Worker();
-				Workers.Add(worker);
-
-				worker.race_id = raceId;
-				worker.rank_id = Unit.RANK_SOLDIER;
-				worker.unit_id = RaceRes[raceId].basic_unit_id;
-				worker.worker_loyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
-
-				if (FirmRes[FirmType].live_in_town)
-					worker.town_recno = townRecno;
-
-				worker.combat_level = GameConstants.CITIZEN_COMBAT_LEVEL;
-				worker.hit_points = GameConstants.CITIZEN_HIT_POINTS;
-
-				worker.skill_id = FirmSkillId;
-				worker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
-
-				worker.init_potential();
-
-				//--------- if this is a military camp ---------//
-				//
-				// Increase armed unit count of the race of the worker assigned,
-				// as when a unit is assigned to a camp, Unit::deinit() will decrease
-				// the counter, so we need to increase it back here.
-				//
-				//---------------------------------------------------//
-
-				if (!FirmRes[FirmType].live_in_town)
-					UnitRes[worker.unit_id].inc_nation_unit_count(NationId);
-
-				//------ if the recruited worker is a spy -----//
-
-				int spyCount = town.RacesSpyCount[raceId - 1];
-
-				if (spyCount >= Misc.Random(recruitableCount) + 1)
-				{
-					// the 3rd parameter is which spy to recruit
-					int spyRecno = SpyArray.FindTownSpy(townRecno, raceId, Misc.Random(spyCount) + 1);
-
-					worker.spy_recno = spyRecno;
-
-					SpyArray[spyRecno].SetPlace(Spy.SPY_FIRM, FirmId);
-				}
-
-				return true;
-			}
-
-			if (++raceId > GameConstants.MAX_RACE)
-				raceId = 1;
-		}
-
-		return false;
-	}
-
-	public void CaptureFirm(int newNationRecno)
-	{
-		if (NationId == NationArray.player_recno)
-			NewsArray.firm_captured(FirmId, newNationRecno, 0); // 0 - the capturer is not a spy
-
-		//-------- if this is an AI firm --------//
-
-		if (AIFirm)
-			AIFirmCaptured(newNationRecno);
-
-		//------------------------------------------//
-		//
-		// If there is an overseer in this firm, then the only
-		// unit who can capture this firm will be the overseer only,
-		// so calling its betray() function will capture the whole
-		// firm already.
-		//
-		//------------------------------------------//
-
-		if (OverseerId != 0 && UnitArray[OverseerId].SpyId != 0)
-			UnitArray[OverseerId].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
-		else
-			ChangeNation(newNationRecno);
-	}
-
-	public virtual void ChangeNation(int newNationId)
-	{
-		if (NationId == newNationId)
-			return;
-
-		UnitArray.StopAttackFirm(FirmId);
-		RebelArray.StopAttackFirm(FirmId);
-
-		Nation oldNation = NationArray[NationId];
-		Nation newNation = NationArray[newNationId];
-
-		if (BuilderId != 0)
-		{
-			Unit unit = UnitArray[BuilderId];
-			unit.ChangeNation(newNationId);
-
-			//--- if this is a spy, chance its cloak ----//
-
-			if (unit.SpyId != 0)
-				SpyArray[unit.SpyId].CloakedNationId = newNationId;
-		}
-
-		if (FirmType == FIRM_CAMP)
-			((FirmCamp)this).clear_defense_mode(FirmId);
-
-		FirmInfo firmInfo = FirmRes[FirmType];
-
-		if (NationId != 0)
-			firmInfo.dec_nation_firm_count(NationId);
-
-		if (newNationId != 0)
-			firmInfo.inc_nation_firm_count(newNationId);
-
-		//---- reset should_close_flag -----//
-
-		if (AIFirm)
-		{
-			if (ShouldCloseFlag)
-			{
-				oldNation.firm_should_close_array[FirmType - 1]--;
-				ShouldCloseFlag = false;
-			}
-		}
-
-		SpyArray.UpdateFirmSpyCount(FirmId);
-
-		SpyArray.ChangeCloakedNation(Spy.SPY_FIRM, FirmId, NationId, newNationId);
-
-		//-----------------------------------------//
-
-		if (AIFirm)
-			oldNation.del_firm_info(FirmType, FirmId);
-
-		if (ShouldSetPower)
-			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
-
-		ShouldSetPower = GetShouldSetPower();
-
-		if (ShouldSetPower)
-			World.SetPower(LocX1, LocY1, LocX2, LocY2, newNationId);
-
-		//------------ update link --------------//
-
-		ReleaseLink(); // need to update link because firms are only linked to firms of the same nation
-
-		NationId = newNationId;
-
-		SetupLink();
-
-		//---------------------------------------//
-
-		AIFirm = NationArray[NationId].is_ai();
-
-		if (AIFirm)
-			newNation.add_firm_info(FirmType, FirmId);
-
-		EstablishContactWithPlayer();
-
-		//---- reset the action mode of all spies in this firm ----//
-
-		// we need to reset it. e.g. when we have captured an enemy firm, SPY_SOW_DISSENT action must be reset to SPY_IDLE
-		SpyArray.SetActionMode(Spy.SPY_FIRM, FirmId, Spy.SPY_IDLE);
-	}
-
-
 	private void SetupLink()
 	{
 		//-----------------------------------------------------------------------------//
@@ -1537,11 +1476,6 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public bool CanToggleTownLink()
-	{
-		return FirmType != FIRM_MARKET; // only a market cannot toggle its link as it is
-	}
-
 	public bool CanToggleFirmLink(int firmId)
 	{
 		Firm firm = FirmArray[firmId];
@@ -1613,6 +1547,11 @@ public abstract class Firm : IIdObject
 		}
 	}
 
+	public bool CanToggleTownLink()
+	{
+		return FirmType != FIRM_MARKET; // only a market cannot toggle its link as it is
+	}
+
 	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
 		//if( !remoteAction && remote.is_enable() )
@@ -1682,35 +1621,883 @@ public abstract class Firm : IIdObject
 		if (FirmType == FIRM_MARKET)
 			TownArray.DistributeDemand();
 	}
-
-
-	public bool ShouldShowInfo()
+	
+	
+	public void MobilizeAllWorkers(int remoteAction)
 	{
-		if (Config.show_ai_info || NationId == NationArray.player_recno || PlayerSpyCount > 0)
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet strcture : <firm_recno>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_ALL_WORKERS, sizeof(short) );
+		//shortPtr[0] = firm_recno;
+		//return;
+		//}
+
+		if (NationId == NationArray.player_recno)
+			Power.reset_selection();
+
+		//------- detect buttons on hiring firm workers -------//
+
+		int mobileWorkerId = 1;
+
+		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
 		{
-			return true;
+			Worker worker = Workers[mobileWorkerId - 1];
+
+			if (!worker.is_nation(FirmId, NationId))
+			{
+				// prohibit mobilizing workers not under your color
+				mobileWorkerId++;
+				continue;
+			}
+
+			// always record 1 as the workers info are moved forward from the back to the front
+			int unitRecno = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
+
+			if (unitRecno == 0)
+				break; // keep the rest workers as there is no space for creating the unit
+
+			Unit unit = UnitArray[unitRecno];
+			unit.TeamId = UnitArray.CurTeamId;
+
+			if (NationId == NationArray.player_recno)
+			{
+				unit.SelectedFlag = true;
+				UnitArray.SelectedCount++;
+				if (UnitArray.SelectedUnitId == 0)
+					UnitArray.SelectedUnitId = unitRecno; // set first worker as selected
+			}
 		}
 
-		//------ if the builder is a spy of the player ------//
+		UnitArray.CurTeamId++;
+	}
 
-		if (BuilderId != 0)
+	public virtual int MobilizeWorker(int workerId, int remoteAction)
+	{
+		Worker worker = Workers[workerId - 1];
+
+		if (remoteAction <= InternalConstants.COMMAND_REMOTE && !worker.is_nation(FirmId, NationId))
 		{
-			if (UnitArray[BuilderId].TrueNationId() == NationArray.player_recno)
+			// cannot order mobilization of foreign workers
+			return 0;
+		}
+
+		//if(!remoteAction && remote.is_enable() )
+		//{
+		//// packet strcture : <firm_recno> <workerId>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_WORKER, 2*sizeof(short) );
+		//shortPtr[0] = firm_recno;
+		//shortPtr[1] = workerId;
+		//return 0;
+		//}
+
+		//err_when( !worker_array );    // this function shouldn't be called if this firm does not need worker
+
+		//------------- resign worker --------------//
+
+		int oldWorkerCount = Workers.Count;
+
+		int unitRecno2 = ResignWorker(worker);
+
+		if (unitRecno2 == 0 && Workers.Count == oldWorkerCount)
+			return 0;
+
+		//------ create a mobile unit -------//
+
+		int unitRecno = 0;
+
+		// if does not live_in_town, resign_worker() create the unit already, so don't create it again here.
+		if (FirmRes[FirmType].live_in_town)
+		{
+			//TODO check. It seems that resign_worker() also calls create_worker_unit()
+			unitRecno = CreateWorkerUnit(worker);
+
+			if (unitRecno == 0) // no space for creating units
+				return 0;
+		}
+
+		//------------------------------------//
+
+		SortWorkers();
+
+		return unitRecno != 0 ? unitRecno : unitRecno2;
+	}
+
+	public virtual int MobilizeOverseer()
+	{
+		if (OverseerId == 0)
+			return 0;
+
+		//--------- restore overseer's harmony ---------//
+
+		int overseerRecno = OverseerId;
+
+		Unit overseer = UnitArray[OverseerId];
+
+		//-------- if the overseer is a spy -------//
+
+		if (overseer.SpyId != 0)
+			SpyArray[overseer.SpyId].SetPlace(Spy.SPY_MOBILE, overseer.SpriteId);
+
+		//---- cancel the overseer's presence in the town -----//
+
+		if (FirmRes[FirmType].live_in_town)
+			TownArray[OverseerTownId].DecPopulation(overseer.RaceId, true);
+
+		//----- get this overseer out of the firm -----//
+
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.UnitType].sprite_id];
+		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
+
+		bool spaceFound = LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
+			spriteInfo.LocWidth, spriteInfo.LocHeight);
+
+		if (spaceFound)
+		{
+			overseer.InitSprite(xLoc, yLoc);
+			overseer.SetMode(0); // reset overseen firm recno
+		}
+		else
+		{
+			UnitArray.DeleteUnit(overseer); // delete it when there is no space for the unit
+			return 0;
+		}
+
+		//--------- reset overseer_recno -------------//
+
+		OverseerId = 0;
+		OverseerTownId = 0;
+
+		//------- update loyalty -------//
+
+		if (overseerRecno != 0 && !UnitArray.IsDeleted(overseerRecno))
+			UnitArray[overseerRecno].UpdateLoyalty();
+
+		return overseerRecno;
+	}
+
+	public bool MobilizeBuilder(int recno)
+	{
+		//----------- mobilize the builder -------------//
+		Unit unit = UnitArray[recno];
+
+		SpriteInfo spriteInfo = unit.SpriteInfo;
+		int xLoc = LocX1, yLoc = LocY1;
+
+		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId) &&
+		    !World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
+			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
+		{
+			UnitArray.DeleteUnit(UnitArray[recno]);
+			return false;
+		}
+
+		unit.InitSprite(xLoc, yLoc);
+		unit.Stop2(); // clear all previously defined action
+		unit.SetMode(0);
+
+		//--- set builder to non-aggressive, except ai ---//
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
+			unit.AggressiveMode = false;
+
+		return true;
+	}
+
+	public void ResignAllWorker(bool disappearFlag = false)
+	{
+		//------- detect buttons on hiring firm workers -------//
+
+		while (Workers.Count > 0)
+		{
+			Worker worker = Workers[0];
+			int townRecno = worker.town_recno;
+			int raceId = worker.race_id;
+			int oldWorkerCount = Workers.Count;
+
+			if (ResignWorker(worker) == 0)
+			{
+				if (oldWorkerCount == Workers.Count)
+					break; // no space to resign the worker, keep them in firm
+			}
+
+			if (disappearFlag && townRecno != 0)
+				TownArray[townRecno].DecPopulation(raceId, false);
+		}
+	}
+
+	public virtual int ResignWorker(Worker worker)
+	{
+		//------- decrease worker no. and create an unit -----//
+		int unitRecno = 0;
+
+		if (worker.race_id != 0 && worker.name_id != 0)
+			RaceRes[worker.race_id].free_name_id(worker.name_id);
+
+		if (worker.town_recno != 0) // town_recno is 0 if the workers in the firm do not live in towns
+		{
+			Town town = TownArray[worker.town_recno];
+
+			town.RacesJoblessPopulation[worker.race_id - 1]++; // move into jobless population
+			town.JoblessPopulation++;
+
+			//------ put the spy in the town -------//
+
+			if (worker.spy_recno != 0)
+				SpyArray[worker.spy_recno].SetPlace(Spy.SPY_TOWN, worker.town_recno);
+		}
+		else
+		{
+			unitRecno = CreateWorkerUnit(worker); // if he is a spy, create_worker_unit wil call set_place(SPY_MOBILE)
+
+			if (unitRecno == 0)
+				return 0; // return 0 eg there is no space to create the unit
+		}
+
+		//------- delete the record from the worker_array ------//
+
+		Workers.Remove(worker);
+
+		//TODO rewrite it
+		//if (selected_worker_id > workerId || selected_worker_id == worker_count)
+		//selected_worker_id--;
+
+		return unitRecno;
+	}
+
+	public int CreateWorkerUnit(Worker worker)
+	{
+		//------------ create a unit --------------//
+
+		// this worker no longer has a job as it has been resigned
+		int unitRecno = CreateUnit(worker.unit_id, worker.town_recno, false);
+
+		if (unitRecno == 0)
+			return 0;
+
+		Unit unit = UnitArray[unitRecno];
+		unit.InitFromWorker(worker);
+
+		//--- decrease the nation unit count as the Unit has already increased it ----//
+
+		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
+			UnitRes[unit.UnitType].dec_nation_unit_count(NationId);
+
+		//--- set non-military units to non-aggressive, except ai ---//
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
+			unit.AggressiveMode = false;
+
+		return unitRecno;
+	}
+
+	protected int CreateUnit(int unitId, int townRecno = 0, bool unitHasJob = false)
+	{
+		//----look for an empty location for the unit to stand ----//
+		//--- scan for the 5 rows right below the building ---//
+
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		int xLoc = LocX1, yLoc = LocY1;
+
+		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
+			    spriteInfo.LocWidth, spriteInfo.LocHeight))
+			return 0;
+
+		//------------ add the unit now ----------------//
+
+		int unitNationRecno = townRecno != 0 ? TownArray[townRecno].NationId : NationId;
+
+		Unit unit = UnitArray.AddUnit(unitId, unitNationRecno, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
+
+		//----- update the population of the town ------//
+
+		if (townRecno != 0)
+			TownArray[townRecno].DecPopulation(unit.RaceId, unitHasJob);
+
+		return unit.SpriteId;
+	}
+	
+	public void SortWorkers()
+	{
+		//TODO this function is for UI
+	}
+
+	protected void RecruitWorker()
+	{
+		if (Workers.Count == MAX_WORKER)
+			return;
+
+		if (Info.TotalDays % 5 != FirmId % 5) // update population once 10 days
+			return;
+
+		//-------- pull from neighbor towns --------//
+
+		Nation nation = NationArray[NationId];
+
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			if (LinkedTownsEnable[i] != InternalConstants.LINK_EE)
+				continue;
+
+			Town town = TownArray[LinkedTowns[i]];
+
+			//--- don't hire foreign workers if we don't have cash to pay them ---//
+
+			if (nation.cash < 0 && NationId != town.NationId)
+				continue;
+
+			//-------- if the town has any unit ready for jobs -------//
+
+			if (town.JoblessPopulation == 0)
+				continue;
+
+			//---- if nation of the town is not hositle to this firm's nation ---//
+
+			if (PullTownPeople(town.TownId, InternalConstants.COMMAND_AUTO))
+				return;
+		}
+	}
+	
+	protected void UpdateWorker()
+	{
+		if (Info.TotalDays % 15 != FirmId % 15)
+			return;
+
+		if (Workers.Count == 0)
+			return;
+
+		//------- update the worker's para ---------//
+
+		int incValue, levelMinor;
+
+		foreach (Worker worker in Workers)
+		{
+			//------- increase worker skill -----------//
+
+			if (IsOperating() && worker.skill_level < 100) // only train when the workers are working
+			{
+				incValue = Math.Max(10, 100 - worker.skill_level)
+					* worker.hit_points / worker.max_hit_points()
+					* (100 + worker.skill_potential) / 100 / 2;
+
+				//-------- increase level minor now --------//
+
+				// with random factors, resulting in 75% to 125% of the original
+				levelMinor = worker.skill_level_minor + incValue * (75 + Misc.Random(50)) / 100;
+
+				while (levelMinor >= 100)
+				{
+					levelMinor -= 100;
+					worker.skill_level++;
+				}
+
+				worker.skill_level_minor = levelMinor;
+			}
+
+			//------- increase worker hit points --------//
+
+			int maxHitPoints = worker.max_hit_points();
+
+			if (worker.hit_points < maxHitPoints)
+			{
+				worker.hit_points += 2; // units in firms recover twice as fast as they are mobile
+
+				if (worker.hit_points > maxHitPoints)
+					worker.hit_points = maxHitPoints;
+			}
+		}
+
+		SortWorkers();
+	}
+
+	protected void ThinkWorkerMigrate()
+	{
+
+		if (Workers.Count == 0 || !FirmRes[FirmType].live_in_town)
+			return;
+
+		foreach (Town town in TownArray.EnumerateRandom())
+		{
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
+				continue;
+
+			//------ check if this town is linked to the current firm -----//
+
+			int j;
+			for (j = town.LinkedFirms.Count - 1; j >= 0; j--)
+			{
+				if (town.LinkedFirms[j] == FirmId &&
+				    town.LinkedFirmsEnable[j] != 0)
+				{
+					break;
+				}
+			}
+
+			if (j < 0)
+				continue;
+
+			//------------------------------------------------//
+			//
+			// Calculate the attractive factor, it is based on:
+			//
+			// - the reputation of the target nation (+0 to 100)
+			// - the racial harmony of the race in the target town (+0 to 100)
+			// - the no. of people of the race in the target town
+			// - distance between the current town and the target town (-0 to 100)
+			//
+			// Attractiveness level range: 0 to 200
+			//
+			//------------------------------------------------//
+
+			int targetBaseAttractLevel = 0;
+
+			if (town.NationId != 0)
+				targetBaseAttractLevel += (int)NationArray[town.NationId].reputation;
+
+			//---- scan all workers, see if any of them want to worker_migrate ----//
+
+			int workerId = Misc.Random(Workers.Count) + 1;
+
+			for (j = 0; j < Workers.Count; j++)
+			{
+				if (++workerId > Workers.Count)
+					workerId = 1;
+
+				Worker worker = Workers[workerId - 1];
+
+				if (worker.town_recno == town.TownId)
+					continue;
+
+				int raceId = worker.race_id;
+				Town workerTown = TownArray[worker.town_recno];
+
+				//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
+
+				if (town.RacesPopulation[raceId - 1] < workerTown.RacesPopulation[raceId - 1] / 2)
+					continue;
+
+				//-- do not migrate if the target town might not be a place this worker will stay --//
+
+				if (ConfigAdv.firm_migrate_stricter_rules &&
+				    town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
+					continue;
+
+				//------ calc the current and target attractiveness level ------//
+
+				int curBaseAttractLevel;
+				if (workerTown.NationId != 0)
+					curBaseAttractLevel = (int)NationArray[workerTown.NationId].reputation;
+				else
+					curBaseAttractLevel = 0;
+
+				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
+
+				if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
+					continue;
+
+				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
+				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.loyalty() - 40);
+
+				if (ConfigAdv.firm_migrate_stricter_rules
+					    ? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
+					    : targetAttractLevel > curAttractLevel)
+				{
+					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);
+
+					WorkerMigrate(workerId, town.TownId, newLoyalty);
+					return;
+				}
+			}
+		}
+	}
+
+	protected void WorkerMigrate(int workerId, int destTownRecno, int newLoyalty)
+	{
+		Worker worker = Workers[workerId - 1];
+
+		int raceId = worker.race_id;
+		Town srcTown = TownArray[worker.town_recno];
+		Town destTown = TownArray[destTownRecno];
+
+		//------------- add news --------------//
+
+		if (srcTown.NationId == NationArray.player_recno || destTown.NationId == NationArray.player_recno)
+		{
+			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
+				NewsArray.migrate(srcTown.TownId, destTownRecno, raceId, 1, FirmId);
+		}
+
+		//--------- migrate now ----------//
+
+		worker.town_recno = destTownRecno;
+
+		//--------- decrease the population of the home town ------//
+
+		srcTown.DecPopulation(raceId, true);
+
+		//--------- increase the population of the target town ------//
+
+		destTown.IncPopulation(raceId, true, newLoyalty);
+	}
+
+	protected void ProcessIndependentTownWorker()
+	{
+		if (Info.TotalDays % 15 != FirmId % 15)
+			return;
+
+		foreach (Worker worker in Workers)
+		{
+			Town town = TownArray[worker.town_recno];
+
+			if (town.NationId == 0) // if it's an independent town
+			{
+				town.RacesResistance[worker.race_id - 1, NationId - 1] -=
+					GameConstants.RESISTANCE_DECREASE_PER_WORKER;
+
+				if (town.RacesResistance[worker.race_id - 1, NationId - 1] < 0.0)
+					town.RacesResistance[worker.race_id - 1, NationId - 1] = 0.0;
+			}
+		}
+	}
+
+	public virtual bool PullTownPeople(int townRecno, int remoteAction, int raceId = 0, bool forcePull = false)
+	{
+		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
+		if (Workers.Count == MAX_WORKER)
+			return false;
+
+		//if(!remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <firm recno> <town recno> <race Id or 0> <force Pull>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_PULL_TOWN_PEOPLE, 4*sizeof(short));
+		//shortPtr[0] = firm_recno;
+		//shortPtr[1] = townRecno;
+		//shortPtr[2] = raceId;	
+		//// if raceId == 0, let each player choose the race by random number, to sychronize the random number
+		//shortPtr[3] = forcePull;
+		//return 0;
+		//}
+
+		//---- people in the town go to work for the firm ---//
+
+		Town town = TownArray[townRecno];
+		int popAdded = 0;
+
+		//---- if doesn't specific a race, randomly pick one ----//
+
+		if (raceId == 0)
+			raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
+
+		//----------- scan the races -----------//
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++) // maximum 8 tries
+		{
+			//---- see if there is any population of this race to move to the firm ----//
+
+			int recruitableCount = town.RecruitableRacePopulation(raceId, true); // 1-allow recruiting spies
+
+			if (recruitableCount > 0)
+			{
+				//----- if the unit is forced to move to the firm ---//
+
+				if (forcePull) // right-click to force pulling a worker from the village
+				{
+					if (town.RacesLoyalty[raceId - 1] <
+					    GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
+						return false;
+
+					town.RecruitDecLoyalty(raceId);
+				}
+				else //--- see if the unit will voluntarily move to the firm ---//
+				{
+					//--- the higher the loyalty is, the higher the chance of working for the firm ---//
+
+					if (town.NationId != 0)
+					{
+						if (Misc.Random((100 - Convert.ToInt32(town.RacesLoyalty[raceId - 1])) / 10) > 0)
+							return false;
+					}
+					else
+					{
+						if (Misc.Random(Convert.ToInt32(town.RacesResistance[raceId - 1, NationId - 1]) / 10) > 0)
+							return false;
+					}
+				}
+
+				//----- get the chance of getting people to your command base is higher when the loyalty is higher ----//
+
+				if (FirmRes[FirmType].live_in_town)
+				{
+					town.RacesJoblessPopulation[raceId - 1]--; // decrease the town's population
+					town.JoblessPopulation--;
+				}
+				else
+				{
+					town.DecPopulation(raceId, false);
+				}
+
+				//------- add the worker to the firm -----//
+
+				Worker worker = new Worker();
+				Workers.Add(worker);
+
+				worker.race_id = raceId;
+				worker.rank_id = Unit.RANK_SOLDIER;
+				worker.unit_id = RaceRes[raceId].basic_unit_id;
+				worker.worker_loyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
+
+				if (FirmRes[FirmType].live_in_town)
+					worker.town_recno = townRecno;
+
+				worker.combat_level = GameConstants.CITIZEN_COMBAT_LEVEL;
+				worker.hit_points = GameConstants.CITIZEN_HIT_POINTS;
+
+				worker.skill_id = FirmSkillId;
+				worker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
+
+				worker.init_potential();
+
+				//--------- if this is a military camp ---------//
+				//
+				// Increase armed unit count of the race of the worker assigned,
+				// as when a unit is assigned to a camp, Unit::deinit() will decrease
+				// the counter, so we need to increase it back here.
+				//
+				//---------------------------------------------------//
+
+				if (!FirmRes[FirmType].live_in_town)
+					UnitRes[worker.unit_id].inc_nation_unit_count(NationId);
+
+				//------ if the recruited worker is a spy -----//
+
+				int spyCount = town.RacesSpyCount[raceId - 1];
+
+				if (spyCount >= Misc.Random(recruitableCount) + 1)
+				{
+					// the 3rd parameter is which spy to recruit
+					int spyRecno = SpyArray.FindTownSpy(townRecno, raceId, Misc.Random(spyCount) + 1);
+
+					worker.spy_recno = spyRecno;
+
+					SpyArray[spyRecno].SetPlace(Spy.SPY_FIRM, FirmId);
+				}
+
 				return true;
+			}
+
+			if (++raceId > GameConstants.MAX_RACE)
+				raceId = 1;
 		}
-
-		//----- if any of the workers belong to the player, show the info of this firm -----//
-
-		if (HaveOwnWorkers(true))
-			return true;
-
-		//---- if there is a phoenix of the player over this firm ----//
-
-		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(LocX1, LocY1))
-			return true;
 
 		return false;
 	}
+	
+	public void SetWorkerHomeTown(int townRecno, char remoteAction, int workerId = 0)
+	{
+		if (workerId == 0)
+			workerId = SelectedWorkerId;
+
+		if (workerId == 0 || workerId > Workers.Count)
+			return;
+
+		Town town = TownArray[townRecno];
+		Worker worker = Workers[workerId - 1];
+
+		if (worker.town_recno != townRecno)
+		{
+			if (!worker.is_nation(FirmId, NationId))
+				return;
+			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
+				return;
+		}
+
+		//if(!remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <firm recno> <town recno> <workderId>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SET_WORKER_HOME, 3*sizeof(short));
+		//shortPtr[0] = firm_recno;
+		//shortPtr[1] = townRecno;
+		//shortPtr[2] = workerId;
+		//return;
+		//}
+
+		//-------------------------------------------------//
+
+		if (worker.town_recno == townRecno)
+		{
+			ResignWorker(worker);
+		}
+
+		//--- otherwise, set the worker's home town to the new one ---//
+
+		else if (worker.is_nation(FirmId, NationId) &&
+		         town.NationId ==
+		         NationId) // only allow when the worker lives in a town belonging to the same nation and moving domestically
+		{
+			int workerLoyalty = worker.loyalty();
+
+			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
+			town.IncPopulation(worker.race_id, true, workerLoyalty);
+
+			worker.town_recno = townRecno;
+		}
+	}
+	
+
+	public bool CanAssignCapture()
+	{
+		return OverseerId == 0 && Workers.Count == 0;
+	}
+
+	public bool CanWorkerCapture(int captureNationRecno)
+	{
+		if (captureNationRecno == 0) // neutral units cannot capture
+			return false;
+
+		if (NationId == captureNationRecno) // cannot capture its own firm
+			return false;
+
+		//----- if this firm needs an overseer, can only capture it when the overseer is the spy ---//
+
+		if (FirmRes[FirmType].need_overseer)
+		{
+			return OverseerId != 0 && UnitArray[OverseerId].TrueNationId() == captureNationRecno;
+		}
+
+		//--- if this firm doesn't need an overseer, can capture it if all the units in the firm are the player's spies ---//
+
+		int captureUnitCount = 0, otherUnitCount = 0;
+
+		foreach (Worker worker in Workers)
+		{
+			if (worker.spy_recno != 0 && SpyArray[worker.spy_recno].TrueNationId == captureNationRecno)
+			{
+				captureUnitCount++;
+			}
+			else if (worker.town_recno != 0)
+			{
+				if (TownArray[worker.town_recno].NationId == captureNationRecno)
+					captureUnitCount++;
+				else
+					otherUnitCount++;
+			}
+			else
+			{
+				otherUnitCount++; // must be an own unit in camps and bases if the unit is not a spy
+			}
+		}
+
+		return captureUnitCount > 0 && otherUnitCount == 0;
+	}
+
+	public void CaptureFirm(int newNationRecno)
+	{
+		if (NationId == NationArray.player_recno)
+			NewsArray.firm_captured(FirmId, newNationRecno, 0); // 0 - the capturer is not a spy
+
+		//-------- if this is an AI firm --------//
+
+		if (AIFirm)
+			AIFirmCaptured(newNationRecno);
+
+		//------------------------------------------//
+		//
+		// If there is an overseer in this firm, then the only
+		// unit who can capture this firm will be the overseer only,
+		// so calling its betray() function will capture the whole
+		// firm already.
+		//
+		//------------------------------------------//
+
+		if (OverseerId != 0 && UnitArray[OverseerId].SpyId != 0)
+			UnitArray[OverseerId].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
+		else
+			ChangeNation(newNationRecno);
+	}
+
+	public virtual void ChangeNation(int newNationId)
+	{
+		if (NationId == newNationId)
+			return;
+
+		UnitArray.StopAttackFirm(FirmId);
+		RebelArray.StopAttackFirm(FirmId);
+
+		Nation oldNation = NationArray[NationId];
+		Nation newNation = NationArray[newNationId];
+
+		if (BuilderId != 0)
+		{
+			Unit unit = UnitArray[BuilderId];
+			unit.ChangeNation(newNationId);
+
+			//--- if this is a spy, chance its cloak ----//
+
+			if (unit.SpyId != 0)
+				SpyArray[unit.SpyId].CloakedNationId = newNationId;
+		}
+
+		if (FirmType == FIRM_CAMP)
+			((FirmCamp)this).clear_defense_mode(FirmId);
+
+		FirmInfo firmInfo = FirmRes[FirmType];
+
+		if (NationId != 0)
+			firmInfo.dec_nation_firm_count(NationId);
+
+		if (newNationId != 0)
+			firmInfo.inc_nation_firm_count(newNationId);
+
+		//---- reset should_close_flag -----//
+
+		if (AIFirm)
+		{
+			if (ShouldCloseFlag)
+			{
+				oldNation.firm_should_close_array[FirmType - 1]--;
+				ShouldCloseFlag = false;
+			}
+		}
+
+		SpyArray.UpdateFirmSpyCount(FirmId);
+
+		SpyArray.ChangeCloakedNation(Spy.SPY_FIRM, FirmId, NationId, newNationId);
+
+		//-----------------------------------------//
+
+		if (AIFirm)
+			oldNation.del_firm_info(FirmType, FirmId);
+
+		if (ShouldSetPower)
+			World.RestorePower(LocX1, LocY1, LocX2, LocY2, 0, FirmId);
+
+		ShouldSetPower = GetShouldSetPower();
+
+		if (ShouldSetPower)
+			World.SetPower(LocX1, LocY1, LocX2, LocY2, newNationId);
+
+		//------------ update link --------------//
+
+		ReleaseLink(); // need to update link because firms are only linked to firms of the same nation
+
+		NationId = newNationId;
+
+		SetupLink();
+
+		//---------------------------------------//
+
+		AIFirm = NationArray[NationId].is_ai();
+
+		if (AIFirm)
+			newNation.add_firm_info(FirmType, FirmId);
+
+		EstablishContactWithPlayer();
+
+		//---- reset the action mode of all spies in this firm ----//
+
+		// we need to reset it. e.g. when we have captured an enemy firm, SPY_SOW_DISSENT action must be reset to SPY_IDLE
+		SpyArray.SetActionMode(Spy.SPY_FIRM, FirmId, Spy.SPY_IDLE);
+	}
+
 
 	public bool SetBuilder(int newBuilderRecno)
 	{
@@ -1829,6 +2616,7 @@ public abstract class Firm : IIdObject
 		unit.Assign(LocX1, LocY1);
 	}
 
+
 	public virtual void SellFirm(int remoteAction)
 	{
 		//if( !remoteAction && remote.is_enable() )
@@ -1866,118 +2654,6 @@ public abstract class Firm : IIdObject
 		FirmArray.DeleteFirm(this);
 	}
 
-	public bool CanAssignCapture()
-	{
-		return OverseerId == 0 && Workers.Count == 0;
-	}
-
-	public bool CanWorkerCapture(int captureNationRecno)
-	{
-		if (captureNationRecno == 0) // neutral units cannot capture
-			return false;
-
-		if (NationId == captureNationRecno) // cannot capture its own firm
-			return false;
-
-		//----- if this firm needs an overseer, can only capture it when the overseer is the spy ---//
-
-		if (FirmRes[FirmType].need_overseer)
-		{
-			return OverseerId != 0 && UnitArray[OverseerId].TrueNationId() == captureNationRecno;
-		}
-
-		//--- if this firm doesn't need an overseer, can capture it if all the units in the firm are the player's spies ---//
-
-		int captureUnitCount = 0, otherUnitCount = 0;
-
-		foreach (Worker worker in Workers)
-		{
-			if (worker.spy_recno != 0 && SpyArray[worker.spy_recno].TrueNationId == captureNationRecno)
-			{
-				captureUnitCount++;
-			}
-			else if (worker.town_recno != 0)
-			{
-				if (TownArray[worker.town_recno].NationId == captureNationRecno)
-					captureUnitCount++;
-				else
-					otherUnitCount++;
-			}
-			else
-			{
-				otherUnitCount++; // must be an own unit in camps and bases if the unit is not a spy
-			}
-		}
-
-		return captureUnitCount > 0 && otherUnitCount == 0;
-	}
-
-	public virtual bool IsWorkerFull()
-	{
-		return Workers.Count == MAX_WORKER;
-	}
-
-	public bool HaveOwnWorkers(bool checkSpy = false)
-	{
-		foreach (Worker worker in Workers)
-		{
-			if (worker.is_nation(FirmId, NationArray.player_recno, checkSpy))
-				return true;
-		}
-
-		return false;
-	}
-
-	public void SetWorkerHomeTown(int townRecno, char remoteAction, int workerId = 0)
-	{
-		if (workerId == 0)
-			workerId = SelectedWorkerId;
-
-		if (workerId == 0 || workerId > Workers.Count)
-			return;
-
-		Town town = TownArray[townRecno];
-		Worker worker = Workers[workerId - 1];
-
-		if (worker.town_recno != townRecno)
-		{
-			if (!worker.is_nation(FirmId, NationId))
-				return;
-			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
-				return;
-		}
-
-		//if(!remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <town recno> <workderId>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SET_WORKER_HOME, 3*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = townRecno;
-		//shortPtr[2] = workerId;
-		//return;
-		//}
-
-		//-------------------------------------------------//
-
-		if (worker.town_recno == townRecno)
-		{
-			ResignWorker(worker);
-		}
-
-		//--- otherwise, set the worker's home town to the new one ---//
-
-		else if (worker.is_nation(FirmId, NationId) &&
-		         town.NationId ==
-		         NationId) // only allow when the worker lives in a town belonging to the same nation and moving domestically
-		{
-			int workerLoyalty = worker.loyalty();
-
-			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
-			town.IncPopulation(worker.race_id, true, workerLoyalty);
-
-			worker.town_recno = townRecno;
-		}
-	}
 
 	public bool CanSpyBribe(int bribeWorkerId, int briberNationRecno)
 	{
@@ -2147,6 +2823,21 @@ public abstract class Firm : IIdObject
 		return CanSpyBribe(SelectedWorkerId, SpyArray[ActionSpyId].TrueNationId);
 	}
 
+
+	public virtual void BeingAttacked(int attackerUnitRecno)
+	{
+		LastAttackedDate = Info.game_date;
+
+		if (NationId != 0 && AIFirm)
+		{
+			// this can happen when the unit has just changed nation
+			if (UnitArray[attackerUnitRecno].NationId == NationId)
+				return;
+
+			NationArray[NationId].ai_defend(attackerUnitRecno);
+		}
+	}
+
 	public virtual void AutoDefense(int targetRecno)
 	{
 		//--------------------------------------------------------//
@@ -2225,10 +2916,34 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 
-	public void SortWorkers()
+	public void Reward(int workerId, int remoteAction)
 	{
-		//TODO this function is for UI
+		//if( remoteAction==InternalConstants.COMMAND_PLAYER && remote.is_enable() )
+		//{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+		//// packet structure : <firm recno> <worker id>
+		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
+		//*shortPtr = firm_recno;
+		//shortPtr[1] = workerId;
+		//}
+		//}
+		//else
+		//{
+		if (workerId == 0)
+		{
+			if (OverseerId != 0)
+				UnitArray[OverseerId].Reward(NationId);
+		}
+		else
+		{
+			Workers[workerId - 1].change_loyalty(GameConstants.REWARD_LOYALTY_INCREASE);
+
+			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
+		}
+		//}
 	}
+
 
 	public void ProcessAnimation()
 	{
@@ -2257,7 +2972,23 @@ public abstract class Firm : IIdObject
 			}
 		}
 	}
+	
+	public int ConstructionFrame() // for under construction only
+	{
+		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
+		int r = Convert.ToInt32(HitPoints * firmBuild.under_construction_bitmap_count / MaxHitPoints);
+		if (r >= firmBuild.under_construction_bitmap_count)
+			r = firmBuild.under_construction_bitmap_count - 1;
+		return r;
+	}
 
+	public abstract void DrawDetails(IRenderer renderer);
+
+	public abstract void HandleDetailsInput(IRenderer renderer);
+	
+
+	#region Old AI Functions
+	
 	public void ProcessCommonAI()
 	{
 		if (Info.TotalDays % 30 == FirmId % 30)
@@ -2276,301 +3007,6 @@ public abstract class Firm : IIdObject
 	}
 
 	public abstract void ProcessAI();
-
-	public void MobilizeAllWorkers(int remoteAction)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet strcture : <firm_recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_ALL_WORKERS, sizeof(short) );
-		//shortPtr[0] = firm_recno;
-		//return;
-		//}
-
-		if (NationId == NationArray.player_recno)
-			Power.reset_selection();
-
-		//------- detect buttons on hiring firm workers -------//
-
-		int mobileWorkerId = 1;
-
-		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
-		{
-			Worker worker = Workers[mobileWorkerId - 1];
-
-			if (!worker.is_nation(FirmId, NationId))
-			{
-				// prohibit mobilizing workers not under your color
-				mobileWorkerId++;
-				continue;
-			}
-
-			// always record 1 as the workers info are moved forward from the back to the front
-			int unitRecno = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
-
-			if (unitRecno == 0)
-				break; // keep the rest workers as there is no space for creating the unit
-
-			Unit unit = UnitArray[unitRecno];
-			unit.TeamId = UnitArray.CurTeamId;
-
-			if (NationId == NationArray.player_recno)
-			{
-				unit.SelectedFlag = true;
-				UnitArray.SelectedCount++;
-				if (UnitArray.SelectedUnitId == 0)
-					UnitArray.SelectedUnitId = unitRecno; // set first worker as selected
-			}
-		}
-
-		UnitArray.CurTeamId++;
-	}
-
-	public virtual int MobilizeWorker(int workerId, int remoteAction)
-	{
-		Worker worker = Workers[workerId - 1];
-
-		if (remoteAction <= InternalConstants.COMMAND_REMOTE && !worker.is_nation(FirmId, NationId))
-		{
-			// cannot order mobilization of foreign workers
-			return 0;
-		}
-
-		//if(!remoteAction && remote.is_enable() )
-		//{
-		//// packet strcture : <firm_recno> <workerId>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_WORKER, 2*sizeof(short) );
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = workerId;
-		//return 0;
-		//}
-
-		//err_when( !worker_array );    // this function shouldn't be called if this firm does not need worker
-
-		//------------- resign worker --------------//
-
-		int oldWorkerCount = Workers.Count;
-
-		int unitRecno2 = ResignWorker(worker);
-
-		if (unitRecno2 == 0 && Workers.Count == oldWorkerCount)
-			return 0;
-
-		//------ create a mobile unit -------//
-
-		int unitRecno = 0;
-
-		// if does not live_in_town, resign_worker() create the unit already, so don't create it again here.
-		if (FirmRes[FirmType].live_in_town)
-		{
-			//TODO check. It seems that resign_worker() also calls create_worker_unit()
-			unitRecno = CreateWorkerUnit(worker);
-
-			if (unitRecno == 0) // no space for creating units
-				return 0;
-		}
-
-		//------------------------------------//
-
-		SortWorkers();
-
-		return unitRecno != 0 ? unitRecno : unitRecno2;
-	}
-
-	public int CreateWorkerUnit(Worker worker)
-	{
-		//------------ create a unit --------------//
-
-		// this worker no longer has a job as it has been resigned
-		int unitRecno = CreateUnit(worker.unit_id, worker.town_recno, false);
-
-		if (unitRecno == 0)
-			return 0;
-
-		Unit unit = UnitArray[unitRecno];
-		unit.InitFromWorker(worker);
-
-		//--- decrease the nation unit count as the Unit has already increased it ----//
-
-		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
-			UnitRes[unit.UnitType].dec_nation_unit_count(NationId);
-
-		//--- set non-military units to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
-			unit.AggressiveMode = false;
-
-		return unitRecno;
-	}
-
-	public virtual int MobilizeOverseer()
-	{
-		if (OverseerId == 0)
-			return 0;
-
-		//--------- restore overseer's harmony ---------//
-
-		int overseerRecno = OverseerId;
-
-		Unit overseer = UnitArray[OverseerId];
-
-		//-------- if the overseer is a spy -------//
-
-		if (overseer.SpyId != 0)
-			SpyArray[overseer.SpyId].SetPlace(Spy.SPY_MOBILE, overseer.SpriteId);
-
-		//---- cancel the overseer's presence in the town -----//
-
-		if (FirmRes[FirmType].live_in_town)
-			TownArray[OverseerTownId].DecPopulation(overseer.RaceId, true);
-
-		//----- get this overseer out of the firm -----//
-
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.UnitType].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
-
-		bool spaceFound = LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
-			spriteInfo.LocWidth, spriteInfo.LocHeight);
-
-		if (spaceFound)
-		{
-			overseer.InitSprite(xLoc, yLoc);
-			overseer.SetMode(0); // reset overseen firm recno
-		}
-		else
-		{
-			UnitArray.DeleteUnit(overseer); // delete it when there is no space for the unit
-			return 0;
-		}
-
-		//--------- reset overseer_recno -------------//
-
-		OverseerId = 0;
-		OverseerTownId = 0;
-
-		//------- update loyalty -------//
-
-		if (overseerRecno != 0 && !UnitArray.IsDeleted(overseerRecno))
-			UnitArray[overseerRecno].UpdateLoyalty();
-
-		return overseerRecno;
-	}
-
-	public bool MobilizeBuilder(int recno)
-	{
-		//----------- mobilize the builder -------------//
-		Unit unit = UnitArray[recno];
-
-		SpriteInfo spriteInfo = unit.SpriteInfo;
-		int xLoc = LocX1, yLoc = LocY1;
-
-		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId) &&
-		    !World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
-		{
-			UnitArray.DeleteUnit(UnitArray[recno]);
-			return false;
-		}
-
-		unit.InitSprite(xLoc, yLoc);
-		unit.Stop2(); // clear all previously defined action
-		unit.SetMode(0);
-
-		//--- set builder to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
-			unit.AggressiveMode = false;
-
-		return true;
-	}
-
-	public void ResignAllWorker(bool disappearFlag = false)
-	{
-		//------- detect buttons on hiring firm workers -------//
-
-		while (Workers.Count > 0)
-		{
-			Worker worker = Workers[0];
-			int townRecno = worker.town_recno;
-			int raceId = worker.race_id;
-			int oldWorkerCount = Workers.Count;
-
-			if (ResignWorker(worker) == 0)
-			{
-				if (oldWorkerCount == Workers.Count)
-					break; // no space to resign the worker, keep them in firm
-			}
-
-			if (disappearFlag && townRecno != 0)
-				TownArray[townRecno].DecPopulation(raceId, false);
-		}
-	}
-
-	public virtual int ResignWorker(Worker worker)
-	{
-		//------- decrease worker no. and create an unit -----//
-		int unitRecno = 0;
-
-		if (worker.race_id != 0 && worker.name_id != 0)
-			RaceRes[worker.race_id].free_name_id(worker.name_id);
-
-		if (worker.town_recno != 0) // town_recno is 0 if the workers in the firm do not live in towns
-		{
-			Town town = TownArray[worker.town_recno];
-
-			town.RacesJoblessPopulation[worker.race_id - 1]++; // move into jobless population
-			town.JoblessPopulation++;
-
-			//------ put the spy in the town -------//
-
-			if (worker.spy_recno != 0)
-				SpyArray[worker.spy_recno].SetPlace(Spy.SPY_TOWN, worker.town_recno);
-		}
-		else
-		{
-			unitRecno = CreateWorkerUnit(worker); // if he is a spy, create_worker_unit wil call set_place(SPY_MOBILE)
-
-			if (unitRecno == 0)
-				return 0; // return 0 eg there is no space to create the unit
-		}
-
-		//------- delete the record from the worker_array ------//
-
-		Workers.Remove(worker);
-
-		//TODO rewrite it
-		//if (selected_worker_id > workerId || selected_worker_id == worker_count)
-		//selected_worker_id--;
-
-		return unitRecno;
-	}
-
-	public void Reward(int workerId, int remoteAction)
-	{
-		//if( remoteAction==InternalConstants.COMMAND_PLAYER && remote.is_enable() )
-		//{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <worker id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
-		//*shortPtr = firm_recno;
-		//shortPtr[1] = workerId;
-		//}
-		//}
-		//else
-		//{
-		if (workerId == 0)
-		{
-			if (OverseerId != 0)
-				UnitArray[OverseerId].Reward(NationId);
-		}
-		else
-		{
-			Workers[workerId - 1].change_loyalty(GameConstants.REWARD_LOYALTY_INCREASE);
-
-			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
-		}
-		//}
-	}
 
 	public void ThinkRepair()
 	{
@@ -2971,431 +3407,5 @@ public abstract class Firm : IIdObject
 		TalkRes.ai_send_talk_msg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
 	}
 
-	protected void RecruitWorker()
-	{
-		if (Workers.Count == MAX_WORKER)
-			return;
-
-		if (Info.TotalDays % 5 != FirmId % 5) // update population once 10 days
-			return;
-
-		//-------- pull from neighbor towns --------//
-
-		Nation nation = NationArray[NationId];
-
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			if (LinkedTownsEnable[i] != InternalConstants.LINK_EE)
-				continue;
-
-			Town town = TownArray[LinkedTowns[i]];
-
-			//--- don't hire foreign workers if we don't have cash to pay them ---//
-
-			if (nation.cash < 0 && NationId != town.NationId)
-				continue;
-
-			//-------- if the town has any unit ready for jobs -------//
-
-			if (town.JoblessPopulation == 0)
-				continue;
-
-			//---- if nation of the town is not hositle to this firm's nation ---//
-
-			if (PullTownPeople(town.TownId, InternalConstants.COMMAND_AUTO))
-				return;
-		}
-	}
-
-	protected void CalcProductivity()
-	{
-		Productivity = 0.0;
-
-		//------- calculate the productivity of the workers -----------//
-
-		double totalSkill = 0.0;
-
-		foreach (Worker worker in Workers)
-		{
-			totalSkill += Convert.ToDouble(worker.skill_level * worker.hit_points)
-			              / Convert.ToDouble(worker.max_hit_points());
-		}
-
-		//----- include skill in the calculation ------//
-
-		Productivity = totalSkill / MAX_WORKER - SabotageLevel;
-
-		if (Productivity < 0)
-			Productivity = 0.0;
-	}
-
-	protected void UpdateWorker()
-	{
-		if (Info.TotalDays % 15 != FirmId % 15)
-			return;
-
-		if (Workers.Count == 0)
-			return;
-
-		//------- update the worker's para ---------//
-
-		int incValue, levelMinor;
-
-		foreach (Worker worker in Workers)
-		{
-			//------- increase worker skill -----------//
-
-			if (IsOperating() && worker.skill_level < 100) // only train when the workers are working
-			{
-				incValue = Math.Max(10, 100 - worker.skill_level)
-					* worker.hit_points / worker.max_hit_points()
-					* (100 + worker.skill_potential) / 100 / 2;
-
-				//-------- increase level minor now --------//
-
-				// with random factors, resulting in 75% to 125% of the original
-				levelMinor = worker.skill_level_minor + incValue * (75 + Misc.Random(50)) / 100;
-
-				while (levelMinor >= 100)
-				{
-					levelMinor -= 100;
-					worker.skill_level++;
-				}
-
-				worker.skill_level_minor = levelMinor;
-			}
-
-			//------- increase worker hit points --------//
-
-			int maxHitPoints = worker.max_hit_points();
-
-			if (worker.hit_points < maxHitPoints)
-			{
-				worker.hit_points += 2; // units in firms recover twice as fast as they are mobile
-
-				if (worker.hit_points > maxHitPoints)
-					worker.hit_points = maxHitPoints;
-			}
-		}
-
-		SortWorkers();
-	}
-
-	protected void AddIncome(int incomeType, double incomeAmt)
-	{
-		CurYearIncome += incomeAmt;
-
-		NationArray[NationId].add_income(incomeType, incomeAmt, true);
-	}
-
-	protected void PayExpense()
-	{
-		if (NationId == 0)
-			return;
-
-		Nation nation = NationArray[NationId];
-
-		//-------- fixed expenses ---------//
-
-		double dayExpense = FirmRes[FirmType].year_cost / 365.0;
-
-		if (nation.cash >= dayExpense)
-		{
-			nation.add_expense(NationBase.EXPENSE_FIRM, dayExpense, true);
-		}
-		else
-		{
-			if (HitPoints > 0)
-				HitPoints--;
-
-			if (HitPoints < 0)
-				HitPoints = 0.0;
-
-			//--- when the hit points drop to zero and the firm is destroyed ---//
-
-			if (HitPoints == 0 && NationId == NationArray.player_recno)
-				NewsArray.firm_worn_out(FirmId);
-		}
-
-		//----- paying salary to workers from other nations -----//
-
-		if (FirmRes[FirmType].live_in_town)
-		{
-			int townNationRecno, payWorkerCount = 0;
-
-			for (int i = Workers.Count - 1; i >= 0; i--)
-			{
-				Worker worker = Workers[i];
-				townNationRecno = TownArray[worker.town_recno].NationId;
-
-				if (townNationRecno != NationId)
-				{
-					//--- if we don't have cash to pay the foreign workers, resign them ---//
-
-					if (nation.cash < 0.0)
-					{
-						ResignWorker(worker);
-					}
-					else //----- pay salaries to the foreign workers now -----//
-					{
-						payWorkerCount++;
-
-						if (townNationRecno != 0) // the nation of the worker will get income
-							NationArray[townNationRecno].add_income(NationBase.INCOME_FOREIGN_WORKER,
-								(double)GameConstants.WORKER_YEAR_SALARY / 365.0, true);
-					}
-				}
-			}
-
-			nation.add_expense(NationBase.EXPENSE_FOREIGN_WORKER,
-				(double)GameConstants.WORKER_YEAR_SALARY * payWorkerCount / 365.0, true);
-		}
-	}
-
-	protected void ConsumeFood()
-	{
-		if (NationArray[NationId].food > 0)
-		{
-			int humanUnitCount = 0;
-
-			foreach (Worker worker in Workers)
-			{
-				if (worker.race_id != 0)
-					humanUnitCount++;
-			}
-
-			NationArray[NationId].consume_food(
-				Convert.ToDouble(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
-		}
-		else //--- decrease loyalty if the food has been run out ---//
-		{
-			// decrease 1 loyalty point every 2 days
-			if (Info.TotalDays % GameConstants.NO_FOOD_LOYALTY_DECREASE_INTERVAL == 0)
-			{
-				foreach (Worker worker in Workers)
-				{
-					if (worker.race_id != 0)
-						worker.change_loyalty(-1);
-				}
-			}
-		}
-	}
-
-	protected void UpdateLoyalty()
-	{
-		if (FirmRes[FirmType].live_in_town) // only for those who do not live in town
-			return;
-
-		//----- update loyalty of the soldiers -----//
-
-		foreach (Worker worker in Workers)
-		{
-			int targetLoyalty = worker.target_loyalty(FirmId);
-
-			if (targetLoyalty > worker.worker_loyalty)
-			{
-				int incValue = (targetLoyalty - worker.worker_loyalty) / 10;
-
-				int newLoyalty = (int)worker.worker_loyalty + Math.Max(1, incValue);
-
-				if (newLoyalty > targetLoyalty)
-					newLoyalty = targetLoyalty;
-
-				worker.worker_loyalty = newLoyalty;
-			}
-			else if (targetLoyalty < worker.worker_loyalty)
-			{
-				worker.worker_loyalty--;
-			}
-		}
-	}
-
-	protected void ThinkWorkerMigrate()
-	{
-
-		if (Workers.Count == 0 || !FirmRes[FirmType].live_in_town)
-			return;
-
-		foreach (Town town in TownArray.EnumerateRandom())
-		{
-			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
-				continue;
-
-			//------ check if this town is linked to the current firm -----//
-
-			int j;
-			for (j = town.LinkedFirms.Count - 1; j >= 0; j--)
-			{
-				if (town.LinkedFirms[j] == FirmId &&
-				    town.LinkedFirmsEnable[j] != 0)
-				{
-					break;
-				}
-			}
-
-			if (j < 0)
-				continue;
-
-			//------------------------------------------------//
-			//
-			// Calculate the attractive factor, it is based on:
-			//
-			// - the reputation of the target nation (+0 to 100)
-			// - the racial harmony of the race in the target town (+0 to 100)
-			// - the no. of people of the race in the target town
-			// - distance between the current town and the target town (-0 to 100)
-			//
-			// Attractiveness level range: 0 to 200
-			//
-			//------------------------------------------------//
-
-			int targetBaseAttractLevel = 0;
-
-			if (town.NationId != 0)
-				targetBaseAttractLevel += (int)NationArray[town.NationId].reputation;
-
-			//---- scan all workers, see if any of them want to worker_migrate ----//
-
-			int workerId = Misc.Random(Workers.Count) + 1;
-
-			for (j = 0; j < Workers.Count; j++)
-			{
-				if (++workerId > Workers.Count)
-					workerId = 1;
-
-				Worker worker = Workers[workerId - 1];
-
-				if (worker.town_recno == town.TownId)
-					continue;
-
-				int raceId = worker.race_id;
-				Town workerTown = TownArray[worker.town_recno];
-
-				//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
-
-				if (town.RacesPopulation[raceId - 1] < workerTown.RacesPopulation[raceId - 1] / 2)
-					continue;
-
-				//-- do not migrate if the target town might not be a place this worker will stay --//
-
-				if (ConfigAdv.firm_migrate_stricter_rules &&
-				    town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
-					continue;
-
-				//------ calc the current and target attractiveness level ------//
-
-				int curBaseAttractLevel;
-				if (workerTown.NationId != 0)
-					curBaseAttractLevel = (int)NationArray[workerTown.NationId].reputation;
-				else
-					curBaseAttractLevel = 0;
-
-				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
-
-				if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
-					continue;
-
-				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.loyalty() - 40);
-
-				if (ConfigAdv.firm_migrate_stricter_rules
-					    ? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
-					    : targetAttractLevel > curAttractLevel)
-				{
-					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);
-
-					WorkerMigrate(workerId, town.TownId, newLoyalty);
-					return;
-				}
-			}
-		}
-	}
-
-	protected void WorkerMigrate(int workerId, int destTownRecno, int newLoyalty)
-	{
-		Worker worker = Workers[workerId - 1];
-
-		int raceId = worker.race_id;
-		Town srcTown = TownArray[worker.town_recno];
-		Town destTown = TownArray[destTownRecno];
-
-		//------------- add news --------------//
-
-		if (srcTown.NationId == NationArray.player_recno || destTown.NationId == NationArray.player_recno)
-		{
-			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
-				NewsArray.migrate(srcTown.TownId, destTownRecno, raceId, 1, FirmId);
-		}
-
-		//--------- migrate now ----------//
-
-		worker.town_recno = destTownRecno;
-
-		//--------- decrease the population of the home town ------//
-
-		srcTown.DecPopulation(raceId, true);
-
-		//--------- increase the population of the target town ------//
-
-		destTown.IncPopulation(raceId, true, newLoyalty);
-	}
-
-	protected void ProcessIndependentTownWorker()
-	{
-		if (Info.TotalDays % 15 != FirmId % 15)
-			return;
-
-		foreach (Worker worker in Workers)
-		{
-			Town town = TownArray[worker.town_recno];
-
-			if (town.NationId == 0) // if it's an independent town
-			{
-				town.RacesResistance[worker.race_id - 1, NationId - 1] -=
-					GameConstants.RESISTANCE_DECREASE_PER_WORKER;
-
-				if (town.RacesResistance[worker.race_id - 1, NationId - 1] < 0.0)
-					town.RacesResistance[worker.race_id - 1, NationId - 1] = 0.0;
-			}
-		}
-	}
-
-	protected int CreateUnit(int unitId, int townRecno = 0, bool unitHasJob = false)
-	{
-		//----look for an empty location for the unit to stand ----//
-		//--- scan for the 5 rows right below the building ---//
-
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1;
-
-		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight))
-			return 0;
-
-		//------------ add the unit now ----------------//
-
-		int unitNationRecno = townRecno != 0 ? TownArray[townRecno].NationId : NationId;
-
-		Unit unit = UnitArray.AddUnit(unitId, unitNationRecno, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
-
-		//----- update the population of the town ------//
-
-		if (townRecno != 0)
-			TownArray[townRecno].DecPopulation(unit.RaceId, unitHasJob);
-
-		return unit.SpriteId;
-	}
-
-	public int ConstructionFrame() // for under construction only
-	{
-		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
-		int r = Convert.ToInt32(HitPoints * firmBuild.under_construction_bitmap_count / MaxHitPoints);
-		if (r >= firmBuild.under_construction_bitmap_count)
-			r = firmBuild.under_construction_bitmap_count - 1;
-		return r;
-	}
-
-	public abstract void DrawDetails(IRenderer renderer);
-
-	public abstract void HandleDetailsInput(IRenderer renderer);
+	#endregion
 }
