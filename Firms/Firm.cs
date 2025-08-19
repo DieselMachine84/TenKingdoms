@@ -749,8 +749,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			totalSkill += Convert.ToDouble(worker.skill_level * worker.hit_points)
-			              / Convert.ToDouble(worker.max_hit_points());
+			totalSkill += Convert.ToDouble(worker.skill_level * worker.hit_points) / Convert.ToDouble(worker.max_hit_points());
 		}
 
 		//----- include skill in the calculation ------//
@@ -761,11 +760,11 @@ public abstract class Firm : IIdObject
 			Productivity = 0.0;
 	}
 
-	protected void AddIncome(int incomeType, double incomeAmt)
+	protected void AddIncome(int incomeType, double incomeAmount)
 	{
-		CurYearIncome += incomeAmt;
+		CurYearIncome += incomeAmount;
 
-		NationArray[NationId].add_income(incomeType, incomeAmt, true);
+		NationArray[NationId].add_income(incomeType, incomeAmount, true);
 	}
 
 	public double Income365Days()
@@ -773,7 +772,7 @@ public abstract class Firm : IIdObject
 		return LastYearIncome * (365 - Info.year_day) / 365 + CurYearIncome;
 	}
 
-	protected void PayExpense()
+	private void PayExpense()
 	{
 		if (NationId == 0)
 			return;
@@ -790,15 +789,15 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			if (HitPoints > 0)
+			if (HitPoints > 0.0)
 				HitPoints--;
 
-			if (HitPoints < 0)
+			if (HitPoints < 0.0)
 				HitPoints = 0.0;
 
 			//--- when the hit points drop to zero and the firm is destroyed ---//
 
-			if (HitPoints == 0 && NationId == NationArray.player_recno)
+			if (HitPoints <= 0.0 && NationId == NationArray.player_recno)
 				NewsArray.firm_worn_out(FirmId);
 		}
 
@@ -806,14 +805,13 @@ public abstract class Firm : IIdObject
 
 		if (FirmRes[FirmType].live_in_town)
 		{
-			int townNationRecno, payWorkerCount = 0;
+			int payWorkerCount = 0;
 
-			for (int i = Workers.Count - 1; i >= 0; i--)
+			foreach (Worker worker in Workers)
 			{
-				Worker worker = Workers[i];
-				townNationRecno = TownArray[worker.town_recno].NationId;
+				int townNationId = TownArray[worker.town_recno].NationId;
 
-				if (townNationRecno != NationId)
+				if (townNationId != NationId)
 				{
 					//--- if we don't have cash to pay the foreign workers, resign them ---//
 
@@ -825,8 +823,8 @@ public abstract class Firm : IIdObject
 					{
 						payWorkerCount++;
 
-						if (townNationRecno != 0) // the nation of the worker will get income
-							NationArray[townNationRecno].add_income(NationBase.INCOME_FOREIGN_WORKER,
+						if (townNationId != 0) // the nation of the worker will get income
+							NationArray[townNationId].add_income(NationBase.INCOME_FOREIGN_WORKER,
 								(double)GameConstants.WORKER_YEAR_SALARY / 365.0, true);
 					}
 				}
@@ -859,8 +857,9 @@ public abstract class Firm : IIdObject
 		return totalExpense;
 	}
 
-	protected void ConsumeFood()
+	private void ConsumeFood()
 	{
+		// TODO bug. Only those workers who doesn't live in town should consume food
 		if (NationArray[NationId].food > 0)
 		{
 			int humanUnitCount = 0;
@@ -871,8 +870,7 @@ public abstract class Firm : IIdObject
 					humanUnitCount++;
 			}
 
-			NationArray[NationId].consume_food(
-				Convert.ToDouble(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+			NationArray[NationId].consume_food(Convert.ToDouble(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
 		}
 		else //--- decrease loyalty if the food has been run out ---//
 		{
@@ -888,12 +886,10 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	protected void UpdateLoyalty()
+	private void UpdateLoyalty()
 	{
-		if (FirmRes[FirmType].live_in_town) // only for those who do not live in town
+		if (FirmRes[FirmType].live_in_town)
 			return;
-
-		//----- update loyalty of the soldiers -----//
 
 		foreach (Worker worker in Workers)
 		{
@@ -903,7 +899,7 @@ public abstract class Firm : IIdObject
 			{
 				int incValue = (targetLoyalty - worker.worker_loyalty) / 10;
 
-				int newLoyalty = (int)worker.worker_loyalty + Math.Max(1, incValue);
+				int newLoyalty = worker.worker_loyalty + Math.Max(1, incValue);
 
 				if (newLoyalty > targetLoyalty)
 					newLoyalty = targetLoyalty;
