@@ -956,7 +956,7 @@ public abstract class Firm : IIdObject
 
 	public virtual bool IsOperating()
 	{
-		return Productivity > 0;
+		return Productivity > 0.0;
 	}
 	
 
@@ -3102,7 +3102,7 @@ public abstract class Firm : IIdObject
 				continue;
 
 			FirmFactory firmFactory = (FirmFactory)firm;
-			if (firmFactory.product_raw_id != rawId)
+			if (firmFactory.ProductRawId != rawId)
 				continue;
 
 			//--- if one of own factories still has not recruited enough workers ---//
@@ -3118,7 +3118,7 @@ public abstract class Firm : IIdObject
 			//
 			//---------------------------------------------------//
 
-			if (firmFactory.stock_qty > firmFactory.max_stock_qty * 0.1)
+			if (firmFactory.StockQty > firmFactory.MaxStockQty * 0.1)
 				return false;
 
 			//---------------------------------------------------//
@@ -3160,7 +3160,7 @@ public abstract class Firm : IIdObject
 
 		if (FirmType == FIRM_MINE)
 		{
-			if (((FirmMine)this).reserve_qty < 1000 && factoryCount >= 1)
+			if (((FirmMine)this).ReserveQty < 1000 && factoryCount >= 1)
 				return false;
 		}
 

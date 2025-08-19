@@ -887,9 +887,9 @@ public class UnitMarine : Unit
 				if (factory.AIStatus == Firm.FACTORY_RELOCATE)
 					continue; // clearing the factory stock, so no unloading
 
-				if (factory.product_raw_id - 1 == i)
+				if (factory.ProductRawId - 1 == i)
 				{
-					totalDemand = (int)(factory.max_raw_stock_qty - factory.raw_stock_qty);
+					totalDemand = (int)(factory.MaxRawStockQty - factory.RawStockQty);
 					firmSelectedIndex++;
 				}
 			}
@@ -944,11 +944,11 @@ public class UnitMarine : Unit
 
 				factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
 
-				unloadQty = totalDemand != 0 ? (int)((factory.max_raw_stock_qty - factory.raw_stock_qty) * curStock / totalDemand + 0.5) : 0;
-				unloadQty = Math.Min((int)(factory.max_raw_stock_qty - factory.raw_stock_qty), unloadQty);
+				unloadQty = totalDemand != 0 ? (int)((factory.MaxRawStockQty - factory.RawStockQty) * curStock / totalDemand + 0.5) : 0;
+				unloadQty = Math.Min((int)(factory.MaxRawStockQty - factory.RawStockQty), unloadQty);
 				unloadQty = Math.Min(raw_qty_array[i], unloadQty);
 
-				factory.raw_stock_qty += unloadQty;
+				factory.RawStockQty += unloadQty;
 				raw_qty_array[i] -= unloadQty;
 				mprocessed_raw_qty_array[linkedMines.Count + j][i] += 2;
 			}
@@ -1074,7 +1074,7 @@ public class UnitMarine : Unit
 		if (linkedFactories.Count > 0)
 		{
 			factory = (FirmFactory)FirmArray[linkedFactories[0]];
-			keepStockQty = autoPickUp ? (int)(factory.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedFactoryIndex = 0;
@@ -1097,10 +1097,10 @@ public class UnitMarine : Unit
 			}
 
 			//---------- check the supply of this goods in the factory ---------//
-			if (factory.product_raw_id != goodsId + 1)
+			if (factory.ProductRawId != goodsId + 1)
 				continue; // incorrect product
 
-			totalSupply += Math.Max((int)(factory.stock_qty - keepStockQty), 0);
+			totalSupply += Math.Max((int)(factory.StockQty - keepStockQty), 0);
 			firmSelectedIndex++;
 		}
 
@@ -1150,7 +1150,7 @@ public class UnitMarine : Unit
 		if (linkedFactories.Count > 0)
 		{
 			factory = (FirmFactory)FirmArray[linkedFactories[0]];
-			keepStockQty = autoPickUp ? (int)(factory.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedFactoryIndex = 0;
@@ -1161,7 +1161,7 @@ public class UnitMarine : Unit
 
 			factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
 
-			loadQty = Math.Max((int)(factory.stock_qty - keepStockQty), 0);
+			loadQty = Math.Max((int)(factory.StockQty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
 			if (factory.NationId != NationId)
@@ -1171,7 +1171,7 @@ public class UnitMarine : Unit
 					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
-			factory.stock_qty -= loadQty;
+			factory.StockQty -= loadQty;
 			product_raw_qty_array[goodsId] += loadQty;
 		}
 
@@ -1236,7 +1236,7 @@ public class UnitMarine : Unit
 		if (linkedMines.Count > 0)
 		{
 			mine = (FirmMine)FirmArray[linkedMines[0]];
-			keepStockQty = autoPickUp ? (int)(mine.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(mine.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMineIndex = 0;
@@ -1259,10 +1259,10 @@ public class UnitMarine : Unit
 			}
 
 			//---------- check the supply of this goods in the mine ---------//
-			if (mine.raw_id != goodsId + 1)
+			if (mine.RawId != goodsId + 1)
 				continue; // incorrect goods
 
-			totalSupply += Math.Max((int)(mine.stock_qty - keepStockQty), 0);
+			totalSupply += Math.Max((int)(mine.StockQty - keepStockQty), 0);
 			firmSelectedIndex++;
 		}
 
@@ -1312,7 +1312,7 @@ public class UnitMarine : Unit
 		if (linkedMines.Count > 0)
 		{
 			mine = (FirmMine)FirmArray[linkedMines[0]];
-			keepStockQty = autoPickUp ? (int)(mine.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(mine.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMineIndex = 0;
@@ -1323,7 +1323,7 @@ public class UnitMarine : Unit
 
 			mine = (FirmMine)FirmArray[linkedMines[linkedMineIndex]];
 
-			loadQty = Math.Max((int)(mine.stock_qty - keepStockQty), 0);
+			loadQty = Math.Max((int)(mine.StockQty - keepStockQty), 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
 			if (mine.NationId != NationId)
@@ -1333,7 +1333,7 @@ public class UnitMarine : Unit
 					nation.import_goods(NationBase.IMPORT_RAW, mine.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
-			mine.stock_qty -= loadQty;
+			mine.StockQty -= loadQty;
 			raw_qty_array[goodsId] += loadQty;
 		}
 
@@ -1816,7 +1816,7 @@ public class UnitMarine : Unit
 			switch (firm.FirmType)
 			{
 				case Firm.FIRM_MINE:
-					id = ((FirmMine)firm).raw_id;
+					id = ((FirmMine)firm).RawId;
 					if (id != 0)
 					{
 						if (goodsNum == 0)
@@ -1826,7 +1826,7 @@ public class UnitMarine : Unit
 
 					break;
 				case Firm.FIRM_FACTORY:
-					id = ((FirmFactory)firm).product_raw_id + GameConstants.MAX_RAW;
+					id = ((FirmFactory)firm).ProductRawId + GameConstants.MAX_RAW;
 					if (id != 0)
 					{
 						if (goodsNum == 0)

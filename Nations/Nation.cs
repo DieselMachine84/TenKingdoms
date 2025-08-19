@@ -1258,8 +1258,8 @@ public class Nation : NationBase
 		{
 			FirmMine mine = (FirmMine)FirmArray[ai_mine_array[i]];
 
-			if (mine.raw_id >= 1 && mine.raw_id <= GameConstants.MAX_RAW)
-				raw_kind_mined[mine.raw_id - 1]++;
+			if (mine.RawId >= 1 && mine.RawId <= GameConstants.MAX_RAW)
+				raw_kind_mined[mine.RawId - 1]++;
 		}
 
 		//-------------------- define parameters ----------------------//
@@ -5406,8 +5406,8 @@ public class Nation : NationBase
 					//--- if this mine's raw materials is one that we don't have --//
 
 					FirmMine firmMine = (FirmMine)firm;
-					if (raw_count_array[firmMine.raw_id - 1] == 0)
-						curRating += 150 * (int)firmMine.reserve_qty / GameConstants.MAX_RAW_RESERVE_QTY;
+					if (raw_count_array[firmMine.RawId - 1] == 0)
+						curRating += 150 * (int)firmMine.ReserveQty / GameConstants.MAX_RAW_RESERVE_QTY;
 				}
 			}
 

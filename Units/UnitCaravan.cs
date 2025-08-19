@@ -132,7 +132,7 @@ public class UnitCaravan : Unit
 		switch (firm.FirmType)
 		{
 			case Firm.FIRM_MINE:
-				goodsId = ((FirmMine)firm).raw_id;
+				goodsId = ((FirmMine)firm).RawId;
 				if (goodsId != 0)
 					stop.pick_up_toggle(goodsId); // enable
 				else
@@ -140,7 +140,7 @@ public class UnitCaravan : Unit
 				break;
 
 			case Firm.FIRM_FACTORY:
-				goodsId = ((FirmFactory)firm).product_raw_id + GameConstants.MAX_RAW;
+				goodsId = ((FirmFactory)firm).ProductRawId + GameConstants.MAX_RAW;
 				if (goodsId != 0)
 					stop.pick_up_toggle(goodsId); // enable
 				else
@@ -1185,16 +1185,16 @@ public class UnitCaravan : Unit
 
 		//------------- load goods -----------//
 		int searchRawId = pickUpType - TradeStop.PICK_UP_RAW_FIRST + 1;
-		if (pickUpType == TradeStop.AUTO_PICK_UP || curMine.raw_id == searchRawId) // auto_pick_up or is the raw to pick up
+		if (pickUpType == TradeStop.AUTO_PICK_UP || curMine.RawId == searchRawId) // auto_pick_up or is the raw to pick up
 		{
-			int goodsId = curMine.raw_id - 1;
+			int goodsId = curMine.RawId - 1;
 			int maxLoadQty = (pickUpType != TradeStop.AUTO_PICK_UP)
-				? (int)curMine.stock_qty
-				: Math.Max(0, (int)curMine.stock_qty - GameConstants.MIN_FIRM_STOCK_QTY); // MAX Qty mine can supply
+				? (int)curMine.StockQty
+				: Math.Max(0, (int)curMine.StockQty - GameConstants.MIN_FIRM_STOCK_QTY); // MAX Qty mine can supply
 			int qty = Math.Min(GameConstants.MAX_CARAVAN_CARRY_QTY - raw_qty_array[goodsId], maxLoadQty); // MAX Qty caravan can carry
 
 			raw_qty_array[goodsId] += qty;
-			curMine.stock_qty -= qty;
+			curMine.StockQty -= qty;
 
 			if (maxLoadQty > 0)
 				last_load_goods_date = Info.game_date;
@@ -1212,7 +1212,7 @@ public class UnitCaravan : Unit
 
 		//--- if the factory does not have any stock and there is no production, set it to type of raw materials the caravan is carring ---//
 
-		if (curFactory.stock_qty == 0 && curFactory.raw_stock_qty == 0 && curFactory.production_30days() == 0)
+		if (curFactory.StockQty == 0 && curFactory.RawStockQty == 0 && curFactory.Production30Days() == 0)
 		{
 			int rawCount = 0;
 			int rawId = 0;
@@ -1229,17 +1229,17 @@ public class UnitCaravan : Unit
 			//-- only if the caravan only carries one type of raw material --//
 
 			if (rawCount == 1 && rawId != 0)
-				curFactory.product_raw_id = rawId;
+				curFactory.ProductRawId = rawId;
 		}
 
 		//---------- unload materials automatically --------//
-		int goodsId = curFactory.product_raw_id - 1;
+		int goodsId = curFactory.ProductRawId - 1;
 
 		if (raw_qty_array[goodsId] != 0) // caravan has this raw materials
 		{
-			int qty = Math.Min(raw_qty_array[goodsId], (int)(curFactory.max_raw_stock_qty - curFactory.raw_stock_qty));
+			int qty = Math.Min(raw_qty_array[goodsId], (int)(curFactory.MaxRawStockQty - curFactory.RawStockQty));
 			raw_qty_array[goodsId] -= qty;
-			curFactory.raw_stock_qty += qty;
+			curFactory.RawStockQty += qty;
 		}
 	}
 
@@ -1256,16 +1256,16 @@ public class UnitCaravan : Unit
 
 		//------------- load goods -----------//
 		int searchProductRawId = pickUpType - TradeStop.PICK_UP_PRODUCT_FIRST + 1;
-		if (pickUpType == TradeStop.AUTO_PICK_UP || curFactory.product_raw_id == searchProductRawId) // auto_pick_up or is the product to pick up
+		if (pickUpType == TradeStop.AUTO_PICK_UP || curFactory.ProductRawId == searchProductRawId) // auto_pick_up or is the product to pick up
 		{
-			int goodsId = curFactory.product_raw_id - 1;
+			int goodsId = curFactory.ProductRawId - 1;
 			int maxLoadQty = (pickUpType != TradeStop.AUTO_PICK_UP)
-				? (int)curFactory.stock_qty
-				: Math.Max(0, (int)curFactory.stock_qty - GameConstants.MIN_FIRM_STOCK_QTY); // MAX Qty factory can supply
+				? (int)curFactory.StockQty
+				: Math.Max(0, (int)curFactory.StockQty - GameConstants.MIN_FIRM_STOCK_QTY); // MAX Qty factory can supply
 			int qty = Math.Min(GameConstants.MAX_CARAVAN_CARRY_QTY - product_raw_qty_array[goodsId], maxLoadQty); // MAX Qty caravan can carry
 
 			product_raw_qty_array[goodsId] += qty;
-			curFactory.stock_qty -= qty;
+			curFactory.StockQty -= qty;
 
 			if (maxLoadQty > 0)
 				last_load_goods_date = Info.game_date;

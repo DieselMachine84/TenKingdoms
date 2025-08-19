@@ -91,7 +91,7 @@ public class CaravanStop : TradeStop
 		switch (firm.FirmType)
 		{
 			case Firm.FIRM_MINE:
-				id = ((FirmMine)firm).raw_id + PICK_UP_RAW_FIRST - 1;
+				id = ((FirmMine)firm).RawId + PICK_UP_RAW_FIRST - 1;
 				if (id != 0)
 				{
 					goodsNum++;
@@ -104,7 +104,7 @@ public class CaravanStop : TradeStop
 				break;
 
 			case Firm.FIRM_FACTORY:
-				id = ((FirmFactory)firm).product_raw_id + PICK_UP_PRODUCT_FIRST - 1;
+				id = ((FirmFactory)firm).ProductRawId + PICK_UP_PRODUCT_FIRST - 1;
 				if (id != 0)
 				{
 					goodsNum++;
@@ -185,7 +185,7 @@ public class ShipStop : TradeStop
 			switch (firm.FirmType)
 			{
 				case Firm.FIRM_MINE:
-					if ((id = ((FirmMine)firm).raw_id) != 0) // 1-3
+					if ((id = ((FirmMine)firm).RawId) != 0) // 1-3
 					{
 						goodsNum++;
 						enableFlag[id] = true;
@@ -196,7 +196,7 @@ public class ShipStop : TradeStop
 					break;
 
 				case Firm.FIRM_FACTORY:
-					if ((id = ((FirmFactory)firm).product_raw_id) != 0) // 1-3
+					if ((id = ((FirmFactory)firm).ProductRawId) != 0) // 1-3
 					{
 						id += GameConstants.MAX_RAW; // 4-6
 						goodsNum++;
