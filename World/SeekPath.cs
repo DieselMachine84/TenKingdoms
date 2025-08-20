@@ -451,7 +451,7 @@ public class SeekPath
 						int nearY = y + j;
 						if (nearX == x && nearY == y)
 							continue;
-						if (nearX < 0 || nearX >= GameConstants.MapSize || nearY < 0 || nearY >= GameConstants.MapSize)
+						if (!Misc.IsLocationValid(nearX, nearY))
 							continue;
 
 						int nearIndex = nearY * GameConstants.MapSize + nearX;
@@ -530,7 +530,7 @@ public class SeekPath
 
 								int nearLocX = _finalDestX + (indexNearX - targetLocXIndex);
 								int nearLocY = _finalDestY + (indexNearY - targetLocYIndex);
-								if (nearLocX < 0 || nearLocX >= GameConstants.MapSize || nearLocY < 0 || nearLocY >= GameConstants.MapSize)
+								if (!Misc.IsLocationValid(nearLocX, nearLocY))
 									continue;
 
 								if (matrix[indexNearX, indexNearY] == -1)
@@ -631,6 +631,9 @@ public class SeekPath
 		reversedPath.Add(resultIndex);
 		while (true)
 		{
+			if (pathValue == 1)
+				break;
+
 			int pathXCopy = pathX;
 			int pathYCopy = pathY;
 			int pathIndex = -1;
@@ -642,9 +645,7 @@ public class SeekPath
 					int nearY = pathYCopy + j;
 					if (nearX == pathXCopy && nearY == pathYCopy)
 						continue;
-					if (nearX < 0 || nearX >= GameConstants.MapSize)
-						continue;
-					if (nearY < 0 || nearY >= GameConstants.MapSize)
+					if (!Misc.IsLocationValid(nearX, nearY))
 						continue;
 
 					int currentIndex = nearY * GameConstants.MapSize + nearX;
@@ -659,10 +660,10 @@ public class SeekPath
 			}
 
 			reversedPath.Add(pathIndex);
-
-			if (pathValue == 1)
-				break;
 		}
+
+		if (reversedPath.Count == 1)
+			reversedPath.Clear();
 		
 		reversedPath.Reverse();
 		pathDist = reversedPath.Count - 1;
