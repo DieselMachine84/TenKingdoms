@@ -372,7 +372,7 @@ public class Sprite : IIdObject
 
 		//------- next attack frame --------//
 		SpriteAttack spriteAttack = CurSpriteAttack();
-		if (++CurFrame > spriteAttack.frameCount)
+		if (++CurFrame > spriteAttack.FrameCount)
 		{
 			((Unit)this).CycleEqvAttack(); // assume only unit can attack
 			CurFrame = 1;

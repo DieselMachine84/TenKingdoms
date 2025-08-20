@@ -245,7 +245,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (CurFrame != CurSpriteAttack().frameCount)
+				if (CurFrame != CurSpriteAttack().FrameCount)
 					return; // is attacking
 
 				HitFirm(this, ActionLocX, ActionLocY, ActualDamage(), NationId);
@@ -468,7 +468,7 @@ public partial class Unit
 			}
 			else // close attack
 			{
-				if (CurFrame != CurSpriteAttack().frameCount)
+				if (CurFrame != CurSpriteAttack().FrameCount)
 					return; // attacking
 
 				HitTown(this, ActionLocX, ActionLocY, ActualDamage(), NationId);
@@ -630,7 +630,7 @@ public partial class Unit
 			}
 			else
 			{
-				if (CurFrame != CurSpriteAttack().frameCount)
+				if (CurFrame != CurSpriteAttack().FrameCount)
 					return; // attacking
 
 				HitWall(this, ActionLocX, ActionLocY, ActualDamage(), NationId);
@@ -2395,7 +2395,7 @@ public partial class Unit
 			//--------------------- close attack ------------------------//
 			AttackInfo attackInfo = AttackInfos[CurAttack];
 
-			if (CurFrame == CurSpriteAttack().frameCount)
+			if (CurFrame == CurSpriteAttack().FrameCount)
 			{
 				if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.BelongsToNation(NationId))
 					((UnitExpCart)targetUnit).trigger_explode();

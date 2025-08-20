@@ -71,8 +71,7 @@ public class SpriteFrame
     public int Width;
     public int Height;
     public int BitmapOffset;
-    private Dictionary<int, IntPtr> _unitTextures = new Dictionary<int, nint>();
-    private IntPtr _nonUnitTexture;
+    private readonly Dictionary<int, IntPtr> _unitTextures = new Dictionary<int, nint>();
 
     public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
     {

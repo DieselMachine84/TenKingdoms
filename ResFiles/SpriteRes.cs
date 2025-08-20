@@ -117,14 +117,14 @@ public class SpriteActionRec
 
 public class SpriteMove
 {
-    public int FirstFrameId; // first frame recno to frame_array.
+    public int FirstFrameId; // first frame id to frame_array.
     public int FrameCount; // no. of frames in the movement
 }
 
 public class SpriteAttack
 {
-    public int FirstFrameId; // first frame recno to frame_array.
-    public int frameCount; // no. of frames in the movement
+    public int FirstFrameId; // first frame id to frame_array.
+    public int FrameCount; // no. of frames in the movement
 
     // no. of frames should be delayed between attack motions. (i.e. when one motion is complete,
     // it will delay <delay_frames> before move on to the next action motion in the cycle
@@ -133,19 +133,19 @@ public class SpriteAttack
 
 public class SpriteStop
 {
-    public int FrameId; // frame recno to frame_array.
+    public int FrameId; // frame id to frame_array.
     public int FrameCount;
 }
 
 public class SpriteDie
 {
-    public int FirstFrameId; // first frame recno to frame_array.
+    public int FirstFrameId; // first frame id to frame_array.
     public int FrameCount; // no. of frames in the movement
 }
 
 public class SpriteGuardStop
 {
-    public int FirstFrameId; // first frame recno to frame_array.
+    public int FirstFrameId; // first frame id to frame_array.
     public int FrameCount;
 }
 
@@ -231,14 +231,6 @@ public class SpriteInfo
 	{
 		return CanGuard & 2;
 	}
-
-	public int TravelDays(int travelDistance)
-	{
-		int travelFrames = InternalConstants.CellWidth * travelDistance / Speed;
-
-		// + 10% for circumstances that the units are blocked and needed to wait and turning, etc.
-		return travelFrames / InternalConstants.FRAMES_PER_DAY * 110 / 100;
-	}
 }
 
 public class SubSpriteRec
@@ -309,7 +301,7 @@ public class SpriteRes
         LoadSubSpriteInfo();
     }
 
-    public void update_speed()
+    public void UpdateSpeed()
     {
 	    int rainScale = Sys.Instance.Weather.rain_scale();
 	    int snowScale = Sys.Instance.Weather.snow_scale();
@@ -424,7 +416,7 @@ public class SpriteRes
 				    SpriteAttack spriteAttack = spriteInfo.Attacks[spriteActionRec.action[1] - '1', dirId];
 
 				    spriteAttack.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
-				    spriteAttack.frameCount = Misc.ToInt32(spriteActionRec.frame_count);
+				    spriteAttack.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 			    }
 
 			    //--------- stop bitmap ---------//
@@ -454,7 +446,6 @@ public class SpriteRes
 					    spriteGuardMove.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
 					    spriteGuardMove.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 
-					    // set can_guard_flag
 					    spriteInfo.CanGuard |= 2;
 				    }
 				    else
@@ -464,7 +455,6 @@ public class SpriteRes
 					    spriteGuardStop.FirstFrameId = Misc.ToInt32(spriteActionRec.first_frame_recno);
 					    spriteGuardStop.FrameCount = Misc.ToInt32(spriteActionRec.frame_count);
 
-					    // set can_guard_flag
 					    spriteInfo.CanGuard |= 1;
 				    }
 			    }
@@ -494,14 +484,18 @@ public class SpriteRes
 		    int subNo = Misc.ToInt32(subSpriteRec.sub_no);
 		    SpriteInfo parentSprite = this[Misc.ToInt32(subSpriteRec.sprite_id)];
 
+		    var oldSubSpriteInfo = parentSprite.SubSpriteInfo;
 		    parentSprite.SubSpriteInfo = new SubSpriteInfo[subNo];
-		    for (int j = 0; j < parentSprite.SubSpriteInfo.Length; j++)
-		    {
-			    parentSprite.SubSpriteInfo[j] = new SubSpriteInfo();
-		    }
 
-		    if (subNo == 1)
-			    parentSprite.SubSpriteInfo[0] = subSpriteInfo;
+		    if (oldSubSpriteInfo != null)
+		    {
+			    for (int j = 0; j < oldSubSpriteInfo.Length; j++)
+			    {
+				    parentSprite.SubSpriteInfo[j] = oldSubSpriteInfo[j];
+			    }
+		    }
+		    
+		    parentSprite.SubSpriteInfo[^1] = subSpriteInfo;
 	    }
     }
 }
