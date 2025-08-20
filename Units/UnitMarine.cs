@@ -789,7 +789,7 @@ public class UnitMarine : Unit
 				marketProduct = market.market_product_array[i];
 				if (marketProduct != null)
 				{
-					totalDemand += (int)(market.max_stock_qty - marketProduct.stock_qty);
+					totalDemand += (int)(market.MaxStockQty - marketProduct.StockQty);
 					firmSelectedIndex++;
 				}
 				else // don't have this product, clear for empty slot
@@ -797,10 +797,10 @@ public class UnitMarine : Unit
 					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 					{
 						marketGoods = market.market_goods_array[k];
-						if (marketGoods.stock_qty == 0 && marketGoods.supply_30days() <= 0.0)
+						if (marketGoods.StockQty == 0 && marketGoods.Supply30Days() <= 0.0)
 						{
 							empty_slot_position_array[j] = k;
-							totalDemand += (int)market.max_stock_qty;
+							totalDemand += (int)market.MaxStockQty;
 							firmSelectedIndex++;
 							break;
 						}
@@ -830,16 +830,16 @@ public class UnitMarine : Unit
 				else
 					useEmptySlot = false;
 
-				unloadQty = totalDemand != 0 ? (int)((market.max_stock_qty - marketProduct.stock_qty) * curStock / totalDemand + 0.5) : 0;
-				unloadQty = Math.Min((int)(market.max_stock_qty - marketProduct.stock_qty), unloadQty);
+				unloadQty = totalDemand != 0 ? (int)((market.MaxStockQty - marketProduct.StockQty) * curStock / totalDemand + 0.5) : 0;
+				unloadQty = Math.Min((int)(market.MaxStockQty - marketProduct.StockQty), unloadQty);
 				unloadQty = Math.Min(product_raw_qty_array[i], unloadQty);
 
 				if (unloadQty != 0)
 				{
 					if (useEmptySlot)
-						market.set_goods(false, i + 1, empty_slot_position_array[j]);
+						market.SetGoods(false, i + 1, empty_slot_position_array[j]);
 
-					marketProduct.stock_qty += unloadQty;
+					marketProduct.StockQty += unloadQty;
 					product_raw_qty_array[i] -= unloadQty;
 					mprocessed_product_raw_qty_array[linkedMines.Count + linkedFactories.Count + j][i] += 2;
 				}
@@ -912,7 +912,7 @@ public class UnitMarine : Unit
 				marketRaw = market.market_raw_array[i];
 				if (marketRaw != null)
 				{
-					totalDemand += (int)(market.max_stock_qty - marketRaw.stock_qty);
+					totalDemand += (int)(market.MaxStockQty - marketRaw.StockQty);
 					firmSelectedIndex++;
 				}
 				else // don't have this raw, clear for empty slot
@@ -920,10 +920,10 @@ public class UnitMarine : Unit
 					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 					{
 						marketGoods = market.market_goods_array[k];
-						if (marketGoods.stock_qty <= 0.0 && marketGoods.supply_30days() <= 0.0)
+						if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0)
 						{
 							empty_slot_position_array[j] = k;
-							totalDemand += (int)market.max_stock_qty;
+							totalDemand += (int)market.MaxStockQty;
 							firmSelectedIndex++;
 							break;
 						}
@@ -973,16 +973,16 @@ public class UnitMarine : Unit
 				else
 					useEmptySlot = false;
 
-				unloadQty = totalDemand != 0 ? (int)((market.max_stock_qty - marketRaw.stock_qty) * curStock / totalDemand + 0.5) : 0;
-				unloadQty = Math.Min((int)(market.max_stock_qty - marketRaw.stock_qty), unloadQty);
+				unloadQty = totalDemand != 0 ? (int)((market.MaxStockQty - marketRaw.StockQty) * curStock / totalDemand + 0.5) : 0;
+				unloadQty = Math.Min((int)(market.MaxStockQty - marketRaw.StockQty), unloadQty);
 				unloadQty = Math.Min(raw_qty_array[i], unloadQty);
 
 				if (unloadQty != 0)
 				{
 					if (useEmptySlot)
-						market.set_goods(true, i + 1, empty_slot_position_array[j]);
+						market.SetGoods(true, i + 1, empty_slot_position_array[j]);
 
-					marketRaw.stock_qty += unloadQty;
+					marketRaw.StockQty += unloadQty;
 					raw_qty_array[i] -= unloadQty;
 					mprocessed_raw_qty_array[linkedMines.Count + linkedFactories.Count + j][i] += 2;
 				}
@@ -1110,7 +1110,7 @@ public class UnitMarine : Unit
 		if (linkedMarkets.Count > 0)
 		{
 			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMarketIndex = 0;
@@ -1136,7 +1136,7 @@ public class UnitMarine : Unit
 			marketProduct = market.market_product_array[goodsId];
 			if (marketProduct != null)
 			{
-				totalSupply += Math.Max((int)(marketProduct.stock_qty - keepStockQty), 0);
+				totalSupply += Math.Max((int)(marketProduct.StockQty - keepStockQty), 0);
 				firmSelectedIndex++;
 			}
 		}
@@ -1181,7 +1181,7 @@ public class UnitMarine : Unit
 		if (linkedMarkets.Count > 0)
 		{
 			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMarketIndex = 0;
@@ -1194,7 +1194,7 @@ public class UnitMarine : Unit
 
 			marketProduct = market.market_product_array[goodsId];
 
-			loadQty = Math.Max((int)marketProduct.stock_qty - keepStockQty, 0);
+			loadQty = Math.Max((int)marketProduct.StockQty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
 			if (market.NationId != NationId)
@@ -1204,7 +1204,7 @@ public class UnitMarine : Unit
 					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
-			marketProduct.stock_qty -= loadQty;
+			marketProduct.StockQty -= loadQty;
 			product_raw_qty_array[goodsId] += loadQty;
 		}
 	}
@@ -1272,7 +1272,7 @@ public class UnitMarine : Unit
 		if (linkedMarkets.Count > 0)
 		{
 			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMarketIndex = 0;
@@ -1298,7 +1298,7 @@ public class UnitMarine : Unit
 			marketRaw = market.market_raw_array[goodsId];
 			if (marketRaw != null)
 			{
-				totalSupply += Math.Max((int)(marketRaw.stock_qty - keepStockQty), 0);
+				totalSupply += Math.Max((int)(marketRaw.StockQty - keepStockQty), 0);
 				firmSelectedIndex++;
 			}
 		}
@@ -1343,7 +1343,7 @@ public class UnitMarine : Unit
 		if (linkedMarkets.Count > 0)
 		{
 			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.max_stock_qty / 5.0) : 0;
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
 		}
 
 		linkedMarketIndex = 0;
@@ -1356,7 +1356,7 @@ public class UnitMarine : Unit
 
 			marketRaw = market.market_raw_array[goodsId];
 
-			loadQty = Math.Max((int)marketRaw.stock_qty - keepStockQty, 0);
+			loadQty = Math.Max((int)marketRaw.StockQty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
 
 			if (market.NationId != NationId)
@@ -1366,7 +1366,7 @@ public class UnitMarine : Unit
 					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
-			marketRaw.stock_qty -= loadQty;
+			marketRaw.StockQty -= loadQty;
 			raw_qty_array[goodsId] += loadQty;
 		}
 	}
@@ -1839,17 +1839,17 @@ public class UnitMarine : Unit
 					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS && goodsNum < 2; j++)
 					{
 						MarketGoods goods = ((FirmMarket)firm).market_goods_array[j];
-						if (goods.raw_id != 0)
+						if (goods.RawId != 0)
 						{
-							id = goods.raw_id;
+							id = goods.RawId;
 
 							if (goodsNum == 0)
 								goodsId = id;
 							goodsNum++;
 						}
-						else if (goods.product_raw_id != 0)
+						else if (goods.ProductId != 0)
 						{
-							id = goods.product_raw_id + GameConstants.MAX_RAW;
+							id = goods.ProductId + GameConstants.MAX_RAW;
 
 							if (goodsNum == 0)
 								goodsId = id;

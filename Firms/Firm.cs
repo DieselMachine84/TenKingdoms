@@ -3142,7 +3142,7 @@ public abstract class Firm : IIdObject
 
 				MarketGoods marketGoods = ((FirmMarket)linkedFirm).market_product_array[rawId - 1];
 
-				if (marketGoods != null && marketGoods.stock_qty > 100)
+				if (marketGoods != null && marketGoods.StockQty > 100)
 					return false;
 			}
 

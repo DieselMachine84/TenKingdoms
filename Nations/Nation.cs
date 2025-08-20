@@ -4395,9 +4395,9 @@ public class Nation : NationBase
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
 				MarketGoods marketGoods = firmMarket.market_goods_array[j];
-				if (marketGoods.raw_id != 0 || marketGoods.product_raw_id != 0)
+				if (marketGoods.RawId != 0 || marketGoods.ProductId != 0)
 				{
-					double stockQty = marketGoods.stock_qty;
+					double stockQty = marketGoods.StockQty;
 
 					totalStockQty += stockQty;
 					totalStockSlot++;
@@ -4410,7 +4410,7 @@ public class Nation : NationBase
 
 		double avgStockQty = totalStockQty / totalStockSlot;
 
-		return (int)(100.0 * avgStockQty / GameConstants.MAX_MARKET_STOCK);
+		return (int)(100.0 * avgStockQty / GameConstants.MARKET_MAX_STOCK_QTY);
 	}
 
 	public int ai_trade_with_rating(int withNationRecno)

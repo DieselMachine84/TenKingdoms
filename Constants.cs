@@ -55,14 +55,16 @@ public static class GameConstants
     public const int TOWN_SCAN_ENEMY_RANGE = 6;
 
     //Firm
-    public const int DEFAULT_MINE_MAX_STOCK_QTY = 500;
-    public const int DEFAULT_FACTORY_MAX_RAW_STOCK_QTY = 500;
-    public const int DEFAULT_FACTORY_MAX_STOCK_QTY = 500;
+    public const int MINE_MAX_STOCK_QTY = 500;
+    public const int FACTORY_MAX_RAW_STOCK_QTY = 500;
+    public const int FACTORY_MAX_STOCK_QTY = 500;
+    public const int MARKET_MAX_STOCK_QTY = 500;
     public const int MIN_FIRM_STOCK_QTY = 100;
     public const int MIN_FACTORY_IMPORT_STOCK_QTY = 20;
     public const int PROCESS_GOODS_INTERVAL = 3; // Process goods in mines, factories and market places once 3 days
     public const int MAX_MARKET_GOODS = 3;
-    public const int MAX_MARKET_STOCK = 500;
+    public const int MAX_RAW = 3;
+    public const int MAX_PRODUCT = 3;
     public const int MAX_SHIP_IN_HARBOR = 4;
     public const int MAX_BUILD_SHIP_QUEUE = 10;
     public const int MAX_INN_UNIT = 6;
@@ -106,8 +108,6 @@ public static class GameConstants
     public const int MAX_CARAVAN_CARRY_QTY = 100;	// Maximum qty of goods a caravan can carry
 
     //Raw resource
-    public const int MAX_RAW = 3;
-    public const int MAX_PRODUCT = 3;
     public const int MAX_RAW_RESERVE_QTY = 20000;
     public const int SMALLEST_RAW_REGION = 50; // only put raw on the region if its size is larger than this
     // only sites with reserve qty >= 5% of MAX_RAW_RESERVE_QTY are counted as raw sites

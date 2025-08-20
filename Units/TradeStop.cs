@@ -120,14 +120,14 @@ public class CaravanStop : TradeStop
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
 					MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[i];
-					if ((id = marketGoods.raw_id) != 0) // 1-3
+					if ((id = marketGoods.RawId) != 0) // 1-3
 					{
 						goodsNum++;
 						enableFlag[id] = true;
 						if (firstGoodsId == 0)
 							firstGoodsId = id;
 					}
-					else if ((id = marketGoods.product_raw_id) != 0) // 1-3
+					else if ((id = marketGoods.ProductId) != 0) // 1-3
 					{
 						id += GameConstants.MAX_RAW; // 4-6
 						goodsNum++;
@@ -211,14 +211,14 @@ public class ShipStop : TradeStop
 					for (int j = 1; j <= GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[i];
-						if ((id = marketGoods.raw_id) != 0) // 1-3
+						if ((id = marketGoods.RawId) != 0) // 1-3
 						{
 							goodsNum++;
 							enableFlag[id] = true;
 							if (firstGoodsId == 0)
 								firstGoodsId = id;
 						}
-						else if ((id = marketGoods.product_raw_id) != 0) // 1-3
+						else if ((id = marketGoods.ProductId) != 0) // 1-3
 						{
 							id += GameConstants.MAX_RAW; // 4-6
 							goodsNum++;

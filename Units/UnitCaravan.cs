@@ -152,17 +152,17 @@ public class UnitCaravan : Unit
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
 					MarketGoods goods = ((FirmMarket)firm).market_goods_array[i];
-					if (goods.raw_id != 0)
+					if (goods.RawId != 0)
 					{
 						if (goodsNum == 0)
-							goodsId = goods.raw_id;
+							goodsId = goods.RawId;
 
 						goodsNum++;
 					}
-					else if (goods.product_raw_id != 0)
+					else if (goods.ProductId != 0)
 					{
 						if (goodsNum == 0)
-							goodsId = goods.product_raw_id + GameConstants.MAX_RAW;
+							goodsId = goods.ProductId + GameConstants.MAX_RAW;
 
 						goodsNum++;
 					}
@@ -941,7 +941,7 @@ public class UnitCaravan : Unit
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
 					MarketGoods marketGoods = firmMarket.market_goods_array[j];
-					if (marketGoods.supply_30days() > 0)
+					if (marketGoods.Supply30Days() > 0)
 						return 0;
 				}
 			}
@@ -989,7 +989,7 @@ public class UnitCaravan : Unit
 
 			FirmMarket firmMarket = (FirmMarket)FirmArray[stop_array[i - 1].firm_recno];
 
-			if (!firmMarket.is_market_linked_to_town())
+			if (!firmMarket.IsMarketLinkedToTown())
 			{
 				//--- and the caravan is not currently picking up goods from the market ---//
 
@@ -1048,12 +1048,12 @@ public class UnitCaravan : Unit
 			return;
 
 		// only when the market is our own, we can use it as a TO market
-		if (firm2.NationId == NationId && ((FirmMarket)firm2).is_retail_market())
+		if (firm2.NationId == NationId && ((FirmMarket)firm2).IsRetailMarket())
 		{
 			think_set_pick_up_type2(1, 2);
 		}
 
-		if (firm1.NationId == NationId && ((FirmMarket)firm1).is_retail_market())
+		if (firm1.NationId == NationId && ((FirmMarket)firm1).IsRetailMarket())
 		{
 			think_set_pick_up_type2(2, 1);
 		}
@@ -1077,17 +1077,17 @@ public class UnitCaravan : Unit
 		for (i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = fromMarket.market_goods_array[i];
-			if (marketGoods.product_raw_id == 0)
+			if (marketGoods.ProductId == 0)
 				continue;
 
 			//----- only if this market has direct supplies -----//
 
-			if (marketGoods.supply_30days() == 0)
+			if (marketGoods.Supply30Days() == 0)
 				continue;
 
 			//-- when the from market has the product and the to market does not have the product, then trade this good --//
 
-			int pickUpType = TradeStop.PICK_UP_PRODUCT_FIRST + marketGoods.product_raw_id - 1;
+			int pickUpType = TradeStop.PICK_UP_PRODUCT_FIRST + marketGoods.ProductId - 1;
 
 			//------ toggle it if the current flag and the flag we need are different ----//
 
@@ -1106,7 +1106,7 @@ public class UnitCaravan : Unit
 
 			//----- if there is no supply, drop the pick up type -----//
 
-			if (marketGoods == null || marketGoods.supply_30days() == 0)
+			if (marketGoods == null || marketGoods.Supply30Days() == 0)
 				set_stop_pick_up(fromStopId, i, InternalConstants.COMMAND_AI);
 		}
 
@@ -1119,7 +1119,7 @@ public class UnitCaravan : Unit
 
 			//--- if the supply is not enough, drop the pick up type ---//
 
-			if (marketGoods == null || marketGoods.supply_30days() == 0)
+			if (marketGoods == null || marketGoods.Supply30Days() == 0)
 				set_stop_pick_up(fromStopId, i, InternalConstants.COMMAND_AI);
 		}
 	}
@@ -1299,28 +1299,28 @@ public class UnitCaravan : Unit
 			MarketGoods marketGoods = curMarket.market_goods_array[i];
 			int unloadQty;
 			int goodsId;
-			if (marketGoods.raw_id != 0)
+			if (marketGoods.RawId != 0)
 			{
 				//-------------- is raw material ----------------//
-				goodsId = marketGoods.raw_id - 1;
+				goodsId = marketGoods.RawId - 1;
 
 				//if( (marketGoods->supply_30days()==0 && marketGoods->stock_qty<curMarket->max_stock_qty) || // no supply and stock isn't full
 				//	 (marketGoods->stock_qty<CARAVAN_UNLOAD_TO_MARKET_QTY &&
 				//	 //##### begin trevor 16/7 #######//
 				//	  marketGoods->month_demand > marketGoods->supply_30days()) ) // demand > supply
 				//	 //##### end trevor 16/7 #######//
-				if (marketGoods.stock_qty < curMarket.max_stock_qty)
+				if (marketGoods.StockQty < curMarket.MaxStockQty)
 				{
 					//-------- demand > supply and stock is not full ----------//
 					if (raw_qty_array[goodsId] != 0) // have this goods
 					{
 						//---------- process unload -------------//
-						unloadQty = Math.Min(raw_qty_array[goodsId], (int)(curMarket.max_stock_qty - marketGoods.stock_qty));
+						unloadQty = Math.Min(raw_qty_array[goodsId], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 						raw_qty_array[goodsId] -= unloadQty;
-						marketGoods.stock_qty += unloadQty;
+						marketGoods.StockQty += unloadQty;
 						processed_raw_qty_array[goodsId] += 2;
 					}
-					else if (marketGoods.stock_qty <= 0.0 && marketGoods.supply_30days() <= 0.0)
+					else if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0)
 					{
 						//---------- no supply, no stock, without this goods ------------//
 						withEmptySlot++;
@@ -1332,25 +1332,25 @@ public class UnitCaravan : Unit
 					processed_raw_qty_array[goodsId]++;
 				}
 			}
-			else if (marketGoods.product_raw_id != 0)
+			else if (marketGoods.ProductId != 0)
 			{
 				//---------------- is product -------------------//
-				goodsId = marketGoods.product_raw_id - 1;
+				goodsId = marketGoods.ProductId - 1;
 
 				//if( (marketGoods->supply_30days()==0 && marketGoods->stock_qty<curMarket->max_stock_qty) || // no supply and stock isn't full
 				//	 //##### begin trevor 16/7 #######//
 				//	 (marketGoods->stock_qty<50 && marketGoods->month_demand > marketGoods->supply_30days()) ) // demand > supply
 				//	 //##### end trevor 16/7 #######//
-				if (marketGoods.stock_qty < curMarket.max_stock_qty)
+				if (marketGoods.StockQty < curMarket.MaxStockQty)
 				{
 					if (product_raw_qty_array[goodsId] != 0) // have this goods
 					{
-						unloadQty = Math.Min(product_raw_qty_array[goodsId], (int)(curMarket.max_stock_qty - marketGoods.stock_qty));
+						unloadQty = Math.Min(product_raw_qty_array[goodsId], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 						product_raw_qty_array[goodsId] -= unloadQty;
-						marketGoods.stock_qty += unloadQty;
+						marketGoods.StockQty += unloadQty;
 						processed_product_raw_qty_array[goodsId] += 2;
 					}
-					else if (marketGoods.stock_qty <= 0.0 && marketGoods.supply_30days() <= 0.0) // no supply, no stock, without this goods
+					else if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0) // no supply, no stock, without this goods
 					{
 						withEmptySlot++;
 						//processed_product_raw_qty_array[goodsId] = 0; // reset to zero for handling empty slot
@@ -1376,7 +1376,7 @@ public class UnitCaravan : Unit
 			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS && withEmptySlot > 0; i++)
 			{
 				MarketGoods marketGoods = curMarket.market_goods_array[i];
-				if (marketGoods.stock_qty > 0.0 || marketGoods.supply_30days() > 0.0)
+				if (marketGoods.StockQty > 0.0 || marketGoods.Supply30Days() > 0.0)
 					continue;
 
 				market_unload_goods_in_empty_slot(curMarket, i);
@@ -1407,7 +1407,7 @@ public class UnitCaravan : Unit
 			for (int k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 			{
 				MarketGoods checkGoods = curMarket.market_goods_array[k];
-				if (checkGoods.product_raw_id == j + 1)
+				if (checkGoods.ProductId == j + 1)
 				{
 					productExistInOtherSlot = true;
 					break;
@@ -1424,14 +1424,14 @@ public class UnitCaravan : Unit
 			// in this empty one
 
 			//-**************************************************-//
-			marketGoods.stock_qty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
+			marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
 			//-**************************************************-//
 			processed_product_raw_qty_array[j] += 2;
-			curMarket.set_goods(false, j + 1, position);
+			curMarket.SetGoods(false, j + 1, position);
 
-			int unloadQty = Math.Min(product_raw_qty_array[j], (int)(curMarket.max_stock_qty - marketGoods.stock_qty));
+			int unloadQty = Math.Min(product_raw_qty_array[j], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 			product_raw_qty_array[j] -= unloadQty;
-			marketGoods.stock_qty += unloadQty;
+			marketGoods.StockQty += unloadQty;
 			processed++;
 			break;
 		}
@@ -1451,7 +1451,7 @@ public class UnitCaravan : Unit
 				for (int k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 				{
 					MarketGoods checkGoods = curMarket.market_goods_array[k];
-					if (checkGoods.raw_id == j + 1)
+					if (checkGoods.RawId == j + 1)
 					{
 						rawExistInOtherSlot = true;
 						break;
@@ -1468,14 +1468,14 @@ public class UnitCaravan : Unit
 				// in this empty one
 
 				//-**************************************************-//
-				marketGoods.stock_qty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
+				marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
 				//-**************************************************-//
 				processed_raw_qty_array[j] += 2;
-				curMarket.set_goods(true, j + 1, position);
+				curMarket.SetGoods(true, j + 1, position);
 
-				int unloadQty = Math.Min(raw_qty_array[j], (int)(curMarket.max_stock_qty - marketGoods.stock_qty));
+				int unloadQty = Math.Min(raw_qty_array[j], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 				raw_qty_array[j] -= unloadQty;
-				marketGoods.stock_qty += unloadQty;
+				marketGoods.StockQty += unloadQty;
 				processed++;
 				break;
 			}
@@ -1496,15 +1496,15 @@ public class UnitCaravan : Unit
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = curMarket.market_goods_array[i];
-			if (marketGoods.raw_id != 0)
+			if (marketGoods.RawId != 0)
 			{
-				if (stop.pick_up_array[marketGoods.raw_id - 1])
-					market_load_goods_now(marketGoods, marketGoods.stock_qty);
+				if (stop.pick_up_array[marketGoods.RawId - 1])
+					market_load_goods_now(marketGoods, marketGoods.StockQty);
 			}
-			else if (marketGoods.product_raw_id != 0)
+			else if (marketGoods.ProductId != 0)
 			{
-				if (stop.pick_up_array[marketGoods.product_raw_id - 1 + GameConstants.MAX_RAW])
-					market_load_goods_now(marketGoods, marketGoods.stock_qty);
+				if (stop.pick_up_array[marketGoods.ProductId - 1 + GameConstants.MAX_RAW])
+					market_load_goods_now(marketGoods, marketGoods.StockQty);
 			}
 		}
 	}
@@ -1524,35 +1524,35 @@ public class UnitCaravan : Unit
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = curMarket.market_goods_array[i];
-			if (marketGoods.stock_qty <= 0.0)
+			if (marketGoods.StockQty <= 0.0)
 				continue;
 
 			int goodsId;
 			int loadQty;
-			if (marketGoods.raw_id != 0)
+			if (marketGoods.RawId != 0)
 			{
-				goodsId = marketGoods.raw_id;
+				goodsId = marketGoods.RawId;
 				goodsId--;
 				if (processed_raw_qty_array[goodsId] == 2)
 					continue; // continue if it is the goods unloaded
 
-				if (marketGoods.stock_qty > GameConstants.MIN_FIRM_STOCK_QTY)
+				if (marketGoods.StockQty > GameConstants.MIN_FIRM_STOCK_QTY)
 				{
-					loadQty = (int)marketGoods.stock_qty - GameConstants.MIN_FIRM_STOCK_QTY;
+					loadQty = (int)marketGoods.StockQty - GameConstants.MIN_FIRM_STOCK_QTY;
 					market_load_goods_now(marketGoods, loadQty);
 				}
 			}
 			//else if(marketGoods->product_raw_id && isOurMarket) // only load product in our market
-			else if (marketGoods.product_raw_id != 0)
+			else if (marketGoods.ProductId != 0)
 			{
-				goodsId = marketGoods.product_raw_id;
+				goodsId = marketGoods.ProductId;
 				goodsId--;
 				if (processed_product_raw_qty_array[goodsId] == 2)
 					continue; // continue if it is the goods unloaded
 
-				if (marketGoods.stock_qty > GameConstants.MIN_FIRM_STOCK_QTY)
+				if (marketGoods.StockQty > GameConstants.MIN_FIRM_STOCK_QTY)
 				{
-					loadQty = (int)marketGoods.stock_qty - GameConstants.MIN_FIRM_STOCK_QTY;
+					loadQty = (int)marketGoods.StockQty - GameConstants.MIN_FIRM_STOCK_QTY;
 					market_load_goods_now(marketGoods, loadQty);
 				}
 			}
@@ -1566,10 +1566,10 @@ public class UnitCaravan : Unit
 		int qty = 0;
 		int goodsId;
 
-		if (marketGoods.product_raw_id != 0)
+		if (marketGoods.ProductId != 0)
 		{
 			//---------------- is product ------------------//
-			goodsId = marketGoods.product_raw_id;
+			goodsId = marketGoods.ProductId;
 			goodsId--;
 
 			qty = Math.Min(GameConstants.MAX_CARAVAN_CARRY_QTY - product_raw_qty_array[goodsId], (int)loadQty);
@@ -1582,12 +1582,12 @@ public class UnitCaravan : Unit
 			}
 
 			product_raw_qty_array[goodsId] += qty;
-			marketGoods.stock_qty -= qty;
+			marketGoods.StockQty -= qty;
 		}
-		else if (marketGoods.raw_id != 0)
+		else if (marketGoods.RawId != 0)
 		{
 			//---------------- is raw ---------------------//
-			goodsId = marketGoods.raw_id;
+			goodsId = marketGoods.RawId;
 			goodsId--;
 
 			qty = Math.Min(GameConstants.MAX_CARAVAN_CARRY_QTY - raw_qty_array[goodsId], (int)loadQty);
@@ -1600,7 +1600,7 @@ public class UnitCaravan : Unit
 			}
 
 			raw_qty_array[goodsId] += qty;
-			marketGoods.stock_qty -= qty;
+			marketGoods.StockQty -= qty;
 		}
 
 		if (qty > 0)

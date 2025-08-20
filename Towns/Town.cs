@@ -1544,7 +1544,7 @@ public class Town : IIdObject
 				MarketGoods marketGoods = market.market_product_array[i];
 				MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
 
-				double thisSupply = marketGoods.stock_qty;
+				double thisSupply = marketGoods.StockQty;
 				marketGoodsInfo.Markets.Add(market);
 				marketGoodsInfo.TotalSupply += thisSupply;
 
@@ -1585,7 +1585,7 @@ public class Town : IIdObject
 					if (marketGoodsInfo.TotalSupply <= townDemand)
 					{
 						// evenly distribute the excessive demand on all markets
-						marketGoods.month_demand += marketGoods.stock_qty + (townDemand - marketGoodsInfo.TotalSupply) / marketGoodsInfo.Markets.Count;
+						marketGoods.MonthDemand += marketGoods.StockQty + (townDemand - marketGoodsInfo.TotalSupply) / marketGoodsInfo.Markets.Count;
 					}
 					else //---- if the supply is larger than the demand -----//
 					{
@@ -1597,12 +1597,12 @@ public class Town : IIdObject
 						{
 							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
 							if (marketGoodsInfo.TotalOwnSupply > 0.0)
-								marketGoods.month_demand += ownShareDemand * marketGoods.stock_qty / marketGoodsInfo.TotalOwnSupply;
+								marketGoods.MonthDemand += ownShareDemand * marketGoods.StockQty / marketGoodsInfo.TotalOwnSupply;
 						}
 						else
 						{
 							// Note: total_supply > 0.0, because else the first case above (demand larger than supply) will be triggered
-							marketGoods.month_demand += (townDemand - ownShareDemand) * marketGoods.stock_qty / marketGoodsInfo.TotalSupply;
+							marketGoods.MonthDemand += (townDemand - ownShareDemand) * marketGoods.StockQty / marketGoodsInfo.TotalSupply;
 						}
 					}
 				}
@@ -1630,7 +1630,7 @@ public class Town : IIdObject
 
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
-				int productId = firmMarket.market_goods_array[j].product_raw_id;
+				int productId = firmMarket.market_goods_array[j].ProductId;
 				if (productId > 1)
 					HasProductSupply[productId - 1] = true;
 			}
@@ -1662,18 +1662,18 @@ public class Town : IIdObject
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
 				MarketGoods marketGoods = firmMarket.market_goods_array[j];
-				if (marketGoods.product_raw_id == 0 || marketGoods.month_demand == 0)
+				if (marketGoods.ProductId == 0 || marketGoods.MonthDemand == 0)
 					continue;
 
-				double monthSaleQty = marketGoods.sale_qty_30days();
+				double monthSaleQty = marketGoods.SaleQty30Days();
 
-				if (monthSaleQty > marketGoods.month_demand)
+				if (monthSaleQty > marketGoods.MonthDemand)
 				{
 					totalPurchase += townDemand;
 				}
-				else if (marketGoods.month_demand > townDemand)
+				else if (marketGoods.MonthDemand > townDemand)
 				{
-					totalPurchase += monthSaleQty * townDemand / marketGoods.month_demand;
+					totalPurchase += monthSaleQty * townDemand / marketGoods.MonthDemand;
 				}
 				else
 				{
@@ -4315,7 +4315,7 @@ public class Town : IIdObject
 
 			//------ if this market is our own one ------//
 
-			if (firmMarket.NationId == NationId && firmMarket.is_retail_market())
+			if (firmMarket.NationId == NationId && firmMarket.IsRetailMarket())
 				return false;
 		}
 
@@ -5345,7 +5345,7 @@ public class Town : IIdObject
 
 			if (firm.FirmType == Firm.FIRM_MARKET)
 			{
-				protectionNeeded += ((FirmMarket)firm).stock_value_index() * 2;
+				protectionNeeded += ((FirmMarket)firm).StockValueIndex() * 2;
 			}
 			else
 			{

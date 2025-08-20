@@ -26,10 +26,10 @@ public class FirmFactory : Firm
 		ProductRawId = 1;
 
 		StockQty = 0.0;
-		MaxStockQty = GameConstants.DEFAULT_FACTORY_MAX_STOCK_QTY;
+		MaxStockQty = GameConstants.FACTORY_MAX_STOCK_QTY;
 
 		RawStockQty = 0.0;
-		MaxRawStockQty = GameConstants.DEFAULT_FACTORY_MAX_RAW_STOCK_QTY;
+		MaxRawStockQty = GameConstants.FACTORY_MAX_RAW_STOCK_QTY;
 	}
 
 	protected override void InitDerived()
@@ -90,7 +90,7 @@ public class FirmFactory : Firm
 
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
-					int rawId = firmMarket.market_goods_array[j].raw_id;
+					int rawId = firmMarket.market_goods_array[j].RawId;
 
 					if (rawId == 0)
 						continue;
@@ -194,14 +194,14 @@ public class FirmFactory : Firm
 			{
 				FirmMarket firmMarket = (FirmMarket)firm;
 
-				if (firmMarket.next_output_firm_recno == FirmId)
+				if (firmMarket.NextOutputFirmId == FirmId)
 				{
 					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = firmMarket.market_goods_array[j];
-						if (marketGoods.raw_id == ProductRawId && marketGoods.stock_qty > 0.0)
+						if (marketGoods.RawId == ProductRawId && marketGoods.StockQty > 0.0)
 						{
-							double inputQty = Math.Min(marketGoods.stock_qty, MaxRawStockQty - RawStockQty);
+							double inputQty = Math.Min(marketGoods.StockQty, MaxRawStockQty - RawStockQty);
 
 							// make sure it has the cash to pay for the raw materials
 							if (firmMarket.NationId != NationId)
@@ -209,7 +209,7 @@ public class FirmFactory : Firm
 
 							if (inputQty > 0.0)
 							{
-								marketGoods.stock_qty -= inputQty;
+								marketGoods.StockQty -= inputQty;
 								RawStockQty += inputQty;
 
 								//---- import from other nation -----//
@@ -297,9 +297,9 @@ public class FirmFactory : Firm
 		ProductRawId = newProductId;
 
 		StockQty = 0.0;
-		MaxStockQty = GameConstants.DEFAULT_FACTORY_MAX_STOCK_QTY;
+		MaxStockQty = GameConstants.FACTORY_MAX_STOCK_QTY;
 		RawStockQty = 0.0;
-		MaxRawStockQty = GameConstants.DEFAULT_FACTORY_MAX_RAW_STOCK_QTY;
+		MaxRawStockQty = GameConstants.FACTORY_MAX_RAW_STOCK_QTY;
 	}
 
 	public double Production30Days()
@@ -383,7 +383,7 @@ public class FirmFactory : Firm
 			//----- if this is a retail market of our own ------//
 
 			FirmMarket firmMarket = (FirmMarket)firm;
-			if (firmMarket.NationId == NationId && firmMarket.is_retail_market())
+			if (firmMarket.NationId == NationId && firmMarket.IsRetailMarket())
 			{
 				return false;
 			}
@@ -490,9 +490,9 @@ public class FirmFactory : Firm
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
 					MarketGoods marketGoods = firmMarket.market_goods_array[j];
-					if (marketGoods.raw_id != 0 && marketGoods.stock_qty >= GameConstants.MIN_FACTORY_IMPORT_STOCK_QTY)
+					if (marketGoods.RawId != 0 && marketGoods.StockQty >= GameConstants.MIN_FACTORY_IMPORT_STOCK_QTY)
 					{
-						curRating = Convert.ToInt32(marketGoods.stock_qty);
+						curRating = Convert.ToInt32(marketGoods.StockQty);
 
 						if (curRating > bestRating)
 						{
@@ -500,7 +500,7 @@ public class FirmFactory : Firm
 							if (firm.NationId == NationId || !bestIsOwn)
 							{
 								bestRating = curRating;
-								bestProductId = marketGoods.raw_id;
+								bestProductId = marketGoods.RawId;
 								bestIsOwn = firm.NationId == NationId;
 							}
 						}

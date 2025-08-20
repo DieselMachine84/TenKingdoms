@@ -5,35 +5,32 @@ namespace TenKingdoms;
 
 public class FirmMarket : Firm
 {
-	public const int RESTOCK_ANY = 0;
-	public const int RESTOCK_PRODUCT = 1;
-	public const int RESTOCK_RAW = 2;
-	public const int RESTOCK_NONE = 3;
+	private const int RESTOCK_ANY = 0;
+	private const int RESTOCK_PRODUCT = 1;
+	private const int RESTOCK_RAW = 2;
+	private const int RESTOCK_NONE = 3;
 
-	public double max_stock_qty; // maximum stock qty of each market goods
+	private int RestockType { get; set; }
+	public double MaxStockQty { get; set; } // maximum stock qty of each market goods
 
-	public MarketGoods[] market_goods_array = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
-	public MarketGoods[] market_raw_array = new MarketGoods[GameConstants.MAX_RAW];
-	public MarketGoods[] market_product_array = new MarketGoods[GameConstants.MAX_PRODUCT];
-
-	public int next_output_link_id;
-	public int next_output_firm_recno;
+	private int NextOutputLinkId { get; set; }
+	public int NextOutputFirmId { get; private set; }
 
 	//------------ ai vars -----------//
 
-	public DateTime no_linked_town_since_date;
-	public DateTime last_import_new_goods_date;
+	private DateTime NoLinkedTownSinceDate { get; set; }
+	private DateTime LastImportNewGoodsDate { get; set; }
 
 	//--------------------------------//
 
-	public int restock_type;
-
-	protected RawRes RawRes => Sys.Instance.RawRes;
-
+	public MarketGoods[] market_goods_array { get; } = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
+	public MarketGoods[] market_raw_array { get; } = new MarketGoods[GameConstants.MAX_RAW];
+	public MarketGoods[] market_product_array { get; } = new MarketGoods[GameConstants.MAX_PRODUCT];
+	
 	public FirmMarket()
 	{
-		max_stock_qty = GameConstants.MAX_MARKET_STOCK;
-		restock_type = RESTOCK_ANY;
+		MaxStockQty = GameConstants.MARKET_MAX_STOCK_QTY;
+		RestockType = RESTOCK_ANY;
 
 		for (int i = 0; i < market_goods_array.Length; i++)
 			market_goods_array[i] = new MarketGoods();
@@ -47,15 +44,13 @@ public class FirmMarket : Firm
 
 	protected override void InitDerived()
 	{
-		//------ redistribute town demand --------//
-
 		TownArray.DistributeDemand();
 
 		//-------- set restock_type for AI only --------//
 
 		if (AIFirm)
 		{
-			restock_type = RESTOCK_PRODUCT; // default to product
+			RestockType = RESTOCK_PRODUCT; // default to product
 
 			for (int i = 0; i < LinkedFirms.Count; i++)
 			{
@@ -64,55 +59,46 @@ public class FirmMarket : Firm
 				//------ if this is our mine -------//
 
 				if (firm.FirmType != FIRM_MINE || firm.NationId != NationId)
-				{
 					continue;
-				}
 
 				//--- if the mine doesn't have links to other market ---//
+				
+				bool mineHasLinkedMarket = false;
 
-				int j;
-				for (j = firm.LinkedFirms.Count - 1; j >= 0; j--)
+				for (int j = 0; j < firm.LinkedFirms.Count; j++)
 				{
 					Firm otherFirm = FirmArray[firm.LinkedFirms[j]];
 
-					if (otherFirm.NationId == NationId &&
-					    otherFirm.FirmId != FirmId &&
-					    otherFirm.FirmType == FIRM_MARKET &&
-					    ((FirmMarket)otherFirm).is_raw_market())
+					if (otherFirm.NationId == NationId && otherFirm.FirmId != FirmId && otherFirm.FirmType == FIRM_MARKET &&
+					    ((FirmMarket)otherFirm).IsRawMarket())
 					{
+						mineHasLinkedMarket = true;
 						break;
 					}
 				}
 
-				if (j < 0) // if the mine doesn't have any links to other markets
+				if (!mineHasLinkedMarket) // if the mine doesn't have any links to other markets
 				{
-					restock_type = RESTOCK_RAW;
+					RestockType = RESTOCK_RAW;
 					break;
 				}
 			}
 		}
 	}
 
-
 	public override void NextDay()
 	{
 		base.NextDay();
 
-		//---- update trade link to harbors to towns -----//
-
-		update_trade_link();
-
-		//-------- input goods ----------//
+		UpdateTradeLink();
 
 		if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == FirmId % GameConstants.PROCESS_GOODS_INTERVAL)
 		{
-			input_goods(50); // input maximum 50 qty of goods per day
-			set_next_output_firm(); // set next output firm
+			InputGoods(50); // input maximum 50 qty of goods per day
+			SetNextOutputFirm(); // set next output firm
 		}
 
-		//-------- sell goods --------//
-
-		sell_goods();
+		SellGoods();
 	}
 
 	public override void NextMonth()
@@ -124,11 +110,11 @@ public class FirmMarket : Firm
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			marketGoods.last_month_supply = marketGoods.cur_month_supply;
-			marketGoods.cur_month_supply = 0.0;
+			marketGoods.LastMonthSupply = marketGoods.CurMonthSupply;
+			marketGoods.CurMonthSupply = 0.0;
 
-			marketGoods.last_month_sale_qty = marketGoods.cur_month_sale_qty;
-			marketGoods.cur_month_sale_qty = 0.0;
+			marketGoods.LastMonthSaleQty = marketGoods.CurMonthSaleQty;
+			marketGoods.CurMonthSaleQty = 0.0;
 		}
 	}
 
@@ -141,425 +127,22 @@ public class FirmMarket : Firm
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			marketGoods.last_year_sales = marketGoods.cur_year_sales;
-			marketGoods.cur_year_sales = 0.0;
+			marketGoods.LastYearSales = marketGoods.CurYearSales;
+			marketGoods.CurYearSales = 0.0;
 		}
 	}
 
-	public int free_slot_count()
+	public bool IsRawMarket()
 	{
-		int freeSlotCount = 0;
-
-		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-		{
-			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.raw_id == 0 && marketGoods.product_raw_id == 0)
-				freeSlotCount++;
-		}
-
-		return freeSlotCount;
+		return RestockType == RESTOCK_RAW || RestockType == RESTOCK_ANY;
 	}
 
-	public int stock_value_index() // for AI, a 0-100 index number telling the total value of the market's stock
+	public bool IsRetailMarket()
 	{
-		double totalValue = 0.0;
-
-		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-		{
-			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.raw_id != 0)
-			{
-				totalValue += marketGoods.stock_qty * GameConstants.RAW_PRICE;
-			}
-			else if (marketGoods.product_raw_id != 0)
-			{
-				totalValue += marketGoods.stock_qty * GameConstants.PRODUCT_PRICE;
-			}
-		}
-
-		return 100 * (int)totalValue /
-		       (GameConstants.MAX_MARKET_GOODS * GameConstants.PRODUCT_PRICE * GameConstants.MAX_MARKET_STOCK);
+		return RestockType == RESTOCK_PRODUCT || RestockType == RESTOCK_ANY;
 	}
-
-	public void sell_goods()
-	{
-		//----------- sell products now ------------//
-
-		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-		{
-			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.product_raw_id != 0 && marketGoods.stock_qty > 0)
-			{
-				double saleQty = Math.Min(marketGoods.month_demand / 30.0, marketGoods.stock_qty);
-
-				marketGoods.stock_qty -= saleQty;
-
-				marketGoods.cur_month_sale_qty += saleQty;
-				marketGoods.cur_year_sales += saleQty * GameConstants.CONSUMER_PRICE;
-
-				AddIncome(NationBase.INCOME_SELL_GOODS, saleQty * GameConstants.CONSUMER_PRICE);
-			}
-		}
-	}
-
-	public int hire_caravan(int remoteAction)
-	{
-		if (can_hire_caravan() == 0)
-			return 0;
-
-		//---------------------------------------//
-
-		Nation nation = NationArray[NationId];
-
-		//if(!remoteAction && remote.is_enable())
-		//{
-		//// packet structure : <town recno>
-		//short *shortPtr = (short *) remote.new_send_queue_msg(MSG_F_MARKET_HIRE_CARA, sizeof(short));
-		//*shortPtr = firm_recno;
-		//return 0;
-		//}
-
-		//---------- add the unit now -----------//
-
-		int unitRecno = CreateUnit(UnitConstants.UNIT_CARAVAN);
-		if (unitRecno == 0)
-			return 0;
-
-		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitRecno];
-		unitCaravan.set_stop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
-		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
-
-		return unitCaravan.SpriteId;
-	}
-
-	public int can_hire_caravan()
-	{
-		Nation nation = NationArray[NationId];
-
-		if (nation.cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
-			return 0;
-
-		int supportedCaravan = nation.total_population / GameConstants.POPULATION_PER_CARAVAN;
-		int caravanCount = UnitRes[UnitConstants.UNIT_CARAVAN].nation_unit_count_array[NationId - 1];
-
-		return supportedCaravan > caravanCount ? supportedCaravan - caravanCount : 0;
-	}
-
-	public void set_goods(bool isRaw, int goodsId, int position)
-	{
-		MarketGoods marketGoods = market_goods_array[position];
-		if (isRaw)
-		{
-			if (marketGoods.raw_id != 0)
-				market_raw_array[marketGoods.raw_id - 1] = null;
-			else if (marketGoods.product_raw_id != 0)
-				market_product_array[marketGoods.product_raw_id - 1] = null;
-
-			marketGoods.raw_id = goodsId;
-			marketGoods.product_raw_id = 0;
-			market_raw_array[goodsId - 1] = marketGoods;
-		}
-		else
-		{
-			if (marketGoods.product_raw_id != 0)
-				market_product_array[marketGoods.product_raw_id - 1] = null;
-			else if (marketGoods.raw_id != 0)
-				market_raw_array[marketGoods.raw_id - 1] = null;
-
-			marketGoods.raw_id = 0;
-			marketGoods.product_raw_id = goodsId;
-			market_product_array[goodsId - 1] = marketGoods;
-		}
-	}
-
-	public void clear_market_goods(int position)
-	{
-		MarketGoods marketGoods = market_goods_array[position - 1];
-
-		marketGoods.stock_qty = 0.0;
-
-		if (marketGoods.raw_id != 0)
-		{
-			market_raw_array[marketGoods.raw_id - 1] = null;
-			marketGoods.raw_id = 0;
-		}
-		else
-		{
-			market_product_array[marketGoods.product_raw_id - 1] = null;
-			marketGoods.product_raw_id = 0;
-		}
-	}
-
-	public bool is_market_linked_to_town(bool ownBaseTownOnly = false)
-	{
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			if (LinkedTownsEnable[i] != InternalConstants.LINK_EE)
-				continue;
-
-			if (ownBaseTownOnly)
-			{
-				Town town = TownArray[LinkedTowns[i]];
-
-				if (town.NationId == NationId && town.IsBaseTown)
-					return true;
-			}
-			else
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public override void ProcessAI() // ai process entry point
-	{
-		//---- think about deleting this firm ----//
-
-		if (Info.TotalDays % 30 == FirmId % 30)
-		{
-			if (think_del())
-				return;
-		}
-
-		//----- think about demand trade treaty -----//
-
-		if (Info.TotalDays % 30 == FirmId % 30)
-			think_demand_trade_treaty();
-
-		//----- think about building a factory next to this market ----//
-
-		if (Info.TotalDays % 60 == FirmId % 60)
-			think_market_build_factory();
-
-		//TODO think_export_product();
-
-		//-------- think about new trading routes --------//
-
-		// don't new imports until it's 60 days after the last one was imported
-		if (Info.game_date < last_import_new_goods_date.AddDays(60.0))
-			return;
-
-		if (can_hire_caravan() > 0)
-		{
-			Nation ownNation = NationArray[NationId];
-
-			int thinkInterval = 10 + (100 - ownNation.pref_trading_tendency) / 5; // think once every 10 to 30 days
-
-			if (is_market_linked_to_town())
-			{
-				if (Info.TotalDays % thinkInterval == FirmId % thinkInterval)
-					think_import_new_product();
-
-				if (Info.TotalDays % 60 == (FirmId + 20) % 60)
-				{
-					//------------------------------------------------------//
-					// Don't think about increaseing existing product supply
-					// if we have just import a new goods, it takes time
-					// to transport and pile up goods.
-					//------------------------------------------------------//
-
-					// only think increase existing supply 180 days after importing a new one
-					if (last_import_new_goods_date == default || Info.game_date > last_import_new_goods_date.AddDays(180.0))
-					{
-						think_increase_existing_product_supply();
-					}
-				}
-			}
-
-			if (Info.TotalDays % thinkInterval == FirmId % thinkInterval)
-				think_export_product();
-		}
-	}
-
-	public bool is_raw_market()
-	{
-		return restock_type == RESTOCK_RAW || restock_type == RESTOCK_ANY;
-	}
-
-	public bool is_retail_market()
-	{
-		return restock_type == RESTOCK_PRODUCT || restock_type == RESTOCK_ANY;
-	}
-
-	public void switch_restock()
-	{
-		if (++restock_type > RESTOCK_NONE)
-			restock_type = RESTOCK_ANY;
-	}
-
-	private void input_goods(int maxInputQty)
-	{
-		//------ scan for a firm to input raw materials --------//
-
-		Nation nation = NationArray[NationId];
-		bool[] is_inputing_array = new bool[GameConstants.MAX_MARKET_GOODS];
-		int queued_firm_recno = 0;
-
-		for (int t = 0; t < LinkedFirms.Count; t++)
-		{
-			if (LinkedFirmsEnable[t] != InternalConstants.LINK_EE)
-				continue;
-
-			Firm firm = FirmArray[LinkedFirms[t]];
-
-			//----------- check if the firm is a mine ----------//
-
-			if (firm.FirmType != FIRM_MINE && firm.FirmType != FIRM_FACTORY)
-				continue;
-
-			//--------- if it's a mine ------------//
-
-			if (firm.FirmType == FIRM_MINE && is_raw_market())
-			{
-				FirmMine firmMine = (FirmMine)firm;
-
-				if (firmMine.RawId != 0)
-				{
-					int i;
-					for (i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-					{
-						MarketGoods marketGoods = market_goods_array[i];
-
-						//--- only assign a slot to the product if it comes from a firm of our own ---//
-
-						if (marketGoods.raw_id == firmMine.RawId)
-						{
-							is_inputing_array[i] = true;
-
-							if (firmMine.NextOutputFirmId == FirmId &&
-							    firmMine.StockQty > 0 && marketGoods.stock_qty < max_stock_qty)
-							{
-								double inputQty = Math.Min(firmMine.StockQty, maxInputQty);
-								inputQty = Math.Min(inputQty, max_stock_qty - marketGoods.stock_qty);
-
-								firmMine.StockQty -= inputQty;
-								marketGoods.stock_qty += inputQty;
-								marketGoods.cur_month_supply += inputQty;
-
-								if (firm.NationId != NationId)
-									nation.import_goods(NationBase.IMPORT_RAW,
-										firm.NationId, inputQty * GameConstants.RAW_PRICE);
-							}
-							else if (Convert.ToInt32(marketGoods.stock_qty) == Convert.ToInt32(max_stock_qty))
-							{
-								// add it so the other functions can know that this market has direct supply links
-								marketGoods.cur_month_supply++;
-							}
-
-							break;
-						}
-					}
-
-					//----- no matched slot for this goods -----//
-
-					if (i == GameConstants.MAX_MARKET_GOODS && firmMine.StockQty > 0 && queued_firm_recno == 0)
-						queued_firm_recno = firm.FirmId;
-				}
-			}
-
-			//--------- if it's a factory ------------//
-
-			else if (firm.FirmType == FIRM_FACTORY && is_retail_market())
-			{
-				FirmFactory firmFactory = (FirmFactory)firm;
-
-				if (firmFactory.ProductRawId != 0)
-				{
-					int i;
-					for (i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-					{
-						MarketGoods marketGoods = market_goods_array[i];
-
-						if (marketGoods.product_raw_id == firmFactory.ProductRawId)
-						{
-							is_inputing_array[i] = true;
-
-							if (firmFactory.NextOutputFirmId == FirmId &&
-							    firmFactory.StockQty > 0 && marketGoods.stock_qty < max_stock_qty)
-							{
-								double inputQty = Math.Min(firmFactory.StockQty, maxInputQty);
-								inputQty = Math.Min(inputQty, max_stock_qty - marketGoods.stock_qty);
-
-								firmFactory.StockQty -= inputQty;
-								marketGoods.stock_qty += inputQty;
-								marketGoods.cur_month_supply += inputQty;
-
-								if (firm.NationId != NationId)
-									nation.import_goods(NationBase.IMPORT_PRODUCT, firm.NationId,
-										inputQty * GameConstants.PRODUCT_PRICE);
-							}
-							else if (Convert.ToInt32(marketGoods.stock_qty) == Convert.ToInt32(max_stock_qty))
-							{
-								// add it so the other functions can know that this market has direct supply links
-								marketGoods.cur_month_supply++;
-							}
-
-							break;
-						}
-					}
-
-					//----- no matched slot for this goods -----//
-
-					if (i == GameConstants.MAX_MARKET_GOODS && firmFactory.StockQty > 0 && queued_firm_recno == 0)
-						queued_firm_recno = firm.FirmId;
-				}
-			}
-		}
-
-		//---- if there are any empty slots for new goods -----//
-
-		if (queued_firm_recno > 0)
-		{
-			Firm firm = FirmArray[queued_firm_recno];
-
-			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-			{
-				MarketGoods marketGoods = market_goods_array[i];
-
-				if (!is_inputing_array[i] && marketGoods.stock_qty == 0)
-				{
-					if (firm.FirmType == FIRM_MINE && is_raw_market())
-					{
-						set_goods(true, ((FirmMine)firm).RawId, i);
-						break;
-					}
-
-					if (firm.FirmType == FIRM_FACTORY && is_retail_market())
-					{
-						set_goods(false, ((FirmFactory)firm).ProductRawId, i);
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	private void set_next_output_firm()
-	{
-		for (int i = 0; i < LinkedFirms.Count; i++) // MAX tries
-		{
-			if (++next_output_link_id > LinkedFirms.Count) // next firm in the link
-				next_output_link_id = 1;
-
-			if (LinkedFirmsEnable[next_output_link_id - 1] == InternalConstants.LINK_EE)
-			{
-				int firmRecno = LinkedFirms[next_output_link_id - 1];
-				int firmId = FirmArray[firmRecno].FirmType;
-
-				if (firmId == FIRM_FACTORY)
-				{
-					next_output_firm_recno = firmRecno;
-					return;
-				}
-			}
-		}
-
-		next_output_firm_recno = 0; // this mine has no linked output firms
-	}
-
-	private void update_trade_link()
+	
+	private void UpdateTradeLink()
 	{
 		Nation ownNation = NationArray[NationId];
 
@@ -572,7 +155,7 @@ public class FirmMarket : Firm
 			if (firm.FirmType != FIRM_HARBOR)
 				continue;
 
-			bool tradeTreaty = ownNation.get_relation(firm.NationId).trade_treaty || firm.NationId == NationId;
+			bool tradeTreaty = firm.NationId == NationId || ownNation.get_relation(firm.NationId).trade_treaty;
 
 			if (LinkedFirmsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
 				ToggleFirmLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
@@ -587,31 +170,362 @@ public class FirmMarket : Firm
 			if (town.NationId == 0)
 				continue;
 
-			bool tradeTreaty = ownNation.get_relation(town.NationId).trade_treaty || town.NationId == NationId;
+			bool tradeTreaty = town.NationId == NationId || ownNation.get_relation(town.NationId).trade_treaty;
 
 			if (LinkedTownsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
 				ToggleTownLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
 		}
 	}
 
-	private void free_unused_slot()
+	private void SetNextOutputFirm()
 	{
-		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+		for (int i = 0; i < LinkedFirms.Count; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.product_raw_id != 0 || marketGoods.raw_id != 0)
+			NextOutputLinkId++;
+			if (NextOutputLinkId > LinkedFirms.Count)
+				NextOutputLinkId = 1;
+
+			if (LinkedFirmsEnable[NextOutputLinkId - 1] == InternalConstants.LINK_EE)
 			{
-				if (marketGoods.sales_365days() == 0 && marketGoods.supply_30days() == 0 && marketGoods.stock_qty == 0)
+				int firmId = LinkedFirms[NextOutputLinkId - 1];
+
+				if (FirmArray[firmId].FirmType == FIRM_FACTORY)
 				{
-					clear_market_goods(i + 1);
+					NextOutputFirmId = firmId;
+					return;
+				}
+			}
+		}
+
+		NextOutputFirmId = 0;
+	}
+	
+	private void InputGoods(int maxInputQty)
+	{
+		//------ scan for a firm to input raw materials --------//
+
+		Nation nation = NationArray[NationId];
+		bool[] is_inputing_array = new bool[GameConstants.MAX_MARKET_GOODS];
+		int queuedFirmId = 0;
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
+		{
+			if (LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
+				continue;
+
+			Firm firm = FirmArray[LinkedFirms[i]];
+
+			if (firm.FirmType == FIRM_MINE && IsRawMarket())
+			{
+				FirmMine firmMine = (FirmMine)firm;
+
+				if (firmMine.RawId != 0)
+				{
+					int j;
+					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
+					{
+						MarketGoods marketGoods = market_goods_array[j];
+
+						//--- only assign a slot to the product if it comes from a firm of our own ---//
+
+						if (marketGoods.RawId == firmMine.RawId)
+						{
+							is_inputing_array[j] = true;
+
+							if (firmMine.NextOutputFirmId == FirmId &&
+							    firmMine.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
+							{
+								double inputQty = Math.Min(firmMine.StockQty, maxInputQty);
+								inputQty = Math.Min(inputQty, MaxStockQty - marketGoods.StockQty);
+
+								firmMine.StockQty -= inputQty;
+								marketGoods.StockQty += inputQty;
+								marketGoods.CurMonthSupply += inputQty;
+
+								if (firm.NationId != NationId)
+									nation.import_goods(NationBase.IMPORT_RAW, firm.NationId, inputQty * GameConstants.RAW_PRICE);
+							}
+							else if (marketGoods.StockQty >= MaxStockQty)
+							{
+								// add it so the other functions can know that this market has direct supply links
+								// TODO check
+								marketGoods.CurMonthSupply++;
+							}
+
+							break;
+						}
+					}
+
+					//----- no matched slot for this goods -----//
+
+					if (j == GameConstants.MAX_MARKET_GOODS && firmMine.StockQty > 0.0 && queuedFirmId == 0)
+						queuedFirmId = firm.FirmId;
+				}
+			}
+
+			if (firm.FirmType == FIRM_FACTORY && IsRetailMarket())
+			{
+				FirmFactory firmFactory = (FirmFactory)firm;
+
+				if (firmFactory.ProductRawId != 0)
+				{
+					int j;
+					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
+					{
+						MarketGoods marketGoods = market_goods_array[j];
+
+						if (marketGoods.ProductId == firmFactory.ProductRawId)
+						{
+							is_inputing_array[j] = true;
+
+							if (firmFactory.NextOutputFirmId == FirmId &&
+							    firmFactory.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
+							{
+								double inputQty = Math.Min(firmFactory.StockQty, maxInputQty);
+								inputQty = Math.Min(inputQty, MaxStockQty - marketGoods.StockQty);
+
+								firmFactory.StockQty -= inputQty;
+								marketGoods.StockQty += inputQty;
+								marketGoods.CurMonthSupply += inputQty;
+
+								if (firm.NationId != NationId)
+									nation.import_goods(NationBase.IMPORT_PRODUCT, firm.NationId, inputQty * GameConstants.PRODUCT_PRICE);
+							}
+							else if (marketGoods.StockQty >= MaxStockQty)
+							{
+								// add it so the other functions can know that this market has direct supply links
+								// TODO check
+								marketGoods.CurMonthSupply++;
+							}
+
+							break;
+						}
+					}
+
+					//----- no matched slot for this goods -----//
+
+					if (j == GameConstants.MAX_MARKET_GOODS && firmFactory.StockQty > 0.0 && queuedFirmId == 0)
+						queuedFirmId = firm.FirmId;
+				}
+			}
+		}
+
+		//---- if there are any empty slots for new goods -----//
+
+		if (queuedFirmId > 0)
+		{
+			Firm firm = FirmArray[queuedFirmId];
+
+			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+			{
+				MarketGoods marketGoods = market_goods_array[i];
+
+				if (!is_inputing_array[i] && marketGoods.StockQty <= 0.0)
+				{
+					if (firm.FirmType == FIRM_MINE && IsRawMarket())
+					{
+						SetGoods(true, ((FirmMine)firm).RawId, i);
+						break;
+					}
+
+					if (firm.FirmType == FIRM_FACTORY && IsRetailMarket())
+					{
+						SetGoods(false, ((FirmFactory)firm).ProductRawId, i);
+						break;
+					}
 				}
 			}
 		}
 	}
+	
+	private void SellGoods()
+	{
+		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+		{
+			MarketGoods marketGoods = market_goods_array[i];
+			if (marketGoods.ProductId != 0 && marketGoods.StockQty > 0.0)
+			{
+				double saleQty = Math.Min(marketGoods.MonthDemand / 30.0, marketGoods.StockQty);
 
-	//------------------ AI actions --------------------//
+				marketGoods.StockQty -= saleQty;
 
-	private bool think_del()
+				marketGoods.CurMonthSaleQty += saleQty;
+				marketGoods.CurYearSales += saleQty * GameConstants.CONSUMER_PRICE;
+
+				AddIncome(NationBase.INCOME_SELL_GOODS, saleQty * GameConstants.CONSUMER_PRICE);
+			}
+		}
+	}
+
+	public void SetGoods(bool isRaw, int goodsId, int position)
+	{
+		MarketGoods marketGoods = market_goods_array[position];
+
+		if (isRaw)
+		{
+			if (marketGoods.RawId != 0)
+				market_raw_array[marketGoods.RawId - 1] = null;
+			else if (marketGoods.ProductId != 0)
+				market_product_array[marketGoods.ProductId - 1] = null;
+
+			marketGoods.RawId = goodsId;
+			marketGoods.ProductId = 0;
+			market_raw_array[goodsId - 1] = marketGoods;
+		}
+		else
+		{
+			if (marketGoods.ProductId != 0)
+				market_product_array[marketGoods.ProductId - 1] = null;
+			else if (marketGoods.RawId != 0)
+				market_raw_array[marketGoods.RawId - 1] = null;
+
+			marketGoods.RawId = 0;
+			marketGoods.ProductId = goodsId;
+			market_product_array[goodsId - 1] = marketGoods;
+		}
+	}
+	
+	public void SwitchRestock()
+	{
+		RestockType++;
+		if (RestockType > RESTOCK_NONE)
+			RestockType = RESTOCK_ANY;
+	}
+
+	public void ClearMarketGoods(int position)
+	{
+		MarketGoods marketGoods = market_goods_array[position - 1];
+
+		marketGoods.StockQty = 0.0;
+
+		if (marketGoods.RawId != 0)
+		{
+			market_raw_array[marketGoods.RawId - 1] = null;
+			marketGoods.RawId = 0;
+		}
+		else
+		{
+			market_product_array[marketGoods.ProductId - 1] = null;
+			marketGoods.ProductId = 0;
+		}
+	}
+
+	public bool CanHireCaravan()
+	{
+		Nation nation = NationArray[NationId];
+
+		if (nation.cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
+			return false;
+
+		int supportedCaravan = nation.total_population / GameConstants.POPULATION_PER_CARAVAN;
+		int caravanCount = UnitRes[UnitConstants.UNIT_CARAVAN].nation_unit_count_array[NationId - 1];
+
+		return supportedCaravan > caravanCount;
+	}
+
+	public int HireCaravan(int remoteAction)
+	{
+		if (!CanHireCaravan())
+			return 0;
+
+		//---------------------------------------//
+
+		//if (!remoteAction && remote.is_enable())
+		//{
+			//// packet structure : <town recno>
+			//short *shortPtr = (short *) remote.new_send_queue_msg(MSG_F_MARKET_HIRE_CARA, sizeof(short));
+			//*shortPtr = firm_recno;
+			//return 0;
+		//}
+
+		//---------- add the unit now -----------//
+
+		int unitId = CreateUnit(UnitConstants.UNIT_CARAVAN);
+		if (unitId == 0)
+			return 0;
+
+		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitId];
+		unitCaravan.set_stop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
+		Nation nation = NationArray[NationId];
+		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
+
+		return unitCaravan.SpriteId;
+	}
+	
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawMarketDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleMarketDetailsInput(this);
+	}
+	
+
+	#region Old AI Functions
+
+	public override void ProcessAI()
+	{
+		//---- think about deleting this firm ----//
+
+		if (Info.TotalDays % 30 == FirmId % 30)
+		{
+			if (ThinkDel())
+				return;
+		}
+
+		//----- think about demand trade treaty -----//
+
+		if (Info.TotalDays % 30 == FirmId % 30)
+			ThinkDemandTradeTreaty();
+
+		//----- think about building a factory next to this market ----//
+
+		if (Info.TotalDays % 60 == FirmId % 60)
+			ThinkMarketBuildFactory();
+
+		//TODO think_export_product();
+
+		//-------- think about new trading routes --------//
+
+		// don't new imports until it's 60 days after the last one was imported
+		if (Info.game_date < LastImportNewGoodsDate.AddDays(60.0))
+			return;
+
+		if (CanHireCaravan())
+		{
+			Nation ownNation = NationArray[NationId];
+
+			int thinkInterval = 10 + (100 - ownNation.pref_trading_tendency) / 5; // think once every 10 to 30 days
+
+			if (IsMarketLinkedToTown())
+			{
+				if (Info.TotalDays % thinkInterval == FirmId % thinkInterval)
+					ThinkImportNewProduct();
+
+				if (Info.TotalDays % 60 == (FirmId + 20) % 60)
+				{
+					//------------------------------------------------------//
+					// Don't think about increasing existing product supply
+					// if we have just import a new goods, it takes time
+					// to transport and pile up goods.
+					//------------------------------------------------------//
+
+					// only think increase existing supply 180 days after importing a new one
+					if (LastImportNewGoodsDate == default || Info.game_date > LastImportNewGoodsDate.AddDays(180.0))
+					{
+						ThinkIncreaseExistingProductSupply();
+					}
+				}
+			}
+
+			if (Info.TotalDays % thinkInterval == FirmId % thinkInterval)
+				ThinkExportProduct();
+		}
+	}
+	
+	private bool ThinkDel()
 	{
 		//if (linked_town_count > 0)
 		//return 0;
@@ -625,23 +539,23 @@ public class FirmMarket : Firm
 
 		if (LinkedTowns.Count > 0)
 		{
-			no_linked_town_since_date = default; // reset it
+			NoLinkedTownSinceDate = default; // reset it
 			return false;
 		}
 		else
 		{
-			no_linked_town_since_date = Info.game_date;
+			NoLinkedTownSinceDate = Info.game_date;
 		}
 
-		//---- don't delete it if there are still signiciant stockhere ---//
+		//---- don't delete it if there are still significant stock here ---//
 
-		if (stock_value_index() >= 10)
+		if (StockValueIndex() >= 10)
 		{
 			Nation ownNation = NationArray[NationId];
 
 			//--- if the market has been sitting idle for too long, delete it ---//
 
-			if (Info.game_date < no_linked_town_since_date.AddDays(180.0 + 180.0 * ownNation.pref_trading_tendency / 100.0))
+			if (Info.game_date < NoLinkedTownSinceDate.AddDays(180.0 + 180.0 * ownNation.pref_trading_tendency / 100.0))
 			{
 				return false;
 			}
@@ -654,56 +568,7 @@ public class FirmMarket : Firm
 		return true;
 	}
 
-	public override void AIUpdateLinkStatus()
-	{
-		//---- make sure the restocking type is defined ----//
-
-		if (restock_type == RESTOCK_ANY)
-		{
-			bool hasRawResource = false;
-			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
-			{
-				MarketGoods marketGoods = market_goods_array[i];
-				if (marketGoods.raw_id != 0)
-				{
-					hasRawResource = true;
-					break;
-				}
-			}
-
-			if (hasRawResource)
-				restock_type = RESTOCK_RAW;
-			else
-				restock_type = RESTOCK_PRODUCT;
-		}
-
-		//---- consider enabling/disabling links to firms ----//
-
-		bool rc;
-
-		for (int i = 0; i < LinkedFirms.Count; i++)
-		{
-			Firm firm = FirmArray[LinkedFirms[i]];
-
-			//-------- check product type ----------//
-
-			if (is_retail_market())
-				rc = firm.FirmType == FIRM_FACTORY;
-			else
-				rc = firm.FirmType == FIRM_MINE || firm.FirmType == FIRM_FACTORY;
-
-			ToggleFirmLink(i + 1, rc, InternalConstants.COMMAND_AI); // enable the link
-		}
-
-		//----- always enable links to towns as there is no downsides for selling goods to the villagers ----//
-
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			ToggleTownLink(i + 1, true, InternalConstants.COMMAND_AI); // enable the link
-		}
-	}
-
-	private bool think_import_new_product()
+	private bool ThinkImportNewProduct()
 	{
 		//---- check if the market place has free space for new supply ----//
 
@@ -712,7 +577,7 @@ public class FirmMarket : Firm
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.product_raw_id == 0 && marketGoods.raw_id == 0)
+			if (marketGoods.ProductId == 0 && marketGoods.RawId == 0)
 				emptySlot++;
 		}
 
@@ -740,10 +605,9 @@ public class FirmMarket : Firm
 
 			//------------------------------------------------//
 			//
-			// Only if the population of the town is equal or
-			// larger than minTradePop, the AI will try to do trade.
-			// The minTradePop is between 10 to 20 depending on the
-			// pref_trading_tendency.
+			// Only if the population of the town is equal or larger than minTradePop,
+			// the AI will try to do trade.
+			// The minTradePop is between 10 to 20 depending on the pref_trading_tendency.
 			//
 			//------------------------------------------------//
 
@@ -760,16 +624,16 @@ public class FirmMarket : Firm
 
 		int minTradePop = 10;
 
-		if (is_retail_market())
+		if (IsRetailMarket())
 		{
 			for (int productId = 1; productId <= GameConstants.MAX_PRODUCT; productId++)
 			{
 				// if  market is empty, try to import some goods
 				if (needProductSupplyPop[productId - 1] >= minTradePop || emptySlot == GameConstants.MAX_MARKET_GOODS)
 				{
-					if (think_import_specific_product(productId))
+					if (ThinkImportSpecificProduct(productId))
 					{
-						last_import_new_goods_date = Info.game_date;
+						LastImportNewGoodsDate = Info.game_date;
 						return true;
 					}
 				}
@@ -783,10 +647,10 @@ public class FirmMarket : Firm
 
 		//--- first check if we can build a new factory to manufacture the products ---//
 
-		if (is_raw_market() && is_market_linked_to_town(true)) // 1-only count towns that are our own and are base towns
+		if (IsRawMarket() && IsMarketLinkedToTown(true)) // 1-only count towns that are our own and are base towns
 		{
 			// if there is a shortage of caravan supplies, use it for transporting finished products instead of raw materials
-			if (!NoNeighborSpace && nation.total_jobless_population >= MAX_WORKER * 2 && can_hire_caravan() >= 2)
+			if (!NoNeighborSpace && nation.total_jobless_population >= MAX_WORKER * 2 && CanHireCaravan())
 			{
 				if (nation.can_ai_build(FIRM_FACTORY))
 				{
@@ -794,9 +658,9 @@ public class FirmMarket : Firm
 					{
 						if (needProductSupplyPop[productId - 1] >= minTradePop)
 						{
-							if (think_mft_specific_product(productId))
+							if (ThinkMftSpecificProduct(productId))
 							{
-								last_import_new_goods_date = Info.game_date;
+								LastImportNewGoodsDate = Info.game_date;
 								return true;
 							}
 						}
@@ -808,18 +672,18 @@ public class FirmMarket : Firm
 		return false;
 	}
 
-	private bool think_increase_existing_product_supply()
+	private bool ThinkIncreaseExistingProductSupply()
 	{
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.product_raw_id != 0)
+			if (marketGoods.ProductId != 0)
 			{
 				// the supply falls behind the demand by at least 20%
-				if (marketGoods.stock_qty < GameConstants.MAX_MARKET_STOCK / 10.0 &&
-				    marketGoods.month_demand * 0.8 > marketGoods.supply_30days())
+				if (marketGoods.StockQty < GameConstants.MARKET_MAX_STOCK_QTY / 10.0 &&
+				    marketGoods.MonthDemand * 0.8 > marketGoods.Supply30Days())
 				{
-					if (think_import_specific_product(marketGoods.product_raw_id))
+					if (ThinkImportSpecificProduct(marketGoods.ProductId))
 						return true;
 				}
 			}
@@ -828,7 +692,7 @@ public class FirmMarket : Firm
 		return false;
 	}
 
-	private bool think_import_specific_product(int productId)
+	private bool ThinkImportSpecificProduct(int productId)
 	{
 		Nation nation = NationArray[NationId];
 		Firm bestFirm = null;
@@ -859,9 +723,9 @@ public class FirmMarket : Firm
 				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
 				{
 					MarketGoods marketGoods = firmMarket.market_goods_array[i];
-					if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5.0)
+					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5.0)
 					{
-						if (marketGoods.product_raw_id == productId)
+						if (marketGoods.ProductId == productId)
 							product_supply_firm_array.Add(firm.FirmId);
 					}
 				}
@@ -870,14 +734,14 @@ public class FirmMarket : Firm
 
 		for (int i = product_supply_firm_array.Count - 1; i >= 0; i--)
 		{
-			int firmRecno = product_supply_firm_array[i];
+			int firmId = product_supply_firm_array[i];
 
-			if (FirmArray.IsDeleted(firmRecno) || firmRecno == FirmId)
+			if (FirmArray.IsDeleted(firmId) || firmId == FirmId)
 				continue;
 
 			//-- if there is already a caravan travelling between two points --//
 
-			Firm firm = FirmArray[firmRecno];
+			Firm firm = FirmArray[firmId];
 
 			if (firm.RegionId != RegionId)
 				continue;
@@ -893,7 +757,7 @@ public class FirmMarket : Firm
 
 			double stockLevel = 0.0;
 
-			//---- think about inputing goods from this factory ----//
+			//---- think about inputting goods from this factory ----//
 
 			if (firm.FirmType == FIRM_FACTORY)
 			{
@@ -936,9 +800,9 @@ public class FirmMarket : Firm
 
 				//--- if this market has the supply of this goods ----//
 
-				if (marketGoods != null && marketGoods.supply_30days() > 0)
+				if (marketGoods != null && marketGoods.Supply30Days() > 0)
 				{
-					stockLevel = 100.0 * marketGoods.stock_qty / GameConstants.MAX_MARKET_STOCK;
+					stockLevel = 100.0 * marketGoods.StockQty / GameConstants.MARKET_MAX_STOCK_QTY;
 				}
 			}
 
@@ -977,12 +841,12 @@ public class FirmMarket : Firm
 		//---- if a suitable supplier is found -----//
 
 		if (bestFirm != null)
-			return ai_create_new_trade(bestFirm, 0, TradeStop.PICK_UP_PRODUCT_FIRST + productId - 1);
+			return AICreateNewTrade(bestFirm, 0, TradeStop.PICK_UP_PRODUCT_FIRST + productId - 1);
 
 		return false;
 	}
 
-	private bool think_mft_specific_product(int rawId)
+	private bool ThinkMftSpecificProduct(int rawId)
 	{
 		Firm bestFirm = null;
 		int bestRating = 0;
@@ -1013,9 +877,9 @@ public class FirmMarket : Firm
 				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
 				{
 					MarketGoods marketGoods = firmMarket.market_goods_array[i];
-					if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5.0)
+					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5.0)
 					{
-						if (marketGoods.raw_id == rawId)
+						if (marketGoods.RawId == rawId)
 							raw_supply_firm_array.Add(firm.FirmId);
 					}
 				}
@@ -1024,14 +888,14 @@ public class FirmMarket : Firm
 		
 		for (int i = raw_supply_firm_array.Count - 1; i >= 0; i--)
 		{
-			int firmRecno = raw_supply_firm_array[i];
+			int firmId = raw_supply_firm_array[i];
 
-			if (FirmArray.IsDeleted(firmRecno) || firmRecno == FirmId)
+			if (FirmArray.IsDeleted(firmId) || firmId == FirmId)
 				continue;
 
 			//-- if there is already a caravan travelling between two points --//
 
-			Firm firm = FirmArray[firmRecno];
+			Firm firm = FirmArray[firmId];
 
 			if (firm.RegionId != RegionId)
 				continue;
@@ -1082,10 +946,10 @@ public class FirmMarket : Firm
 				for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
 					MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[j];
-					if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK / 5)
+					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5)
 					{
-						if (marketGoods.raw_id == rawId)
-							stockLevel = 100 * marketGoods.stock_qty / GameConstants.MAX_MARKET_STOCK;
+						if (marketGoods.RawId == rawId)
+							stockLevel = 100 * marketGoods.StockQty / GameConstants.MARKET_MAX_STOCK_QTY;
 					}
 				}
 			}
@@ -1117,13 +981,13 @@ public class FirmMarket : Firm
 		if (bestFirm == null)
 			return false;
 
-		if (!ai_create_new_trade(bestFirm, 0, TradeStop.PICK_UP_RAW_FIRST + rawId - 1))
+		if (!AICreateNewTrade(bestFirm, 0, TradeStop.PICK_UP_RAW_FIRST + rawId - 1))
 			return false;
 
 		return true;
 	}
 
-	private bool think_export_product()
+	private bool ThinkExportProduct()
 	{
 		//--- first check if there is any excessive supply for export ---//
 
@@ -1132,13 +996,13 @@ public class FirmMarket : Firm
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.product_raw_id != 0)
+			if (marketGoods.ProductId != 0)
 			{
 				// the supply is at least double of the demand
-				if (marketGoods.stock_qty > GameConstants.MAX_MARKET_STOCK * 3.0 / 4.0 &&
-				    marketGoods.month_demand < marketGoods.supply_30days() / 2)
+				if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY * 3.0 / 4.0 &&
+				    marketGoods.MonthDemand < marketGoods.Supply30Days() / 2)
 				{
-					exportProductId = marketGoods.product_raw_id;
+					exportProductId = marketGoods.ProductId;
 					break;
 				}
 			}
@@ -1196,16 +1060,16 @@ public class FirmMarket : Firm
 
 			//----- think about building a new market to the town for exporting our goods -----//
 
-			if (think_build_export_market(town.TownId))
+			if (ThinkBuildExportMarket(town.TownId))
 				return true;
 		}
 
 		return false;
 	}
 
-	private bool think_build_export_market(int townRecno)
+	private bool ThinkBuildExportMarket(int townId)
 	{
-		Town town = TownArray[townRecno];
+		Town town = TownArray[townId];
 		Nation nation = NationArray[NationId];
 
 		//---- see if we already have a market linked to this town ----//
@@ -1225,10 +1089,7 @@ public class FirmMarket : Firm
 
 		//--- if there is no market place linked to this town, we can set up one ourselves ---//
 
-		int buildXLoc, buildYLoc;
-
-		if (!nation.find_best_firm_loc(FIRM_MARKET, town.LocX1, town.LocY1,
-			    out buildXLoc, out buildYLoc))
+		if (!nation.find_best_firm_loc(FIRM_MARKET, town.LocX1, town.LocY1, out int buildXLoc, out int buildYLoc))
 		{
 			town.NoNeighborSpace = true;
 			return false;
@@ -1238,7 +1099,7 @@ public class FirmMarket : Firm
 		return true;
 	}
 
-	private void think_demand_trade_treaty()
+	private void ThinkDemandTradeTreaty()
 	{
 		Nation nation = NationArray[NationId];
 
@@ -1250,15 +1111,15 @@ public class FirmMarket : Firm
 
 			if (LinkedTownsEnable[i] != InternalConstants.LINK_EE)
 			{
-				int townNationRecno = TownArray[LinkedTowns[i]].NationId;
+				int townNationId = TownArray[LinkedTowns[i]].NationId;
 
-				if (townNationRecno != 0)
-					nation.get_relation(townNationRecno).ai_demand_trade_treaty++;
+				if (townNationId != 0)
+					nation.get_relation(townNationId).ai_demand_trade_treaty++;
 			}
 		}
 	}
 
-	private void think_market_build_factory()
+	private void ThinkMarketBuildFactory()
 	{
 		if (NoNeighborSpace) // if there is no space in the neighbor area for building a new firm.
 			return;
@@ -1271,10 +1132,10 @@ public class FirmMarket : Firm
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
 			MarketGoods marketGoods = market_goods_array[i];
-			if (marketGoods.raw_id == 0)
+			if (marketGoods.RawId == 0)
 				continue;
 
-			if (marketGoods.stock_qty < 250) // only when the stock is >= 250
+			if (marketGoods.StockQty < 250) // only when the stock is >= 250
 				continue;
 
 			//----- check if the raw materials are from a local mine, if so don't build a factory,
@@ -1286,7 +1147,7 @@ public class FirmMarket : Firm
 				Firm firm = FirmArray[LinkedFirms[j]];
 
 				if (firm.FirmType == FIRM_MINE && firm.NationId == NationId &&
-				    ((FirmMine)firm).RawId == marketGoods.raw_id)
+				    ((FirmMine)firm).RawId == marketGoods.RawId)
 				{
 					break;
 				}
@@ -1297,12 +1158,61 @@ public class FirmMarket : Firm
 
 			//-------------------------------------------//
 
-			if (ThinkBuildFactory(marketGoods.raw_id))
+			if (ThinkBuildFactory(marketGoods.RawId))
 				return;
 		}
 	}
 
-	private bool ai_create_new_trade(Firm firm, int stop1PickUpType, int stop2PickUpType)
+	public override void AIUpdateLinkStatus()
+	{
+		//---- make sure the restocking type is defined ----//
+
+		if (RestockType == RESTOCK_ANY)
+		{
+			bool hasRawResource = false;
+			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+			{
+				MarketGoods marketGoods = market_goods_array[i];
+				if (marketGoods.RawId != 0)
+				{
+					hasRawResource = true;
+					break;
+				}
+			}
+
+			if (hasRawResource)
+				RestockType = RESTOCK_RAW;
+			else
+				RestockType = RESTOCK_PRODUCT;
+		}
+
+		//---- consider enabling/disabling links to firms ----//
+
+		bool rc;
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
+		{
+			Firm firm = FirmArray[LinkedFirms[i]];
+
+			//-------- check product type ----------//
+
+			if (IsRetailMarket())
+				rc = firm.FirmType == FIRM_FACTORY;
+			else
+				rc = firm.FirmType == FIRM_MINE || firm.FirmType == FIRM_FACTORY;
+
+			ToggleFirmLink(i + 1, rc, InternalConstants.COMMAND_AI); // enable the link
+		}
+
+		//----- always enable links to towns as there is no downsides for selling goods to the villagers ----//
+
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			ToggleTownLink(i + 1, true, InternalConstants.COMMAND_AI); // enable the link
+		}
+	}
+
+	private bool AICreateNewTrade(Firm firm, int stop1PickUpType, int stop2PickUpType)
 	{
 		//---- see if there is already a caravan moving along the route -----//
 
@@ -1364,7 +1274,7 @@ public class FirmMarket : Firm
 
 		//----------- hire a new caravan -----------//
 
-		int unitRecno = hire_caravan(InternalConstants.COMMAND_AI);
+		int unitRecno = HireCaravan(InternalConstants.COMMAND_AI);
 
 		if (unitRecno == 0)
 			return false;
@@ -1387,13 +1297,49 @@ public class FirmMarket : Firm
 		return true;
 	}
 	
-	public override void DrawDetails(IRenderer renderer)
+	public int StockValueIndex() // for AI, a 0-100 index number telling the total value of the market's stock
 	{
-		renderer.DrawMarketDetails(this);
+		double totalValue = 0.0;
+
+		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+		{
+			MarketGoods marketGoods = market_goods_array[i];
+			if (marketGoods.RawId != 0)
+			{
+				totalValue += marketGoods.StockQty * GameConstants.RAW_PRICE;
+			}
+			else if (marketGoods.ProductId != 0)
+			{
+				totalValue += marketGoods.StockQty * GameConstants.PRODUCT_PRICE;
+			}
+		}
+
+		return 100 * (int)totalValue /
+		       (GameConstants.MAX_MARKET_GOODS * GameConstants.PRODUCT_PRICE * GameConstants.MARKET_MAX_STOCK_QTY);
 	}
 
-	public override void HandleDetailsInput(IRenderer renderer)
+	public bool IsMarketLinkedToTown(bool ownBaseTownOnly = false)
 	{
-		renderer.HandleMarketDetailsInput(this);
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			if (LinkedTownsEnable[i] != InternalConstants.LINK_EE)
+				continue;
+
+			if (ownBaseTownOnly)
+			{
+				Town town = TownArray[LinkedTowns[i]];
+
+				if (town.NationId == NationId && town.IsBaseTown)
+					return true;
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
+
+	#endregion
 }

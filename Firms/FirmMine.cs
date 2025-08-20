@@ -22,7 +22,7 @@ public class FirmMine : Firm
     {
         FirmSkillId = Skill.SKILL_MINING;
         StockQty = 0.0;
-        MaxStockQty = GameConstants.DEFAULT_MINE_MAX_STOCK_QTY;
+        MaxStockQty = GameConstants.MINE_MAX_STOCK_QTY;
     }
 
     protected override void InitDerived()
@@ -282,7 +282,7 @@ public class FirmMine : Firm
             //------ if this market is our own one ------//
             // if it already has a raw material market, then no need to build a new one
             FirmMarket firmMarket = (FirmMarket)firm;
-            if (firmMarket.NationId == NationId && firmMarket.is_raw_market())
+            if (firmMarket.NationId == NationId && firmMarket.IsRawMarket())
             {
                 return false;
             }
