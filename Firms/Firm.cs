@@ -2694,6 +2694,7 @@ public abstract class Firm : IIdObject
 		if (succeedChance > 0 && Misc.Random(100) < succeedChance)
 		{
 			Spy briber = SpyArray[briberSpyRecno];
+			// TODO crash NameId == 0
 			Spy newSpy = SpyArray.AddSpy(0, 10); // add a new Spy record
 
 			newSpy.ActionMode = Spy.SPY_IDLE;

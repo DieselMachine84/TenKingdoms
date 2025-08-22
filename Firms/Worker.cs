@@ -42,6 +42,7 @@ public class Worker
 
     public int loyalty()
     {
+        // TODO: town may be deleted if last worker is out
         if (town_recno != 0) // if the worker lives in a town
             return Convert.ToInt32(TownArray[town_recno].RacesLoyalty[race_id - 1]);
         else
