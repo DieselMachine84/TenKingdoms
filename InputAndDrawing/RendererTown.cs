@@ -101,8 +101,8 @@ public partial class Renderer
             }
             else
             {
-                loyalty = (int)town.RacesResistance[i, NationArray.player_recno];
-                targetLoyalty = town.RacesTargetResistance[i, NationArray.player_recno];
+                loyalty = NationArray.player_recno != 0 ? (int)town.RacesResistance[i, NationArray.player_recno] : 0;
+                targetLoyalty = NationArray.player_recno != 0 ? town.RacesTargetResistance[i, NationArray.player_recno] : 0;
                 if (targetLoyalty > loyalty)
                     targetLoyalty = loyalty;
             }
@@ -144,7 +144,7 @@ public partial class Renderer
         if (town.NationId != 0)
             PutText(FontMid, town.AverageLoyalty().ToString(), avgLoyaltyX, totalTextY - 1);
         else
-            PutText(FontMid, town.AverageResistance(NationArray.player_recno).ToString(), avgLoyaltyX, totalTextY - 1);
+            PutText(FontMid, NationArray.player_recno != 0 ? town.AverageResistance(NationArray.player_recno).ToString() : "0", avgLoyaltyX, totalTextY - 1);
 
         if (NationArray.player_recno != 0 && town.NationId == NationArray.player_recno && _selectedRaceId != 0)
         {
@@ -225,7 +225,7 @@ public partial class Renderer
         }
         else
         {
-            bool displayGrantButton = town.HasLinkedCamp(NationArray.player_recno, false);
+            bool displayGrantButton = NationArray.player_recno != 0 && town.HasLinkedCamp(NationArray.player_recno, false);
             if (displayGrantButton)
             {
                 if (IsGrantToNonOwnTownEnabled(town))
@@ -339,7 +339,7 @@ public partial class Renderer
                 // TODO grant
             }
             
-            bool displayGrantButton = town.HasLinkedCamp(NationArray.player_recno, false);
+            bool displayGrantButton = NationArray.player_recno != 0 && town.HasLinkedCamp(NationArray.player_recno, false);
             bool spiesButtonPressed = (displayGrantButton ? button2Pressed : button1Pressed);
             if (spiesButtonPressed && town.HasPlayerSpy())
             {

@@ -266,6 +266,7 @@ public partial class Renderer
             //TODO replace with unit.selected_flag
             if (unit.SelectedFlag && (Config.show_unit_path & 2) != 0)
             {
+                //TODO check this
                 if (Config.show_ai_info || NationArray.player_recno == 0 || unit.BelongsToNation(NationArray.player_recno))
                 {
                     if (unit.PathNodes.Count > 0)
