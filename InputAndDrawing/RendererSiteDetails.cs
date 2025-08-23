@@ -18,11 +18,11 @@ public partial class Renderer
         PutTextCenter(FontSan, siteText, DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
         
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 48);
-        DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 53);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 53);
         switch (site.SiteType)
         {
             case Site.SITE_RAW:
-                DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 82);
+                DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 82);
                 PutText(FontSan, "Resource", DetailsX1 + 13, DetailsY1 + 56, -1, true);
                 PutText(FontSan, RawRes[site.ObjectId].name, DetailsX1 + 108, DetailsY1 + 56, -1, true);
                 PutText(FontSan, "Reserve", DetailsX1 + 13, DetailsY1 + 85, -1, true);
@@ -30,7 +30,7 @@ public partial class Renderer
                 break;
 
             case Site.SITE_SCROLL:
-                DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 82);
+                DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 82);
                 GodInfo godInfo = GodRes[site.ObjectId];
                 PutText(FontSan, "Nationality", DetailsX1 + 13, DetailsY1 + 56, -1, true);
                 PutText(FontSan, RaceRes[godInfo.race_id].name, DetailsX1 + 108, DetailsY1 + 56, -1, true);

@@ -2,6 +2,9 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
+    // TODO show spies list, show bribe menu, show assassination result, show view secret menu
+    // TODO go to firm location when pressing color square
+    
     private void DrawFirmDetails(Firm firm)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
@@ -22,14 +25,18 @@ public partial class Renderer
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 96);
             PutTextCenter(FontSan, "Under construction", DetailsX1 + 2, DetailsY1 + 96, DetailsX2 - 4, DetailsY1 + 96 + 42);
+            return;
         }
+
+        if (!firm.ShouldShowInfo())
+            return;
 
         firm.DrawDetails(this);
     }
 
-    private void DrawWorkers(Firm firm)
+    private void DrawWorkers(Firm firm, int y)
     {
-        DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 192);
+        DrawWorkersPanel(DetailsX1 + 2, y);
 
         if (_selectedWorkerId > firm.Workers.Count)
             _selectedWorkerId = 0;
@@ -38,10 +45,10 @@ public partial class Renderer
         {
             Worker worker = firm.Workers[i];
             UnitInfo unitInfo = UnitRes[worker.unit_id];
-            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.rank_id), DetailsX1 + 12 + 100 * (i % 4), DetailsY1 + 199 + 50 * (i / 4),
+            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.rank_id), DetailsX1 + 12 + 100 * (i % 4), y + 7 + 50 * (i / 4),
                 unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
             PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.combat_level.ToString() : worker.skill_level.ToString(),
-                DetailsX1 + 64 + 100 * (i % 4), DetailsY1 + 205 + 50 * (i / 4));
+                DetailsX1 + 64 + 100 * (i % 4), y + 13 + 50 * (i / 4));
             
             // TODO worker hit points bar
             // TODO spy icon
@@ -56,6 +63,8 @@ public partial class Renderer
 
     private void HandleFirmDetailsInput(Firm firm)
     {
+        // TODO handle sell, destroy, repair and request repair buttons
+        
         firm.HandleDetailsInput(this);
     }
 }

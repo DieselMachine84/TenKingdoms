@@ -723,7 +723,7 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 
-	private bool HaveOwnWorkers(bool checkSpy = false)
+	public bool HaveOwnWorkers(bool checkSpy = false)
 	{
 		foreach (Worker worker in Workers)
 		{
@@ -1621,12 +1621,12 @@ public abstract class Firm : IIdObject
 	
 	public void MobilizeAllWorkers(int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet strcture : <firm_recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_ALL_WORKERS, sizeof(short) );
-		//shortPtr[0] = firm_recno;
-		//return;
+			//// packet strcture : <firm_recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_ALL_WORKERS, sizeof(short) );
+			//shortPtr[0] = firm_recno;
+			//return;
 		//}
 
 		if (NationId == NationArray.player_recno)

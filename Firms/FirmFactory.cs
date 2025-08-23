@@ -274,7 +274,7 @@ public class FirmFactory : Firm
 		NextOutputFirmId = 0; // this mine has no linked output firms
 	}
 	
-	private void ChangeProduction()
+	public void ChangeProduction()
 	{
 		//if (remote.is_enable())
 		//{

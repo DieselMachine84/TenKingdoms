@@ -15,6 +15,8 @@ public partial class Renderer
 	private const int Button4X = DetailsX1 + 251;
 	private const int Button5X = DetailsX1 + 334;
 	private const int ButtonsTownY = DetailsY1 + 385;
+	private const int ButtonsMineY = DetailsY1 + 412;
+	private const int ButtonsFactoryY = DetailsY1 + 412;
 	private const int ButtonsCampY = DetailsY1 + 376;
 
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
@@ -77,6 +79,9 @@ public partial class Renderer
 	private IntPtr _workersPanelTexture;
 	private int _workersPanelWidth;
 	private int _workersPanelHeight;
+	private IntPtr _mineFactoryPanelTexture;
+	private int _mineFactoryPanelWidth;
+	private int _mineFactoryPanelHeight;
 	private IntPtr _unitPanelTexture;
 	private int _unitPanelWidth;
 	private int _unitPanelHeight;
@@ -86,12 +91,18 @@ public partial class Renderer
 	private IntPtr _panelWithThreeFieldsTexture;
 	private int _panelWithThreeFieldsWidth;
 	private int _panelWithThreeFieldsHeight;
-	private IntPtr _fieldPanel1Texture;
-	private int _fieldPanel1Width;
-	private int _fieldPanel1Height;
-	private IntPtr _fieldPanel2Texture;
-	private int _fieldPanel2Width;
-	private int _fieldPanel2Height;
+	private IntPtr _fieldPanel62Texture;
+	private int _fieldPanel62Width;
+	private int _fieldPanel62Height;
+	private IntPtr _fieldPanel67Texture;
+	private int _fieldPanel67Width;
+	private int _fieldPanel67Height;
+	private IntPtr _fieldPanel111Texture;
+	private int _fieldPanel111Width;
+	private int _fieldPanel111Height;
+	private IntPtr _fieldPanel119Texture;
+	private int _fieldPanel119Width;
+	private int _fieldPanel119Height;
 	private IntPtr _skillPanelUpTexture;
 	private IntPtr _skillPanelDownTexture;
 	private int _skillPanelWidth;
@@ -147,6 +158,9 @@ public partial class Renderer
 	private IntPtr _buttonPatrolDisabledTexture;
 	private int _buttonPatrolWidth;
 	private int _buttonPatrolHeight;
+	private IntPtr _buttonChangeProductionTexture;
+	private int _buttonChangeProductionWidth;
+	private int _buttonChangeProductionHeight;
 
 	private IntPtr _buttonSpyMenuTexture;
 	private int _buttonSpyMenuWidth;
@@ -304,6 +318,10 @@ public partial class Renderer
 		_workersPanelHeight = 72;
 		byte[] workersPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _workersPanelWidth, _workersPanelHeight);
 		_workersPanelTexture = Graphics.CreateTextureFromBmp(workersPanelBitmap, _workersPanelWidth, _workersPanelHeight, 32);
+		_mineFactoryPanelWidth = _smallPanelWidth;
+		_mineFactoryPanelHeight = 86;
+		byte[] mineFactoryPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _mineFactoryPanelWidth, _mineFactoryPanelHeight);
+		_mineFactoryPanelTexture = Graphics.CreateTextureFromBmp(mineFactoryPanelBitmap, _mineFactoryPanelWidth, _mineFactoryPanelHeight, 32);
 		_unitPanelWidth = _smallPanelWidth;
 		_unitPanelHeight = 62;
 		byte[] unitPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _unitPanelWidth, _unitPanelHeight);
@@ -316,14 +334,22 @@ public partial class Renderer
 		_panelWithThreeFieldsHeight = 63;
 		byte[] panelWithThreeFieldsBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithThreeFieldsWidth, _panelWithThreeFieldsHeight);
 		_panelWithThreeFieldsTexture = Graphics.CreateTextureFromBmp(panelWithThreeFieldsBitmap, _panelWithThreeFieldsWidth, _panelWithThreeFieldsHeight, 32);
-		_fieldPanel1Width = 67;
-		_fieldPanel1Height = 18;
-		byte[] fieldPanel1Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel1Width, _fieldPanel1Height);
-		_fieldPanel1Texture = Graphics.CreateTextureFromBmp(fieldPanel1Bitmap, _fieldPanel1Width, _fieldPanel1Height, 32);
-		_fieldPanel2Width = 62;
-		_fieldPanel2Height = 18;
-		byte[] fieldPanel2Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel2Width, _fieldPanel2Height);
-		_fieldPanel2Texture = Graphics.CreateTextureFromBmp(fieldPanel2Bitmap, _fieldPanel2Width, _fieldPanel2Height, 32);
+		_fieldPanel62Width = 62;
+		_fieldPanel62Height = 18;
+		byte[] fieldPanel62Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel62Width, _fieldPanel62Height);
+		_fieldPanel62Texture = Graphics.CreateTextureFromBmp(fieldPanel62Bitmap, _fieldPanel62Width, _fieldPanel62Height, 32);
+		_fieldPanel67Width = 67;
+		_fieldPanel67Height = 18;
+		byte[] fieldPanel67Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel67Width, _fieldPanel67Height);
+		_fieldPanel67Texture = Graphics.CreateTextureFromBmp(fieldPanel67Bitmap, _fieldPanel67Width, _fieldPanel67Height, 32);
+		_fieldPanel111Width = 111;
+		_fieldPanel111Height = 18;
+		byte[] fieldPanel111Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel111Width, _fieldPanel111Height);
+		_fieldPanel111Texture = Graphics.CreateTextureFromBmp(fieldPanel111Bitmap, _fieldPanel111Width, _fieldPanel111Height, 32);
+		_fieldPanel119Width = 119;
+		_fieldPanel119Height = 18;
+		byte[] fieldPanel119Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel119Width, _fieldPanel119Height);
+		_fieldPanel119Texture = Graphics.CreateTextureFromBmp(fieldPanel119Bitmap, _fieldPanel119Width, _fieldPanel119Height, 32);
 		_skillPanelWidth = _smallPanelWidth;
 		_skillPanelHeight = 40;
 		byte[] skillPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _skillPanelWidth, _skillPanelHeight);
@@ -425,6 +451,11 @@ public partial class Renderer
 		_buttonPatrolTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
 		buttonData = CreateDisabledButtonTexture(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
 		_buttonPatrolDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight, 32);
+		buttonData = buttonImages.Read("CHGPROD");
+		_buttonChangeProductionWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonChangeProductionHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonChangeProductionWidth, _buttonChangeProductionHeight);
+		_buttonChangeProductionTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonChangeProductionWidth, _buttonChangeProductionHeight);
 		
 		buttonData = buttonImages.Read("SPYMENU");
 		_buttonSpyMenuWidth = BitConverter.ToInt16(buttonData, 0);
@@ -604,6 +635,11 @@ public partial class Renderer
 		Graphics.DrawBitmap(_workersPanelTexture, x, y, Scale(_workersPanelWidth), Scale(_workersPanelHeight));
 	}
 
+	private void DrawMineFactoryPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_mineFactoryPanelTexture, x, y, Scale(_mineFactoryPanelWidth), Scale(_mineFactoryPanelHeight));
+	}
+	
 	private void DrawUnitPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_unitPanelTexture, x, y, Scale(_unitPanelWidth), Scale(_unitPanelHeight));
@@ -619,16 +655,26 @@ public partial class Renderer
 		Graphics.DrawBitmap(_panelWithThreeFieldsTexture, x, y, Scale(_panelWithThreeFieldsWidth), Scale(_panelWithThreeFieldsHeight));
 	}
 
-	private void DrawFieldPanel1(int x, int y)
+	private void DrawFieldPanel62(int x, int y)
 	{
-		Graphics.DrawBitmap(_fieldPanel1Texture, x, y, Scale(_fieldPanel1Width), Scale(_fieldPanel1Height));
+		Graphics.DrawBitmap(_fieldPanel62Texture, x, y, Scale(_fieldPanel62Width), Scale(_fieldPanel62Height));
 	}
 
-	private void DrawFieldPanel2(int x, int y)
+	private void DrawFieldPanel67(int x, int y)
 	{
-		Graphics.DrawBitmap(_fieldPanel2Texture, x, y, Scale(_fieldPanel2Width), Scale(_fieldPanel2Height));
+		Graphics.DrawBitmap(_fieldPanel67Texture, x, y, Scale(_fieldPanel67Width), Scale(_fieldPanel67Height));
 	}
 
+	private void DrawFieldPanel111(int x, int y)
+	{
+		Graphics.DrawBitmap(_fieldPanel111Texture, x, y, Scale(_fieldPanel111Width), Scale(_fieldPanel111Height));
+	}
+
+	private void DrawFieldPanel119(int x, int y)
+	{
+		Graphics.DrawBitmap(_fieldPanel119Texture, x, y, Scale(_fieldPanel119Width), Scale(_fieldPanel119Height));
+	}
+	
 	private void DrawSkillPanelUp(int x, int y)
 	{
 		Graphics.DrawBitmap(_skillPanelUpTexture, x, y, Scale(_skillPanelWidth), Scale(_skillPanelHeight));

@@ -91,19 +91,19 @@ public partial class Renderer
 
         if (unit.Skill.SkillId != 0)
         {
-            DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149);
+            DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 149);
             PutText(FontSan, unit.Skill.SkillDescription(), DetailsX1 + 13, DetailsY1 + 152, -1, true);
             PutText(FontSan, unit.Skill.SkillLevel.ToString(), DetailsX1 + 113, DetailsY1 + 154, -1, true);
             combatPanelDY += 29;
         }
 
-        DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 149 + combatPanelDY);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 149 + combatPanelDY);
         PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 152 + combatPanelDY, -1, true);
         PutText(FontSan, unit.Skill.CombatLevel.ToString(), DetailsX1 + 113, DetailsY1 + 154 + combatPanelDY, -1, true);
 
         if (unit.Rank != Unit.RANK_KING && !unit.IsCivilian())
         {
-            DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 207);
+            DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 207);
             PutText(FontSan, "Contribution", DetailsX1 + 13, DetailsY1 + 210, -1, true);
             PutText(FontSan, unit.NationContribution.ToString(), DetailsX1 + 113, DetailsY1 + 212, -1, true);
         }
@@ -112,7 +112,7 @@ public partial class Renderer
         {
             if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
             {
-                DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
+                DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 149);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
                 PutText(FontSan, SpyArray[unit.SpyId].SpyLoyalty.ToString(), DetailsX1 + 307, DetailsY1 + 154, -1, true);
             }
@@ -120,7 +120,7 @@ public partial class Renderer
             {
                 if (unit.NationId != 0)
                 {
-                    DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 149);
+                    DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 149);
                     PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
                     PutText(FontSan, unit.Loyalty + " " + unit.TargetLoyalty, DetailsX1 + 307, DetailsY1 + 154, -1, true);
                 }
@@ -129,7 +129,7 @@ public partial class Renderer
 
         if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
         {
-            DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 178);
+            DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 178);
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);
             PutText(FontSan, SpyArray[unit.SpyId].SpySkill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }

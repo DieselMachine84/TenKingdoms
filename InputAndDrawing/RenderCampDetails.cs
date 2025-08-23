@@ -41,14 +41,14 @@ public partial class Renderer
             }
         }
         
-        DrawWorkers(camp);
+        DrawWorkers(camp, DetailsY1 + 192);
 
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 303);
-        DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 308);
-        DrawFieldPanel1(DetailsX1 + 7, DetailsY1 + 337);
-        DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 308);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 308);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 337);
+        DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 308);
         if (overseer == null || overseer.Rank != Unit.RANK_KING)
-            DrawFieldPanel2(DetailsX1 + 208, DetailsY1 + 337);
+            DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 337);
 
         if (_selectedWorkerId == 0 && overseer != null)
         {
@@ -167,7 +167,6 @@ public partial class Renderer
             {
                 camp.Reward(_selectedWorkerId, InternalConstants.COMMAND_PLAYER);
                 SECtrl.immediate_sound("TURN_ON");
-
             }
 
             if (button3Pressed)
