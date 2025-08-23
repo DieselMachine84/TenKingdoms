@@ -54,8 +54,12 @@ public partial class Renderer
 
                 if (location.HasSite())
                 {
-                    ResetSelection();
-                    _selectedSiteId = location.SiteId();
+                    Site site = SiteArray[location.SiteId()];
+                    if (!site.HasMine)
+                    {
+                        ResetSelection();
+                        _selectedSiteId = location.SiteId();
+                    }
                 }
             }
 

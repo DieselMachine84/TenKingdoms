@@ -127,7 +127,7 @@ public partial class Renderer : IRenderer
             DrawUnitDetails(UnitArray[_selectedUnitId]);
         }
 
-        if (_selectedSiteId != 0 && !SiteArray.IsDeleted(_selectedSiteId))
+        if (_selectedSiteId != 0 && !SiteArray.IsDeleted(_selectedSiteId) && !SiteArray[_selectedSiteId].HasMine)
         {
             DrawSiteDetails(SiteArray[_selectedSiteId]);
         }
