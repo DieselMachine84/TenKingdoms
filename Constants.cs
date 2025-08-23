@@ -203,4 +203,8 @@ public static class InputConstants
     public const int KeyBPressed = 98;
     public const int KeySPressed = 115;
     public const int KeyTPressed = 116;
+    public const int KeyLeftPressed = 129;
+    public const int KeyRightPressed = 130;
+    public const int KeyDownPressed = 131;
+    public const int KeyUpPressed = 132;
 }

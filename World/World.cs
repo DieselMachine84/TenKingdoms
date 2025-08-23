@@ -171,13 +171,6 @@ public class World
 		{
 			UnitArray.DisplayNext(seekDir, sameNation);
 		}
-
-		//--- if the selected one is a natural resource site ----//
-
-		if (SiteArray.SelectedSiteId != 0)
-		{
-			SiteArray.DisplayNext(seekDir, sameNation);
-		}
 	}
 
 	public int GetUnitId(int locX, int locY, int mobileType)

@@ -4,7 +4,6 @@ namespace TenKingdoms;
 
 public class SiteArray : DynArray<Site>
 {
-	public int SelectedSiteId { get; set; }
 	public int UntappedRawCount { get; set; }
 	private int _scrollCount;
 	private int _goldCoinCount;
@@ -69,9 +68,6 @@ public class SiteArray : DynArray<Site>
 
 		site.Deinit();
 		Delete(site.SiteId);
-
-		if (SelectedSiteId == site.SiteId)
-			SelectedSiteId = 0;
 	}
 
 	public void NextDay()
@@ -240,19 +236,14 @@ public class SiteArray : DynArray<Site>
 		}
 	}
 
-	public void DisplayNext(int seekDir, bool sameNation)
+	public int GetNextSite(int currentSiteId, int seekDir)
 	{
-		if (SelectedSiteId == 0)
-			return;
-
-		int siteType = this[SelectedSiteId].SiteType;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedSiteId, true) : EnumerateAll(SelectedSiteId, false);
+		int siteType = this[currentSiteId].SiteType;
+		var enumerator = (seekDir >= 0) ? EnumerateAll(currentSiteId, true) : EnumerateAll(currentSiteId, false);
 
 		foreach (int siteId in enumerator)
 		{
 			Site site = this[siteId];
-
-			//--- check if the location of this site has been explored ---//
 
 			if (!World.GetLoc(site.LocX, site.LocY).IsExplored())
 				continue;
@@ -260,11 +251,10 @@ public class SiteArray : DynArray<Site>
 			if (site.SiteType == siteType && !site.HasMine)
 			{
 				Power.reset_selection();
-				SelectedSiteId = site.SiteId;
-
-				World.GoToLocation(site.LocX, site.LocY);
-				return;
+				return site.SiteId;
 			}
 		}
+
+		return currentSiteId;
 	}
 }

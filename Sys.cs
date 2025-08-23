@@ -336,10 +336,20 @@ public class Sys
                 Speed = 0;
         }
         
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_LEFT)
+            Renderer.ProcessInput(InputConstants.KeyLeftPressed, 0, 0);
+
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_RIGHT)
+            Renderer.ProcessInput(InputConstants.KeyRightPressed, 0, 0);
+
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_DOWN)
+            Renderer.ProcessInput(InputConstants.KeyDownPressed, 0, 0);
+
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_UP)
+            Renderer.ProcessInput(InputConstants.KeyUpPressed, 0, 0);
+        
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g)
-        {
             Reset();
-        }
     }
 
     private void ProcessMouseButtonEvent(SDL.SDL_MouseButtonEvent mouseButtonEvent)

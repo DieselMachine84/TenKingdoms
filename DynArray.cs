@@ -125,6 +125,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
             if (keys[i] == startId)
             {
                 startIndex = i;
+                break;
             }
         }
         
@@ -134,8 +135,6 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         int index = startIndex;
         for (int i = 0; i < keys.Count; i++)
         {
-            yield return keys[index];
-
             if (forward)
             {
                 index++;
@@ -148,6 +147,8 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
                 if (index == -1)
                     index = keys.Count - 1;
             }
+
+            yield return keys[index];
         }
     }
 }

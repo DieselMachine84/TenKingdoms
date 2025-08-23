@@ -110,24 +110,27 @@ public partial class Renderer : IRenderer
     
     public void DrawFrame()
     {
+        ResetDeletedSelectedObjects();
+        
         Graphics.ResetClipRectangle();
         DrawMainScreen();
-        if (_selectedTownId != 0 && !TownArray.IsDeleted(_selectedTownId))
+
+        if (_selectedTownId != 0)
         {
             DrawTownDetails(TownArray[_selectedTownId]);
         }
 
-        if (_selectedFirmId != 0 && !FirmArray.IsDeleted(_selectedFirmId))
+        if (_selectedFirmId != 0)
         {
             DrawFirmDetails(FirmArray[_selectedFirmId]);
         }
 
-        if (_selectedUnitId != 0 && !UnitArray.IsDeleted(_selectedUnitId))
+        if (_selectedUnitId != 0)
         {
             DrawUnitDetails(UnitArray[_selectedUnitId]);
         }
 
-        if (_selectedSiteId != 0 && !SiteArray.IsDeleted(_selectedSiteId) && !SiteArray[_selectedSiteId].HasMine)
+        if (_selectedSiteId != 0 && !SiteArray[_selectedSiteId].HasMine)
         {
             DrawSiteDetails(SiteArray[_selectedSiteId]);
         }
@@ -181,6 +184,18 @@ public partial class Renderer : IRenderer
             Scale(_bottomBorder1TextureWidth), Scale(_bottomBorder1TextureHeight));
         Graphics.DrawBitmap(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
             Scale(_bottomBorder2TextureWidth), Scale(_bottomBorder2TextureHeight));
+    }
+
+    private void ResetDeletedSelectedObjects()
+    {
+        if (_selectedTownId != 0 && TownArray.IsDeleted(_selectedTownId))
+            _selectedTownId = 0;
+        if (_selectedFirmId != 0 && FirmArray.IsDeleted(_selectedFirmId))
+            _selectedFirmId = 0;
+        if (_selectedUnitId != 0 && UnitArray.IsDeleted(_selectedUnitId))
+            _selectedUnitId = 0;
+        if (_selectedSiteId != 0 && SiteArray.IsDeleted(_selectedSiteId))
+            _selectedSiteId = 0;
     }
 
     private void ResetSelection()
