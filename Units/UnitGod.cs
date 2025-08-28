@@ -995,4 +995,14 @@ public class UnitGod : Unit
 
 		return false;
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawGodDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleGodDetailsInput(this);
+	}
 }

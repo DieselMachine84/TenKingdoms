@@ -2174,4 +2174,14 @@ public class UnitMarine : Unit
 
 		return false;
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawShipDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleShipDetailsInput(this);
+	}
 }

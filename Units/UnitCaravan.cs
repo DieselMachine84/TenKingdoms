@@ -1742,4 +1742,14 @@ public class UnitCaravan : Unit
 
 		return false;
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawCaravanDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleCaravanDetailsInput(this);
+	}
 }

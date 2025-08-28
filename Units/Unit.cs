@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public partial class Unit : Sprite
+public abstract partial class Unit : Sprite
 {
 	public const int RANK_SOLDIER = 0;
 	public const int RANK_GENERAL = 1;
@@ -4178,6 +4178,9 @@ public partial class Unit : Sprite
 			NewsArray.general_die(SpriteId);
 	}
 
+	public abstract void DrawDetails(IRenderer renderer);
+
+	public abstract void HandleDetailsInput(IRenderer renderer);
 
 	#region Functions for unit AI mode
 

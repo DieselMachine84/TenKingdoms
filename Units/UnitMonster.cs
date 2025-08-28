@@ -376,4 +376,14 @@ public class UnitMonster : Unit
             }
         }
     }
+
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawMonsterDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleMonsterDetailsInput(this);
+    }
 }
