@@ -413,9 +413,6 @@ public partial class Unit : Sprite
 
 		if (!keepSelected)
 		{
-			if (UnitArray.SelectedUnitId == SpriteId)
-				UnitArray.SelectedUnitId = 0;
-
 			//TODO rewrite
 			//if (Power.command_unit_recno == sprite_recno)
 				//Power.command_id = 0;
@@ -803,11 +800,12 @@ public partial class Unit : Sprite
 
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters();
-					if (SelectedFlag)
+					//TODO selection
+					/*if (SelectedFlag)
 					{
 						SelectedFlag = false;
 						UnitArray.SelectedCount--;
-					}
+					}*/
 				}
 				else if (loc.IsTown() && loc.TownId() == ActionParam)
 				{
@@ -826,11 +824,12 @@ public partial class Unit : Sprite
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters2();
 					ResetActionParameters();
-					if (SelectedFlag)
+					//TODO selection
+					/*if (SelectedFlag)
 					{
 						SelectedFlag = false;
 						UnitArray.SelectedCount--;
-					}
+					}*/
 
 					//-------------- assign the unit to the town -----------------//
 					TownArray[actionParam].AssignUnit(this);
@@ -843,11 +842,12 @@ public partial class Unit : Sprite
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters2();
 					ResetActionParameters();
-					if (SelectedFlag)
+					//TODO selection
+					/*if (SelectedFlag)
 					{
 						SelectedFlag = false;
 						UnitArray.SelectedCount--;
-					}
+					}*/
 
 					//----------------- load the unit to the marine -----------------//
 					((UnitMarine)UnitArray[ActionParam]).load_unit(SpriteId);
@@ -3913,10 +3913,11 @@ public partial class Unit : Sprite
 
 		//-- if the player is giving a command to this unit, cancel the command --//
 
-		if (NationId == NationArray.player_recno && SpriteId == UnitArray.SelectedUnitId && Power.command_id != 0)
+		//TODO rewrite
+		/*if (NationId == NationArray.player_recno && SpriteId == UnitArray.SelectedUnitId && Power.command_id != 0)
 		{
 			Power.command_id = 0;
-		}
+		}*/
 
 		//---------- stop all action to attack this unit ------------//
 

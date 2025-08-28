@@ -5,8 +5,6 @@ namespace TenKingdoms;
 
 public class FirmArray : DynArray<Firm>
 {
-	public int SelectedFirmId { get; set; }
-
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private Info Info => Sys.Instance.Info;
@@ -77,9 +75,6 @@ public class FirmArray : DynArray<Firm>
 	{
 		firm.Deinit();
 		Delete(firm.FirmId);
-		
-		if (SelectedFirmId == firm.FirmId)
-			SelectedFirmId = 0;
 	}
 
 	public void DeleteFirm(int firmId)
@@ -177,30 +172,29 @@ public class FirmArray : DynArray<Firm>
 		}
 	}
 	
-	public void DisplayNext(int seekDir, bool sameNation)
+	public int GetNextFirm(int currentFirmId, int seekDir, bool sameNation)
 	{
-		if (SelectedFirmId == 0)
-			return;
+		Firm currentFirm = this[currentFirmId];
+		var enumerator = (seekDir >= 0) ? EnumerateAll(currentFirmId, true) : EnumerateAll(currentFirmId, false);
 
-		int nationId = this[SelectedFirmId].NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedFirmId, true) : EnumerateAll(SelectedFirmId, false);
-
-		foreach (int recNo in enumerator)
+		foreach (int firmId in enumerator)
 		{
-			Firm firm = this[recNo];
+			Firm firm = this[firmId];
+			
+			if (firm.FirmType != currentFirm.FirmType)
+				continue;
 
-			if (sameNation && firm.NationId != nationId)
+			if (sameNation && firm.NationId != currentFirm.NationId)
 				continue;
 
 			if (!World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsExplored())
 				continue;
 
 			Power.reset_selection();
-			SelectedFirmId = firm.FirmId;
 			firm.SortWorkers();
-
-			World.GoToLocation(firm.LocCenterX, firm.LocCenterY);
-			return;
+			return firmId;
 		}
+
+		return currentFirmId;
 	}
 }

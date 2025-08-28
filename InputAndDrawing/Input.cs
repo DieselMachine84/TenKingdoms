@@ -129,24 +129,60 @@ public partial class Renderer
 
         if (eventType == InputConstants.KeyLeftPressed)
         {
+            if (_selectedTownId != 0)
+                SelectPrevOrNextTown(-1, true);
+            
+            if (_selectedFirmId != 0)
+                SelectPrevOrNextFirm(-1, true);
+            
+            if (_selectedUnitId != 0)
+                SelectPrevOrNextUnit(-1, true);
+            
             if (_selectedSiteId != 0)
                 SelectPrevOrNextSite(-1);
         }
         
         if (eventType == InputConstants.KeyRightPressed)
         {
+            if (_selectedTownId != 0)
+                SelectPrevOrNextTown(1, true);
+
+            if (_selectedFirmId != 0)
+                SelectPrevOrNextFirm(1, true);
+
+            if (_selectedUnitId != 0)
+                SelectPrevOrNextUnit(1, true);
+
             if (_selectedSiteId != 0)
                 SelectPrevOrNextSite(1);
         }
         
         if (eventType == InputConstants.KeyDownPressed)
         {
+            if (_selectedTownId != 0)
+                SelectPrevOrNextTown(-1, false);
+
+            if (_selectedFirmId != 0)
+                SelectPrevOrNextFirm(-1, false);
+
+            if (_selectedUnitId != 0)
+                SelectPrevOrNextUnit(-1, false);
+
             if (_selectedSiteId != 0)
                 SelectPrevOrNextSite(-1);
         }
         
         if (eventType == InputConstants.KeyUpPressed)
         {
+            if (_selectedTownId != 0)
+                SelectPrevOrNextTown(1, false);
+
+            if (_selectedFirmId != 0)
+                SelectPrevOrNextFirm(1, false);
+            
+            if (_selectedUnitId != 0)
+                SelectPrevOrNextUnit(1, false);
+
             if (_selectedSiteId != 0)
                 SelectPrevOrNextSite(1);
         }
@@ -165,6 +201,30 @@ public partial class Renderer
             _topLeftLocY = 0;
         if (_topLeftLocY > GameConstants.MapSize - MainViewHeightInCells)
             _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
+    }
+
+    private void SelectPrevOrNextTown(int seekDir, bool sameNation)
+    {
+        int nextTownId = TownArray.GetNextTown(_selectedTownId, seekDir, sameNation);
+        _selectedTownId = nextTownId;
+        Town selectedTown = TownArray[_selectedTownId];
+        GoToLocation(selectedTown.LocCenterX, selectedTown.LocCenterY);
+    }
+
+    private void SelectPrevOrNextFirm(int seekDir, bool sameNation)
+    {
+        int nextFirmId = FirmArray.GetNextFirm(_selectedFirmId, seekDir, sameNation);
+        _selectedFirmId = nextFirmId;
+        Firm selectedFirm = FirmArray[_selectedFirmId];
+        GoToLocation(selectedFirm.LocCenterX, selectedFirm.LocCenterY);
+    }
+
+    private void SelectPrevOrNextUnit(int seekDir, bool sameNation)
+    {
+        int nextUnitId = UnitArray.GetNextUnit(_selectedUnitId, seekDir, sameNation);
+        _selectedUnitId = nextUnitId;
+        Unit selectedUnit = UnitArray[_selectedUnitId];
+        GoToLocation(selectedUnit.NextLocX, selectedUnit.NextLocY);
     }
 
     private void SelectPrevOrNextSite(int seekDir)

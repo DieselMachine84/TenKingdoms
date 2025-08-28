@@ -47,6 +47,7 @@ public partial class Renderer : IRenderer
 
     private int _selectedTownId;
     private int _selectedFirmId;
+    //TODO keep selected caravan and trader when it enters market/harbor
     private int _selectedUnitId;
     private int _selectedSiteId;
     private int _selectedRaceId;

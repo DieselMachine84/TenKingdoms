@@ -471,13 +471,6 @@ public class UnitCaravan : Unit
 				stop_array[stopId - 1].pick_up_toggle(newPickUpType);
 				break;
 		}
-
-		if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			//TODO
-			//if (nation_recno == NationArray.player_recno || Config.show_ai_info)
-				//disp_stop(INFO_Y1 + 54, INFO_UPDATE);
-		}
 	}
 
 	public bool can_set_stop(int firmRecno)

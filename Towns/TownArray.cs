@@ -4,9 +4,6 @@ namespace TenKingdoms;
 
 public class TownArray : DynArray<Town>
 {
-	// the town current being selected
-	public int SelectedTownId { get; set; }
-
 	// no. of wandering people of each race. They are people for setting up independent towns later
 	private int[] _raceWandereres = new int[GameConstants.MAX_RACE];
 
@@ -44,9 +41,6 @@ public class TownArray : DynArray<Town>
 		Delete(town.TownId);
 
 		NationArray.update_statistic();
-		
-		if (SelectedTownId == town.TownId)
-			SelectedTownId = 0;
 	}
 
 	public override bool IsDeleted(int recNo)
@@ -357,13 +351,10 @@ public class TownArray : DynArray<Town>
 		}
 	}
 
-	public void DisplayNext(int seekDir, bool sameNation)
+	public int GetNextTown(int currentTownId, int seekDir, bool sameNation)
 	{
-		if (SelectedTownId == 0)
-			return;
-
-		int nationId = this[SelectedTownId].NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedTownId, true) : EnumerateAll(SelectedTownId, false);
+		int nationId = this[currentTownId].NationId;
+		var enumerator = (seekDir >= 0) ? EnumerateAll(currentTownId, true) : EnumerateAll(currentTownId, false);
 
 		foreach (int townId in enumerator)
 		{
@@ -376,10 +367,9 @@ public class TownArray : DynArray<Town>
 				continue;
 
 			Power.reset_selection();
-			SelectedTownId = town.TownId;
-
-			World.GoToLocation(town.LocCenterX, town.LocCenterY);
-			return;
+			return townId;
 		}
+
+		return currentTownId;
 	}
 }

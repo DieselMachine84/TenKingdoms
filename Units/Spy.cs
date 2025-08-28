@@ -1034,13 +1034,13 @@ public class Spy : IIdObject
 		}
 
 		//--- if this firm is the selected firm and the spy is the player's spy ---//
+		//TODO show assassination result
 
-		if (trueNationRecno == NationArray.player_recno && firm.FirmId == FirmArray.SelectedFirmId)
+		/*if (trueNationRecno == NationArray.player_recno && firm.FirmId == FirmArray.SelectedFirmId)
 		{
-			//TODO drawing
 			//Firm.assassinate_result = rc;
 			//Firm.firm_menu_mode = FIRM_MENU_ASSASSINATE_RESULT;
-		}
+		}*/
 
 		return rc;
 	}

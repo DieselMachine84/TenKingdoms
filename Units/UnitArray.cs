@@ -9,9 +9,6 @@ public class UnitArray : SpriteArray
 	private const int MAX_UNIT_SURROUND_SIZE = MAX_TARGET_SIZE + 2;
 	private const int SHIFT_ADJUST = 1;
 	
-    public int SelectedUnitId { get; set; }
-    public int SelectedCount { get; set; }
-
     public int CurGroupId { get; set; }            // for Unit::unit_group_id
     public int CurTeamId { get; set; }             // for Unit::team_id
 
@@ -3300,15 +3297,10 @@ public class UnitArray : SpriteArray
 		//}
 	}
 
-	public void DisplayNext(int seekDir, bool sameNation)
+	public int GetNextUnit(int currentUnitId, int seekDir, bool sameNation)
 	{
-		if (SelectedUnitId == 0)
-			return;
-
-		Unit selectedUnit = this[SelectedUnitId];
-		int unitClass = UnitRes[selectedUnit.UnitType].unit_class;
-		int nationId = selectedUnit.NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(SelectedUnitId, true) : EnumerateAll(SelectedUnitId, false);
+		Unit selectedUnit = this[currentUnitId];
+		var enumerator = (seekDir >= 0) ? EnumerateAll(currentUnitId, true) : EnumerateAll(currentUnitId, false);
 
 		foreach (int unitId in enumerator)
 		{
@@ -3317,22 +3309,19 @@ public class UnitArray : SpriteArray
 			if (!unit.IsVisible())
 				continue;
 
-			if (sameNation && unit.NationId != nationId)
+			if (sameNation && unit.NationId != selectedUnit.NationId)
+				continue;
+			
+			if (UnitRes[unit.UnitType].unit_class != UnitRes[selectedUnit.UnitType].unit_class)
 				continue;
 
 			if (!World.GetLoc(unit.NextLocX, unit.NextLocY).IsExplored())
 				continue;
 
-			if (UnitRes[unit.UnitType].unit_class == unitClass)
-			{
-				Power.reset_selection();
-				unit.SelectedFlag = true;
-				SelectedUnitId = unit.SpriteId;
-				SelectedCount++;
-
-				World.GoToLocation(unit.CurLocX, unit.CurLocY);
-				return;
-			}
+			Power.reset_selection();
+			return unitId;
 		}
+
+		return currentUnitId;
 	}
 }

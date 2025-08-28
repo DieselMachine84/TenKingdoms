@@ -245,9 +245,7 @@ public abstract class Firm : IIdObject
 		}
 
 		LocX1 = -1; // mark deleted
-
-		if (FirmArray.SelectedFirmId == FirmId)
-			FirmArray.SelectedFirmId = 0;
+		LocY1 = -1;
 
 		IsDeleting = false;
 	}
@@ -1656,13 +1654,14 @@ public abstract class Firm : IIdObject
 			Unit unit = UnitArray[unitRecno];
 			unit.TeamId = UnitArray.CurTeamId;
 
-			if (NationId == NationArray.player_recno)
+			//TODO selection
+			/*if (NationId == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
 				UnitArray.SelectedCount++;
 				if (UnitArray.SelectedUnitId == 0)
 					UnitArray.SelectedUnitId = unitRecno; // set first worker as selected
-			}
+			}*/
 		}
 
 		UnitArray.CurTeamId++;
@@ -2513,11 +2512,12 @@ public abstract class Firm : IIdObject
 				BuilderRegionId = World.GetRegionId(unit.CurLocX, unit.CurLocY);
 				unit.DeinitSprite();
 
-				if (unit.SelectedFlag)
+				//TODO selection
+				/*if (unit.SelectedFlag)
 				{
 					unit.SelectedFlag = false;
 					UnitArray.SelectedCount--;
-				}
+				}*/
 			}
 
 			unit.SetMode(UnitConstants.UNIT_MODE_CONSTRUCT, FirmId);

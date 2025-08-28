@@ -201,15 +201,15 @@ public class FirmHarbor : Firm
 
 		del_hosted_ship(ship_recno_array[browseRecno - 1]);
 
-		//-------- selected the ship --------//
+		// TODO select ship
 
-		if (FirmArray.SelectedFirmId == FirmId && NationId == NationArray.player_recno)
+		/*if (FirmArray.SelectedFirmId == FirmId && NationId == NationArray.player_recno)
 		{
 			Power.reset_selection();
 			unit.SelectedFlag = true;
 			UnitArray.SelectedUnitId = unit.SpriteId;
 			UnitArray.SelectedCount = 1;
-		}
+		}*/
 	}
 
 	public void del_hosted_ship(int delUnitRecno)

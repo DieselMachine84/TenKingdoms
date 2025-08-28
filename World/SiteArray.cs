@@ -248,11 +248,11 @@ public class SiteArray : DynArray<Site>
 			if (!World.GetLoc(site.LocX, site.LocY).IsExplored())
 				continue;
 
-			if (site.SiteType == siteType && !site.HasMine)
-			{
-				Power.reset_selection();
-				return site.SiteId;
-			}
+			if (site.SiteType != siteType || site.HasMine)
+				continue;
+
+			Power.reset_selection();
+			return siteId;
 		}
 
 		return currentSiteId;

@@ -18,7 +18,6 @@ public class World
 	private HillRes HillRes => Sys.Instance.HillRes;
 	private PlantRes PlantRes => Sys.Instance.PlantRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
-	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private SECtrl SECtrl => Sys.Instance.SECtrl;
 
@@ -144,35 +143,6 @@ public class World
 		}
 	}
 	
-	public void GoToLocation(int locX, int locY, bool select = false)
-	{
-		//TODO implement
-	}
-
-	public void DisplayNext(int seekDir, bool sameNation)
-	{
-		//--- if the selected one is a town ----//
-
-		if (TownArray.SelectedTownId != 0)
-		{
-			TownArray.DisplayNext(seekDir, sameNation);
-		}
-
-		//--- if the selected one is a firm ----//
-
-		if (FirmArray.SelectedFirmId != 0)
-		{
-			FirmArray.DisplayNext(seekDir, sameNation);
-		}
-
-		//--- if the selected one is a unit ----//
-
-		if (UnitArray.SelectedUnitId != 0)
-		{
-			UnitArray.DisplayNext(seekDir, sameNation);
-		}
-	}
-
 	public int GetUnitId(int locX, int locY, int mobileType)
 	{
 		Location location = GetLoc(locX, locY);

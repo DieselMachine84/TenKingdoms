@@ -254,12 +254,13 @@ public class FirmCamp : Firm
 			// set it to the same team as the soldiers which are defined in mobilize_all_worker()
 			unit.TeamId = UnitArray.CurTeamId - 1;
 
-			if (NationId == NationArray.player_recno)
+			//TODO selection
+			/*if (NationId == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
 				UnitArray.SelectedUnitId = OverseerId;
 				UnitArray.SelectedCount++;
-			}
+			}*/
 		}
 
 		AssignOverseer(0);
@@ -325,14 +326,15 @@ public class FirmCamp : Firm
 				unit.UpdateLoyalty(); // the unit is just assigned to a new leader, set its target loyalty
 			}
 
-			if (NationId == NationArray.player_recno)
+			//TODO selection
+			/*if (NationId == NationArray.player_recno)
 			{
 				unit.SelectedFlag = true;
 				UnitArray.SelectedCount++;
 				// set the first soldier as selected; this is also the soldier with the highest leadership (because of sorting)
 				if (UnitArray.SelectedUnitId == 0)
 					UnitArray.SelectedUnitId = unitRecno;
-			}
+			}*/
 		}
 
 		UnitArray.CurTeamId++;

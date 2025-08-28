@@ -491,10 +491,10 @@ public class UnitMarine : Unit
 				break;
 		}
 
-		if (UnitArray.SelectedUnitId == SpriteId)
+		//TODO UI
+		/*if (UnitArray.SelectedUnitId == SpriteId)
 		{
-			//TODO
-			/*if (nation_recno == NationArray.player_recno || Config.show_ai_info)
+			if (nation_recno == NationArray.player_recno || Config.show_ai_info)
 			{
 				int y = INFO_Y1 + 54;
 				UnitInfo* unitInfo = UnitRes[unit_id];
@@ -502,8 +502,8 @@ public class UnitMarine : Unit
 					y += 25;
 
 				disp_stop(y, INFO_UPDATE);
-			}*/
-		}
+			}
+		}*/
 	}
 
 	public void ship_in_firm(int autoMode = 1)
@@ -1442,21 +1442,23 @@ public class UnitMarine : Unit
 
 		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
 
-		if (unit.SelectedFlag)
+		//TODO selection
+		/*if (unit.SelectedFlag)
 		{
 			unit.SelectedFlag = false;
 			UnitArray.SelectedCount--;
-		}
+		}*/
 
 		unit.DeinitSprite();
 
 		//--- if this marine unit is currently selected ---//
 
-		if (UnitArray.SelectedUnitId == SpriteId)
+		//TODO UI
+		/*if (UnitArray.SelectedUnitId == SpriteId)
 		{
-			//if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
-				//disp_info(INFO_UPDATE);
-		}
+			if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
+				disp_info(INFO_UPDATE);
+		}*/
 	}
 
 	public void unload_unit(int unitSeqId, int remoteAction)
@@ -1539,15 +1541,15 @@ public class UnitMarine : Unit
 					unit.InitSprite(checkXLoc, checkYLoc);
 					unit.SetMode(0);
 
-					if (isAll && NationId ==
-					    NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
+					//TODO selection
+					/*if (isAll && NationId == NationArray.player_recno)
 					{
 						unit.SelectedFlag = true; // mark selected if unload all
 						UnitArray.SelectedCount++;
 
 						if (UnitArray.SelectedUnitId == 0)
 							UnitArray.SelectedUnitId = unit.SpriteId;
-					}
+					}*/
 
 					unprocess--;
 					UnitsOnBoard.Remove(unit.SpriteId);
