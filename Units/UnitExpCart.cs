@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class UnitExpCart : Unit
+public class UnitExpCart : UnitWeapon
 {
 	public bool triggered;
 

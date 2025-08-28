@@ -181,17 +181,6 @@ public class GodRes
         }
     }
 
-    public bool is_god_unit(int unitId)
-    {
-        for (int i = 1; i <= god_info_array.Length; i++)
-        {
-            if (this[i].unit_id == unitId)
-                return true;
-        }
-
-        return false;
-    }
-
     public void init_nation_know(int nationRecno)
     {
         for (int i = 1; i <= god_info_array.Length; i++)

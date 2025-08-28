@@ -40,31 +40,29 @@ public class UnitArray : SpriteArray
 
     protected override Sprite CreateNewObject(int objectType)
     {
-	    switch (objectType)
+	    UnitInfo unitInfo = UnitRes[objectType];
+	    switch (unitInfo.unit_class)
 	    {
-		    case UnitConstants.UNIT_CARAVAN:
+		    case UnitConstants.UNIT_CLASS_HUMAN:
+			    return new UnitHuman();
+		    
+		    case UnitConstants.UNIT_CLASS_WEAPON:
+			    return objectType == UnitConstants.UNIT_EXPLOSIVE_CART ? new UnitExpCart() : new UnitWeapon();
+
+		    case UnitConstants.UNIT_CLASS_CARAVAN:
 			    return new UnitCaravan();
 
-		    case UnitConstants.UNIT_VESSEL:
-		    case UnitConstants.UNIT_TRANSPORT:
-		    case UnitConstants.UNIT_CARAVEL:
-		    case UnitConstants.UNIT_GALLEON:
+		    case UnitConstants.UNIT_CLASS_SHIP:
 			    return new UnitMarine();
+		    
+		    case UnitConstants.UNIT_CLASS_GOD:
+			    return new UnitGod();
+		    
+		    case UnitConstants.UNIT_CLASS_MONSTER:
+			    return new UnitMonster();
 
-		    case UnitConstants.UNIT_EXPLOSIVE_CART:
-			    return new UnitExpCart();
-
-		    default:
-			    UnitInfo unitInfo = UnitRes[objectType];
-
-			    if (unitInfo.is_monster != 0)
-				    return new UnitMonster();
-
-			    if (GodRes.is_god_unit(objectType))
-				    return new UnitGod();
-
-			    return new Unit();
 	    }
+	    throw new NotSupportedException();
     }
 
     public Unit AddUnit(int unitType, int nationId, int rankId = 0, int unitLoyalty = 0, int startLocX = -1, int startLocY = -1)

@@ -316,7 +316,6 @@ public class UnitInfo
 	public int dll_sprite_id;
 	public int race_id;
 	public char unit_class;
-	public int is_monster;
 
 	public int mobile_type;
 

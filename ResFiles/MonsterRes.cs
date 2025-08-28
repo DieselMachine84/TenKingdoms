@@ -265,10 +265,6 @@ public class MonsterRes
             monsterInfo.unit_id = Misc.ToInt32(monsterRec.unit_id);
             monsterInfo.level = monsterRec.level - '0';
             monsterInfo.firm_build_code = Misc.ToString(monsterRec.firm_build_code);
-
-            //---- set the monster_id in UnitInfo ----//
-
-            UnitRes[monsterInfo.unit_id].is_monster = 1;
         }
     }
 

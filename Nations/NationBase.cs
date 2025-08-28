@@ -1108,9 +1108,7 @@ public class NationBase : IIdObject
             if (unit.NationId != nation_recno)
                 continue;
 
-            //----- if it is a god, resign it -------//
-
-            if (GodRes.is_god_unit(unit.UnitType))
+            if (unit is UnitGod)
             {
                 unit.Resign(InternalConstants.COMMAND_AUTO);
                 continue;
