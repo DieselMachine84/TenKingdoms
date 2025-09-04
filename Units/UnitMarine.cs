@@ -2159,16 +2159,16 @@ public class UnitMarine : Unit
 		return false;
 	}
 
-	public bool should_show_info()
+	public override bool ShouldShowInfo()
 	{
-		if (Config.show_ai_info || NationId == NationArray.player_recno)
+		if (base.ShouldShowInfo())
 			return true;
 
 		//--- if any of the units on the ship are spies of the player ---//
 
-		foreach (var unitId in UnitsOnBoard)
+		for (int i = 0; i < UnitsOnBoard.Count; i++)
 		{
-			if (UnitArray[unitId].IsOwn())
+			if (UnitArray[UnitsOnBoard[i]].IsOwn())
 				return true;
 		}
 

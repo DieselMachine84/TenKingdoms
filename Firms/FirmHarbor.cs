@@ -529,18 +529,16 @@ public class FirmHarbor : Firm
 		build_unit_id = 0;
 	}
 
-	private bool should_show_harbor_info()
+	public override bool ShouldShowInfo()
 	{
-		if (ShouldShowInfo())
+		if (base.ShouldShowInfo())
 			return true;
 
 		//--- if any of the ships in the harbor has the spies of the player ---//
 
 		for (int i = 0; i < ship_recno_array.Count; i++)
 		{
-			UnitMarine unitMarine = (UnitMarine)UnitArray[ship_recno_array[i]];
-
-			if (unitMarine.should_show_info())
+			if (UnitArray[ship_recno_array[i]].ShouldShowInfo())
 				return true;
 		}
 

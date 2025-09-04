@@ -28,10 +28,8 @@ public partial class Renderer
             return;
         }
 
-        if (!firm.ShouldShowInfo())
-            return;
-
-        firm.DrawDetails(this);
+        if (firm.ShouldShowInfo())
+            firm.DrawDetails(this);
     }
 
     private void DrawWorkers(Firm firm, int y)

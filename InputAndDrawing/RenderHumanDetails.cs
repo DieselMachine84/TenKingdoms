@@ -19,7 +19,7 @@ public partial class Renderer
                     title = (unit.UnitMode == UnitConstants.UNIT_MODE_REBEL) ? "Rebel Leader" : "General";
                     break;
                 case Unit.RANK_SOLDIER:
-                    if (ShouldShowInfo(unit))
+                    if (unit.ShouldShowInfo())
                     {
                         title = unit.Skill.SkillId switch
                         {

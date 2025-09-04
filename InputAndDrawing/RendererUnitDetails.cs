@@ -4,17 +4,6 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-    private bool ShouldShowInfo(Unit unit)
-    {
-        if (Config.show_ai_info || unit.IsOwn())
-            return true;
-        
-        if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(unit.NextLocX, unit.NextLocY))
-            return true;
-
-        return false;
-    }
-    
     private void DrawUnitDetails(Unit unit)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
@@ -25,7 +14,8 @@ public partial class Renderer
         }
         // TODO draw hit points bar and X button
         
-        unit.DrawDetails(this);
+        if (unit.ShouldShowInfo())
+            unit.DrawDetails(this);
     }
 
     private void HandleUnitDetailsInput(Unit unit)

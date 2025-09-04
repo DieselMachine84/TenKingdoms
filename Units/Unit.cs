@@ -2950,6 +2950,17 @@ public abstract partial class Unit : Sprite
 
 		return 0;
 	}
+
+	public virtual bool ShouldShowInfo()
+	{
+		if (Config.show_ai_info || IsOwn())
+			return true;
+        
+		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(NextLocX, NextLocY))
+			return true;
+
+		return false;
+	}
 	
 	
 	public virtual string GetUnitName(bool withTitle = true)

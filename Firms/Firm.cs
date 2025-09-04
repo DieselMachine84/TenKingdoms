@@ -693,7 +693,7 @@ public abstract class Firm : IIdObject
 		return NationArray.player_recno != 0 && NationId == NationArray.player_recno;
 	}
 
-	public bool ShouldShowInfo()
+	public virtual bool ShouldShowInfo()
 	{
 		if (Config.show_ai_info || NationId == NationArray.player_recno || PlayerSpyCount > 0)
 		{
@@ -702,10 +702,9 @@ public abstract class Firm : IIdObject
 
 		//------ if the builder is a spy of the player ------//
 
-		if (BuilderId != 0)
+		if (BuilderId != 0 && UnitArray[BuilderId].TrueNationId() == NationArray.player_recno)
 		{
-			if (UnitArray[BuilderId].TrueNationId() == NationArray.player_recno)
-				return true;
+			return true;
 		}
 
 		//----- if any of the workers belong to the player, show the info of this firm -----//
