@@ -119,11 +119,11 @@ public partial class Renderer
             PutText(FontSan, SpyArray[unit.SpyId].SpySkill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }
         
-        if (unit.IsOwnSpy())
-            DrawSpyCloakPanel(unit);
-        
         if (unit.IsOwn())
             DrawButtons(unit);
+
+        if (unit.IsOwnSpy())
+            DrawSpyCloakPanel(unit);
     }
 
     private void DrawButtons(Unit unit)
@@ -349,123 +349,102 @@ public partial class Renderer
                     SECtrl.immediate_sound("TURN_OFF");
             }
 
-            if (button2Pressed)
+            if (button2Pressed && IsRewardEnabled(unit))
             {
-                if (IsRewardEnabled(unit))
-                {
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <unit no> + <rewarding nation recno>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
-                        //*shortPtr = i;
-                        //shortPtr[1] = nation_array.player_recno;
-                    //}
-                    //else
-                    //{
-                        unit.Reward(NationArray.player_recno);
-                    //}
-                    
-                    SECtrl.immediate_sound("TURN_ON");
-                }
+                //if (remote.is_enable())
+                //{
+                    //// packet structure : <unit no> + <rewarding nation recno>
+                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
+                    //*shortPtr = i;
+                    //shortPtr[1] = nation_array.player_recno;
+                //}
+                //else
+                //{
+                    unit.Reward(NationArray.player_recno);
+                //}
+
+                SECtrl.immediate_sound("TURN_ON");
             }
 
-            if (button3Pressed)
+            if (button3Pressed && IsSettleEnabled(unit))
             {
-                if (IsSettleEnabled(unit))
-                {
-                    //
-                }
+                //
             }
 
-            if (button4Pressed)
+            if (button4Pressed && IsBuildEnabled(unit))
             {
-                if (IsBuildEnabled(unit))
-                {
-                    //
-                }
+                //
             }
 
-            if (button5Pressed)
+            if (button5Pressed && (IsPromoteEnabled(unit) || IsDemoteEnabled(unit)))
             {
-                if (IsPromoteEnabled(unit) || IsDemoteEnabled(unit))
-                {
-                    bool promote = IsPromoteEnabled(unit);
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <unit recno> <new rank>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_SET_RANK, 2*sizeof(short));
-                        //*shortPtr = sprite_recno;
-                        //shortPtr[1] = promote ? RANK_GENERAL : RANK_SOLDIER;
-                    //}
-                    //else
-                    //{
-                        unit.SetRank(promote ? Unit.RANK_GENERAL : Unit.RANK_SOLDIER);
-                    //}
-                    
-                    SECtrl.immediate_sound(promote ? "TURN_ON" : "TURN_OFF");
-                }
+                bool promote = IsPromoteEnabled(unit);
+                //if (remote.is_enable())
+                //{
+                    //// packet structure : <unit recno> <new rank>
+                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_SET_RANK, 2*sizeof(short));
+                    //*shortPtr = sprite_recno;
+                    //shortPtr[1] = promote ? RANK_GENERAL : RANK_SOLDIER;
+                //}
+                //else
+                //{
+                    unit.SetRank(promote ? Unit.RANK_GENERAL : Unit.RANK_SOLDIER);
+                //}
+
+                SECtrl.immediate_sound(promote ? "TURN_ON" : "TURN_OFF");
             }
 
-            if (button6Pressed)
+            if (button6Pressed && IsReturnToCampEnabled(unit))
             {
-                if (IsReturnToCampEnabled(unit))
-                {
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <no. of units> <unit recno>...
-                        //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
-                        //*shortPtr = selectedCount;
-                        //shortPtr++;
-                        //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
-                    //}
-                    //else
-                    //{
-                        unit.ReturnCamp();
-                    //}
-                    SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
-                }
+                //if (remote.is_enable())
+                //{
+                    //// packet structure : <no. of units> <unit recno>...
+                    //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
+                    //*shortPtr = selectedCount;
+                    //shortPtr++;
+                    //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
+                //}
+                //else
+                //{
+                    unit.ReturnCamp();
+                //}
+                SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
             }
 
-            if (button7Pressed)
+            if (button7Pressed && IsSpyButtonsEnabled(unit))
             {
-                if (IsSpyButtonsEnabled(unit))
-                {
-                    Spy spy = SpyArray[unit.SpyId];
-                    bool newNotifyFlag = !spy.NotifyCloakedNation;
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <spy recno> <new notify_cloaked_nation_flag>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_CHANGE_NOTIFY_FLAG, sizeof(short)*2);
-                        //*shortPtr = unitPtr->spy_recno;
-                        //shortPtr[1] = newNotifyFlag;
-                    //}
-                    //else
-                    //{
-                        spy.NotifyCloakedNation = newNotifyFlag;
-                    //}
-                    
-                    SECtrl.immediate_sound(newNotifyFlag ? "TURN_ON" : "TURN_OFF");
-                }
+                Spy spy = SpyArray[unit.SpyId];
+                bool newNotifyFlag = !spy.NotifyCloakedNation;
+                //if (remote.is_enable())
+                //{
+                    //// packet structure : <spy recno> <new notify_cloaked_nation_flag>
+                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_CHANGE_NOTIFY_FLAG, sizeof(short)*2);
+                    //*shortPtr = unitPtr->spy_recno;
+                    //shortPtr[1] = newNotifyFlag;
+                //}
+                //else
+                //{
+                    spy.NotifyCloakedNation = newNotifyFlag;
+                //}
+
+                SECtrl.immediate_sound(newNotifyFlag ? "TURN_ON" : "TURN_OFF");
             }
 
-            if (button8Pressed)
+            if (button8Pressed && IsSpyButtonsEnabled(unit))
             {
-                if (IsSpyButtonsEnabled(unit))
-                {
-                    Spy spy = SpyArray[unit.SpyId];
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <spy recno>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_DROP_IDENTITY, sizeof(short));
-                        //shortPtr[0] = unitPtr->spy_recno;
-                    //}
-                    //else
-                    //{
-                        spy.DropSpyIdentity();
-                    //}
-                    
-                    SECtrl.immediate_sound("TURN_OFF");
-                }
+                Spy spy = SpyArray[unit.SpyId];
+                //if (remote.is_enable())
+                //{
+                    //// packet structure : <spy recno>
+                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_DROP_IDENTITY, sizeof(short));
+                    //shortPtr[0] = unitPtr->spy_recno;
+                //}
+                //else
+                //{
+                    spy.DropSpyIdentity();
+                //}
+
+                SECtrl.immediate_sound("TURN_OFF");
             }
         }
 
