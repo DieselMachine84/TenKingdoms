@@ -32,7 +32,7 @@ public class Spy : IIdObject
 	public int CloakedNationId { get; set; }
 
 	// whether the spy will send a surrendering message to the cloaked nation when it changes its cloak to the nation
-	public int NotifyCloakedNation { get; set; }
+	public bool NotifyCloakedNation { get; set; }
 	public bool Exposed { get; set; } // this is set to 1 when the spy finished stealing the secret of a nation.
 
 	public int RaceId { get; set; }
@@ -876,7 +876,7 @@ public class Spy : IIdObject
 			// when a spy has been assigned to a firm, its notification flag should be set to 1,
 			// so the nation can control it as it is one of its own units
 			if (FirmArray[SpyPlaceId].NationId != TrueNationId)
-				NotifyCloakedNation = 1;
+				NotifyCloakedNation = true;
 		}
 		else if (SpyPlace == SPY_TOWN)
 		{
@@ -891,7 +891,7 @@ public class Spy : IIdObject
 			CloakedNationId = TownArray[SpyPlaceId].NationId;
 
 			if (TownArray[SpyPlaceId].NationId != TrueNationId)
-				NotifyCloakedNation = 1;
+				NotifyCloakedNation = true;
 		}
 	}
 

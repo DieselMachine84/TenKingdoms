@@ -1025,8 +1025,7 @@ public abstract partial class Unit : Sprite
 				//---------------------------------------------------------//
 				// check whether the firm can be built in the specified location
 				//---------------------------------------------------------//
-				if (shouldProceed && World.CanBuildFirm(ActionLocX, ActionLocY, ActionParam, SpriteId) != 0 &&
-				    FirmRes[ActionParam].can_build(SpriteId))
+				if (shouldProceed && World.CanBuildFirm(ActionLocX, ActionLocY, ActionParam, SpriteId) != 0 && CanBuild(ActionParam))
 				{
 					//---------------------------------------------------------------------------//
 					// if the unit inside the firm location, deinit the unit to free the space for building firm
@@ -3601,7 +3600,7 @@ public abstract partial class Unit : Sprite
 
 		if (IsVisible() && NationId != 0)
 		{
-			if (SpyId == 0 || SpyArray[SpyId].NotifyCloakedNation != 0)
+			if (SpyId == 0 || SpyArray[SpyId].NotifyCloakedNation)
 			{
 				// generals shouldn't automatically be assigned to camps, they should just move near your villages
 				if (Rank == RANK_GENERAL)
@@ -3838,6 +3837,59 @@ public abstract partial class Unit : Sprite
 		return Rank != RANK_KING;
 	}
 
+	public bool CanBuild(int firmType)
+	{
+		if (NationId == 0)
+			return false;
+
+		FirmInfo firmInfo = FirmRes[firmType];
+		if (!firmInfo.buildable)
+			return false;
+
+		if (firmInfo.get_nation_tech_level(NationId) == 0)
+			return false;
+
+		if (firmType == Firm.FIRM_BASE) // only if the nation has acquired the myth to build it
+		{
+			if (Rank == RANK_GENERAL || Rank == RANK_KING || Skill.SkillId == Skill.SKILL_CONSTRUCTION)
+			{
+				//----- each nation can only build one seat of power -----//
+
+				if (RaceId > 0 && NationArray[NationId].base_count_array[RaceId - 1] == 0)
+				{
+					//--- if this nation has acquired the needed scroll of power ---//
+
+					return NationArray[NationId].know_base_array[RaceId - 1] != 0;
+				}
+			}
+
+			return false;
+		}
+
+		if (Rank == RANK_KING)
+		{
+			if (firmType == Firm.FIRM_CAMP || firmType == Firm.FIRM_INN)
+				return true;
+		}
+
+		//------ unit with construction skill knows how to build all buildings -----//
+
+		if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firmInfo.firm_race_id == 0)
+			return true;
+
+		//----- if the firm is race specific, if the unit is right race, return true ----//
+
+		if (firmInfo.firm_race_id == RaceId)
+			return true;
+
+		//---- if the unit has the skill needed by the firm or the unit has general construction skill ----//
+
+		if (firmInfo.firm_skill_id != 0 && firmInfo.firm_skill_id == Skill.SkillId)
+			return true;
+
+		return false;
+	}
+
 	public void Resign(int remoteAction)
 	{
 		//if (!remoteAction && remote.is_enable())
@@ -4063,7 +4115,7 @@ public abstract partial class Unit : Sprite
 		if (spy.TrueNationId != NationArray.player_recno)
 		{
 			if (Rank == RANK_GENERAL || UnitMode == UnitConstants.UNIT_MODE_OVERSEE ||
-			    (spy.NotifyCloakedNation != 0 && groupDefect == 0))
+			    (spy.NotifyCloakedNation && groupDefect == 0))
 			{
 				//-- if this spy's cloaked nation is the player's nation, the player will be notified --//
 
@@ -4073,7 +4125,7 @@ public abstract partial class Unit : Sprite
 
 			//---- send news to the cloaked nation if notify flag is on ---//
 
-			if (spy.NotifyCloakedNation != 0 && groupDefect == 0)
+			if (spy.NotifyCloakedNation && groupDefect == 0)
 			{
 				if (newNationId == NationArray.player_recno) // cloaked as the player's nation
 					NewsArray.unit_betray(SpriteId, newNationId);
@@ -4545,6 +4597,9 @@ public abstract partial class Unit : Sprite
 		if (HomeCampId == 0)
 			return false;
 
+		if (IsUnitDead() || !IsVisible())
+			return false;
+
 		Firm firm = FirmArray[HomeCampId];
 
 		if (firm.RegionId != RegionId())
@@ -4576,7 +4631,7 @@ public abstract partial class Unit : Sprite
 			//
 			//---------------------------------------------//
 
-			if (SpyArray[SpyId].NotifyCloakedNation == 0)
+			if (!SpyArray[SpyId].NotifyCloakedNation)
 				return;
 
 			if (Info.TotalDays % 5 != SpriteId % 5)
@@ -4727,7 +4782,7 @@ public abstract partial class Unit : Sprite
 
 		//--- if it's a spy from other nation, don't control it ---//
 
-		if (SpyId != 0 && TrueNationId() != NationId && SpyArray[SpyId].NotifyCloakedNation == 0 && Info.TotalDays % 60 != SpriteId % 60)
+		if (SpyId != 0 && TrueNationId() != NationId && !SpyArray[SpyId].NotifyCloakedNation && Info.TotalDays % 60 != SpriteId % 60)
 		{
 			return;
 		}
@@ -5265,7 +5320,7 @@ public abstract partial class Unit : Sprite
 				//---- try to build one if this unit can ----//
 
 				// if this unit is commanded by a leader, let the leader build the camp
-				if (ownNation.cash > FirmRes[Firm.FIRM_CAMP].setup_cost && FirmRes[Firm.FIRM_CAMP].can_build(SpriteId) && LeaderId == 0)
+				if (ownNation.cash > FirmRes[Firm.FIRM_CAMP].setup_cost && CanBuild(Firm.FIRM_CAMP) && LeaderId == 0)
 				{
 					AIBuildCamp();
 				}

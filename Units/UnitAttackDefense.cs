@@ -4608,7 +4608,7 @@ public partial class Unit
 		{
 			Spy spy = SpyArray[targetUnit.SpyId];
 
-			if (spy.TrueNationId == NationId && spy.NotifyCloakedNation == 0)
+			if (spy.TrueNationId == NationId && !spy.NotifyCloakedNation)
 				return false;
 		}
 
@@ -4616,7 +4616,7 @@ public partial class Unit
 		{
 			Spy spy = SpyArray[SpyId];
 
-			if (spy.TrueNationId == targetUnit.NationId && spy.NotifyCloakedNation == 0)
+			if (spy.TrueNationId == targetUnit.NationId && !spy.NotifyCloakedNation)
 				return false;
 		}
 

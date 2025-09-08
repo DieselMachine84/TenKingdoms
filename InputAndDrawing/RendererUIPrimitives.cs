@@ -18,6 +18,8 @@ public partial class Renderer
 	private const int ButtonsMineY = DetailsY1 + 412;
 	private const int ButtonsFactoryY = DetailsY1 + 412;
 	private const int ButtonsCampY = DetailsY1 + 376;
+	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
+	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
 
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
 	private int _colorSquareWidth;
@@ -100,6 +102,9 @@ public partial class Renderer
 	private IntPtr _fieldPanel67Texture;
 	private int _fieldPanel67Width;
 	private int _fieldPanel67Height;
+	private IntPtr _fieldPanel75Texture;
+	private int _fieldPanel75Width;
+	private int _fieldPanel75Height;
 	private IntPtr _fieldPanel111Texture;
 	private int _fieldPanel111Width;
 	private int _fieldPanel111Height;
@@ -164,6 +169,39 @@ public partial class Renderer
 	private IntPtr _buttonChangeProductionTexture;
 	private int _buttonChangeProductionWidth;
 	private int _buttonChangeProductionHeight;
+	private IntPtr _buttonSucceedKingTexture;
+	private int _buttonSucceedKingWidth;
+	private int _buttonSucceedKingHeight;
+	private IntPtr _buttonAggressionOffTexture;
+	private int _buttonAggressionOffWidth;
+	private int _buttonAggressionOffHeight;
+	private IntPtr _buttonAggressionOnTexture;
+	private int _buttonAggressionOnWidth;
+	private int _buttonAggressionOnHeight;
+	private IntPtr _buttonSettleTexture;
+	private int _buttonSettleWidth;
+	private int _buttonSettleHeight;
+	private IntPtr _buttonBuildTexture;
+	private int _buttonBuildWidth;
+	private int _buttonBuildHeight;
+	private IntPtr _buttonPromoteTexture;
+	private int _buttonPromoteWidth;
+	private int _buttonPromoteHeight;
+	private IntPtr _buttonDemoteTexture;
+	private int _buttonDemoteWidth;
+	private int _buttonDemoteHeight;
+	private IntPtr _buttonReturnToCampTexture;
+	private int _buttonReturnToCampWidth;
+	private int _buttonReturnToCampHeight;
+	private IntPtr _buttonSpyNotifyOnTexture;
+	private int _buttonSpyNotifyOnWidth;
+	private int _buttonSpyNotifyOnHeight;
+	private IntPtr _buttonSpyNotifyOffTexture;
+	private int _buttonSpyNotifyOffWidth;
+	private int _buttonSpyNotifyOffHeight;
+	private IntPtr _buttonDropSpyIdentityTexture;
+	private int _buttonDropSpyIdentityWidth;
+	private int _buttonDropSpyIdentityHeight;
 
 	private IntPtr _buttonSpyMenuTexture;
 	private int _buttonSpyMenuWidth;
@@ -349,6 +387,10 @@ public partial class Renderer
 		_fieldPanel67Height = 18;
 		byte[] fieldPanel67Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel67Width, _fieldPanel67Height);
 		_fieldPanel67Texture = Graphics.CreateTextureFromBmp(fieldPanel67Bitmap, _fieldPanel67Width, _fieldPanel67Height, 32);
+		_fieldPanel75Width = 75;
+		_fieldPanel75Height = 18;
+		byte[] fieldPanel75Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel75Width, _fieldPanel75Height);
+		_fieldPanel75Texture = Graphics.CreateTextureFromBmp(fieldPanel75Bitmap, _fieldPanel75Width, _fieldPanel75Height, 32);
 		_fieldPanel111Width = 111;
 		_fieldPanel111Height = 18;
 		byte[] fieldPanel111Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel111Width, _fieldPanel111Height);
@@ -463,6 +505,66 @@ public partial class Renderer
 		_buttonChangeProductionHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonChangeProductionWidth, _buttonChangeProductionHeight);
 		_buttonChangeProductionTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonChangeProductionWidth, _buttonChangeProductionHeight);
+		buttonData = buttonImages.Read("SUCCEED");
+		_buttonSucceedKingWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSucceedKingHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSucceedKingWidth, _buttonSucceedKingHeight);
+		_buttonSucceedKingTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSucceedKingWidth, _buttonSucceedKingHeight);
+		buttonData = buttonImages.Read("AGGRESS0");
+		_buttonAggressionOffWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonAggressionOffHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonAggressionOffWidth, _buttonAggressionOffHeight);
+		_buttonAggressionOffTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonAggressionOffWidth, _buttonAggressionOffHeight);
+		buttonData = buttonImages.Read("AGGRESS1");
+		_buttonAggressionOnWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonAggressionOnHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonAggressionOnWidth, _buttonAggressionOnHeight);
+		_buttonAggressionOnTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonAggressionOnWidth, _buttonAggressionOnHeight);
+		buttonData = buttonImages.Read("SETTLE");
+		_buttonSettleWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSettleHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSettleWidth, _buttonSettleHeight);
+		_buttonSettleTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSettleWidth, _buttonSettleHeight);
+		buttonData = buttonImages.Read("BUILD");
+		_buttonBuildWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonBuildHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonBuildWidth, _buttonBuildHeight);
+		_buttonBuildTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonBuildWidth, _buttonBuildHeight);
+		buttonData = buttonImages.Read("PROMOTE");
+		_buttonPromoteWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonPromoteHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonPromoteWidth, _buttonPromoteHeight);
+		_buttonPromoteTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPromoteWidth, _buttonPromoteHeight);
+		buttonData = buttonImages.Read("DEMOTE");
+		_buttonDemoteWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDemoteHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDemoteWidth, _buttonDemoteHeight);
+		_buttonDemoteTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDemoteWidth, _buttonDemoteHeight);
+		buttonData = buttonImages.Read("RETCAMP");
+		_buttonReturnToCampWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonReturnToCampHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonReturnToCampWidth, _buttonReturnToCampHeight);
+		_buttonReturnToCampTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonReturnToCampWidth, _buttonReturnToCampHeight);
+		buttonData = buttonImages.Read("DEMOTE");
+		_buttonDemoteWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDemoteHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDemoteWidth, _buttonDemoteHeight);
+		_buttonDemoteTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDemoteWidth, _buttonDemoteHeight);
+		buttonData = buttonImages.Read("SPYNOTI1");
+		_buttonSpyNotifyOnWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpyNotifyOnHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyNotifyOnWidth, _buttonSpyNotifyOnHeight);
+		_buttonSpyNotifyOnTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyNotifyOnWidth, _buttonSpyNotifyOnHeight);
+		buttonData = buttonImages.Read("SPYNOTI0");
+		_buttonSpyNotifyOffWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpyNotifyOffHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyNotifyOffWidth, _buttonSpyNotifyOffHeight);
+		_buttonSpyNotifyOffTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyNotifyOffWidth, _buttonSpyNotifyOffHeight);
+		buttonData = buttonImages.Read("NOSPY");
+		_buttonDropSpyIdentityWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDropSpyIdentityHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDropSpyIdentityWidth, _buttonDropSpyIdentityHeight);
+		_buttonDropSpyIdentityTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDropSpyIdentityWidth, _buttonDropSpyIdentityHeight);
 		
 		buttonData = buttonImages.Read("SPYMENU");
 		_buttonSpyMenuWidth = BitConverter.ToInt16(buttonData, 0);
@@ -677,6 +779,11 @@ public partial class Renderer
 		Graphics.DrawBitmap(_fieldPanel67Texture, x, y, Scale(_fieldPanel67Width), Scale(_fieldPanel67Height));
 	}
 
+	private void DrawFieldPanel75(int x, int y)
+	{
+		Graphics.DrawBitmap(_fieldPanel75Texture, x, y, Scale(_fieldPanel75Width), Scale(_fieldPanel75Height));
+	}
+	
 	private void DrawFieldPanel111(int x, int y)
 	{
 		Graphics.DrawBitmap(_fieldPanel111Texture, x, y, Scale(_fieldPanel111Width), Scale(_fieldPanel111Height));

@@ -299,63 +299,6 @@ public class FirmInfo
         FirmRes = firmRes;
     }
 
-    public bool can_build(int unitRecno)
-    {
-        if (!buildable)
-            return false;
-
-        Unit unit = UnitArray[unitRecno];
-
-        if (unit.NationId == 0)
-            return false;
-
-        if (get_nation_tech_level(unit.NationId) == 0)
-            return false;
-
-        //------ fortress of power ------//
-
-        if (firm_id == Firm.FIRM_BASE) // only if the nation has acquired the myth to build it
-        {
-            if (unit.Rank == Unit.RANK_GENERAL ||
-                unit.Rank == Unit.RANK_KING ||
-                unit.Skill.SkillId == Skill.SKILL_PRAYING ||
-                unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
-            {
-                //----- each nation can only build one seat of power -----//
-
-                if (unit.NationId > 0 && unit.RaceId > 0 &&
-                    NationArray[unit.NationId].base_count_array[unit.RaceId - 1] == 0)
-                {
-                    //--- if this nation has acquired the needed scroll of power ---//
-
-                    return NationArray[unit.NationId].know_base_array[unit.RaceId - 1] != 0;
-                }
-            }
-
-            return false;
-        }
-
-        //------ a king or a unit with construction skill knows how to build all buildings -----//
-
-        if (firm_race_id == 0)
-        {
-            if (unit.Rank == Unit.RANK_KING || unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
-                return true;
-        }
-
-        //----- if the firm is race specific, if the unit is right race, return true ----//
-
-        if (firm_race_id == unit.RaceId)
-            return true;
-
-        //---- if the unit has the skill needed by the firm or the unit has general construction skill ----//
-
-        if (firm_skill_id != 0 && firm_skill_id == unit.Skill.SkillId)
-            return true;
-
-        return false;
-    }
-
     public bool is_linkable_to_town;
 
     public bool is_linkable_to_firm(int linkFirmId)

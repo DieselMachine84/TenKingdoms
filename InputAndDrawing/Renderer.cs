@@ -78,6 +78,7 @@ public partial class Renderer : IRenderer
     private static Info Info => Sys.Instance.Info;
     private static World World => Sys.Instance.World;
     private static SECtrl SECtrl => Sys.Instance.SECtrl;
+    private static SERes SERes => Sys.Instance.SERes;
 
     
     private static RockArray DirtArray => Sys.Instance.DirtArray;

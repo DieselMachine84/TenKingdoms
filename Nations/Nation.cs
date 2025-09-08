@@ -747,7 +747,7 @@ public class Nation : NationBase
 		}
 
 		doublebreak:
-		spy.NotifyCloakedNation = 0;
+		spy.NotifyCloakedNation = false;
 		if (nearbyTown != null && nearbyTown.NationId == 0 && spy.CloakedNationId == 0)
 		{
 			Location location = World.GetLoc(actionNode.action_x_loc, actionNode.action_y_loc);
@@ -756,7 +756,7 @@ public class Nation : NationBase
 				Town targetTown = TownArray[location.TownId()];
 				if (targetTown.NationId != 0 && targetTown.NationId != spyUnit.TrueNationId())
 				{
-					spy.NotifyCloakedNation = 1;
+					spy.NotifyCloakedNation = true;
 				}
 			}
 		}
@@ -782,7 +782,7 @@ public class Nation : NationBase
 
 		//------- assign the spy to the target -------//
 
-		if (spy.NotifyCloakedNation == 0)
+		if (!spy.NotifyCloakedNation)
 			spyUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		else
 			spyUnit.AIMoveToNearbyTown();

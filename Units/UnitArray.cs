@@ -143,40 +143,6 @@ public class UnitArray : SpriteArray
 	    DeleteUnit(this[unitId]);
     }
 
-    public void ReturnCamp(int remoteAction, List<int> selectedUnits)
-    {
-	    if (selectedUnits.Count > 0)
-	    {
-		    /*if (!remoteAction && remote.is_enable())
-		    {
-			    // packet structure : <no. of units> <unit recno>...
-			    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
-			    *shortPtr = selectedCount;
-			    shortPtr++;
-			    memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
-
-			    return;
-		    }*/
-		    //else
-		    //{
-			    for (int j = selectedUnits.Count - 1; j >= 0; j--)
-			    {
-				    int unitId = selectedUnits[j];
-				    if (IsDeleted(unitId))
-					    continue;
-
-				    Unit unit = this[unitId];
-				    if (!unit.IsVisible())
-					    continue;
-				    if (unit.IsUnitDead())
-					    continue;
-
-				    unit.ReturnCamp();
-			    }
-		    //}
-	    }
-    }
-
     public void Stop(List<int> selectedUnits, int remoteAction)
     {
 	    //-------- if it's a multiplayer game --------//
