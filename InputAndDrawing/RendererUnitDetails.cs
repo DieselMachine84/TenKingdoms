@@ -6,14 +6,17 @@ public partial class Renderer
 {
     private void DrawUnitDetails(Unit unit)
     {
-        DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-        if (unit.NationId != 0)
+        if (HumanDetailsMode != HumanDetailsMode.BuildMenu)
         {
-            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.NationId], false);
-            Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
+            DrawSmallPanel(DetailsX1 + 2, DetailsY1);
+            if (unit.NationId != 0)
+            {
+                int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.NationId], false);
+                Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
+            }
+            // TODO draw hit points bar and X button
         }
-        // TODO draw hit points bar and X button
-        
+
         if (unit.ShouldShowInfo())
             unit.DrawDetails(this);
     }

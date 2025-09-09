@@ -24,6 +24,9 @@ public partial class Renderer
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
 	private int _colorSquareWidth;
 	private int _colorSquareHeight;
+	private readonly Dictionary<string, IntPtr> _buildButtonTextures = new Dictionary<string, nint>();
+	private int _buildButtonWidth;
+	private int _buildButtonHeight;
 	private IntPtr _gameMenuTexture1;
 	private int _gameMenuTexture1Width;
 	private int _gameMenuTexture1Height;
@@ -146,6 +149,12 @@ public partial class Renderer
 	private IntPtr _buttonDisabledTexture;
 	private int _buttonDisabledWidth;
 	private int _buttonDisabledHeight;
+	private IntPtr _buttonCancelTexture;
+	private int _buttonCancelWidth;
+	private int _buttonCancelHeight;
+	private IntPtr _buttonBuildDownTexture;
+	private int _buttonBuildDownWidth;
+	private int _buttonBuildDownHeight;
 	private IntPtr _buttonRecruitTexture;
 	private IntPtr _buttonRecruitDisabledTexture;
 	private int _buttonRecruitWidth;
@@ -465,6 +474,16 @@ public partial class Renderer
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDownWidth, _buttonDownHeight);
 		_buttonDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDownWidth, _buttonDownHeight);
 
+		buttonData = buttonImages.Read("CANCEL");
+		_buttonCancelWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonCancelHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonCancelWidth, _buttonCancelHeight);
+		_buttonCancelTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonCancelWidth, _buttonCancelHeight);
+		buttonData = buttonImages.Read("F-DOWN");
+		_buttonBuildDownWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonBuildDownHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonBuildDownWidth, _buttonBuildDownHeight);
+		_buttonBuildDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonBuildDownWidth, _buttonBuildDownHeight);
 		buttonData = buttonImages.Read("RECRUIT");
 		_buttonRecruitWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonRecruitHeight = BitConverter.ToInt16(buttonData, 2);
@@ -619,6 +638,38 @@ public partial class Renderer
 		_buttonSpySkillHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpySkillWidth, _buttonSpySkillHeight);
 		_buttonSpySkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpySkillWidth, _buttonSpySkillHeight);
+	}
+
+	private void CreateBuildButtonTextures(int colorScheme)
+	{
+		ResourceIdx buttonImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_BUTTON.RES");
+
+		void CreateBuildButtonTexture(string key)
+		{
+			byte[] buildButton = buttonImages.Read(key);
+			_buildButtonWidth = BitConverter.ToInt16(buildButton, 0);
+			_buildButtonHeight = BitConverter.ToInt16(buildButton, 2);
+			byte[] buildButtonBitmap = buildButton.Skip(4).ToArray();
+			byte[] decompressedBitmap = Graphics.DecompressTransparentBitmap(buildButtonBitmap, _buildButtonWidth, _buildButtonHeight,
+				ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
+			_buildButtonTextures.Add(key, Graphics.CreateTextureFromBmp(decompressedBitmap, _buildButtonWidth, _buildButtonHeight));
+		}
+
+		for (int i = 1; i < Firm.MAX_FIRM_TYPE; i++)
+		{
+			string key = "F-" + i;
+			if (i == Firm.FIRM_BASE)
+			{
+				for (int j = 1; j <= GameConstants.MAX_RACE; j++)
+				{
+					CreateBuildButtonTexture(key + "-" + j);
+				}
+			}
+			else
+			{
+				CreateBuildButtonTexture(key);
+			}
+		}
 	}
 
 	private byte[] CreateDisabledButtonTexture(byte[] buttonData, int width, int height)

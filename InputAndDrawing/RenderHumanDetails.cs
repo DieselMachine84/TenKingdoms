@@ -2,6 +2,8 @@ using System;
 
 namespace TenKingdoms;
 
+enum HumanDetailsMode { Normal, Settle, BuildMenu, Build }
+
 public partial class Renderer
 {
     // TODO main menu
@@ -21,8 +23,34 @@ public partial class Renderer
     // TODO disable reward button when not enough money
     // TODO enable/disable buttons dependent on group count
 
+    private int[] _buildFirmOrder =
+    {
+        Firm.FIRM_CAMP, Firm.FIRM_INN, Firm.FIRM_MINE, Firm.FIRM_FACTORY, Firm.FIRM_RESEARCH, Firm.FIRM_WAR_FACTORY,
+        Firm.FIRM_MARKET, Firm.FIRM_HARBOR, Firm.FIRM_BASE
+    };
+
+    private HumanDetailsMode HumanDetailsMode { get; set; } = HumanDetailsMode.Normal;
+
     public void DrawHumanDetails(UnitHuman unit)
     {
+        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        {
+            DrawSettlePanel();
+            return;
+        }
+
+        if (HumanDetailsMode == HumanDetailsMode.BuildMenu)
+        {
+            DrawBuildMenu(unit);
+            return;
+        }
+
+        if (HumanDetailsMode == HumanDetailsMode.Build)
+        {
+            DrawBuildPanel();
+            return;
+        }
+        
         DrawUnitPanel(DetailsX1 + 2, DetailsY1 + 48);
         string title = String.Empty;
         switch (unit.Rank)
@@ -293,6 +321,24 @@ public partial class Renderer
     
     public void HandleHumanDetailsInput(UnitHuman unit)
     {
+        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        {
+            HandleSettlePanelInput();
+            return;
+        }
+
+        if (HumanDetailsMode == HumanDetailsMode.BuildMenu)
+        {
+            HandleBuildMenuInput();
+            return;
+        }
+
+        if (HumanDetailsMode == HumanDetailsMode.Build)
+        {
+            HandleBuildPanelInput();
+            return;
+        }
+
         if (unit.IsOwn())
         {
             bool button1Pressed = _leftMouseReleased && _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
@@ -368,12 +414,12 @@ public partial class Renderer
 
             if (button3Pressed && IsSettleEnabled(unit))
             {
-                //
+                HumanDetailsMode = HumanDetailsMode.Settle;
             }
 
             if (button4Pressed && IsBuildEnabled(unit))
             {
-                //
+                HumanDetailsMode = HumanDetailsMode.BuildMenu;
             }
 
             if (button5Pressed && (IsPromoteEnabled(unit) || IsDemoteEnabled(unit)))
@@ -544,5 +590,67 @@ public partial class Renderer
     private bool IsSpyCloakPanelVisible(Unit unit, bool canChangeToOtherNation)
     {
         return canChangeToOtherNation || unit.NationId != unit.TrueNationId();
+    }
+
+    private void DrawSettlePanel()
+    {
+        //
+    }
+
+    private void HandleSettlePanelInput()
+    {
+        //
+    }
+
+    private void DrawBuildMenu(Unit unit)
+    {
+        if (_buildButtonTextures.Count == 0)
+            CreateBuildButtonTextures(ColorRemap.ColorSchemes[unit.NationId]);
+
+        bool mouseOnButton = false;
+        int buttonsCount = 0;
+        for (int i = 0; i < _buildFirmOrder.Length; i++)
+        {
+            int firmType = _buildFirmOrder[i];
+            if (unit.CanBuild(firmType))
+            {
+                string resourceName = "F-" + firmType;
+                if (firmType == Firm.FIRM_BASE)
+                    resourceName += "-" + unit.RaceId;
+                int buttonX = DetailsX1 + 56 + 150 * (buttonsCount % 2);
+                int buttonY = DetailsY1 + 2 + 92 * (buttonsCount / 2);
+                Graphics.DrawBitmap(_buildButtonTextures[resourceName], buttonX, buttonY, Scale(_buildButtonWidth), Scale(_buildButtonHeight));
+                mouseOnButton = _mouseButtonX >= buttonX && _mouseButtonX <= buttonX + Scale(_buildButtonWidth) &&
+                                _mouseButtonY >= buttonY && _mouseButtonY <= buttonY + Scale(_buildButtonHeight);
+                if (_leftMousePressed && mouseOnButton)
+                    Graphics.DrawBitmap(_buttonBuildDownTexture, buttonX, buttonY, Scale(_buttonBuildDownWidth), Scale(_buttonBuildDownHeight));
+                buttonsCount++;
+            }
+        }
+
+        int buttonCancelX = DetailsX1 + 56 + 150 * (buttonsCount % 2);
+        int buttonCancelY = DetailsY1 + 2 + 92 * (buttonsCount / 2);
+        mouseOnButton = _mouseButtonX >= buttonCancelX && _mouseButtonX <= buttonCancelX + ButtonWidth &&
+                        _mouseButtonY >= buttonCancelY && _mouseButtonY <= buttonCancelY + ButtonHeight;
+        if (_leftMousePressed && mouseOnButton)
+            Graphics.DrawBitmap(_buttonDownTexture, buttonCancelX, buttonCancelY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+        else
+            Graphics.DrawBitmap(_buttonUpTexture, buttonCancelX, buttonCancelY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+        Graphics.DrawBitmap(_buttonCancelTexture, buttonCancelX + 12, buttonCancelY + 8, Scale(_buttonCancelWidth), Scale(_buttonCancelHeight));
+    }
+
+    private void HandleBuildMenuInput()
+    {
+        //
+    }
+
+    private void DrawBuildPanel()
+    {
+        //
+    }
+
+    private void HandleBuildPanelInput()
+    {
+        //
     }
 }
