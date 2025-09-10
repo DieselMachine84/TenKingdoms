@@ -114,6 +114,10 @@ public partial class Renderer
 	private IntPtr _fieldPanel119Texture;
 	private int _fieldPanel119Width;
 	private int _fieldPanel119Height;
+	private IntPtr _cancelPanelUpTexture;
+	private IntPtr _cancelPanelDownTexture;
+	private int _cancelPanelWidth;
+	private int _cancelPanelHeight;
 	private IntPtr _skillPanelUpTexture;
 	private IntPtr _skillPanelDownTexture;
 	private int _skillPanelWidth;
@@ -408,6 +412,12 @@ public partial class Renderer
 		_fieldPanel119Height = 18;
 		byte[] fieldPanel119Bitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _fieldPanel119Width, _fieldPanel119Height);
 		_fieldPanel119Texture = Graphics.CreateTextureFromBmp(fieldPanel119Bitmap, _fieldPanel119Width, _fieldPanel119Height, 32);
+		_cancelPanelWidth = _smallPanelWidth;
+		_cancelPanelHeight = 25;
+		byte[] cancelPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _cancelPanelWidth, _cancelPanelHeight);
+		_cancelPanelUpTexture = Graphics.CreateTextureFromBmp(cancelPanelUpBitmap, _cancelPanelWidth, _cancelPanelHeight, 32);
+		byte[] cancelPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _cancelPanelWidth, _cancelPanelHeight);
+		_cancelPanelDownTexture = Graphics.CreateTextureFromBmp(cancelPanelDownBitmap, _cancelPanelWidth, _cancelPanelHeight, 32);
 		_skillPanelWidth = _smallPanelWidth;
 		_skillPanelHeight = 40;
 		byte[] skillPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _skillPanelWidth, _skillPanelHeight);
@@ -843,6 +853,16 @@ public partial class Renderer
 	private void DrawFieldPanel119(int x, int y)
 	{
 		Graphics.DrawBitmap(_fieldPanel119Texture, x, y, Scale(_fieldPanel119Width), Scale(_fieldPanel119Height));
+	}
+
+	private void DrawCancelPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmap(_cancelPanelUpTexture, x, y, Scale(_cancelPanelWidth), Scale(_cancelPanelHeight));
+	}
+	
+	private void DrawCancelPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmap(_cancelPanelDownTexture, x, y, Scale(_cancelPanelWidth), Scale(_cancelPanelHeight));
 	}
 	
 	private void DrawSkillPanelUp(int x, int y)

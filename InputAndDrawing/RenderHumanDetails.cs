@@ -7,9 +7,6 @@ enum HumanDetailsMode { Normal, Settle, BuildMenu, Build }
 public partial class Renderer
 {
     // TODO main menu
-    // TODO build menu
-    // TODO please select a location to build
-    // TODO please select a location to settle
     // TODO draw fields
     // TODO draw and handle buttons
     // TODO draw and handle spy panel
@@ -23,11 +20,18 @@ public partial class Renderer
     // TODO disable reward button when not enough money
     // TODO enable/disable buttons dependent on group count
 
-    private int[] _buildFirmOrder =
+    private const int MouseOnBuildSettleCancelButtonX1 = DetailsX1 + 8;
+    private const int MouseOnBuildSettleCancelButtonX2 = DetailsX2 - 8;
+    private const int MouseOnBuildSettleCancelButtonY1 = DetailsY1 + 120;
+    private const int MouseOnBuildSettleCancelButtonY2 = DetailsY1 + 152;
+    
+    private readonly int[] _buildFirmOrder =
     {
         Firm.FIRM_CAMP, Firm.FIRM_INN, Firm.FIRM_MINE, Firm.FIRM_FACTORY, Firm.FIRM_RESEARCH, Firm.FIRM_WAR_FACTORY,
         Firm.FIRM_MARKET, Firm.FIRM_HARBOR, Firm.FIRM_BASE
     };
+
+    private int _buildFirmType;
 
     private HumanDetailsMode HumanDetailsMode { get; set; } = HumanDetailsMode.Normal;
 
@@ -329,7 +333,7 @@ public partial class Renderer
 
         if (HumanDetailsMode == HumanDetailsMode.BuildMenu)
         {
-            HandleBuildMenuInput();
+            HandleBuildMenuInput(unit);
             return;
         }
 
@@ -594,12 +598,30 @@ public partial class Renderer
 
     private void DrawSettlePanel()
     {
-        //
+        DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 48);
+        PutTextCenter(FontSan, "Please select a location", DetailsX1 + 2, DetailsY1 + 64, DetailsX2 - 4, DetailsY1 + 64);
+        PutTextCenter(FontSan, "to settle", DetailsX1 + 2, DetailsY1 + 90, DetailsX2 - 4, DetailsY1 + 90);
+
+        bool mouseOnCancelButton = _mouseButtonX >= MouseOnBuildSettleCancelButtonX1 && _mouseButtonX <= MouseOnBuildSettleCancelButtonX2 &&
+                                   _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
+        if (_leftMousePressed && mouseOnCancelButton)
+            DrawCancelPanelDown(DetailsX1 + 2, DetailsY1 + 117);
+        else
+            DrawCancelPanelUp(DetailsX1 + 2, DetailsY1 + 117);
+        PutTextCenter(FontSan, "Cancel", DetailsX1 + 2, DetailsY1 + 132, DetailsX2 - 4, DetailsY1 + 132);
     }
 
     private void HandleSettlePanelInput()
     {
-        //
+        if (_leftMouseReleased)
+        {
+            bool mouseOnCancelButton = _mouseButtonX >= MouseOnBuildSettleCancelButtonX1 && _mouseButtonX <= MouseOnBuildSettleCancelButtonX2 &&
+                                       _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
+            if (mouseOnCancelButton)
+            {
+                HumanDetailsMode = HumanDetailsMode.Normal;
+            }
+        }
     }
 
     private void DrawBuildMenu(Unit unit)
@@ -639,18 +661,77 @@ public partial class Renderer
         Graphics.DrawBitmap(_buttonCancelTexture, buttonCancelX + 12, buttonCancelY + 8, Scale(_buttonCancelWidth), Scale(_buttonCancelHeight));
     }
 
-    private void HandleBuildMenuInput()
+    private void HandleBuildMenuInput(Unit unit)
     {
-        //
+        if (_leftMouseReleased)
+        {
+            int buttonsCount = 0;
+            for (int i = 0; i < _buildFirmOrder.Length; i++)
+            {
+                int firmType = _buildFirmOrder[i];
+                if (unit.CanBuild(firmType))
+                {
+                    int buttonX = DetailsX1 + 56 + 150 * (buttonsCount % 2);
+                    int buttonY = DetailsY1 + 2 + 92 * (buttonsCount / 2);
+                    if (_mouseButtonX >= buttonX && _mouseButtonX <= buttonX + Scale(_buildButtonWidth) &&
+                        _mouseButtonY >= buttonY && _mouseButtonY <= buttonY + Scale(_buildButtonHeight))
+                    {
+                        _buildFirmType = firmType;
+                        HumanDetailsMode = HumanDetailsMode.Build;
+                    }
+                    buttonsCount++;
+                }
+            }
+
+            int buttonCancelX = DetailsX1 + 56 + 150 * (buttonsCount % 2);
+            int buttonCancelY = DetailsY1 + 2 + 92 * (buttonsCount / 2);
+            if (_mouseButtonX >= buttonCancelX && _mouseButtonX <= buttonCancelX + ButtonWidth &&
+                _mouseButtonY >= buttonCancelY && _mouseButtonY <= buttonCancelY + ButtonHeight)
+            {
+                HumanDetailsMode = HumanDetailsMode.Normal;
+            }
+        }
     }
 
     private void DrawBuildPanel()
     {
-        //
+        string buildFirmText = _buildFirmType switch
+        {
+            Firm.FIRM_CAMP => "Fort",
+            Firm.FIRM_INN => "Inn",
+            Firm.FIRM_MINE => "Mine",
+            Firm.FIRM_FACTORY => "Factory",
+            Firm.FIRM_RESEARCH => "Tower of Science",
+            Firm.FIRM_WAR_FACTORY => "War Factory",
+            Firm.FIRM_MARKET => "Market",
+            Firm.FIRM_HARBOR => "Harbor",
+            Firm.FIRM_BASE => "Seat of Power",
+            _ => ""
+        };
+        DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 48);
+        PutTextCenter(FontSan, "Please select a location", DetailsX1 + 2, DetailsY1 + 64, DetailsX2 - 4, DetailsY1 + 64);
+        PutTextCenter(FontSan, "to build the " + buildFirmText, DetailsX1 + 2, DetailsY1 + 90, DetailsX2 - 4, DetailsY1 + 90);
+
+        bool mouseOnCancelButton = _mouseButtonX >= MouseOnBuildSettleCancelButtonX1 && _mouseButtonX <= MouseOnBuildSettleCancelButtonX2 &&
+                                   _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
+        if (_leftMousePressed && mouseOnCancelButton)
+            DrawCancelPanelDown(DetailsX1 + 2, DetailsY1 + 117);
+        else
+            DrawCancelPanelUp(DetailsX1 + 2, DetailsY1 + 117);
+        PutTextCenter(FontSan, "Cancel", DetailsX1 + 2, DetailsY1 + 132, DetailsX2 - 4, DetailsY1 + 132);
     }
 
     private void HandleBuildPanelInput()
     {
-        //
+        if (_leftMouseReleased)
+        {
+            bool mouseOnCancelButton = _mouseButtonX >= MouseOnBuildSettleCancelButtonX1 && _mouseButtonX <= MouseOnBuildSettleCancelButtonX2 &&
+                                       _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
+            if (mouseOnCancelButton)
+            {
+                HumanDetailsMode = HumanDetailsMode.Normal;
+                _buildFirmType = 0;
+            }
+        }
     }
 }
