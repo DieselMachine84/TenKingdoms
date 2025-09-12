@@ -254,8 +254,9 @@ public partial class Renderer
             }
         }
 
-        foreach (Unit unit in UnitArray)
+        for (int i = 0; i < _selectedUnits.Count; i++)
         {
+            Unit unit = UnitArray[_selectedUnits[i]];
             if (!unit.IsVisible() || unit.IsStealth())
                 continue;
 
@@ -263,8 +264,7 @@ public partial class Renderer
             if (unit.MobileType == UnitConstants.UNIT_SEA)
                 lineColor = Colors.V_WHITE;
 
-            //TODO replace with unit.selected_flag
-            if (unit.SelectedFlag && (Config.show_unit_path & 2) != 0)
+            if ((Config.show_unit_path & 2) != 0)
             {
                 //TODO check this
                 if (Config.show_ai_info || NationArray.player_recno == 0 || unit.BelongsToNation(NationArray.player_recno))
@@ -272,11 +272,11 @@ public partial class Renderer
                     if (unit.PathNodes.Count > 0)
                     {
                         //TODO optimize drawing lines - join them
-                        for (int i = unit.PathNodeIndex + 1; i < unit.PathNodes.Count; i++)
+                        for (int j = unit.PathNodeIndex + 1; j < unit.PathNodes.Count; j++)
                         {
-                            int resultNode1 = unit.PathNodes[i - 1];
+                            int resultNode1 = unit.PathNodes[j - 1];
                             World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
-                            int resultNode2 = unit.PathNodes[i];
+                            int resultNode2 = unit.PathNodes[j];
                             World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
                             DrawLineOnMiniMap(resultNode2LocX, resultNode2LocY, resultNode1LocX, resultNode1LocY, lineColor);
                         }

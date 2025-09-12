@@ -374,7 +374,7 @@ public partial class Renderer
             SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
             //TODO select only under cursor?
             //bool isSelected = (unit.sprite_recno == _selectedUnitId);
-            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, unit.SelectedFlag), unitX, unitY,
+            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
                 Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
     }
@@ -384,9 +384,11 @@ public partial class Renderer
         if ((Config.show_unit_path & 1) == 0)
             return;
 
-        foreach (Unit unit in UnitArray)
+        for (int i = 0; i < _selectedUnits.Count; i++)
         {
-            if (!unit.IsVisible() || !unit.SelectedFlag)
+            Unit unit = UnitArray[_selectedUnits[i]];
+            //TODO unit.IsStealth()?
+            if (!unit.IsVisible())
                 continue;
 
             //TODO check this
@@ -403,11 +405,11 @@ public partial class Renderer
                 }
 
                 //TODO optimize drawing lines - join them
-                for (int i = unit.PathNodeIndex + 1; i < unit.PathNodes.Count; i++)
+                for (int j = unit.PathNodeIndex + 1; j < unit.PathNodes.Count; j++)
                 {
-                    int resultNode1 = unit.PathNodes[i - 1];
+                    int resultNode1 = unit.PathNodes[j - 1];
                     World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
-                    int resultNode2 = unit.PathNodes[i];
+                    int resultNode2 = unit.PathNodes[j];
                     World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
                     if (resultNode1LocX >= _topLeftLocX - 1 && resultNode1LocX <= _topLeftLocX + MainViewWidthInCells &&
                         resultNode2LocX >= _topLeftLocX - 1 && resultNode2LocX <= _topLeftLocX + MainViewWidthInCells &&

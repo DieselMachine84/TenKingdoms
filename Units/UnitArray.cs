@@ -1323,22 +1323,6 @@ public class UnitArray : SpriteArray
 
 	    //-------------------------------------------//
 
-	    //TODO remove this code
-	    if (selectedUnits.Count == 0)
-	    {
-		    // find myself
-		    foreach (Unit unit in this)
-		    {
-			    if (!unit.IsVisible())
-				    continue;
-
-			    if (unit.SelectedFlag && unit.IsOwn())
-			    {
-				    selectedUnits.Add(unit.SpriteId);
-			    }
-		    }
-	    }
-
 	    /*if (!remoteAction && remote.is_enable())
 	    {
 		    // packet structure : <xLoc> <yLoc> <no. of units> <unit recno ...>
@@ -1648,22 +1632,6 @@ public class UnitArray : SpriteArray
 
     public void Settle(int destLocX, int destLocY, bool divided, int remoteAction, List<int> selectedUnits)
     {
-	    //TODO remove this code
-	    if (selectedUnits.Count == 0)
-	    {
-		    // find myself
-		    foreach (Unit unit in this)
-		    {
-			    if (!unit.IsVisible())
-				    continue;
-
-			    if (unit.SelectedFlag && unit.IsOwn())
-			    {
-				    selectedUnits.Add(unit.SpriteId);
-			    }
-		    }
-	    }
-
 	    /*if (!remoteAction && remote.is_enable())
 	    {
 		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>

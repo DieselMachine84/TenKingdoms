@@ -31,11 +31,8 @@ public abstract partial class Unit : Sprite
 	public TeamInfo TeamInfo { get; } = new TeamInfo();
 	public int TeamId { get; set; } // id of defined team
 	public int LeaderId { get; set; } // id of this unit's leader
-	public bool AIUnit { get; set; }
-	
-	
-	public bool SelectedFlag { get; set; } // whether the unit has been selected or not
 	public int GroupId { get; set; } // the group id this unit belong to if it is selected
+	public bool AIUnit { get; set; }
 
 	
 	public int ActionMode { get; set; }
