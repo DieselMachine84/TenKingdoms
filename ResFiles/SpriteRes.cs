@@ -33,51 +33,51 @@ public class SpriteRec
     public char[] first_move_recno = new char[RECNO_LEN];
     public char[] move_count = new char[COUNT_LEN];
 
-    public SpriteRec(byte[] data)
+    public SpriteRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < sprite_code.Length; i++, dataIndex++)
-            sprite_code[i] = Convert.ToChar(data[dataIndex]);
+            sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        sprite_type = Convert.ToChar(data[dataIndex]);
+        sprite_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
-        sprite_sub_type = Convert.ToChar(data[dataIndex]);
+        sprite_sub_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
-        need_turning = Convert.ToChar(data[dataIndex]);
+        need_turning = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
 
         for (int i = 0; i < turn_resolution.Length; i++, dataIndex++)
-            turn_resolution[i] = Convert.ToChar(data[dataIndex]);
+            turn_resolution[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < loc_width.Length; i++, dataIndex++)
-            loc_width[i] = Convert.ToChar(data[dataIndex]);
+            loc_width[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < loc_height.Length; i++, dataIndex++)
-            loc_height[i] = Convert.ToChar(data[dataIndex]);
+            loc_height[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < speed.Length; i++, dataIndex++)
-            speed[i] = Convert.ToChar(data[dataIndex]);
+            speed[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < frames_per_step.Length; i++, dataIndex++)
-            frames_per_step[i] = Convert.ToChar(data[dataIndex]);
+            frames_per_step[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < max_rain_slowdown.Length; i++, dataIndex++)
-            max_rain_slowdown[i] = Convert.ToChar(data[dataIndex]);
+            max_rain_slowdown[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < max_snow_slowdown.Length; i++, dataIndex++)
-            max_snow_slowdown[i] = Convert.ToChar(data[dataIndex]);
+            max_snow_slowdown[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < lightning_damage.Length; i++, dataIndex++)
-            lightning_damage[i] = Convert.ToChar(data[dataIndex]);
+            lightning_damage[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        remap_bitmap_flag = Convert.ToChar(data[dataIndex]);
+        remap_bitmap_flag = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
 
         for (int i = 0; i < first_move_recno.Length; i++, dataIndex++)
-            first_move_recno[i] = Convert.ToChar(data[dataIndex]);
+            first_move_recno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < move_count.Length; i++, dataIndex++)
-            move_count[i] = Convert.ToChar(data[dataIndex]);
+            move_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -95,23 +95,23 @@ public class SpriteActionRec
     public char[] first_frame_recno = new char[RECNO_LEN];
     public char[] frame_count = new char[COUNT_LEN];
 
-    public SpriteActionRec(byte[] data)
+    public SpriteActionRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < sprite_name.Length; i++, dataIndex++)
-            sprite_name[i] = Convert.ToChar(data[dataIndex]);
+            sprite_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < action.Length; i++, dataIndex++)
-            action[i] = Convert.ToChar(data[dataIndex]);
+            action[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < dir_id.Length; i++, dataIndex++)
-            dir_id[i] = Convert.ToChar(data[dataIndex]);
+            dir_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < first_frame_recno.Length; i++, dataIndex++)
-            first_frame_recno[i] = Convert.ToChar(data[dataIndex]);
+            first_frame_recno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < frame_count.Length; i++, dataIndex++)
-            frame_count[i] = Convert.ToChar(data[dataIndex]);
+            frame_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -248,29 +248,29 @@ public class SubSpriteRec
     public char[] sprite_id = new char[RECNO_LEN];
     public char[] sub_sprite_id = new char[RECNO_LEN];
 
-    public SubSpriteRec(byte[] data)
+    public SubSpriteRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < sprite_code.Length; i++, dataIndex++)
-            sprite_code[i] = Convert.ToChar(data[dataIndex]);
+            sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sub_no.Length; i++, dataIndex++)
-            sub_no[i] = Convert.ToChar(data[dataIndex]);
+            sub_no[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sub_sprite_code.Length; i++, dataIndex++)
-            sub_sprite_code[i] = Convert.ToChar(data[dataIndex]);
+            sub_sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < offset_x.Length; i++, dataIndex++)
-            offset_x[i] = Convert.ToChar(data[dataIndex]);
+            offset_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < offset_y.Length; i++, dataIndex++)
-            offset_y[i] = Convert.ToChar(data[dataIndex]);
+            offset_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sprite_id.Length; i++, dataIndex++)
-            sprite_id[i] = Convert.ToChar(data[dataIndex]);
+            sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sub_sprite_id.Length; i++, dataIndex++)
-            sub_sprite_id[i] = Convert.ToChar(data[dataIndex]);
+            sub_sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -339,7 +339,7 @@ public class SpriteRes
 
 	    for (int i = 0; i < _spriteInfos.Length; i++)
 	    {
-		    SpriteRec spriteRec = new SpriteRec(dbSprite.Read(i + 1));
+		    SpriteRec spriteRec = new SpriteRec(dbSprite, i + 1);
 		    SpriteInfo spriteInfo = new SpriteInfo();
 		    _spriteInfos[i] = spriteInfo;
 
@@ -387,7 +387,7 @@ public class SpriteRes
 
 		    for (int j = 0; j < dirCounts[i]; j++, actionId++)
 		    {
-			    SpriteActionRec spriteActionRec = new SpriteActionRec(dbSpriteMove.Read(actionId));
+			    SpriteActionRec spriteActionRec = new SpriteActionRec(dbSpriteMove, actionId);
 
 			    int dirId = Misc.ToInt32(spriteActionRec.dir_id);
 
@@ -469,7 +469,7 @@ public class SpriteRes
 
 	    for (int i = 0; i < _subSpriteInfos.Length; i++)
 	    {
-		    SubSpriteRec subSpriteRec = new SubSpriteRec(dbSubSprite.Read(i + 1));
+		    SubSpriteRec subSpriteRec = new SubSpriteRec(dbSubSprite, i + 1);
 		    SubSpriteInfo subSpriteInfo = new SubSpriteInfo();
 		    _subSpriteInfos[i] = subSpriteInfo;
 

@@ -19,32 +19,32 @@ public class RockRec
     public char[] firstAnimRecno = new char[RECNO_LEN];
     public char[] maxFrame = new char[MAX_FRAME_LEN];
 
-    public RockRec(byte[] data)
+    public RockRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < rockId.Length; i++, dataIndex++)
-            rockId[i] = Convert.ToChar(data[dataIndex]);
+            rockId[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        rockType = Convert.ToChar(data[dataIndex]);
+        rockType = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < locWidth.Length; i++, dataIndex++)
-            locWidth[i] = Convert.ToChar(data[dataIndex]);
+            locWidth[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < locHeight.Length; i++, dataIndex++)
-            locHeight[i] = Convert.ToChar(data[dataIndex]);
+            locHeight[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        terrain1 = Convert.ToChar(data[dataIndex]);
+        terrain1 = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
-        terrain2 = Convert.ToChar(data[dataIndex]);
+        terrain2 = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < firstAnimRecno.Length; i++, dataIndex++)
-            firstAnimRecno[i] = Convert.ToChar(data[dataIndex]);
+            firstAnimRecno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < maxFrame.Length; i++, dataIndex++)
-            maxFrame[i] = Convert.ToChar(data[dataIndex]);
+            maxFrame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -60,23 +60,23 @@ public class RockBlockRec
     public char[] rockRecno = new char[RECNO_LEN];
     public char[] firstBitmap = new char[RECNO_LEN];
 
-    public RockBlockRec(byte[] data)
+    public RockBlockRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < rockId.Length; i++, dataIndex++)
-            rockId[i] = Convert.ToChar(data[dataIndex]);
+            rockId[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < locX.Length; i++, dataIndex++)
-            locX[i] = Convert.ToChar(data[dataIndex]);
+            locX[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < locY.Length; i++, dataIndex++)
-            locY[i] = Convert.ToChar(data[dataIndex]);
+            locY[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < rockRecno.Length; i++, dataIndex++)
-            rockRecno[i] = Convert.ToChar(data[dataIndex]);
+            rockRecno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < firstBitmap.Length; i++, dataIndex++)
-            firstBitmap[i] = Convert.ToChar(data[dataIndex]);
+            firstBitmap[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -95,26 +95,26 @@ public class RockBitmapRec
     public char[] fileName = new char[FILE_NAME_LEN];
     public byte[] bitmap = new byte[BITMAP_PTR_LEN];
 
-    public RockBitmapRec(byte[] data)
+    public RockBitmapRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < rockId.Length; i++, dataIndex++)
-            rockId[i] = Convert.ToChar(data[dataIndex]);
+            rockId[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < locX.Length; i++, dataIndex++)
-            locX[i] = Convert.ToChar(data[dataIndex]);
+            locX[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < locY.Length; i++, dataIndex++)
-            locY[i] = Convert.ToChar(data[dataIndex]);
+            locY[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < frame.Length; i++, dataIndex++)
-            frame[i] = Convert.ToChar(data[dataIndex]);
+            frame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < fileName.Length; i++, dataIndex++)
-            fileName[i] = Convert.ToChar(data[dataIndex]);
+            fileName[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < bitmap.Length; i++, dataIndex++)
-            bitmap[i] = data[dataIndex];
+            bitmap[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -130,23 +130,23 @@ public class RockAnimRec
     public char[] nextFrame = new char[FRAME_NO_LEN];
     public char[] altNext = new char[FRAME_NO_LEN];
 
-    public RockAnimRec(byte[] data)
+    public RockAnimRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < rockId.Length; i++, dataIndex++)
-            rockId[i] = Convert.ToChar(data[dataIndex]);
+            rockId[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < frame.Length; i++, dataIndex++)
-            frame[i] = Convert.ToChar(data[dataIndex]);
+            frame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < delay.Length; i++, dataIndex++)
-            delay[i] = Convert.ToChar(data[dataIndex]);
+            delay[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < nextFrame.Length; i++, dataIndex++)
-            nextFrame[i] = Convert.ToChar(data[dataIndex]);
+            nextFrame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < altNext.Length; i++, dataIndex++)
-            altNext[i] = Convert.ToChar(data[dataIndex]);
+            altNext[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -347,7 +347,7 @@ public class RockRes
 
         for (int i = 0; i < _rockInfos.Length; i++)
         {
-            RockRec rockRec = new RockRec(dbRock.Read(i + 1));
+            RockRec rockRec = new RockRec(dbRock, i + 1);
             RockInfo rockInfo = new RockInfo();
             _rockInfos[i] = rockInfo;
 
@@ -380,7 +380,7 @@ public class RockRes
 
         for (int i = 0; i < _rockBlockInfos.Length; i++)
         {
-            RockBlockRec rockBlockRec = new RockBlockRec(dbRock.Read(i + 1));
+            RockBlockRec rockBlockRec = new RockBlockRec(dbRock, i + 1);
             RockBlockInfo rockBlockInfo = new RockBlockInfo();
             _rockBlockInfos[i] = rockBlockInfo;
 
@@ -412,7 +412,7 @@ public class RockRes
 
         for (int i = 0; i < _rockBitmapInfos.Length; i++)
         {
-            RockBitmapRec rockBitmapRec = new RockBitmapRec(dbRock.Read(i + 1));
+            RockBitmapRec rockBitmapRec = new RockBitmapRec(dbRock, i + 1);
             RockBitmapInfo rockBitmapInfo = new RockBitmapInfo();
             _rockBitmapInfos[i] = rockBitmapInfo;
 
@@ -435,7 +435,7 @@ public class RockRes
 
         for (int i = 0; i < _rockAnimInfos.Length; i++)
         {
-            RockAnimRec rockAnimRec = new RockAnimRec(dbRock.Read(i + 1));
+            RockAnimRec rockAnimRec = new RockAnimRec(dbRock, i + 1);
             RockAnimInfo rockAnimInfo = new RockAnimInfo();
             _rockAnimInfos[i] = rockAnimInfo;
 

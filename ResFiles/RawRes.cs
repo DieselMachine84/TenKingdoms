@@ -11,14 +11,14 @@ public class RawRec
     public char[] name = new char[NAME_LEN];
     public char[] tera_type = new char[TERA_TYPE_LEN];
 
-    public RawRec(byte[] data)
+    public RawRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < name.Length; i++, dataIndex++)
-            name[i] = Convert.ToChar(data[dataIndex]);
+            name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < tera_type.Length; i++, dataIndex++)
-            tera_type[i] = Convert.ToChar(data[dataIndex]);
+            tera_type[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -118,7 +118,7 @@ public class RawRes
 
         for (int i = 0; i < _rawInfos.Length; i++)
         {
-            RawRec rawRec = new RawRec(dbRaw.Read(i + 1));
+            RawRec rawRec = new RawRec(dbRaw, i + 1);
             RawInfo rawInfo = new RawInfo();
             _rawInfos[i] = rawInfo;
 

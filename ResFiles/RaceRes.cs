@@ -36,23 +36,23 @@ public class RaceRec
 	public char[] icon_file_name = new char[FILE_NAME_LEN];
 	public byte[] icon_bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-	public RaceRec(byte[] data)
+	public RaceRec(Database db, int recNo)
 	{
 		int dataIndex = 0;
 		for (int i = 0; i < code.Length; i++, dataIndex++)
-			code[i] = Convert.ToChar(data[dataIndex]);
+			code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
 		for (int i = 0; i < name.Length; i++, dataIndex++)
-			name[i] = Convert.ToChar(data[dataIndex]);
+			name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
 		for (int i = 0; i < adjective.Length; i++, dataIndex++)
-			adjective[i] = Convert.ToChar(data[dataIndex]);
+			adjective[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
 		for (int i = 0; i < icon_file_name.Length; i++, dataIndex++)
-			icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
 		for (int i = 0; i < icon_bitmap_ptr.Length; i++, dataIndex++)
-			icon_bitmap_ptr[i] = data[dataIndex];
+			icon_bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
 	}
 }
 
@@ -284,11 +284,11 @@ public class RaceNameRec
 	public const int NAME_LEN = 20;
 	public char[] name = new char[NAME_LEN + 1];
 
-	public RaceNameRec(byte[] data)
+	public RaceNameRec(Database db, int recNo)
 	{
 		int dataIndex = 0;
 		for (int i = 0; i < name.Length; i++, dataIndex++)
-			name[i] = Convert.ToChar(data[dataIndex]);
+			name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	}
 }
 
@@ -350,7 +350,7 @@ public class RaceRes
 
 		for (int i = 0; i < race_info_array.Length; i++)
 		{
-			RaceRec raceRec = new RaceRec(dbRace.Read(i + 1));
+			RaceRec raceRec = new RaceRec(dbRace, i + 1);
 			RaceInfo raceInfo = new RaceInfo(this);
 			race_info_array[i] = raceInfo;
 			raceInfo.race_id = i + 1;
@@ -404,7 +404,7 @@ public class RaceRes
 
 		for (i = 1; i <= name_array.Length; i++)
 		{
-			RaceNameRec raceNameRec = new RaceNameRec(dbRaceName.Read(i));
+			RaceNameRec raceNameRec = new RaceNameRec(dbRaceName, i);
 			RaceName raceName = new RaceName();
 			name_array[i - 1] = raceName;
 

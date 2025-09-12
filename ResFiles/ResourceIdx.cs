@@ -6,48 +6,44 @@ namespace TenKingdoms;
 
 public class ResourceItem
 {
-    public string name;
-    public int pointer;
-    public byte[] data;
+    public string Name { get; set; }
+    public int Pointer { get; set; }
+    public byte[] Data { get; set; }
 }
 
 public class ResourceIdx
 {
-    public ResourceItem[] resourceItems; // index buffer pointer
-    public int rec_count; // total no. of records
+    private readonly ResourceItem[] _resourceItems;
+    public int RecordCount { get; }
 
     public ResourceIdx(string resFile)
     {
         using FileStream stream = new FileStream(resFile, FileMode.Open, FileAccess.Read);
         using BinaryReader reader = new BinaryReader(stream);
 
-        rec_count = reader.ReadInt16();
+        RecordCount = reader.ReadInt16();
 
-        //---------- Read in record index -------------//
+        _resourceItems = new ResourceItem[RecordCount + 1];
 
-        resourceItems = new ResourceItem[rec_count + 1];
+        // RecordCount + 1 is the last index pointer for calculating last record size
 
-        // rec_count+1 is the last index pointer for calculating last record size
-
-        for (int i = 0; i < rec_count + 1; i++)
+        for (int i = 0; i < RecordCount + 1; i++)
         {
-            resourceItems[i] = new ResourceItem();
+            _resourceItems[i] = new ResourceItem();
             
             for (int j = 0; j < 9; j++)
             {
                 byte symbol = reader.ReadByte();
                 if (symbol != 0)
-                    resourceItems[i].name += Convert.ToChar(symbol);
+                    _resourceItems[i].Name += Convert.ToChar(symbol);
             }
 
-            resourceItems[i].pointer = reader.ReadInt32();
+            _resourceItems[i].Pointer = reader.ReadInt32();
         }
 
-        //---------- Read in record data -------------//
-
-        for (int i = 0; i < rec_count; i++)
+        for (int i = 0; i < RecordCount; i++)
         {
-            resourceItems[i].data = reader.ReadBytes(resourceItems[i + 1].pointer - resourceItems[i].pointer);
+            _resourceItems[i].Data = reader.ReadBytes(_resourceItems[i + 1].Pointer - _resourceItems[i].Pointer);
         }
     }
 
@@ -60,9 +56,9 @@ public class ResourceIdx
 
     public int GetIndex(string dataName)
     {
-        for (int i = 0; i < rec_count; i++)
+        for (int i = 0; i < RecordCount; i++)
         {
-            if (resourceItems[i].name == dataName)
+            if (_resourceItems[i].Name == dataName)
                 return i + 1;
         }
 
@@ -71,15 +67,12 @@ public class ResourceIdx
     
     public string GetDataName(int index)
     {
-        return resourceItems[index - 1].name;
+        return _resourceItems[index - 1].Name;
     }
 
     public byte[] GetData(int indexId)
     {
-        return resourceItems[indexId - 1].data;
-        //return data_buf.Skip(resources[indexId].pointer - resources[0].pointer)
-        //.Take(resources[indexId + 1].pointer - resources[indexId].pointer)
-        //.ToArray();
+        return _resourceItems[indexId - 1].Data;
     }
 
     public byte[] GetData(string dataName)

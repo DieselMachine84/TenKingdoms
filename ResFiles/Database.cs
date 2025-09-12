@@ -15,10 +15,10 @@ public class DbfHeader
 
 public class Database
 {
-    private DbfHeader dbfHeader = new DbfHeader();
-    private byte[] buffer; // buffer for reading in the whole dbf
+    private readonly DbfHeader _dbfHeader = new DbfHeader();
+    private byte[] _buffer; // buffer for reading in the whole dbf
 
-    public int RecordCount => dbfHeader.last_rec;
+    public int RecordCount => _dbfHeader.last_rec;
 
     public Database(string fileName)
     {
@@ -35,26 +35,20 @@ public class Database
     private void Init(Stream stream)
     {
         using BinaryReader reader = new BinaryReader(stream);
-        dbfHeader.dbf_id = reader.ReadByte();
-        dbfHeader.last_update[0] = reader.ReadByte();
-        dbfHeader.last_update[1] = reader.ReadByte();
-        dbfHeader.last_update[2] = reader.ReadByte();
-        dbfHeader.last_rec = reader.ReadInt32();
-        dbfHeader.data_offset = reader.ReadUInt16();
-        dbfHeader.rec_size = reader.ReadUInt16();
+        _dbfHeader.dbf_id = reader.ReadByte();
+        _dbfHeader.last_update[0] = reader.ReadByte();
+        _dbfHeader.last_update[1] = reader.ReadByte();
+        _dbfHeader.last_update[2] = reader.ReadByte();
+        _dbfHeader.last_rec = reader.ReadInt32();
+        _dbfHeader.data_offset = reader.ReadUInt16();
+        _dbfHeader.rec_size = reader.ReadUInt16();
 
-        stream.Seek(1 + dbfHeader.data_offset, SeekOrigin.Begin);
-        buffer = reader.ReadBytes(dbfHeader.rec_size * dbfHeader.last_rec);
-    }
-    
-    //TODO remove
-    public byte[] Read(int recNo = 0)
-    {
-        return buffer.Skip(dbfHeader.rec_size * (recNo - 1)).ToArray();
+        stream.Seek(1 + _dbfHeader.data_offset, SeekOrigin.Begin);
+        _buffer = reader.ReadBytes(_dbfHeader.rec_size * _dbfHeader.last_rec);
     }
     
     public byte ReadByte(int recNo, int index)
     {
-        return buffer[dbfHeader.rec_size * (recNo - 1) + index];
+        return _buffer[_dbfHeader.rec_size * (recNo - 1) + index];
     }
 }

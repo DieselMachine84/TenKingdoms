@@ -220,8 +220,8 @@ public class SECtrl
 
 	private void LoadInfo()
 	{
-		int count = max_sound_effect = res_wave.rec_count;
-		int suppCount = max_supp_effect = res_supp.rec_count;
+		int count = max_sound_effect = res_wave.RecordCount;
+		int suppCount = max_supp_effect = res_supp.RecordCount;
 		total_effect = max_sound_effect + max_supp_effect;
 
 		req_pool = new SERequest[total_effect];

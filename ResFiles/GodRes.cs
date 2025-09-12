@@ -34,32 +34,32 @@ public class GodRec
     public char[] race_id = new char[RACE_ID_LEN];
     public char[] unit_id = new char[UNIT_ID_LEN];
 
-    public GodRec(byte[] data)
+    public GodRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < race.Length; i++, dataIndex++)
-            race[i] = Convert.ToChar(data[dataIndex]);
+            race[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
         for (int i = 0; i < unit.Length; i++, dataIndex++)
-            unit[i] = Convert.ToChar(data[dataIndex]);
+            unit[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
         for (int i = 0; i < exist_pray_points.Length; i++, dataIndex++)
-            exist_pray_points[i] = Convert.ToChar(data[dataIndex]);
+            exist_pray_points[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
         for (int i = 0; i < power_pray_points.Length; i++, dataIndex++)
-            power_pray_points[i] = Convert.ToChar(data[dataIndex]);
+            power_pray_points[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        can_cast_power = data[dataIndex];
+        can_cast_power = db.ReadByte(recNo, dataIndex);
         dataIndex++;
         
         for (int i = 0; i < cast_power_range.Length; i++, dataIndex++)
-            cast_power_range[i] = Convert.ToChar(data[dataIndex]);
+            cast_power_range[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race_id.Length; i++, dataIndex++)
-            race_id[i] = Convert.ToChar(data[dataIndex]);
+            race_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < unit_id.Length; i++, dataIndex++)
-            unit_id[i] = Convert.ToChar(data[dataIndex]);
+            unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -164,7 +164,7 @@ public class GodRes
 
         for (int i = 0; i < god_info_array.Length; i++)
         {
-            GodRec godRec = new GodRec(dbGod.Read(i + 1));
+            GodRec godRec = new GodRec(dbGod, i + 1);
             GodInfo godInfo = new GodInfo();
             god_info_array[i] = godInfo;
 

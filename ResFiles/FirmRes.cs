@@ -36,48 +36,48 @@ public class FirmRec
     public char[] first_build = new char[FIRST_BUILD_LEN];
     public char[] build_count = new char[BUILD_COUNT_LEN];
 
-    public FirmRec(byte[] data)
+    public FirmRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < code.Length; i++, dataIndex++)
-            code[i] = Convert.ToChar(data[dataIndex]);
+            code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < name.Length; i++, dataIndex++)
-            name[i] = Convert.ToChar(data[dataIndex]);
+            name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < short_name.Length; i++, dataIndex++)
-            short_name[i] = Convert.ToChar(data[dataIndex]);
+            short_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < overseer_title.Length; i++, dataIndex++)
-            overseer_title[i] = Convert.ToChar(data[dataIndex]);
+            overseer_title[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < worker_title.Length; i++, dataIndex++)
-            worker_title[i] = Convert.ToChar(data[dataIndex]);
+            worker_title[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        tera_type = Convert.ToChar(data[dataIndex]);
+        tera_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
-        all_know = data[dataIndex];
+        all_know = db.ReadByte(recNo, dataIndex);
         dataIndex++;
-        live_in_town = data[dataIndex];
+        live_in_town = db.ReadByte(recNo, dataIndex);
         dataIndex++;
         
         for (int i = 0; i < hit_points.Length; i++, dataIndex++)
-            hit_points[i] = Convert.ToChar(data[dataIndex]);
+            hit_points[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        is_linkable_to_town = data[dataIndex];
+        is_linkable_to_town = db.ReadByte(recNo, dataIndex);
         dataIndex++;
         
         for (int i = 0; i < setup_cost.Length; i++, dataIndex++)
-            setup_cost[i] = Convert.ToChar(data[dataIndex]);
+            setup_cost[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < year_cost.Length; i++, dataIndex++)
-            year_cost[i] = Convert.ToChar(data[dataIndex]);
+            year_cost[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < first_build.Length; i++, dataIndex++)
-            first_build[i] = Convert.ToChar(data[dataIndex]);
+            first_build[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < build_count.Length; i++, dataIndex++)
-            build_count[i] = Convert.ToChar(data[dataIndex]);
+            build_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -106,38 +106,38 @@ public class FirmBuildRec
 
     public char[] race_id = new char[RACE_ID_LEN];
 
-    public FirmBuildRec(byte[] data)
+    public FirmBuildRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < firm_code.Length; i++, dataIndex++)
-            firm_code[i] = Convert.ToChar(data[dataIndex]);
+            firm_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race_code.Length; i++, dataIndex++)
-            race_code[i] = Convert.ToChar(data[dataIndex]);
+            race_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        animate_full_size = Convert.ToChar(data[dataIndex]);
+        animate_full_size = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < under_construction_bitmap_recno.Length; i++, dataIndex++)
-            under_construction_bitmap_recno[i] = Convert.ToChar(data[dataIndex]);
+            under_construction_bitmap_recno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < under_construction_bitmap_count.Length; i++, dataIndex++)
-            under_construction_bitmap_count[i] = Convert.ToChar(data[dataIndex]);
+            under_construction_bitmap_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < idle_bitmap_recno.Length; i++, dataIndex++)
-            idle_bitmap_recno[i] = Convert.ToChar(data[dataIndex]);
+            idle_bitmap_recno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < ground_bitmap_recno.Length; i++, dataIndex++)
-            ground_bitmap_recno[i] = Convert.ToChar(data[dataIndex]);
+            ground_bitmap_recno[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < first_frame.Length; i++, dataIndex++)
-            first_frame[i] = Convert.ToChar(data[dataIndex]);
+            first_frame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < frame_count.Length; i++, dataIndex++)
-            frame_count[i] = Convert.ToChar(data[dataIndex]);
+            frame_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race_id.Length; i++, dataIndex++)
-            race_id[i] = Convert.ToChar(data[dataIndex]);
+            race_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -160,26 +160,26 @@ public class FirmFrameRec
     public char[] first_bitmap = new char[FIRST_BITMAP_LEN];
     public char[] bitmap_count = new char[BITMAP_COUNT_LEN];
 
-    public FirmFrameRec(byte[] data)
+    public FirmFrameRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < firm_code.Length; i++, dataIndex++)
-            firm_code[i] = Convert.ToChar(data[dataIndex]);
+            firm_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < race_code.Length; i++, dataIndex++)
-            race_code[i] = Convert.ToChar(data[dataIndex]);
+            race_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < frame_id.Length; i++, dataIndex++)
-            frame_id[i] = Convert.ToChar(data[dataIndex]);
+            frame_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < delay.Length; i++, dataIndex++)
-            delay[i] = Convert.ToChar(data[dataIndex]);
+            delay[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < first_bitmap.Length; i++, dataIndex++)
-            first_bitmap[i] = Convert.ToChar(data[dataIndex]);
+            first_bitmap[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < bitmap_count.Length; i++, dataIndex++)
-            bitmap_count[i] = Convert.ToChar(data[dataIndex]);
+            bitmap_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -212,44 +212,44 @@ public class FirmBitmapRec
     public char[] file_name = new char[FILE_NAME_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public FirmBitmapRec(byte[] data)
+    public FirmBitmapRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < firm_code.Length; i++, dataIndex++)
-            firm_code[i] = Convert.ToChar(data[dataIndex]);
+            firm_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race_code.Length; i++, dataIndex++)
-            race_code[i] = Convert.ToChar(data[dataIndex]);
+            race_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        mode = Convert.ToChar(data[dataIndex]);
+        mode = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < frame_id.Length; i++, dataIndex++)
-            frame_id[i] = Convert.ToChar(data[dataIndex]);
+            frame_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < loc_width.Length; i++, dataIndex++)
-            loc_width[i] = Convert.ToChar(data[dataIndex]);
+            loc_width[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < loc_height.Length; i++, dataIndex++)
-            loc_height[i] = Convert.ToChar(data[dataIndex]);
+            loc_height[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        layer = Convert.ToChar(data[dataIndex]);
+        layer = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < offset_x.Length; i++, dataIndex++)
-            offset_x[i] = Convert.ToChar(data[dataIndex]);
+            offset_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < offset_y.Length; i++, dataIndex++)
-            offset_y[i] = Convert.ToChar(data[dataIndex]);
+            offset_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < delay.Length; i++, dataIndex++)
-            delay[i] = Convert.ToChar(data[dataIndex]);
+            delay[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+            file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -547,7 +547,7 @@ public class FirmRes
 
         for (int i = 0; i < firm_info_array.Length; i++)
         {
-            FirmRec firmRec = new FirmRec(dbFirm.Read(i + 1));
+            FirmRec firmRec = new FirmRec(dbFirm, i + 1);
             FirmInfo firmInfo = new FirmInfo(this);
             firm_info_array[i] = firmInfo;
 
@@ -614,7 +614,7 @@ public class FirmRes
 
         for (int i = 0; i < firm_build_array.Length; i++)
         {
-            FirmBuildRec firmBuildRec = new FirmBuildRec(dbFirmBuild.Read(i + 1));
+            FirmBuildRec firmBuildRec = new FirmBuildRec(dbFirmBuild, i + 1);
             FirmBuild firmBuild = new FirmBuild();
             firm_build_array[i] = firmBuild;
 
@@ -649,7 +649,7 @@ public class FirmRes
 
             for (int j = 0; j < firmBuild.frame_count; j++, frameRecno++)
             {
-                FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame.Read(frameRecno));
+                FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame, frameRecno);
 
                 //------ following animation frames, bitmap sections -----//
 
@@ -720,7 +720,7 @@ public class FirmRes
 
         for (int i = 0; i < firm_bitmap_array.Length; i++)
         {
-            FirmBitmapRec firmBitmapRec = new FirmBitmapRec(dbFirmBitmap.Read(i + 1));
+            FirmBitmapRec firmBitmapRec = new FirmBitmapRec(dbFirmBitmap, i + 1);
             FirmBitmap firmBitmap = new FirmBitmap();
             firm_bitmap_array[i] = firmBitmap;
 

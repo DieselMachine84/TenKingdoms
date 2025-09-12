@@ -22,25 +22,25 @@ public class PlantBitmapRec
     public char[] file_name = new char[FILE_NAME_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public PlantBitmapRec(byte[] data)
+    public PlantBitmapRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < plant.Length; i++, dataIndex++)
-            plant[i] = Convert.ToChar(data[dataIndex]);
+            plant[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         for (int i = 0; i < size.Length; i++, dataIndex++)
-            size[i] = Convert.ToChar(data[dataIndex]);
+            size[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         for (int i = 0; i < offset_x.Length; i++, dataIndex++)
-            offset_x[i] = Convert.ToChar(data[dataIndex]);
+            offset_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         for (int i = 0; i < offset_y.Length; i++, dataIndex++)
-            offset_y[i] = Convert.ToChar(data[dataIndex]);
+            offset_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        town_age = Convert.ToChar(data[dataIndex]);
+        town_age = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
 
         for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+            file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -86,29 +86,29 @@ public class PlantRec
     public char[] first_bitmap = new char[FIRST_BITMAP_LEN];
     public char[] bitmap_count = new char[BITMAP_COUNT_LEN];
 
-    public PlantRec(byte[] data)
+    public PlantRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < code.Length; i++, dataIndex++)
-            code[i] = Convert.ToChar(data[dataIndex]);
+            code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < climate_zone.Length; i++, dataIndex++)
-            climate_zone[i] = Convert.ToChar(data[dataIndex]);
+            climate_zone[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < tera_type1.Length; i++, dataIndex++)
-            tera_type1[i] = Convert.ToChar(data[dataIndex]);
+            tera_type1[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < tera_type2.Length; i++, dataIndex++)
-            tera_type2[i] = Convert.ToChar(data[dataIndex]);
+            tera_type2[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < tera_type3.Length; i++, dataIndex++)
-            tera_type3[i] = Convert.ToChar(data[dataIndex]);
+            tera_type3[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < first_bitmap.Length; i++, dataIndex++)
-            first_bitmap[i] = Convert.ToChar(data[dataIndex]);
+            first_bitmap[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < bitmap_count.Length; i++, dataIndex++)
-            bitmap_count[i] = Convert.ToChar(data[dataIndex]);
+            bitmap_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -205,7 +205,7 @@ public class PlantRes
 
         for (int i = 0; i < plant_info_array.Length; i++)
         {
-            PlantRec plantRec = new PlantRec(dbPlant.Read(i + 1));
+            PlantRec plantRec = new PlantRec(dbPlant, i + 1);
             PlantInfo plantInfo = new PlantInfo();
             plant_info_array[i] = plantInfo;
 
@@ -261,7 +261,7 @@ public class PlantRes
 
         for (int i = 0; i < plant_bitmap_array.Length; i++)
         {
-            PlantBitmapRec plantBitmapRec = new PlantBitmapRec(dbPlantBitmap.Read(i + 1));
+            PlantBitmapRec plantBitmapRec = new PlantBitmapRec(dbPlantBitmap, i + 1);
             PlantBitmap plantBitmap = new PlantBitmap();
             plant_bitmap_array[i] = plantBitmap;
 

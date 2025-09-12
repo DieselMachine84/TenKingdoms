@@ -56,7 +56,7 @@ public class FirmDieRes
 
 		for (int i = 0; i < firm_build_array.Length; i++)
 		{
-			FirmBuildRec firmBuildRec = new FirmBuildRec(dbFirmBuild.Read(i + 1));
+			FirmBuildRec firmBuildRec = new FirmBuildRec(dbFirmBuild, i + 1);
 			FirmBuild firmBuild = new FirmBuild();
 			firm_build_array[i] = firmBuild;
 
@@ -91,7 +91,7 @@ public class FirmDieRes
 
 			for (int j = 0; j < firmBuild.frame_count; j++, frameRecno++)
 			{
-				FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame.Read(frameRecno));
+				FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame, frameRecno);
 
 				//------ following animation frames, bitmap sections -----//
 
@@ -160,7 +160,7 @@ public class FirmDieRes
 
 		for (int i = 0; i < firm_bitmap_array.Length; i++)
 		{
-			FirmBitmapRec firmBitmapRec = new FirmBitmapRec(dbFirmBitmap.Read(i + 1));
+			FirmBitmapRec firmBitmapRec = new FirmBitmapRec(dbFirmBitmap, i + 1);
 			FirmDieBitmap firmDieBitmap = new FirmDieBitmap();
 			firm_bitmap_array[i] = firmDieBitmap;
 

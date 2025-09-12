@@ -18,23 +18,23 @@ public class MonsterRec
     public char[] firm_build_code = new char[FIRM_BUILD_CODE_LEN];
     public char[] unit_id = new char[UNIT_ID_LEN];
 
-    public MonsterRec(byte[] data)
+    public MonsterRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < unit_code.Length; i++, dataIndex++)
-            unit_code[i] = Convert.ToChar(data[dataIndex]);
+            unit_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < name.Length; i++, dataIndex++)
-            name[i] = Convert.ToChar(data[dataIndex]);
+            name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
-        level = Convert.ToChar(data[dataIndex]);
+        level = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
         
         for (int i = 0; i < firm_build_code.Length; i++, dataIndex++)
-            firm_build_code[i] = Convert.ToChar(data[dataIndex]);
+            firm_build_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < unit_id.Length; i++, dataIndex++)
-            unit_id[i] = Convert.ToChar(data[dataIndex]);
+            unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -256,7 +256,7 @@ public class MonsterRes
 
         for (int i = 0; i < monster_info_array.Length; i++)
         {
-            MonsterRec monsterRec = new MonsterRec(dbMonster.Read(i + 1));
+            MonsterRec monsterRec = new MonsterRec(dbMonster, i + 1);
             MonsterInfo monsterInfo = new MonsterInfo();
             monster_info_array[i] = monsterInfo;
 

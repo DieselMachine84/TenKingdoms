@@ -58,20 +58,20 @@ public class CursorRec
     public char[] hot_spot_y = new char[HOT_SPOT_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public CursorRec(byte[] data)
+    public CursorRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+            file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < hot_spot_x.Length; i++, dataIndex++)
-            hot_spot_x[i] = Convert.ToChar(data[dataIndex]);
+            hot_spot_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < hot_spot_y.Length; i++, dataIndex++)
-            hot_spot_y[i] = Convert.ToChar(data[dataIndex]);
+            hot_spot_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -116,7 +116,7 @@ public class CursorRes
 
         for (int i = 0; i < _cursorInfos.Length; i++)
         {
-            CursorRec cursorRec = new CursorRec(dbCursor.Read(i + 1));
+            CursorRec cursorRec = new CursorRec(dbCursor, i + 1);
             CursorInfo cursorInfo = new CursorInfo();
             _cursorInfos[i] = cursorInfo;
             

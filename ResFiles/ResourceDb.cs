@@ -6,7 +6,7 @@ namespace TenKingdoms;
 
 public class ResourceDb
 {
-    private byte[] buffer;
+    private byte[] _buffer;
     
     public ResourceDb(string resName)
     {
@@ -19,18 +19,17 @@ public class ResourceDb
         int count = 0;
         while ((count = reader.Read(tempBuffer, 0, tempBuffer.Length)) != 0)
             ms.Write(tempBuffer, 0, count);
-        buffer = ms.ToArray();
+        _buffer = ms.ToArray();
     }
 
     public byte[] Read(int offset)
     {
-        int size = BitConverter.ToInt32(buffer, offset);
-        //TODO optimize
-        return buffer.Skip(offset + sizeof(int)).Take(size).ToArray();
+        int size = BitConverter.ToInt32(_buffer, offset);
+        return _buffer.Skip(offset + sizeof(int)).Take(size).ToArray();
     }
 
     public byte[] ReadFull()
     {
-        return buffer;
+        return _buffer;
     }
 }

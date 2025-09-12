@@ -58,38 +58,38 @@ public class TerrainRec
     public char[] file_name = new char[FILE_NAME_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public TerrainRec(byte[] data)
+    public TerrainRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < nw_type_code.Length; i++, dataIndex++)
-            nw_type_code[i] = Convert.ToChar(data[dataIndex]);
+            nw_type_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < ne_type_code.Length; i++, dataIndex++)
-            ne_type_code[i] = Convert.ToChar(data[dataIndex]);
+            ne_type_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sw_type_code.Length; i++, dataIndex++)
-            sw_type_code[i] = Convert.ToChar(data[dataIndex]);
+            sw_type_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < se_type_code.Length; i++, dataIndex++)
-            se_type_code[i] = Convert.ToChar(data[dataIndex]);
+            se_type_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        extra_flag = data[dataIndex];
+        extra_flag = db.ReadByte(recNo, dataIndex);
         dataIndex++;
-        special_flag = data[dataIndex];
+        special_flag = db.ReadByte(recNo, dataIndex);
         dataIndex++;
-        represent_type = Convert.ToChar(data[dataIndex]);
+        represent_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
-        secondary_type = Convert.ToChar(data[dataIndex]);
+        secondary_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
 
         for (int i = 0; i < pattern_id.Length; i++, dataIndex++)
-            pattern_id[i] = Convert.ToChar(data[dataIndex]);
+            pattern_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+            file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -157,26 +157,26 @@ public class TerrainSubRec
     public char[] sec_adj = new char[SEC_ADJ_LEN];
     public char[] post_move = new char[DIRECTION_LEN];
 
-    public TerrainSubRec(byte[] data)
+    public TerrainSubRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < sub_no.Length; i++, dataIndex++)
-            sub_no[i] = Convert.ToChar(data[dataIndex]);
+            sub_no[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < step_id.Length; i++, dataIndex++)
-            step_id[i] = Convert.ToChar(data[dataIndex]);
+            step_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < old_pattern_id.Length; i++, dataIndex++)
-            old_pattern_id[i] = Convert.ToChar(data[dataIndex]);
+            old_pattern_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < new_pattern_id.Length; i++, dataIndex++)
-            new_pattern_id[i] = Convert.ToChar(data[dataIndex]);
+            new_pattern_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < sec_adj.Length; i++, dataIndex++)
-            sec_adj[i] = Convert.ToChar(data[dataIndex]);
+            sec_adj[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < post_move.Length; i++, dataIndex++)
-            post_move[i] = Convert.ToChar(data[dataIndex]);
+            post_move[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -206,23 +206,23 @@ public class TerrainAnimRec
     public TerrainAnimRec()
     {
     }
-    public TerrainAnimRec(byte[] data)
+    public TerrainAnimRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < base_file.Length; i++, dataIndex++)
-            base_file[i] = Convert.ToChar(data[dataIndex]);
+            base_file[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < frame_no.Length; i++, dataIndex++)
-            frame_no[i] = Convert.ToChar(data[dataIndex]);
+            frame_no[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < next_frame.Length; i++, dataIndex++)
-            next_frame[i] = Convert.ToChar(data[dataIndex]);
+            next_frame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < filename.Length; i++, dataIndex++)
-            filename[i] = Convert.ToChar(data[dataIndex]);
+            filename[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -349,7 +349,7 @@ public class TerrainRes
 
 		for (i = 0; i < terrain_count; i++)
 		{
-			TerrainRec terrainRec = new TerrainRec(dbTerrain.Read(i + 1));
+			TerrainRec terrainRec = new TerrainRec(dbTerrain, i + 1);
 			terrainInfo = terrain_info_array[i];
 
 			for (int j = 0; j < TerrainRec.FILE_NAME_LEN; j++)
@@ -460,7 +460,7 @@ public class TerrainRes
 
 		for (int i = 0; i < ter_sub_rec_count; i++)
 		{
-			TerrainSubRec terrainSubRec = new TerrainSubRec(dbTerrain.Read(i + 1));
+			TerrainSubRec terrainSubRec = new TerrainSubRec(dbTerrain, i + 1);
 			TerrainSubInfo terrainSubInfo = ter_sub_array[i];
 
 			terrainSubInfo.sub_no = Convert.ToInt16(new string(terrainSubRec.sub_no));
@@ -583,7 +583,7 @@ public class TerrainRes
 		//---------- read in TERANM.DBF -------//
 		for (int i = 0; i < count; i++)
 		{
-			TerrainAnimRec terrainAnimRec = new TerrainAnimRec(dbTerAnim.Read(i + 1));
+			TerrainAnimRec terrainAnimRec = new TerrainAnimRec(dbTerAnim, i + 1);
 
 			int bitmapOffset = BitConverter.ToInt32(terrainAnimRec.bitmap_ptr, 0);
 			byte[] bitmapPtr = anm_bitmap.Read(bitmapOffset);

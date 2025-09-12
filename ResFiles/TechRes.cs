@@ -10,14 +10,14 @@ public class TechClassRec
     public char[] class_code = new char[CODE_LEN];
     public char[] icon_name = new char[ICON_NAME_LEN];
 
-    public TechClassRec(byte[] data)
+    public TechClassRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < class_code.Length; i++, dataIndex++)
-            class_code[i] = Convert.ToChar(data[dataIndex]);
+            class_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < icon_name.Length; i++, dataIndex++)
-            icon_name[i] = Convert.ToChar(data[dataIndex]);
+            icon_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -48,50 +48,50 @@ public class TechRec
     public char[] parent_unit_id = new char[ID_LEN];
     public char[] parent_firm_id = new char[ID_LEN];
 
-    public TechRec(byte[] data)
+    public TechRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < class_code.Length; i++, dataIndex++)
-            class_code[i] = Convert.ToChar(data[dataIndex]);
+            class_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < max_tech_level.Length; i++, dataIndex++)
-            max_tech_level[i] = Convert.ToChar(data[dataIndex]);
+            max_tech_level[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < complex_level.Length; i++, dataIndex++)
-            complex_level[i] = Convert.ToChar(data[dataIndex]);
+            complex_level[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < unit_code.Length; i++, dataIndex++)
-            unit_code[i] = Convert.ToChar(data[dataIndex]);
+            unit_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < firm_code.Length; i++, dataIndex++)
-            firm_code[i] = Convert.ToChar(data[dataIndex]);
+            firm_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < parent_unit_code.Length; i++, dataIndex++)
-            parent_unit_code[i] = Convert.ToChar(data[dataIndex]);
+            parent_unit_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < parent_firm_code.Length; i++, dataIndex++)
-            parent_firm_code[i] = Convert.ToChar(data[dataIndex]);
+            parent_firm_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        parent_level = Convert.ToChar(data[dataIndex]);
+        parent_level = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         dataIndex++;
 
         for (int i = 0; i < icon_name.Length; i++, dataIndex++)
-            icon_name[i] = Convert.ToChar(data[dataIndex]);
+            icon_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < class_id.Length; i++, dataIndex++)
-            class_id[i] = Convert.ToChar(data[dataIndex]);
+            class_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < unit_id.Length; i++, dataIndex++)
-            unit_id[i] = Convert.ToChar(data[dataIndex]);
+            unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < firm_id.Length; i++, dataIndex++)
-            firm_id[i] = Convert.ToChar(data[dataIndex]);
+            firm_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < parent_unit_id.Length; i++, dataIndex++)
-            parent_unit_id[i] = Convert.ToChar(data[dataIndex]);
+            parent_unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < parent_firm_id.Length; i++, dataIndex++)
-            parent_firm_id[i] = Convert.ToChar(data[dataIndex]);
+            parent_firm_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -323,7 +323,7 @@ public class TechRes
 
         for (int i = 0; i < tech_class_array.Length; i++)
         {
-            TechClassRec techClassRec = new TechClassRec(dbTechClass.Read(i + 1));
+            TechClassRec techClassRec = new TechClassRec(dbTechClass, i + 1);
             TechClass techClass = new TechClass();
             tech_class_array[i] = techClass;
 
@@ -344,7 +344,7 @@ public class TechRes
         TechClass techClass = null;
         for (int i = 0; i < tech_info_array.Length; i++)
         {
-            TechRec techRec = new TechRec(dbTech.Read(i + 1));
+            TechRec techRec = new TechRec(dbTech, i + 1);
             TechInfo techInfo = new TechInfo();
             tech_info_array[i] = techInfo;
 

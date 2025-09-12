@@ -16,20 +16,20 @@ public class TownLayoutRec
     public char[] first_slot = new char[FIRST_SLOT_LEN];
     public char[] slot_count = new char[SLOT_COUNT_LEN];
 
-    public TownLayoutRec(byte[] data)
+    public TownLayoutRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < code.Length; i++, dataIndex++)
-            code[i] = Convert.ToChar(data[dataIndex]);
+            code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
         for (int i = 0; i < ground_name.Length; i++, dataIndex++)
-            ground_name[i] = Convert.ToChar(data[dataIndex]);
+            ground_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
         for (int i = 0; i < first_slot.Length; i++, dataIndex++)
-            first_slot[i] = Convert.ToChar(data[dataIndex]);
+            first_slot[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 		
         for (int i = 0; i < slot_count.Length; i++, dataIndex++)
-            slot_count[i] = Convert.ToChar(data[dataIndex]);
+            slot_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -77,26 +77,26 @@ public class TownSlotRec
 
     public char[] type_id = new char[TYPE_ID_LEN];
 
-    public TownSlotRec(byte[] data)
+    public TownSlotRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < layout_code.Length; i++, dataIndex++)
-            layout_code[i] = Convert.ToChar(data[dataIndex]);
+            layout_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < base_x.Length; i++, dataIndex++)
-            base_x[i] = Convert.ToChar(data[dataIndex]);
+            base_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < base_y.Length; i++, dataIndex++)
-            base_y[i] = Convert.ToChar(data[dataIndex]);
+            base_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < type.Length; i++, dataIndex++)
-            type[i] = Convert.ToChar(data[dataIndex]);
+            type[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < build_code.Length; i++, dataIndex++)
-            build_code[i] = Convert.ToChar(data[dataIndex]);
+            build_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < type_id.Length; i++, dataIndex++)
-            type_id[i] = Convert.ToChar(data[dataIndex]);
+            type_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -123,17 +123,17 @@ public class TownBuildTypeRec
     public char[] first_build = new char[FIRST_BUILD_LEN];
     public char[] build_count = new char[BUILD_COUNT_LEN];
 
-    public TownBuildTypeRec(byte[] data)
+    public TownBuildTypeRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < type_code.Length; i++, dataIndex++)
-            type_code[i] = Convert.ToChar(data[dataIndex]);
+            type_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < first_build.Length; i++, dataIndex++)
-            first_build[i] = Convert.ToChar(data[dataIndex]);
+            first_build[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < build_count.Length; i++, dataIndex++)
-            build_count[i] = Convert.ToChar(data[dataIndex]);
+            build_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -163,29 +163,29 @@ public class TownBuildRec
     public char[] file_name = new char[FILE_NAME_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public TownBuildRec(byte[] data)
+    public TownBuildRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < type.Length; i++, dataIndex++)
-            type[i] = Convert.ToChar(data[dataIndex]);
+            type[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < build_code.Length; i++, dataIndex++)
-            build_code[i] = Convert.ToChar(data[dataIndex]);
+            build_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race.Length; i++, dataIndex++)
-            race[i] = Convert.ToChar(data[dataIndex]);
+            race[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < type_id.Length; i++, dataIndex++)
-            type_id[i] = Convert.ToChar(data[dataIndex]);
+            type_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < race_id.Length; i++, dataIndex++)
-            race_id[i] = Convert.ToChar(data[dataIndex]);
+            race_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
         
         for (int i = 0; i < file_name.Length; i++, dataIndex++)
-            file_name[i] = Convert.ToChar(data[dataIndex]);
+            file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
         for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-            bitmap_ptr[i] = data[dataIndex];
+            bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -223,11 +223,11 @@ public class TownNameRec
 
     public char[] name = new char[NAME_LEN];
 
-    public TownNameRec(byte[] data)
+    public TownNameRec(Database db, int recNo)
     {
         int dataIndex = 0;
         for (int i = 0; i < name.Length; i++, dataIndex++)
-            name[i] = Convert.ToChar(data[dataIndex]);
+            name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
@@ -420,7 +420,7 @@ public class TownRes
 
         for (int i = 0; i < TownLayouts.Length; i++)
         {
-            TownLayoutRec townLayoutRec = new TownLayoutRec(dbTownLayout.Read(i + 1));
+            TownLayoutRec townLayoutRec = new TownLayoutRec(dbTownLayout, i + 1);
             TownLayout townLayout = new TownLayout();
             TownLayouts[i] = townLayout;
 
@@ -451,7 +451,7 @@ public class TownRes
 
         for (int i = 0; i < _townSlots.Length; i++)
         {
-            TownSlotRec townSlotRec = new TownSlotRec(dbTownSlot.Read(i + 1));
+            TownSlotRec townSlotRec = new TownSlotRec(dbTownSlot, i + 1);
             TownSlot townSlot = new TownSlot();
             _townSlots[i] = townSlot;
 
@@ -470,7 +470,7 @@ public class TownRes
 
         for (int i = 0; i < _townBuildTypes.Length; i++)
         {
-            TownBuildTypeRec buildTypeRec = new TownBuildTypeRec(dbTownBuildType.Read((i + 1)));
+            TownBuildTypeRec buildTypeRec = new TownBuildTypeRec(dbTownBuildType, i + 1);
             TownBuildType buildType = new TownBuildType();
             _townBuildTypes[i] = buildType;
 
@@ -487,7 +487,7 @@ public class TownRes
 
         for (int i = 0; i < _townBuilds.Length; i++)
         {
-            TownBuildRec townBuildRec = new TownBuildRec(dbTownBuild.Read(i + 1));
+            TownBuildRec townBuildRec = new TownBuildRec(dbTownBuild, i + 1);
             TownBuild townBuild = new TownBuild();
             _townBuilds[i] = townBuild;
 
@@ -516,7 +516,7 @@ public class TownRes
         int i = 1;
         for (i = 1; i <= _townNames.Length; i++)
         {
-            TownNameRec townNameRec = new TownNameRec(dbTownName.Read(i));
+            TownNameRec townNameRec = new TownNameRec(dbTownName, i);
             TownName townName = new TownName();
             _townNames[i - 1] = townName;
 

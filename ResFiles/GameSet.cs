@@ -5,84 +5,81 @@ namespace TenKingdoms;
 
 public class SetRec
 {
-    public const int CODE_LEN = 8;
-    public const int DES_LEN = 60;
+    private const int CODE_LEN = 8;
+    private const int DES_LEN = 60;
 
     public char[] code = new char[CODE_LEN];
     public char[] des = new char[DES_LEN];
 
-    public SetRec(byte[] data)
+    public SetRec(Database db, int recNo)
     {
-        int j = 0;
-        for (int i = 0; i < code.Length; i++, j++)
-            code[i] = Convert.ToChar(data[j]);
+        int dataIndex = 0;
+        for (int i = 0; i < code.Length; i++, dataIndex++)
+            code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-        for (int i = 0; i < des.Length; i++, j++)
-            des[i] = Convert.ToChar(data[j]);
+        for (int i = 0; i < des.Length; i++, dataIndex++)
+            des[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
     }
 }
 
 public class SetInfo
 {
-    public string code;
-    public string des;
+    public string Code { get; set; }
+    public string Description { get; set; }
 }
 
 public class GameSet
 {
-    public const string SET_HEADER_DB = "HEADER";
+    private const string SET_HEADER_DB = "HEADER";
 
-    public SetInfo[] set_info_array;
+    private SetInfo[] _setInfos;
 
-    public ResourceIdx set_res;
-    public Database set_db;
+    private ResourceIdx _setResource;
 
     public GameSet()
     {
-        LoadSetHeader(); // load the info. of all sets
+        LoadSetInfo();
     }
 
     public void OpenSet(int setId)
     {
-        set_res = new ResourceIdx($"{Sys.GameDataFolder}/Resource/{set_info_array[setId - 1].code}.SET");
+        _setResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/{_setInfos[setId - 1].Code}.SET");
     }
 
     public Database OpenDb(string dbName)
     {
-        byte[] data = set_res.Read(dbName);
-        set_db = new Database(data);
-        return set_db;
+        return new Database(_setResource.Read(dbName));
     }
 
     public int FindSet(string setCode)
     {
-        for (int i = 0; i < set_info_array.Length; i++)
+        for (int i = 0; i < _setInfos.Length; i++)
         {
-            if (new string(set_info_array[i].code) == setCode)
+            if (_setInfos[i].Code == setCode)
                 return i + 1;
         }
 
         return 0;
     }
 
-    public SetInfo this[int recNo] => set_info_array[recNo - 1];
+    public SetInfo this[int recNo] => _setInfos[recNo - 1];
 
-    private void LoadSetHeader()
+    private void LoadSetInfo()
     {
         DirectoryInfo setDir = new DirectoryInfo($"{Sys.GameDataFolder}/Resource/");
         FileInfo[] files = setDir.GetFiles("*.SET");
-        set_info_array = new SetInfo[files.Length];
+        _setInfos = new SetInfo[files.Length];
         
         for (int i = 0; i < files.Length; i++)
         {
-            set_res = new ResourceIdx($"{Sys.GameDataFolder}/Resource/" + files[i].Name);
-            set_db = new Database(set_res.Read(SET_HEADER_DB));
-            SetRec setRec = new SetRec(set_db.Read(1));
+            ResourceIdx setResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/" + files[i].Name);
+            Database setDatabase = new Database(setResource.Read(SET_HEADER_DB));
+            SetRec setRec = new SetRec(setDatabase, 1);
             SetInfo setInfo = new SetInfo();
-            set_info_array[i] = setInfo;
+            _setInfos[i] = setInfo;
 
-            setInfo.code = Misc.ToString(setRec.code);
-            setInfo.des = Misc.ToString(setRec.des);
+            setInfo.Code = Misc.ToString(setRec.code);
+            setInfo.Description = Misc.ToString(setRec.des);
         }
     }
 }

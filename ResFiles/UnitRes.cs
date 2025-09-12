@@ -79,139 +79,139 @@ public class UnitRec
 	public char[] first_attack = new char[UNIT_PARA_LEN];
 	public char[] attack_count = new char[UNIT_PARA_LEN];
 
-	public UnitRec(byte[] data)
+	public UnitRec(Database db, int recNo)
 	{
 		int dataIndex = 0;
 		for (int i = 0; i < name.Length; i++, dataIndex++)
-			name[i] = Convert.ToChar(data[dataIndex]);
+			name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < sprite_code.Length; i++, dataIndex++)
-			sprite_code[i] = Convert.ToChar(data[dataIndex]);
+			sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < race_code.Length; i++, dataIndex++)
-			race_code[i] = Convert.ToChar(data[dataIndex]);
+			race_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < unit_class.Length; i++, dataIndex++)
-			unit_class[i] = Convert.ToChar(data[dataIndex]);
+			unit_class[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-		mobile_type = data[dataIndex];
+		mobile_type = db.ReadByte(recNo, dataIndex);
 		dataIndex++;
-		all_know = data[dataIndex];
+		all_know = db.ReadByte(recNo, dataIndex);
 		dataIndex++;
 
 		for (int i = 0; i < visual_range.Length; i++, dataIndex++)
-			visual_range[i] = Convert.ToChar(data[dataIndex]);
+			visual_range[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < visual_extend.Length; i++, dataIndex++)
-			visual_extend[i] = Convert.ToChar(data[dataIndex]);
+			visual_extend[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < stealth.Length; i++, dataIndex++)
-			stealth[i] = Convert.ToChar(data[dataIndex]);
+			stealth[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < hit_points.Length; i++, dataIndex++)
-			hit_points[i] = Convert.ToChar(data[dataIndex]);
+			hit_points[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < armor.Length; i++, dataIndex++)
-			armor[i] = Convert.ToChar(data[dataIndex]);
+			armor[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < build_days.Length; i++, dataIndex++)
-			build_days[i] = Convert.ToChar(data[dataIndex]);
+			build_days[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < year_cost.Length; i++, dataIndex++)
-			year_cost[i] = Convert.ToChar(data[dataIndex]);
+			year_cost[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
-		weapon_power = data[dataIndex];
+		weapon_power = db.ReadByte(recNo, dataIndex);
 		dataIndex++;
 
 		for (int i = 0; i < carry_unit_capacity.Length; i++, dataIndex++)
-			carry_unit_capacity[i] = Convert.ToChar(data[dataIndex]);
+			carry_unit_capacity[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < carry_goods_capacity.Length; i++, dataIndex++)
-			carry_goods_capacity[i] = Convert.ToChar(data[dataIndex]);
+			carry_goods_capacity[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < free_weapon_count.Length; i++, dataIndex++)
-			free_weapon_count[i] = Convert.ToChar(data[dataIndex]);
+			free_weapon_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < vehicle_code.Length; i++, dataIndex++)
-			vehicle_code[i] = Convert.ToChar(data[dataIndex]);
+			vehicle_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < vehicle_unit_code.Length; i++, dataIndex++)
-			vehicle_unit_code[i] = Convert.ToChar(data[dataIndex]);
+			vehicle_unit_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < transform_unit.Length; i++, dataIndex++)
-			transform_unit[i] = Convert.ToChar(data[dataIndex]);
+			transform_unit[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < transform_combat_level.Length; i++, dataIndex++)
-			transform_combat_level[i] = Convert.ToChar(data[dataIndex]);
+			transform_combat_level[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < guard_combat_level.Length; i++, dataIndex++)
-			guard_combat_level[i] = Convert.ToChar(data[dataIndex]);
+			guard_combat_level[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < large_icon_file_name.Length; i++, dataIndex++)
-			large_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			large_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < large_icon_ptr.Length; i++, dataIndex++)
-			large_icon_ptr[i] = data[dataIndex];
+			large_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < general_icon_file_name.Length; i++, dataIndex++)
-			general_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			general_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < general_icon_ptr.Length; i++, dataIndex++)
-			general_icon_ptr[i] = data[dataIndex];
+			general_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < king_icon_file_name.Length; i++, dataIndex++)
-			king_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			king_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < king_icon_ptr.Length; i++, dataIndex++)
-			king_icon_ptr[i] = data[dataIndex];
+			king_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < small_icon_file_name.Length; i++, dataIndex++)
-			small_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			small_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < small_icon_ptr.Length; i++, dataIndex++)
-			small_icon_ptr[i] = data[dataIndex];
+			small_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < general_small_icon_file_name.Length; i++, dataIndex++)
-			general_small_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			general_small_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < general_small_icon_ptr.Length; i++, dataIndex++)
-			general_small_icon_ptr[i] = data[dataIndex];
+			general_small_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < king_small_icon_file_name.Length; i++, dataIndex++)
-			king_small_icon_file_name[i] = Convert.ToChar(data[dataIndex]);
+			king_small_icon_file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < king_small_icon_ptr.Length; i++, dataIndex++)
-			king_small_icon_ptr[i] = data[dataIndex];
+			king_small_icon_ptr[i] = db.ReadByte(recNo, dataIndex);
 
 		for (int i = 0; i < die_effect_sprite.Length; i++, dataIndex++)
-			die_effect_sprite[i] = Convert.ToChar(data[dataIndex]);
+			die_effect_sprite[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < sprite_id.Length; i++, dataIndex++)
-			sprite_id[i] = Convert.ToChar(data[dataIndex]);
+			sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < dll_sprite_id.Length; i++, dataIndex++)
-			dll_sprite_id[i] = Convert.ToChar(data[dataIndex]);
+			dll_sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < race_id.Length; i++, dataIndex++)
-			race_id[i] = Convert.ToChar(data[dataIndex]);
+			race_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < vehicle_id.Length; i++, dataIndex++)
-			vehicle_id[i] = Convert.ToChar(data[dataIndex]);
+			vehicle_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < vehicle_unit_id.Length; i++, dataIndex++)
-			vehicle_unit_id[i] = Convert.ToChar(data[dataIndex]);
+			vehicle_unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < transform_unit_id.Length; i++, dataIndex++)
-			transform_unit_id[i] = Convert.ToChar(data[dataIndex]);
+			transform_unit_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < die_effect_id.Length; i++, dataIndex++)
-			die_effect_id[i] = Convert.ToChar(data[dataIndex]);
+			die_effect_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < first_attack.Length; i++, dataIndex++)
-			first_attack[i] = Convert.ToChar(data[dataIndex]);
+			first_attack[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < attack_count.Length; i++, dataIndex++)
-			attack_count[i] = Convert.ToChar(data[dataIndex]);
+			attack_count[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	}
 }
 
@@ -245,65 +245,65 @@ public class UnitAttackRec
 	public char[] effect_code = new char[SPRITE_CODE_LEN];
 	public char[] effect_id = new char[UNIT_PARA_LEN];
 
-	public UnitAttackRec(byte[] data)
+	public UnitAttackRec(Database db, int recNo)
 	{
 		int dataIndex = 0;
 		for (int i = 0; i < sprite_code.Length; i++, dataIndex++)
-			sprite_code[i] = Convert.ToChar(data[dataIndex]);
+			sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < attack_id.Length; i++, dataIndex++)
-			attack_id[i] = Convert.ToChar(data[dataIndex]);
+			attack_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < combat_level.Length; i++, dataIndex++)
-			combat_level[i] = Convert.ToChar(data[dataIndex]);
+			combat_level[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < attack_delay.Length; i++, dataIndex++)
-			attack_delay[i] = Convert.ToChar(data[dataIndex]);
+			attack_delay[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < attack_range.Length; i++, dataIndex++)
-			attack_range[i] = Convert.ToChar(data[dataIndex]);
+			attack_range[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < attack_damage.Length; i++, dataIndex++)
-			attack_damage[i] = Convert.ToChar(data[dataIndex]);
+			attack_damage[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < pierce_damage.Length; i++, dataIndex++)
-			pierce_damage[i] = Convert.ToChar(data[dataIndex]);
+			pierce_damage[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < bullet_out_frame.Length; i++, dataIndex++)
-			bullet_out_frame[i] = Convert.ToChar(data[dataIndex]);
+			bullet_out_frame[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < bullet_speed.Length; i++, dataIndex++)
-			bullet_speed[i] = Convert.ToChar(data[dataIndex]);
+			bullet_speed[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < bullet_radius.Length; i++, dataIndex++)
-			bullet_radius[i] = Convert.ToChar(data[dataIndex]);
+			bullet_radius[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < bullet_sprite_code.Length; i++, dataIndex++)
-			bullet_sprite_code[i] = Convert.ToChar(data[dataIndex]);
+			bullet_sprite_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < bullet_sprite_id.Length; i++, dataIndex++)
-			bullet_sprite_id[i] = Convert.ToChar(data[dataIndex]);
+			bullet_sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < dll_bullet_sprite_id.Length; i++, dataIndex++)
-			dll_bullet_sprite_id[i] = Convert.ToChar(data[dataIndex]);
+			dll_bullet_sprite_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < eqv_attack_next.Length; i++, dataIndex++)
-			eqv_attack_next[i] = Convert.ToChar(data[dataIndex]);
+			eqv_attack_next[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < min_power.Length; i++, dataIndex++)
-			min_power[i] = Convert.ToChar(data[dataIndex]);
+			min_power[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < consume_power.Length; i++, dataIndex++)
-			consume_power[i] = Convert.ToChar(data[dataIndex]);
+			consume_power[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < fire_radius.Length; i++, dataIndex++)
-			fire_radius[i] = Convert.ToChar(data[dataIndex]);
+			fire_radius[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < effect_code.Length; i++, dataIndex++)
-			effect_code[i] = Convert.ToChar(data[dataIndex]);
+			effect_code[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 
 		for (int i = 0; i < effect_id.Length; i++, dataIndex++)
-			effect_id[i] = Convert.ToChar(data[dataIndex]);
+			effect_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	}
 }
 
@@ -677,7 +677,7 @@ public class UnitRes
 
 		for (int i = 0; i < unit_info_array.Length; i++)
 		{
-			UnitRec unitRec = new UnitRec(dbUnit.Read(i + 1));
+			UnitRec unitRec = new UnitRec(dbUnit, i + 1);
 			UnitInfo unitInfo = new UnitInfo();
 			unit_info_array[i] = unitInfo;
 
@@ -813,7 +813,7 @@ public class UnitRes
 
 		for (int i = 0; i < attack_info_array.Length; i++)
 		{
-			UnitAttackRec attackRec = new UnitAttackRec(dbUnitAttack.Read(i + 1));
+			UnitAttackRec attackRec = new UnitAttackRec(dbUnitAttack, i + 1);
 			AttackInfo attackInfo = new AttackInfo();
 			attack_info_array[i] = attackInfo;
 

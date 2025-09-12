@@ -23,36 +23,36 @@ public class HillBlockRec
     public char[] file_name = new char[FILE_NAME_LEN];
     public byte[] bitmap_ptr = new byte[BITMAP_PTR_LEN];
 
-    public HillBlockRec(byte[] data)
+    public HillBlockRec(Database db, int recNo)
     {
 	    int dataIndex = 0;
 	    for (int i = 0; i < pattern_id.Length; i++, dataIndex++)
-		    pattern_id[i] = Convert.ToChar(data[dataIndex]);
+		    pattern_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
 	    for (int i = 0; i < sub_pattern_id.Length; i++, dataIndex++)
-		    sub_pattern_id[i] = Convert.ToChar(data[dataIndex]);
+		    sub_pattern_id[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
 	    for (int i = 0; i < priority.Length; i++, dataIndex++)
-		    priority[i] = Convert.ToChar(data[dataIndex]);
+		    priority[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
-	    special_flag = Convert.ToChar(data[dataIndex]);
+	    special_flag = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    dataIndex++;
-	    layer = Convert.ToChar(data[dataIndex]);
+	    layer = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    dataIndex++;
-	    bitmap_type = Convert.ToChar(data[dataIndex]);
+	    bitmap_type = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    dataIndex++;
 	    
 	    for (int i = 0; i < offset_x.Length; i++, dataIndex++)
-		    offset_x[i] = Convert.ToChar(data[dataIndex]);
+		    offset_x[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
 	    for (int i = 0; i < offset_y.Length; i++, dataIndex++)
-		    offset_y[i] = Convert.ToChar(data[dataIndex]);
+		    offset_y[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
 	    for (int i = 0; i < file_name.Length; i++, dataIndex++)
-		    file_name[i] = Convert.ToChar(data[dataIndex]);
+		    file_name[i] = Convert.ToChar(db.ReadByte(recNo, dataIndex));
 	    
 	    for (int i = 0; i < bitmap_ptr.Length; i++, dataIndex++)
-		    bitmap_ptr[i] = data[dataIndex];
+		    bitmap_ptr[i] = db.ReadByte(recNo, dataIndex);
     }
 }
 
@@ -114,7 +114,7 @@ public class HillRes
 
 	    for (int i = 0; i < hill_block_info_array.Length; i++)
 	    {
-		    HillBlockRec hillBlockRec = new HillBlockRec(dbHill.Read(i + 1));
+		    HillBlockRec hillBlockRec = new HillBlockRec(dbHill, i + 1);
 		    HillBlockInfo hillBlockInfo = new HillBlockInfo();
 		    hill_block_info_array[i] = hillBlockInfo;
 
