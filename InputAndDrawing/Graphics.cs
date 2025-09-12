@@ -20,6 +20,7 @@ public class Graphics
     private IntPtr _palette = IntPtr.Zero; 
     private IntPtr _miniMapTexture = IntPtr.Zero;
     private readonly List<IntPtr> _textures = new List<IntPtr>();
+    private readonly List<IntPtr> _cursors = new List<IntPtr>();
     private bool _initialized;
 
     public Graphics()
@@ -101,11 +102,19 @@ public class Graphics
         //SDL_image.IMG_Quit();
         SDL.SDL_FreePalette(_palette);
 
-        foreach (var item in _textures)
+        foreach (var texture in _textures)
         {
-            if (item != IntPtr.Zero)
+            if (texture != IntPtr.Zero)
             {
-                SDL.SDL_DestroyTexture(item);
+                SDL.SDL_DestroyTexture(texture);
+            }
+        }
+
+        foreach (var cursor in _cursors)
+        {
+            if (cursor != IntPtr.Zero)
+            {
+                SDL.SDL_FreeCursor(cursor);
             }
         }
 
@@ -174,16 +183,42 @@ public class Graphics
             width, height, depth, width * depth / 8, 0, 0, 0, 0);
         if (depth == 8)
             SDL.SDL_SetSurfacePalette(imageSurface, _palette);
-
         SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
+
         IntPtr texture = SDL.SDL_CreateTextureFromSurface(_renderer, imageSurface);
         SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
         if (addToList)
             _textures.Add(texture);
         pinnedBmpImage.Free();
         SDL.SDL_FreeSurface(imageSurface);
-
         return texture;
+    }
+
+    public IntPtr CreateCursor(byte[] bmpImage, int width, int height, int hotSpotX, int hotSpotY)
+    {
+        GCHandle pinnedBmpImage = GCHandle.Alloc(bmpImage, GCHandleType.Pinned);
+        IntPtr imageSurface = SDL.SDL_CreateRGBSurfaceFrom(pinnedBmpImage.AddrOfPinnedObject(),
+            width, height, 8, width, 0, 0, 0, 0);
+        SDL.SDL_SetSurfacePalette(imageSurface, _palette);
+        SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_NONE);
+        IntPtr convertedSurface = SDL.SDL_ConvertSurfaceFormat(imageSurface, SDL.SDL_PIXELFORMAT_ARGB8888, 0);
+        SDL.SDL_SetSurfaceBlendMode(convertedSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_NONE);
+        IntPtr scaledSurface = SDL.SDL_CreateRGBSurfaceWithFormat(0, width * 3 / 2, height * 3 / 2, 32, SDL.SDL_PIXELFORMAT_ARGB8888);
+        SDL.SDL_SetSurfaceBlendMode(scaledSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_NONE);
+        SDL.SDL_BlitScaled(convertedSurface, IntPtr.Zero, scaledSurface, IntPtr.Zero);
+
+        IntPtr cursor = SDL.SDL_CreateColorCursor(scaledSurface, hotSpotX * 3 / 2, hotSpotY * 3 / 2);
+        _cursors.Add(cursor);
+        pinnedBmpImage.Free();
+        SDL.SDL_FreeSurface(imageSurface);
+        SDL.SDL_FreeSurface(convertedSurface);
+        SDL.SDL_FreeSurface(scaledSurface);
+        return cursor;
+    }
+
+    public void SetCursor(IntPtr cursor)
+    {
+        SDL.SDL_SetCursor(cursor);
     }
 
     public void SetClipRectangle(int x, int y, int width, int height)

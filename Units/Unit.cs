@@ -1157,7 +1157,7 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	private int CanAssignToFirm(int firmId)
+	public int CanAssignToFirm(int firmId)
 	{
 		Firm firm = FirmArray[firmId];
 		FirmInfo firmInfo = FirmRes[firm.FirmType];

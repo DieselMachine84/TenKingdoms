@@ -6,6 +6,8 @@ namespace TenKingdoms;
 [Flags]
 public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
 
+public enum ScreenObjectType { None, FriendTown, EnemyTown, FriendFirm, EnemyFirm, FriendUnit, EnemyUnit, SpyUnit, UnitGroup, Site }
+
 public partial class Renderer : IRenderer
 {
     public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
@@ -49,6 +51,8 @@ public partial class Renderer : IRenderer
     private int _selectedFirmId;
     //TODO keep selected caravan and trader when it enters market/harbor
     private int _selectedUnitId;
+    //TODO what if _selectedUnitId is killed but _selectedUnits.Count is greater than zero?
+    private readonly List<int> _selectedUnits = new List<int>();
     private int _selectedSiteId;
     private int _selectedRaceId;
     private int _selectedWorkerId;
@@ -73,6 +77,7 @@ public partial class Renderer : IRenderer
     private static UnitRes UnitRes => Sys.Instance.UnitRes;
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private static GodRes GodRes => Sys.Instance.GodRes;
+    private static CursorRes CursorRes => Sys.Instance.CursorRes;
 
     private static Config Config => Sys.Instance.Config;
     private static Info Info => Sys.Instance.Info;
@@ -198,11 +203,17 @@ public partial class Renderer : IRenderer
             _selectedUnitId = 0;
         if (_selectedSiteId != 0 && SiteArray.IsDeleted(_selectedSiteId))
             _selectedSiteId = 0;
+        for (int i = _selectedUnits.Count - 1; i >= 0; i--)
+        {
+            if (UnitArray.IsDeleted(_selectedUnits[i]))
+                _selectedUnits.RemoveAt(i);
+        }
     }
 
     private void ResetSelection()
     {
         _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedWorkerId = 0;
+        _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
     }
     

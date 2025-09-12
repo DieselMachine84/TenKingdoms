@@ -734,4 +734,13 @@ public partial class Renderer
             }
         }
     }
+
+    private void CancelSettleAndBuild()
+    {
+        if (HumanDetailsMode == HumanDetailsMode.Build || HumanDetailsMode == HumanDetailsMode.Settle)
+        {
+            HumanDetailsMode = HumanDetailsMode.Normal;
+            _buildFirmType = 0;
+        }
+    }
 }

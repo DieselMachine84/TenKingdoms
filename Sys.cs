@@ -36,6 +36,7 @@ public class Sys
     public GodRes GodRes { get; private set; }
     public TechRes TechRes { get; private set; }
     public TalkRes TalkRes { get; private set; }
+    public CursorRes CursorRes { get; private set; }
     public SERes SERes { get; private set; }
     public SECtrl SECtrl { get; private set; }
 
@@ -94,6 +95,7 @@ public class Sys
 
         TechRes = new TechRes(GameSet);
         TalkRes = new TalkRes();
+        CursorRes = new CursorRes();
         SERes = new SERes(GameSet);
         SECtrl = new SECtrl();
     }
@@ -260,7 +262,7 @@ public class Sys
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         while (true)
         {
-            bool eventProcessed = false;
+            bool needRedraw = false;
             bool nextFrameReady = false;
             SDL.SDL_Event sdlEvent = default;
             if (Speed > 0)
@@ -274,7 +276,7 @@ public class Sys
                         if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                             return;
 
-                        eventProcessed = ProcessEvent(sdlEvent);
+                        needRedraw = ProcessEvent(sdlEvent);
                     }
                 }
                 else
@@ -291,14 +293,14 @@ public class Sys
                     if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                         return;
                 
-                    eventProcessed = ProcessEvent(sdlEvent);
+                    needRedraw = ProcessEvent(sdlEvent);
                 }
             }
 
             if (nextFrameReady)
                 Process();
 
-            if (eventProcessed || nextFrameReady)
+            if (needRedraw || nextFrameReady)
             {
                 Renderer.DrawFrame();
                 Graphics.Render();
@@ -318,6 +320,12 @@ public class Sys
         {
             ProcessMouseButtonEvent(sdlEvent.button);
             return true;
+        }
+
+        if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
+        {
+            ProcessMouseMotionEvent(sdlEvent.motion);
+            return false;
         }
 
         return false;
@@ -374,6 +382,11 @@ public class Sys
             //Right mouse button released
             Renderer.ProcessInput(InputConstants.RightMouseUp, mouseButtonEvent.x, mouseButtonEvent.y);
         }
+    }
+
+    private void ProcessMouseMotionEvent(SDL.SDL_MouseMotionEvent mouseMotionEvent)
+    {
+        Renderer.ProcessInput(InputConstants.MouseMotion, mouseMotionEvent.x, mouseMotionEvent.y);
     }
 
     public void EndGame(int winNationRecno, int playerDestroyed = 0, int surrenderToNationRecno = 0, int retireFlag = 0)
