@@ -215,6 +215,7 @@ public partial class Renderer : IRenderer
         _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedWorkerId = 0;
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
+        HumanDetailsMode = HumanDetailsMode.Normal;
     }
     
     public void Reset()
@@ -230,9 +231,9 @@ public partial class Renderer : IRenderer
         if (Config.explore_whole_map)
             return true;
         
-        for (int locX = locX1; locX <= locX2; locX++)
+        for (int locY = locY1; locY <= locY2; locY++)
         {
-            for (int locY = locY1; locY <= locY2; locY++)
+            for (int locX = locX1; locX <= locX2; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (location.IsExplored())
