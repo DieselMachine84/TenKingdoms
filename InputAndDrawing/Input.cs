@@ -50,6 +50,7 @@ public partial class Renderer
                     _selectedFirmId = location.FirmId();
                 }
 
+                // TODO UNIT_SEA and UNIT_AIR
                 if (location.HasUnit(UnitConstants.UNIT_LAND))
                 {
                     ResetSelection();
