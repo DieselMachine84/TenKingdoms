@@ -115,7 +115,7 @@ public partial class Renderer : IRenderer
         return size * 3 / 2;
     }
     
-    public void DrawFrame()
+    public void DrawFrame(bool nextFrame)
     {
         ResetDeletedSelectedObjects();
         
@@ -143,7 +143,7 @@ public partial class Renderer : IRenderer
         }
 
         DrawMainView();
-        DrawMiniMap();
+        DrawMiniMap(nextFrame);
     }
 
     private void DrawMainScreen()

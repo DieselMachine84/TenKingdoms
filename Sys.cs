@@ -302,7 +302,7 @@ public class Sys
 
             if (needRedraw || nextFrameReady)
             {
-                Renderer.DrawFrame();
+                Renderer.DrawFrame(nextFrameReady);
                 Graphics.Render();
             }
         }

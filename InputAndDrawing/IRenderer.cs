@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public interface IRenderer
 {
-    void DrawFrame();
+    void DrawFrame(bool nextFrame);
     void ProcessInput(int eventType, int screenX, int screenY);
     void Reset();
 
