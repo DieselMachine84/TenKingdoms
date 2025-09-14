@@ -498,7 +498,7 @@ public partial class Renderer
         Graphics.DrawBitmap(_diagonalLineTextures[(int)(Sys.Instance.FrameNumber % _diagonalLineTextures.Count)],
             (screenX1 < screenX2) ? screenX1 : screenX2, (screenY1 < screenY2) ? screenY1 : screenY2, CellTextureWidth, CellTextureHeight, diagonalFlip);
     }
-    
+
     private void DrawSelectionRectangle()
     {
         if (_mouseButtonX < MainViewX || _mouseButtonX > MainViewX + MainViewWidth)
@@ -507,60 +507,30 @@ public partial class Renderer
         if (_mouseButtonY < MainViewY || _mouseButtonY > MainViewY + MainViewHeight)
             return;
         
-        const int Thickness = 3;
-        int color = Colors.VGA_YELLOW;
-
         int BoundX(int x)
         {
-            if (x < MainViewX)
-                return MainViewX;
-            if (x > MainViewX + MainViewWidth - Thickness)
-                return MainViewX + MainViewWidth - Thickness;
+            x = Math.Max(x, MainViewX);
+            x = Math.Min(x, MainViewX + MainViewWidth);
             return x;
         }
 
         int BoundY(int y)
         {
-            if (y < MainViewY)
-                return MainViewY;
-            if (y > MainViewY + MainViewHeight - Thickness)
-                return MainViewY + MainViewHeight - Thickness;
+            y = Math.Max(y, MainViewY);
+            y = Math.Min(y, MainViewY + MainViewHeight);
             return y;
         }
-        
-        if (_mouseMotionX >= _mouseButtonX)
-        {
-            if (_mouseMotionY >= _mouseButtonY)
-            {
-                Graphics.DrawRect(_mouseButtonX, _mouseButtonY, BoundX(_mouseMotionX) - _mouseButtonX, Thickness, color);
-                Graphics.DrawRect(_mouseButtonX, BoundY(_mouseMotionY - Thickness), _mouseMotionX - _mouseButtonX, Thickness, color);
-                Graphics.DrawRect(_mouseButtonX, _mouseButtonY, Thickness, BoundY(_mouseMotionY) - _mouseButtonY, color);
-                Graphics.DrawRect(BoundX(_mouseMotionX - Thickness), _mouseButtonY, Thickness, BoundY(_mouseMotionY) - _mouseButtonY, color);
-            }
-            else
-            {
-                Graphics.DrawRect(_mouseButtonX, BoundY(_mouseMotionY), BoundX(_mouseMotionX) - _mouseButtonX, Thickness, color);
-                Graphics.DrawRect(_mouseButtonX, _mouseButtonY - Thickness, BoundX(_mouseMotionX) - _mouseButtonX, Thickness, color);
-                Graphics.DrawRect(_mouseButtonX,  BoundY(_mouseMotionY), Thickness, _mouseButtonY - BoundY(_mouseMotionY), color);
-                Graphics.DrawRect(BoundX(_mouseMotionX) - Thickness, BoundY(_mouseMotionY), Thickness, _mouseButtonY - BoundY(_mouseMotionY), color);
-            }
-        }
-        else
-        {
-            if (_mouseMotionY >= _mouseButtonY)
-            {
-                Graphics.DrawRect(BoundX(_mouseMotionX), _mouseButtonY, _mouseButtonX - BoundX(_mouseMotionX), Thickness, color);
-                Graphics.DrawRect(BoundX(_mouseMotionX), BoundY(_mouseMotionY - Thickness), _mouseButtonX - BoundX(_mouseMotionX), Thickness, color);
-                Graphics.DrawRect(BoundX(_mouseMotionX), _mouseButtonY, Thickness, BoundY(_mouseMotionY) - _mouseButtonY, color);
-                Graphics.DrawRect(_mouseButtonX - Thickness, _mouseButtonY, Thickness, BoundY(_mouseMotionY) - _mouseButtonY, color);
-            }
-            else
-            {
-                Graphics.DrawRect(BoundX(_mouseMotionX), BoundY(_mouseMotionY), _mouseButtonX - BoundX(_mouseMotionX), Thickness, color);
-                Graphics.DrawRect(BoundX(_mouseMotionX), _mouseButtonY - Thickness, _mouseButtonX - BoundX(_mouseMotionX), Thickness, color);
-                Graphics.DrawRect(BoundX(_mouseMotionX), BoundY(_mouseMotionY), Thickness, _mouseButtonY - BoundY(_mouseMotionY), color);
-                Graphics.DrawRect(_mouseButtonX - Thickness, BoundY(_mouseMotionY), Thickness, _mouseButtonY - BoundY(_mouseMotionY), color);
-            }
-        }
+
+        const int Thickness = 3;
+        int color = Colors.VGA_YELLOW;
+
+        int x1 = BoundX(Math.Min(_mouseButtonX, _mouseMotionX));
+        int x2 = BoundX(Math.Max(_mouseButtonX, _mouseMotionX));
+        int y1 = BoundY(Math.Min(_mouseButtonY, _mouseMotionY));
+        int y2 = BoundY(Math.Max(_mouseButtonY, _mouseMotionY));
+        Graphics.DrawRect(x1, y1, x2 - x1, Thickness, color);
+        Graphics.DrawRect(x1, y2 - Thickness, x2 - x1, Thickness, color);
+        Graphics.DrawRect(x1, y1, Thickness, y2 - y1, color);
+        Graphics.DrawRect(x2 - Thickness, y1, Thickness, y2 - y1, color);
     }
 }
