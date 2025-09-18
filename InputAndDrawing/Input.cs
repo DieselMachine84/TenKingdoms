@@ -15,40 +15,44 @@ public partial class Renderer
     private int _mouseMotionX;
     private int _mouseMotionY;
 
-    public void ProcessInput(int eventType, int screenX, int screenY)
+    public void ProcessInput(int eventType, int mouseEventX, int mouseEventY)
     {
+        bool clickOnMainView = _mouseButtonX >= MainViewX && _mouseButtonX < MainViewX + MainViewWidth &&
+                               _mouseButtonY >= MainViewY && _mouseButtonY < MainViewY + MainViewHeight &&
+                               mouseEventX >= MainViewX && mouseEventX < MainViewX + MainViewWidth &&
+                               mouseEventY >= MainViewY && mouseEventY < MainViewY + MainViewHeight;
+        bool clickOnMiniMap = _mouseButtonX >= MiniMapX && _mouseButtonX < MiniMapX + MiniMapSize &&
+                              _mouseButtonY >= MiniMapY && _mouseButtonY < MiniMapY + MiniMapSize &&
+                              mouseEventX >= MiniMapX && mouseEventX < MiniMapX + MiniMapSize &&
+                              mouseEventY >= MiniMapY && mouseEventY < MiniMapY + MiniMapSize;
+        bool clickOnDetails = _mouseButtonX >= DetailsX1 && _mouseButtonX <= DetailsX2 &&
+                              _mouseButtonY >= DetailsY1 && _mouseButtonY <= DetailsY2 &&
+                              mouseEventX >= DetailsX1 && mouseEventX <= DetailsX2 &&
+                              mouseEventY >= DetailsY1 && mouseEventY <= DetailsY2;
+
         ResetDeletedSelectedObjects();
         
         if (eventType == InputConstants.LeftMouseDown)
         {
             _leftMousePressed = true;
-            _mouseButtonX = screenX;
-            _mouseButtonY = screenY;
+            _mouseButtonX = mouseEventX;
+            _mouseButtonY = mouseEventY;
         }
         
         if (eventType == InputConstants.LeftMouseUp)
         {
-            bool clickOnMiniMap = _mouseButtonX >= MiniMapX && _mouseButtonX <= MiniMapX + MiniMapSize &&
-                                  _mouseButtonY >= MiniMapY && _mouseButtonY <= MiniMapY + MiniMapSize &&
-                                  screenX >= MiniMapX && screenX <= MiniMapX + MiniMapSize &&
-                                  screenY >= MiniMapY && screenY <= MiniMapY + MiniMapSize;
-            bool clickOnDetails = _mouseButtonX >= DetailsX1 && _mouseButtonX <= DetailsX2 &&
-                                  _mouseButtonY >= DetailsY1 && _mouseButtonY <= DetailsY2 &&
-                                  screenX >= DetailsX1 && screenX <= DetailsX2 &&
-                                  screenY >= DetailsY1 && screenY <= DetailsY2;
-
-            SelectObjects(screenX, screenY);
+            SelectObjects(mouseEventX, mouseEventY);
             
             _leftMousePressed = false;
             _leftMouseReleased = true;
-            _mouseButtonX = screenX;
-            _mouseButtonY = screenY;
+            _mouseButtonX = mouseEventX;
+            _mouseButtonY = mouseEventY;
 
             if (clickOnMiniMap)
-                HandleMiniMap(screenX, screenY);
+                HandleMiniMap();
             
             if (clickOnDetails)
-                HandleDetails(screenX, screenY);
+                HandleDetails();
 
             _leftMouseReleased = false;
         }
@@ -56,24 +60,24 @@ public partial class Renderer
         if (eventType == InputConstants.RightMouseDown)
         {
             _rightMousePressed = true;
-            _mouseButtonX = screenX;
-            _mouseButtonY = screenY;
+            _mouseButtonX = mouseEventX;
+            _mouseButtonY = mouseEventY;
         }
 
         if (eventType == InputConstants.RightMouseUp)
         {
             _rightMousePressed = false;
             _rightMouseReleased = true;
-            _mouseButtonX = screenX;
-            _mouseButtonY = screenY;
+            _mouseButtonX = mouseEventX;
+            _mouseButtonY = mouseEventY;
             
-            if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
+            if (clickOnMainView)
             {
-                int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
-                int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
+                int locX = _topLeftLocX + (mouseEventX - MainViewX) / CellTextureWidth;
+                int locY = _topLeftLocY + (mouseEventY - MainViewY) / CellTextureHeight;
             }
             
-            if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
+            if (clickOnDetails)
             {
                 if (_selectedTownId != 0)
                     HandleTownDetailsInput(TownArray[_selectedTownId]);
@@ -88,8 +92,8 @@ public partial class Renderer
 
         if (eventType == InputConstants.MouseMotion)
         {
-            _mouseMotionX = screenX;
-            _mouseMotionY = screenY;
+            _mouseMotionX = mouseEventX;
+            _mouseMotionY = mouseEventY;
             SelectMouseCursor();
         }
 
@@ -327,40 +331,36 @@ public partial class Renderer
         }
     }
 
-    private void HandleMiniMap(int screenX, int screenY)
+    private void HandleMiniMap()
     {
-        if (screenX >= MiniMapX && screenX < MiniMapX + MiniMapSize && screenY >= MiniMapY && screenY < MiniMapY + MiniMapSize)
+        int locX = _mouseButtonX - MiniMapX;
+        int locY = _mouseButtonY - MiniMapY;
+        
+        if (MiniMapSize > GameConstants.MapSize)
         {
-            int locX = screenX - MiniMapX;
-            int locY = screenY - MiniMapY;
-            if (MiniMapSize > GameConstants.MapSize)
-            {
-                locX /= MiniMapScale;
-                locY /= MiniMapScale;
-            }
-            if (MiniMapSize < GameConstants.MapSize)
-            {
-                locX *= MiniMapScale;
-                locY *= MiniMapScale;
-            }
-
-            GoToLocation(locX, locY);
+            locX /= MiniMapScale;
+            locY /= MiniMapScale;
         }
+
+        if (MiniMapSize < GameConstants.MapSize)
+        {
+            locX *= MiniMapScale;
+            locY *= MiniMapScale;
+        }
+
+        GoToLocation(locX, locY);
     }
 
-    private void HandleDetails(int screenX, int screenY)
+    private void HandleDetails()
     {
-        if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
-        {
-            if (_selectedTownId != 0)
-                HandleTownDetailsInput(TownArray[_selectedTownId]);
-                
-            if (_selectedFirmId != 0)
-                HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
-                
-            if (_selectedUnitId != 0)
-                HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
-        }
+        if (_selectedTownId != 0)
+            HandleTownDetailsInput(TownArray[_selectedTownId]);
+
+        if (_selectedFirmId != 0)
+            HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
+
+        if (_selectedUnitId != 0)
+            HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
     }
 
     private void SelectPrevOrNextTown(int seekDir, bool sameNation)
