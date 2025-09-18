@@ -17,17 +17,11 @@ public partial class Renderer
 
     public void ProcessInput(int eventType, int mouseEventX, int mouseEventY)
     {
-        bool clickOnMainView = _mouseButtonX >= MainViewX && _mouseButtonX < MainViewX + MainViewWidth &&
-                               _mouseButtonY >= MainViewY && _mouseButtonY < MainViewY + MainViewHeight &&
-                               mouseEventX >= MainViewX && mouseEventX < MainViewX + MainViewWidth &&
+        bool clickOnMainView = mouseEventX >= MainViewX && mouseEventX < MainViewX + MainViewWidth &&
                                mouseEventY >= MainViewY && mouseEventY < MainViewY + MainViewHeight;
-        bool clickOnMiniMap = _mouseButtonX >= MiniMapX && _mouseButtonX < MiniMapX + MiniMapSize &&
-                              _mouseButtonY >= MiniMapY && _mouseButtonY < MiniMapY + MiniMapSize &&
-                              mouseEventX >= MiniMapX && mouseEventX < MiniMapX + MiniMapSize &&
+        bool clickOnMiniMap = mouseEventX >= MiniMapX && mouseEventX < MiniMapX + MiniMapSize &&
                               mouseEventY >= MiniMapY && mouseEventY < MiniMapY + MiniMapSize;
-        bool clickOnDetails = _mouseButtonX >= DetailsX1 && _mouseButtonX <= DetailsX2 &&
-                              _mouseButtonY >= DetailsY1 && _mouseButtonY <= DetailsY2 &&
-                              mouseEventX >= DetailsX1 && mouseEventX <= DetailsX2 &&
+        bool clickOnDetails = mouseEventX >= DetailsX1 && mouseEventX <= DetailsX2 &&
                               mouseEventY >= DetailsY1 && mouseEventY <= DetailsY2;
 
         ResetDeletedSelectedObjects();
@@ -37,22 +31,28 @@ public partial class Renderer
             _leftMousePressed = true;
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
+            if (clickOnMainView)
+                ProcessCommand();
         }
         
         if (eventType == InputConstants.LeftMouseUp)
         {
-            SelectObjects(mouseEventX, mouseEventY);
+            int oldMouseButtonX = _mouseButtonX;
+            int oldMouseButtonY = _mouseButtonY;
             
             _leftMousePressed = false;
             _leftMouseReleased = true;
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
 
-            if (clickOnMiniMap)
-                HandleMiniMap();
-            
-            if (clickOnDetails)
-                HandleDetails();
+            if (!SelectObjects(oldMouseButtonX, oldMouseButtonY, mouseEventX, mouseEventY))
+            {
+                if (clickOnMiniMap)
+                    HandleMiniMap();
+
+                if (clickOnDetails)
+                    HandleDetails();
+            }
 
             _leftMouseReleased = false;
         }
@@ -173,11 +173,17 @@ public partial class Renderer
             _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
     }
 
-    private void SelectObjects(int screenX, int screenY)
+    private bool SelectObjects(int mouse1X, int mouse1Y, int mouse2X, int mouse2Y)
     {
         // TODO recallGroup
         // TODO shiftSelect
         // TODO selection sound
+
+        if (mouse1X < MainViewX || mouse1X >= MainViewX + MainViewWidth)
+            return false;
+        
+        if (mouse1Y < MainViewY || mouse1Y >= MainViewY + MainViewHeight)
+            return false;
         
         Unit SelectUnit(Location location, int mobileType)
         {
@@ -198,23 +204,17 @@ public partial class Renderer
             return null;
         }
 
-        if (_mouseButtonX < MainViewX || _mouseButtonX >= MainViewX + MainViewWidth)
-            return;
-        
-        if (_mouseButtonY < MainViewY || _mouseButtonY >= MainViewY + MainViewHeight)
-            return;
+        mouse2X = Math.Max(mouse2X, MainViewX);
+        mouse2X = Math.Min(mouse2X, MainViewX + MainViewWidth - 1);
+        mouse2Y = Math.Max(mouse2Y, MainViewY);
+        mouse2Y = Math.Min(mouse2Y, MainViewY + MainViewHeight - 1);
+        (int selectLocX1, int selectLocY1) = GetLocationFromScreen(Math.Min(mouse1X, mouse2X), Math.Min(mouse1Y, mouse2Y));
+        (int selectLocX2, int selectLocY2) = GetLocationFromScreen(Math.Max(mouse1X, mouse2X), Math.Max(mouse1Y, mouse2Y));
 
-        screenX = Math.Max(screenX, MainViewX);
-        screenX = Math.Min(screenX, MainViewX + MainViewWidth - 1);
-        screenY = Math.Max(screenY, MainViewY);
-        screenY = Math.Min(screenY, MainViewY + MainViewHeight - 1);
-        (int selectLocX1, int selectLocY1) = GetLocationFromScreen(Math.Min(_mouseButtonX, screenX), Math.Min(_mouseButtonY, screenY));
-        (int selectLocX2, int selectLocY2) = GetLocationFromScreen(Math.Max(_mouseButtonX, screenX), Math.Max(_mouseButtonY, screenY));
-
-        bool selectOneOnly = Math.Abs(_mouseButtonX - screenX) <= 3 && Math.Abs(_mouseButtonY - screenY) <= 3;
+        bool selectOneOnly = Math.Abs(mouse1X - mouse2X) <= 3 && Math.Abs(mouse1Y - mouse2Y) <= 3;
         if (selectOneOnly)
         {
-            Location pointingLocation = GetPointingLocation(screenX, screenY);
+            Location pointingLocation = GetPointingLocation(mouse2X, mouse2Y);
             Unit unit = SelectUnit(pointingLocation, UnitConstants.UNIT_AIR);
             if (unit == null)
                 unit = SelectUnit(pointingLocation, UnitConstants.UNIT_LAND);
@@ -320,7 +320,9 @@ public partial class Renderer
                 return false;
             }
             
-            ResetSelection();
+            if (unitsToSelect.Count > 0)
+                ResetSelection();
+            
             for (int i = 0; i < unitsToSelect.Count; i++)
             {
                 Unit unitToSelect = unitsToSelect[i];
@@ -329,8 +331,68 @@ public partial class Renderer
                     _selectedUnitId = unitToSelect.SpriteId;
             }
         }
+
+        return true;
     }
 
+    private void ProcessCommand()
+    {
+        // TODO process caravan stop, ship stop and cast power
+        
+        int locX = _topLeftLocX + (_mouseButtonX - MainViewX) / CellTextureWidth;
+        int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
+        Location location = World.GetLoc(locX, locY);
+
+        if (HumanDetailsMode == HumanDetailsMode.Build)
+        {
+            if (!UnitArray.IsDeleted(_selectedUnitId))
+            {
+                Unit unit = UnitArray[_selectedUnitId];
+                if (unit.IsVisible())
+                {
+                    unit.BuildFirm(locX, locY, _buildFirmType, InternalConstants.COMMAND_PLAYER);
+                    if (SERes.mark_command_time() != 0)
+                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                }
+            }
+            CancelSettleAndBuild();
+        }
+
+        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        {
+            if (!UnitArray.IsDeleted(_selectedUnitId))
+            {
+                Unit unit = UnitArray[_selectedUnitId];
+                if (unit.IsVisible())
+                {
+                    if (location.IsTown())
+                    {
+                        Town town = TownArray[location.TownId()];
+                        if (town.NationId == unit.NationId)
+                            UnitArray.Assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_PLAYER, _selectedUnits);
+                        else
+                            UnitArray.MoveTo(town.LocX1, town.LocY1, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
+                    }
+                    else
+                    {
+                        UnitArray.Settle(locX, locY, false, InternalConstants.COMMAND_PLAYER, _selectedUnits);
+                    }
+                    
+                    if (SERes.mark_command_time() != 0)
+                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                }
+            }
+            CancelSettleAndBuild();
+        }
+        
+        SelectMouseCursor();
+    }
+
+    private void HandleMainViewRightMouse()
+    {
+        //
+    }
+    
     private void HandleMiniMap()
     {
         int locX = _mouseButtonX - MiniMapX;
