@@ -114,6 +114,11 @@ public partial class Renderer : IRenderer
     {
         return size * 3 / 2;
     }
+
+    private (int, int) GetLocationFromScreen(int screenX, int screenY)
+    {
+        return (_topLeftLocX + (screenX - MainViewX) / CellTextureWidth, _topLeftLocY + (screenY - MainViewY) / CellTextureHeight);
+    }
     
     public void DrawFrame(bool nextFrame)
     {

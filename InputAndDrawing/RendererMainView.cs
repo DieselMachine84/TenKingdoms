@@ -380,6 +380,85 @@ public partial class Renderer
             Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
                 Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
         }
+
+        for (int i = 0; i < _selectedUnits.Count; i++)
+        {
+            Unit selectedUnit = UnitArray[_selectedUnits[i]];
+            if (selectedUnit.CurLocX < _topLeftLocX || selectedUnit.CurLocX > _topLeftLocX + MainViewWidthInCells)
+                continue;
+            if (selectedUnit.CurLocY < _topLeftLocY || selectedUnit.CurLocY > _topLeftLocY + MainViewHeightInCells)
+                continue;
+
+            int selectedUnitX = MainViewX + Scale(selectedUnit.CurX) - _topLeftLocX * CellTextureWidth;
+            int selectedUnitY = MainViewY + Scale(selectedUnit.CurY) - _topLeftLocY * CellTextureHeight;
+            int maxHitBarWidth = 0;
+            int hitBarX = 0;
+            int hitBarY = 0;
+            if (selectedUnit.MobileType == UnitConstants.UNIT_LAND)
+            {
+                if (UnitRes[selectedUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN)
+                    maxHitBarWidth = CellTextureWidth - 16;
+                else
+                    maxHitBarWidth = CellTextureWidth;
+                
+                hitBarX = selectedUnitX;
+                hitBarY = selectedUnitY - 30;
+            }
+            else
+            {
+                maxHitBarWidth = CellTextureWidth * 2 - 32;
+                hitBarX = selectedUnitX - CellTextureWidth / 2 + 16;
+                hitBarY = selectedUnitY - 30;
+
+                if (selectedUnit.MobileType == UnitConstants.UNIT_AIR)
+                    hitBarY -= 30;
+            }
+
+
+            const int HIT_BAR_LIGHT_BORDER = 0;
+            const int HIT_BAR_DARK_BORDER = 3;
+            const int HIT_BAR_BODY = 1;
+            const int NO_BAR_LIGHT_BORDER = 0x40 + 11;
+            const int NO_BAR_DARK_BORDER = 0x40 + 3;
+            const int NO_BAR_BODY = 0x40 + 7;
+            int hitBarColor = 0xA8;
+            if (selectedUnit.MaxHitPoints >= 51 && selectedUnit.MaxHitPoints <= 100)
+                hitBarColor = 0xB4;
+            if (selectedUnit.MaxHitPoints >= 101)
+                hitBarColor = 0xAC;
+            int separatorX = hitBarX + (maxHitBarWidth - 1) * (int)selectedUnit.HitPoints / selectedUnit.MaxHitPoints;
+
+            Graphics.DrawLine(hitBarX, hitBarY, separatorX, hitBarY, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
+            Graphics.DrawLine(hitBarX, hitBarY + 1, separatorX, hitBarY + 1, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
+            if (separatorX < hitBarX + maxHitBarWidth - 1)
+            {
+                Graphics.DrawLine(separatorX + 1, hitBarY, hitBarX + maxHitBarWidth - 1, hitBarY, NO_BAR_LIGHT_BORDER); //top
+                Graphics.DrawLine(separatorX + 1, hitBarY + 1, hitBarX + maxHitBarWidth - 1, hitBarY + 1, NO_BAR_LIGHT_BORDER); //top
+            }
+
+            Graphics.DrawLine(hitBarX + 2, hitBarY + 4, separatorX, hitBarY + 4, hitBarColor + HIT_BAR_DARK_BORDER); //bottom
+            Graphics.DrawLine(hitBarX + 2, hitBarY + 5, separatorX, hitBarY + 5, hitBarColor + HIT_BAR_DARK_BORDER); //bottom
+            if (separatorX < hitBarX + maxHitBarWidth - 1)
+            {
+                Graphics.DrawLine(separatorX + 1, hitBarY + 4, hitBarX + maxHitBarWidth - 1, hitBarY + 4, NO_BAR_DARK_BORDER); //bottom
+                Graphics.DrawLine(separatorX + 1, hitBarY + 5, hitBarX + maxHitBarWidth - 1, hitBarY + 5, NO_BAR_DARK_BORDER); //bottom
+            }
+
+            Graphics.DrawLine(hitBarX, hitBarY, hitBarX, hitBarY + 5, hitBarColor + HIT_BAR_LIGHT_BORDER); //left
+            Graphics.DrawLine(hitBarX + 1, hitBarY, hitBarX + 1, hitBarY + 5, hitBarColor + HIT_BAR_LIGHT_BORDER); //left
+            Graphics.DrawLine(hitBarX + maxHitBarWidth - 2, hitBarY + 2, hitBarX + maxHitBarWidth - 2, hitBarY + 3,
+                separatorX == hitBarX + maxHitBarWidth - 1 ? hitBarColor + HIT_BAR_DARK_BORDER : NO_BAR_DARK_BORDER); //right
+            Graphics.DrawLine(hitBarX + maxHitBarWidth - 1, hitBarY + 2, hitBarX + maxHitBarWidth - 1, hitBarY + 3,
+                separatorX == hitBarX + maxHitBarWidth - 1 ? hitBarColor + HIT_BAR_DARK_BORDER : NO_BAR_DARK_BORDER); //right
+            
+            Graphics.DrawLine(hitBarX + 2, hitBarY + 2, Math.Min(separatorX, hitBarX + maxHitBarWidth - 3), hitBarY + 2, hitBarColor + HIT_BAR_BODY); //body
+            Graphics.DrawLine(hitBarX + 2, hitBarY + 3, Math.Min(separatorX, hitBarX + maxHitBarWidth - 3), hitBarY + 3, hitBarColor + HIT_BAR_BODY); //body
+            if (separatorX < hitBarX + maxHitBarWidth - 3)
+            {
+                Graphics.DrawLine(separatorX + 1, hitBarY + 2, hitBarX + maxHitBarWidth - 3, hitBarY + 2, NO_BAR_BODY); //body
+                Graphics.DrawLine(separatorX + 1, hitBarY + 3, hitBarX + maxHitBarWidth - 3, hitBarY + 3, NO_BAR_BODY); //body
+            }
+        }
     }
 
     private void DrawUnitPaths()
@@ -501,10 +580,10 @@ public partial class Renderer
 
     private void DrawSelectionRectangle()
     {
-        if (_mouseButtonX < MainViewX || _mouseButtonX > MainViewX + MainViewWidth)
+        if (_mouseButtonX < MainViewX || _mouseButtonX >= MainViewX + MainViewWidth)
             return;
         
-        if (_mouseButtonY < MainViewY || _mouseButtonY > MainViewY + MainViewHeight)
+        if (_mouseButtonY < MainViewY || _mouseButtonY >= MainViewY + MainViewHeight)
             return;
         
         int BoundX(int x)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace TenKingdoms;
@@ -27,78 +28,27 @@ public partial class Renderer
         
         if (eventType == InputConstants.LeftMouseUp)
         {
+            bool clickOnMiniMap = _mouseButtonX >= MiniMapX && _mouseButtonX <= MiniMapX + MiniMapSize &&
+                                  _mouseButtonY >= MiniMapY && _mouseButtonY <= MiniMapY + MiniMapSize &&
+                                  screenX >= MiniMapX && screenX <= MiniMapX + MiniMapSize &&
+                                  screenY >= MiniMapY && screenY <= MiniMapY + MiniMapSize;
+            bool clickOnDetails = _mouseButtonX >= DetailsX1 && _mouseButtonX <= DetailsX2 &&
+                                  _mouseButtonY >= DetailsY1 && _mouseButtonY <= DetailsY2 &&
+                                  screenX >= DetailsX1 && screenX <= DetailsX2 &&
+                                  screenY >= DetailsY1 && screenY <= DetailsY2;
+
+            SelectObjects(screenX, screenY);
+            
             _leftMousePressed = false;
             _leftMouseReleased = true;
             _mouseButtonX = screenX;
             _mouseButtonY = screenY;
+
+            if (clickOnMiniMap)
+                HandleMiniMap(screenX, screenY);
             
-            if (screenX >= MainViewX && screenX < MainViewX + MainViewWidth && screenY >= MainViewY && screenY < MainViewY + MainViewHeight)
-            {
-                int locX = _topLeftLocX + (screenX - MainViewX) / CellTextureWidth;
-                int locY = _topLeftLocY + (screenY - MainViewY) / CellTextureHeight;
-
-                Location location = World.GetLoc(locX, locY);
-                if (location.IsTown())
-                {
-                    ResetSelection();
-                    _selectedTownId = location.TownId();
-                }
-
-                if (location.IsFirm())
-                {
-                    ResetSelection();
-                    _selectedFirmId = location.FirmId();
-                }
-
-                // TODO UNIT_SEA and UNIT_AIR
-                if (location.HasUnit(UnitConstants.UNIT_LAND))
-                {
-                    ResetSelection();
-                    _selectedUnitId = location.UnitId(UnitConstants.UNIT_LAND);
-                    _selectedUnits.Clear();
-                    _selectedUnits.Add(_selectedUnitId);
-                }
-
-                if (location.HasSite())
-                {
-                    Site site = SiteArray[location.SiteId()];
-                    if (!site.HasMine)
-                    {
-                        ResetSelection();
-                        _selectedSiteId = location.SiteId();
-                    }
-                }
-            }
-
-            if (screenX >= MiniMapX && screenX < MiniMapX + MiniMapSize && screenY >= MiniMapY && screenY < MiniMapY + MiniMapSize)
-            {
-                int locX = screenX - MiniMapX;
-                int locY = screenY - MiniMapY;
-                if (MiniMapSize > GameConstants.MapSize)
-                {
-                    locX /= MiniMapScale;
-                    locY /= MiniMapScale;
-                }
-                if (MiniMapSize < GameConstants.MapSize)
-                {
-                    locX *= MiniMapScale;
-                    locY *= MiniMapScale;
-                }
-
-                GoToLocation(locX, locY);
-            }
-
-            if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
-            {
-                if (_selectedTownId != 0)
-                    HandleTownDetailsInput(TownArray[_selectedTownId]);
-                
-                if (_selectedFirmId != 0)
-                    HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
-                
-                if (_selectedUnitId != 0)
-                    HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
-            }
+            if (clickOnDetails)
+                HandleDetails(screenX, screenY);
 
             _leftMouseReleased = false;
         }
@@ -219,6 +169,200 @@ public partial class Renderer
             _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
     }
 
+    private void SelectObjects(int screenX, int screenY)
+    {
+        // TODO recallGroup
+        // TODO shiftSelect
+        // TODO selection sound
+        
+        Unit SelectUnit(Location location, int mobileType)
+        {
+            if (location.HasUnit(mobileType))
+            {
+                int unitId = location.UnitId(mobileType);
+                if (!UnitArray.IsDeleted(unitId))
+                {
+                    Unit unit = UnitArray[unitId];
+                    if (unit.IsVisible() && !unit.IsStealth())
+                    {
+                        //TODO update absolute position
+                        return unit;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        if (_mouseButtonX < MainViewX || _mouseButtonX >= MainViewX + MainViewWidth)
+            return;
+        
+        if (_mouseButtonY < MainViewY || _mouseButtonY >= MainViewY + MainViewHeight)
+            return;
+
+        screenX = Math.Max(screenX, MainViewX);
+        screenX = Math.Min(screenX, MainViewX + MainViewWidth - 1);
+        screenY = Math.Max(screenY, MainViewY);
+        screenY = Math.Min(screenY, MainViewY + MainViewHeight - 1);
+        (int selectLocX1, int selectLocY1) = GetLocationFromScreen(Math.Min(_mouseButtonX, screenX), Math.Min(_mouseButtonY, screenY));
+        (int selectLocX2, int selectLocY2) = GetLocationFromScreen(Math.Max(_mouseButtonX, screenX), Math.Max(_mouseButtonY, screenY));
+
+        bool selectOneOnly = Math.Abs(_mouseButtonX - screenX) <= 3 && Math.Abs(_mouseButtonY - screenY) <= 3;
+        if (selectOneOnly)
+        {
+            Location pointingLocation = GetPointingLocation(screenX, screenY);
+            Unit unit = SelectUnit(pointingLocation, UnitConstants.UNIT_AIR);
+            if (unit == null)
+                unit = SelectUnit(pointingLocation, UnitConstants.UNIT_LAND);
+            if (unit == null)
+                unit = SelectUnit(pointingLocation, UnitConstants.UNIT_SEA);
+
+            if (unit != null)
+            {
+                ResetSelection();
+                _selectedUnitId = unit.SpriteId;
+                _selectedUnits.Add(_selectedUnitId);
+            }
+            else
+            {
+                if (pointingLocation.IsTown())
+                {
+                    ResetSelection();
+                    _selectedTownId = pointingLocation.TownId();
+                }
+                
+                if (pointingLocation.IsFirm())
+                {
+                    ResetSelection();
+                    _selectedFirmId = pointingLocation.FirmId();
+                }
+
+                if (pointingLocation.HasSite())
+                {
+                    Site site = SiteArray[pointingLocation.SiteId()];
+                    if (!site.HasMine)
+                    {
+                        ResetSelection();
+                        _selectedSiteId = pointingLocation.SiteId();
+                    }
+                }
+            }
+        }
+        else
+        {
+            int[] mobileTypes = { UnitConstants.UNIT_LAND, UnitConstants.UNIT_SEA, UnitConstants.UNIT_AIR };
+            List<Unit> unitsToSelect = new List<Unit>();
+            for (int locY = selectLocY1; locY <= selectLocY2; locY++)
+            {
+                for (int locX = selectLocX1; locX <= selectLocX2; locX++)
+                {
+                    Location location = World.GetLoc(locX, locY);
+                    for (int i = 0; i < mobileTypes.Length; i++)
+                    {
+                        int mobileType = mobileTypes[i];
+                        if (location.HasUnit(mobileType))
+                        {
+                            int unitId = location.UnitId(mobileType);
+                            if (!UnitArray.IsDeleted(unitId))
+                            {
+                                Unit unit = UnitArray[unitId];
+                                if (unit.IsVisible() && !unit.IsStealth() && unit.IsOwn())
+                                {
+                                    //TODO update absolute position
+                                    unitsToSelect.Add(unit);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            bool hasPlayerNationUnits = false;
+            for (int i = 0; i < unitsToSelect.Count; i++)
+            {
+                if (unitsToSelect[i].NationId == NationArray.player_recno)
+                {
+                    hasPlayerNationUnits = true;
+                    break;
+                }
+            }
+
+            if (hasPlayerNationUnits)
+            {
+                for (int i = unitsToSelect.Count - 1; i >= 0; i--)
+                {
+                    if (unitsToSelect[i].NationId != NationArray.player_recno)
+                        unitsToSelect.RemoveAt(i);
+                }
+            }
+
+            bool IsUnitHigherRank(Unit unit1, Unit unit2)
+            {
+                if (unit1.Rank < unit2.Rank)
+                    return false;
+
+                if (unit1.Rank > unit2.Rank)
+                    return true;
+
+                if (UnitRes[unit1.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN &&
+                    UnitRes[unit2.UnitType].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
+                {
+                    return true;
+                }
+
+                if (unit1.Skill.SkillId != 0 && unit2.Skill.SkillId == 0)
+                    return true;
+
+                return false;
+            }
+            
+            ResetSelection();
+            for (int i = 0; i < unitsToSelect.Count; i++)
+            {
+                Unit unitToSelect = unitsToSelect[i];
+                _selectedUnits.Add(unitToSelect.SpriteId);
+                if (_selectedUnitId == 0 || IsUnitHigherRank(unitToSelect, UnitArray[_selectedUnitId]))
+                    _selectedUnitId = unitToSelect.SpriteId;
+            }
+        }
+    }
+
+    private void HandleMiniMap(int screenX, int screenY)
+    {
+        if (screenX >= MiniMapX && screenX < MiniMapX + MiniMapSize && screenY >= MiniMapY && screenY < MiniMapY + MiniMapSize)
+        {
+            int locX = screenX - MiniMapX;
+            int locY = screenY - MiniMapY;
+            if (MiniMapSize > GameConstants.MapSize)
+            {
+                locX /= MiniMapScale;
+                locY /= MiniMapScale;
+            }
+            if (MiniMapSize < GameConstants.MapSize)
+            {
+                locX *= MiniMapScale;
+                locY *= MiniMapScale;
+            }
+
+            GoToLocation(locX, locY);
+        }
+    }
+
+    private void HandleDetails(int screenX, int screenY)
+    {
+        if (screenX >= DetailsX1 && screenX <= DetailsX2 && screenY >= DetailsY1 && screenY <= DetailsY2)
+        {
+            if (_selectedTownId != 0)
+                HandleTownDetailsInput(TownArray[_selectedTownId]);
+                
+            if (_selectedFirmId != 0)
+                HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
+                
+            if (_selectedUnitId != 0)
+                HandleUnitDetailsInput(UnitArray[_selectedUnitId]);
+        }
+    }
+
     private void SelectPrevOrNextTown(int seekDir, bool sameNation)
     {
         int nextTownId = TownArray.GetNextTown(_selectedTownId, seekDir, sameNation);
@@ -260,7 +404,7 @@ public partial class Renderer
             _mouseMotionY >= MainViewY && _mouseMotionY < MainViewY + MainViewHeight)
         {
             (ScreenObjectType selectedObjectType, int selectedObjectId) = GetSelectedObjectType();
-            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(GetPointingLocation());
+            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(GetPointingLocation(_mouseMotionX, _mouseMotionY));
             newCursor = ChooseCursor(selectedObjectType, selectedObjectId, pointingObjectType, pointingObjectId);
         }
 
@@ -359,10 +503,10 @@ public partial class Renderer
         return (ScreenObjectType.None, 0);
     }
 
-    private Location GetPointingLocation()
+    private Location GetPointingLocation(int pointingX, int pointingY)
     {
-        int locX = _topLeftLocX + (_mouseMotionX - MainViewX) / CellTextureWidth;
-        int locY = _topLeftLocY + (_mouseMotionY - MainViewY) / CellTextureHeight;
+        int locX = _topLeftLocX + (pointingX - MainViewX) / CellTextureWidth;
+        int locY = _topLeftLocY + (pointingY - MainViewY) / CellTextureHeight;
         
         //TODO detect spread
         Location location = World.GetLoc(locX, locY);
