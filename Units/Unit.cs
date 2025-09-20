@@ -114,7 +114,6 @@ public abstract partial class Unit : Sprite
 	
 	protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	protected Info Info => Sys.Instance.Info;
-	protected Power Power => Sys.Instance.Power;
 	private SeekPath SeekPath => Sys.Instance.SeekPath;
 	protected TerrainRes TerrainRes => Sys.Instance.TerrainRes;
 	protected FirmRes FirmRes => Sys.Instance.FirmRes;
@@ -295,11 +294,6 @@ public abstract partial class Unit : Sprite
 			SpyArray.DeleteSpy(SpyArray[SpyId]);
 			SpyId = 0;
 		}
-
-		//---------- reset command ----------//
-
-		if (Power.command_unit_recno == SpriteId)
-			Power.reset_command();
 
 		//-----------------------------------//
 

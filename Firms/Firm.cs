@@ -100,7 +100,6 @@ public abstract class Firm : IIdObject
 	protected Config Config => Sys.Instance.Config;
 	protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	protected Info Info => Sys.Instance.Info;
-	protected Power Power => Sys.Instance.Power;
 	protected World World => Sys.Instance.World;
 	protected NationArray NationArray => Sys.Instance.NationArray;
 	protected FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -1625,9 +1624,6 @@ public abstract class Firm : IIdObject
 			//shortPtr[0] = firm_recno;
 			//return;
 		//}
-
-		if (NationId == NationArray.player_recno)
-			Power.reset_selection();
 
 		//------- detect buttons on hiring firm workers -------//
 

@@ -8,7 +8,6 @@ public class FirmArray : DynArray<Firm>
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private Info Info => Sys.Instance.Info;
-	private Power Power => Sys.Instance.Power;
 	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
 
@@ -190,7 +189,6 @@ public class FirmArray : DynArray<Firm>
 			if (!World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsExplored())
 				continue;
 
-			Power.reset_selection();
 			firm.SortWorkers();
 			return firmId;
 		}

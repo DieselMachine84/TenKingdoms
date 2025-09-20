@@ -20,7 +20,6 @@ public class UnitArray : SpriteArray
 
     public override Unit this[int recNo] => (Unit)base[recNo];
 
-    private Power Power => Sys.Instance.Power;
     private World World => Sys.Instance.World;
     private SeekPath SeekPath => Sys.Instance.SeekPath;
     private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
@@ -3222,7 +3221,6 @@ public class UnitArray : SpriteArray
 			if (!World.GetLoc(unit.NextLocX, unit.NextLocY).IsExplored())
 				continue;
 
-			Power.reset_selection();
 			return unitId;
 		}
 

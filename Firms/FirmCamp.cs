@@ -215,9 +215,6 @@ public class FirmCamp : Firm
 
 	public void patrol()
 	{
-		if (NationId == NationArray.player_recno)
-			Power.reset_selection();
-
 		//------------------------------------------------------------//
 		// If the commander in this camp has units under his lead
 		// outside and he is now going to lead a new team, then

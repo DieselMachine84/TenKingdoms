@@ -1511,9 +1511,6 @@ public class UnitMarine : Unit
 		bool found = false;
 		int sqtSize = 5, sqtArea = sqtSize * sqtSize;
 
-		if (isAll && NationId == NationArray.player_recno) // for player's camp, patrol() can only be called when the player presses the button.
-			Power.reset_selection();
-
 		while (unprocess > 0) // using the calculated 'i' to reduce useless calculation
 		{
 			Misc.cal_move_around_a_point(i, GameConstants.MapSize, GameConstants.MapSize, out int xShift, out int yShift);

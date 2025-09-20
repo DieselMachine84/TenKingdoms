@@ -12,7 +12,6 @@ public class SiteArray : DynArray<Site>
 	private int _stdRawSiteCount;
 
 	private Info Info => Sys.Instance.Info;
-	private Power Power => Sys.Instance.Power;
 	private World World => Sys.Instance.World;
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private TownArray TownArray => Sys.Instance.TownArray;
@@ -251,7 +250,6 @@ public class SiteArray : DynArray<Site>
 			if (site.SiteType != siteType || site.HasMine)
 				continue;
 
-			Power.reset_selection();
 			return siteId;
 		}
 

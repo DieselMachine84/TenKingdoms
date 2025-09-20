@@ -10,7 +10,6 @@ public class TownArray : DynArray<Town>
 	private Config Config => Sys.Instance.Config;
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
-	private Power Power => Sys.Instance.Power;
 	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -366,7 +365,6 @@ public class TownArray : DynArray<Town>
 			if (!World.GetLoc(town.LocCenterX, town.LocCenterY).IsExplored())
 				continue;
 
-			Power.reset_selection();
 			return townId;
 		}
 

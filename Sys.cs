@@ -43,7 +43,6 @@ public class Sys
     public Config Config { get; private set; }
     public ConfigAdv ConfigAdv { get; private set; }
     public Info Info { get; private set; }
-    public Power Power { get; private set; }
     public World World { get; private set; }
     public Weather Weather { get; set; }
     public Weather[] WeatherForecast { get; } = new Weather[GameConstants.MAX_WEATHER_FORECAST];
@@ -103,7 +102,6 @@ public class Sys
     private void CreateObjects()
     {
         Info = new Info();
-        Power = new Power();
         SeekPath = new SeekPath();
 
         RegionArray = new RegionArray();
