@@ -166,6 +166,18 @@ public partial class Renderer
         }
     }
 
+    public void Scroll(bool scrollUp, bool scrollDown, bool scrollLeft, bool scrollRight)
+    {
+        if (scrollUp && _topLeftLocX > 0)
+            _topLeftLocX--;
+        if (scrollDown && _topLeftLocX < GameConstants.MapSize - MainViewWidthInCells)
+            _topLeftLocX++;
+        if (scrollLeft && _topLeftLocY > 0)
+            _topLeftLocY--;
+        if (scrollRight && _topLeftLocY < GameConstants.MapSize - MainViewHeightInCells)
+            _topLeftLocY++;
+    }
+
     private void GoToLocation(int locX, int locY)
     {
         _topLeftLocX = locX - MainViewWidthInCells / 2;

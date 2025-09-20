@@ -118,6 +118,8 @@ public static class InternalConstants
 {
     public const int MAX_COLOR_SCHEME = GameConstants.MAX_NATION;
     public const int FRAMES_PER_DAY = 10;
+    public const int SCROLL_WIDTH = 8;
+    public const int SCROLL_INTERVAL = 100;
     public const int MIN_AUDIO_VOL = 10;
     public const int DEFAULT_VOL_DROP = 100;
     public const int DEFAULT_DIST_LIMIT = 40;

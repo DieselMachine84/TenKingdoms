@@ -258,6 +258,7 @@ public class Sys
     private void MainLoop()
     {
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+        long lastScrollTime = DateTime.Now.Ticks;
         while (true)
         {
             bool needRedraw = false;
@@ -269,7 +270,7 @@ public class Sys
                 long currentMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
                 if (currentMilliseconds < nextFrameTime)
                 {
-                    if (SDL.SDL_WaitEventTimeout(out sdlEvent, (int)(nextFrameTime - currentMilliseconds)) == 1)
+                    if (SDL.SDL_WaitEventTimeout(out sdlEvent, Math.Min((int)(nextFrameTime - currentMilliseconds), InternalConstants.SCROLL_INTERVAL)) == 1)
                     {
                         if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                             return;
@@ -286,7 +287,7 @@ public class Sys
             }
             else
             {
-                if (SDL.SDL_WaitEvent(out sdlEvent) == 1)
+                if (SDL.SDL_WaitEventTimeout(out sdlEvent, InternalConstants.SCROLL_INTERVAL) == 1)
                 {
                     if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                         return;
@@ -297,6 +298,21 @@ public class Sys
 
             if (nextFrameReady)
                 Process();
+
+            if (DateTime.Now.Ticks - lastScrollTime > InternalConstants.SCROLL_INTERVAL * TimeSpan.TicksPerMillisecond)
+            {
+                SDL.SDL_GetMouseState(out int mouseX, out int mouseY);
+                bool scrollUp = (mouseX >= 0 && mouseX < InternalConstants.SCROLL_WIDTH);
+                bool scrollDown = (mouseX >= Renderer.WindowWidth - InternalConstants.SCROLL_WIDTH && mouseX < Renderer.WindowWidth);
+                bool scrollLeft = (mouseY >= 0 && mouseY < InternalConstants.SCROLL_WIDTH);
+                bool scrollRight = (mouseY >= Renderer.WindowHeight - InternalConstants.SCROLL_WIDTH && mouseY < Renderer.WindowHeight);
+                if (scrollUp || scrollDown || scrollLeft || scrollRight)
+                {
+                    Renderer.Scroll(scrollUp, scrollDown, scrollLeft, scrollRight);
+                    needRedraw = true;
+                    lastScrollTime = DateTime.Now.Ticks;
+                }
+            }
 
             if (needRedraw || nextFrameReady)
             {
@@ -341,7 +357,7 @@ public class Sys
             if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_KP_0)
                 Speed = 0;
         }
-        
+
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_LEFT)
             Renderer.ProcessInput(InputConstants.KeyLeftPressed, 0, 0);
 
