@@ -106,7 +106,7 @@ public partial class Renderer : IRenderer
         
         CreateUITextures();
         CreateAnimatedSegments();
-        CreateArrowTextures();
+        CreateIconTextures();
         CreateButtonTextures();
     }
 

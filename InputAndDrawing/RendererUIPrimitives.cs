@@ -143,6 +143,17 @@ public partial class Renderer
 	private IntPtr _arrowDownTexture;
 	private int _arrowDownWidth;
 	private int _arrowDownHeight;
+	private IntPtr _kingTexture;
+	private IntPtr _generalTexture;
+	private IntPtr _constructionTexture;
+	private IntPtr _leadershipTexture;
+	private IntPtr _miningTexture;
+	private IntPtr _manufactureTexture;
+	private IntPtr _researchTexture;
+	private IntPtr _spyingTexture;
+	private IntPtr _prayingTexture;
+	private int _skillWidth;
+	private int _skillHeight;
 
 	private IntPtr _buttonUpTexture;
 	private int _buttonUpWidth;
@@ -453,17 +464,37 @@ public partial class Renderer
 		_listBoxScrollPanelTexture = Graphics.CreateTextureFromBmp(listBoxScrollPanelBitmap, _listBoxScrollPanelWidth, _listBoxScrollPanelHeight, 32);
 	}
 	
-	private void CreateArrowTextures()
+	private void CreateIconTextures()
 	{
-		ResourceIdx arrowResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_ICON.RES");
-		byte[] arrowUpData = arrowResource.Read("ARROWUP");
+		ResourceIdx iconResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_ICON.RES");
+		byte[] arrowUpData = iconResource.Read("ARROWUP");
 		_arrowUpWidth = BitConverter.ToInt16(arrowUpData, 0);
 		_arrowUpHeight = BitConverter.ToInt16(arrowUpData, 2);
 		_arrowUpTexture = Graphics.CreateTextureFromBmp(arrowUpData.Skip(4).ToArray(), _arrowUpWidth, _arrowUpHeight);
-		byte[] arrowDownData = arrowResource.Read("ARROWDWN");
+		byte[] arrowDownData = iconResource.Read("ARROWDWN");
 		_arrowDownWidth = BitConverter.ToInt16(arrowDownData, 0);
 		_arrowDownHeight = BitConverter.ToInt16(arrowDownData, 2);
 		_arrowDownTexture = Graphics.CreateTextureFromBmp(arrowDownData.Skip(4).ToArray(), _arrowDownWidth, _arrowDownHeight);
+		byte[] kingData = iconResource.Read("U_KING");
+		_skillWidth = BitConverter.ToInt16(kingData, 0);
+		_skillHeight = BitConverter.ToInt16(kingData, 2);
+		_kingTexture = Graphics.CreateTextureFromBmp(kingData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] generalData = iconResource.Read("U_GENE");
+		_generalTexture = Graphics.CreateTextureFromBmp(generalData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] constructionData = iconResource.Read("U_CONS");
+		_constructionTexture = Graphics.CreateTextureFromBmp(constructionData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] leadershipData = iconResource.Read("U_LEAD");
+		_leadershipTexture = Graphics.CreateTextureFromBmp(leadershipData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] miningData = iconResource.Read("U_MINE");
+		_miningTexture = Graphics.CreateTextureFromBmp(miningData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] manufactureData = iconResource.Read("U_MANU");
+		_manufactureTexture = Graphics.CreateTextureFromBmp(manufactureData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] researchData = iconResource.Read("U_RESE");
+		_researchTexture = Graphics.CreateTextureFromBmp(researchData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] spyingData = iconResource.Read("U_SPY");
+		_spyingTexture = Graphics.CreateTextureFromBmp(spyingData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] prayingData = iconResource.Read("U_PRAY");
+		_prayingTexture = Graphics.CreateTextureFromBmp(prayingData.Skip(4).ToArray(), _skillWidth, _skillHeight);
 	}
 
 	private void CreateButtonTextures()

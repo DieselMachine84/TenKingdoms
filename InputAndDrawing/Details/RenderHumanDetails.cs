@@ -127,7 +127,7 @@ public partial class Renderer
 
         if (unit.Rank != Unit.RANK_KING)
         {
-            if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
+            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
             {
                 DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 149);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 152, -1, true);
@@ -144,7 +144,7 @@ public partial class Renderer
             }
         }
 
-        if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno)
+        if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
         {
             DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 178);
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);

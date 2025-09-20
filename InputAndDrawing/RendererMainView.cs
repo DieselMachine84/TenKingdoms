@@ -379,6 +379,56 @@ public partial class Renderer
             //bool isSelected = (unit.sprite_recno == _selectedUnitId);
             Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
                 Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
+
+            if (unit is UnitHuman)
+            {
+                IntPtr skillTexture = unit.Rank switch
+                {
+                    Unit.RANK_SOLDIER => unit.Skill.SkillId switch
+                    {
+                        Skill.SKILL_CONSTRUCTION => _constructionTexture,
+                        Skill.SKILL_LEADING => _leadershipTexture,
+                        Skill.SKILL_MINING => _miningTexture,
+                        Skill.SKILL_MFT => _manufactureTexture,
+                        Skill.SKILL_RESEARCH => _researchTexture,
+                        Skill.SKILL_SPYING => _spyingTexture,
+                        Skill.SKILL_PRAYING => _prayingTexture,
+                        _ => IntPtr.Zero
+                    },
+                    Unit.RANK_GENERAL => _generalTexture,
+                    Unit.RANK_KING => _kingTexture,
+                    _ => IntPtr.Zero
+                };
+
+                int skillIconX = unitX - spriteFrame.OffsetX + 32;
+                int skillIconY = unitY - spriteFrame.OffsetY - 34;
+                int iconWidth = Scale(_skillWidth);
+                int iconHeight = Scale(_skillHeight);
+                if (skillTexture != IntPtr.Zero)
+                {
+                    Graphics.DrawBitmap(skillTexture, skillIconX, skillIconY, iconWidth, iconHeight);
+                }
+
+                if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+                {
+                    int spyIconX = skillIconX;
+                    int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + iconHeight + 1 : skillIconY;
+                    Graphics.DrawBitmap(_spyingTexture, spyIconX, spyIconY, iconWidth, iconHeight);
+
+                    if (Config.show_ai_info)
+                    {
+                        int color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[unit.TrueNationId()], false).MainColor;
+                        Graphics.DrawLine(spyIconX, spyIconY, spyIconX + iconWidth - 1, spyIconY, color);
+                        Graphics.DrawLine(spyIconX, spyIconY + 1, spyIconX + iconWidth - 1, spyIconY + 1, color);
+                        Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 2, spyIconX + iconWidth - 1, spyIconY + iconHeight - 2, color);
+                        Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 1, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
+                        Graphics.DrawLine(spyIconX, spyIconY, spyIconX, spyIconY + iconHeight - 1, color);
+                        Graphics.DrawLine(spyIconX + 1, spyIconY, spyIconX + 1, spyIconY + iconHeight - 1, color);
+                        Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
+                        Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
+                    }
+                }
+            }
         }
 
         for (int i = 0; i < _selectedUnits.Count; i++)
