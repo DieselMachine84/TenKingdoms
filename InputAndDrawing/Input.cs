@@ -925,10 +925,11 @@ public partial class Renderer
                 switch (pointingObjectType)
                 {
                     case ScreenObjectType.FriendTown:
+                        Town pointingTown = TownArray[pointingId];
                         for (int i = 0; i < _selectedUnits.Count; i++)
                         {
                             Unit unit = UnitArray[_selectedUnits[i]];
-                            if (unit is UnitHuman && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0)
+                            if (unit is UnitHuman && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0 && unit.NationId == pointingTown.NationId)
                                 return CursorType.ASSIGN;
                         }
                         return CursorType.NORMAL_OWN;
@@ -938,7 +939,7 @@ public partial class Renderer
                         for (int i = 0; i < _selectedUnits.Count; i++)
                         {
                             Unit unit = UnitArray[_selectedUnits[i]];
-                            if (CanAssignUnitToFirm(unit, pointingFirm))
+                            if (unit.NationId == pointingFirm.NationId && CanAssignUnitToFirm(unit, pointingFirm))
                                 return CursorType.ASSIGN;
                         }
                         return CursorType.NORMAL_OWN;
