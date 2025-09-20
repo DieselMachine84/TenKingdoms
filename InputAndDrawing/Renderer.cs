@@ -115,9 +115,29 @@ public partial class Renderer : IRenderer
         return size * 3 / 2;
     }
 
-    private (int, int) GetLocationFromScreen(int screenX, int screenY)
+    private (int, int) GetMainViewLocation(int screenX, int screenY)
     {
         return (_topLeftLocX + (screenX - MainViewX) / CellTextureWidth, _topLeftLocY + (screenY - MainViewY) / CellTextureHeight);
+    }
+
+    private (int, int) GetMiniMapLocation(int screenX, int screenY)
+    {
+        int locX = screenX - MiniMapX;
+        int locY = screenY - MiniMapY;
+        
+        if (MiniMapSize > GameConstants.MapSize)
+        {
+            locX /= MiniMapScale;
+            locY /= MiniMapScale;
+        }
+
+        if (MiniMapSize < GameConstants.MapSize)
+        {
+            locX *= MiniMapScale;
+            locY *= MiniMapScale;
+        }
+
+        return (locX, locY);
     }
     
     public void DrawFrame(bool nextFrame)

@@ -72,13 +72,17 @@ public partial class Renderer
             _mouseButtonY = mouseEventY;
             
             // TODO add waypoint
-            
+
             if (clickOnMainView)
-                ProcessRightMouseAction();
+            {
+                (int locX, int locY) = GetMainViewLocation(_mouseButtonX, _mouseButtonY);
+                ProcessRightMouseAction(locX, locY, false);
+            }
 
             if (clickOnMiniMap)
             {
-                //
+                (int locX, int locY) = GetMiniMapLocation(_mouseButtonX, _mouseButtonY);
+                ProcessRightMouseAction(locX, locY, true);
             }
             
             if (clickOnDetails)
@@ -212,8 +216,8 @@ public partial class Renderer
         mouse2X = Math.Min(mouse2X, MainViewX + MainViewWidth - 1);
         mouse2Y = Math.Max(mouse2Y, MainViewY);
         mouse2Y = Math.Min(mouse2Y, MainViewY + MainViewHeight - 1);
-        (int selectLocX1, int selectLocY1) = GetLocationFromScreen(Math.Min(mouse1X, mouse2X), Math.Min(mouse1Y, mouse2Y));
-        (int selectLocX2, int selectLocY2) = GetLocationFromScreen(Math.Max(mouse1X, mouse2X), Math.Max(mouse1Y, mouse2Y));
+        (int selectLocX1, int selectLocY1) = GetMainViewLocation(Math.Min(mouse1X, mouse2X), Math.Min(mouse1Y, mouse2Y));
+        (int selectLocX2, int selectLocY2) = GetMainViewLocation(Math.Max(mouse1X, mouse2X), Math.Max(mouse1Y, mouse2Y));
 
         bool selectOneOnly = Math.Abs(mouse1X - mouse2X) <= 3 && Math.Abs(mouse1Y - mouse2Y) <= 3;
         if (selectOneOnly)
@@ -392,14 +396,8 @@ public partial class Renderer
         SelectMouseCursor();
     }
 
-    private void ProcessRightMouseAction()
+    private void ProcessRightMouseAction(int locX, int locY, bool moveOnly)
     {
-        // TODO update absolute position
-
-        int locX = _topLeftLocX + (_mouseButtonX - MainViewX) / CellTextureWidth;
-        int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
-        Location location = World.GetLoc(locX, locY);
-
         List<int> playerNationUnits = new List<int>(_selectedUnits.Count);
         List<int> otherNationUnits = new List<int>(_selectedUnits.Count);
         for (int i = 0; i < _selectedUnits.Count; i++)
@@ -415,6 +413,16 @@ public partial class Renderer
                 otherNationUnits.Add(selectedUnitId);
         }
 
+        if (moveOnly)
+        {
+            UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+            UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+            return;
+        }
+
+        // TODO update absolute position
+        Location location = World.GetLoc(locX, locY);
+        
         Unit targetUnit = null;
         if (location.HasUnit(UnitConstants.UNIT_AIR))
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
@@ -563,28 +571,15 @@ public partial class Renderer
 
             if (!location.IsTown() && !location.IsFirm())
             {
-                UnitArray.MoveTo(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
+                UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+                UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
             }
         }
     }
 
     private void HandleMiniMap()
     {
-        int locX = _mouseButtonX - MiniMapX;
-        int locY = _mouseButtonY - MiniMapY;
-        
-        if (MiniMapSize > GameConstants.MapSize)
-        {
-            locX /= MiniMapScale;
-            locY /= MiniMapScale;
-        }
-
-        if (MiniMapSize < GameConstants.MapSize)
-        {
-            locX *= MiniMapScale;
-            locY *= MiniMapScale;
-        }
-
+        (int locX, int locY) = GetMiniMapLocation(_mouseButtonX, _mouseButtonY);
         GoToLocation(locX, locY);
     }
 
@@ -742,8 +737,7 @@ public partial class Renderer
 
     private Location GetPointingLocation(int pointingX, int pointingY)
     {
-        int locX = _topLeftLocX + (pointingX - MainViewX) / CellTextureWidth;
-        int locY = _topLeftLocY + (pointingY - MainViewY) / CellTextureHeight;
+        (int locX, int locY) = GetMainViewLocation(pointingX, pointingY);
         
         //TODO detect spread
         Location location = World.GetLoc(locX, locY);
@@ -863,7 +857,7 @@ public partial class Renderer
                 switch (pointingObjectType)
                 {
                     case ScreenObjectType.FriendTown:
-                        if (unit.RaceId != 0 && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0)
+                        if (unit is UnitHuman && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0)
                             return CursorType.ASSIGN;
                         return CursorType.NORMAL_OWN;
 
@@ -896,7 +890,7 @@ public partial class Renderer
                         Town pointingTown = TownArray[pointingId];
                         if (unit.NationId == pointingTown.NationId)
                         {
-                            if (unit.RaceId != 0 && unit.Rank == Unit.RANK_SOLDIER)
+                            if (unit is UnitHuman && unit.Rank == Unit.RANK_SOLDIER)
                                 return CursorType.ASSIGN;
                             return CursorType.NORMAL_OWN;
                         }
@@ -905,10 +899,12 @@ public partial class Renderer
                     case ScreenObjectType.FriendFirm:
                     case ScreenObjectType.EnemyFirm:
                         Firm pointingFirm = FirmArray[pointingId];
-                        if (CanAssignUnitToFirm(unit, pointingFirm))
-                            return CursorType.ASSIGN;
                         if (unit.NationId == pointingFirm.NationId)
+                        {
+                            if (CanAssignUnitToFirm(unit, pointingFirm))
+                                return CursorType.ASSIGN;
                             return CursorType.NORMAL_OWN;
+                        }
                         return CursorType.NORMAL_ENEMY;
                     
                     case ScreenObjectType.FriendUnit:
@@ -916,7 +912,6 @@ public partial class Renderer
                         Unit pointingUnit = UnitArray[pointingId];
                         if (unit.NationId == pointingUnit.NationId)
                         {
-                            //TODO assign to ship or trigger explode
                             return CursorType.NORMAL_OWN;
                         }
                         return CursorType.NORMAL_ENEMY;
@@ -933,7 +928,7 @@ public partial class Renderer
                         for (int i = 0; i < _selectedUnits.Count; i++)
                         {
                             Unit unit = UnitArray[_selectedUnits[i]];
-                            if (unit.RaceId != 0 && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0)
+                            if (unit is UnitHuman && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == 0)
                                 return CursorType.ASSIGN;
                         }
                         return CursorType.NORMAL_OWN;
