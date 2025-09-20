@@ -26,7 +26,6 @@ public class UnitArray : SpriteArray
     private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private FirmRes FirmRes => Sys.Instance.FirmRes;
     private UnitRes UnitRes => Sys.Instance.UnitRes;
-    private GodRes GodRes => Sys.Instance.GodRes;
     private NationArray NationArray => Sys.Instance.NationArray;
     private FirmArray FirmArray => Sys.Instance.FirmArray;
     private TownArray TownArray => Sys.Instance.TownArray;
@@ -404,6 +403,9 @@ public class UnitArray : SpriteArray
     
     public void MoveTo(int destLocX, int destLocY, bool divided, List<int> selectedUnits, int remoteAction)
     {
+	    if (selectedUnits.Count == 0)
+		    return;
+	    
 	    //-------- if it's a multiplayer game --------//
 	    /*if (!remoteAction && remote.is_enable())
 	    {
@@ -1297,8 +1299,11 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    public void Assign(int destLocX, int destLocY, bool divided, int remoteAction, List<int> selectedUnits)
+    public void Assign(int destLocX, int destLocY, bool divided, List<int> selectedUnits, int remoteAction)
     {
+	    if (selectedUnits.Count == 0)
+		    return;
+	    
 	    //--- set the destination to the top left position of the town/firm ---//
 
 	    Location location = World.GetLoc(destLocX, destLocY);
@@ -1332,78 +1337,76 @@ public class UnitArray : SpriteArray
 		    shortPtr[2] = selectedCount;
 		    shortPtr[3] = divided;
 		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
+		    return;
 	    }*/
-	    //else
-	    //{
-		    if (!divided)
+	    if (!divided)
+	    {
+		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
-			    for (int i = 0; i < selectedUnits.Count; i++)
+			    int unitId = selectedUnits[i];
+
+			    if (IsDeleted(unitId))
+				    continue;
+
+			    Unit unit = this[unitId];
+			    unit.Stop2();
+		    }
+
+		    DivideUnits(destLocX, destLocY, selectedUnits);
+
+		    if (_selectedLandUnits.Count > 0)
+			    Assign(destLocX, destLocY, true, _selectedLandUnits, remoteAction);
+
+		    if (_selectedSeaUnits.Count > 0)
+		    {
+			    Location loc = World.GetLoc(destLocX, destLocY);
+			    if (loc.IsFirm())
 			    {
-				    int unitId = selectedUnits[i];
-
-				    if (IsDeleted(unitId))
-					    continue;
-
-				    Unit unit = this[unitId];
-				    unit.Stop2();
+				    Firm firm = FirmArray[loc.FirmId()];
+				    if (firm.FirmType == Firm.FIRM_HARBOR)
+					    Assign(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
+				    else
+					    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
 			    }
+			    else
+			    {
+				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
+			    }
+		    }
 
-			    DivideUnits(destLocX, destLocY, selectedUnits);
+		    if (_selectedAirUnits.Count > 0)
+			    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
+	    }
+	    else
+	    {
+		    //---------- set unit to assign -----------//
+		    if (selectedUnits.Count == 1)
+		    {
+			    Unit unit = this[selectedUnits[0]];
 
-			    if (_selectedLandUnits.Count > 0)
-				    Assign(destLocX, destLocY, true, remoteAction, _selectedLandUnits);
-
-			    if (_selectedSeaUnits.Count > 0)
+			    if (unit.SpriteInfo.LocWidth <= 1)
+			    {
+				    unit.GroupId = CurGroupId++;
+				    unit.Assign(destLocX, destLocY);
+			    }
+			    else // move to object surrounding
 			    {
 				    Location loc = World.GetLoc(destLocX, destLocY);
 				    if (loc.IsFirm())
-				    {
-					    Firm firm = FirmArray[loc.FirmId()];
-					    if (firm.FirmType == Firm.FIRM_HARBOR) // recursive call
-						    Assign(destLocX, destLocY, true, remoteAction, _selectedSeaUnits);
-					    else
-						    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
-				    }
-				    else
-				    {
-					    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
-				    }
+					    unit.MoveToFirmSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight, loc.FirmId());
+				    else if (loc.IsTown())
+					    unit.MoveToTownSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight);
+				    else if (loc.HasUnit(UnitConstants.UNIT_LAND))
+					    unit.MoveToUnitSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth,
+						    unit.SpriteInfo.LocHeight, loc.UnitId(UnitConstants.UNIT_LAND));
 			    }
-
-			    if (_selectedAirUnits.Count > 0) // no assign for air units
-				    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
 		    }
-		    else
+		    else // for more than one unit selecting, call GroupAssign() to take care of it
 		    {
-			    //---------- set unit to assign -----------//
-			    if (selectedUnits.Count == 1)
-			    {
-				    Unit unit = this[selectedUnits[0]];
-
-				    if (unit.SpriteInfo.LocWidth <= 1)
-				    {
-					    unit.GroupId = CurGroupId++;
-					    unit.Assign(destLocX, destLocY);
-				    }
-				    else // move to object surrounding
-				    {
-					    Location loc = World.GetLoc(destLocX, destLocY);
-					    if (loc.IsFirm())
-						    unit.MoveToFirmSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight, loc.FirmId());
-					    else if (loc.IsTown())
-						    unit.MoveToTownSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth, unit.SpriteInfo.LocHeight);
-					    else if (loc.HasUnit(UnitConstants.UNIT_LAND))
-						    unit.MoveToUnitSurround(destLocX, destLocY, unit.SpriteInfo.LocWidth,
-							    unit.SpriteInfo.LocHeight, loc.UnitId(UnitConstants.UNIT_LAND));
-				    }
-			    }
-			    else // for more than one unit selecting, call GroupAssign() to take care of it
-			    {
-				    SetGroupId(selectedUnits);
-				    GroupAssign(destLocX, destLocY, selectedUnits);
-			    }
+			    SetGroupId(selectedUnits);
+			    GroupAssign(destLocX, destLocY, selectedUnits);
 		    }
-	    //}
+	    }
     }
 
     private void GroupAssign(int destLocX, int destLocY, List<int> selectedUnits)
@@ -1463,44 +1466,11 @@ public class UnitArray : SpriteArray
 	    }
     }
     
-    public void AssignToCamp(int destLocX, int destLocY, int remoteAction, List<int> selectedUnits)
-    {
-	    DivideUnits(destLocX, destLocY, selectedUnits);
-
-	    if (_selectedLandUnits.Count > 0)
-	    {
-		    List<int> unitsToAssign = new List<int>();
-		    List<int> unitsToMove = new List<int>();
-
-		    //----------------------------------------------------------------//
-		    // Only human and weapon can be assigned to the camp. Others are
-		    // ordered to move to camp as close as possible.
-		    //----------------------------------------------------------------//
-		    for (int i = 0; i < selectedUnits.Count; i++)
-		    {
-			    Unit unit = this[selectedUnits[i]];
-			    int unitClass = UnitRes[unit.UnitType].unit_class;
-			    if (unitClass == UnitConstants.UNIT_CLASS_HUMAN || unitClass == UnitConstants.UNIT_CLASS_WEAPON)
-				    unitsToAssign.Add(selectedUnits[i]);
-			    else
-				    unitsToMove.Add(selectedUnits[i]);
-		    }
-
-		    if (unitsToAssign.Count > 0)
-			    Assign(destLocX, destLocY, true, remoteAction, unitsToAssign);
-		    if (unitsToMove.Count > 0)
-			    MoveTo(destLocX, destLocY, true, unitsToMove, remoteAction);
-	    }
-
-	    if (_selectedSeaUnits.Count > 0)
-		    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
-
-	    if (_selectedAirUnits.Count > 0)
-		    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
-    }
-
     public void AssignToShip(int shipLocX, int shipLocY, bool divided, List<int> selectedUnits, int remoteAction, int shipId)
     {
+	    if (selectedUnits.Count == 0)
+		    return;
+	    
 	    /*if (!remoteAction && remote.is_enable())
 	    {
 		    // packet structure : <xLoc> <yLoc> <ship recno> <no. of units> <divided> <unit recno ...>
@@ -1630,8 +1600,11 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    public void Settle(int destLocX, int destLocY, bool divided, int remoteAction, List<int> selectedUnits)
+    public void Settle(int destLocX, int destLocY, bool divided, List<int> selectedUnits, int remoteAction)
     {
+	    if (selectedUnits.Count == 0)
+		    return;
+	    
 	    /*if (!remoteAction && remote.is_enable())
 	    {
 		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
@@ -1641,57 +1614,59 @@ public class UnitArray : SpriteArray
 		    shortPtr[2] = selectedCount;
 		    shortPtr[3] = divided;
 		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
+		    return;
 	    }*/
-	    //else
-	    //{
-		    if (!divided)
+
+	    if (!divided)
+	    {
+		    for (int j = 0; j < selectedUnits.Count; j++)
 		    {
-			    for (int j = 0; j < selectedUnits.Count; j++)
-			    {
-				    int unitId = selectedUnits[j];
+			    int unitId = selectedUnits[j];
 
-				    if (IsDeleted(unitId))
-					    continue;
+			    if (IsDeleted(unitId))
+				    continue;
 
-				    Unit unit = this[unitId];
-				    unit.Stop2();
-			    }
+			    Unit unit = this[unitId];
+			    unit.Stop2();
+		    }
 
-			    DivideUnits(destLocX, destLocY, selectedUnits);
+		    DivideUnits(destLocX, destLocY, selectedUnits);
 
-			    if (_selectedLandUnits.Count > 0)
-				    Settle(destLocX, destLocY, true, remoteAction, _selectedLandUnits);
+		    if (_selectedLandUnits.Count > 0)
+			    Settle(destLocX, destLocY, true, _selectedLandUnits, remoteAction);
 
-			    if (_selectedSeaUnits.Count > 0)
-				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
+		    if (_selectedSeaUnits.Count > 0)
+			    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
 
-			    if (_selectedAirUnits.Count > 0)
-				    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
+		    if (_selectedAirUnits.Count > 0)
+			    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
+	    }
+	    else
+	    {
+		    //---------- set unit to settle -----------//
+		    if (selectedUnits.Count == 1)
+		    {
+			    Unit unit = this[selectedUnits[0]];
+			    unit.GroupId = CurGroupId++;
+			    unit.Settle(destLocX, destLocY);
 		    }
 		    else
 		    {
-			    //---------- set unit to settle -----------//
-			    if (selectedUnits.Count == 1)
+			    SetGroupId(selectedUnits);
+			    for (int i = 0; i < selectedUnits.Count; i++)
 			    {
-				    Unit unit = this[selectedUnits[0]];
-				    unit.GroupId = CurGroupId++;
-				    unit.Settle(destLocX, destLocY);
-			    }
-			    else
-			    {
-				    SetGroupId(selectedUnits);
-				    for (int i = 0; i < selectedUnits.Count; i++)
-				    {
-					    Unit unit = this[selectedUnits[i]];
-					    unit.Settle(destLocX, destLocY, i + 1);
-				    }
+				    Unit unit = this[selectedUnits[i]];
+				    unit.Settle(destLocX, destLocY, i + 1);
 			    }
 		    }
-	    //}
+	    }
     }
 
     public void Attack(int targetLocX, int targetLocY, bool divided, List<int> selectedUnits, int remoteAction, int targetUnitId)
     {
+	    if (selectedUnits.Count == 0)
+		    return;
+	    
 	    int targetNationId = 0;
 
 	    if (targetUnitId == 0)
@@ -1757,8 +1732,6 @@ public class UnitArray : SpriteArray
 			    return;
 	    }
 
-	    //--------- AI debug code ---------//
-
 	    //--- AI attacking a nation which its NationRelation::should_attack is 0 ---//
 
 	    Unit attackUnit = this[selectedUnits[0]];
@@ -1781,30 +1754,29 @@ public class UnitArray : SpriteArray
 		    shortPtr[4] = divided;
 
 		    memcpy(shortPtr + 5, selectedUnitArray, sizeof(short) * selectedCount);
+		    return;
 	    }*/
-	    //else
-	    //{
-		    if (!divided)
-		    {
-			    // 1 for excluding the recno in target location
-			    DivideUnits(targetLocX, targetLocY, selectedUnits, 1);
+	    
+	    if (!divided)
+	    {
+		    // 1 for excluding the recno in target location
+		    DivideUnits(targetLocX, targetLocY, selectedUnits, 1);
 
-			    Location location = World.GetLoc(targetLocX, targetLocY);
-			    int targetMobileType = location.HasAnyUnit();
+		    Location location = World.GetLoc(targetLocX, targetLocY);
+		    int targetMobileType = location.HasAnyUnit();
 
-			    if (_selectedLandUnits.Count > 0)
-				    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_LAND, targetMobileType, true,
-					    _selectedLandUnits, targetUnitId);
+		    if (_selectedLandUnits.Count > 0)
+			    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_LAND, targetMobileType, true,
+				    _selectedLandUnits, targetUnitId);
 
-			    if (_selectedSeaUnits.Count > 0)
-				    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_SEA, targetMobileType, true,
-					    _selectedSeaUnits, targetUnitId);
+		    if (_selectedSeaUnits.Count > 0)
+			    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_SEA, targetMobileType, true,
+				    _selectedSeaUnits, targetUnitId);
 
-			    if (_selectedAirUnits.Count > 0)
-				    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_AIR, targetMobileType, true,
-					    _selectedAirUnits, targetUnitId);
-		    }
-	    //}
+		    if (_selectedAirUnits.Count > 0)
+			    AttackCall(targetLocX, targetLocY, UnitConstants.UNIT_AIR, targetMobileType, true,
+				    _selectedAirUnits, targetUnitId);
+	    }
     }
 
     private void AttackCall(int targetXLoc, int targetYLoc, int mobileType, int targetMobileType, bool divided,

@@ -32,7 +32,7 @@ public partial class Renderer
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
             if (clickOnMainView)
-                ProcessCommand();
+                ProcessLeftMouseAction();
         }
         
         if (eventType == InputConstants.LeftMouseUp)
@@ -71,10 +71,14 @@ public partial class Renderer
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
             
+            // TODO add waypoint
+            
             if (clickOnMainView)
+                ProcessRightMouseAction();
+
+            if (clickOnMiniMap)
             {
-                int locX = _topLeftLocX + (mouseEventX - MainViewX) / CellTextureWidth;
-                int locY = _topLeftLocY + (mouseEventY - MainViewY) / CellTextureHeight;
+                //
             }
             
             if (clickOnDetails)
@@ -335,7 +339,7 @@ public partial class Renderer
         return true;
     }
 
-    private void ProcessCommand()
+    private void ProcessLeftMouseAction()
     {
         // TODO process caravan stop, ship stop and cast power
         
@@ -369,13 +373,13 @@ public partial class Renderer
                     {
                         Town town = TownArray[location.TownId()];
                         if (town.NationId == unit.NationId)
-                            UnitArray.Assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_PLAYER, _selectedUnits);
+                            UnitArray.Assign(town.LocX1, town.LocY1, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                         else
                             UnitArray.MoveTo(town.LocX1, town.LocY1, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     else
                     {
-                        UnitArray.Settle(locX, locY, false, InternalConstants.COMMAND_PLAYER, _selectedUnits);
+                        UnitArray.Settle(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     
                     if (SERes.mark_command_time() != 0)
@@ -388,11 +392,182 @@ public partial class Renderer
         SelectMouseCursor();
     }
 
-    private void HandleMainViewRightMouse()
+    private void ProcessRightMouseAction()
     {
-        //
+        // TODO update absolute position
+
+        int locX = _topLeftLocX + (_mouseButtonX - MainViewX) / CellTextureWidth;
+        int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
+        Location location = World.GetLoc(locX, locY);
+
+        List<int> playerNationUnits = new List<int>(_selectedUnits.Count);
+        List<int> otherNationUnits = new List<int>(_selectedUnits.Count);
+        for (int i = 0; i < _selectedUnits.Count; i++)
+        {
+            int selectedUnitId = _selectedUnits[i];
+            Unit selectedUnit = UnitArray[selectedUnitId];
+            if (!selectedUnit.IsOwn())
+                continue;
+            
+            if (selectedUnit.NationId == NationArray.player_recno)
+                playerNationUnits.Add(selectedUnitId);
+            else
+                otherNationUnits.Add(selectedUnitId);
+        }
+
+        Unit targetUnit = null;
+        if (location.HasUnit(UnitConstants.UNIT_AIR))
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
+        if (targetUnit == null && location.HasUnit(UnitConstants.UNIT_LAND))
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
+        if (targetUnit == null && location.HasUnit(UnitConstants.UNIT_SEA))
+            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
+
+        if (targetUnit != null && targetUnit.HitPoints > 0.0)
+        {
+            if (!targetUnit.IsOwn())
+            {
+                if (NationArray.player.get_relation_should_attack(targetUnit.NationId))
+                {
+                    UnitArray.Attack(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
+                        InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
+                }
+                else
+                {
+                    UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+                }
+                UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+            }
+            else
+            {
+                switch (targetUnit.MobileType)
+                {
+                    case UnitConstants.UNIT_LAND:
+                        //TODO only when shift is pressed
+                        if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
+                        {
+                            UnitArray.Attack(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
+                                InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
+                        }
+                        break;
+
+                    case UnitConstants.UNIT_SEA:
+                        if (UnitRes[targetUnit.UnitType].carry_unit_capacity > 0)
+                            UnitArray.AssignToShip(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
+                                InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
+                        UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+                        break;
+
+                    case UnitConstants.UNIT_AIR:
+                        UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+                        UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+                        break;
+                }
+            }
+        }
+        else
+        {
+            if (location.IsTown())
+            {
+                Town targetTown = TownArray[location.TownId()];
+                if (targetTown.NationId == NationArray.player_recno)
+                {
+                    List<int> unitsToAssign = new List<int>(playerNationUnits.Count);
+                    List<int> unitsToMove = new List<int>(playerNationUnits.Count);
+                    for (int i = 0; i < playerNationUnits.Count; i++)
+                    {
+                        int playerUnitId = playerNationUnits[i];
+                        Unit playerUnit = UnitArray[playerUnitId];
+            
+                        if (playerUnit is UnitHuman && playerUnit.Rank == Unit.RANK_SOLDIER && playerUnit.Skill.SkillId == 0)
+                            unitsToAssign.Add(playerUnitId);
+                        else
+                            unitsToMove.Add(playerUnitId);
+                    }
+                    
+                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+                }
+                else
+                {
+                    if (NationArray.player.get_relation_should_attack(targetTown.NationId))
+                        UnitArray.Attack(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
+                    else
+                        UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+                    
+                    List<int> unitsToAssign = new List<int>(otherNationUnits.Count);
+                    List<int> unitsToMove = new List<int>(otherNationUnits.Count);
+                    for (int i = 0; i < otherNationUnits.Count; i++)
+                    {
+                        int otherUnitId = otherNationUnits[i];
+                        Unit otherUnit = UnitArray[otherUnitId];
+            
+                        if (otherUnit.NationId == targetTown.NationId)
+                            unitsToAssign.Add(otherUnitId);
+                        else
+                            unitsToMove.Add(otherUnitId);
+                    }
+                    
+                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
+                }
+            }
+
+            if (location.IsFirm())
+            {
+                Firm targetFirm = FirmArray[location.FirmId()];
+                if (targetFirm.OwnFirm())
+                {
+                    List<int> unitsToAssign = new List<int>(playerNationUnits.Count);
+                    List<int> unitsToMove = new List<int>(playerNationUnits.Count);
+                    for (int i = 0; i < playerNationUnits.Count; i++)
+                    {
+                        int playerUnitId = playerNationUnits[i];
+                        Unit playerUnit = UnitArray[playerUnitId];
+            
+                        if (CanAssignUnitToFirm(playerUnit, targetFirm))
+                            unitsToAssign.Add(playerUnitId);
+                        else
+                            unitsToMove.Add(playerUnitId);
+                    }
+                    
+                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+                }
+                else
+                {
+                    if (NationArray.player.get_relation_should_attack(targetFirm.NationId))
+                        UnitArray.Attack(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
+                    else
+                        UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
+                    
+                    List<int> unitsToAssign = new List<int>(otherNationUnits.Count);
+                    List<int> unitsToMove = new List<int>(otherNationUnits.Count);
+                    for (int i = 0; i < otherNationUnits.Count; i++)
+                    {
+                        int otherUnitId = otherNationUnits[i];
+                        Unit otherUnit = UnitArray[otherUnitId];
+            
+                        if (otherUnit.NationId == targetFirm.NationId && CanAssignUnitToFirm(otherUnit, targetFirm))
+                            unitsToAssign.Add(otherUnitId);
+                        else
+                            unitsToMove.Add(otherUnitId);
+                    }
+                    
+                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
+                }
+            }
+
+            if (!location.IsTown() && !location.IsFirm())
+            {
+                UnitArray.MoveTo(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
+            }
+        }
     }
-    
+
     private void HandleMiniMap()
     {
         int locX = _mouseButtonX - MiniMapX;

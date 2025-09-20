@@ -3581,11 +3581,7 @@ public class Nation : NationBase
 						{
 							FirmCamp firmCamp = (FirmCamp)FirmArray[firmRecno];
 							firmCamp.validate_patrol_unit();
-							if (firmCamp.patrol_unit_array.Count > 0)
-							{
-								UnitArray.AssignToCamp(firmCamp.LocX1, firmCamp.LocY1,
-									InternalConstants.COMMAND_AI, firmCamp.patrol_unit_array);
-							}
+							UnitArray.Assign(firmCamp.LocX1, firmCamp.LocY1, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 						}
 					}
 				}
@@ -4063,11 +4059,7 @@ public class Nation : NationBase
 						if (attack_camps[j].patrol_date == default(DateTime)) //troop is patrolling, call them back
 						{
 							firmCamp.validate_patrol_unit();
-							if (firmCamp.patrol_unit_array.Count > 0)
-							{
-								UnitArray.MoveTo(attackerXLoc, attackerYLoc, false,
-									firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
-							}
+							UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 
 							calledFromAttack = true;
 						}
@@ -4100,11 +4092,7 @@ public class Nation : NationBase
 			FirmCamp firmCamp = (FirmCamp)FirmArray[defendingCamps[i]];
 			firmCamp.patrol();
 			firmCamp.validate_patrol_unit();
-			if (firmCamp.patrol_unit_array.Count > 0)
-			{
-				UnitArray.MoveTo(attackerXLoc, attackerYLoc, false,
-					firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
-			}
+			UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
 		}
 
 		//------ request military aid from allies ----//
@@ -6295,11 +6283,11 @@ public class Nation : NationBase
 				if (location.IsTown() && TownArray[location.TownId()].NationId == nation_recno)
 				{
 					Town town = TownArray[location.TownId()];
-					UnitArray.Assign(town.LocX1, town.LocY1, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Assign(town.LocX1, town.LocY1, false, unitRecnoArray, InternalConstants.COMMAND_AI);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
 				{
-					UnitArray.Settle(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Settle(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
 				}
 
 				break;
@@ -6313,7 +6301,7 @@ public class Nation : NationBase
 
 			case SEA_ACTION_ASSIGN_TO_FIRM:
 				if (check_firm_ready(destXLoc, destYLoc))
-					UnitArray.Assign(destXLoc, destYLoc, false, InternalConstants.COMMAND_AI, unitRecnoArray);
+					UnitArray.Assign(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
 				break;
 
 			case SEA_ACTION_MOVE:

@@ -409,7 +409,6 @@ public class Rebel : IIdObject
 
         //-------- execute the new action now --------//
 
-        // TODO why different remote action is used?
         switch (ActionMode)
         {
             case REBEL_ATTACK_TOWN:
@@ -423,11 +422,11 @@ public class Rebel : IIdObject
                 break;
 
             case REBEL_SETTLE_NEW:
-                UnitArray.Settle(ActionParam, ActionParam2, false, 1, rebelUnits);
+                UnitArray.Settle(ActionParam, ActionParam2, false, rebelUnits, InternalConstants.COMMAND_AI);
                 break;
 
             case REBEL_SETTLE_TO:
-                UnitArray.Assign(ActionParam, ActionParam2, false, 1, rebelUnits);
+                UnitArray.Assign(ActionParam, ActionParam2, false, rebelUnits, InternalConstants.COMMAND_AI);
                 break;
         }
     }

@@ -76,11 +76,11 @@ public abstract partial class Unit : Sprite
 	public int MaxPower { get; private set; }
 
 	private bool _canAttack;
-	protected bool CanAttack
+	public bool CanAttack // true able to attack, false unable to attack no matter what AttackCount is
 	{
 		get => _canAttack && AttackCount > 0;
-		set => _canAttack = value;
-	} // true able to attack, false unable to attack no matter what AttackCount is
+		protected set => _canAttack = value;
+	}
 	private int CanGuard { get; set; } // bit0 = standing guard, bit1 = moving guard
 	public bool CanStandGuard => (CanGuard & 1) != 0;
 	public bool CanMoveGuard => (CanGuard & 2) != 0;
@@ -4436,7 +4436,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.TownId() == OriginalActionParam && TownArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4446,7 +4446,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4466,7 +4466,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (World.CanBuildTown(OriginalActionLocX, OriginalActionLocY, SpriteId))
 			{
-				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, InternalConstants.COMMAND_AUTO, selectedArray);
+				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -5044,7 +5044,7 @@ public abstract partial class Unit : Sprite
 		{
 			ValidateTeam();
 
-			UnitArray.Assign(bestCamp.LocX1, bestCamp.LocY1, false, InternalConstants.COMMAND_AI, TeamInfo.Members);
+			UnitArray.Assign(bestCamp.LocX1, bestCamp.LocY1, false, TeamInfo.Members, InternalConstants.COMMAND_AI);
 			return true;
 		}
 		else //--- otherwise assign the general only ---//
