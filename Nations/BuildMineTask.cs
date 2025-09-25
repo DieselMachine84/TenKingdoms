@@ -2,12 +2,14 @@ using System;
 
 namespace TenKingdoms;
 
-public class BuildMineTask : AITask
+public class BuildMineTask : AITask, IUnitTask
 {
     private int _builderId;
     private bool _builderSent;
     public int SiteId { get; }
-    
+
+    public int UnitId => _builderId;
+
     public BuildMineTask(NationBase nation, int siteId) : base(nation)
     {
         SiteId = siteId;
@@ -71,7 +73,7 @@ public class BuildMineTask : AITask
                 if (town.RegionId != site.RegionId)
                     continue;
 
-                int race = town.PickRandomRace(false, true);
+                int race = town.PickRandomRace(false, false);
                 // TODO do not train if population is low
                 if (race == 0 || !town.CanTrain(race))
                     continue;

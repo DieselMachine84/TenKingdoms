@@ -2,12 +2,14 @@ using System;
 
 namespace TenKingdoms;
 
-public class SettleTask : AITask
+public class SettleTask : AITask, IUnitTask
 {
     private int _settlerId;
     private bool _settlerSent;
     private bool _noPlaceToSettle;
     public int FirmId { get; }
+
+    public int UnitId => _settlerId;
     
     public SettleTask(NationBase nation, int firmId) : base(nation)
     {
@@ -51,7 +53,7 @@ public class SettleTask : AITask
 
             foreach (Town town in TownArray)
             {
-                if (town.NationId != firm.NationId)
+                if (town.NationId != Nation.nation_recno)
                     continue;
 
                 // TODO other region
@@ -98,22 +100,20 @@ public class SettleTask : AITask
             int bestSettleLocY = -1;
             
             // TODO use better bounds
-            for (int settleLocX = firm.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
-                 settleLocX < firm.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
-                 settleLocX++)
+            for (int settleLocY = firm.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
+                 settleLocY < firm.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
+                 settleLocY++)
             {
-                if (!Misc.IsLocationValid(settleLocX, 0))
-                    continue;
-                
-                for (int settleLocY = firm.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
-                     settleLocY < firm.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
-                     settleLocY++)
+                for (int settleLocX = firm.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
+                     settleLocX < firm.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
+                     settleLocX++)
                 {
-                    if (!Misc.IsLocationValid(0, settleLocY))
-                        continue;
-
                     int settleLocX2 = settleLocX + InternalConstants.TOWN_WIDTH - 1;
                     int settleLocY2 = settleLocY + InternalConstants.TOWN_HEIGHT - 1;
+
+                    if (!Misc.IsLocationValid(settleLocX, settleLocY) || !Misc.IsLocationValid(settleLocX2, settleLocY2))
+                        continue;
+
                     if (Misc.rects_distance(settleLocX, settleLocY, settleLocX2, settleLocY2,
                             firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
                     {
@@ -129,6 +129,7 @@ public class SettleTask : AITask
 
                     int rating = Misc.PointsDistance(settleLocX, settleLocY, settleLocX2, settleLocY2,
                         firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+                    
                     foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(settleLocX, settleLocY, settleLocX2, settleLocY2, 1))
                     {
                         Location nearLocation = World.GetLoc(locXlocY.Item1, locXlocY.Item2);

@@ -5,11 +5,11 @@ namespace TenKingdoms;
 
 public class NationNew : NationBase
 {
-    private List<AITask> tasks = new List<AITask>();
-    private List<CaptureIndependentTask> captureIndependentTasks = new List<CaptureIndependentTask>();
+    private List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
     private List<SettleTask> _settleTasks = new List<SettleTask>();
+    private List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
     {
@@ -31,6 +31,10 @@ public class NationNew : NationBase
             
             case 1:
                 ThinkBuildMine();
+                break;
+            
+            case 2:
+                FindIdleUnits();
                 break;
         }
 
@@ -91,6 +95,21 @@ public class NationNew : NationBase
                 task.Process();
             }
         }
+        
+        if ((Info.TotalDays + nation_recno + 3) % 10 == 0)
+        {
+            for (int i = _idleUnitTasks.Count - 1; i >= 0; i--)
+            {
+                IdleUnitTask task = _idleUnitTasks[i];
+                if (task.ShouldCancel())
+                {
+                    _idleUnitTasks.RemoveAt(i);
+                    continue;
+                }
+                
+                task.Process();
+            }
+        }
     }
 
     private void ThinkCaptureIndependent()
@@ -105,7 +124,7 @@ public class NationNew : NationBase
                 continue;
 
             bool alreadyCapturing = false;
-            foreach (CaptureIndependentTask task in captureIndependentTasks)
+            foreach (CaptureIndependentTask task in _captureIndependentTasks)
             {
                 if (task.TownId == town.TownId)
                 {
@@ -139,7 +158,7 @@ public class NationNew : NationBase
                     if (overseer.Skill.SkillLevel > 50) // TODO constant should depend on preferences
                     {
                         bool isCapturer = false;
-                        foreach (CaptureIndependentTask task in captureIndependentTasks)
+                        foreach (CaptureIndependentTask task in _captureIndependentTasks)
                         {
                             if (task.Capturers.Contains(overseer.SpriteId))
                             {
@@ -278,7 +297,7 @@ public class NationNew : NationBase
                     if (buildCampTask.TownId == town.TownId)
                         hasBuildCampTask = true;
                 }
-                
+
                 if (!hasBuildCampTask)
                     _buildCampTasks.Add(new BuildCampTask(this, town.TownId));
             }
@@ -313,9 +332,56 @@ public class NationNew : NationBase
                     if (settleTask.FirmId == firm.FirmId)
                         hasSettleTask = true;
                 }
-                
+
                 if (!hasSettleTask)
                     _settleTasks.Add(new SettleTask(this, firm.FirmId));
+            }
+        }
+    }
+
+    private void FindIdleUnits()
+    {
+        List<int> unitsOnTasks = new List<int>();
+        
+        foreach (var buildMineTask in _buildMineTasks)
+        {
+            unitsOnTasks.Add(buildMineTask.UnitId);
+        }
+        
+        foreach (var settleTask in _settleTasks)
+        {
+            unitsOnTasks.Add(settleTask.UnitId);
+        }
+        
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.NationId != nation_recno)
+                continue;
+            
+            if (!unit.IsAIAllStop())
+                continue;
+
+            bool isIdle = true;
+            foreach (int unitOnTask in unitsOnTasks)
+            {
+                if (unit.SpriteId == unitOnTask)
+                {
+                    isIdle = false;
+                    break;
+                }
+            }
+
+            if (isIdle)
+            {
+                bool hasIdleUnitTask = false;
+                foreach (IdleUnitTask idleUnitTask in _idleUnitTasks)
+                {
+                    if (idleUnitTask.UnitId == unit.SpriteId)
+                        hasIdleUnitTask = true;
+                }
+                
+                if (!hasIdleUnitTask)
+                    _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
             }
         }
     }
