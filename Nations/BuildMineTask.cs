@@ -6,6 +6,7 @@ public class BuildMineTask : AITask, IUnitTask
 {
     private int _builderId;
     private bool _builderSent;
+    private bool _noPlaceToBuild;
     public int SiteId { get; }
 
     public int UnitId => _builderId;
@@ -17,6 +18,9 @@ public class BuildMineTask : AITask, IUnitTask
 
     public override bool ShouldCancel()
     {
+        if (_noPlaceToBuild)
+            return true;
+        
         if (SiteArray.IsDeleted(SiteId))
             return true;
 
@@ -30,99 +34,12 @@ public class BuildMineTask : AITask, IUnitTask
     public override void Process()
     {
         Site site = SiteArray[SiteId];
-
+        
         if (_builderId != 0 && UnitArray.IsDeleted(_builderId))
             _builderId = 0;
 
         if (_builderId == 0)
-        {
-            int minFirmDistance = Int32.MaxValue;
-            Firm bestFirm = null;
-            foreach (Firm firm in FirmArray)
-            {
-                if (firm.NationId != Nation.nation_recno)
-                    continue;
-
-                // TODO other region
-                if (firm.RegionId != site.RegionId)
-                    continue;
-
-                // TODO use pref
-                if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0)
-                {
-                    int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, site.LocX, site.LocY);
-                    if (firmDistance < minFirmDistance)
-                    {
-                        //TODO prefer firms at the same region
-                        minFirmDistance = firmDistance;
-                        bestFirm = firm;
-                    }
-                }
-            }
-            
-            int minTownDistance = Int32.MaxValue;
-            Town bestTown = null;
-            int bestRace = 0;
-
-            foreach (Town town in TownArray)
-            {
-                if (town.NationId != Nation.nation_recno)
-                    continue;
-
-                // TODO other region
-                if (town.RegionId != site.RegionId)
-                    continue;
-
-                int race = town.PickRandomRace(false, false);
-                // TODO do not train if population is low
-                if (race == 0 || !town.CanTrain(race))
-                    continue;
-                
-                int townDistance = Misc.points_distance(town.LocX1, town.LocY1, site.LocX, site.LocY);
-                if (townDistance < minTownDistance)
-                {
-                    //TODO prefer towns at the same region
-                    minTownDistance = townDistance;
-                    bestTown = town;
-                    bestRace = race;
-                }
-            }
-
-            if (minFirmDistance <= minTownDistance)
-            {
-                bestTown = null;
-            }
-            else
-            {
-                if (bestFirm != null && bestTown != null)
-                {
-                    if (Misc.PointsDistance(bestFirm.LocX1, bestFirm.LocY1, bestFirm.LocX2, bestFirm.LocY2,
-                            bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2) < 10)
-                    {
-                        bestTown = null;
-                    }
-                }
-                else
-                {
-                    bestFirm = null;
-                }
-            }
-
-            if (bestFirm != null)
-            {
-                _builderId = bestFirm.BuilderId;
-                if (!bestFirm.MobilizeBuilder(_builderId))
-                    _builderId = 0;
-            }
-
-            if (bestTown != null)
-            {
-                _builderId = bestTown.Recruit(Skill.SKILL_CONSTRUCTION, bestRace, InternalConstants.COMMAND_AI);
-            }
-            
-            //TODO hire builder from inn
-            //TODO check idle construction workers
-        }
+            _builderId = FindBuilder(site.LocX, site.LocY);
 
         if (_builderId == 0)
             return;
@@ -133,14 +50,83 @@ public class BuildMineTask : AITask, IUnitTask
 
         if (!_builderSent)
         {
-            //World.can_build_firm()
-            //TODO find best location
-            builder.BuildFirm(site.LocX, site.LocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
-            _builderSent = true;
+            (int buildLocX, int buildLocY) = FindBestBuildLocation(site.LocX, site.LocY);
+            if (buildLocX != -1 && buildLocY != -1)
+            {
+                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
+                _builderSent = true;
+            }
+            else
+            {
+                _noPlaceToBuild = true;
+            }
         }
         else
         {
             //TODO check that builder is on the way, not stuck and is able to build mine
+            if (builder.IsAIAllStop())
+                _builderSent = false;
         }
+    }
+
+    private (int, int) FindBestBuildLocation(int siteLocX, int siteLocY)
+    {
+        Location location = World.GetLoc(siteLocX, siteLocY);
+        
+        Town nearestTown = null;
+        int minDistance = Int32.MaxValue / 2;
+        foreach (Town town in TownArray)
+        {
+            if (town.NationId != Nation.nation_recno)
+                continue;
+
+            if (town.RegionId != location.RegionId)
+                continue;
+
+            int distance = Misc.RectsDistance(siteLocX, siteLocY, siteLocX, siteLocY,
+                town.LocX1, town.LocY1, town.LocX2, town.LocY2);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestTown = town;
+            }
+        }
+        
+        FirmInfo firmInfo = FirmRes[Firm.FIRM_MINE];
+        FirmBuild firmBuild = FirmRes.get_build(firmInfo.first_build_id);
+        int mineWidth = firmBuild.loc_width;
+        int mineHeight = firmBuild.loc_height;
+
+        int buildLocX = -1;
+        int buildLocY = -1;
+        minDistance = Int32.MaxValue / 2;
+        for (int locY = siteLocY - mineWidth + 1; locY < siteLocY; locY++)
+        {
+            for (int locX = siteLocX - mineHeight + 1; locX < siteLocX; locX++)
+            {
+                if (World.CanBuildFirm(locX, locY, Firm.FIRM_MINE, _builderId) == 0)
+                    continue;
+
+                if (nearestTown != null)
+                {
+                    int distance = Misc.RectsDistance(locX, locY, locX + mineWidth - 1, locY + mineHeight - 1,
+                        nearestTown.LocX1, nearestTown.LocY1, nearestTown.LocX2, nearestTown.LocY2);
+                    if (distance < minDistance)
+                    {
+                        buildLocX = locX;
+                        buildLocY = locY;
+                        minDistance = distance;
+                    }
+                }
+                else
+                {
+                    buildLocX = locX;
+                    buildLocY = locY;
+                }
+            }
+        }
+
+        // TODO take other nation towns into account
+        return (buildLocX, buildLocY);
     }
 }

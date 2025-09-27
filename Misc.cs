@@ -16,6 +16,8 @@ public class Misc
     private static Random InternalRandom = new Random();
     private static long StartTicks;
 
+    private static World World => Sys.Instance.World;
+    
     static Misc()
     {
         StartTicks = DateTime.Now.Ticks;
@@ -88,29 +90,35 @@ public class Misc
         locY = Math.Min(locY, GameConstants.MapSize - 1);
     }
 
-    public static IEnumerable<(int, int)> EnumerateNearLocations(int locX1, int locY1, int locX2, int locY2, int distance)
+    public static IEnumerable<Location> EnumerateNearLocations(int locX1, int locY1, int locX2, int locY2)
     {
-        for (int locX = locX1 - distance; locX <= locX2 + distance; locX++)
+        for (int locX = locX1 - 1; locX <= locX2 + 1; locX++)
         {
-            if (IsLocationValid(locX, locY1 - distance))
-                yield return (locX, locY1 - distance);
-            if (IsLocationValid(locX, locY2 + distance))
-                yield return (locX, locY2 + distance);
+            if (IsLocationValid(locX, locY1 - 1))
+                yield return World.GetLoc(locX, locY1 - 1);
+            if (IsLocationValid(locX, locY2 + 1))
+                yield return World.GetLoc(locX, locY2 + 1);
         }
 
-        for (int locY = locY1 - distance; locY <= locY2 + distance; locY++)
+        for (int locY = locY1 + 1; locY <= locY2 - 1; locY++)
         {
-            if (IsLocationValid(locX1 - distance, locY))
-                yield return (locX1 - distance, locY);
-            if (IsLocationValid(locX2 + distance, locY))
-                yield return (locX2 + distance, locY);
+            if (IsLocationValid(locX1 - 1, locY))
+                yield return World.GetLoc(locX1 - 1, locY);
+            if (IsLocationValid(locX2 + 1, locY))
+                yield return World.GetLoc(locX2 + 1, locY);
         }
     }
-
+    
     public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {
-        return rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-            firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+        return AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2, firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+    }
+
+    public static bool AreTownAndFirmLinked(int townLocX1, int townLocY1, int townLocX2, int townLocY2,
+        int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
+    {
+        return rects_distance(townLocX1, townLocY1, townLocX2, townLocY2,
+            firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
     }
 
     public static bool AreFirmsLinked(Firm firm1, Firm firm2)
@@ -121,8 +129,14 @@ public class Misc
 
     public static bool AreTownsLinked(Town town1, Town town2)
     {
-        return Misc.rects_distance(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2,
-            town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
+        return AreTownsLinked(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2, town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2);
+    }
+
+    public static bool AreTownsLinked(int town1LocX1, int town1LocY1, int town1LocX2, int town1LocY2,
+        int town2LocX1, int town2LocY1, int town2LocX2, int town2LocY2)
+    {
+        return rects_distance(town1LocX1, town1LocY1, town1LocX2, town1LocY2,
+            town2LocX1, town2LocY1, town2LocX2, town2LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
     }
 
     // Given two lengths in x and y coordination, then find the diagonal
@@ -164,29 +178,6 @@ public class Misc
         return Math.Max(x, y);
     }
 
-    public static int PointsDistance(int obj1LocX1, int obj1LocY1, int obj1LocX2, int obj1LocY2,
-        int obj2LocX1, int obj2LocY1, int obj2LocX2, int obj2LocY2)
-    {
-        int result = Int32.MaxValue;
-        for (int i = obj1LocX1; i <= obj1LocX2; i++)
-        {
-            for (int j = obj1LocY1; j <= obj1LocY2; j++)
-            {
-                for (int k = obj2LocX1; k <= obj2LocX2; k++)
-                {
-                    for (int l = obj2LocY1; l <= obj2LocY2; l++)
-                    {
-                        int distance = points_distance(i, j, k, l);
-                        if (distance < result)
-                            result = distance;
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
     // Given two rectangles 'A' and 'B' in a pair of x and y coordinates, find the
     // distance between the two rectangles, returning the maximum of the horizontal
     // and vertical directions.
@@ -222,6 +213,21 @@ public class Misc
         return Math.Max(x, y);
     }
 
+    public static int RectsDistance(int obj1LocX1, int obj1LocY1, int obj1LocX2, int obj1LocY2,
+        int obj2LocX1, int obj2LocY1, int obj2LocX2, int obj2LocY2)
+    {
+        int diffX = Math.Abs(obj1LocX1 - obj2LocX1);
+        diffX = Math.Min(diffX, Math.Abs(obj1LocX1 - obj2LocX2));
+        diffX = Math.Min(diffX, Math.Abs(obj1LocX2 - obj2LocX1));
+        diffX = Math.Min(diffX, Math.Abs(obj1LocX2 - obj2LocX2));
+        int diffY = Math.Abs(obj1LocY1 - obj2LocY1);
+        diffY = Math.Min(diffY, Math.Abs(obj1LocY1 - obj2LocY2));
+        diffY = Math.Min(diffY, Math.Abs(obj1LocY2 - obj2LocY1));
+        diffY = Math.Min(diffY, Math.Abs(obj1LocY2 - obj2LocY2));
+
+        return Math.Max(diffX, diffY);
+    }
+    
     public static bool is_touch(int x1, int y1, int x2, int y2, int a1, int b1, int a2, int b2)
     {
         return ((b1 <= y1 && b2 >= y1) || (y1 <= b1 && y2 >= b1)) &&

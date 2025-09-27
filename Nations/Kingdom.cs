@@ -253,7 +253,7 @@ public class NationNew : NationBase
                 if (town.RegionId != site.RegionId)
                     continue;
 
-                int siteRating = GameConstants.MapSize - Misc.PointsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                int siteRating = GameConstants.MapSize - Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
                     site.LocX, site.LocY, site.LocX, site.LocY);
                 if (siteRating > bestRating)
                 {

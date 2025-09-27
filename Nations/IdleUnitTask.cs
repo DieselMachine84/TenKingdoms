@@ -14,17 +14,14 @@ public class IdleUnitTask : AITask
 
     public override bool ShouldCancel()
     {
+        if (UnitArray.IsDeleted(UnitId))
+            _shouldCancel = true;
+
         return _shouldCancel;
     }
 
     public override void Process()
     {
-        if (UnitArray.IsDeleted(UnitId))
-        {
-            _shouldCancel = true;
-            return;
-        }
-
         Unit unit = UnitArray[UnitId];
         if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
         {
@@ -33,6 +30,9 @@ public class IdleUnitTask : AITask
             foreach (Firm firm in FirmArray)
             {
                 if (firm.NationId != Nation.nation_recno)
+                    continue;
+
+                if (firm.UnderConstruction)
                     continue;
 
                 // TODO other region

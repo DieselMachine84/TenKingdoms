@@ -17,10 +17,10 @@ public class BuildCampTask : AITask
 
     public override bool ShouldCancel()
     {
-        if (TownArray.IsDeleted(TownId))
+        if (_noPlaceToBuild)
             return true;
 
-        if (_noPlaceToBuild)
+        if (TownArray.IsDeleted(TownId))
             return true;
 
         Town town = TownArray[TownId];
@@ -42,7 +42,7 @@ public class BuildCampTask : AITask
         if (_generalId == 0)
         {
             Town sourceTown = null;
-            // TODO look for a general in camps, bases inns or train
+            // TODO look for a general in camps, bases, inns or train
             foreach (Town otherTown in TownArray)
             {
                 if (otherTown.NationId != Nation.nation_recno)
@@ -114,11 +114,10 @@ public class BuildCampTask : AITask
                     if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _generalId) == 0)
                         continue;
 
-                    int rating = Misc.PointsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
+                    int rating = Misc.RectsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
                         town.LocX1, town.LocY1, town.LocX2, town.LocY2);
-                    foreach ((int, int) locXlocY in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2, 1))
+                    foreach (Location nearLocation in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2))
                     {
-                        Location nearLocation = World.GetLoc(locXlocY.Item1, locXlocY.Item2);
                         if (nearLocation.IsFirm() || nearLocation.IsTown())
                             rating++;
                     }
