@@ -71,7 +71,7 @@ public class BuildMineTask : AITask, IUnitTask
 
     private (int, int) FindBestBuildLocation(int siteLocX, int siteLocY)
     {
-        Location location = World.GetLoc(siteLocX, siteLocY);
+        Location siteLocation = World.GetLoc(siteLocX, siteLocY);
         
         Town nearestTown = null;
         int minDistance = Int32.MaxValue / 2;
@@ -80,7 +80,10 @@ public class BuildMineTask : AITask, IUnitTask
             if (town.NationId != Nation.nation_recno)
                 continue;
 
-            if (town.RegionId != location.RegionId)
+            if (town.RegionId != siteLocation.RegionId)
+                continue;
+            
+            if (World.GetLoc(town.LocX1, town.LocY1).IsPlateau() != siteLocation.IsPlateau())
                 continue;
 
             int distance = Misc.RectsDistance(siteLocX, siteLocY, siteLocX, siteLocY,

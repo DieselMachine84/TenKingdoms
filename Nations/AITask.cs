@@ -67,9 +67,12 @@ public abstract class AITask
             if (town.RegionId != location.RegionId)
                 continue;
 
+            // TODO do not train if population is low
+            if (town.Population <= 10)
+                continue;
+
             // TODO check all races, select race better
             int race = town.PickRandomRace(false, false);
-            // TODO do not train if population is low
             if (race == 0 || !town.CanTrain(race))
                 continue;
 

@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
 public class BuildCampTask : AITask
 {
-    private int _generalId;
-    private bool _generalSent;
+    private int _builderId;
+    private bool _builderSent;
     private bool _noPlaceToBuild;
     
     public int TownId { get; }
@@ -36,107 +37,29 @@ public class BuildCampTask : AITask
     public override void Process()
     {
         Town town = TownArray[TownId];
-        int majorRace = town.MajorityRace();
 
-        // TODO use builder for building camps
-        if (_generalId == 0)
-        {
-            Town sourceTown = null;
-            // TODO look for a general in camps, bases, inns or train
-            foreach (Town otherTown in TownArray)
-            {
-                if (otherTown.NationId != Nation.nation_recno)
-                    continue;
+        if (_builderId != 0 && UnitArray.IsDeleted(_builderId))
+            _builderId = 0;
 
-                // TODO other region
-                if (otherTown.RegionId != town.RegionId)
-                    continue;
+        if (_builderId == 0)
+            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY);
 
-                // TODO check for other races too
-                // TODO do not train if population is low
-                if (otherTown.CanTrain(majorRace))
-                {
-                    sourceTown = otherTown;
-                }
-            }
-
-            if (sourceTown != null)
-            {
-                _generalId = sourceTown.Recruit(Skill.SKILL_LEADING, majorRace, InternalConstants.COMMAND_AI);
-            }
-        }
-
-        if (_generalId == 0)
-            return;
-
-        Unit general = UnitArray[_generalId];
-        if (general.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
+        if (_builderId == 0)
             return;
         
-        if (general.Rank != Unit.RANK_GENERAL || general.Rank != Unit.RANK_KING)
-            general.SetRank(Unit.RANK_GENERAL);
+        // TODO king should build camp if there are no builders available
+        
+        Unit builder = UnitArray[_builderId];
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
+            return;
 
-        if (!_generalSent)
+        if (!_builderSent)
         {
-            FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
-            Location townLocation = World.GetLoc(town.LocX1, town.LocY1);
-            int minRating = Int32.MaxValue;
-            int bestBuildLocX = -1;
-            int bestBuildLocY = -1;
-            
-            // TODO use better bounds
-            for (int buildLocX = town.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
-                 buildLocX < town.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
-                 buildLocX++)
+            (int buildLocX, int buildLocY) = FindBestBuildLocation(town.LocX1, town.LocY1, town.LocX2, town.LocY2);
+            if (buildLocX != -1 && buildLocY != -1)
             {
-                if (!Misc.IsLocationValid(buildLocX, 0))
-                    continue;
-
-                for (int buildLocY = town.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
-                     buildLocY < town.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
-                     buildLocY++)
-                {
-                    if (!Misc.IsLocationValid(0, buildLocY))
-                        continue;
-
-                    int buildLocX2 = buildLocX + firmInfo.loc_width - 1;
-                    int buildLocY2 = buildLocY + firmInfo.loc_height - 1;
-                    if (Misc.rects_distance(buildLocX, buildLocY, buildLocX2, buildLocY2,
-                            town.LocX1, town.LocY1, town.LocX2, town.LocY2) > InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-                    {
-                        continue;
-                    }
-
-                    Location buildLocation = World.GetLoc(buildLocX, buildLocY);
-                    if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
-                        continue;
-
-                    if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _generalId) == 0)
-                        continue;
-
-                    int rating = Misc.RectsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
-                        town.LocX1, town.LocY1, town.LocX2, town.LocY2);
-                    foreach (Location nearLocation in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2))
-                    {
-                        if (nearLocation.IsFirm() || nearLocation.IsTown())
-                            rating++;
-                    }
-                    
-                    // TODO rating should also depend on distance to the enemy and to our other villages
-
-                    if (rating < minRating)
-                    {
-                        minRating = rating;
-                        bestBuildLocX = buildLocX;
-                        bestBuildLocY = buildLocY;
-                    }
-                }
-            }
-
-            if (bestBuildLocX != -1 && bestBuildLocY != -1)
-            {
-                general.BuildFirm(bestBuildLocX, bestBuildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
-                _generalSent = true;
+                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
+                _builderSent = true;
             }
             else
             {
@@ -145,9 +68,99 @@ public class BuildCampTask : AITask
         }
         else
         {
-            //TODO check that general is on the way, not stuck and is able to build camp
-            if (general.IsAIAllStop())
-                _generalSent = false;
+            //TODO check that builder is on the way, not stuck and is able to build mine
+            if (builder.IsAIAllStop())
+                _builderSent = false;
         }
+    }
+
+    private (int, int) FindBestBuildLocation(int townLocX1, int townLocY1, int townLocX2, int townLocY2)
+    {
+        Location townLocation = World.GetLoc(townLocX1, townLocY1);
+        int maxRating = Int32.MinValue / 2;
+        List<(int, int)> maxRatingLocations = new List<(int, int)>();
+
+        List<Town> nearTowns = new List<Town>();
+        foreach (Town town in TownArray)
+        {
+            Location otherTownLocation = World.GetLoc(town.LocX1, town.LocY1);
+            if (otherTownLocation.IsPlateau() != townLocation.IsPlateau() || otherTownLocation.RegionId != townLocation.RegionId)
+                continue;
+            
+            if (Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                    townLocX1, townLocY1, townLocX2, townLocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE * 3)
+            {
+                nearTowns.Add(town);
+            }
+        }
+        
+        FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
+        FirmBuild firmBuild = FirmRes.get_build(firmInfo.first_build_id);
+        int campWidth = firmBuild.loc_width;
+        int campHeight = firmBuild.loc_height;
+
+        for (int buildLocY = townLocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - campHeight;
+             buildLocY < townLocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + campHeight;
+             buildLocY++)
+        {
+            for (int buildLocX = townLocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - campWidth;
+                 buildLocX < townLocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + campWidth;
+                 buildLocX++)
+            {
+                int buildLocX2 = buildLocX + campWidth - 1;
+                int buildLocY2 = buildLocY + campHeight - 1;
+
+                if (!Misc.IsLocationValid(buildLocX, buildLocY) || !Misc.IsLocationValid(buildLocX2, buildLocY2))
+                    continue;
+
+                if (!Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2, townLocX1, townLocY1, townLocX2, townLocY2))
+                    continue;
+                
+                Location buildLocation = World.GetLoc(buildLocX, buildLocY);
+                if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
+                    continue;
+                
+                if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _builderId) == 0)
+                    continue;
+
+                int rating = 0;
+                foreach (Town nearTown in nearTowns)
+                {
+                    if (!Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2,
+                            nearTown.LocX1, nearTown.LocY1, nearTown.LocX2, nearTown.LocY2))
+                        continue;
+                    
+                    if (nearTown.NationId == Nation.nation_recno)
+                        rating += 100;
+                    
+                    // TODO calculate rating for other nation towns
+                }
+
+                foreach (Location nearLocation in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2))
+                {
+                    if (!nearLocation.Walkable())
+                        rating -= 10;
+                }
+
+                rating -= Misc.RectsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
+                    townLocX1, townLocY1, townLocX2, townLocY2) * 5;
+                
+                if (rating > maxRating)
+                {
+                    maxRating = rating;
+                    maxRatingLocations.Clear();
+                }
+                
+                if (rating == maxRating)
+                    maxRatingLocations.Add((buildLocX, buildLocY));
+            }
+        }
+
+        if (maxRatingLocations.Count > 0)
+        {
+            return maxRatingLocations[Misc.Random(maxRatingLocations.Count)];
+        }
+
+        return (-1, -1);
     }
 }

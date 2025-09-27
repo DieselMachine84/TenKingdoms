@@ -127,6 +127,11 @@ public class SettleTask : AITask, IUnitTask
         List<Firm> nearFirms = new List<Firm>();
         foreach (Firm firm in FirmArray)
         {
+            Location otherFirmLocation = World.GetLoc(firm.LocX1, firm.LocY1);
+
+            if (otherFirmLocation.IsPlateau() != firmLocation.IsPlateau() || otherFirmLocation.RegionId != firmLocation.RegionId)
+                continue;
+
             if (Misc.RectsDistance(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
                     firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE * 3)
             {
@@ -137,6 +142,11 @@ public class SettleTask : AITask, IUnitTask
         List<Town> nearTowns = new List<Town>();
         foreach (Town town in TownArray)
         {
+            Location townLocation = World.GetLoc(town.LocX1, town.LocY1);
+            
+            if (townLocation.IsPlateau() != firmLocation.IsPlateau() || townLocation.RegionId != firmLocation.RegionId)
+                continue;
+
             if (Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
                     firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE * 3)
             {
