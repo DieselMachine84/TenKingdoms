@@ -1194,7 +1194,7 @@ public abstract class Firm : IIdObject
 		if (World.LocateSpace(ref locX, ref locY, LocX2, LocY2,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.UNIT_LAND, RegionId, true))
 		{
-			if (Misc.rects_distance(locX, locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
+			if (Misc.RectsDistance(locX, locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
 				    LocX1, LocY1, LocX2, LocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 			{
 				Town town = TownArray.AddTown(NationId, raceId, locX, locY);
@@ -1226,7 +1226,7 @@ public abstract class Firm : IIdObject
 			if (town.NationId != NationId)
 				continue;
 
-			int townDistance = Misc.rects_distance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+			int townDistance = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
 				LocX1, LocY1, LocX2, LocY2);
 
 			if (townDistance < minDistance)
@@ -1323,11 +1323,6 @@ public abstract class Firm : IIdObject
 			if (!Misc.AreFirmsLinked(this, firm))
 				continue;
 
-			//------ check if both are on the same terrain type ------//
-
-			if (World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
-				continue;
-
 			if (!firmInfo.is_linkable_to_firm(firm.FirmType))
 				continue;
 
@@ -1367,11 +1362,6 @@ public abstract class Firm : IIdObject
 			//------ check if the town is close enough to this firm -------//
 
 			if (!Misc.AreTownAndFirmLinked(town, this))
-				continue;
-
-			//------ check if both are on the same terrain type ------//
-
-			if (World.GetLoc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
 				continue;
 
 			if (!firmInfo.is_linkable_to_town)

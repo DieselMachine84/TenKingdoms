@@ -75,7 +75,7 @@ public static class GameConstants
     public const int MONSTER_ATTACK_NEIGHBOR_RANGE = 6;
     public const int MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER = 2;
     public const int MONSTER_EXPAND_RANGE = 8;
-    public const int MIN_MONSTER_CIVILIAN_DISTANCE = 10; // the minimum distance between monster firms and civilian towns & firms
+    public const int MIN_MONSTER_CIVILIAN_DISTANCE = 8; // the minimum distance between monster firms and civilian towns & firms
     public const int MIN_GENERAL_EXPAND_NUM = 3;
     public const int EXPAND_FIRM_DISTANCE = 30;
     public const int FREE_SPACE_DISTANCE = 3;
@@ -146,9 +146,9 @@ public static class InternalConstants
     // Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
     public const int TOWN_TRAIN_BATCH_COUNT = 8;
     
-    public const int EFFECTIVE_TOWN_TOWN_DISTANCE = 8;
-    public const int EFFECTIVE_FIRM_TOWN_DISTANCE = 8;
-    public const int EFFECTIVE_FIRM_FIRM_DISTANCE = 8;
+    public const int EFFECTIVE_TOWN_TOWN_DISTANCE = 6;
+    public const int EFFECTIVE_FIRM_TOWN_DISTANCE = 6;
+    public const int EFFECTIVE_FIRM_FIRM_DISTANCE = 6;
     public const int EFFECTIVE_POWER_DISTANCE = 3;
     public const int WALL_SPACE_LOC = 5;
 

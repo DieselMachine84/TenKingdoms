@@ -76,9 +76,8 @@ public class MonsterInfo
 
         foreach (Town town in TownArray)
         {
-            if (Misc.rects_distance(xLoc, yLoc, xLoc + firmInfo.loc_width, yLoc + firmInfo.loc_height,
-                    town.LocX1, town.LocY1, town.LocX2, town.LocY2) <
-                GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
+            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.loc_width - 1, yLoc + firmInfo.loc_height - 1,
+                    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;
             }
@@ -86,8 +85,8 @@ public class MonsterInfo
 
         foreach (Firm firm in FirmArray)
         {
-            if (Misc.points_distance(xLoc, yLoc, firm.LocCenterX, firm.LocCenterY) <
-                GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
+            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.loc_width - 1, yLoc + firmInfo.loc_height - 1,
+                    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;
             }

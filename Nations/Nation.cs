@@ -1309,7 +1309,7 @@ public class Nation : NationBase
 				if (siteLoc.RegionId != location.RegionId)
 					continue; // not on the same territory
 
-				int dist = Misc.rects_distance(site.LocX, site.LocY, site.LocX, site.LocY,
+				int dist = Misc.RectsDistance(site.LocX, site.LocY, site.LocX, site.LocY,
 					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 				//-------------------------------------------------------------------------//

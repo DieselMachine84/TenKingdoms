@@ -108,107 +108,11 @@ public class Misc
                 yield return World.GetLoc(locX2 + 1, locY);
         }
     }
-    
-    public static bool AreTownAndFirmLinked(Town town, Firm firm)
-    {
-        return AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2, firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
-    }
 
-    public static bool AreTownAndFirmLinked(int townLocX1, int townLocY1, int townLocX2, int townLocY2,
-        int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
-    {
-        return rects_distance(townLocX1, townLocY1, townLocX2, townLocY2,
-            firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-    }
-
-    public static bool AreFirmsLinked(Firm firm1, Firm firm2)
-    {
-        return rects_distance(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm2.LocY2,
-            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
-    }
-
-    public static bool AreTownsLinked(Town town1, Town town2)
-    {
-        return AreTownsLinked(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2, town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2);
-    }
-
-    public static bool AreTownsLinked(int town1LocX1, int town1LocY1, int town1LocX2, int town1LocY2,
-        int town2LocX1, int town2LocY1, int town2LocX2, int town2LocY2)
-    {
-        return rects_distance(town1LocX1, town1LocY1, town1LocX2, town1LocY2,
-            town2LocX1, town2LocY1, town2LocX2, town2LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
-    }
-
-    // Given two lengths in x and y coordination, then find the diagonal
-    // distance between them
-    // result = the square root of X*X + Y*Y
-    //
-    // <int> x1, y1 = the starting point of the diagonal line
-    // <int> x2, y2 = the ending point of the diagonal line
-    public static int diagonal_distance(int x1, int y1, int x2, int y2)
-    {
-        int x = Math.Abs(x1 - x2);
-        int y = Math.Abs(y1 - y2);
-
-        return Convert.ToInt32(Math.Sqrt(x * x + y * y));
-    }
-
-    // Given two lengths in x and y coordination, then find the
-    // distance between two points, taking diagonal distance
-    // the same as the horizontal and vertical distances.
-    //
-    // <int> x1, y1 = the starting point of the diagonal line
-    // <int> x2, y2 = the ending point of the diagonal line
-    //
-    // This function can be used for measuring distances between
-    // two points in space. It can also be used to measure between
-    // shapes, but it is unreliable if the shape has one dimension
-    // size that is evenly divisible. Because the formula frequently
-    // used to calculate the center of a shape is a simple (x1+x2)/2,
-    // this means the center is often not precise in game logic.
-    //
-    // For a more accurate measurement, use rects_distance() as that
-    // will pick a group of coordinates that represent a center, then
-    // calculates a distance.
     public static int points_distance(int x1, int y1, int x2, int y2)
     {
         int x = Math.Abs(x1 - x2);
         int y = Math.Abs(y1 - y2);
-
-        return Math.Max(x, y);
-    }
-
-    // Given two rectangles 'A' and 'B' in a pair of x and y coordinates, find the
-    // distance between the two rectangles, returning the maximum of the horizontal
-    // and vertical directions.
-    //
-    // <int> ax1, ay1, ax2, ay2 = edge coordinates of rectangle A
-    // <int> bx1, by1, bx2, by2 = edge coordinates of rectangle B
-    // <int> edgeA = if not true measure to center of rectangle A
-    // <int> edgeB = if not true measure to center of rectangle B
-    //
-    // If measuring to an edge, then the provided coordinates are used. Otherwise,
-    // when a rectangle size is evenly divisible, the center four coordinates are
-    // equally considered the center. If it is odd, there will only be one center
-    // coordinate to the shape.
-    public static int rects_distance(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
-    {
-        int dax = (ax2 - ax1) / 2;
-        int day = (ay2 - ay1) / 2;
-        ax1 += dax;
-        ax2 -= dax;
-        ay1 += day;
-        ay2 -= day;
-
-        int dbx = (bx2 - bx1) / 2;
-        int dby = (by2 - by1) / 2;
-        bx1 += dbx;
-        bx2 -= dbx;
-        by1 += dby;
-        by2 -= dby;
-
-        int x = Math.Min(Math.Abs(ax1 - bx2), Math.Abs(ax2 - bx1));
-        int y = Math.Min(Math.Abs(ay1 - by2), Math.Abs(ay2 - by1));
 
         return Math.Max(x, y);
     }
@@ -228,10 +132,55 @@ public class Misc
         return Math.Max(diffX, diffY);
     }
     
-    public static bool is_touch(int x1, int y1, int x2, int y2, int a1, int b1, int a2, int b2)
+    public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {
-        return ((b1 <= y1 && b2 >= y1) || (y1 <= b1 && y2 >= b1)) &&
-               ((a1 <= x1 && a2 >= x1) || (x1 <= a1 && x2 >= a1));
+        return AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2, firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+    }
+
+    public static bool AreTownAndFirmLinked(int townLocX1, int townLocY1, int townLocX2, int townLocY2,
+        int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
+    {
+        Location location1 = World.GetLoc(townLocX1, townLocY1);
+        Location location2 = World.GetLoc(firmLocX1, firmLocY1);
+        if (location1.RegionId != location2.RegionId || location1.IsPlateau() != location2.IsPlateau())
+            return false;
+        
+        return RectsDistance(townLocX1, townLocY1, townLocX2, townLocY2,
+            firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
+    }
+
+    public static bool AreFirmsLinked(Firm firm1, Firm firm2)
+    {
+        return AreFirmsLinked(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm2.LocY2, firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
+    }
+
+    public static bool AreFirmsLinked(int firm1LocX1, int firm1LocY1, int firm1LocX2, int firm1LocY2,
+        int firm2LocX1, int firm2LocY1, int firm2LocX2, int firm2LocY2)
+    {
+        Location location1 = World.GetLoc(firm1LocX1, firm1LocY1);
+        Location location2 = World.GetLoc(firm2LocX1, firm2LocY1);
+        if (location1.RegionId != location2.RegionId || location1.IsPlateau() != location2.IsPlateau())
+            return false;
+
+        return RectsDistance(firm1LocX1, firm1LocY1, firm1LocX2, firm1LocY2,
+            firm2LocX1, firm2LocY1, firm2LocX2, firm2LocY2) <= InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE;
+    }
+
+    public static bool AreTownsLinked(Town town1, Town town2)
+    {
+        return AreTownsLinked(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2, town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2);
+    }
+
+    public static bool AreTownsLinked(int town1LocX1, int town1LocY1, int town1LocX2, int town1LocY2,
+        int town2LocX1, int town2LocY1, int town2LocX2, int town2LocY2)
+    {
+        Location location1 = World.GetLoc(town1LocX1, town1LocY1);
+        Location location2 = World.GetLoc(town2LocX1, town2LocY1);
+        if (location1.RegionId != location2.RegionId || location1.IsPlateau() != location2.IsPlateau())
+            return false;
+        
+        return RectsDistance(town1LocX1, town1LocY1, town1LocX2, town1LocY2,
+            town2LocX1, town2LocY1, town2LocX2, town2LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
     }
 
     public static void cal_move_around_a_point(int num, int width, int height, out int xShift, out int yShift)
@@ -364,30 +313,6 @@ public class Misc
 
         return str;
     }
-
-    /*public static void dos_encoding_to_win(char[] c, int len)
-    {
-        // look up table to convert multilingual char set to windows char set
-        char[] multi_to_win_table = new char[]
-        {
-            "ÇüéâäàåçêëèïîìÄÅ",
-            "ÉæÆôöòûùÿÖÜø£Ø×\x83",
-            "áíóúñÑªº¿\xae¬œŒ¡«»",
-            "?????ÁÂÀ©????¢¥?",
-            "??????ãÃ???????€",
-            "ðÐÊËÈ'ÍÎÏ????ŠÌ?",
-            "ÓßÔÒõÕµÞþÚÛÙýÝ?Ž",
-            "·±=Ÿ¶§÷?°š?¹³²??"
-        };
-
-
-        unsigned char *textPtr = (unsigned char *)c;
-        for( ; len > 0 && *textPtr; --len, ++textPtr )
-        {
-            if( *textPtr >= 0x80 && multi_to_win_table[*textPtr - 0x80] != '?' )
-                *textPtr = multi_to_win_table[*textPtr - 0x80];
-        }
-    }*/
 
     public static int ToInt32(char[] chars)
     {

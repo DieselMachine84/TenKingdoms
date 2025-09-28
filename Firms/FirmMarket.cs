@@ -1032,7 +1032,7 @@ public class FirmMarket : Firm
 				continue;
 
 			// don't consider if it is too far away
-			if (Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+			if (Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
 				    town.LocX1, town.LocY1, town.LocX2, town.LocY2) > GameConstants.MapSize / 4)
 				continue;
 

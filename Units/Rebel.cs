@@ -331,7 +331,7 @@ public class Rebel : IIdObject
             if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
                 continue;
 
-            int townDistance = Misc.rects_distance(leaderLocX, leaderLocY, leaderLocX, leaderLocY,
+            int townDistance = Misc.RectsDistance(leaderLocX, leaderLocY, leaderLocX, leaderLocY,
                 town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
             if (townDistance < closestTownDistance)

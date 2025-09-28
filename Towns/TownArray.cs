@@ -278,7 +278,7 @@ public class TownArray : DynArray<Town>
 
 			foreach (Town town in this)
 			{
-				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
+				if (Misc.RectsDistance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
 					    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < InternalConstants.MIN_INTER_TOWN_DISTANCE)
 				{
 					canBuildFlag = false;
@@ -294,7 +294,7 @@ public class TownArray : DynArray<Town>
 
 			foreach (Firm firm in FirmArray)
 			{
-				if (Misc.rects_distance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
+				if (Misc.RectsDistance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
 					    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE)
 				{
 					canBuildFlag = false;

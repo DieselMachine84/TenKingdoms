@@ -1944,7 +1944,7 @@ public class Town : IIdObject
 			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
-			int townDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+			int townDistance = Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
 				town.LocX1, town.LocY1, town.LocX2, town.LocY2);
 
 			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
@@ -2930,7 +2930,7 @@ public class Town : IIdObject
 			if (firm.FirmType != Firm.FIRM_CAMP || firm.NationId != NationId)
 				continue;
 
-			int curDistance = Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+			int curDistance = Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
 				firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
 
 			if (curDistance < minDistance)
@@ -3300,7 +3300,7 @@ public class Town : IIdObject
 
 		// only call out defender when the attacking unit is within the effective defending distance
 
-		if (Misc.rects_distance(attackerUnit.CurLocX, attackerUnit.CurLocY, attackerUnit.CurLocX, attackerUnit.CurLocY,
+		if (Misc.RectsDistance(attackerUnit.CurLocX, attackerUnit.CurLocY, attackerUnit.CurLocX, attackerUnit.CurLocY,
 			    LocX1, LocY1, LocX2, LocY2) <= UnitConstants.EFFECTIVE_DEFEND_TOWN_DISTANCE)
 		{
 			while (true)
@@ -5545,7 +5545,7 @@ public class Town : IIdObject
 
 		//------- it must be within the effective town-to-town distance ---//
 
-		if (Misc.rects_distance(LocX1, LocY1, LocX2, LocY2,
+		if (Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
 			    xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1) >
 		    InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
 		{
