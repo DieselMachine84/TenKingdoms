@@ -39,6 +39,15 @@ public class SettleTask : AITask, IUnitTask
         return false;
     }
 
+    public override void Cancel()
+    {
+        if (_settlerId != 0 && !UnitArray.IsDeleted(_settlerId))
+        {
+            Unit settler = UnitArray[_settlerId];
+            settler.Stop2();
+        }
+    }
+    
     public override void Process()
     {
         Firm firm = FirmArray[FirmId];

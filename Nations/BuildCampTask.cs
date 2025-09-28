@@ -34,6 +34,15 @@ public class BuildCampTask : AITask
         return false;
     }
 
+    public override void Cancel()
+    {
+        if (_builderId != 0 && !UnitArray.IsDeleted(_builderId))
+        {
+            Unit builder = UnitArray[_builderId];
+            builder.Stop2();
+        }
+    }
+
     public override void Process()
     {
         Town town = TownArray[TownId];

@@ -9,6 +9,7 @@ public class NationNew : NationBase
     private List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
     private List<SettleTask> _settleTasks = new List<SettleTask>();
+    private List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
     private List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
@@ -47,6 +48,11 @@ public class NationNew : NationBase
         {
             ThinkSettle();
         }
+        
+        if ((Info.TotalDays + nation_recno + 2) % 10 == 0)
+        {
+            ThinkAssignGeneral();
+        }
     }
 
     private void ProcessTasks()
@@ -58,6 +64,7 @@ public class NationNew : NationBase
                 BuildMineTask task = _buildMineTasks[i];
                 if (task.ShouldCancel())
                 {
+                    task.Cancel();
                     _buildMineTasks.RemoveAt(i);
                     continue;
                 }
@@ -73,6 +80,7 @@ public class NationNew : NationBase
                 BuildCampTask task = _buildCampTasks[i];
                 if (task.ShouldCancel())
                 {
+                    task.Cancel();
                     _buildCampTasks.RemoveAt(i);
                     continue;
                 }
@@ -88,6 +96,7 @@ public class NationNew : NationBase
                 SettleTask task = _settleTasks[i];
                 if (task.ShouldCancel())
                 {
+                    task.Cancel();
                     _settleTasks.RemoveAt(i);
                     continue;
                 }
@@ -103,7 +112,24 @@ public class NationNew : NationBase
                 IdleUnitTask task = _idleUnitTasks[i];
                 if (task.ShouldCancel())
                 {
+                    task.Cancel();
                     _idleUnitTasks.RemoveAt(i);
+                    continue;
+                }
+                
+                task.Process();
+            }
+        }
+        
+        if ((Info.TotalDays + nation_recno + 4) % 10 == 0)
+        {
+            for (int i = _assignGeneralTasks.Count - 1; i >= 0; i--)
+            {
+                AssignGeneralTask task = _assignGeneralTasks[i];
+                if (task.ShouldCancel())
+                {
+                    task.Cancel();
+                    _assignGeneralTasks.RemoveAt(i);
                     continue;
                 }
                 
@@ -335,6 +361,34 @@ public class NationNew : NationBase
 
                 if (!hasSettleTask)
                     _settleTasks.Add(new SettleTask(this, firm.FirmId));
+            }
+        }
+    }
+
+    private void ThinkAssignGeneral()
+    {
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno)
+                continue;
+
+            if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
+                continue;
+            
+            if (firm.UnderConstruction)
+                continue;
+
+            if (firm.OverseerId == 0)
+            {
+                bool hasAssignGeneralTask = false;
+                foreach (AssignGeneralTask assignGeneralTask in _assignGeneralTasks)
+                {
+                    if (assignGeneralTask.FirmId == firm.FirmId)
+                        hasAssignGeneralTask = true;
+                }
+                
+                if (!hasAssignGeneralTask)
+                    _assignGeneralTasks.Add(new AssignGeneralTask(this, firm.FirmId));
             }
         }
     }

@@ -21,6 +21,10 @@ public abstract class AITask
 
     public abstract bool ShouldCancel();
 
+    public virtual void Cancel()
+    {
+    }
+
     public abstract void Process();
     
     protected int FindBuilder(int buildLocX, int buildLocY)
