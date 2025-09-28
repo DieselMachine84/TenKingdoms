@@ -2571,11 +2571,6 @@ public class Town : IIdObject
 			if (!Misc.AreTownAndFirmLinked(this, firm))
 				continue;
 
-			//------ check if both are on the same terrain type ------//
-
-			if (World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
-				continue;
-
 			//------- determine the default link status ------//
 
 			var defaultLinkStatus = firm.NationId == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
@@ -2615,11 +2610,6 @@ public class Town : IIdObject
 			//------ check if the town is close enough to this town -------//
 
 			if (!Misc.AreTownsLinked(this, town))
-				continue;
-
-			//------ check if both are on the same terrain type ------//
-
-			if (World.GetLoc(town.LocCenterX, town.LocCenterY).IsPlateau() != World.GetLoc(LocCenterX, LocCenterY).IsPlateau())
 				continue;
 
 			//------- determine the default link status ------//
