@@ -301,12 +301,13 @@ public class Sys
 
             if (DateTime.Now.Ticks - lastScrollTime > InternalConstants.SCROLL_INTERVAL * TimeSpan.TicksPerMillisecond)
             {
-                SDL.SDL_GetMouseState(out int mouseX, out int mouseY);
+                uint buttonMask = SDL.SDL_GetMouseState(out int mouseX, out int mouseY);
                 bool scrollUp = (mouseX >= 0 && mouseX < InternalConstants.SCROLL_WIDTH);
                 bool scrollDown = (mouseX >= Renderer.WindowWidth - InternalConstants.SCROLL_WIDTH && mouseX < Renderer.WindowWidth);
                 bool scrollLeft = (mouseY >= 0 && mouseY < InternalConstants.SCROLL_WIDTH);
                 bool scrollRight = (mouseY >= Renderer.WindowHeight - InternalConstants.SCROLL_WIDTH && mouseY < Renderer.WindowHeight);
-                if (scrollUp || scrollDown || scrollLeft || scrollRight)
+                bool leftButtonPressed = ((buttonMask & SDL.SDL_BUTTON_LMASK) != 0);
+                if ((scrollUp || scrollDown || scrollLeft || scrollRight) && !leftButtonPressed)
                 {
                     Renderer.Scroll(scrollUp, scrollDown, scrollLeft, scrollRight);
                     needRedraw = true;
