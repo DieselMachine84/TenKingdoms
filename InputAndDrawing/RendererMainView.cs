@@ -24,12 +24,7 @@ public partial class Renderer
 
                 int screenX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
                 int screenY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
-                TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
-                Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
-                //TODO terrain animation
-                //IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
-                //if (animatedTerrain != IntPtr.Zero)
-                    //Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+                DrawTerrain(location, screenX, screenY);
 
                 if (location.HasDirt())
                 {
@@ -101,6 +96,16 @@ public partial class Renderer
             DrawSelectionRectangle();
     }
 
+    private void DrawTerrain(Location location, int screenX, int screenY)
+    {
+        TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
+        Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+        //TODO terrain animation
+        //IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
+        //if (animatedTerrain != IntPtr.Zero)
+        //Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+    }
+
     private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
     {
         int dirtArrayId = location.DirtArrayId();
@@ -121,13 +126,12 @@ public partial class Renderer
     private void DrawHill(HillBlockInfo hillBlockInfo, int screenX, int screenY, int layerMask)
     {
         //TODO check this
-        //if((layerMask & hillBlockInfo.layer) == 0)
+        //if((layerMask & hillBlockInfo.Layer) == 0)
             //return;
 
-        int hillX = screenX + Scale(hillBlockInfo.offset_x);
-        int hillY = screenY + Scale(hillBlockInfo.offset_y);
-		
-        Graphics.DrawBitmap(hillBlockInfo.GetTexture(Graphics), hillX, hillY, Scale(hillBlockInfo.bitmapWidth), Scale(hillBlockInfo.bitmapHeight));
+        int hillX = screenX + Scale(hillBlockInfo.OffsetX);
+        int hillY = screenY + Scale(hillBlockInfo.OffsetY);
+        Graphics.DrawBitmap(hillBlockInfo.GetTexture(Graphics), hillX, hillY, Scale(hillBlockInfo.BitmapWidth), Scale(hillBlockInfo.BitmapHeight));
     }
 
     private void DrawSite(Location location, int screenX, int screenY)

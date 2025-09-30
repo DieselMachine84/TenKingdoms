@@ -541,7 +541,7 @@ public class MapGenerator
 					}
 					else
 					{
-						int hillId = HillRes.scan(patternId, HillRes.LOW_HILL_PRIORITY, 0, false);
+						int hillId = HillRes.Scan(patternId, HillRes.LOW_HILL_PRIORITY, 0, false);
 						//err_when( !hillId );
 						location.SetHill(hillId);
 						location.SetFlammability(-100);
@@ -551,8 +551,8 @@ public class MapGenerator
 						//#### end alex 24/6 ####//
 						if (y > 0)
 						{
-							aboveLoc.SetHill(HillRes.locate(patternId,
-								HillRes[hillId].sub_pattern_id, HillRes.HIGH_HILL_PRIORITY, 0));
+							aboveLoc.SetHill(HillRes.Locate(patternId,
+								HillRes[hillId].SubPatternId, HillRes.HIGH_HILL_PRIORITY, 0));
 							aboveLoc.SetFlammability(-100);
 							//### begin alex 24/6 ###//
 							aboveLoc.SetPowerOff();
@@ -603,15 +603,15 @@ public class MapGenerator
 					    World.GetLoc(x + 2, y).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
-						int h1p = h1.pattern_id;
+						int h1p = h1.PatternId;
 						HillBlockInfo h2 = HillRes[World.GetLoc(x + 1, y).HillId1()];
-						int h2p = h2.pattern_id;
+						int h2p = h2.PatternId;
 						HillBlockInfo h3 = HillRes[World.GetLoc(x + 2, y).HillId1()];
-						int h3p = h3.pattern_id;
-						if (h1.special_flag == 0 &&
-						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsSouthExitPattern(h1p) &&
-						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsSouthExitPattern(h2p) &&
-						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsSouthExitPattern(h3p))
+						int h3p = h3.PatternId;
+						if (h1.SpecialFlag == 0 &&
+						    h1.Priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsSouthExitPattern(h1p) &&
+						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsSouthExitPattern(h2p) &&
+						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsSouthExitPattern(h3p))
 						{
 							if (World.GetLoc(x + 1, y - 1).Walkable())
 							{
@@ -622,7 +622,7 @@ public class MapGenerator
 									h1p = SOUTH_PATTERN1;
 								else if (h1p == SOUTH_PATTERN4)
 									h1p = SOUTH_PATTERN2;
-								hillId = HillRes.scan(h1p, HillRes.HIGH_HILL_PRIORITY, SOUTH_LEFT_SPECIAL, false);
+								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, SOUTH_LEFT_SPECIAL, false);
 								location.RemoveHill();
 								location.SetHill(hillId);
 								location.SetPowerOff();
@@ -632,8 +632,8 @@ public class MapGenerator
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.locate(h1p,
-									HillRes[hillId].sub_pattern_id,
+								hillId = HillRes.Locate(h1p,
+									HillRes[hillId].SubPatternId,
 									HillRes.LOW_HILL_PRIORITY, SOUTH_LEFT_SPECIAL);
 								if (loc2.HillId2() == 0)
 								{
@@ -681,7 +681,7 @@ public class MapGenerator
 									h3p = SOUTH_PATTERN1;
 								if (h3p == SOUTH_PATTERN3)
 									h3p = SOUTH_PATTERN2;
-								hillId = HillRes.scan(h3p, HillRes.HIGH_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL,
+								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL,
 									false);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
@@ -693,8 +693,8 @@ public class MapGenerator
 
 								// next row
 								loc2 = World.GetLoc(x + 2, y + 1);
-								hillId = HillRes.locate(h3p,
-									HillRes[hillId].sub_pattern_id,
+								hillId = HillRes.Locate(h3p,
+									HillRes[hillId].SubPatternId,
 									HillRes.LOW_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL);
 								if (loc2.HillId2() == 0)
 								{
@@ -748,15 +748,15 @@ public class MapGenerator
 					    World.GetLoc(x + 2, y).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
-						int h1p = h1.pattern_id;
+						int h1p = h1.PatternId;
 						HillBlockInfo h2 = HillRes[World.GetLoc(x + 1, y).HillId1()];
-						int h2p = h2.pattern_id;
+						int h2p = h2.PatternId;
 						HillBlockInfo h3 = HillRes[World.GetLoc(x + 2, y).HillId1()];
-						int h3p = h3.pattern_id;
-						if (h1.special_flag == 0 &&
-						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsNorthExitPattern(h1p) &&
-						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsNorthExitPattern(h2p) &&
-						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsNorthExitPattern(h3p))
+						int h3p = h3.PatternId;
+						if (h1.SpecialFlag == 0 &&
+						    h1.Priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsNorthExitPattern(h1p) &&
+						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsNorthExitPattern(h2p) &&
+						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsNorthExitPattern(h3p))
 						{
 							if (World.GetLoc(x + 1, y + 1).Walkable())
 							{
@@ -767,7 +767,7 @@ public class MapGenerator
 									h1p = NORTH_PATTERN1;
 								else if (h1p == NORTH_PATTERN3)
 									h1p = NORTH_PATTERN2;
-								hillId = HillRes.scan(h1p, HillRes.HIGH_HILL_PRIORITY, NORTH_LEFT_SPECIAL,
+								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, NORTH_LEFT_SPECIAL,
 									false);
 								location.RemoveHill();
 								location.SetHill(hillId);
@@ -799,7 +799,7 @@ public class MapGenerator
 									h3p = NORTH_PATTERN1;
 								if (h3p == NORTH_PATTERN4)
 									h3p = NORTH_PATTERN2;
-								hillId = HillRes.scan(h3p, HillRes.HIGH_HILL_PRIORITY, NORTH_RIGHT_SPECIAL, false);
+								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, NORTH_RIGHT_SPECIAL, false);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -846,15 +846,15 @@ public class MapGenerator
 					    World.GetLoc(x, y + 2).HasHill() && World.GetLoc(x, y + 3).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
-						int h1p = h1.pattern_id;
+						int h1p = h1.PatternId;
 						HillBlockInfo h2 = HillRes[World.GetLoc(x, y + 2).HillId1()];
-						int h2p = h2.pattern_id;
+						int h2p = h2.PatternId;
 						HillBlockInfo h3 = HillRes[World.GetLoc(x, y + 3).HillId1()];
-						int h3p = h3.pattern_id;
-						if (h1.special_flag == 0 &&
-						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsWestExitPattern(h1p) &&
-						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsWestExitPattern(h2p) &&
-						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsWestExitPattern(h3p))
+						int h3p = h3.PatternId;
+						if (h1.SpecialFlag == 0 &&
+						    h1.Priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsWestExitPattern(h1p) &&
+						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsWestExitPattern(h2p) &&
+						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsWestExitPattern(h3p))
 						{
 							if ((h3p == WEST_PATTERN1 || h3p == WEST_PATTERN4) &&
 							    World.GetLoc(x + 1, y + 2).Walkable())
@@ -866,7 +866,7 @@ public class MapGenerator
 									h1p = WEST_PATTERN1;
 								else if (h1p == WEST_PATTERN4)
 									h1p = WEST_PATTERN2;
-								hillId = HillRes.scan(h1p, HillRes.HIGH_HILL_PRIORITY, WEST_TOP_SPECIAL, false);
+								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, WEST_TOP_SPECIAL, false);
 								hill2 = location.HillId2();
 								location.RemoveHill();
 								location.SetHill(hillId);
@@ -877,8 +877,8 @@ public class MapGenerator
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.locate(h1p,
-									HillRes[hillId].sub_pattern_id,
+								hillId = HillRes.Locate(h1p,
+									HillRes[hillId].SubPatternId,
 									HillRes.LOW_HILL_PRIORITY, WEST_TOP_SPECIAL);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
@@ -910,7 +910,7 @@ public class MapGenerator
 									h3p = WEST_PATTERN1;
 								if (h3p == WEST_PATTERN3)
 									h3p = WEST_PATTERN2;
-								hillId = HillRes.scan(h3p, HillRes.HIGH_HILL_PRIORITY, WEST_BOTTOM_SPECIAL, false);
+								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, WEST_BOTTOM_SPECIAL, false);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -920,8 +920,8 @@ public class MapGenerator
 
 								// next row
 								loc2 = World.GetLoc(x, y + 4);
-								hillId = HillRes.locate(h3p,
-									HillRes[hillId].sub_pattern_id,
+								hillId = HillRes.Locate(h3p,
+									HillRes[hillId].SubPatternId,
 									HillRes.LOW_HILL_PRIORITY, WEST_BOTTOM_SPECIAL);
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -966,15 +966,15 @@ public class MapGenerator
 					    World.GetLoc(x, y + 2).HasHill() && World.GetLoc(x, y + 3).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
-						int h1p = h1.pattern_id;
+						int h1p = h1.PatternId;
 						HillBlockInfo h2 = HillRes[World.GetLoc(x, y + 2).HillId1()];
-						int h2p = h2.pattern_id;
+						int h2p = h2.PatternId;
 						HillBlockInfo h3 = HillRes[World.GetLoc(x, y + 3).HillId1()];
-						int h3p = h3.pattern_id;
-						if (h1.special_flag == 0 &&
-						    h1.priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsEastExitPattern(h1p) &&
-						    h2.priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsEastExitPattern(h2p) &&
-						    h3.priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsEastExitPattern(h3p))
+						int h3p = h3.PatternId;
+						if (h1.SpecialFlag == 0 &&
+						    h1.Priority == HillRes.HIGH_HILL_PRIORITY && h1p != 0 && IsEastExitPattern(h1p) &&
+						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsEastExitPattern(h2p) &&
+						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsEastExitPattern(h3p))
 						{
 							if ((h3p == EAST_PATTERN1 || h3p == EAST_PATTERN4) &&
 							    World.GetLoc(x - 1, y + 2).Walkable())
@@ -986,7 +986,7 @@ public class MapGenerator
 									h1p = EAST_PATTERN1;
 								else if (h1p == EAST_PATTERN4)
 									h1p = EAST_PATTERN2;
-								hillId = HillRes.scan(h1p, HillRes.HIGH_HILL_PRIORITY, EAST_TOP_SPECIAL, false);
+								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, EAST_TOP_SPECIAL, false);
 								hill2 = location.HillId2();
 								location.RemoveHill();
 								location.SetHill(hillId);
@@ -997,8 +997,8 @@ public class MapGenerator
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.locate(h1p,
-									HillRes[hillId].sub_pattern_id, HillRes.LOW_HILL_PRIORITY,
+								hillId = HillRes.Locate(h1p,
+									HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY,
 									EAST_TOP_SPECIAL);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
@@ -1030,7 +1030,7 @@ public class MapGenerator
 									h3p = EAST_PATTERN1;
 								if (h3p == EAST_PATTERN3)
 									h3p = EAST_PATTERN2;
-								hillId = HillRes.scan(h3p, HillRes.HIGH_HILL_PRIORITY, EAST_BOTTOM_SPECIAL, false);
+								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, EAST_BOTTOM_SPECIAL, false);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -1040,8 +1040,8 @@ public class MapGenerator
 
 								// next row
 								loc2 = World.GetLoc(x, y + 4);
-								hillId = HillRes.locate(h3p,
-									HillRes[hillId].sub_pattern_id, HillRes.LOW_HILL_PRIORITY,
+								hillId = HillRes.Locate(h3p,
+									HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY,
 									EAST_BOTTOM_SPECIAL);
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();

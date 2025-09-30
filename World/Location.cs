@@ -351,7 +351,7 @@ public class Location
 		{
 			// already has a hill block
 			// compare which is on the top, swap if necessary
-			if (HillRes[CargoId].priority <= HillRes[hillId].priority)
+			if (HillRes[CargoId].Priority <= HillRes[hillId].Priority)
 			{
 				_extraPara = CargoId;
 				CargoId = hillId;
