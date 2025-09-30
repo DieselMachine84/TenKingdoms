@@ -358,11 +358,11 @@ public class RockRes
             if (rockRec.terrain1 == 0 || rockRec.terrain1 == ' ')
                 rockInfo.terrain1 = 0;
             else
-                rockInfo.terrain1 = TerrainRes.terrain_code(rockRec.terrain1);
+                rockInfo.terrain1 = TerrainRes.TerrainCode(rockRec.terrain1);
             if (rockRec.terrain2 == 0 || rockRec.terrain2 == ' ')
                 rockInfo.terrain2 = 0;
             else
-                rockInfo.terrain2 = TerrainRes.terrain_code(rockRec.terrain2);
+                rockInfo.terrain2 = TerrainRes.TerrainCode(rockRec.terrain2);
             rockInfo.firstAnimId = Misc.ToInt32(rockRec.firstAnimRecno);
             if (rockInfo.firstAnimId != 0)
                 rockInfo.maxFrame = Misc.ToInt32(rockRec.maxFrame);

@@ -2147,7 +2147,7 @@ public class UnitMarine : Unit
 
 			Location location = World.GetLoc(checkXLoc, checkYLoc);
 
-			if (TerrainRes[location.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
+			if (TerrainRes[location.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
 			{
 				return true;
 			}

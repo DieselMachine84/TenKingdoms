@@ -814,7 +814,7 @@ public class World
 
 			Location loc = GetLoc(x, y);
 			bool buildFlag = true;
-			int teraType = TerrainRes[loc.TerrainId].average_type;
+			int teraType = TerrainRes[loc.TerrainId].AverageType;
 
 			// ------- all square around are the same terrain type and empty
 			for (int y1 = y - 1; y1 <= y + 1; y1++)
@@ -822,7 +822,7 @@ public class World
 				for (int x1 = x - 1; x1 <= x + 1; x1++)
 				{
 					loc = GetLoc(x1, y1);
-					if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].average_type != teraType)
+					if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].AverageType != teraType)
 						buildFlag = false;
 				}
 			}
@@ -866,7 +866,7 @@ public class World
 
 		int teraType;
 		if (newLoc != null && newLoc.CanAddPlant() &&
-		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].average_type) ||
+		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
 		     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
 		{
 			newLoc.SetPlant(plantInfo.first_bitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
@@ -1046,7 +1046,7 @@ public class World
 							int teraType;
 							PlantInfo plantInfo = PlantRes[basePlantId];
 							if (newLoc != null && newLoc.CanAddPlant() &&
-							    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].average_type) ||
+							    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
 							     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
 							{
 								newLoc.SetPlant(plantInfo.first_bitmap, GetRandomPlantInnerX(), GetRandomPlantInnerY());
@@ -1081,7 +1081,7 @@ public class World
 
 		Location loc = GetLoc(x, y);
 		bool buildFlag = true;
-		int teraType = TerrainRes[loc.TerrainId].average_type;
+		int teraType = TerrainRes[loc.TerrainId].AverageType;
 
 		// ------- all square around are the same terrain type and empty
 		for (int y1 = y - 1; y1 <= y + 1; ++y1)
@@ -1089,7 +1089,7 @@ public class World
 			for (int x1 = x - 1; x1 <= x + 1; ++x1)
 			{
 				loc = GetLoc(x1, y1);
-				if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].average_type != teraType)
+				if (!loc.CanAddPlant() || TerrainRes[loc.TerrainId].AverageType != teraType)
 					buildFlag = false;
 			}
 		}
@@ -1237,7 +1237,7 @@ public class World
 			}
 			else
 			{
-				switch (TerrainRes[location.TerrainId].average_type)
+				switch (TerrainRes[location.TerrainId].AverageType)
 				{
 					case TerrainTypeCode.TERRAIN_OCEAN:
 						location.SetFlammability(-100);

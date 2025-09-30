@@ -121,7 +121,7 @@ public class Location
 		}
 		else
 		{
-			if (TerrainRes[TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN)
+			if (TerrainRes[TerrainId].AverageType == TerrainTypeCode.TERRAIN_OCEAN)
 			{
 				_locFlag |= LOCATE_WALK_SEA;
 			}
@@ -200,7 +200,7 @@ public class Location
 	public bool IsPlateau()
 	{
 		//**BUGHERE, to be changed to TERRAIN_HILL when the no. of terrain type has been reduced to 4 from 7
-		return TerrainRes[TerrainId].average_type == TerrainTypeCode.TERRAIN_DARK_DIRT; 
+		return TerrainRes[TerrainId].AverageType == TerrainTypeCode.TERRAIN_DARK_DIRT; 
 	}
 
 	// ----------- site -------------//

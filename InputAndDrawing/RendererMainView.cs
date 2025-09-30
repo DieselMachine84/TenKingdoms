@@ -14,20 +14,22 @@ public partial class Renderer
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         
-        for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
+        for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
         {
-            for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
+            for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (!location.IsExplored())
                     continue;
 
-                //Draw terrain
-                //TODO terrain animation
                 int screenX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
                 int screenY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
                 TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
-                Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.bitmapWidth), Scale(terrainInfo.bitmapHeight));
+                Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+                //TODO terrain animation
+                //IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
+                //if (animatedTerrain != IntPtr.Zero)
+                    //Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
 
                 if (location.HasDirt())
                 {

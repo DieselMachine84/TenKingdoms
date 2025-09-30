@@ -50,7 +50,7 @@ public class MapGenerator
 		int[] heightFreq = new int[2];
 		int minLandCount = 0;
 		int maxLandCount = 0;
-		int initHeightLimit = TerrainRes.min_height(TerrainTypeCode.TERRAIN_DARK_GRASS);
+		int initHeightLimit = TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_GRASS);
 		switch (Config.land_mass)
 		{
 			case Config.OPTION_LOW:
@@ -124,14 +124,14 @@ public class MapGenerator
 
 		// ------------ shuffle sub-terrain level ---------//
 
-		heightMap.shuffle_level(TerrainRes.min_height(TerrainTypeCode.TERRAIN_OCEAN),
-			TerrainRes.max_height(TerrainTypeCode.TERRAIN_OCEAN), -3);
-		heightMap.shuffle_level(TerrainRes.min_height(TerrainTypeCode.TERRAIN_DARK_GRASS),
-			TerrainRes.max_height(TerrainTypeCode.TERRAIN_DARK_GRASS), 3);
-		heightMap.shuffle_level(TerrainRes.min_height(TerrainTypeCode.TERRAIN_LIGHT_GRASS),
-			TerrainRes.max_height(TerrainTypeCode.TERRAIN_LIGHT_GRASS), 3);
-		heightMap.shuffle_level(TerrainRes.min_height(TerrainTypeCode.TERRAIN_DARK_DIRT),
-			TerrainRes.max_height(TerrainTypeCode.TERRAIN_DARK_DIRT), 3);
+		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_OCEAN),
+			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_OCEAN), -3);
+		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_GRASS),
+			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_DARK_GRASS), 3);
+		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_LIGHT_GRASS),
+			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_LIGHT_GRASS), 3);
+		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_DIRT),
+			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_DARK_DIRT), 3);
 
 		SetTeraId(heightMap);
 
@@ -169,7 +169,7 @@ public class MapGenerator
 
 		// -------- compare the TerrainTypeCode of four adjacent square ------//
 		int subPtr = 0;
-		int center = TerrainRes.terrain_height(plasma.get_pix(x, y), out subPtr);
+		int center = TerrainRes.TerrainHeight(plasma.get_pix(x, y), out subPtr);
 		int same = 0;
 		int diff = 0;
 		int diffTerrain = -1;
@@ -180,7 +180,7 @@ public class MapGenerator
 		// ------- compare north square -------//
 		if (y > 0)
 		{
-			if (center == TerrainRes.terrain_height(plasma.get_pix(x, y - 1), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x, y - 1), out subPtr))
 			{
 				same++;
 				sameX = x;
@@ -193,13 +193,13 @@ public class MapGenerator
 				{
 					// new diffHeight
 					diffHeight = plasma.get_pix(x, y - 1);
-					diffTerrain = TerrainRes.terrain_height(diffHeight, out subPtr);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
 
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.terrain_height(plasma.get_pix(x, y - 1), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x, y - 1), out subPtr))
 						return;
 				}
 			}
@@ -208,7 +208,7 @@ public class MapGenerator
 		// ------- compare south square -------//
 		if (y < plasma.max_y)
 		{
-			if (center == TerrainRes.terrain_height(plasma.get_pix(x, y + 1), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out subPtr))
 			{
 				same++;
 				sameX = x;
@@ -221,12 +221,12 @@ public class MapGenerator
 				{
 					// new diffHeight
 					diffHeight = plasma.get_pix(x, y + 1);
-					diffTerrain = TerrainRes.terrain_height(diffHeight, out subPtr);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.terrain_height(plasma.get_pix(x, y + 1), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out subPtr))
 						return;
 				}
 			}
@@ -235,7 +235,7 @@ public class MapGenerator
 		// ------- compare west square -------//
 		if (x > 0)
 		{
-			if (center == TerrainRes.terrain_height(plasma.get_pix(x - 1, y), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x - 1, y), out subPtr))
 			{
 				same++;
 				sameX = x - 1;
@@ -248,12 +248,12 @@ public class MapGenerator
 				{
 					// new diffHeight
 					diffHeight = plasma.get_pix(x - 1, y);
-					diffTerrain = TerrainRes.terrain_height(diffHeight, out subPtr);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.terrain_height(plasma.get_pix(x - 1, y), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x - 1, y), out subPtr))
 						return;
 				}
 			}
@@ -262,7 +262,7 @@ public class MapGenerator
 		// ------- compare east square -------//
 		if (x < plasma.max_x)
 		{
-			if (center == TerrainRes.terrain_height(plasma.get_pix(x + 1, y), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out subPtr))
 			{
 				same++;
 				sameX = x + 1;
@@ -275,12 +275,12 @@ public class MapGenerator
 				{
 					// new diffHeight
 					diffHeight = plasma.get_pix(x + 1, y);
-					diffTerrain = TerrainRes.terrain_height(diffHeight, out subPtr);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.terrain_height(plasma.get_pix(x + 1, y), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out subPtr))
 						return;
 				}
 			}
@@ -307,12 +307,12 @@ public class MapGenerator
 			{
 				int nwType, neType, swType, seType;
 				int nwSubType, neSubType, swSubType, seSubType;
-				nwType = TerrainRes.terrain_height(plasma.get_pix(x, y), out nwSubType);
-				neType = TerrainRes.terrain_height(plasma.get_pix(x + 1, y), out neSubType);
-				swType = TerrainRes.terrain_height(plasma.get_pix(x, y + 1), out swSubType);
-				seType = TerrainRes.terrain_height(plasma.get_pix(x + 1, y + 1), out seSubType);
+				nwType = TerrainRes.TerrainHeight(plasma.get_pix(x, y), out nwSubType);
+				neType = TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out neSubType);
+				swType = TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out swSubType);
+				seType = TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y + 1), out seSubType);
 
-				if ((World.GetLoc(x, y).TerrainId = TerrainRes.scan(nwType, nwSubType,
+				if ((World.GetLoc(x, y).TerrainId = TerrainRes.Scan(nwType, nwSubType,
 					    neType, neSubType, swType, swSubType, seType, seSubType, 0, 1, 0)) == 0)
 				{
 					//err.run("Error World::set_tera_id, Cannot find terrain type %d:%d, %d:%d, %d:%d, %d:%d",
@@ -332,8 +332,7 @@ public class MapGenerator
 			for (int x = 0; x < GameConstants.MapSize; ++x)
 			{
 				int terrainId = World.GetLoc(x, y).TerrainId;
-				int SubFound = TerrainRes.search_pattern(TerrainRes[terrainId].pattern_id,
-					candSub, resultArraySize);
+				int SubFound = TerrainRes.SearchPattern(TerrainRes[terrainId].PatternId, candSub, resultArraySize);
 				for (int i = 0; i < SubFound; ++i)
 				{
 					int tx = x, ty = y;
@@ -341,18 +340,18 @@ public class MapGenerator
 					TerrainSubInfo terrainSubInfo = candSub[i];
 
 					// ----- test if a substitution matches
-					for (terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.next_step)
+					for (terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.NextStep)
 					{
 						if (tx < 0 || tx >= GameConstants.MapSize || ty < 0 || ty >= GameConstants.MapSize ||
-						    TerrainRes[World.GetLoc(tx, ty).TerrainId].pattern_id !=
-						    terrainSubInfo.old_pattern_id)
+						    TerrainRes[World.GetLoc(tx, ty).TerrainId].PatternId !=
+						    terrainSubInfo.OldPatternId)
 						{
 							flag = false;
 							break;
 						}
 
 						// ----- update tx, ty according to post_move -----//
-						switch (terrainSubInfo.post_move)
+						switch (terrainSubInfo.PostMove)
 						{
 							case 1:
 								ty--;
@@ -392,12 +391,12 @@ public class MapGenerator
 						ty = y;
 						for (terrainSubInfo = candSub[i];
 						     terrainSubInfo != null;
-						     terrainSubInfo = terrainSubInfo.next_step)
+						     terrainSubInfo = terrainSubInfo.NextStep)
 						{
 							TerrainInfo oldTerrain = TerrainRes[World.GetLoc(tx, ty).TerrainId];
-							int terrain_id = TerrainRes.scan(oldTerrain.average_type,
-								oldTerrain.secondary_type + terrainSubInfo.sec_adj,
-								terrainSubInfo.new_pattern_id, 0, 1, 0);
+							int terrain_id = TerrainRes.Scan(oldTerrain.AverageType,
+								oldTerrain.SecondaryType + terrainSubInfo.SecAdj,
+								terrainSubInfo.NewPatternId, 0, 1, 0);
 							World.GetLoc(tx, ty).TerrainId = terrain_id;
 							if (terrain_id == 0)
 							{
@@ -405,7 +404,7 @@ public class MapGenerator
 							}
 
 							// ----- update tx, ty according to post_move -----//
-							switch (terrainSubInfo.post_move)
+							switch (terrainSubInfo.PostMove)
 							{
 								case 1:
 									ty--;
@@ -474,10 +473,10 @@ public class MapGenerator
 					location.ExploredOff();
 
 				TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
-				if (terrainInfo.is_coast())
+				if (terrainInfo.IsCoast())
 				{
 					location.SetCoast();
-					if (terrainInfo.average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					if (terrainInfo.AverageType != TerrainTypeCode.TERRAIN_OCEAN)
 						location.SetPowerOff();
 					else
 						SetSurroundPowerOff(locX, locY);
@@ -519,14 +518,14 @@ public class MapGenerator
 				Location location = World.GetLoc(x, y);
 				aboveLoc = y > 0 ? World.GetLoc(x, y - 1) : null;
 				terrainInfo = TerrainRes[location.TerrainId];
-				priTerrain = terrainInfo.average_type;
-				secTerrain = terrainInfo.secondary_type;
+				priTerrain = terrainInfo.AverageType;
+				secTerrain = terrainInfo.SecondaryType;
 				highTerrain = (priTerrain >= secTerrain ? priTerrain : secTerrain);
 				lowTerrain = (priTerrain >= secTerrain ? secTerrain : priTerrain);
 				if (highTerrain >= terrainType)
 				{
 					// BUGHERE : ignore special or extra flag
-					patternId = terrainInfo.pattern_id;
+					patternId = terrainInfo.PatternId;
 					if (lowTerrain >= terrainType)
 					{
 						// move this terrain one square north
@@ -537,7 +536,7 @@ public class MapGenerator
 							// if y is max_y_loc-1, aboveLoc and locPtr looks the same
 							// BUGHERE : repeat the same pattern below is a bug if patternId is not 0,9,10,13,14
 							if (y == GameConstants.MapSize - 1)
-								location.TerrainId = TerrainRes.scan(priTerrain, secTerrain, patternId);
+								location.TerrainId = TerrainRes.Scan(priTerrain, secTerrain, patternId);
 						}
 					}
 					else
@@ -562,7 +561,7 @@ public class MapGenerator
 						}
 
 						// set terrain type to pure teraType-1
-						location.TerrainId = TerrainRes.scan(lowTerrain, lowTerrain, 0);
+						location.TerrainId = TerrainRes.Scan(lowTerrain, lowTerrain, 0);
 					}
 				}
 			}
@@ -628,7 +627,7 @@ public class MapGenerator
 								location.SetHill(hillId);
 								location.SetPowerOff();
 								SetSurroundPowerOff(x, y);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									location.TerrainId = terrainId;
 
 								// next row
@@ -646,7 +645,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 1);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1,
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1,
 									    0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -656,7 +655,7 @@ public class MapGenerator
 								loc2.ResetWalkable();
 								//if((terrainId = terrain_res.scan(terrainType, terrainType,
 								//	0, 0, 1, 0)) != 0 )
-								if ((terrainId = TerrainRes.scan(terrainType, (int)SubTerrainMask.BOTTOM_MASK,
+								if ((terrainId = TerrainRes.Scan(terrainType, (int)SubTerrainMask.BOTTOM_MASK,
 									    terrainType,
 									    (int)SubTerrainMask.BOTTOM_MASK, terrainType, (int)SubTerrainMask.BOTTOM_MASK,
 									    terrainType, (int)SubTerrainMask.BOTTOM_MASK)) != 0)
@@ -666,7 +665,7 @@ public class MapGenerator
 								loc2 = World.GetLoc(x + 1, y + 1);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								if ((terrainId = TerrainRes.scan(terrainType, terrainType - 1,
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1,
 									    SOUTH_PATTERN2, 0, 1, SOUTH_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -688,7 +687,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x + 2, y);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1,
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1,
 									    0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -707,7 +706,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x + 2, y + 1);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								lastExit = MIN_EXIT_SEPARATION;
@@ -774,7 +773,7 @@ public class MapGenerator
 								location.SetHill(hillId);
 								location.SetPowerOff();
 								SetSurroundPowerOff(x, y);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									location.TerrainId = terrainId;
 
 								// second square
@@ -784,7 +783,7 @@ public class MapGenerator
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
 								//	0, 0, 1, NORTH_CENTRE_SPECIAL)) != 0 )
 								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.scan(terrainType, terrainType - 1, NORTH_PATTERN2, 0, 1,
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, NORTH_PATTERN2, 0, 1,
 									    NORTH_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -805,7 +804,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x + 2, y);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								lastExit = MIN_EXIT_SEPARATION;
@@ -885,7 +884,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 1);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// third row
@@ -895,7 +894,7 @@ public class MapGenerator
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
 								//	0, 0, 1, WEST_CENTRE_SPECIAL)) != 0 )
 								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.scan(terrainType, terrainType - 1, WEST_PATTERN2, 0, 1,
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, WEST_PATTERN2, 0, 1,
 									    WEST_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -916,7 +915,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 3);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next row
@@ -927,7 +926,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 4);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 								lastExit = MIN_EXIT_SEPARATION;
 							}
@@ -1005,7 +1004,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 1);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// third row
@@ -1015,7 +1014,7 @@ public class MapGenerator
 								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
 								//	0, 0, 1, EAST_CENTRE_SPECIAL)) != 0 )
 								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.scan(terrainType, terrainType - 1, EAST_PATTERN2,
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, EAST_PATTERN2,
 									    0, 1, EAST_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -1036,7 +1035,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 3);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next row
@@ -1047,7 +1046,7 @@ public class MapGenerator
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 4);
-								if ((terrainId = TerrainRes.scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 								lastExit = MIN_EXIT_SEPARATION;
 							}
@@ -1205,16 +1204,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddDirt(rockId, x, y);
 
@@ -1231,16 +1230,16 @@ public class MapGenerator
 							{
 								int rock2Id = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.GetLoc(sx, sy).TerrainId].average_type);
+									TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
 								if (rock2Id == 0)
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
 								sx2 = sx + rock2Info.locWidth - 1;
 								sy2 = sy + rock2Info.locHeight - 1;
-								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].average_type))
+								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].AverageType) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].AverageType) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].AverageType))
 								{
 									AddDirt(rock2Id, sx, sy);
 								}
@@ -1264,16 +1263,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
 						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddDirt(rockId, x, y);
 						nLarge--;
@@ -1293,16 +1292,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddDirt(rockId, x, y);
 						nSmall--;
@@ -1373,16 +1372,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", 1, LARGE_ROCK_SIZE,
 						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddRock(rockId, x, y);
 
@@ -1399,16 +1398,16 @@ public class MapGenerator
 							{
 								int rock2Id = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.GetLoc(sx, sy).TerrainId].average_type);
+									TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
 								if (rock2Id == 0)
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
 								sx2 = sx + rock2Info.locWidth - 1;
 								sy2 = sy + rock2Info.locHeight - 1;
-								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].average_type) &&
-								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].average_type))
+								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].AverageType) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].AverageType) &&
+								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].AverageType))
 								{
 									AddRock(rock2Id, sx, sy);
 								}
@@ -1432,16 +1431,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
 						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddRock(rockId, x, y);
 						nLarge--;
@@ -1461,16 +1460,16 @@ public class MapGenerator
 				{
 					int rockId = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
 						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].average_type);
+						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 					x2 = x + rockInfo.locWidth - 1;
 					y2 = y + rockInfo.locHeight - 1;
-					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].average_type) &&
-					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].average_type))
+					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
+					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
 					{
 						AddRock(rockId, x, y);
 						nSmall--;

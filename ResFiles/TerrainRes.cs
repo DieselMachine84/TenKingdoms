@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TenKingdoms;
@@ -32,9 +33,9 @@ public enum TerrainFlag
 
 public class TerrainType
 {
-    public int first_terrain_id;
-    public int last_terrain_id;
-    public int min_height;
+    public int FirstTerrainId { get; set; }
+    public int LastTerrainId { get; set; }
+    public int MinHeight { get; set; }
 }
 
 public class TerrainRec
@@ -95,50 +96,69 @@ public class TerrainRec
 
 public class TerrainInfo
 {
-    public int nw_type, nw_subtype;
-    public int ne_type, ne_subtype;
-    public int sw_type, sw_subtype;
-    public int se_type, se_subtype;
+    public int NWType { get; set; }
+    public int NWSubType { get; set; }
+    public int NEType { get; set; }
+    public int NESubType { get; set; }
+    public int SWType { get; set; }
+    public int SWSubType { get; set; }
+    public int SEType { get; set; }
+    public int SESubType { get; set; }
 
-    public int average_type;
-    public byte extra_flag;
-    public byte special_flag;
-    public int secondary_type;
-    public byte pattern_id;
+    public int AverageType { get; set; }
+    public byte ExtraFlag { get; set; }
+    public byte SpecialFlag { get; set; }
+    public int SecondaryType { get; set; }
+    public byte PatternId { get; set; }
 
-    public int alternative_count_with_extra; // no. of alternative bitmaps of this terrain
-    public int alternative_count_without_extra; // no. of alternative bitmaps of this terrain
-    public TerrainFlag flags;
+    public int AlternativeCountWithExtra { get; set; } // no. of alternative bitmaps of this terrain
+    public int AlternativeCountWithoutExtra { get; set; } // no. of alternative bitmaps of this terrain
+    public TerrainFlag Flags { get; set; }
 
-    public byte[] bitmap;
-    public int bitmapWidth;
-    public int bitmapHeight;
+    public byte[] Bitmap { get; set; }
+    public int BitmapWidth { get; set; }
+    public int BitmapHeight  { get; set; }
     private IntPtr _texture;
-    public int anim_frames;
-    public byte[][] anim_bitmap_ptr;
+    public int AnimationFrames  { get; set; }
+    public byte[][] AnimationBitmaps  { get; set; }
+    private readonly List<IntPtr> _animationTextures = new List<nint>();
 
     public IntPtr GetTexture(Graphics graphics)
     {
 	    if (_texture == default)
-		    _texture = graphics.CreateTextureFromBmp(bitmap, bitmapWidth, bitmapHeight);
+		    _texture = graphics.CreateTextureFromBmp(Bitmap, BitmapWidth, BitmapHeight);
 
 	    return _texture;
     }
 
-    public byte[] get_bitmap(int frameNo)
+    public IntPtr GetAnimationTexture(Graphics graphics, long frameNumber)
     {
-        return (frameNo > 0 && anim_frames > 0) ? anim_bitmap_ptr[frameNo % anim_frames] : null;
+	    if (AnimationFrames == 0)
+		    return IntPtr.Zero;
+	    
+	    if (_animationTextures.Count == 0)
+	    {
+		    for (int i = 0; i < AnimationFrames; i++)
+		    {
+			    int width = BitConverter.ToInt16(AnimationBitmaps[i], 0);
+			    int height = BitConverter.ToInt16(AnimationBitmaps[i], 2);
+			    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(AnimationBitmaps[i].Skip(4).ToArray(), width, height);
+			    _animationTextures.Add(graphics.CreateTextureFromBmp(decompressedBitmap, width, height));
+		    }
+	    }
+
+	    return _animationTextures[(int)(frameNumber % AnimationFrames)];
     }
 
-    public bool is_coast()
+    public bool IsCoast()
     {
-	    return average_type == TerrainTypeCode.TERRAIN_OCEAN && secondary_type > TerrainTypeCode.TERRAIN_OCEAN ||
-	           average_type > TerrainTypeCode.TERRAIN_OCEAN && secondary_type == TerrainTypeCode.TERRAIN_OCEAN;
+	    return AverageType == TerrainTypeCode.TERRAIN_OCEAN && SecondaryType > TerrainTypeCode.TERRAIN_OCEAN ||
+	           AverageType > TerrainTypeCode.TERRAIN_OCEAN && SecondaryType == TerrainTypeCode.TERRAIN_OCEAN;
     }
 
-    public bool can_snow()
+    public bool CanSnow()
     {
-        return (flags & TerrainFlag.TERRAIN_FLAG_SNOW) != TerrainFlag.TERRAIN_FLAG_NONE;
+        return (Flags & TerrainFlag.TERRAIN_FLAG_SNOW) != TerrainFlag.TERRAIN_FLAG_NONE;
     }
 }
 
@@ -182,13 +202,13 @@ public class TerrainSubRec
 
 public class TerrainSubInfo
 {
-    public int sub_no;
-    public int step_id;
-    public byte old_pattern_id;
-    public byte new_pattern_id;
-    public sbyte sec_adj;
-    public sbyte post_move;
-    public TerrainSubInfo next_step;
+    public int SubNo { get; set; }
+    public int StepId { get; set; }
+    public byte OldPatternId { get; set; }
+    public byte NewPatternId { get; set; }
+    public sbyte SecAdj { get; set; }
+    public sbyte PostMove { get; set; }
+    public TerrainSubInfo NextStep { get; set; }
 }
 
 public class TerrainAnimRec
@@ -236,28 +256,27 @@ public class TerrainRes
 	public const int TERRAIN_TILE_Y_MASK = 63;
 	public const int MAX_TERRAIN_ANIM_FRAME = 16;
 
-	public int terrain_count;
-	public TerrainInfo[] terrain_info_array;
-	public char[] file_name_array;
+	private int TerrainCount { get; set; }
+	private TerrainInfo[] TerrainInfos { get; set; }
+	private char[] FileNames { get; set; }
 
-	public TerrainType[] terrain_type_array = new TerrainType[TOTAL_TERRAIN_TYPE];
-	public int[] nw_type_min = new int[TOTAL_TERRAIN_TYPE];
-	public int[] nw_type_max = new int[TOTAL_TERRAIN_TYPE];
+	private TerrainType[] TerrainTypes { get; set; } = new TerrainType[TOTAL_TERRAIN_TYPE];
+	private int[] NWTypeMin { get; set; } = new int[TOTAL_TERRAIN_TYPE];
+	private int[] NWTypeMax { get; set; } = new int[TOTAL_TERRAIN_TYPE];
 
 	//----- field related to terrain pattern substitution -----//
-	public int ter_sub_rec_count;
-	public int ter_sub_index_count;
-	public TerrainSubInfo[] ter_sub_array;
-	public TerrainSubInfo[] ter_sub_index;
+	private int TerrainSubRecCount { get; set; }
+	private int TerrainSubIndexCount { get; set; }
+	private TerrainSubInfo[] TerrainSubRecs { get; set; }
+	private TerrainSubInfo[] TerrainSubIndexes { get; set; }
 
-	private static int[] terrain_type_color_array = new int[TOTAL_TERRAIN_TYPE] { 0x20, 0x0A, 0x0D, 0x2D };
+	private static int[] TerrainTypeColors { get; set; } = new int[TOTAL_TERRAIN_TYPE] { 0x20, 0x0A, 0x0D, 0x2D };
 
-	private static string[] map_tile_name_array = new string[TOTAL_TERRAIN_TYPE]
-		{ "TERA_S", "TERA_DG", "TERA_LG", "TERA_D" };
+	private static string[] MapTileNames { get; set; } = new string[TOTAL_TERRAIN_TYPE] { "TERA_S", "TERA_DG", "TERA_LG", "TERA_D" };
 
-	private static byte[][] map_tile_ptr_array = new byte[TOTAL_TERRAIN_TYPE][];
+	private static byte[][] MapTileBitmaps { get; set; } = new byte[TOTAL_TERRAIN_TYPE][];
 
-	private static int[,] terrain_type_min_height_array = new int[TOTAL_TERRAIN_TYPE, 3]
+	private static int[,] TerrainTypeMinHeights { get; set; } = new int[TOTAL_TERRAIN_TYPE, 3]
 	{
 		{ 0, 20, 40 }, // S-, S0, S+
 		{ 60, 80, 110 }, // G-, G0, G+
@@ -265,212 +284,184 @@ public class TerrainRes
 		{ 200, 215, 240 }, // D-, D0, D+
 	};
 
-	public ResourceDb res_bitmap;
-	public ResourceDb anm_bitmap;
-
 	public TerrainRes()
 	{
-		res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERN{Sys.Instance.Config.terrain_set}.RES");
-
 		LoadInfo();
 		LoadSubInfo();
+		LoadAnimationInfo();
 
-		anm_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERA{Sys.Instance.Config.terrain_set}.RES");
-
-		LoadAnimInfo();
-
-		//-------- init map_tile_ptr_array --------//
-		ResourceIdx image_tpict = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.terrain_set}.RES");
+		ResourceIdx mapTiles = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.terrain_set}.RES");
 		for (int i = 0; i < TOTAL_TERRAIN_TYPE; i++)
 		{
-			if (!String.IsNullOrEmpty(map_tile_name_array[i]))
+			if (!String.IsNullOrEmpty(MapTileNames[i]))
 			{
-				map_tile_ptr_array[i] = image_tpict.Read(map_tile_name_array[i]).Skip(4).ToArray();
+				MapTileBitmaps[i] = mapTiles.Read(MapTileNames[i]).Skip(4).ToArray();
 			}
 		}
 
-		//-------- init terrain_type_array ---------//
-
 		for (int i = 1; i <= TOTAL_TERRAIN_TYPE; i++)
 		{
-			terrain_type_array[i - 1] = new TerrainType();
+			TerrainTypes[i - 1] = new TerrainType();
 			// scan for terrain of all four types. 1-take the first instance of the terrain bitmap that matches the given terrain types
-			int terrainId = scan(i, (int)SubTerrainMask.ALL_MASK, i, (int)SubTerrainMask.ALL_MASK,
+			int terrainId = Scan(i, (int)SubTerrainMask.ALL_MASK, i, (int)SubTerrainMask.ALL_MASK,
 				i, (int)SubTerrainMask.ALL_MASK, i, (int)SubTerrainMask.ALL_MASK, 1);
 
 			if (terrainId != 0)
 			{
-				terrain_type_array[i - 1].first_terrain_id = terrainId;
-				terrain_type_array[i - 1].last_terrain_id =
-					terrainId + this[terrainId].alternative_count_with_extra;
-				terrain_type_array[i - 1].min_height = terrain_type_min_height_array[i - 1, 0];
+				TerrainTypes[i - 1].FirstTerrainId = terrainId;
+				TerrainTypes[i - 1].LastTerrainId = terrainId + this[terrainId].AlternativeCountWithExtra;
+				TerrainTypes[i - 1].MinHeight = TerrainTypeMinHeights[i - 1, 0];
 			}
 			else
 			{
 				// BUGHERE: should not reach this point after all terrain type are complete
-				terrain_type_array[i - 1].first_terrain_id = 0;
-				terrain_type_array[i - 1].last_terrain_id = 0;
-				terrain_type_array[i - 1].min_height = terrain_type_min_height_array[i - 1, 0];
+				TerrainTypes[i - 1].FirstTerrainId = 0;
+				TerrainTypes[i - 1].LastTerrainId = 0;
+				TerrainTypes[i - 1].MinHeight = TerrainTypeMinHeights[i - 1, 0];
 			}
 		}
 	}
 	
-	public TerrainInfo this[int terrainId] => terrain_info_array[terrainId - 1];
+	public TerrainInfo this[int terrainId] => TerrainInfos[terrainId - 1];
 
 	private void LoadInfo()
 	{
 		TerrainInfo terrainInfo = null;
 		int i = 0;
 
-		//---- read in terrain count and initialize terrain info array ----//
+		Database dbTerrain = new Database($"{Sys.GameDataFolder}/Resource/TERRAIN{Sys.Instance.Config.terrain_set}.RES");
+		TerrainCount = dbTerrain.RecordCount;
+		TerrainInfos = new TerrainInfo[TerrainCount];
+		for (i = 0; i < TerrainInfos.Length; i++)
+			TerrainInfos[i] = new TerrainInfo();
 
-		string terrainDbName = $"{Sys.GameDataFolder}/Resource/TERRAIN{Sys.Instance.Config.terrain_set}.RES";
-		Database dbTerrain = new Database(terrainDbName);
+		FileNames = new char[TerrainRec.FILE_NAME_LEN * TerrainCount];
 
-		terrain_count = dbTerrain.RecordCount;
-		terrain_info_array = new TerrainInfo[terrain_count];
-		for (i = 0; i < terrain_info_array.Length; i++)
-			terrain_info_array[i] = new TerrainInfo();
-
-		file_name_array = new char[TerrainRec.FILE_NAME_LEN * terrain_count];
-
-		// ------ initial nw_type_index -------//
 		for (i = 0; i < TOTAL_TERRAIN_TYPE; ++i)
 		{
-			nw_type_min[i] = 0;
-			nw_type_max[i] = 0;
+			NWTypeMin[i] = 0;
+			NWTypeMax[i] = 0;
 		}
 
-		//---------- read in TERRAIN.DBF ---------//
+		ResourceDb terrainBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERN{Sys.Instance.Config.terrain_set}.RES");
 
 		int firstNw = 0, firstNe = 0, firstSw = 0, firstSe = 0;
-		int firstNwSub = 0, firstNeSub = 0, firstSwSub = 0, firstSeSub = 0, firstSpFlag = 0;
+		int firstNwSub = 0, firstNeSub = 0, firstSwSub = 0, firstSeSub = 0;
+		int firstSpFlag = 0;
 		int firstId = 0;
 
-		for (i = 0; i < terrain_count; i++)
+		for (i = 0; i < TerrainCount; i++)
 		{
 			TerrainRec terrainRec = new TerrainRec(dbTerrain, i + 1);
-			terrainInfo = terrain_info_array[i];
+			terrainInfo = TerrainInfos[i];
 
 			for (int j = 0; j < TerrainRec.FILE_NAME_LEN; j++)
 			{
-				file_name_array[i * TerrainRec.FILE_NAME_LEN + j] = terrainRec.file_name[j];
+				FileNames[i * TerrainRec.FILE_NAME_LEN + j] = terrainRec.file_name[j];
 			}
 
-			terrainInfo.nw_type = terrain_code(terrainRec.nw_type_code[0]);
-			terrainInfo.nw_subtype = (int)terrain_mask(terrainRec.nw_type_code[1]);
-			terrainInfo.ne_type = terrain_code(terrainRec.ne_type_code[0]);
-			terrainInfo.ne_subtype = (int)terrain_mask(terrainRec.ne_type_code[1]);
-			terrainInfo.sw_type = terrain_code(terrainRec.sw_type_code[0]);
-			terrainInfo.sw_subtype = (int)terrain_mask(terrainRec.sw_type_code[1]);
-			terrainInfo.se_type = terrain_code(terrainRec.se_type_code[0]);
-			terrainInfo.se_subtype = (int)terrain_mask(terrainRec.se_type_code[1]);
+			terrainInfo.NWType = TerrainCode(terrainRec.nw_type_code[0]);
+			terrainInfo.NWSubType = (int)TerrainMask(terrainRec.nw_type_code[1]);
+			terrainInfo.NEType = TerrainCode(terrainRec.ne_type_code[0]);
+			terrainInfo.NESubType = (int)TerrainMask(terrainRec.ne_type_code[1]);
+			terrainInfo.SWType = TerrainCode(terrainRec.sw_type_code[0]);
+			terrainInfo.SWSubType = (int)TerrainMask(terrainRec.sw_type_code[1]);
+			terrainInfo.SEType = TerrainCode(terrainRec.se_type_code[0]);
+			terrainInfo.SESubType = (int)TerrainMask(terrainRec.se_type_code[1]);
 
-			terrainInfo.average_type = terrain_code(terrainRec.represent_type);
+			terrainInfo.AverageType = TerrainCode(terrainRec.represent_type);
 			char extraFlagChar = Convert.ToChar(terrainRec.extra_flag);
 			if (terrainRec.extra_flag == 0 || extraFlagChar == ' ' || extraFlagChar == 'N' || extraFlagChar == 'n')
-				terrainInfo.extra_flag = 0;
+				terrainInfo.ExtraFlag = 0;
 			else
-				terrainInfo.extra_flag = 1;
-			terrainInfo.special_flag = Convert.ToChar(terrainRec.special_flag) == ' ' ? (byte)0 : terrainRec.special_flag;
-
-			terrainInfo.secondary_type = terrain_code(terrainRec.secondary_type);
-			terrainInfo.pattern_id = Convert.ToByte(new string(terrainRec.pattern_id));
+				terrainInfo.ExtraFlag = 1;
+			terrainInfo.SpecialFlag = Convert.ToChar(terrainRec.special_flag) == ' ' ? (byte)0 : terrainRec.special_flag;
+			terrainInfo.SecondaryType = TerrainCode(terrainRec.secondary_type);
+			terrainInfo.PatternId = Convert.ToByte(Misc.ToString(terrainRec.pattern_id));
 
 			//------ set alternative_count ---------//
 
-			if (firstNw == terrainInfo.nw_type && firstNwSub == terrainInfo.nw_subtype &&
-			    firstNe == terrainInfo.ne_type && firstNeSub == terrainInfo.ne_subtype &&
-			    firstSw == terrainInfo.sw_type && firstSwSub == terrainInfo.sw_subtype &&
-			    firstSe == terrainInfo.se_type && firstSeSub == terrainInfo.se_subtype &&
-			    firstSpFlag == terrainInfo.special_flag)
+			if (firstNw == terrainInfo.NWType && firstNwSub == terrainInfo.NWSubType &&
+			    firstNe == terrainInfo.NEType && firstNeSub == terrainInfo.NESubType &&
+			    firstSw == terrainInfo.SWType && firstSwSub == terrainInfo.SWSubType &&
+			    firstSe == terrainInfo.SEType && firstSeSub == terrainInfo.SESubType &&
+			    firstSpFlag == terrainInfo.SpecialFlag)
 			{
-				terrain_info_array[firstId - 1].alternative_count_with_extra++;
+				TerrainInfos[firstId - 1].AlternativeCountWithExtra++;
 
-				if (terrainInfo.extra_flag == 0)
-					terrain_info_array[firstId - 1].alternative_count_without_extra++;
+				if (terrainInfo.ExtraFlag == 0)
+					TerrainInfos[firstId - 1].AlternativeCountWithoutExtra++;
 
 				// ----- record firstId - terrain_id -------//
-				terrainInfo.alternative_count_with_extra = firstId - 1 - i;
-				terrainInfo.alternative_count_without_extra = firstId - 1 - i;
+				terrainInfo.AlternativeCountWithExtra = firstId - 1 - i;
+				terrainInfo.AlternativeCountWithoutExtra = firstId - 1 - i;
 			}
 			else
 			{
 				// build index on nw_type
-				if (firstNw != terrainInfo.nw_type)
+				if (firstNw != terrainInfo.NWType)
 				{
-					// --------- mark end of previous nw_type group ---------//
+					// --------- mark end of previous NWType group ---------//
 					if (firstNw > 0)
-						nw_type_max[firstNw - 1] = i;
+						NWTypeMax[firstNw - 1] = i;
 
-					// --------- mark start of new nw_type group -----------//
-					nw_type_min[terrainInfo.nw_type - 1] = i + 1;
+					// --------- mark start of new NWType group -----------//
+					NWTypeMin[terrainInfo.NWType - 1] = i + 1;
 				}
 
-				firstNw = terrainInfo.nw_type;
-				firstNe = terrainInfo.ne_type;
-				firstSw = terrainInfo.sw_type;
-				firstSe = terrainInfo.se_type;
-				firstNwSub = terrainInfo.nw_subtype;
-				firstNeSub = terrainInfo.ne_subtype;
-				firstSwSub = terrainInfo.sw_subtype;
-				firstSeSub = terrainInfo.se_subtype;
-				firstSpFlag = terrainInfo.special_flag;
+				firstNw = terrainInfo.NWType;
+				firstNe = terrainInfo.NEType;
+				firstSw = terrainInfo.SWType;
+				firstSe = terrainInfo.SEType;
+				firstNwSub = terrainInfo.NWSubType;
+				firstNeSub = terrainInfo.NESubType;
+				firstSwSub = terrainInfo.SWSubType;
+				firstSeSub = terrainInfo.SESubType;
+				firstSpFlag = terrainInfo.SpecialFlag;
 				firstId = i + 1;
 			}
 
-			//---- get the bitmap pointer of the terrain icon in res_icon ----//
-
 			int bitmapOffset = BitConverter.ToInt32(terrainRec.bitmap_ptr, 0);
-			terrainInfo.bitmap = res_bitmap.Read(bitmapOffset);
-			terrainInfo.bitmapWidth = BitConverter.ToInt16(terrainInfo.bitmap, 0);
-			terrainInfo.bitmapHeight = BitConverter.ToInt16(terrainInfo.bitmap, 2);
-			terrainInfo.bitmap = terrainInfo.bitmap.Skip(4).ToArray();
+			terrainInfo.Bitmap = terrainBitmaps.Read(bitmapOffset);
+			terrainInfo.BitmapWidth = BitConverter.ToInt16(terrainInfo.Bitmap, 0);
+			terrainInfo.BitmapHeight = BitConverter.ToInt16(terrainInfo.Bitmap, 2);
+			terrainInfo.Bitmap = terrainInfo.Bitmap.Skip(4).ToArray();
 
-			terrainInfo.anim_frames = 0;
-			terrainInfo.anim_bitmap_ptr = null;
-
-			terrainInfo.flags = TerrainFlag.TERRAIN_FLAG_NONE;
-			if (terrainInfo.average_type != TerrainTypeCode.TERRAIN_OCEAN &&
-			    terrainInfo.secondary_type != TerrainTypeCode.TERRAIN_OCEAN)
+			terrainInfo.Flags = TerrainFlag.TERRAIN_FLAG_NONE;
+			if (terrainInfo.AverageType != TerrainTypeCode.TERRAIN_OCEAN && terrainInfo.SecondaryType != TerrainTypeCode.TERRAIN_OCEAN)
 			{
-				terrainInfo.flags |= TerrainFlag.TERRAIN_FLAG_SNOW;
+				terrainInfo.Flags |= TerrainFlag.TERRAIN_FLAG_SNOW;
 			}
-
 		}
 
-		// ------- mark end of last nw_type group -------//
-		if (terrainInfo != null && terrainInfo.nw_type > 0)
-			nw_type_max[terrainInfo.nw_type - 1] = i;
+		// ------- mark end of last NWType group -------//
+		if (terrainInfo != null && terrainInfo.NWType > 0)
+			NWTypeMax[terrainInfo.NWType - 1] = i;
 	}
 
 	private void LoadSubInfo()
 	{
-		//---- read in terrain count and initialize terrain info array ----//
-
 		Database dbTerrain = new Database($"{Sys.GameDataFolder}/Resource/TERSUB.RES");
+		TerrainSubRecCount = dbTerrain.RecordCount;
+		TerrainSubRecs = new TerrainSubInfo[TerrainSubRecCount];
+		for (int i = 0; i < TerrainSubRecs.Length; i++)
+			TerrainSubRecs[i] = new TerrainSubInfo();
 
-		ter_sub_rec_count = dbTerrain.RecordCount;
-		ter_sub_array = new TerrainSubInfo[ter_sub_rec_count];
-		for (int i = 0; i < ter_sub_array.Length; i++)
-			ter_sub_array[i] = new TerrainSubInfo();
-
-		//---------- read in TERSUB.DBF ---------//
 		int maxSubNo = 0;
 
-		for (int i = 0; i < ter_sub_rec_count; i++)
+		for (int i = 0; i < TerrainSubRecCount; i++)
 		{
 			TerrainSubRec terrainSubRec = new TerrainSubRec(dbTerrain, i + 1);
-			TerrainSubInfo terrainSubInfo = ter_sub_array[i];
+			TerrainSubInfo terrainSubInfo = TerrainSubRecs[i];
 
-			terrainSubInfo.sub_no = Convert.ToInt16(new string(terrainSubRec.sub_no));
-			terrainSubInfo.step_id = Convert.ToInt16(new string(terrainSubRec.step_id));
-			terrainSubInfo.old_pattern_id = Convert.ToByte(new string(terrainSubRec.old_pattern_id));
-			terrainSubInfo.new_pattern_id = Convert.ToByte(new string(terrainSubRec.new_pattern_id));
+			terrainSubInfo.SubNo = Convert.ToInt16(Misc.ToString(terrainSubRec.sub_no));
+			terrainSubInfo.StepId = Convert.ToInt16(Misc.ToString(terrainSubRec.step_id));
+			terrainSubInfo.OldPatternId = Convert.ToByte(Misc.ToString(terrainSubRec.old_pattern_id));
+			terrainSubInfo.NewPatternId = Convert.ToByte(Misc.ToString(terrainSubRec.new_pattern_id));
 
-			// sec_adj is useful when a pure type is changing to boundary type.
-			// eg. a GG square can be changed to SG or GS sqare
-			terrainSubInfo.sec_adj = Convert.ToSByte(new string(terrainSubRec.sec_adj));
+			// SecAdj is useful when a pure type is changing to boundary type.
+			// eg. a GG square can be changed to SG or GS square
+			terrainSubInfo.SecAdj = Convert.ToSByte(Misc.ToString(terrainSubRec.sec_adj));
 
 			switch (terrainSubRec.post_move[0])
 			{
@@ -478,13 +469,13 @@ public class TerrainRes
 					switch (terrainSubRec.post_move[1])
 					{
 						case 'E':
-							terrainSubInfo.post_move = 2;
+							terrainSubInfo.PostMove = 2;
 							break;
 						case 'W':
-							terrainSubInfo.post_move = 8;
+							terrainSubInfo.PostMove = 8;
 							break;
 						default:
-							terrainSubInfo.post_move = 1;
+							terrainSubInfo.PostMove = 1;
 							break;
 					}
 					break;
@@ -492,63 +483,61 @@ public class TerrainRes
 					switch (terrainSubRec.post_move[1])
 					{
 						case 'E':
-							terrainSubInfo.post_move = 4;
+							terrainSubInfo.PostMove = 4;
 							break;
 						case 'W':
-							terrainSubInfo.post_move = 6;
+							terrainSubInfo.PostMove = 6;
 							break;
 						default:
-							terrainSubInfo.post_move = 5;
+							terrainSubInfo.PostMove = 5;
 							break;
 					}
 					break;
 				case 'E':
-					terrainSubInfo.post_move = 3;
+					terrainSubInfo.PostMove = 3;
 					break;
 				case 'W':
-					terrainSubInfo.post_move = 7;
+					terrainSubInfo.PostMove = 7;
 					break;
 				case 'X':
-					terrainSubInfo.post_move = 0;
+					terrainSubInfo.PostMove = 0;
 					break;
 			}
 
-			terrainSubInfo.next_step = null;
+			terrainSubInfo.NextStep = null;
 
-			if (terrainSubInfo.sub_no > maxSubNo)
-				maxSubNo = terrainSubInfo.sub_no;
+			if (terrainSubInfo.SubNo > maxSubNo)
+				maxSubNo = terrainSubInfo.SubNo;
 		}
 
-		// ------- build ter_sub_index ------//
-		ter_sub_index_count = maxSubNo;
-		ter_sub_index = new TerrainSubInfo[ter_sub_index_count];
+		TerrainSubIndexCount = maxSubNo;
+		TerrainSubIndexes = new TerrainSubInfo[TerrainSubIndexCount];
 
 		TerrainSubInfo lastTerrainSubInfo = null;
-		for (int i = 0; i < ter_sub_rec_count; i++)
+		for (int i = 0; i < TerrainSubRecCount; i++)
 		{
-			TerrainSubInfo terrainSubInfo = ter_sub_array[i];
-			if (terrainSubInfo.step_id == 1)
+			TerrainSubInfo terrainSubInfo = TerrainSubRecs[i];
+			if (terrainSubInfo.StepId == 1)
 			{
-				ter_sub_index[terrainSubInfo.sub_no - 1] = terrainSubInfo;
+				TerrainSubIndexes[terrainSubInfo.SubNo - 1] = terrainSubInfo;
 			}
 			else
 			{
-				// link from the next_step pointer of previous step
+				// link from the NextStep pointer of previous step
 				// search the previous record first
-				if (lastTerrainSubInfo != null && lastTerrainSubInfo.sub_no == terrainSubInfo.sub_no
-				                               && lastTerrainSubInfo.step_id == terrainSubInfo.step_id - 1)
+				if (lastTerrainSubInfo != null && lastTerrainSubInfo.SubNo == terrainSubInfo.SubNo
+				                               && lastTerrainSubInfo.StepId == terrainSubInfo.StepId - 1)
 				{
-					lastTerrainSubInfo.next_step = terrainSubInfo;
+					lastTerrainSubInfo.NextStep = terrainSubInfo;
 				}
 				else
 				{
 					// search from the array
-					for (int j = 0; j < ter_sub_rec_count; j++)
+					for (int j = 0; j < TerrainSubRecCount; j++)
 					{
-						if (ter_sub_array[j].sub_no == terrainSubInfo.sub_no &&
-						    ter_sub_array[j].step_id == terrainSubInfo.step_id - 1)
+						if (TerrainSubRecs[j].SubNo == terrainSubInfo.SubNo && TerrainSubRecs[j].StepId == terrainSubInfo.StepId - 1)
 						{
-							ter_sub_array[j].next_step = terrainSubInfo;
+							TerrainSubRecs[j].NextStep = terrainSubInfo;
 							break;
 						}
 					}
@@ -559,12 +548,11 @@ public class TerrainRes
 		}
 	}
 
-	private void LoadAnimInfo()
+	private void LoadAnimationInfo()
 	{
 		TerrainAnimRec lastAnimRec = new TerrainAnimRec();
-
-		string terAnimDbName = $"{Sys.GameDataFolder}/Resource/TERANM{Sys.Instance.Config.terrain_set}.RES";
-		Database dbTerAnim = new Database(terAnimDbName);
+		ResourceDb animationBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERA{Sys.Instance.Config.terrain_set}.RES");
+		Database dbTerAnim = new Database($"{Sys.GameDataFolder}/Resource/TERANM{Sys.Instance.Config.terrain_set}.RES");
 
 		int count = dbTerAnim.RecordCount;
 
@@ -580,68 +568,36 @@ public class TerrainRes
 			lastAnimRec.base_file[i] = ' ';
 		}
 
-		//---------- read in TERANM.DBF -------//
 		for (int i = 0; i < count; i++)
 		{
 			TerrainAnimRec terrainAnimRec = new TerrainAnimRec(dbTerAnim, i + 1);
-
 			int bitmapOffset = BitConverter.ToInt32(terrainAnimRec.bitmap_ptr, 0);
-			byte[] bitmapPtr = anm_bitmap.Read(bitmapOffset);
+			byte[] bitmap = animationBitmaps.Read(bitmapOffset);
 
-			if (new string(terrainAnimRec.base_file) != new string(lastAnimRec.base_file))
+			if (Misc.ToString(terrainAnimRec.base_file) != Misc.ToString(lastAnimRec.base_file))
 			{
 				// string not equal
 				if (lastAnimRec.filename[0] != ' ' && animFrameCount > 0)
 				{
-					// replace terrainInfo->anim_frames and anim_frame_ptr
-					// where the bitmap filename are the same
-					int replaceCount = 0;
-					for (int l = 0; l < terrain_count; l++)
+					// replace terrainInfo.AnimationFrames and AnimationBitmaps where the bitmap filename are the same
+					for (int l = 0; l < TerrainCount; l++)
 					{
 						bool equals = true;
 						for (int index = 0; index < TerrainAnimRec.FILE_NAME_LEN; index++)
 						{
-							if (file_name_array[l * TerrainAnimRec.FILE_NAME_LEN + index] !=
-							    lastAnimRec.base_file[index])
+							if (FileNames[l * TerrainAnimRec.FILE_NAME_LEN + index] != lastAnimRec.base_file[index])
 								equals = false;
 						}
 
 						if (equals)
 						{
-							TerrainInfo terrainInfo = terrain_info_array[l];
-							//err_when(terrainInfo->anim_frames > 0);
-							terrainInfo.anim_frames = animFrameCount;
-							terrainInfo.anim_bitmap_ptr = new byte[animFrameCount][];
+							TerrainInfo terrainInfo = TerrainInfos[l];
+							terrainInfo.AnimationFrames = animFrameCount;
+							terrainInfo.AnimationBitmaps = new byte[animFrameCount][];
 							for (int j = 0; j < animFrameCount; j++)
-								terrainInfo.anim_bitmap_ptr[j] = animFrameBitmap[j];
-							replaceCount++;
+								terrainInfo.AnimationBitmaps[j] = animFrameBitmap[j];
 						}
 					}
-					/*
-					for(int special = 0; special <= 1; ++special)
-					{
-						j = scan( terrain_code(lastAnimRec.average_type),
-							terrain_code(lastAnimRec.secondary_type),
-							misc.atoi(lastAnimRec.pattern_id, lastAnimRec.PATTERN_ID_LEN), 1,0,special);
-						if( j > 0)
-						{
-							k = terrain_info_array[j-1].alternative_count_with_extra;
-							for(l = j; l <= j+k; ++l)
-							{
-								if( memcmp(&file_name_array[terrainAnimRec.FILE_NAME_LEN *(l-1)],
-									lastAnimRec.base_file, terrainAnimRec.FILE_NAME_LEN) == 0)
-								{
-									TerrainInfo *terrainInfo = terrain_info_array+j-1;
-									err_when(terrainInfo->anim_frames > 0);
-									terrainInfo->anim_frames = animFrameCount;
-									terrainInfo->anim_bitmap_ptr = (char **) mem_add(sizeof(char *)*animFrameCount);
-									memcpy(terrainInfo->anim_bitmap_ptr, animFrameBitmap, sizeof(char *)*animFrameCount);
-									replaceCount++;
-								}
-							}
-						}
-					}
-					*/
 				}
 
 				lastAnimRec = terrainAnimRec;
@@ -651,189 +607,137 @@ public class TerrainRes
 			}
 
 			animFrameCount++;
-			animFrameBitmap[Convert.ToInt32(new string(terrainAnimRec.frame_no)) - 1] = bitmapPtr;
+			animFrameBitmap[Misc.ToInt32(terrainAnimRec.frame_no) - 1] = bitmap;
 		}
 
 		if (lastAnimRec.filename[0] != ' ' && animFrameCount > 0)
 		{
-			// replace terrainInfo->anim_frames and anim_frame_ptr
-			// where the bitmap filename are the same
-			int replaceCount = 0;
-			for (int l = 0; l < terrain_count; l++)
+			// replace terrainInfo.AnimationFrames and AnimationBitmaps where the bitmap filename are the same
+			for (int l = 0; l < TerrainCount; l++)
 			{
 				bool equals = true;
 				for (int index = 0; index < TerrainAnimRec.FILE_NAME_LEN; index++)
 				{
-					if (file_name_array[l * TerrainAnimRec.FILE_NAME_LEN + index] !=
-					    lastAnimRec.base_file[index])
+					if (FileNames[l * TerrainAnimRec.FILE_NAME_LEN + index] != lastAnimRec.base_file[index])
 						equals = false;
 				}
 
 				if (equals)
 				{
-					TerrainInfo terrainInfo = terrain_info_array[l];
-					terrainInfo.anim_frames = animFrameCount;
-					terrainInfo.anim_bitmap_ptr = new byte[animFrameCount][];
+					TerrainInfo terrainInfo = TerrainInfos[l];
+					terrainInfo.AnimationFrames = animFrameCount;
+					terrainInfo.AnimationBitmaps = new byte[animFrameCount][];
 					for (int j = 0; j < animFrameCount; j++)
-						terrainInfo.anim_bitmap_ptr[j] = animFrameBitmap[j];
-					replaceCount++;
+						terrainInfo.AnimationBitmaps[j] = animFrameBitmap[j];
 				}
 			}
-			/*
-			for(int special = 0; special <= 1; ++special)
-			{
-				j = scan( terrain_code(lastAnimRec.average_type),
-					terrain_code(lastAnimRec.secondary_type),
-					misc.atoi(lastAnimRec.pattern_id, lastAnimRec.PATTERN_ID_LEN), 1,0,special);
-				if( j > 0)
-				{
-					k = terrain_info_array[j-1].alternative_count_with_extra;
-					for(l = j; l <= j+k; ++l)
-					{
-						if( memcmp(&file_name_array[terrainAnimRec.FILE_NAME_LEN *(l-1)],
-							lastAnimRec.base_file, terrainAnimRec.FILE_NAME_LEN) == 0)
-						{
-							TerrainInfo *terrainInfo = terrain_info_array+j-1;
-							err_when(terrainInfo->anim_frames > 0);
-							terrainInfo->anim_frames = animFrameCount;
-							terrainInfo->anim_bitmap_ptr = (char **) mem_add(sizeof(char *)*animFrameCount);
-							memcpy(terrainInfo->anim_bitmap_ptr, animFrameBitmap, sizeof(char *)*animFrameCount);
-							replaceCount++;
-						}
-					}
-				}
-			}
-			*/
 		}
 	}
 
-	public byte get_tera_type_id(char[] teraTypeCode)
+	public byte GetTeraTypeId(char[] teraTypeCode)
 	{
-		return terrain_code(teraTypeCode[0]);
+		return TerrainCode(teraTypeCode[0]);
 	}
 
-	public byte[] get_map_tile(int terrainId)
+	public byte[] GetMapTile(int terrainId)
 	{
 		TerrainInfo terrainInfo = this[terrainId];
-		return map_tile_ptr_array[terrainInfo.average_type - 1];
+		return MapTileBitmaps[terrainInfo.AverageType - 1];
 	}
 
-	public int scan(int nwType, int nwSubType, int neType, int neSubType,
+	public int Scan(int nwType, int nwSubType, int neType, int neSubType,
 		int swType, int swSubType, int seType, int seSubType,
 		int firstInstance = 0, int includeExtra = 0, int special = 0)
 	{
-		int terrainId = nw_type_min[nwType - 1];
-		int terrainIdMax = nw_type_max[nwType - 1];
+		int terrainId = NWTypeMin[nwType - 1];
+		int terrainIdMax = NWTypeMax[nwType - 1];
 		if (terrainId <= 0 || terrainIdMax <= 0)
 			return 0;
 
-		//	int firstTerrainId=0, instanceCount=0;
-		int index = terrainId - 1;
-
-		for (; terrainId <= terrainIdMax; terrainId++, index++)
+		for (int index = terrainId - 1; terrainId <= terrainIdMax; terrainId++, index++)
 		{
-			TerrainInfo terrainInfo = terrain_info_array[index];
-			if (terrainInfo.nw_type == nwType && (terrainInfo.nw_subtype & nwSubType) != 0 &&
-			    terrainInfo.ne_type == neType && (terrainInfo.ne_subtype & neSubType) != 0 &&
-			    terrainInfo.sw_type == swType && (terrainInfo.sw_subtype & swSubType) != 0 &&
-			    terrainInfo.se_type == seType && (terrainInfo.se_subtype & seSubType) != 0 &&
-			    terrainInfo.special_flag == special)
+			TerrainInfo terrainInfo = TerrainInfos[index];
+			if (terrainInfo.NWType == nwType && (terrainInfo.NWSubType & nwSubType) != 0 &&
+			    terrainInfo.NEType == neType && (terrainInfo.NESubType & neSubType) != 0 &&
+			    terrainInfo.SWType == swType && (terrainInfo.SWSubType & swSubType) != 0 &&
+			    terrainInfo.SEType == seType && (terrainInfo.SESubType & seSubType) != 0 &&
+			    terrainInfo.SpecialFlag == special)
 			{
 				if (firstInstance != 0)
 					return terrainId;
 
-				if (includeExtra != 0)
-				{
-					return terrainId + Misc.Random(terrainInfo.alternative_count_with_extra + 1);
-				}
-				else
-				{
-					return terrainId + Misc.Random(terrainInfo.alternative_count_without_extra + 1);
-				}
+				return includeExtra != 0
+					? terrainId + Misc.Random(terrainInfo.AlternativeCountWithExtra + 1)
+					: terrainId + Misc.Random(terrainInfo.AlternativeCountWithoutExtra + 1);
 			}
 			else
 			{
-				//------ skip tiles of the same type and special_flag
-				terrainId += terrainInfo.alternative_count_with_extra;
-				index += terrainInfo.alternative_count_with_extra;
+				//------ skip tiles of the same type and SpecialFlag
+				terrainId += terrainInfo.AlternativeCountWithExtra;
+				index += terrainInfo.AlternativeCountWithExtra;
 			}
 		}
 
 		return 0;
 	}
 
-	public int scan(int primaryType, int secondaryType, int patternId, int firstInstance = 0, int includeExtra = 0,
-		int special = 0)
+	public int Scan(int primaryType, int secondaryType, int patternId, int firstInstance = 0, int includeExtra = 0, int special = 0)
 	{
 		// if patternId is zero, that means it requires a pure terrain
 		if (patternId == 0)
 			secondaryType = primaryType;
 
 		// ----------- search 1, search the lower type -------//
-		int terrainId = nw_type_min[Math.Min(primaryType, secondaryType) - 1];
-		int terrainIdMax = nw_type_max[Math.Min(primaryType, secondaryType) - 1];
-		// int firstTerrainId=0, instanceCount=0;
+		int terrainId = NWTypeMin[Math.Min(primaryType, secondaryType) - 1];
+		int terrainIdMax = NWTypeMax[Math.Min(primaryType, secondaryType) - 1];
 
-		int index = terrainId - 1;
-		for (; terrainId <= terrainIdMax; terrainId++, index++)
+		for (int index = terrainId - 1; terrainId <= terrainIdMax; terrainId++, index++)
 		{
-			TerrainInfo terrainInfo = terrain_info_array[index];
-			if (((terrainInfo.average_type == primaryType && terrainInfo.secondary_type == secondaryType) ||
-			     (terrainInfo.average_type == secondaryType && terrainInfo.secondary_type == primaryType)) &&
-			    terrainInfo.pattern_id == patternId && terrainInfo.special_flag == special)
+			TerrainInfo terrainInfo = TerrainInfos[index];
+			if (((terrainInfo.AverageType == primaryType && terrainInfo.SecondaryType == secondaryType) ||
+			     (terrainInfo.AverageType == secondaryType && terrainInfo.SecondaryType == primaryType))
+			    && terrainInfo.PatternId == patternId && terrainInfo.SpecialFlag == special)
 			{
 				if (firstInstance != 0)
 					return terrainId;
 
-				if (includeExtra != 0)
-				{
-					return terrainId + Misc.Random(terrainInfo.alternative_count_with_extra + 1);
-				}
-				else
-				{
-					return terrainId + Misc.Random(terrainInfo.alternative_count_without_extra + 1);
-				}
+				return includeExtra != 0
+					? terrainId + Misc.Random(terrainInfo.AlternativeCountWithExtra + 1)
+					: terrainId + Misc.Random(terrainInfo.AlternativeCountWithoutExtra + 1);
 			}
 			else
 			{
-				//------ skip tiles of the same type and special_flag
-				terrainId += terrainInfo.alternative_count_with_extra;
-				index += terrainInfo.alternative_count_with_extra;
+				//------ skip tiles of the same type and SpecialFlag
+				terrainId += terrainInfo.AlternativeCountWithExtra;
+				index += terrainInfo.AlternativeCountWithExtra;
 			}
 		}
 
 		// ----------- search 2, search the higher type ---------//
 		if (primaryType != secondaryType)
 		{
-			terrainId = nw_type_min[Math.Max(primaryType, secondaryType) - 1];
-			terrainIdMax = nw_type_max[Math.Max(primaryType, secondaryType) - 1];
-			// int firstTerrainId=0, instanceCount=0;
+			terrainId = NWTypeMin[Math.Max(primaryType, secondaryType) - 1];
+			terrainIdMax = NWTypeMax[Math.Max(primaryType, secondaryType) - 1];
 
-			index = terrainId - 1;
-			for (; terrainId <= terrainIdMax; terrainId++, index++)
+			for (int index = terrainId - 1; terrainId <= terrainIdMax; terrainId++, index++)
 			{
-				TerrainInfo terrainInfo = terrain_info_array[index];
-				if (((terrainInfo.average_type == primaryType && terrainInfo.secondary_type == secondaryType) ||
-				     (terrainInfo.average_type == secondaryType && terrainInfo.secondary_type == primaryType)) &&
-				    terrainInfo.pattern_id == patternId && terrainInfo.special_flag == special)
+				TerrainInfo terrainInfo = TerrainInfos[index];
+				if (((terrainInfo.AverageType == primaryType && terrainInfo.SecondaryType == secondaryType) ||
+				     (terrainInfo.AverageType == secondaryType && terrainInfo.SecondaryType == primaryType))
+				    && terrainInfo.PatternId == patternId && terrainInfo.SpecialFlag == special)
 				{
 					if (firstInstance != 0)
 						return terrainId;
-						
-					if (includeExtra != 0)
-					{
-						return terrainId + Misc.Random(terrainInfo.alternative_count_with_extra + 1);
-					}
-					else
-					{
-						return terrainId + Misc.Random(terrainInfo.alternative_count_without_extra + 1);
-					}
+
+					return includeExtra != 0
+						? terrainId + Misc.Random(terrainInfo.AlternativeCountWithExtra + 1)
+						: terrainId + Misc.Random(terrainInfo.AlternativeCountWithoutExtra + 1);
 				}
 				else
 				{
-					//------ skip tiles of the same type and special_flag
-					terrainId += terrainInfo.alternative_count_with_extra;
-					index += terrainInfo.alternative_count_with_extra;
+					//------ skip tiles of the same type and SpecialFlag
+					terrainId += terrainInfo.AlternativeCountWithExtra;
+					index += terrainInfo.AlternativeCountWithExtra;
 				}
 			}
 		}
@@ -841,19 +745,17 @@ public class TerrainRes
 		return 0;
 	}
 
-	//---- function related to terrain pattern substitution ----//
-
-	public int search_pattern(int nwPatternId, TerrainSubInfo[] resultArray, int maxResult)
+	public int SearchPattern(int nwPatternId, TerrainSubInfo[] resultArray, int maxResult)
 	{
 		if (resultArray == null || maxResult == 0)
 			return 0;
 
 		int occur = 0;
-		for (int i = 0; i < ter_sub_index_count; i++)
+		for (int i = 0; i < TerrainSubIndexCount; i++)
 		{
-			if (ter_sub_index[i] != null && nwPatternId == ter_sub_index[i].old_pattern_id)
+			if (TerrainSubIndexes[i] != null && nwPatternId == TerrainSubIndexes[i].OldPatternId)
 			{
-				resultArray[occur++] = ter_sub_index[i];
+				resultArray[occur++] = TerrainSubIndexes[i];
 				if (occur >= maxResult)
 					break;
 			}
@@ -862,9 +764,7 @@ public class TerrainRes
 		return occur;
 	}
 
-	//---------- define code conversion function -------//
-
-	public static byte terrain_code(char tcCode)
+	public static byte TerrainCode(char tcCode)
 	{
 		switch (tcCode)
 		{
@@ -881,7 +781,7 @@ public class TerrainRes
 		}
 	}
 
-	public static SubTerrainMask terrain_mask(char subtc)
+	private static SubTerrainMask TerrainMask(char subtc)
 	{
 		switch (subtc)
 		{
@@ -902,16 +802,16 @@ public class TerrainRes
 		}
 	}
 
-	public static int terrain_height(int height, out int sub)
+	public static int TerrainHeight(int height, out int sub)
 	{
 		sub = 0;
-		for (int tc = TerrainRes.TOTAL_TERRAIN_TYPE - 1; tc >= 0; tc--)
+		for (int tc = TOTAL_TERRAIN_TYPE - 1; tc >= 0; tc--)
 		{
-			if (height >= terrain_type_min_height_array[tc, 0])
+			if (height >= TerrainTypeMinHeights[tc, 0])
 			{
 				for (int subtc = 2; subtc >= 0; subtc--)
 				{
-					if (height >= terrain_type_min_height_array[tc, subtc])
+					if (height >= TerrainTypeMinHeights[tc, subtc])
 					{
 						sub = 1 << subtc;
 						break;
@@ -925,26 +825,26 @@ public class TerrainRes
 		return 0;
 	}
 
-	public static int min_height(int tc, SubTerrainMask subtc = SubTerrainMask.BOTTOM_MASK)
+	public static int MinHeight(int tc, SubTerrainMask subtc = SubTerrainMask.BOTTOM_MASK)
 	{
 		int s, j;
 		for (s = 0, j = 1; s < 3 && (subtc & (SubTerrainMask)j) == SubTerrainMask.ZERO_MASK; s++, j += j)
 		{
 		}
 
-		return terrain_type_min_height_array[tc - 1, s];
+		return TerrainTypeMinHeights[tc - 1, s];
 	}
 
-	public static int max_height(int tc, SubTerrainMask subtc = SubTerrainMask.TOP_MASK)
+	public static int MaxHeight(int tc, SubTerrainMask subtc = SubTerrainMask.TOP_MASK)
 	{
 		if ((subtc & SubTerrainMask.TOP_MASK) != SubTerrainMask.ZERO_MASK)
-			return tc < TOTAL_TERRAIN_TYPE ? terrain_type_min_height_array[tc - 1 + 1, 0] - 1 : 255;
+			return tc < TOTAL_TERRAIN_TYPE ? TerrainTypeMinHeights[tc - 1 + 1, 0] - 1 : 255;
 
 		int s, j;
 		for (s = 2, j = 2; s >= 0 && (subtc & (SubTerrainMask)j) == SubTerrainMask.ZERO_MASK; s--, j >>= 1)
 		{
 		}
 
-		return terrain_type_min_height_array[tc - 1, s] - 1;
+		return TerrainTypeMinHeights[tc - 1, s] - 1;
 	}
 }

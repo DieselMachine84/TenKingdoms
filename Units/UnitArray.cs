@@ -429,7 +429,7 @@ public class UnitArray : SpriteArray
 		    if (_selectedSeaUnits.Count > 0)
 		    {
 			    Location location = World.GetLoc(destLocX, destLocY);
-			    if (TerrainRes[location.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN)
+			    if (TerrainRes[location.TerrainId].AverageType == TerrainTypeCode.TERRAIN_OCEAN)
 				    MoveTo(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
 			    else
 				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
@@ -1260,7 +1260,7 @@ public class UnitArray : SpriteArray
 					    continue;
 
 				    loc = World.GetLoc(seaLocX, seaLocY);
-				    if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+				    if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN)
 					    continue;
 
 				    //--------------------------------------------------------------------//

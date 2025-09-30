@@ -1057,7 +1057,7 @@ public partial class Unit
 					//----------------------------------------------------------------------//
 					if (Math.Abs(unit.NextLocX - unit.ActionLocX2) <= moveStep &&
 					    Math.Abs(unit.NextLocY - unit.ActionLocY2) <= moveStep &&
-					    TerrainRes[World.GetLoc(unit.ActionLocX2, unit.ActionLocY2).TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					    TerrainRes[World.GetLoc(unit.ActionLocX2, unit.ActionLocY2).TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						if (ActionMode2 == UnitConstants.ACTION_SHIP_TO_BEACH &&
 						    ActionLocX2 == unit.ActionLocX2 && ActionLocY2 == unit.ActionLocY2)
@@ -1750,7 +1750,7 @@ public partial class Unit
 					checkYLoc += vecY;
 
 					loc = World.GetLoc(checkXLoc, checkYLoc);
-					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN) // found
+					if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN) // found
 					{
 						found++;
 						break;
@@ -1794,7 +1794,7 @@ public partial class Unit
 					MoveToLocX = preXLoc;
 					MoveToLocY = preYLoc;
 					loc = World.GetLoc((preXLoc + checkXLoc) / 2, (preYLoc + checkYLoc) / 2);
-					if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN)
+					if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN)
 					{
 						resultLocX = (preXLoc + checkXLoc) / 2;
 						resultYLoc = (preYLoc + checkYLoc) / 2;
@@ -1839,7 +1839,7 @@ public partial class Unit
 				if (loc.RegionId != regionId)
 					continue;
 
-				if (TerrainRes[loc.TerrainId].average_type != TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(UnitConstants.UNIT_LAND))
+				if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(UnitConstants.UNIT_LAND))
 				{
 					resultLocX = checkLocX;
 					resultYLoc = checkLocY;
@@ -1877,7 +1877,7 @@ public partial class Unit
 				continue;
 
 			Location loc = World.GetLoc(checkLocX, checkLocY);
-			if (TerrainRes[loc.TerrainId].average_type == TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(MobileType))
+			if (TerrainRes[loc.TerrainId].AverageType == TerrainTypeCode.TERRAIN_OCEAN && loc.CanMove(MobileType))
 			{
 				found = true;
 				break;

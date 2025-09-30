@@ -218,7 +218,7 @@ public class PlantRes
             else
             {
                 if (plantRec.tera_type1[0] != ' ')
-                    plantInfo.tera_type[0] = TerrainRes.get_tera_type_id(plantRec.tera_type1);
+                    plantInfo.tera_type[0] = TerrainRes.GetTeraTypeId(plantRec.tera_type1);
                 else
                     plantInfo.tera_type[0] = 0;
             }
@@ -230,7 +230,7 @@ public class PlantRes
             else
             {
                 if (plantRec.tera_type2[0] != ' ')
-                    plantInfo.tera_type[1] = TerrainRes.get_tera_type_id(plantRec.tera_type2);
+                    plantInfo.tera_type[1] = TerrainRes.GetTeraTypeId(plantRec.tera_type2);
                 else
                     plantInfo.tera_type[1] = 0;
             }
@@ -242,7 +242,7 @@ public class PlantRes
             else
             {
                 if (plantRec.tera_type3[0] != ' ')
-                    plantInfo.tera_type[2] = TerrainRes.get_tera_type_id(plantRec.tera_type3);
+                    plantInfo.tera_type[2] = TerrainRes.GetTeraTypeId(plantRec.tera_type3);
                 else
                     plantInfo.tera_type[2] = 0;
             }

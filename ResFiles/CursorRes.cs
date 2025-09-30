@@ -80,17 +80,17 @@ public class CursorInfo
     public int HotSpotX { get; set; }
     public int HotSpotY { get; set; }
     
-    public byte[] bitmap;
-    public int bitmapWidth;
-    public int bitmapHeight;
+    public byte[] Bitmap { get; set; }
+    public int BitmapWidth { get; set; }
+    public int BitmapHeight { get; set; }
     private IntPtr _cursor;
     
     public IntPtr GetCursor(Graphics graphics)
     {
         if (_cursor == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight);
-            _cursor = graphics.CreateCursor(decompressedBitmap, bitmapWidth, bitmapHeight, HotSpotX, HotSpotY);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(Bitmap, BitmapWidth, BitmapHeight);
+            _cursor = graphics.CreateCursor(decompressedBitmap, BitmapWidth, BitmapHeight, HotSpotX, HotSpotY);
         }
 
         return _cursor;
@@ -121,10 +121,10 @@ public class CursorRes
             _cursorInfos[i] = cursorInfo;
             
             int bitmapOffset = BitConverter.ToInt32(cursorRec.bitmap_ptr, 0);
-            cursorInfo.bitmap = resources.Read(bitmapOffset);
-            cursorInfo.bitmapWidth = BitConverter.ToInt16(cursorInfo.bitmap, 0);
-            cursorInfo.bitmapHeight = BitConverter.ToInt16(cursorInfo.bitmap, 2);
-            cursorInfo.bitmap = cursorInfo.bitmap.Skip(4).ToArray();
+            cursorInfo.Bitmap = resources.Read(bitmapOffset);
+            cursorInfo.BitmapWidth = BitConverter.ToInt16(cursorInfo.Bitmap, 0);
+            cursorInfo.BitmapHeight = BitConverter.ToInt16(cursorInfo.Bitmap, 2);
+            cursorInfo.Bitmap = cursorInfo.Bitmap.Skip(4).ToArray();
             cursorInfo.HotSpotX = Misc.ToInt32(cursorRec.hot_spot_x);
             cursorInfo.HotSpotY = Misc.ToInt32(cursorRec.hot_spot_y);
         }

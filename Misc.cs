@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace TenKingdoms;
 
@@ -324,15 +325,15 @@ public class Misc
 
     public static string ToString(char[] chars)
     {
-        string result = string.Empty;
+        StringBuilder result = new StringBuilder(chars.Length);
         foreach (var c in chars)
         {
             if (c != '\0' && !Char.IsWhiteSpace(c))
             {
-                result += c;
+                result.Append(c);
             }
         }
 
-        return result;
+        return result.ToString();
     }
 }
