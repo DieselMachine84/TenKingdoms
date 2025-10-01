@@ -143,7 +143,14 @@ public class TerrainInfo
 			    int width = BitConverter.ToInt16(AnimationBitmaps[i], 0);
 			    int height = BitConverter.ToInt16(AnimationBitmaps[i], 2);
 			    byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(AnimationBitmaps[i].Skip(4).ToArray(), width, height);
-			    _animationTextures.Add(graphics.CreateTextureFromBmp(decompressedBitmap, width, height));
+			    byte[] joinedBitmap = new byte[BitmapWidth * BitmapHeight];
+			    Array.Copy(Bitmap, joinedBitmap, Bitmap.Length);
+			    for (int j = 0; j < joinedBitmap.Length; j++)
+			    {
+				    if (decompressedBitmap[j] < Colors.MIN_TRANSPARENT_CODE)
+					    joinedBitmap[j] = decompressedBitmap[j];
+			    }
+			    _animationTextures.Add(graphics.CreateTextureFromBmp(joinedBitmap, width, height));
 		    }
 	    }
 

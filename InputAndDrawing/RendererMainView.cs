@@ -99,11 +99,11 @@ public partial class Renderer
     private void DrawTerrain(Location location, int screenX, int screenY)
     {
         TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
-        Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
-        //TODO terrain animation
-        //IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
-        //if (animatedTerrain != IntPtr.Zero)
-        //Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+        IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
+        if (animatedTerrain != IntPtr.Zero)
+            Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+        else
+            Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
     }
 
     private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
