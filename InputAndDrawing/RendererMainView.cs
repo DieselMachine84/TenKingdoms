@@ -108,8 +108,7 @@ public partial class Renderer
 
     private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
     {
-        int dirtArrayId = location.DirtArrayId();
-        Rock dirt = DirtArray[dirtArrayId];
+        Rock dirt = DirtArray[location.DirtArrayId()];
         int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
         if (dirtBlockId != 0)
         {
@@ -118,7 +117,7 @@ public partial class Renderer
             {
                 RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
                 Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), screenX, screenY,
-                    Scale(dirtBitmapInfo.bitmapWidth), Scale(dirtBitmapInfo.bitmapHeight));
+                    Scale(dirtBitmapInfo.BitmapWidth), Scale(dirtBitmapInfo.BitmapHeight));
             }
         }
     }

@@ -19,9 +19,9 @@ public class RockArray
 
     public void Process()
     {
-        foreach (Rock rock in _rocks)
+        for (int i = 0; i < _rocks.Count; i++)
         {
-            rock.Process();
+            _rocks[i].Process();
         }
     }
 }

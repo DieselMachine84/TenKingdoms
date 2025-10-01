@@ -23,11 +23,11 @@ public class Rock
 		LocX = locX;
 		LocY = locY;
 
-		// ------- random frame, random initial delay_remain  -----//
+		// ------- random frame, random initial _remainDelay  -----//
 		RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-		CurFrame = 1 + Misc.Random(rockInfo.maxFrame);
+		CurFrame = 1 + Misc.Random(rockInfo.MaxFrame);
 
-		int initDelayCount = RockRes.GetAnimInfo(RockRes.GetAnimId(rockId, CurFrame)).delay;
+		int initDelayCount = RockRes.GetAnimInfo(RockRes.GetAnimId(rockId, CurFrame)).Delay;
 		_remainDelay = 1 + Misc.Random(initDelayCount);
 	}
 
@@ -36,7 +36,7 @@ public class Rock
 		if (--_remainDelay <= 0)
 		{
 			CurFrame = RockRes.ChooseNext(RockId, CurFrame, Misc.Random(ROCK_ALT_PATH));
-			_remainDelay = RockRes.GetAnimInfo(RockRes.GetAnimId(RockId, CurFrame)).delay;
+			_remainDelay = RockRes.GetAnimInfo(RockRes.GetAnimId(RockId, CurFrame)).Delay;
 		}
 	}
 }

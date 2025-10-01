@@ -1209,8 +1209,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1235,8 +1235,8 @@ public class MapGenerator
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
-								sx2 = sx + rock2Info.locWidth - 1;
-								sy2 = sy + rock2Info.locHeight - 1;
+								sx2 = sx + rock2Info.LocWidth - 1;
+								sy2 = sy + rock2Info.LocHeight - 1;
 								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].AverageType) &&
 								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].AverageType) &&
 								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].AverageType))
@@ -1268,8 +1268,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1297,8 +1297,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1332,15 +1332,15 @@ public class MapGenerator
 		int dirtArrayId = DirtArray.Add(newDirt);
 		RockInfo dirtInfo = RockRes.GetRockInfo(dirtId);
 
-		for (int dy = 0; dy < dirtInfo.locHeight && y1 + dy < GameConstants.MapSize; dy++)
+		for (int dy = 0; dy < dirtInfo.LocHeight && y1 + dy < GameConstants.MapSize; dy++)
 		{
-			for (int dx = 0; dx < dirtInfo.locWidth && x1 + dx < GameConstants.MapSize; dx++)
+			for (int dx = 0; dx < dirtInfo.LocWidth && x1 + dx < GameConstants.MapSize; dx++)
 			{
 				int dirtBlockId = RockRes.LocateBlock(dirtId, dx, dy);
 				if (dirtBlockId != 0)
 				{
 					Location location = World.GetLoc(x1 + dx, y1 + dy);
-					location.SetDirt(dirtArrayId, dirtInfo.rockType == RockInfo.DIRT_BLOCKING_TYPE);
+					location.SetDirt(dirtArrayId, dirtInfo.RockType == RockInfo.DIRT_BLOCKING_TYPE);
 				}
 			}
 		}
@@ -1377,8 +1377,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1403,8 +1403,8 @@ public class MapGenerator
 									continue;
 
 								RockInfo rock2Info = RockRes.GetRockInfo(rock2Id);
-								sx2 = sx + rock2Info.locWidth - 1;
-								sy2 = sy + rock2Info.locHeight - 1;
+								sx2 = sx + rock2Info.LocWidth - 1;
+								sy2 = sy + rock2Info.LocHeight - 1;
 								if (rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy).TerrainId].AverageType) &&
 								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx, sy2).TerrainId].AverageType) &&
 								    rock2Info.IsTerrainValid(TerrainRes[World.GetLoc(sx2, sy2).TerrainId].AverageType))
@@ -1436,8 +1436,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1465,8 +1465,8 @@ public class MapGenerator
 						continue;
 
 					RockInfo rockInfo = RockRes.GetRockInfo(rockId);
-					x2 = x + rockInfo.locWidth - 1;
-					y2 = y + rockInfo.locHeight - 1;
+					x2 = x + rockInfo.LocWidth - 1;
+					y2 = y + rockInfo.LocHeight - 1;
 					if (rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x, y2).TerrainId].AverageType) &&
 					    rockInfo.IsTerrainValid(TerrainRes[World.GetLoc(x2, y2).TerrainId].AverageType))
@@ -1500,9 +1500,9 @@ public class MapGenerator
 		int rockArrayId = RockArray.Add(newRock);
 		RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 
-		for (int dy = 0; dy < rockInfo.locHeight && y1 + dy < GameConstants.MapSize; dy++)
+		for (int dy = 0; dy < rockInfo.LocHeight && y1 + dy < GameConstants.MapSize; dy++)
 		{
-			for (int dx = 0; dx < rockInfo.locWidth && x1 + dx < GameConstants.MapSize; dx++)
+			for (int dx = 0; dx < rockInfo.LocWidth && x1 + dx < GameConstants.MapSize; dx++)
 			{
 				int rockBlockId = RockRes.LocateBlock(rockId, dx, dy);
 				if (rockBlockId != 0)
