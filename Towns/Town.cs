@@ -543,7 +543,7 @@ public class Town : IIdObject
 			{
 				case TownSlot.TOWN_OBJECT_PLANT:
 					// 'T' - town only, 1st 0 - any zone area, 3rd 0 - age level
-					SlotObjectIds[i] = PlantRes.scan(0, 'T', 0);
+					SlotObjectIds[i] = PlantRes.Scan(0, 'T', 0);
 					break;
 
 				case TownSlot.TOWN_OBJECT_FARM:

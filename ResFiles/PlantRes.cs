@@ -5,11 +5,11 @@ namespace TenKingdoms;
 
 public class PlantBitmapRec
 {
-    public const int PLANT_LEN = 8;
-    public const int SIZE_LEN = 2;
-    public const int OFFSET_LEN = 3;
-    public const int FILE_NAME_LEN = 8;
-    public const int BITMAP_PTR_LEN = 4;
+    private const int PLANT_LEN = 8;
+    private const int SIZE_LEN = 2;
+    private const int OFFSET_LEN = 3;
+    private const int FILE_NAME_LEN = 8;
+    private const int BITMAP_PTR_LEN = 4;
 
     public char[] plant = new char[PLANT_LEN];
     public char[] size = new char[SIZE_LEN];
@@ -46,35 +46,35 @@ public class PlantBitmapRec
 
 public class PlantBitmap
 {
-    public int size;
-    public int offset_x;
-    public int offset_y;
-    public int town_age;
+    public int Size { get; set; }
+    public int OffsetX { get; set; }
+    public int OffsetY { get; set; }
+    public int TownAge { get; set; }
 
-    public byte[] bitmap;
-    public int bitmapWidth;
-    public int bitmapHeight;
-    private IntPtr texture;
+    public byte[] Bitmap { get; set; }
+    public int BitmapWidth { get; set; }
+    public int BitmapHeight { get; set; }
+    private IntPtr _texture;
     
     public IntPtr GetTexture(Graphics graphics)
     {
-        if (texture == default)
+        if (_texture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight);
-            texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(Bitmap, BitmapWidth, BitmapHeight);
+            _texture = graphics.CreateTextureFromBmp(decompressedBitmap, BitmapWidth, BitmapHeight);
         }
 
-        return texture;
+        return _texture;
     }
 }
 
 public class PlantRec
 {
-    public const int CODE_LEN = 8;
-    public const int ZONE_LEN = 1;
-    public const int TERA_TYPE_LEN = 2;
-    public const int FIRST_BITMAP_LEN = 3;
-    public const int BITMAP_COUNT_LEN = 3;
+    private const int CODE_LEN = 8;
+    private const int ZONE_LEN = 1;
+    private const int TERA_TYPE_LEN = 2;
+    private const int FIRST_BITMAP_LEN = 3;
+    private const int BITMAP_COUNT_LEN = 3;
 
     public char[] code = new char[CODE_LEN];
     public char[] climate_zone = new char[ZONE_LEN];
@@ -114,61 +114,52 @@ public class PlantRec
 
 public class PlantInfo
 {
-    public int climate_zone;
-    public byte[] tera_type = new byte[3];
+    public int ClimateZone { get; set; }
+    public byte[] TeraType { get; } = new byte[3];
 
-    public int first_bitmap;
-    public int bitmap_count;
+    public int FirstBitmap { get; set; }
+    public int BitmapCount { get; set; }
 }
 
 public class PlantRes
 {
-    public PlantInfo[] plant_info_array;
-    public PlantBitmap[] plant_bitmap_array;
-    public int[] scan_id_array; // a buffer for scaning
+    private PlantInfo[] PlantInfos { get; set; }
+    private PlantBitmap[] PlantBitmaps { get; set; }
+    private int[] _scanIdArray; // a buffer for scanning
 
-    public byte plant_map_color;
+    private byte PlantMapColor { get; }
 
-    public ResourceDb res_bitmap;
-    
-    public TerrainRes TerrainRes { get; private set; }
+    public TerrainRes TerrainRes { get; }
 
     public PlantRes(TerrainRes terrainRes)
     {
         TerrainRes = terrainRes;
         
-        res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_PLANT{Sys.Instance.Config.terrain_set}.RES");
-
         LoadPlantInfo();
         LoadPlantBitmap();
 
-        plant_map_color = Colors.V_DARK_GREEN;
+        PlantMapColor = Colors.V_DARK_GREEN;
     }
 
-    public int scan(int climateZone, int teraType, int townAge)
+    public PlantInfo this[int plantId] => PlantInfos[plantId - 1];
+    
+    public int Scan(int climateZone, int teraType, int townAge)
     {
         int matchCount = 0;
 
-        //-------- scan plant id. ----------//
-
-        foreach (var plantInfo in plant_info_array)
+        foreach (var plantInfo in PlantInfos)
         {
-            if (climateZone == 0 || (plantInfo.climate_zone & climateZone) != 0)
+            if (climateZone == 0 || (plantInfo.ClimateZone & climateZone) != 0)
             {
-                if (teraType == 0 ||
-                    plantInfo.tera_type[0] == teraType ||
-                    plantInfo.tera_type[1] == teraType ||
-                    plantInfo.tera_type[2] == teraType)
+                if (teraType == 0 || plantInfo.TeraType[0] == teraType || plantInfo.TeraType[1] == teraType || plantInfo.TeraType[2] == teraType)
                 {
-                    //------ scan plant bitmap ----------//
-                    for (int j = 0; j < plantInfo.bitmap_count; j++)
+                    for (int j = 0; j < plantInfo.BitmapCount; j++)
                     {
-                        PlantBitmap plantBitmap = plant_bitmap_array[plantInfo.first_bitmap - 1 + j];
+                        PlantBitmap plantBitmap = PlantBitmaps[plantInfo.FirstBitmap - 1 + j];
                         // * = wildcard type, could apply to any town age level
-                        if (townAge == 0 || plantBitmap.town_age == townAge ||
-                            plantBitmap.town_age == Convert.ToInt32('*'))
+                        if (townAge == 0 || plantBitmap.TownAge == townAge || plantBitmap.TownAge == '*')
                         {
-                            scan_id_array[matchCount++] = plantInfo.first_bitmap + j;
+                            _scanIdArray[matchCount++] = plantInfo.FirstBitmap + j;
                         }
                     }
                 }
@@ -176,108 +167,97 @@ public class PlantRes
         }
 
         //--- pick one from those plants that match the criteria ---//
-        return matchCount > 0 ? scan_id_array[Misc.Random(matchCount)] : 0;
+        return matchCount > 0 ? _scanIdArray[Misc.Random(matchCount)] : 0;
     }
 
-    public int plant_recno(int bitmapId)
+    public int PlantId(int bitmapId)
     {
-        for (int i = 0; i < plant_info_array.Length; ++i)
+        for (int i = 0; i < PlantInfos.Length; i++)
         {
-            PlantInfo plantInfo = plant_info_array[i];
-            if (plantInfo.first_bitmap <= bitmapId && bitmapId < plantInfo.first_bitmap + plantInfo.bitmap_count)
+            PlantInfo plantInfo = PlantInfos[i];
+            if (plantInfo.FirstBitmap <= bitmapId && bitmapId < plantInfo.FirstBitmap + plantInfo.BitmapCount)
                 return i + 1;
         }
 
         return 0;
     }
 
-    public PlantBitmap get_bitmap(int bitmapId)
+    public PlantBitmap GetBitmap(int bitmapId)
     {
-        return plant_bitmap_array[bitmapId - 1];
+        return PlantBitmaps[bitmapId - 1];
     }
-
-    public PlantInfo this[int plantId] => plant_info_array[plantId - 1];
 
     private void LoadPlantInfo()
     {
         Database dbPlant = new Database($"{Sys.GameDataFolder}/Resource/PLANT{Sys.Instance.Config.terrain_set}.RES");
-        plant_info_array = new PlantInfo[dbPlant.RecordCount];
+        PlantInfos = new PlantInfo[dbPlant.RecordCount];
 
-        for (int i = 0; i < plant_info_array.Length; i++)
+        for (int i = 0; i < PlantInfos.Length; i++)
         {
             PlantRec plantRec = new PlantRec(dbPlant, i + 1);
             PlantInfo plantInfo = new PlantInfo();
-            plant_info_array[i] = plantInfo;
+            PlantInfos[i] = plantInfo;
 
-            plantInfo.climate_zone = Convert.ToInt32(new string(plantRec.climate_zone));
+            plantInfo.ClimateZone = Misc.ToInt32(plantRec.climate_zone);
 
             if (plantRec.tera_type1[0] == 'T') // town plant
             {
-                plantInfo.tera_type[0] = Convert.ToByte('T');
+                plantInfo.TeraType[0] = Convert.ToByte('T');
             }
             else
             {
-                if (plantRec.tera_type1[0] != ' ')
-                    plantInfo.tera_type[0] = TerrainRes.GetTeraTypeId(plantRec.tera_type1);
-                else
-                    plantInfo.tera_type[0] = 0;
+                plantInfo.TeraType[0] = plantRec.tera_type1[0] != ' ' ? TerrainRes.GetTeraTypeId(plantRec.tera_type1) : (byte)0;
             }
 
             if (plantRec.tera_type2[0] == 'T') // town plant
             {
-                plantInfo.tera_type[1] = Convert.ToByte('T');
+                plantInfo.TeraType[1] = Convert.ToByte('T');
             }
             else
             {
-                if (plantRec.tera_type2[0] != ' ')
-                    plantInfo.tera_type[1] = TerrainRes.GetTeraTypeId(plantRec.tera_type2);
-                else
-                    plantInfo.tera_type[1] = 0;
+                plantInfo.TeraType[1] = plantRec.tera_type2[0] != ' ' ? TerrainRes.GetTeraTypeId(plantRec.tera_type2) : (byte)0;
             }
 
             if (plantRec.tera_type3[0] == 'T') // town plant
             {
-                plantInfo.tera_type[2] = Convert.ToByte('T');
+                plantInfo.TeraType[2] = Convert.ToByte('T');
             }
             else
             {
-                if (plantRec.tera_type3[0] != ' ')
-                    plantInfo.tera_type[2] = TerrainRes.GetTeraTypeId(plantRec.tera_type3);
-                else
-                    plantInfo.tera_type[2] = 0;
+                plantInfo.TeraType[2] = plantRec.tera_type3[0] != ' ' ? TerrainRes.GetTeraTypeId(plantRec.tera_type3) : (byte)0;
             }
 
-            plantInfo.first_bitmap = Misc.ToInt32(plantRec.first_bitmap);
-            plantInfo.bitmap_count = 1 + Misc.ToInt32(plantRec.bitmap_count);
+            plantInfo.FirstBitmap = Misc.ToInt32(plantRec.first_bitmap);
+            plantInfo.BitmapCount = 1 + Misc.ToInt32(plantRec.bitmap_count);
         }
     }
 
     private void LoadPlantBitmap()
     {
+        ResourceDb plantBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_PLANT{Sys.Instance.Config.terrain_set}.RES");
         Database dbPlantBitmap = new Database($"{Sys.GameDataFolder}/Resource/PLANTBM{Sys.Instance.Config.terrain_set}.RES");
-        plant_bitmap_array = new PlantBitmap[dbPlantBitmap.RecordCount];
+        PlantBitmaps = new PlantBitmap[dbPlantBitmap.RecordCount];
+        _scanIdArray = new int[PlantBitmaps.Length];
 
-        scan_id_array = new int[plant_bitmap_array.Length];
-
-        for (int i = 0; i < plant_bitmap_array.Length; i++)
+        for (int i = 0; i < PlantBitmaps.Length; i++)
         {
             PlantBitmapRec plantBitmapRec = new PlantBitmapRec(dbPlantBitmap, i + 1);
             PlantBitmap plantBitmap = new PlantBitmap();
-            plant_bitmap_array[i] = plantBitmap;
+            PlantBitmaps[i] = plantBitmap;
 
-            plantBitmap.size = Misc.ToInt32(plantBitmapRec.size);
+            plantBitmap.Size = Misc.ToInt32(plantBitmapRec.size);
 
             int bitmapOffset = BitConverter.ToInt32(plantBitmapRec.bitmap_ptr, 0);
-            plantBitmap.bitmap = res_bitmap.Read(bitmapOffset);
-            plantBitmap.bitmapWidth = BitConverter.ToInt16(plantBitmap.bitmap, 0);
-            plantBitmap.bitmapHeight = BitConverter.ToInt16(plantBitmap.bitmap, 2);
-            plantBitmap.bitmap = plantBitmap.bitmap.Skip(4).ToArray();
+            plantBitmap.Bitmap = plantBitmaps.Read(bitmapOffset);
+            plantBitmap.BitmapWidth = BitConverter.ToInt16(plantBitmap.Bitmap, 0);
+            plantBitmap.BitmapHeight = BitConverter.ToInt16(plantBitmap.Bitmap, 2);
+            plantBitmap.Bitmap = plantBitmap.Bitmap.Skip(4).ToArray();
 
-            plantBitmap.offset_x = Misc.ToInt32(plantBitmapRec.offset_x);
-            plantBitmap.offset_y = Misc.ToInt32(plantBitmapRec.offset_y);
+            plantBitmap.OffsetX = Misc.ToInt32(plantBitmapRec.offset_x);
+            plantBitmap.OffsetY = Misc.ToInt32(plantBitmapRec.offset_y);
 
             if (plantBitmapRec.town_age >= '1' && plantBitmapRec.town_age <= '9')
-                plantBitmap.town_age = plantBitmapRec.town_age - '0';
+                plantBitmap.TownAge = plantBitmapRec.town_age - '0';
         }
     }
 }

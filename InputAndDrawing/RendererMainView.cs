@@ -14,9 +14,9 @@ public partial class Renderer
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         
-        for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
         {
-            for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (!location.IsExplored())
@@ -157,17 +157,17 @@ public partial class Renderer
 
     private void DrawPlants()
     {
-        for (int locX = _topLeftLocX; (locX < _topLeftLocX + MainViewWidthInCells) && locX < GameConstants.MapSize; locX++)
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
         {
-            for (int locY = _topLeftLocY; (locY < _topLeftLocY + MainViewHeightInCells) && locY < GameConstants.MapSize; locY++)
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (location.IsExplored() && location.IsPlant())
                 {
-                    PlantBitmap plantBitmap = PlantRes.get_bitmap(location.PlantId());
-                    int drawX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth + Scale(plantBitmap.offset_x);
-                    int drawY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight + Scale(plantBitmap.offset_y);
-                    Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.bitmapWidth), Scale(plantBitmap.bitmapHeight));
+                    PlantBitmap plantBitmap = PlantRes.GetBitmap(location.PlantId());
+                    int drawX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
+                    int drawY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
+                    Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
                 }
             }
         }
@@ -220,11 +220,11 @@ public partial class Renderer
                         break;
                     
                     case TownSlot.TOWN_OBJECT_PLANT:
-                        PlantBitmap plantBitmap = PlantRes.get_bitmap(town.SlotObjectIds[i]);
-                        int townPlantX = townX + Scale(townSlot.BaseX) - Scale(plantBitmap.bitmapWidth) / 2;
-                        int townPlantY = townY + Scale(townSlot.BaseY) - Scale(plantBitmap.bitmapHeight);
+                        PlantBitmap plantBitmap = PlantRes.GetBitmap(town.SlotObjectIds[i]);
+                        int townPlantX = townX + Scale(townSlot.BaseX) - Scale(plantBitmap.BitmapWidth) / 2;
+                        int townPlantY = townY + Scale(townSlot.BaseY) - Scale(plantBitmap.BitmapHeight);
                         Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY,
-                            Scale(plantBitmap.bitmapWidth), Scale(plantBitmap.bitmapHeight));
+                            Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
                         break;
                     
                     case TownSlot.TOWN_OBJECT_FARM:

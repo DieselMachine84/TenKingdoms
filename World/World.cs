@@ -832,7 +832,7 @@ public class World
 				int[] plantArray = new int[PLANT_ARRAY_SIZE];
 				for (int i = 0; i < PLANT_ARRAY_SIZE; ++i)
 				{
-					plantArray[i] = PlantRes.plant_recno(PlantRes.scan(0, teraType, 0));
+					plantArray[i] = PlantRes.PlantId(PlantRes.Scan(0, teraType, 0));
 				}
 
 				if (plantArray[0] != 0)
@@ -860,16 +860,16 @@ public class World
 		Location newLoc = GetLoc(x, y);
 		int basePlantId = plantArray[Misc.Random(plantArray.Length)];
 		PlantInfo plantInfo = PlantRes[basePlantId];
-		int plantSize = Misc.Random(plantInfo.bitmap_count);
+		int plantSize = Misc.Random(plantInfo.BitmapCount);
 		if (plantSize > strength)
 			plantSize = strength;
 
 		int teraType;
 		if (newLoc != null && newLoc.CanAddPlant() &&
-		    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
-		     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
+		    (plantInfo.TeraType[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
+		     plantInfo.TeraType[1] == teraType || plantInfo.TeraType[2] == teraType))
 		{
-			newLoc.SetPlant(plantInfo.first_bitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+			newLoc.SetPlant(plantInfo.FirstBitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
 			newLoc.SetFlammability(100);
 			PlantCount++;
 		}
@@ -881,11 +881,11 @@ public class World
 		         // newLoc.plant_id() > plant_res[basePlantId].first_bitmap + plantSize &&
 		         // newLoc.plant_id() < plant_res[basePlantId].first_bitmap + plant_res[basePlantId].bitmap_count)
 		         // 3. all types, small override large
-		         (newLoc.PlantId() - PlantRes[PlantRes.plant_recno(newLoc.PlantId())].first_bitmap) > plantSize)
+		         (newLoc.PlantId() - PlantRes[PlantRes.PlantId(newLoc.PlantId())].FirstBitmap) > plantSize)
 		{
 			// same kind of plant, but smaller, override by a smaller one
 			newLoc.RemovePlant();
-			newLoc.SetPlant(plantInfo.first_bitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+			newLoc.SetPlant(plantInfo.FirstBitmap + plantSize, GetRandomPlantInnerX(), GetRandomPlantInnerY());
 			newLoc.SetFlammability(100);
 		}
 		else
@@ -960,8 +960,8 @@ public class World
 
 				// is a plant and is not at maximum grade
 				if (location.IsPlant() && Misc.Random(100) < pGrow &&
-				    (basePlantId = PlantRes.plant_recno(bitmapId = location.PlantId())) != 0 &&
-				    bitmapId - PlantRes[basePlantId].first_bitmap < PlantRes[basePlantId].bitmap_count - 1)
+				    (basePlantId = PlantRes.PlantId(bitmapId = location.PlantId())) != 0 &&
+				    bitmapId - PlantRes[basePlantId].FirstBitmap < PlantRes[basePlantId].BitmapCount - 1)
 				{
 					// increase the grade of plant
 					location.PlantGrow();
@@ -991,12 +991,12 @@ public class World
 				Location location = GetLoc(x, y);
 				int bitmapId, basePlantId, plantGrade;
 				// is a plant and grade > 3
-				if (location.IsPlant() && (basePlantId = PlantRes.plant_recno(bitmapId = location.PlantId())) != 0 &&
-				    ((plantGrade = bitmapId - PlantRes[basePlantId].first_bitmap) >= 3 ||
-				     plantGrade == PlantRes[basePlantId].bitmap_count - 1))
+				if (location.IsPlant() && (basePlantId = PlantRes.PlantId(bitmapId = location.PlantId())) != 0 &&
+				    ((plantGrade = bitmapId - PlantRes[basePlantId].FirstBitmap) >= 3 ||
+				     plantGrade == PlantRes[basePlantId].BitmapCount - 1))
 				{
 					// find the optimal temperature for the plant
-					int oTemp = _optTemp[PlantRes[basePlantId].climate_zone - 1];
+					int oTemp = _optTemp[PlantRes[basePlantId].ClimateZone - 1];
 					int tempEffect = 5 - Math.Abs(oTemp - temp);
 					tempEffect = tempEffect > 0 ? tempEffect : 0;
 
@@ -1046,10 +1046,10 @@ public class World
 							int teraType;
 							PlantInfo plantInfo = PlantRes[basePlantId];
 							if (newLoc != null && newLoc.CanAddPlant() &&
-							    (plantInfo.tera_type[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
-							     plantInfo.tera_type[1] == teraType || plantInfo.tera_type[2] == teraType))
+							    (plantInfo.TeraType[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
+							     plantInfo.TeraType[1] == teraType || plantInfo.TeraType[2] == teraType))
 							{
-								newLoc.SetPlant(plantInfo.first_bitmap, GetRandomPlantInnerX(), GetRandomPlantInnerY());
+								newLoc.SetPlant(plantInfo.FirstBitmap, GetRandomPlantInnerX(), GetRandomPlantInnerY());
 								newLoc.SetFlammability(100);
 								PlantCount++;
 								break;
@@ -1104,7 +1104,7 @@ public class World
 					if (Misc.Random(5) > Math.Abs(temp - _optTemp[j]))
 					{
 						climateZone = j + 1;
-						int plantBitmap = PlantRes.scan(climateZone, teraType, 0);
+						int plantBitmap = PlantRes.Scan(climateZone, teraType, 0);
 						if (plantBitmap != 0)
 						{
 							loc = GetLoc(x, y);

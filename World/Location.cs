@@ -556,7 +556,7 @@ public class Location
 	{
 		_locFlag = _locFlag & ~(LOCATE_BLOCK_MASK | LOCATE_SITE_MASK) | (LOCATE_IS_PLANT | LOCATE_SITE_RESERVED);
 		_extraPara = plantId;
-		CargoId = (offsetY << 16) + offsetX;
+		CargoId = (offsetY << 8) + offsetX;
 		WalkableOff();
 	}
 
@@ -571,6 +571,16 @@ public class Location
 	public int PlantId()
 	{
 		return IsPlant() ? _extraPara : 0;
+	}
+
+	public int PlantInnerX()
+	{
+		return CargoId & 0xFF;
+	}
+	
+	public int PlantInnerY()
+	{
+		return CargoId >> 8;
 	}
 
 	public void PlantGrow()
