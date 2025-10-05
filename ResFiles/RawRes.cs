@@ -5,8 +5,8 @@ namespace TenKingdoms;
 
 public class RawRec
 {
-    public const int NAME_LEN = 12;
-    public const int TERA_TYPE_LEN = 1;
+    private const int NAME_LEN = 12;
+    private const int TERA_TYPE_LEN = 1;
 
     public char[] name = new char[NAME_LEN];
     public char[] tera_type = new char[TERA_TYPE_LEN];
@@ -24,33 +24,33 @@ public class RawRec
 
 public class RawInfo
 {
-    public int rawId;
-    public string name;
-    public int teraType;
+    public int RawId { get; set; }
+    public string Name { get; set; }
+    public int TeraType { get; set; }
 
-    public byte[] largeProductIcon;
-    public int largeProductIconWidth;
-    public int largeProductIconHeight;
+    public byte[] LargeProductIcon { get; set; }
+    public int LargeProductIconWidth { get; set; }
+    public int LargeProductIconHeight { get; set; }
     private IntPtr _largeProductTexture;
-    public byte[] smallProductIcon;
-    public int smallProductIconWidth;
-    public int smallProductIconHeight;
+    public byte[] SmallProductIcon { get; set; }
+    public int SmallProductIconWidth { get; set; }
+    public int SmallProductIconHeight { get; set; }
     private IntPtr _smallProductTexture;
-    public byte[] largeRawIcon;
-    public int largeRawIconWidth;
-    public int largeRawIconHeight;
+    public byte[] LargeRawIcon { get; set; }
+    public int LargeRawIconWidth { get; set; }
+    public int LargeRawIconHeight { get; set; }
     private IntPtr _largeRawTexture;
-    public byte[] smallRawIcon;
-    public int smallRawIconWidth;
-    public int smallRawIconHeight;
+    public byte[] SmallRawIcon { get; set; }
+    public int SmallRawIconWidth { get; set; }
+    public int SmallRawIconHeight { get; set; }
     private IntPtr _smallRawTexture;
 
     public IntPtr GetLargeProductTexture(Graphics graphics)
     {
         if (_largeProductTexture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(largeProductIcon, largeProductIconWidth, largeProductIconHeight);
-            _largeProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, largeProductIconWidth, largeProductIconHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(LargeProductIcon, LargeProductIconWidth, LargeProductIconHeight);
+            _largeProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, LargeProductIconWidth, LargeProductIconHeight);
         }
 
         return _largeProductTexture;
@@ -60,8 +60,8 @@ public class RawInfo
     {
         if (_smallProductTexture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(smallProductIcon, smallProductIconWidth, smallProductIconHeight);
-            _smallProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, smallProductIconWidth, smallProductIconHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(SmallProductIcon, SmallProductIconWidth, SmallProductIconHeight);
+            _smallProductTexture = graphics.CreateTextureFromBmp(decompressedBitmap, SmallProductIconWidth, SmallProductIconHeight);
         }
 
         return _smallProductTexture;
@@ -71,8 +71,8 @@ public class RawInfo
     {
         if (_largeRawTexture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(largeRawIcon, largeRawIconWidth, largeRawIconHeight);
-            _largeRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, largeRawIconWidth, largeRawIconHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(LargeRawIcon, LargeRawIconWidth, LargeRawIconHeight);
+            _largeRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, LargeRawIconWidth, LargeRawIconHeight);
         }
 
         return _largeRawTexture;
@@ -82,8 +82,8 @@ public class RawInfo
     {
         if (_smallRawTexture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(smallRawIcon, smallRawIconWidth, smallRawIconHeight);
-            _smallRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, smallRawIconWidth, smallRawIconHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(SmallRawIcon, SmallRawIconWidth, SmallRawIconHeight);
+            _smallRawTexture = graphics.CreateTextureFromBmp(decompressedBitmap, SmallRawIconWidth, SmallRawIconHeight);
         }
 
         return _smallRawTexture;
@@ -92,19 +92,13 @@ public class RawInfo
 
 public class RawRes
 {
-    private const string RAW_DB = "RAW";
-
     private RawInfo[] _rawInfos;
-
-    private readonly Resource _iconResource;
 
     private GameSet GameSet { get; }
 
     public RawRes(GameSet gameSet)
     {
         GameSet = gameSet;
-
-        _iconResource = new Resource($"{Sys.GameDataFolder}/Resource/I_RAW.RES");
 
         LoadAllInfo();
     }
@@ -113,7 +107,8 @@ public class RawRes
 
     private void LoadAllInfo()
     {
-        Database dbRaw = GameSet.OpenDb(RAW_DB);
+        Resource iconResource = new Resource($"{Sys.GameDataFolder}/Resource/I_RAW.RES");
+        Database dbRaw = GameSet.OpenDb("RAW");
         _rawInfos = new RawInfo[dbRaw.RecordCount];
 
         for (int i = 0; i < _rawInfos.Length; i++)
@@ -122,25 +117,25 @@ public class RawRes
             RawInfo rawInfo = new RawInfo();
             _rawInfos[i] = rawInfo;
 
-            rawInfo.rawId = i + 1;
-            rawInfo.name = Misc.ToString(rawRec.name);
-            rawInfo.teraType = Misc.ToInt32(rawRec.tera_type);
-            rawInfo.largeProductIcon = _iconResource.Read(i + 1);
-            rawInfo.largeProductIconWidth = BitConverter.ToInt16(rawInfo.largeProductIcon, 0);
-            rawInfo.largeProductIconHeight = BitConverter.ToInt16(rawInfo.largeProductIcon, 2);
-            rawInfo.largeProductIcon = rawInfo.largeProductIcon.Skip(4).ToArray();
-            rawInfo.smallProductIcon = _iconResource.Read(GameConstants.MAX_RAW + i + 1);
-            rawInfo.smallProductIconWidth = BitConverter.ToInt16(rawInfo.smallProductIcon, 0);
-            rawInfo.smallProductIconHeight = BitConverter.ToInt16(rawInfo.smallProductIcon, 2);
-            rawInfo.smallProductIcon = rawInfo.smallProductIcon.Skip(4).ToArray();
-            rawInfo.largeRawIcon = _iconResource.Read(GameConstants.MAX_RAW * 2 + i + 1);
-            rawInfo.largeRawIconWidth = BitConverter.ToInt16(rawInfo.largeRawIcon, 0);
-            rawInfo.largeRawIconHeight = BitConverter.ToInt16(rawInfo.largeRawIcon, 2);
-            rawInfo.largeRawIcon = rawInfo.largeRawIcon.Skip(4).ToArray();
-            rawInfo.smallRawIcon = _iconResource.Read(GameConstants.MAX_RAW * 3 + i + 1);
-            rawInfo.smallRawIconWidth = BitConverter.ToInt16(rawInfo.smallRawIcon, 0);
-            rawInfo.smallRawIconHeight = BitConverter.ToInt16(rawInfo.smallRawIcon, 2);
-            rawInfo.smallRawIcon = rawInfo.smallRawIcon.Skip(4).ToArray();
+            rawInfo.RawId = i + 1;
+            rawInfo.Name = Misc.ToString(rawRec.name);
+            rawInfo.TeraType = Misc.ToInt32(rawRec.tera_type);
+            rawInfo.LargeProductIcon = iconResource.Read(i + 1);
+            rawInfo.LargeProductIconWidth = BitConverter.ToInt16(rawInfo.LargeProductIcon, 0);
+            rawInfo.LargeProductIconHeight = BitConverter.ToInt16(rawInfo.LargeProductIcon, 2);
+            rawInfo.LargeProductIcon = rawInfo.LargeProductIcon.Skip(4).ToArray();
+            rawInfo.SmallProductIcon = iconResource.Read(GameConstants.MAX_RAW + i + 1);
+            rawInfo.SmallProductIconWidth = BitConverter.ToInt16(rawInfo.SmallProductIcon, 0);
+            rawInfo.SmallProductIconHeight = BitConverter.ToInt16(rawInfo.SmallProductIcon, 2);
+            rawInfo.SmallProductIcon = rawInfo.SmallProductIcon.Skip(4).ToArray();
+            rawInfo.LargeRawIcon = iconResource.Read(GameConstants.MAX_RAW * 2 + i + 1);
+            rawInfo.LargeRawIconWidth = BitConverter.ToInt16(rawInfo.LargeRawIcon, 0);
+            rawInfo.LargeRawIconHeight = BitConverter.ToInt16(rawInfo.LargeRawIcon, 2);
+            rawInfo.LargeRawIcon = rawInfo.LargeRawIcon.Skip(4).ToArray();
+            rawInfo.SmallRawIcon = iconResource.Read(GameConstants.MAX_RAW * 3 + i + 1);
+            rawInfo.SmallRawIconWidth = BitConverter.ToInt16(rawInfo.SmallRawIcon, 0);
+            rawInfo.SmallRawIconHeight = BitConverter.ToInt16(rawInfo.SmallRawIcon, 2);
+            rawInfo.SmallRawIcon = rawInfo.SmallRawIcon.Skip(4).ToArray();
         }
     }
 }

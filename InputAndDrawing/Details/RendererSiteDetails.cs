@@ -24,7 +24,7 @@ public partial class Renderer
                 DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 53);
                 DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 82);
                 PutText(FontSan, "Resource", DetailsX1 + 13, DetailsY1 + 56, -1, true);
-                PutText(FontSan, RawRes[site.ObjectId].name, DetailsX1 + 113, DetailsY1 + 56, -1, true);
+                PutText(FontSan, RawRes[site.ObjectId].Name, DetailsX1 + 113, DetailsY1 + 56, -1, true);
                 PutText(FontSan, "Reserve", DetailsX1 + 13, DetailsY1 + 85, -1, true);
                 PutText(FontSan, site.ReserveQty.ToString(), DetailsX1 + 113, DetailsY1 + 87, -1, true);
                 break;

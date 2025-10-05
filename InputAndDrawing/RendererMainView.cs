@@ -140,7 +140,7 @@ public partial class Renderer
         {
             case Site.SITE_RAW:
                 RawInfo rawInfo = RawRes[site.ObjectId];
-                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), screenX, screenY, Scale(rawInfo.largeRawIconWidth), Scale(rawInfo.largeRawIconHeight));
+                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), screenX, screenY, Scale(rawInfo.LargeRawIconWidth), Scale(rawInfo.LargeRawIconHeight));
                 break;
             case Site.SITE_SCROLL:
                 RaceInfo raceInfo = RaceRes[site.ObjectId];
@@ -151,8 +151,17 @@ public partial class Renderer
                     Scale(MonsterRes.goldCoinWidth), Scale(MonsterRes.goldCoinHeight));
                 break;
         }
-        
-        //TODO draw selected site
+
+        if (site.SiteId == _selectedSiteId)
+        {
+            const int thickness = 2;
+            const int color = Colors.VGA_YELLOW;
+
+            Graphics.DrawRect(screenX, screenY, CellTextureWidth, thickness, color);
+            Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, CellTextureWidth, thickness, color);
+            Graphics.DrawRect(screenX, screenY, thickness, CellTextureHeight, color);
+            Graphics.DrawRect(screenX + CellTextureWidth - thickness, screenY, thickness, CellTextureHeight, color);
+        }
     }
 
     private void DrawPlants()

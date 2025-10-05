@@ -8,7 +8,7 @@ public partial class Renderer
         
         RawInfo rawInfo = RawRes[factory.ProductRawId];
         Graphics.DrawBitmap(rawInfo.GetLargeProductTexture(Graphics), DetailsX1 + 12, DetailsY1 + 104,
-            rawInfo.largeProductIconWidth * 3 / 4, rawInfo.largeProductIconHeight * 3 / 4);
+            rawInfo.LargeProductIconWidth * 3 / 4, rawInfo.LargeProductIconHeight * 3 / 4);
         
         string manufacturingProduct = "Producing " + factory.ProductRawId switch
         {

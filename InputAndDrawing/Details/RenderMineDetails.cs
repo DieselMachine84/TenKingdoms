@@ -14,7 +14,7 @@ public partial class Renderer
 
         RawInfo rawInfo = RawRes[mine.RawId];
         Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), DetailsX1 + 12, DetailsY1 + 104,
-            rawInfo.largeRawIconWidth * 3 / 4, rawInfo.largeRawIconHeight * 3 / 4);
+            rawInfo.LargeRawIconWidth * 3 / 4, rawInfo.LargeRawIconHeight * 3 / 4);
 
         string miningResource = "Mining " + mine.RawId switch
         {
