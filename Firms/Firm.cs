@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public abstract class Firm : IIdObject
+public abstract class Firm : IIdObject, IDisplayable
 {
 	public const int MAX_FIRM_TYPE = 10;
 	public const int FIRM_BASE = 1;
@@ -40,6 +40,7 @@ public abstract class Firm : IIdObject
 	public int LocCenterX { get; private set; }
 	public int LocCenterY { get; private set; }
 	public int RegionId { get; protected set; }
+	public int DrawY2 { get; set; }
 	
 	public int ClosestTownNameId { get; private set; }
 	private int FirmNameInstanceId { get; set; }
@@ -70,9 +71,9 @@ public abstract class Firm : IIdObject
 	public List<int> LinkedTowns { get; } = new List<int>();
 	public List<int> LinkedFirmsEnable { get; } = new List<int>();
 	public List<int> LinkedTownsEnable { get; } = new List<int>();
-
 	
-	public bool AIFirm  { get; private set; } // whether Computer AI control this firm or not
+	
+	public bool AIFirm { get; private set; } // whether Computer AI control this firm or not
 
 	// some ai actions are processed once only in the processing day. To prevent multiple checking in the processing day
 	public bool AIProcessed { get; set; }
@@ -2962,6 +2963,11 @@ public abstract class Firm : IIdObject
 		if (r >= firmBuild.under_construction_bitmap_count)
 			r = firmBuild.under_construction_bitmap_count - 1;
 		return r;
+	}
+
+	public void Draw(IRenderer renderer, int layer)
+	{
+		renderer.DrawFirm(this, layer);
 	}
 
 	public abstract void DrawDetails(IRenderer renderer);

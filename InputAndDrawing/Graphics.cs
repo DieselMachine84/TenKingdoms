@@ -316,6 +316,11 @@ public class Graphics
                 break;
         }
     }
+
+    public void DrawBitmapScaled(IntPtr texture, int x, int y, int width, int height, FlipMode flip = FlipMode.None)
+    {
+        DrawBitmap(texture, x, y, width * 3 / 2, height * 3 / 2, flip);
+    }
     
     public byte[] DecompressTransparentBitmap(byte[] bitmap, int width, int height, byte[] colorTable = null)
     {

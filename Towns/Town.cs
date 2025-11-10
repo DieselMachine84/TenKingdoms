@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class Town : IIdObject
+public class Town : IIdObject, IDisplayable
 {
 	public int TownId { get; private set; }
 	public int NationId { get; private set; }
@@ -20,6 +20,7 @@ public class Town : IIdObject
 	public int TownNameId { get; private set; }
 	public int LayoutId { get; private set; }
 	public int[] SlotObjectIds { get; } = new int[TownLayout.MAX_TOWN_LAYOUT_SLOT]; // the race id. of each slot building
+	public int DrawY2 { get; set; }
 	public string Name => TownRes.GetName(TownNameId);
 
 
@@ -3778,6 +3779,11 @@ public class Town : IIdObject
 		}
 
 		NationArray.update_statistic();
+	}
+
+	public void Draw(IRenderer renderer, int layer)
+	{
+		renderer.DrawTown(this, layer);
 	}
 
 	#region IndependentTownAIFunctions

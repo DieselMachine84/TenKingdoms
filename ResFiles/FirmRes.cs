@@ -289,6 +289,11 @@ public class FirmInfo
     public int firm_skill_id; // the id. of the skill that fits this firm
     public int firm_race_id; // only can be built and operated by this race
     
+    public byte[] FlagBitmap { get; set; }
+    public int FlagBitmapWidth { get; set; }
+    public int FlagBitmapHeight { get; set; }
+    private Dictionary<int, IntPtr> _flagTextures = new Dictionary<int, nint>();
+    
     public FirmRes FirmRes { get; }
 
     private NationArray NationArray => Sys.Instance.NationArray;
@@ -405,6 +410,21 @@ public class FirmInfo
         if (nation_firm_count_array[nationRecno - 1] < 0) // run-time bug fixing
             nation_firm_count_array[nationRecno - 1] = 0;
     }
+
+    public IntPtr GetFlagTexture(Graphics graphics, int nationColor)
+    {
+        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
+        if (!_flagTextures.ContainsKey(textureKey))
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(FlagBitmap, FlagBitmapWidth, FlagBitmapHeight,
+                ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, FlagBitmapWidth, FlagBitmapHeight);
+            _flagTextures.Add(textureKey, texture);
+        }
+
+        return _flagTextures[textureKey];
+    }
 }
 
 public class FirmBuild
@@ -470,14 +490,14 @@ public class FirmBitmap
     public int bitmapHeight;
     private Dictionary<int, IntPtr> textures = new Dictionary<int, nint>();
 
-    public IntPtr GetTexture(Graphics graphics, int nationColor, bool isSelected)
+    public IntPtr GetTexture(Graphics graphics, int nationColor)
     {
         int colorScheme = ColorRemap.ColorSchemes[nationColor];
-        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
         if (!textures.ContainsKey(textureKey))
         {
             byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight,
-                ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+                ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
             IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
             textures.Add(textureKey, texture);
         }
@@ -536,6 +556,7 @@ public class FirmRes
 
     private void LoadFirmInfo()
     {
+        ResourceIdx flagResources = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
         //---- read in firm count and initialize firm info array ----//
 
         // only one database can be opened at a time, so we read FIRM.DBF first
@@ -595,6 +616,11 @@ public class FirmRes
             // if only one building style for this firm, take the race id. of the building as the race of the firm
             if (firmInfo.build_count == 1)
                 firmInfo.firm_race_id = firmBuild.race_id;
+            
+            byte[] flagData = flagResources.Read("FLAG-S0");
+            firmInfo.FlagBitmapWidth = BitConverter.ToInt16(flagData, 0);
+            firmInfo.FlagBitmapHeight = BitConverter.ToInt16(flagData, 2);
+            firmInfo.FlagBitmap = flagData.Skip(4).ToArray();
         }
     }
 

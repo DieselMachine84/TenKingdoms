@@ -118,9 +118,10 @@ public class TerrainInfo
     public byte[] Bitmap { get; set; }
     public int BitmapWidth { get; set; }
     public int BitmapHeight  { get; set; }
-    private IntPtr _texture;
     public int AnimationFrames  { get; set; }
     public byte[][] AnimationBitmaps  { get; set; }
+    
+    private IntPtr _texture;
     private readonly List<IntPtr> _animationTextures = new List<nint>();
 
     public IntPtr GetTexture(Graphics graphics)

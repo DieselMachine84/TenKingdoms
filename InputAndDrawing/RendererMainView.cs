@@ -3,62 +3,130 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+public interface IDisplayable
+{
+    const int NormalLayer = 1;
+    const int TopLayer = 2;
+    const int BottomLayer = 4;
+    const int AirLayer = 8;
+    
+    int DrawY2 { get; set; }
+    void Draw(IRenderer renderer, int layer);
+}
+
 public partial class Renderer
 {
     private readonly byte[] _animatedLineSegment = { 0x90, 0x93, 0x98, 0x9c, 0x9f, 0x9c, 0x98, 0x93 };
     private readonly List<IntPtr> _horizontalLineTextures = new List<nint>();
     private readonly List<IntPtr> _verticalLineTextures = new List<nint>();
     private readonly List<IntPtr> _diagonalLineTextures = new List<nint>();
+    private readonly List<IDisplayable> _objectsToDrawBottom = new List<IDisplayable>();
+    private readonly List<IDisplayable> _objectsToDraw = new List<IDisplayable>();
+    private readonly List<Town> _townsToDraw = new List<Town>();
+    private readonly List<Firm> _firmsToDraw = new List<Firm>();
+
+    private int GetScreenXFromLocX(int locX)
+    {
+        return MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
+    }
+
+    private int GetScreenYFromLocY(int locY)
+    {
+        return MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
+    }
 
     private void DrawMainView()
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
-        
-        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
+        _objectsToDrawBottom.Clear();
+        _objectsToDraw.Clear();
+        _townsToDraw.Clear();
+        _firmsToDraw.Clear();
+
+        DrawTerrainDirtAndHills();
+
+        const int margin = 2;
+        int startLocX = Math.Max(_topLeftLocX - margin, 0);
+        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + margin, GameConstants.MapSize);
+        int startLocY = Math.Max(_topLeftLocY - margin, 0);
+        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + margin, GameConstants.MapSize);
+
+        for (int locY = startLocY; locY < endLocY; locY++)
         {
-            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
+            for (int locX = startLocX; locX < endLocX; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
-                if (!location.IsExplored())
-                    continue;
 
-                int screenX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
-                int screenY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
-                DrawTerrain(location, screenX, screenY);
-
-                if (location.HasDirt())
+                if (location.IsTown())
                 {
-                    DrawDirt(location, locX, locY, screenX, screenY);
+                    Town town = TownArray[location.TownId()];
+                    if (!_townsToDraw.Contains(town))
+                    {
+                        town.DrawY2 = town.LocY2 * CellTextureHeight;
+                        _objectsToDrawBottom.Add(town);
+                        _objectsToDraw.Add(town);
+                        _townsToDraw.Add(town);
+                    }
                 }
 
-                //TODO draw snow
-
-                if (location.HasHill())
+                if (location.IsFirm())
                 {
-                    if (location.HillId2() != 0)
-                        DrawHill(HillRes[location.HillId2()], screenX, screenY, 1);
-                    DrawHill(HillRes[location.HillId1()], screenX, screenY, 1);
+                    Firm firm = FirmArray[location.FirmId()];
+                    if (!_firmsToDraw.Contains(firm))
+                    {
+                        firm.DrawY2 = firm.LocY2 * CellTextureHeight;
+                        _objectsToDrawBottom.Add(firm);
+                        _objectsToDraw.Add(firm);
+                        _firmsToDraw.Add(firm);
+                    }
                 }
 
-                //TODO draw power
-
-                // don't display if a building/object has already been built on the location
                 if (location.HasSite() && location.Walkable())
                 {
-                    DrawSite(location, screenX, screenY);
+                    Site site = SiteArray[location.SiteId()];
+                    site.DrawY2 = site.LocY * CellTextureHeight;
+                    _objectsToDrawBottom.Add(site);
+                }
+
+                if (location.HasUnit(UnitConstants.UNIT_LAND))
+                {
+                    Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
+                    if (!unit.IsStealth())
+                    {
+                        //TODO update absolute position
+                    }
                 }
             }
         }
-
-        DrawTownsGround();
         
-        DrawTownsStructures();
+        _objectsToDrawBottom.Sort((x, y) => x.DrawY2 - y.DrawY2);
+        _objectsToDraw.Sort((x, y) => x.DrawY2 - y.DrawY2);
+
+        for (int i = 0; i < _objectsToDrawBottom.Count; i++)
+        {
+            _objectsToDrawBottom[i].Draw(this, IDisplayable.BottomLayer);
+        }
+        for (int i = 0; i < _objectsToDraw.Count; i++)
+        {
+            _objectsToDraw[i].Draw(this, IDisplayable.NormalLayer);
+        }
+    }
+
+    private void DrawMainView2()
+    {
+        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
+
+        DrawTerrainDirtAndHills();
+        
+        //DrawTownsGround();
+        
+        //DrawTownsStructures();
         
         DrawUnitPaths();
 
         DrawUnits();
 
-        DrawFirms();
+        //DrawFirms();
 
         //Draw firm dies
 
@@ -96,14 +164,48 @@ public partial class Renderer
             DrawSelectionRectangle();
     }
 
+    private void DrawTerrainDirtAndHills()
+    {
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
+        {
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
+            {
+                Location location = World.GetLoc(locX, locY);
+                if (!location.IsExplored())
+                    continue;
+
+                int screenX = GetScreenXFromLocX(locX);
+                int screenY = GetScreenYFromLocY(locY);
+                
+                DrawTerrain(location, screenX, screenY);
+
+                if (location.HasDirt())
+                {
+                    DrawDirt(location, locX, locY, screenX, screenY);
+                }
+
+                //TODO draw snow
+
+                if (location.HasHill())
+                {
+                    if (location.HillId2() != 0)
+                        DrawHill(HillRes[location.HillId2()], screenX, screenY, IDisplayable.NormalLayer);
+                    DrawHill(HillRes[location.HillId1()], screenX, screenY, IDisplayable.NormalLayer);
+                }
+
+                //TODO draw power
+            }
+        }
+    }
+
     private void DrawTerrain(Location location, int screenX, int screenY)
     {
         TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
         IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
         if (animatedTerrain != IntPtr.Zero)
-            Graphics.DrawBitmap(animatedTerrain, screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+            Graphics.DrawBitmapScaled(animatedTerrain, screenX, screenY, terrainInfo.BitmapWidth, terrainInfo.BitmapHeight);
         else
-            Graphics.DrawBitmap(terrainInfo.GetTexture(Graphics), screenX, screenY, Scale(terrainInfo.BitmapWidth), Scale(terrainInfo.BitmapHeight));
+            Graphics.DrawBitmapScaled(terrainInfo.GetTexture(Graphics), screenX, screenY, terrainInfo.BitmapWidth, terrainInfo.BitmapHeight);
     }
 
     private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
@@ -116,8 +218,7 @@ public partial class Renderer
             if (dirtBitmapId != 0)
             {
                 RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
-                Graphics.DrawBitmap(dirtBitmapInfo.GetTexture(Graphics), screenX, screenY,
-                    Scale(dirtBitmapInfo.BitmapWidth), Scale(dirtBitmapInfo.BitmapHeight));
+                Graphics.DrawBitmapScaled(dirtBitmapInfo.GetTexture(Graphics), screenX, screenY, dirtBitmapInfo.BitmapWidth, dirtBitmapInfo.BitmapHeight);
             }
         }
     }
@@ -130,38 +231,7 @@ public partial class Renderer
 
         int hillX = screenX + Scale(hillBlockInfo.OffsetX);
         int hillY = screenY + Scale(hillBlockInfo.OffsetY);
-        Graphics.DrawBitmap(hillBlockInfo.GetTexture(Graphics), hillX, hillY, Scale(hillBlockInfo.BitmapWidth), Scale(hillBlockInfo.BitmapHeight));
-    }
-
-    private void DrawSite(Location location, int screenX, int screenY)
-    {
-        Site site = SiteArray[location.SiteId()];
-        switch (site.SiteType)
-        {
-            case Site.SITE_RAW:
-                RawInfo rawInfo = RawRes[site.ObjectId];
-                Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), screenX, screenY, Scale(rawInfo.LargeRawIconWidth), Scale(rawInfo.LargeRawIconHeight));
-                break;
-            case Site.SITE_SCROLL:
-                RaceInfo raceInfo = RaceRes[site.ObjectId];
-                Graphics.DrawBitmap(raceInfo.GetScrollTexture(Graphics), screenX, screenY, Scale(raceInfo.scrollBitmapWidth), Scale(raceInfo.scrollBitmapHeight));
-                break;
-            case Site.SITE_GOLD_COIN:
-                Graphics.DrawBitmap(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), screenX, screenY,
-                    Scale(MonsterRes.goldCoinWidth), Scale(MonsterRes.goldCoinHeight));
-                break;
-        }
-
-        if (site.SiteId == _selectedSiteId)
-        {
-            const int thickness = 2;
-            const int color = Colors.VGA_YELLOW;
-
-            Graphics.DrawRect(screenX, screenY, CellTextureWidth, thickness, color);
-            Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, CellTextureWidth, thickness, color);
-            Graphics.DrawRect(screenX, screenY, thickness, CellTextureHeight, color);
-            Graphics.DrawRect(screenX + CellTextureWidth - thickness, screenY, thickness, CellTextureHeight, color);
-        }
+        Graphics.DrawBitmapScaled(hillBlockInfo.GetTexture(Graphics), hillX, hillY, hillBlockInfo.BitmapWidth, hillBlockInfo.BitmapHeight);
     }
 
     private void DrawPlants()
@@ -174,146 +244,181 @@ public partial class Renderer
                 if (location.IsExplored() && location.IsPlant())
                 {
                     PlantBitmap plantBitmap = PlantRes.GetBitmap(location.PlantId());
-                    int drawX = MainViewX + (locX - _topLeftLocX) * CellTextureWidth + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
-                    int drawY = MainViewY + (locY - _topLeftLocY) * CellTextureHeight + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
+                    int drawX = GetScreenXFromLocX(locX) + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
+                    int drawY = GetScreenYFromLocY(locY) + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
                     Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
                 }
             }
         }
     }
 
-    private void DrawTownsGround()
+    public void DrawTown(Town town, int layer)
     {
-        foreach (Town town in TownArray)
+        int townX = GetScreenXFromLocX(town.LocX1);
+        int townY = GetScreenYFromLocY(town.LocY1);
+        TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
+
+        switch (layer)
         {
-            if (town.LocX2 < _topLeftLocX || town.LocX1 > _topLeftLocX + MainViewWidthInCells)
-                continue;
-            if (town.LocY2 < _topLeftLocY || town.LocY1 > _topLeftLocY + MainViewHeightInCells)
-                continue;
+            case IDisplayable.BottomLayer:
+                int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.groundBitmapWidth)) / 2;
+                int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.groundBitmapHeight)) / 2;
+                Graphics.DrawBitmapScaled(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
+                break;
             
-            TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
-            int townX = MainViewX + (town.LocX1 - _topLeftLocX) * CellTextureWidth;
-            int townY = MainViewY + (town.LocY1 - _topLeftLocY) * CellTextureHeight;
-            int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.groundBitmapWidth)) / 2;
-            int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.groundBitmapHeight)) / 2;
-            Graphics.DrawBitmap(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, Scale(townLayout.groundBitmapWidth), Scale(townLayout.groundBitmapHeight));
-        }
-    }
-
-    private void DrawTownsStructures()
-    {
-        foreach (Town town in TownArray)
-        {
-            if (town.LocX2 < _topLeftLocX || town.LocX1 > _topLeftLocX + MainViewWidthInCells)
-                continue;
-            if (town.LocY2 < _topLeftLocY || town.LocY1 > _topLeftLocY + MainViewHeightInCells)
-                continue;
-            
-            int townX = MainViewX + (town.LocX1 - _topLeftLocX) * CellTextureWidth;
-            int townY = MainViewY + (town.LocY1 - _topLeftLocY) * CellTextureHeight;
-            bool isSelected = (town.TownId == _selectedTownId);
-
-            TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
-            for (int i = 0; i < townLayout.SlotCount; i++)
-            {
-                TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
-
-                switch (townSlot.BuildType)
+            case IDisplayable.NormalLayer:
+                bool isSelected = (town.TownId == _selectedTownId);
+                for (int i = 0; i < townLayout.SlotCount; i++)
                 {
-                    case TownSlot.TOWN_OBJECT_HOUSE:
-                        TownBuild townBuild = TownRes.GetBuild(town.SlotObjectIds[i]);
-                        int townBuildX = townX + Scale(townSlot.BaseX) - Scale(townBuild.bitmapWidth) / 2;
-                        int townBuildY = townY + Scale(townSlot.BaseY) - Scale(townBuild.bitmapHeight);
-                        Graphics.DrawBitmap(townBuild.GetTexture(Graphics, town.NationId, isSelected), townBuildX, townBuildY,
-                            Scale(townBuild.bitmapWidth), Scale(townBuild.bitmapHeight));
-                        break;
-                    
-                    case TownSlot.TOWN_OBJECT_PLANT:
-                        PlantBitmap plantBitmap = PlantRes.GetBitmap(town.SlotObjectIds[i]);
-                        int townPlantX = townX + Scale(townSlot.BaseX) - Scale(plantBitmap.BitmapWidth) / 2;
-                        int townPlantY = townY + Scale(townSlot.BaseY) - Scale(plantBitmap.BitmapHeight);
-                        Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY,
-                            Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
-                        break;
-                    
-                    case TownSlot.TOWN_OBJECT_FARM:
-                        int farmIndex = townSlot.BuildCode - 1;
-                        int townFarmX = townX + Scale(townSlot.BaseX);
-                        int townFarmY = townY + Scale(townSlot.BaseY);
-                        var farmTexture = TownRes.GetFarmTexture(Graphics, farmIndex);
-                        Graphics.DrawBitmap(farmTexture, townFarmX, townFarmY,
-                            Scale(TownRes.FarmWidths[farmIndex]), Scale(TownRes.FarmHeights[farmIndex]));
-                        break;
-                    
-                    case TownSlot.TOWN_OBJECT_FLAG:
-                        if (town.NationId == 0 && town.RebelId == 0)
+                    TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
+                    switch (townSlot.BuildType)
+                    {
+                        case TownSlot.TOWN_OBJECT_HOUSE:
+                            TownBuild townBuild = TownRes.GetBuild(town.SlotObjectIds[i]);
+                            int townBuildX = townX + Scale(townSlot.BaseX) - Scale(townBuild.bitmapWidth) / 2;
+                            int townBuildY = townY + Scale(townSlot.BaseY) - Scale(townBuild.bitmapHeight);
+                            Graphics.DrawBitmapScaled(townBuild.GetTexture(Graphics, town.NationId, isSelected), townBuildX, townBuildY,
+                                townBuild.bitmapWidth, townBuild.bitmapHeight);
                             break;
-                        
-                        //TODO fix one flag slot with base_x == 57
-                        int flagIndex = (int)(((Sys.Instance.FrameNumber + town.TownId) % 8) / 2);
-                        int townFlagX = townX + Scale(townSlot.BaseX) + Scale(TownFlagShiftX);
-                        int townFlagY = townY + Scale(townSlot.BaseY) + Scale(TownFlagShiftY);
-                        var flagTexture = TownRes.GetFlagTexture(Graphics, flagIndex, town.NationId);
-                        Graphics.DrawBitmap(flagTexture, townFlagX, townFlagY,
-                            Scale(TownRes.FlagWidths[flagIndex]), Scale(TownRes.FlagHeights[flagIndex]));
-                        break;
+
+                        case TownSlot.TOWN_OBJECT_PLANT:
+                            PlantBitmap plantBitmap = PlantRes.GetBitmap(town.SlotObjectIds[i]);
+                            int townPlantX = townX + Scale(townSlot.BaseX) - Scale(plantBitmap.BitmapWidth) / 2;
+                            int townPlantY = townY + Scale(townSlot.BaseY) - Scale(plantBitmap.BitmapHeight);
+                            Graphics.DrawBitmapScaled(plantBitmap.GetTexture(Graphics), townPlantX, townPlantY, plantBitmap.BitmapWidth, plantBitmap.BitmapHeight);
+                            break;
+
+                        case TownSlot.TOWN_OBJECT_FARM:
+                            int farmIndex = townSlot.BuildCode - 1;
+                            int townFarmX = townX + Scale(townSlot.BaseX);
+                            int townFarmY = townY + Scale(townSlot.BaseY);
+                            var farmTexture = TownRes.GetFarmTexture(Graphics, farmIndex);
+                            Graphics.DrawBitmapScaled(farmTexture, townFarmX, townFarmY, TownRes.FarmWidths[farmIndex], TownRes.FarmHeights[farmIndex]);
+                            break;
+
+                        case TownSlot.TOWN_OBJECT_FLAG:
+                            if (town.NationId == 0 && town.RebelId == 0)
+                                break;
+
+                            //TODO fix one flag slot with base_x == 57
+                            int flagIndex = (int)(((Sys.Instance.FrameNumber + town.TownId) % 8) / 2);
+                            int townFlagX = townX + Scale(townSlot.BaseX) + Scale(TownFlagShiftX);
+                            int townFlagY = townY + Scale(townSlot.BaseY) + Scale(TownFlagShiftY);
+                            var flagTexture = TownRes.GetFlagTexture(Graphics, flagIndex, town.NationId);
+                            Graphics.DrawBitmapScaled(flagTexture, townFlagX, townFlagY, TownRes.FlagWidths[flagIndex], TownRes.FlagHeights[flagIndex]);
+                            break;
+                    }
                 }
-            }
+                break;
         }
     }
 
-    private void DrawFirms()
+    public void DrawFirm(Firm firm, int layer)
     {
-        //TODO
-        int displayLayer = 1;
-
-        foreach (Firm firm in FirmArray)
+        int firmX = GetScreenXFromLocX(firm.LocX1);
+        int firmY = GetScreenYFromLocY(firm.LocY1);
+        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
+        // if in construction, don't draw ground unless the last construction frame
+        if (firmBuild.ground_bitmap_recno != 0 &&
+            (!firm.UnderConstruction || firm.ConstructionFrame() >= firmBuild.under_construction_bitmap_count - 1))
         {
-            if (firm.LocX2 < _topLeftLocX || firm.LocX1 > _topLeftLocX + MainViewWidthInCells)
-                continue;
-            if (firm.LocY2 < _topLeftLocY || firm.LocY1 > _topLeftLocY + MainViewHeightInCells)
-                continue;
-
-            int firmX = MainViewX + (firm.LocX1 - _topLeftLocX) * CellTextureWidth;
-            int firmY = MainViewY + (firm.LocY1 - _topLeftLocY) * CellTextureHeight;
-
-            FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
-            // if in construction, don't draw ground unless the last construction frame
-            if (firmBuild.ground_bitmap_recno != 0 &&
-                (!firm.UnderConstruction || firm.ConstructionFrame() >= firmBuild.under_construction_bitmap_count - 1))
+            FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
+            if (firmBitmap.display_layer == layer)
             {
-                FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
                 int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
                 int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-                Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, 0, false), firmBitmapX, firmBitmapY,
-                    Scale(firmBitmap.bitmapWidth), Scale(firmBitmap.bitmapHeight));
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
             }
-
-            if (firmBuild.animate_full_size)
+        }
+        
+        if (firmBuild.animate_full_size)
+        {
+            DrawFirmFullSize(firm, firmX, firmY, layer);
+        }
+        else
+        {
+            if (firm.UnderConstruction)
             {
-                DrawFirmFullSize(firm, firmX, firmY, displayLayer);
+                DrawFirmFullSize(firm, firmX, firmY, layer);
             }
-            else
+            else if (!firm.IsOperating())
             {
-                if (firm.UnderConstruction)
+                if (FirmRes.get_bitmap(firmBuild.idle_bitmap_recno) != null)
                 {
-                    DrawFirmFullSize(firm, firmX, firmY, displayLayer);
-                }
-                else if (!firm.IsOperating())
-                {
-                    if (FirmRes.get_bitmap(firmBuild.idle_bitmap_recno) != null)
-                        DrawFirmFullSize(firm, firmX, firmY, displayLayer);
-                    else
-                    {
-                        DrawFirmFrame(firm, firmX, firmY, 1, displayLayer);
-                        DrawFirmFrame(firm, firmX, firmY, 2, displayLayer);
-                    }
+                    DrawFirmFullSize(firm, firmX, firmY, layer);
                 }
                 else
                 {
-                    // the first frame is the common frame for multi-segment bitmaps
-                    DrawFirmFrame(firm, firmX, firmY, 1, displayLayer);
-                    DrawFirmFrame(firm, firmX, firmY, firm.CurFrame, displayLayer);
+                    DrawFirmFrame(firm, firmX, firmY, 1, layer);
+                    DrawFirmFrame(firm, firmX, firmY, 2, layer);
+                }
+            }
+            else
+            {
+                // the first frame is the common frame for multi-segment bitmaps
+                DrawFirmFrame(firm, firmX, firmY, 1, layer);
+                DrawFirmFrame(firm, firmX, firmY, firm.CurFrame, layer);
+            }
+        }
+
+        if (firm.FirmType == Firm.FIRM_MINE)
+        {
+            FirmMine mine = (FirmMine)firm;
+            if (layer == IDisplayable.NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && mine.RawId != 0)
+            {
+                int cargoCount = (int)(Firm.MAX_CARGO * mine.StockQty / mine.MaxStockQty);
+                RawInfo rawInfo = RawRes[mine.RawId];
+                DrawFirmCargo(Math.Max(cargoCount, 1), firmX, firmY, rawInfo.GetSmallRawTexture(Graphics), rawInfo.SmallRawIconWidth, rawInfo.SmallRawIconHeight);
+            }
+        }
+
+        if (firm.FirmType == Firm.FIRM_FACTORY)
+        {
+            FirmFactory factory = (FirmFactory)firm;
+            if (layer == IDisplayable.NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && factory.ProductRawId != 0)
+            {
+                int cargoCount = (int)(Firm.MAX_CARGO * factory.StockQty / factory.MaxStockQty);
+                RawInfo rawInfo = RawRes[factory.ProductRawId];
+                DrawFirmCargo(Math.Max(cargoCount, 1), firmX, firmY, rawInfo.GetSmallProductTexture(Graphics), rawInfo.SmallProductIconWidth, rawInfo.SmallProductIconHeight);
+            }
+        }
+
+        if (firm.FirmType == Firm.FIRM_MARKET)
+        {
+            if (layer == IDisplayable.NormalLayer && !firm.UnderConstruction)
+            {
+                FirmMarket market = (FirmMarket)firm;
+                for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+                {
+                    IntPtr texture = IntPtr.Zero;
+                    int width = 0;
+                    int height = 0;
+                    
+                    MarketGoods marketGoods = market.market_goods_array[i];
+                    if (marketGoods.RawId != 0)
+                    {
+                        RawInfo rawInfo = RawRes[marketGoods.RawId];
+                        texture = rawInfo.GetSmallRawTexture(Graphics);
+                        width = rawInfo.SmallRawIconWidth;
+                        height = rawInfo.SmallRawIconHeight;
+                    }
+
+                    if (marketGoods.ProductId != 0)
+                    {
+                        RawInfo rawInfo = RawRes[marketGoods.ProductId];
+                        texture = rawInfo.GetSmallProductTexture(Graphics);
+                        width = rawInfo.SmallProductIconWidth;
+                        height = rawInfo.SmallProductIconHeight;
+                    }
+
+                    if (texture != IntPtr.Zero)
+                    {
+                        int count = Math.Max((int)(Firm.MAX_CARGO * marketGoods.StockQty / market.MaxStockQty), 1);
+                        for (int j = 0; j < count; j++)
+                        {
+                            Graphics.DrawBitmapScaled(texture, firmX + _marketSectionX[i] + _marketCargoX[j], firmY + _marketSectionY[i] + _marketCargoY[j], width, height);
+                        }
+                    }
                 }
             }
         }
@@ -321,12 +426,16 @@ public partial class Renderer
 
     private void DrawFirmFullSize(Firm firm, int firmX, int firmY, int displayLayer)
     {
-        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
         if (firm.UnderConstruction)
         {
-            //TODO
+            FirmInfo firmInfo = FirmRes[firm.FirmType];
+            int flag1X = firmX;
+            Graphics.DrawBitmapScaled(firmInfo.GetFlagTexture(Graphics, firm.NationId), flag1X, firmY, firmInfo.FlagBitmapWidth, firmInfo.FlagBitmapHeight);
+            int flag2X = MainViewX + (firm.LocX2 + 1 - _topLeftLocX) * CellTextureWidth - Scale(firmInfo.FlagBitmapWidth);
+            Graphics.DrawBitmapScaled(firmInfo.GetFlagTexture(Graphics, firm.NationId), flag2X, firmY, firmInfo.FlagBitmapWidth, firmInfo.FlagBitmapHeight);
         }
 
+        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
         FirmBitmap firmBitmap;
         if (firm.UnderConstruction)
         {
@@ -342,37 +451,89 @@ public partial class Renderer
             firmBitmap = FirmRes.get_bitmap(firmBuild.first_bitmap(firm.CurFrame));
         }
 
-        // ------ check if the display layer is correct ---------//
-        if ((firmBitmap.display_layer & displayLayer) == 0)
+        if (firmBitmap == null || firmBitmap.display_layer != displayLayer)
             return;
 
         int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
         int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-        Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.NationId, false), firmBitmapX, firmBitmapY,
-            Scale(firmBitmap.bitmapWidth), Scale(firmBitmap.bitmapHeight));
+        Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
 
         if (firm.UnderConstruction)
         {
-            //TODO
+            FirmInfo firmInfo = FirmRes[firm.FirmType];
+            int flag3X = firmX;
+            int flag3Y = MainViewY + (firm.LocY2 + 1 - _topLeftLocY) * CellTextureHeight - Scale(firmInfo.FlagBitmapHeight);
+            Graphics.DrawBitmapScaled(firmInfo.GetFlagTexture(Graphics, firm.NationId), flag3X, flag3Y, firmInfo.FlagBitmapWidth, firmInfo.FlagBitmapHeight);
+            int flag4X = MainViewX + (firm.LocX2 + 1 - _topLeftLocX) * CellTextureWidth - Scale(firmInfo.FlagBitmapWidth);
+            int flag4Y = flag3Y;
+            Graphics.DrawBitmapScaled(firmInfo.GetFlagTexture(Graphics, firm.NationId), flag4X, flag4Y, firmInfo.FlagBitmapWidth, firmInfo.FlagBitmapHeight);
         }
     }
 
-    private void DrawFirmFrame(Firm firm, int firmX, int firmY, int frameId, int displayLayer)
+    private void DrawFirmFrame(Firm firm, int firmX, int firmY, int frameId, int layer)
     {
         FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
         int firstBitmap = firmBuild.first_bitmap(frameId);
         int bitmapCount = firmBuild.bitmap_count(frameId);
 
-        for (int i = 0, bitmapRecno = firstBitmap; i < bitmapCount; i++, bitmapRecno++)
+        for (int i = 0, bitmapId = firstBitmap; i < bitmapCount; i++, bitmapId++)
         {
-            FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapRecno);
-            int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
-            int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-            Graphics.DrawBitmap(firmBitmap.GetTexture(Graphics, firm.NationId, false), firmBitmapX, firmBitmapY,
-                Scale(firmBitmap.bitmapWidth), Scale(firmBitmap.bitmapHeight));
+            FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapId);
+            if (firmBitmap.display_layer == layer)
+            {
+                int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
+                int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+            }
         }
     }
 
+    private int[] _cargoX = { 1, 12, 22, 1, 12, 22, 1, 12, 22 };
+    private int[] _cargoY = { 129, 126, 129, 119, 116, 119, 108, 105, 108 };
+    private int[] _marketSectionX = { 60, 44, 36 };
+    private int[] _marketSectionY = { 45, 63, 84 };
+    private int[] _marketCargoX = { 0, 9, 18, 12, 21, 30, 24, 33, 42 };
+    private int[] _marketCargoY = { 0, 1, 3, 9, 10, 12, 18, 19, 21 };
+    private void DrawFirmCargo(int count, int firmX, int firmY, IntPtr texture, int width, int height)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Graphics.DrawBitmapScaled(texture, firmX + _cargoX[i], firmY + _cargoY[i], width, height);
+        }
+    }
+
+    public void DrawSite(Site site, int layer)
+    {
+        int siteX = GetScreenXFromLocX(site.LocX);
+        int siteY = GetScreenYFromLocY(site.LocY);
+
+        switch (site.SiteType)
+        {
+            case Site.SITE_RAW:
+                RawInfo rawInfo = RawRes[site.ObjectId];
+                Graphics.DrawBitmapScaled(rawInfo.GetLargeRawTexture(Graphics), siteX, siteY, rawInfo.LargeRawIconWidth, rawInfo.LargeRawIconHeight);
+                break;
+            case Site.SITE_SCROLL:
+                RaceInfo raceInfo = RaceRes[site.ObjectId];
+                Graphics.DrawBitmapScaled(raceInfo.GetScrollTexture(Graphics), siteX, siteY, raceInfo.scrollBitmapWidth, raceInfo.scrollBitmapHeight);
+                break;
+            case Site.SITE_GOLD_COIN:
+                Graphics.DrawBitmapScaled(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), siteX, siteY, MonsterRes.goldCoinWidth, MonsterRes.goldCoinHeight);
+                break;
+        }
+
+        if (site.SiteId == _selectedSiteId)
+        {
+            const int thickness = 2;
+            const int color = Colors.VGA_YELLOW;
+
+            Graphics.DrawRect(siteX, siteY, CellTextureWidth, thickness, color);
+            Graphics.DrawRect(siteX, siteY + CellTextureHeight - thickness, CellTextureWidth, thickness, color);
+            Graphics.DrawRect(siteX, siteY, thickness, CellTextureHeight, color);
+            Graphics.DrawRect(siteX + CellTextureWidth - thickness, siteY, thickness, CellTextureHeight, color);
+        }
+    }
+    
     private void DrawUnits()
     {
         foreach (Unit unit in UnitArray)

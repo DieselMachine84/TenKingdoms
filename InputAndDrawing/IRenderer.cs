@@ -6,7 +6,12 @@ public interface IRenderer
     void ProcessInput(int eventType, int screenX, int screenY);
     void Reset();
 
-   
+
+    void DrawTown(Town town, int layer);
+    void DrawFirm(Firm firm, int layer);
+    void DrawSite(Site site, int layer);
+
+
     void DrawMineDetails(FirmMine mine);
     void DrawFactoryDetails(FirmFactory factory);
     void DrawResearchDetails(FirmResearch research);

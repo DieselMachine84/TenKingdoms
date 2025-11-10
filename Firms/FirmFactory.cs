@@ -4,6 +4,7 @@ namespace TenKingdoms;
 
 public class FirmFactory : Firm
 {
+	//TODO ProductId
 	public int ProductRawId { get; set; } // the raw id. of the product
 
 	public double RawStockQty { get; set; } // raw materials stock

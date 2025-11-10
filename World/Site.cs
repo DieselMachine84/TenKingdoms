@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class Site : IIdObject
+public class Site : IIdObject, IDisplayable
 {
     public const int SITE_RAW = 1;
     public const int SITE_SCROLL = 2;
@@ -14,6 +14,7 @@ public class Site : IIdObject
     public int LocX { get; private set; }
     public int LocY { get; private set; }
     public int RegionId { get; private set; }
+    public int DrawY2 { get; set; }
 
     public int ReserveQty { get; set; } // for raw material only
     public bool HasMine { get; set; } // whether there is a mine on this site
@@ -139,5 +140,10 @@ public class Site : IIdObject
         }
 
         return false;
+    }
+    
+    public void Draw(IRenderer renderer, int layer)
+    {
+        renderer.DrawSite(this, layer);
     }
 }
