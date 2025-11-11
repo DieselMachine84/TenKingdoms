@@ -120,6 +120,11 @@ public partial class Renderer : IRenderer
         return (_topLeftLocX + (screenX - MainViewX) / CellTextureWidth, _topLeftLocY + (screenY - MainViewY) / CellTextureHeight);
     }
 
+    private (int, int) GetScreenXAndY(int locX, int locY)
+    {
+        return (MainViewX + (locX - _topLeftLocX) * CellTextureWidth, MainViewY + (locY - _topLeftLocY) * CellTextureHeight);
+    }
+
     private (int, int) GetMiniMapLocation(int screenX, int screenY)
     {
         int locX = screenX - MiniMapX;

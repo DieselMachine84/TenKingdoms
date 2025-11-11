@@ -22,26 +22,22 @@ public partial class Renderer
     private readonly List<IntPtr> _diagonalLineTextures = new List<nint>();
     private readonly List<IDisplayable> _objectsToDrawBottom = new List<IDisplayable>();
     private readonly List<IDisplayable> _objectsToDraw = new List<IDisplayable>();
+    private readonly List<IDisplayable> _objectsToDrawTop = new List<IDisplayable>();
+    private readonly List<IDisplayable> _objectsToDrawAir = new List<IDisplayable>();
     private readonly List<Town> _townsToDraw = new List<Town>();
     private readonly List<Firm> _firmsToDraw = new List<Firm>();
-
-    private int GetScreenXFromLocX(int locX)
-    {
-        return MainViewX + (locX - _topLeftLocX) * CellTextureWidth;
-    }
-
-    private int GetScreenYFromLocY(int locY)
-    {
-        return MainViewY + (locY - _topLeftLocY) * CellTextureHeight;
-    }
+    private readonly List<Unit> _airAndSeaUnitsToDraw = new List<Unit>();
 
     private void DrawMainView()
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         _objectsToDrawBottom.Clear();
         _objectsToDraw.Clear();
+        _objectsToDrawTop.Clear();
+        _objectsToDrawAir.Clear();
         _townsToDraw.Clear();
         _firmsToDraw.Clear();
+        _airAndSeaUnitsToDraw.Clear();
 
         DrawTerrainDirtAndHills();
 
@@ -94,6 +90,32 @@ public partial class Renderer
                     if (!unit.IsStealth())
                     {
                         //TODO update absolute position
+                        unit.DrawY2 = Scale(unit.CurY);
+                        _objectsToDraw.Add(unit);
+                    }
+                }
+                
+                if (location.HasUnit(UnitConstants.UNIT_SEA))
+                {
+                    Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
+                    if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
+                    {
+                        //TODO update absolute position
+                        unit.DrawY2 = unit.CurY;
+                        _objectsToDraw.Add(unit);
+                        _airAndSeaUnitsToDraw.Add(unit);
+                    }
+                }
+                
+                if (location.HasUnit(UnitConstants.UNIT_AIR))
+                {
+                    Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
+                    if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
+                    {
+                        //TODO update absolute position
+                        unit.DrawY2 = unit.CurY;
+                        _objectsToDrawAir.Add(unit);
+                        _airAndSeaUnitsToDraw.Add(unit);
                     }
                 }
             }
@@ -101,65 +123,30 @@ public partial class Renderer
         
         _objectsToDrawBottom.Sort((x, y) => x.DrawY2 - y.DrawY2);
         _objectsToDraw.Sort((x, y) => x.DrawY2 - y.DrawY2);
+        _objectsToDrawTop.Sort((x, y) => x.DrawY2 - y.DrawY2);
+        _objectsToDrawAir.Sort((x, y) => x.DrawY2 - y.DrawY2);
 
         for (int i = 0; i < _objectsToDrawBottom.Count; i++)
         {
             _objectsToDrawBottom[i].Draw(this, IDisplayable.BottomLayer);
         }
+        DrawUnitPaths(IDisplayable.NormalLayer);
         for (int i = 0; i < _objectsToDraw.Count; i++)
         {
             _objectsToDraw[i].Draw(this, IDisplayable.NormalLayer);
         }
-    }
-
-    private void DrawMainView2()
-    {
-        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
-
-        DrawTerrainDirtAndHills();
+        for (int i = 0; i < _objectsToDrawTop.Count; i++)
+        {
+            _objectsToDrawTop[i].Draw(this, IDisplayable.TopLayer);
+        }
+        DrawUnitPaths(IDisplayable.AirLayer);
+        for (int i = 0; i < _objectsToDrawAir.Count; i++)
+        {
+            _objectsToDrawAir[i].Draw(this, IDisplayable.AirLayer);
+        }
         
-        //DrawTownsGround();
+        //TODO draw way points
         
-        //DrawTownsStructures();
-        
-        DrawUnitPaths();
-
-        DrawUnits();
-
-        //DrawFirms();
-
-        //Draw firm dies
-
-        DrawPlants();
-
-        //Draw hills
-
-        //Draw rocks
-
-        //Draw fire
-
-        //Draw air units
-
-        //Draw bullets
-
-        //Draw tornadoes
-
-        //Draw effects
-
-        //Draw unit paths and waypoints
-
-        //DrawWeatherEffects();
-
-        //DrawBuildMarker();
-
-        //if (Config.blacken_map && Config.fog_of_war)
-        //BlackenFogOfWar();
-
-        //else if (!Config.explore_whole_map)
-        //BlackenUnexplored();
-
-        //DispText();
-
         if (_leftMousePressed)
             DrawSelectionRectangle();
     }
@@ -174,8 +161,7 @@ public partial class Renderer
                 if (!location.IsExplored())
                     continue;
 
-                int screenX = GetScreenXFromLocX(locX);
-                int screenY = GetScreenYFromLocY(locY);
+                (int screenX, int screenY) = GetScreenXAndY(locX, locY);
                 
                 DrawTerrain(location, screenX, screenY);
 
@@ -243,9 +229,10 @@ public partial class Renderer
                 Location location = World.GetLoc(locX, locY);
                 if (location.IsExplored() && location.IsPlant())
                 {
+                    (int screenX, int screenY) = GetScreenXAndY(locX, locY);
                     PlantBitmap plantBitmap = PlantRes.GetBitmap(location.PlantId());
-                    int drawX = GetScreenXFromLocX(locX) + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
-                    int drawY = GetScreenYFromLocY(locY) + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
+                    int drawX = screenX + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
+                    int drawY = screenY + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
                     Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
                 }
             }
@@ -254,8 +241,7 @@ public partial class Renderer
 
     public void DrawTown(Town town, int layer)
     {
-        int townX = GetScreenXFromLocX(town.LocX1);
-        int townY = GetScreenYFromLocY(town.LocY1);
+        (int townX, int townY) = GetScreenXAndY(town.LocX1, town.LocY1);
         TownLayout townLayout = TownRes.GetLayout(town.LayoutId);
 
         switch (layer)
@@ -315,8 +301,7 @@ public partial class Renderer
 
     public void DrawFirm(Firm firm, int layer)
     {
-        int firmX = GetScreenXFromLocX(firm.LocX1);
-        int firmY = GetScreenYFromLocY(firm.LocY1);
+        (int firmX, int firmY) = GetScreenXAndY(firm.LocX1, firm.LocY1);
         FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
         // if in construction, don't draw ground unless the last construction frame
         if (firmBuild.ground_bitmap_recno != 0 &&
@@ -504,8 +489,7 @@ public partial class Renderer
 
     public void DrawSite(Site site, int layer)
     {
-        int siteX = GetScreenXFromLocX(site.LocX);
-        int siteY = GetScreenYFromLocY(site.LocY);
+        (int siteX, int siteY) = GetScreenXAndY(site.LocX, site.LocY);
 
         switch (site.SiteType)
         {
@@ -533,111 +517,97 @@ public partial class Renderer
             Graphics.DrawRect(siteX + CellTextureWidth - thickness, siteY, thickness, CellTextureHeight, color);
         }
     }
-    
-    private void DrawUnits()
+
+    public void DrawUnit(Unit unit, int layer)
     {
-        foreach (Unit unit in UnitArray)
+        SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
+        //TODO update absolute position
+        int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + Scale(spriteFrame.OffsetX);
+        int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + Scale(spriteFrame.OffsetY);
+
+        //TODO draw outlined if mouse cursor is pointed on this unit
+        SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
+        Graphics.DrawBitmapScaled(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
+            spriteFrame.Width, spriteFrame.Height, needMirror ? FlipMode.Horizontal : FlipMode.None);
+
+        //Draw skill icons
+        if (unit is UnitHuman)
         {
-            // TODO check conditions for big units
-            // TODO CurLoc or NextLoc?
-            if (unit.CurLocX < _topLeftLocX || unit.CurLocX > _topLeftLocX + MainViewWidthInCells)
-                continue;
-            if (unit.CurLocY < _topLeftLocY || unit.CurLocY > _topLeftLocY + MainViewHeightInCells)
-                continue;
-
-            SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
-            int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + spriteFrame.OffsetX;
-            int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + spriteFrame.OffsetY;
-
-            SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
-            //TODO select only under cursor?
-            //bool isSelected = (unit.sprite_recno == _selectedUnitId);
-            Graphics.DrawBitmap(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
-                Scale(spriteFrame.Width), Scale(spriteFrame.Height), needMirror ? FlipMode.Horizontal : FlipMode.None);
-
-            if (unit is UnitHuman)
+            IntPtr skillTexture = unit.Rank switch
             {
-                IntPtr skillTexture = unit.Rank switch
+                Unit.RANK_SOLDIER => unit.Skill.SkillId switch
                 {
-                    Unit.RANK_SOLDIER => unit.Skill.SkillId switch
-                    {
-                        Skill.SKILL_CONSTRUCTION => _constructionTexture,
-                        Skill.SKILL_LEADING => _leadershipTexture,
-                        Skill.SKILL_MINING => _miningTexture,
-                        Skill.SKILL_MFT => _manufactureTexture,
-                        Skill.SKILL_RESEARCH => _researchTexture,
-                        Skill.SKILL_SPYING => _spyingTexture,
-                        Skill.SKILL_PRAYING => _prayingTexture,
-                        _ => IntPtr.Zero
-                    },
-                    Unit.RANK_GENERAL => _generalTexture,
-                    Unit.RANK_KING => _kingTexture,
+                    Skill.SKILL_CONSTRUCTION => _constructionTexture,
+                    Skill.SKILL_LEADING => _leadershipTexture,
+                    Skill.SKILL_MINING => _miningTexture,
+                    Skill.SKILL_MFT => _manufactureTexture,
+                    Skill.SKILL_RESEARCH => _researchTexture,
+                    Skill.SKILL_SPYING => _spyingTexture,
+                    Skill.SKILL_PRAYING => _prayingTexture,
                     _ => IntPtr.Zero
-                };
+                },
+                Unit.RANK_GENERAL => _generalTexture,
+                Unit.RANK_KING => _kingTexture,
+                _ => IntPtr.Zero
+            };
 
-                int skillIconX = unitX - spriteFrame.OffsetX + 32;
-                int skillIconY = unitY - spriteFrame.OffsetY - 34;
-                int iconWidth = Scale(_skillWidth);
-                int iconHeight = Scale(_skillHeight);
-                if (skillTexture != IntPtr.Zero)
+            int skillIconX = unitX - Scale(spriteFrame.OffsetX) + 32;
+            int skillIconY = unitY - Scale(spriteFrame.OffsetY) - 37;
+            int iconWidth = Scale(_skillWidth);
+            int iconHeight = Scale(_skillHeight);
+            if (skillTexture != IntPtr.Zero)
+            {
+                Graphics.DrawBitmap(skillTexture, skillIconX, skillIconY, iconWidth, iconHeight);
+            }
+
+            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+            {
+                int spyIconX = skillIconX;
+                int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + iconHeight + 1 : skillIconY;
+                Graphics.DrawBitmap(_spyingTexture, spyIconX, spyIconY, iconWidth, iconHeight);
+
+                if (Config.show_ai_info)
                 {
-                    Graphics.DrawBitmap(skillTexture, skillIconX, skillIconY, iconWidth, iconHeight);
-                }
-
-                if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
-                {
-                    int spyIconX = skillIconX;
-                    int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + iconHeight + 1 : skillIconY;
-                    Graphics.DrawBitmap(_spyingTexture, spyIconX, spyIconY, iconWidth, iconHeight);
-
-                    if (Config.show_ai_info)
-                    {
-                        int color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[unit.TrueNationId()], false).MainColor;
-                        Graphics.DrawLine(spyIconX, spyIconY, spyIconX + iconWidth - 1, spyIconY, color);
-                        Graphics.DrawLine(spyIconX, spyIconY + 1, spyIconX + iconWidth - 1, spyIconY + 1, color);
-                        Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 2, spyIconX + iconWidth - 1, spyIconY + iconHeight - 2, color);
-                        Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 1, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
-                        Graphics.DrawLine(spyIconX, spyIconY, spyIconX, spyIconY + iconHeight - 1, color);
-                        Graphics.DrawLine(spyIconX + 1, spyIconY, spyIconX + 1, spyIconY + iconHeight - 1, color);
-                        Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
-                        Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
-                    }
+                    int color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[unit.TrueNationId()], false).MainColor;
+                    Graphics.DrawLine(spyIconX, spyIconY, spyIconX + iconWidth - 1, spyIconY, color);
+                    Graphics.DrawLine(spyIconX, spyIconY + 1, spyIconX + iconWidth - 1, spyIconY + 1, color);
+                    Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 2, spyIconX + iconWidth - 1, spyIconY + iconHeight - 2, color);
+                    Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 1, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
+                    Graphics.DrawLine(spyIconX, spyIconY, spyIconX, spyIconY + iconHeight - 1, color);
+                    Graphics.DrawLine(spyIconX + 1, spyIconY, spyIconX + 1, spyIconY + iconHeight - 1, color);
+                    Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
+                    Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
                 }
             }
         }
-
-        for (int i = 0; i < _selectedUnits.Count; i++)
+        
+        if (_selectedUnits.Contains(unit.SpriteId))
         {
-            Unit selectedUnit = UnitArray[_selectedUnits[i]];
-            if (selectedUnit.CurLocX < _topLeftLocX || selectedUnit.CurLocX > _topLeftLocX + MainViewWidthInCells)
-                continue;
-            if (selectedUnit.CurLocY < _topLeftLocY || selectedUnit.CurLocY > _topLeftLocY + MainViewHeightInCells)
-                continue;
-
-            int selectedUnitX = MainViewX + Scale(selectedUnit.CurX) - _topLeftLocX * CellTextureWidth;
-            int selectedUnitY = MainViewY + Scale(selectedUnit.CurY) - _topLeftLocY * CellTextureHeight;
             int maxHitBarWidth = 0;
             int hitBarX = 0;
             int hitBarY = 0;
-            if (selectedUnit.MobileType == UnitConstants.UNIT_LAND)
+            if (unit.MobileType == UnitConstants.UNIT_LAND)
             {
-                if (UnitRes[selectedUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN)
+                if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN)
                     maxHitBarWidth = CellTextureWidth - 16;
                 else
                     maxHitBarWidth = CellTextureWidth;
                 
-                hitBarX = selectedUnitX;
-                hitBarY = selectedUnitY - 30;
+                hitBarX = unitX;
+                hitBarY = unitY - 33;
             }
             else
             {
                 maxHitBarWidth = CellTextureWidth * 2 - 32;
-                hitBarX = selectedUnitX - CellTextureWidth / 2 + 16;
-                hitBarY = selectedUnitY - 30;
+                hitBarX = unitX - CellTextureWidth / 2 + 16;
+                hitBarY = unitY - 30;
 
-                if (selectedUnit.MobileType == UnitConstants.UNIT_AIR)
+                if (unit.MobileType == UnitConstants.UNIT_AIR)
                     hitBarY -= 30;
             }
+
+            hitBarX -= Scale(spriteFrame.OffsetX);
+            hitBarY -= Scale(spriteFrame.OffsetY);
 
 
             const int HIT_BAR_LIGHT_BORDER = 0;
@@ -647,11 +617,11 @@ public partial class Renderer
             const int NO_BAR_DARK_BORDER = 0x40 + 3;
             const int NO_BAR_BODY = 0x40 + 7;
             int hitBarColor = 0xA8;
-            if (selectedUnit.MaxHitPoints >= 51 && selectedUnit.MaxHitPoints <= 100)
+            if (unit.MaxHitPoints >= 51 && unit.MaxHitPoints <= 100)
                 hitBarColor = 0xB4;
-            if (selectedUnit.MaxHitPoints >= 101)
+            if (unit.MaxHitPoints >= 101)
                 hitBarColor = 0xAC;
-            int separatorX = hitBarX + (maxHitBarWidth - 1) * (int)selectedUnit.HitPoints / selectedUnit.MaxHitPoints;
+            int separatorX = hitBarX + (maxHitBarWidth - 1) * (int)unit.HitPoints / unit.MaxHitPoints;
 
             Graphics.DrawLine(hitBarX, hitBarY, separatorX, hitBarY, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
             Graphics.DrawLine(hitBarX, hitBarY + 1, separatorX, hitBarY + 1, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
@@ -684,9 +654,11 @@ public partial class Renderer
                 Graphics.DrawLine(separatorX + 1, hitBarY + 3, hitBarX + maxHitBarWidth - 3, hitBarY + 3, NO_BAR_BODY); //body
             }
         }
+        
+        //TODO if unit is attacking another unit or firm, select it also
     }
 
-    private void DrawUnitPaths()
+    private void DrawUnitPaths(int layer)
     {
         if ((Config.show_unit_path & 1) == 0)
             return;
@@ -694,6 +666,11 @@ public partial class Renderer
         for (int i = 0; i < _selectedUnits.Count; i++)
         {
             Unit unit = UnitArray[_selectedUnits[i]];
+            if (layer == IDisplayable.NormalLayer && unit.MobileType == UnitConstants.UNIT_AIR)
+                continue;
+            if (layer == IDisplayable.AirLayer && unit.MobileType != UnitConstants.UNIT_AIR)
+                continue;
+
             //TODO unit.IsStealth()?
             if (!unit.IsVisible())
                 continue;

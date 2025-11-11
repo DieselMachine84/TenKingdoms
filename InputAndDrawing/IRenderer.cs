@@ -10,6 +10,7 @@ public interface IRenderer
     void DrawTown(Town town, int layer);
     void DrawFirm(Firm firm, int layer);
     void DrawSite(Site site, int layer);
+    void DrawUnit(Unit unit, int layer);
 
 
     void DrawMineDetails(FirmMine mine);

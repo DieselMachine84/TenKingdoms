@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public abstract partial class Unit : Sprite
+public abstract partial class Unit : Sprite, IDisplayable
 {
 	public const int RANK_SOLDIER = 0;
 	public const int RANK_GENERAL = 1;
@@ -33,6 +33,7 @@ public abstract partial class Unit : Sprite
 	public int LeaderId { get; set; } // id of this unit's leader
 	public int GroupId { get; set; } // the group id this unit belong to if it is selected
 	public bool AIUnit { get; set; }
+	public int DrawY2 { get; set; }
 
 	
 	public int ActionMode { get; set; }
@@ -4230,6 +4231,11 @@ public abstract partial class Unit : Sprite
 	{
 		if (NationId == NationArray.player_recno)
 			NewsArray.general_die(SpriteId);
+	}
+
+	public void Draw(IRenderer renderer, int layer)
+	{
+		renderer.DrawUnit(this, layer);
 	}
 
 	public abstract void DrawDetails(IRenderer renderer);
