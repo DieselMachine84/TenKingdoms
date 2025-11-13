@@ -256,24 +256,12 @@ public class Sprite : IIdObject
 	{
 		CurX = curX;
 		CurY = curY;
-		UpdateAbsPos();
 	}
 
 	protected virtual void SetNext(int nextX, int nextY, int param = 0, int blockedChecked = 0)
 	{
 		NextX = nextX;
 		NextY = nextY;
-	}
-
-	protected virtual void UpdateAbsPos(SpriteFrame spriteFrame = null)
-	{
-		spriteFrame ??= CurSpriteFrame(out _);
-
-		//abs_x1 = cur_x + spriteFrame.offset_x;		// absolute position 
-		//abs_y1 = cur_y + spriteFrame.offset_y;
-
-		//abs_x2 = abs_x1 + spriteFrame.width  - 1;
-		//abs_y2 = abs_y1 + spriteFrame.height - 1;
 	}
 
 	protected int MoveStepCoeff()

@@ -488,21 +488,21 @@ public class FirmBitmap
     public byte[] bitmap;
     public int bitmapWidth;
     public int bitmapHeight;
-    private Dictionary<int, IntPtr> textures = new Dictionary<int, nint>();
+    private readonly Dictionary<int, IntPtr> _textures = new Dictionary<int, nint>();
 
-    public IntPtr GetTexture(Graphics graphics, int nationColor)
+    public IntPtr GetTexture(Graphics graphics, int nationColor, bool isSelected)
     {
         int colorScheme = ColorRemap.ColorSchemes[nationColor];
-        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
-        if (!textures.ContainsKey(textureKey))
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
+        if (!_textures.ContainsKey(textureKey))
         {
             byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight,
-                ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
+                ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
             IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
-            textures.Add(textureKey, texture);
+            _textures.Add(textureKey, texture);
         }
         
-        return textures[textureKey];
+        return _textures[textureKey];
     }
 }
 

@@ -16,6 +16,7 @@ public interface IDisplayable
 
 public partial class Renderer
 {
+    private readonly int[] _waveHeights = { 8, 6, 4, 2, 0, 2, 4, 6 };
     private readonly byte[] _animatedLineSegment = { 0x90, 0x93, 0x98, 0x9c, 0x9f, 0x9c, 0x98, 0x93 };
     private readonly List<IntPtr> _horizontalLineTextures = new List<nint>();
     private readonly List<IntPtr> _verticalLineTextures = new List<nint>();
@@ -27,6 +28,7 @@ public partial class Renderer
     private readonly List<Town> _townsToDraw = new List<Town>();
     private readonly List<Firm> _firmsToDraw = new List<Firm>();
     private readonly List<Unit> _airAndSeaUnitsToDraw = new List<Unit>();
+    private Unit _pointingUnit;
 
     private void DrawMainView()
     {
@@ -38,14 +40,14 @@ public partial class Renderer
         _townsToDraw.Clear();
         _firmsToDraw.Clear();
         _airAndSeaUnitsToDraw.Clear();
+        _pointingUnit = null;
 
         DrawTerrainDirtAndHills();
 
-        const int margin = 2;
-        int startLocX = Math.Max(_topLeftLocX - margin, 0);
-        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + margin, GameConstants.MapSize);
-        int startLocY = Math.Max(_topLeftLocY - margin, 0);
-        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + margin, GameConstants.MapSize);
+        int startLocX = Math.Max(_topLeftLocX - InternalConstants.DETECT_MARGIN, 0);
+        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int startLocY = Math.Max(_topLeftLocY - InternalConstants.DETECT_MARGIN, 0);
+        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
 
         for (int locY = startLocY; locY < endLocY; locY++)
         {
@@ -58,7 +60,7 @@ public partial class Renderer
                     Town town = TownArray[location.TownId()];
                     if (!_townsToDraw.Contains(town))
                     {
-                        town.DrawY2 = town.LocY2 * CellTextureHeight;
+                        town.DrawY2 = GetScreenXAndY(town.LocX2, town.LocY2).Item2;
                         _objectsToDrawBottom.Add(town);
                         _objectsToDraw.Add(town);
                         _townsToDraw.Add(town);
@@ -70,7 +72,7 @@ public partial class Renderer
                     Firm firm = FirmArray[location.FirmId()];
                     if (!_firmsToDraw.Contains(firm))
                     {
-                        firm.DrawY2 = firm.LocY2 * CellTextureHeight;
+                        firm.DrawY2 = GetScreenXAndY(firm.LocX2, firm.LocY2).Item2;
                         _objectsToDrawBottom.Add(firm);
                         _objectsToDraw.Add(firm);
                         _firmsToDraw.Add(firm);
@@ -80,7 +82,7 @@ public partial class Renderer
                 if (location.HasSite() && location.Walkable())
                 {
                     Site site = SiteArray[location.SiteId()];
-                    site.DrawY2 = site.LocY * CellTextureHeight;
+                    site.DrawY2 = GetScreenXAndY(site.LocX, site.LocY).Item2;
                     _objectsToDrawBottom.Add(site);
                 }
 
@@ -89,19 +91,17 @@ public partial class Renderer
                     Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
                     if (!unit.IsStealth())
                     {
-                        //TODO update absolute position
-                        unit.DrawY2 = Scale(unit.CurY);
+                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
                         _objectsToDraw.Add(unit);
                     }
                 }
                 
                 if (location.HasUnit(UnitConstants.UNIT_SEA))
                 {
-                    Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
+                    UnitMarine unit = (UnitMarine)UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
                     if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
                     {
-                        //TODO update absolute position
-                        unit.DrawY2 = unit.CurY;
+                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
                         _objectsToDraw.Add(unit);
                         _airAndSeaUnitsToDraw.Add(unit);
                     }
@@ -112,13 +112,18 @@ public partial class Renderer
                     Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
                     if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
                     {
-                        //TODO update absolute position
-                        unit.DrawY2 = unit.CurY;
+                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
                         _objectsToDrawAir.Add(unit);
                         _airAndSeaUnitsToDraw.Add(unit);
                     }
                 }
             }
+        }
+
+        Location pointingLocation = GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType);
+        if (mobileType == UnitConstants.UNIT_LAND || mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
+        {
+            _pointingUnit = UnitArray[pointingLocation.UnitId(mobileType)];
         }
         
         _objectsToDrawBottom.Sort((x, y) => x.DrawY2 - y.DrawY2);
@@ -310,9 +315,10 @@ public partial class Renderer
             FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
             if (firmBitmap.display_layer == layer)
             {
+                bool isSelected = (firm.FirmId == _selectedFirmId);
                 int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
                 int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
             }
         }
         
@@ -439,9 +445,10 @@ public partial class Renderer
         if (firmBitmap == null || firmBitmap.display_layer != displayLayer)
             return;
 
+        bool isSelected = (firm.FirmId == _selectedFirmId);
         int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
         int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-        Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+        Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
 
         if (firm.UnderConstruction)
         {
@@ -466,9 +473,10 @@ public partial class Renderer
             FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapId);
             if (firmBitmap.display_layer == layer)
             {
+                bool isSelected = (firm.FirmId == _selectedFirmId);
                 int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
                 int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
             }
         }
     }
@@ -520,14 +528,10 @@ public partial class Renderer
 
     public void DrawUnit(Unit unit, int layer)
     {
+        (int unitX, int unitY) = GetUnitScreenXAndY(unit);
         SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
-        //TODO update absolute position
-        int unitX = MainViewX + Scale(unit.CurX) - _topLeftLocX * CellTextureWidth + Scale(spriteFrame.OffsetX);
-        int unitY = MainViewY + Scale(unit.CurY) - _topLeftLocY * CellTextureHeight + Scale(spriteFrame.OffsetY);
-
-        //TODO draw outlined if mouse cursor is pointed on this unit
         SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
-        Graphics.DrawBitmapScaled(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, false), unitX, unitY,
+        Graphics.DrawBitmapScaled(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, unit == _pointingUnit), unitX, unitY,
             spriteFrame.Width, spriteFrame.Height, needMirror ? FlipMode.Horizontal : FlipMode.None);
 
         //Draw skill icons
@@ -580,6 +584,8 @@ public partial class Renderer
                 }
             }
         }
+        
+        //TODO draw splash for sea units
         
         if (_selectedUnits.Contains(unit.SpriteId))
         {
@@ -813,5 +819,20 @@ public partial class Renderer
         Graphics.DrawRect(x1, y2 - Thickness, x2 - x1, Thickness, color);
         Graphics.DrawRect(x1, y1, Thickness, y2 - y1, color);
         Graphics.DrawRect(x2 - Thickness, y1, Thickness, y2 - y1, color);
+    }
+
+    private (int, int) GetUnitScreenXAndY(Unit unit)
+    {
+        SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
+        int unitX = MainViewX + Scale(unit.CurX + spriteFrame.OffsetX) - _topLeftLocX * CellTextureWidth;
+        int unitY = MainViewY + Scale(unit.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight;
+        if (unit is UnitMarine)
+            unitY -= WaveHeight(6);
+        return (unitX, unitY);
+    }
+    
+    private int WaveHeight(int phase = 0)
+    {
+        return _waveHeights[(Sys.Instance.FrameNumber / 4 + phase) % InternalConstants.WAVE_CYCLE];
     }
 }

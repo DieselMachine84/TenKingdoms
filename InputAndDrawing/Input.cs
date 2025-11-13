@@ -205,25 +205,6 @@ public partial class Renderer
         if (mouse1Y < MainViewY || mouse1Y >= MainViewY + MainViewHeight)
             return false;
         
-        Unit SelectUnit(Location location, int mobileType)
-        {
-            if (location.HasUnit(mobileType))
-            {
-                int unitId = location.UnitId(mobileType);
-                if (!UnitArray.IsDeleted(unitId))
-                {
-                    Unit unit = UnitArray[unitId];
-                    if (unit.IsVisible() && !unit.IsStealth())
-                    {
-                        //TODO update absolute position
-                        return unit;
-                    }
-                }
-            }
-
-            return null;
-        }
-
         mouse2X = Math.Max(mouse2X, MainViewX);
         mouse2X = Math.Min(mouse2X, MainViewX + MainViewWidth - 1);
         mouse2Y = Math.Max(mouse2Y, MainViewY);
@@ -234,17 +215,11 @@ public partial class Renderer
         bool selectOneOnly = Math.Abs(mouse1X - mouse2X) <= 3 && Math.Abs(mouse1Y - mouse2Y) <= 3;
         if (selectOneOnly)
         {
-            Location pointingLocation = GetPointingLocation(mouse2X, mouse2Y);
-            Unit unit = SelectUnit(pointingLocation, UnitConstants.UNIT_AIR);
-            if (unit == null)
-                unit = SelectUnit(pointingLocation, UnitConstants.UNIT_LAND);
-            if (unit == null)
-                unit = SelectUnit(pointingLocation, UnitConstants.UNIT_SEA);
-
-            if (unit != null)
+            Location pointingLocation = GetPointingLocation(mouse2X, mouse2Y, out int mobileType);
+            if (mobileType == UnitConstants.UNIT_LAND || mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
             {
                 ResetSelection();
-                _selectedUnitId = unit.SpriteId;
+                _selectedUnitId = pointingLocation.UnitId(mobileType);
                 _selectedUnits.Add(_selectedUnitId);
             }
             else
@@ -648,7 +623,7 @@ public partial class Renderer
             _mouseMotionY >= MainViewY && _mouseMotionY < MainViewY + MainViewHeight)
         {
             (ScreenObjectType selectedObjectType, int selectedObjectId) = GetSelectedObjectType();
-            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(GetPointingLocation(_mouseMotionX, _mouseMotionY));
+            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType), mobileType);
             newCursor = ChooseCursor(selectedObjectType, selectedObjectId, pointingObjectType, pointingObjectId);
         }
 
@@ -702,29 +677,15 @@ public partial class Renderer
         return (ScreenObjectType.None, 0);
     }
 
-    private (ScreenObjectType, int) GetPointingObjectType(Location pointingLocation)
+    private (ScreenObjectType, int) GetPointingObjectType(Location pointingLocation, int mobileType)
     {
-        if (pointingLocation.HasUnit(UnitConstants.UNIT_AIR))
+        if (mobileType == UnitConstants.UNIT_LAND || mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
         {
-            int unitId = pointingLocation.UnitId(UnitConstants.UNIT_AIR);
-            Unit unit = UnitArray[unitId];
-            return unit.NationId == NationArray.player_recno ? (ScreenObjectType.FriendUnit, unitId) : (ScreenObjectType.EnemyUnit, unitId);
-        }
-
-        if (pointingLocation.HasUnit(UnitConstants.UNIT_LAND))
-        {
-            int unitId = pointingLocation.UnitId(UnitConstants.UNIT_LAND);
+            int unitId = pointingLocation.UnitId(mobileType);
             Unit unit = UnitArray[unitId];
             return unit.NationId == NationArray.player_recno ? (ScreenObjectType.FriendUnit, unitId) : (ScreenObjectType.EnemyUnit, unitId);
         }
         
-        if (pointingLocation.HasUnit(UnitConstants.UNIT_SEA))
-        {
-            int unitId = pointingLocation.UnitId(UnitConstants.UNIT_SEA);
-            Unit unit = UnitArray[unitId];
-            return unit.NationId == NationArray.player_recno ? (ScreenObjectType.FriendUnit, unitId) : (ScreenObjectType.EnemyUnit, unitId);
-        }
-
         if (pointingLocation.IsTown())
         {
             int townId = pointingLocation.TownId();
@@ -747,19 +708,74 @@ public partial class Renderer
         return (ScreenObjectType.None, 0);
     }
 
-    private Location GetPointingLocation(int pointingX, int pointingY)
+    private Location GetPointingLocation(int pointingX, int pointingY, out int mobileType)
     {
-        (int locX, int locY) = GetMainViewLocation(pointingX, pointingY);
-        
-        //TODO detect spread
-        Location location = World.GetLoc(locX, locY);
-        return location;
+        (int pointingLocX, int pointingLocY) = GetMainViewLocation(pointingX, pointingY);
+        Location pointingLocation = World.GetLoc(pointingLocX, pointingLocY);
+        Location unitLocation;
 
-        //TODO update absolute position
-        //if (location.HasUnit(UnitConstants.UNIT_AIR) && !UnitArray.IsDeleted(location.AirCargoId))
-        //{
-        //Unit unit = UnitArray[location.AirCargoId];
-        //}
+        if (HasUnitAt(pointingX, pointingY, UnitConstants.UNIT_AIR, out unitLocation))
+        {
+            mobileType = UnitConstants.UNIT_AIR;
+            return unitLocation;
+        }
+        
+        if (pointingLocation.IsTown() || pointingLocation.IsFirm() || pointingLocation.HasSite())
+        {
+            mobileType = UnitConstants.UNIT_NONE;
+            return pointingLocation;
+        }
+        
+        if (HasUnitAt(pointingX, pointingY, UnitConstants.UNIT_LAND, out unitLocation))
+        {
+            mobileType = UnitConstants.UNIT_LAND;
+            return unitLocation;
+        }
+        
+        if (HasUnitAt(pointingX, pointingY, UnitConstants.UNIT_SEA, out unitLocation))
+        {
+            mobileType = UnitConstants.UNIT_SEA;
+            return unitLocation;
+        }
+
+        mobileType = UnitConstants.UNIT_NONE;
+        return pointingLocation;
+    }
+
+    private bool HasUnitAt(int pointingX, int pointingY, int mobileType, out Location unitLocation)
+    {
+        (int pointingLocX, int pointingLocY) = GetMainViewLocation(pointingX, pointingY);
+        int startLocX = Math.Max(pointingLocX - InternalConstants.DETECT_MARGIN, 0);
+        int endLocX = Math.Min(pointingLocX + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int startLocY = Math.Max(pointingLocY - InternalConstants.DETECT_MARGIN, 0);
+        int endLocY = Math.Min(pointingLocY + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+
+        for (int locY = startLocY; locY < endLocY; locY++)
+        {
+            for (int locX = startLocX; locX < endLocX; locX++)
+            {
+                Location location = World.GetLoc(locX, locY);
+                if (location.HasUnit(mobileType))
+                {
+                    Unit unit = UnitArray[location.UnitId(mobileType)];
+                    if (!unit.IsStealth())
+                    {
+                        SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
+                        (int unitX, int unitY) = GetUnitScreenXAndY(unit);
+                        int unitX2 = unitX + Scale(spriteFrame.Width) - 1;
+                        int unitY2 = unitY + Scale(spriteFrame.Height) - 1;
+                        if (pointingX >= unitX && pointingX <= unitX2 && pointingY >= unitY && pointingY <= unitY2)
+                        {
+                            unitLocation = location;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        unitLocation = null;
+        return false;
     }
 
     private int ChooseCursor(ScreenObjectType selectedObjectType, int selectedId, ScreenObjectType pointingObjectType, int pointingId)

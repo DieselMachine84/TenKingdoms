@@ -1384,14 +1384,6 @@ public class UnitMarine : Unit
 		return totalQty;
 	}
 
-	protected override void UpdateAbsPos(SpriteFrame spriteFrame = null)
-	{
-		base.UpdateAbsPos(spriteFrame);
-		int h = wave_height(6);
-		//abs_y1 -= h;
-		//abs_y2 -= h;
-	}
-
 	public override double ActualDamage()
 	{
 		//-----------------------------------------//
@@ -1412,12 +1404,6 @@ public class UnitMarine : Unit
 		}
 
 		return base.ActualDamage() * (100 + highestLeadership) / 100.0;
-	}
-
-	public int wave_height(int phase = 0)
-	{
-		int[] heights = { 4, 3, 2, 1, 0, 1, 2, 3 };
-		return heights[(Sys.Instance.FrameNumber / 4 + phase) % InternalConstants.WAVE_CYCLE];
 	}
 
 	public bool can_unload_unit()

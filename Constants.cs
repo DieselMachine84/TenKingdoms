@@ -138,6 +138,7 @@ public static class InternalConstants
     public const int GET_SITE_RANGE = 30; // only notify units within this range
     public const int MAX_UNIT_TO_GET_SITE = 5;
     public const int SCAN_FIRE_DIST = 4;
+    public const int DETECT_MARGIN = 2;
 
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;
