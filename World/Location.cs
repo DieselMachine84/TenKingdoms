@@ -41,8 +41,8 @@ public class Location
 	private int _locFlag;
 	public int TerrainId { get; set; }
 	public int RegionId { get; set; }
-	public int CargoId { get; set; }
-	public int AirCargoId { get; set; }
+	public int CargoId { get; private set; }
+	public int AirCargoId { get; private set; }
 
 	private int _extraPara;
 
@@ -744,6 +744,14 @@ public class Location
 		}
 
 		return 0;
+	}
+
+	public void SetUnit(int mobileType, int unitId)
+	{
+		if (mobileType == UnitConstants.UNIT_AIR)
+			AirCargoId = unitId;
+		else
+			CargoId = unitId;
 	}
 
 	public int UnitId(int mobileType)

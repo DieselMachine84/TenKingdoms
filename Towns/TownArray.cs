@@ -334,6 +334,7 @@ public class TownArray : DynArray<Town>
 
 		town.AssignUnit(unit);
 
+		//TODO move to Town.SetWorldMatrix()
 		if (unitLocX >= town.LocX1 && unitLocX <= town.LocX2 && unitLocY >= town.LocY1 && unitLocY <= town.LocY2)
 			location.SetTown(town.TownId);
 

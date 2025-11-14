@@ -391,7 +391,8 @@ public class Town : IIdObject, IDisplayable
 			{
 				Location location = World.GetLoc(locX, locY);
 
-				if (location.CargoId == 0) // skip the location where the settle unit is standing
+				//TODO why need to check CargoId?
+				if (!location.HasUnit(UnitConstants.UNIT_LAND)) // skip the location where the settle unit is standing
 					location.SetTown(TownId);
 			}
 		}

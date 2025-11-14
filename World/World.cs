@@ -142,21 +142,6 @@ public class World
 			EarthQuake();
 		}
 	}
-	
-	public int GetUnitId(int locX, int locY, int mobileType)
-	{
-		Location location = GetLoc(locX, locY);
-		return mobileType == UnitConstants.UNIT_AIR ? location.AirCargoId : location.CargoId;
-	}
-
-	public void SetUnitId(int locX, int locY, int mobileType, int unitId)
-	{
-		Location location = GetLoc(locX, locY);
-		if (mobileType == UnitConstants.UNIT_AIR)
-			location.AirCargoId = unitId;
-		else
-			location.CargoId = unitId;
-	}
 
 	// TODO remove
 	public int DistanceRating(int locX1, int locY1, int locX2, int locY2)

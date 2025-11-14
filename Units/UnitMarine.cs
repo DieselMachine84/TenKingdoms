@@ -1679,8 +1679,8 @@ public class UnitMarine : Unit
 
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				World.SetUnitId(curXLoc, curYLoc, MobileType, 0);
-				World.SetUnitId(goXLoc, goYLoc, MobileType, SpriteId);
+				World.GetLoc(curXLoc, curYLoc).SetUnit(MobileType, 0);
+				World.GetLoc(goXLoc, goYLoc).SetUnit(MobileType, SpriteId);
 				NextX = GoX;
 				NextY = GoY;
 

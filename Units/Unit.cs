@@ -360,7 +360,7 @@ public abstract partial class Unit : Sprite, IDisplayable
 		{
 			for (int w = 0, x = startLocX; w < SpriteInfo.LocWidth; w++, x++)
 			{
-				World.SetUnitId(x, y, MobileType, SpriteId);
+				World.GetLoc(x, y).SetUnit(MobileType, SpriteId);
 			}
 		}
 
@@ -394,7 +394,7 @@ public abstract partial class Unit : Sprite, IDisplayable
 		{
 			for (int w = 0, x = NextLocX; w < SpriteInfo.LocWidth; w++, x++)
 			{
-				World.SetUnitId(x, y, MobileType, 0);
+				World.GetLoc(x, y).SetUnit(MobileType, 0);
 			}
 		}
 
@@ -2746,7 +2746,7 @@ public abstract partial class Unit : Sprite, IDisplayable
 					locX = curNextLocX;
 					for (int w = 0; w < SpriteInfo.LocWidth; w++, locX++)
 					{
-						World.SetUnitId(locX, locY, MobileType, 0);
+						World.GetLoc(locX, locY).SetUnit(MobileType, 0);
 					}
 				}
 
@@ -2756,7 +2756,7 @@ public abstract partial class Unit : Sprite, IDisplayable
 					locX = NextLocX;
 					for (int w = 0; w < SpriteInfo.LocWidth; w++, locX++)
 					{
-						World.SetUnitId(locX, locY, MobileType, SpriteId);
+						World.GetLoc(locX, locY).SetUnit( MobileType, SpriteId);
 					}
 				}
 

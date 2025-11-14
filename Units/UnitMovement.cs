@@ -408,7 +408,7 @@ public partial class Unit
 				break;
 
 			case UnitConstants.BUILDING_TYPE_VEHICLE:
-				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.CargoId);
+				searchResult = Search(buildLocX, buildLocY, 1, SeekPath.SEARCH_MODE_TO_VEHICLE, location.UnitId(UnitConstants.UNIT_LAND));
 				break;
 
 			case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
@@ -1461,15 +1461,14 @@ public partial class Unit
 			//----------------------------------------------------------------------//
 			// shift the recno of all the unit in the cycle
 			//----------------------------------------------------------------------//
-			int backupSpriteRecno;
-			World.SetUnitId(CurLocX, CurLocY, MobileType, 0); // empty the firt node in the cycle
+			World.GetLoc(CurLocX, CurLocY).SetUnit(MobileType, 0); // empty the first node in the cycle
 			CycleWaitShiftRecno(this, unit); // shift all the unit in the cycle
-			backupSpriteRecno = World.GetUnitId(CurLocX, CurLocY, MobileType);
-			World.SetUnitId(CurLocX, CurLocY, MobileType, SpriteId);
+			int backupSpriteId = World.GetLoc(CurLocX, CurLocY).UnitId(MobileType);
+			World.GetLoc(CurLocX, CurLocY).SetUnit(MobileType, SpriteId);
 			SetNext(unit.CurX, unit.CurY, -stepMagn, 1);
 			SetMove();
-			World.SetUnitId(unit.CurLocX, unit.CurLocY, MobileType, SpriteId);
-			World.SetUnitId(CurLocX, CurLocY, MobileType, backupSpriteRecno);
+			World.GetLoc(unit.CurLocX, unit.CurLocY).SetUnit(MobileType, SpriteId);
+			World.GetLoc(CurLocX, CurLocY).SetUnit(MobileType, backupSpriteId);
 			Swapping = true;
 		}
 		else // not in a cycle
@@ -1521,17 +1520,16 @@ public partial class Unit
 			CycleWaitShiftRecno(nextUnit, blockedUnit);
 			nextUnit.SetNext(blockedUnit.CurX, blockedUnit.CurY, -stepMagn, 1);
 			nextUnit.SetMove();
-			World.SetUnitId(blockedUnit.CurLocX, blockedUnit.CurLocY,
-				nextUnit.MobileType, nextUnit.SpriteId);
-			World.SetUnitId(nextUnit.CurLocX, nextUnit.CurLocY, nextUnit.MobileType, 0);
+			World.GetLoc(blockedUnit.CurLocX, blockedUnit.CurLocY).SetUnit(nextUnit.MobileType, nextUnit.SpriteId);
+			World.GetLoc(nextUnit.CurLocX, nextUnit.CurLocY).SetUnit(nextUnit.MobileType, 0);
 			nextUnit.Swapping = true;
 		}
 		else // the cycle shift is ended
 		{
 			nextUnit.SetNext(CurX, CurY, -stepMagn, 1);
 			nextUnit.SetMove();
-			World.SetUnitId(CurLocX, CurLocY, nextUnit.MobileType, nextUnit.SpriteId);
-			World.SetUnitId(nextUnit.CurLocX, nextUnit.CurLocY, nextUnit.MobileType, 0);
+			World.GetLoc(CurLocX, CurLocY).SetUnit(nextUnit.MobileType, nextUnit.SpriteId);
+			World.GetLoc(nextUnit.CurLocX, nextUnit.CurLocY).SetUnit(nextUnit.MobileType, 0);
 
 			nextUnit.Swapping = true;
 		}
