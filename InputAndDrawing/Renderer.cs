@@ -13,6 +13,11 @@ public partial class Renderer : IRenderer
     public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
     public const int WindowHeight = MainViewY + MainViewHeight;
 
+    public const int NormalLayer = 1;
+    public const int TopLayer = 2;
+    public const int BottomLayer = 4;
+    public const int AirLayer = 8;
+
     private const int GameMenuHeight = 84;
     private const int BorderWidth = 18;
 
@@ -86,6 +91,7 @@ public partial class Renderer : IRenderer
     private static SERes SERes => Sys.Instance.SERes;
 
     
+    private static RockArray RockArray => Sys.Instance.RockArray;
     private static RockArray DirtArray => Sys.Instance.DirtArray;
     private static NationArray NationArray => Sys.Instance.NationArray;
     private static TownArray TownArray => Sys.Instance.TownArray;
