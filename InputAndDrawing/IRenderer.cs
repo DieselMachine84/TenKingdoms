@@ -11,6 +11,8 @@ public interface IRenderer
     void DrawFirm(Firm firm, int layer);
     void DrawSite(Site site, int layer);
     void DrawUnit(Unit unit, int layer);
+    void DrawPlant(PlantBitmap plantBitmap, int locX, int locY);
+    void DrawHill(HillBlockInfo hillBlockInfo, int layer, int locX, int locY);
 
 
     void DrawMineDetails(FirmMine mine);

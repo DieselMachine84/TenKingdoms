@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public abstract class Firm : IIdObject, IDisplayable
+public abstract class Firm : IIdObject
 {
 	public const int MAX_FIRM_TYPE = 10;
 	public const int FIRM_BASE = 1;
@@ -40,7 +40,6 @@ public abstract class Firm : IIdObject, IDisplayable
 	public int LocCenterX { get; private set; }
 	public int LocCenterY { get; private set; }
 	public int RegionId { get; protected set; }
-	public int DrawY2 { get; set; }
 	
 	public int ClosestTownNameId { get; private set; }
 	private int FirmNameInstanceId { get; set; }
@@ -2963,11 +2962,6 @@ public abstract class Firm : IIdObject, IDisplayable
 		if (r >= firmBuild.under_construction_bitmap_count)
 			r = firmBuild.under_construction_bitmap_count - 1;
 		return r;
-	}
-
-	public void Draw(IRenderer renderer, int layer)
-	{
-		renderer.DrawFirm(this, layer);
 	}
 
 	public abstract void DrawDetails(IRenderer renderer);

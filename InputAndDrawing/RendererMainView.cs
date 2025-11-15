@@ -3,17 +3,6 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public interface IDisplayable
-{
-    const int NormalLayer = 1;
-    const int TopLayer = 2;
-    const int BottomLayer = 4;
-    const int AirLayer = 8;
-    
-    int DrawY2 { get; set; }
-    void Draw(IRenderer renderer, int layer);
-}
-
 public partial class Renderer
 {
     private readonly int[] _waveHeights = { 8, 6, 4, 2, 0, 2, 4, 6 };
@@ -21,10 +10,12 @@ public partial class Renderer
     private readonly List<IntPtr> _horizontalLineTextures = new List<nint>();
     private readonly List<IntPtr> _verticalLineTextures = new List<nint>();
     private readonly List<IntPtr> _diagonalLineTextures = new List<nint>();
-    private readonly List<IDisplayable> _objectsToDrawBottom = new List<IDisplayable>();
-    private readonly List<IDisplayable> _objectsToDraw = new List<IDisplayable>();
-    private readonly List<IDisplayable> _objectsToDrawTop = new List<IDisplayable>();
-    private readonly List<IDisplayable> _objectsToDrawAir = new List<IDisplayable>();
+    private readonly List<DisplayableObject> _displayableObjects = new List<DisplayableObject>();
+    private int _displayableObjectIndex;
+    private readonly List<DisplayableObject> _objectsToDrawBottom = new List<DisplayableObject>();
+    private readonly List<DisplayableObject> _objectsToDraw = new List<DisplayableObject>();
+    private readonly List<DisplayableObject> _objectsToDrawTop = new List<DisplayableObject>();
+    private readonly List<DisplayableObject> _objectsToDrawAir = new List<DisplayableObject>();
     private readonly List<Town> _townsToDraw = new List<Town>();
     private readonly List<Firm> _firmsToDraw = new List<Firm>();
     private readonly List<Unit> _airAndSeaUnitsToDraw = new List<Unit>();
@@ -33,6 +24,10 @@ public partial class Renderer
     private void DrawMainView()
     {
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
+        for (int i = 0; i < _displayableObjects.Count; i++)
+            _displayableObjects[i].ObjectType = DisplayableObjectType.None;
+        _displayableObjectIndex = 0;
+        
         _objectsToDrawBottom.Clear();
         _objectsToDraw.Clear();
         _objectsToDrawTop.Clear();
@@ -42,7 +37,7 @@ public partial class Renderer
         _airAndSeaUnitsToDraw.Clear();
         _pointingUnit = null;
 
-        DrawTerrainDirtAndHills();
+        DrawGround();
 
         int startLocX = Math.Max(_topLeftLocX - InternalConstants.DETECT_MARGIN, 0);
         int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
@@ -60,9 +55,12 @@ public partial class Renderer
                     Town town = TownArray[location.TownId()];
                     if (!_townsToDraw.Contains(town))
                     {
-                        town.DrawY2 = GetScreenXAndY(town.LocX2, town.LocY2).Item2;
-                        _objectsToDrawBottom.Add(town);
-                        _objectsToDraw.Add(town);
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Town;
+                        displayableObject.ObjectId = town.TownId;
+                        displayableObject.DrawY2 = GetScreenXAndY(town.LocX2, town.LocY2 + 1).Item2 - 1;
+                        _objectsToDrawBottom.Add(displayableObject);
+                        _objectsToDraw.Add(displayableObject);
                         _townsToDraw.Add(town);
                     }
                 }
@@ -72,18 +70,23 @@ public partial class Renderer
                     Firm firm = FirmArray[location.FirmId()];
                     if (!_firmsToDraw.Contains(firm))
                     {
-                        firm.DrawY2 = GetScreenXAndY(firm.LocX2, firm.LocY2).Item2;
-                        _objectsToDrawBottom.Add(firm);
-                        _objectsToDraw.Add(firm);
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Firm;
+                        displayableObject.ObjectId = firm.FirmId;
+                        displayableObject.DrawY2 = GetScreenXAndY(firm.LocX2, firm.LocY2 + 1).Item2 - 1;
+                        _objectsToDrawBottom.Add(displayableObject);
+                        _objectsToDraw.Add(displayableObject);
                         _firmsToDraw.Add(firm);
                     }
                 }
 
                 if (location.HasSite() && location.Walkable())
                 {
-                    Site site = SiteArray[location.SiteId()];
-                    site.DrawY2 = GetScreenXAndY(site.LocX, site.LocY).Item2;
-                    _objectsToDrawBottom.Add(site);
+                    DisplayableObject displayableObject = GetDisplayableObject();
+                    displayableObject.ObjectType = DisplayableObjectType.Site;
+                    displayableObject.ObjectId = location.SiteId();
+                    displayableObject.DrawY2 = GetScreenXAndY(locX, locY + 1).Item2 - 1;
+                    _objectsToDrawBottom.Add(displayableObject);
                 }
 
                 if (location.HasUnit(UnitConstants.UNIT_LAND))
@@ -91,8 +94,11 @@ public partial class Renderer
                     Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
                     if (!unit.IsStealth())
                     {
-                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
-                        _objectsToDraw.Add(unit);
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Unit;
+                        displayableObject.ObjectId = unit.SpriteId;
+                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        _objectsToDraw.Add(displayableObject);
                     }
                 }
                 
@@ -101,8 +107,11 @@ public partial class Renderer
                     UnitMarine unit = (UnitMarine)UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
                     if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
                     {
-                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
-                        _objectsToDraw.Add(unit);
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Unit;
+                        displayableObject.ObjectId = unit.SpriteId;
+                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        _objectsToDraw.Add(displayableObject);
                         _airAndSeaUnitsToDraw.Add(unit);
                     }
                 }
@@ -112,20 +121,55 @@ public partial class Renderer
                     Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
                     if (!unit.IsStealth() && !_airAndSeaUnitsToDraw.Contains(unit))
                     {
-                        unit.DrawY2 = GetUnitScreenXAndY(unit).Item2;
-                        _objectsToDrawAir.Add(unit);
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Unit;
+                        displayableObject.ObjectId = unit.SpriteId;
+                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        _objectsToDrawAir.Add(displayableObject);
                         _airAndSeaUnitsToDraw.Add(unit);
+                    }
+                }
+
+                if (location.IsPlant())
+                {
+                    PlantBitmap plantBitmap = PlantRes.GetBitmap(location.PlantId());
+                    DisplayableObject displayableObject = GetDisplayableObject();
+                    displayableObject.ObjectType = DisplayableObjectType.Plant;
+                    displayableObject.ObjectId = location.PlantId();
+                    displayableObject.DrawLocX = locX;
+                    displayableObject.DrawLocY = locY;
+                    displayableObject.DrawY2 = GetScreenXAndY(locX, locY).Item2 + location.PlantInnerY() - CellTextureHeight / 2
+                                         + Scale(plantBitmap.OffsetY) + Scale(plantBitmap.BitmapHeight) - 1;
+                    _objectsToDraw.Add(displayableObject);
+                }
+
+                if (location.HasHill())
+                {
+                    HillBlockInfo hillBlockInfo = HillRes[location.HillId1()];
+                    if (hillBlockInfo.Layer == TopLayer)
+                    {
+                        DisplayableObject displayableObject = GetDisplayableObject();
+                        displayableObject.ObjectType = DisplayableObjectType.Hill;
+                        displayableObject.ObjectId = location.HillId1();
+                        displayableObject.DrawLocX = locX;
+                        displayableObject.DrawLocY = locY;
+                        displayableObject.DrawY2 = GetScreenXAndY(locX, locY + 1).Item2 - 1;
+                        _objectsToDrawTop.Add(displayableObject);
                     }
                 }
             }
         }
 
-        Location pointingLocation = GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType);
-        if (mobileType == UnitConstants.UNIT_LAND || mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
+        if (_mouseMotionX >= MainViewX && _mouseMotionX < MainViewX + MainViewWidth &&
+            _mouseMotionY >= MainViewY && _mouseMotionY < MainViewY + MainViewHeight)
         {
-            _pointingUnit = UnitArray[pointingLocation.UnitId(mobileType)];
+            Location pointingLocation = GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType);
+            if (mobileType == UnitConstants.UNIT_LAND || mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
+            {
+                _pointingUnit = UnitArray[pointingLocation.UnitId(mobileType)];
+            }
         }
-        
+
         _objectsToDrawBottom.Sort((x, y) => x.DrawY2 - y.DrawY2);
         _objectsToDraw.Sort((x, y) => x.DrawY2 - y.DrawY2);
         _objectsToDrawTop.Sort((x, y) => x.DrawY2 - y.DrawY2);
@@ -133,21 +177,21 @@ public partial class Renderer
 
         for (int i = 0; i < _objectsToDrawBottom.Count; i++)
         {
-            _objectsToDrawBottom[i].Draw(this, IDisplayable.BottomLayer);
+            _objectsToDrawBottom[i].Draw(this, BottomLayer);
         }
-        DrawUnitPaths(IDisplayable.NormalLayer);
+        DrawUnitPaths(NormalLayer);
         for (int i = 0; i < _objectsToDraw.Count; i++)
         {
-            _objectsToDraw[i].Draw(this, IDisplayable.NormalLayer);
+            _objectsToDraw[i].Draw(this, NormalLayer);
         }
         for (int i = 0; i < _objectsToDrawTop.Count; i++)
         {
-            _objectsToDrawTop[i].Draw(this, IDisplayable.TopLayer);
+            _objectsToDrawTop[i].Draw(this, TopLayer);
         }
-        DrawUnitPaths(IDisplayable.AirLayer);
+        DrawUnitPaths(AirLayer);
         for (int i = 0; i < _objectsToDrawAir.Count; i++)
         {
-            _objectsToDrawAir[i].Draw(this, IDisplayable.AirLayer);
+            _objectsToDrawAir[i].Draw(this, AirLayer);
         }
         
         //TODO draw way points
@@ -156,7 +200,25 @@ public partial class Renderer
             DrawSelectionRectangle();
     }
 
-    private void DrawTerrainDirtAndHills()
+    private DisplayableObject GetDisplayableObject()
+    {
+        DisplayableObject result;
+        if (_displayableObjectIndex < _displayableObjects.Count)
+        {
+            result = _displayableObjects[_displayableObjectIndex];
+        }
+        else
+        {
+            result = new DisplayableObject();
+            _displayableObjects.Add(result);
+        }
+
+        _displayableObjectIndex++;
+
+        return result;
+    }
+
+    private void DrawGround()
     {
         for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
         {
@@ -166,13 +228,16 @@ public partial class Renderer
                 if (!location.IsExplored())
                     continue;
 
-                (int screenX, int screenY) = GetScreenXAndY(locX, locY);
-                
-                DrawTerrain(location, screenX, screenY);
+                DrawTerrain(location, locX, locY);
 
                 if (location.HasDirt())
                 {
-                    DrawDirt(location, locX, locY, screenX, screenY);
+                    DrawDirtOrRock(DirtArray[location.DirtArrayId()], locX, locY);
+                }
+                
+                if (location.IsRock())
+                {
+                    DrawDirtOrRock(RockArray[location.RockArrayId()], locX, locY);
                 }
 
                 //TODO draw snow
@@ -180,8 +245,8 @@ public partial class Renderer
                 if (location.HasHill())
                 {
                     if (location.HillId2() != 0)
-                        DrawHill(HillRes[location.HillId2()], screenX, screenY, IDisplayable.NormalLayer);
-                    DrawHill(HillRes[location.HillId1()], screenX, screenY, IDisplayable.NormalLayer);
+                        DrawHill(HillRes[location.HillId2()], NormalLayer, locX, locY);
+                    DrawHill(HillRes[location.HillId1()], NormalLayer, locX, locY);
                 }
 
                 //TODO draw power
@@ -189,8 +254,9 @@ public partial class Renderer
         }
     }
 
-    private void DrawTerrain(Location location, int screenX, int screenY)
+    private void DrawTerrain(Location location, int locX, int locY)
     {
+        (int screenX, int screenY) = GetScreenXAndY(locX, locY);
         TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
         IntPtr animatedTerrain = terrainInfo.GetAnimationTexture(Graphics, Sys.Instance.FrameNumber / 4);
         if (animatedTerrain != IntPtr.Zero)
@@ -199,49 +265,39 @@ public partial class Renderer
             Graphics.DrawBitmapScaled(terrainInfo.GetTexture(Graphics), screenX, screenY, terrainInfo.BitmapWidth, terrainInfo.BitmapHeight);
     }
 
-    private void DrawDirt(Location location, int locX, int locY, int screenX, int screenY)
+    public void DrawHill(HillBlockInfo hillBlockInfo, int layer, int locX, int locY)
     {
-        Rock dirt = DirtArray[location.DirtArrayId()];
-        int dirtBlockId = RockRes.LocateBlock(dirt.RockId, locX - dirt.LocX, locY - dirt.LocY);
-        if (dirtBlockId != 0)
-        {
-            int dirtBitmapId = RockRes.GetBitmapId(dirtBlockId, dirt.CurFrame);
-            if (dirtBitmapId != 0)
-            {
-                RockBitmapInfo dirtBitmapInfo = RockRes.GetBitmapInfo(dirtBitmapId);
-                Graphics.DrawBitmapScaled(dirtBitmapInfo.GetTexture(Graphics), screenX, screenY, dirtBitmapInfo.BitmapWidth, dirtBitmapInfo.BitmapHeight);
-            }
-        }
-    }
+        if (hillBlockInfo.Layer != layer)
+            return;
 
-    private void DrawHill(HillBlockInfo hillBlockInfo, int screenX, int screenY, int layerMask)
-    {
-        //TODO check this
-        //if((layerMask & hillBlockInfo.Layer) == 0)
-            //return;
-
+        (int screenX, int screenY) = GetScreenXAndY(locX, locY);
         int hillX = screenX + Scale(hillBlockInfo.OffsetX);
         int hillY = screenY + Scale(hillBlockInfo.OffsetY);
         Graphics.DrawBitmapScaled(hillBlockInfo.GetTexture(Graphics), hillX, hillY, hillBlockInfo.BitmapWidth, hillBlockInfo.BitmapHeight);
     }
 
-    private void DrawPlants()
+    private void DrawDirtOrRock(Rock dirtOrRock, int locX, int locY)
     {
-        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
+        (int screenX, int screenY) = GetScreenXAndY(locX, locY);
+        int rockBlockId = RockRes.LocateBlock(dirtOrRock.RockId, locX - dirtOrRock.LocX, locY - dirtOrRock.LocY);
+        if (rockBlockId != 0)
         {
-            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
+            int rockBitmapId = RockRes.GetBitmapId(rockBlockId, dirtOrRock.CurFrame);
+            if (rockBitmapId != 0)
             {
-                Location location = World.GetLoc(locX, locY);
-                if (location.IsExplored() && location.IsPlant())
-                {
-                    (int screenX, int screenY) = GetScreenXAndY(locX, locY);
-                    PlantBitmap plantBitmap = PlantRes.GetBitmap(location.PlantId());
-                    int drawX = screenX + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
-                    int drawY = screenY + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
-                    Graphics.DrawBitmap(plantBitmap.GetTexture(Graphics), drawX, drawY, Scale(plantBitmap.BitmapWidth), Scale(plantBitmap.BitmapHeight));
-                }
+                RockBitmapInfo rockBitmapInfo = RockRes.GetBitmapInfo(rockBitmapId);
+                Graphics.DrawBitmapScaled(rockBitmapInfo.GetTexture(Graphics), screenX, screenY, rockBitmapInfo.BitmapWidth, rockBitmapInfo.BitmapHeight);
             }
         }
+    }
+    
+    public void DrawPlant(PlantBitmap plantBitmap, int locX, int locY)
+    {
+        Location location = World.GetLoc(locX, locY);
+        (int screenX, int screenY) = GetScreenXAndY(locX, locY);
+        int drawX = screenX + location.PlantInnerX() - CellTextureWidth / 2 + Scale(plantBitmap.OffsetX);
+        int drawY = screenY + location.PlantInnerY() - CellTextureHeight / 2 + Scale(plantBitmap.OffsetY);
+        Graphics.DrawBitmapScaled(plantBitmap.GetTexture(Graphics), drawX, drawY, plantBitmap.BitmapWidth, plantBitmap.BitmapHeight);
     }
 
     public void DrawTown(Town town, int layer)
@@ -251,13 +307,13 @@ public partial class Renderer
 
         switch (layer)
         {
-            case IDisplayable.BottomLayer:
+            case BottomLayer:
                 int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.groundBitmapWidth)) / 2;
                 int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.groundBitmapHeight)) / 2;
                 Graphics.DrawBitmapScaled(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
                 break;
             
-            case IDisplayable.NormalLayer:
+            case NormalLayer:
                 bool isSelected = (town.TownId == _selectedTownId);
                 for (int i = 0; i < townLayout.SlotCount; i++)
                 {
@@ -355,7 +411,7 @@ public partial class Renderer
         if (firm.FirmType == Firm.FIRM_MINE)
         {
             FirmMine mine = (FirmMine)firm;
-            if (layer == IDisplayable.NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && mine.RawId != 0)
+            if (layer == NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && mine.RawId != 0)
             {
                 int cargoCount = (int)(Firm.MAX_CARGO * mine.StockQty / mine.MaxStockQty);
                 RawInfo rawInfo = RawRes[mine.RawId];
@@ -366,7 +422,7 @@ public partial class Renderer
         if (firm.FirmType == Firm.FIRM_FACTORY)
         {
             FirmFactory factory = (FirmFactory)firm;
-            if (layer == IDisplayable.NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && factory.ProductRawId != 0)
+            if (layer == NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && factory.ProductRawId != 0)
             {
                 int cargoCount = (int)(Firm.MAX_CARGO * factory.StockQty / factory.MaxStockQty);
                 RawInfo rawInfo = RawRes[factory.ProductRawId];
@@ -376,7 +432,7 @@ public partial class Renderer
 
         if (firm.FirmType == Firm.FIRM_MARKET)
         {
-            if (layer == IDisplayable.NormalLayer && !firm.UnderConstruction)
+            if (layer == NormalLayer && !firm.UnderConstruction)
             {
                 FirmMarket market = (FirmMarket)firm;
                 for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
@@ -672,9 +728,9 @@ public partial class Renderer
         for (int i = 0; i < _selectedUnits.Count; i++)
         {
             Unit unit = UnitArray[_selectedUnits[i]];
-            if (layer == IDisplayable.NormalLayer && unit.MobileType == UnitConstants.UNIT_AIR)
+            if (layer == NormalLayer && unit.MobileType == UnitConstants.UNIT_AIR)
                 continue;
-            if (layer == IDisplayable.AirLayer && unit.MobileType != UnitConstants.UNIT_AIR)
+            if (layer == AirLayer && unit.MobileType != UnitConstants.UNIT_AIR)
                 continue;
 
             //TODO unit.IsStealth()?
@@ -819,6 +875,15 @@ public partial class Renderer
         Graphics.DrawRect(x1, y2 - Thickness, x2 - x1, Thickness, color);
         Graphics.DrawRect(x1, y1, Thickness, y2 - y1, color);
         Graphics.DrawRect(x2 - Thickness, y1, Thickness, y2 - y1, color);
+    }
+
+    private int GetUnitDrawY2(Unit unit)
+    {
+        SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
+        int unitY = MainViewY + Scale(unit.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight + Scale(spriteFrame.Height) - 1;
+        if (unit is UnitMarine)
+            unitY -= WaveHeight(6);
+        return unitY;
     }
 
     private (int, int) GetUnitScreenXAndY(Unit unit)
