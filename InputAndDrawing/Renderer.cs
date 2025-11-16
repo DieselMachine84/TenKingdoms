@@ -99,6 +99,8 @@ public partial class Renderer : IRenderer
     private static UnitArray UnitArray => Sys.Instance.UnitArray;
     private static SpyArray SpyArray => Sys.Instance.SpyArray;
     private static SiteArray SiteArray => Sys.Instance.SiteArray;
+    private static BulletArray BulletArray => Sys.Instance.BulletArray;
+    private static EffectArray EffectArray => Sys.Instance.EffectArray;
 
     public Renderer(Graphics graphics)
     {

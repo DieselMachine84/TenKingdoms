@@ -761,7 +761,7 @@ public partial class Renderer
                     if (!unit.IsStealth())
                     {
                         SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
-                        (int unitX, int unitY) = GetUnitScreenXAndY(unit);
+                        (int unitX, int unitY) = GetSpriteScreenXAndY(unit);
                         int unitX2 = unitX + Scale(spriteFrame.Width) - 1;
                         int unitY2 = unitY + Scale(spriteFrame.Height) - 1;
                         if (pointingX >= unitX && pointingX <= unitX2 && pointingY >= unitY && pointingY <= unitY2)

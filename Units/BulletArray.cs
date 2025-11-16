@@ -9,6 +9,8 @@ public class BulletArray : SpriteArray
 	private World World => Sys.Instance.World;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
 	private TownArray TownArray => Sys.Instance.TownArray;
+	
+	public override Bullet this[int recNo] => (Bullet)base[recNo];
 
 	public BulletArray()
 	{

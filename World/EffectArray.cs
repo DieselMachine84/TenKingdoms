@@ -2,6 +2,8 @@ namespace TenKingdoms;
 
 public class EffectArray : SpriteArray
 {
+    public override Effect this[int recNo] => (Effect)base[recNo];
+    
     protected override Effect CreateNewObject(int objectType)
     {
         return new Effect();

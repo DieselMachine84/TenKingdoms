@@ -97,7 +97,7 @@ public partial class Renderer
                         DisplayableObject displayableObject = GetDisplayableObject();
                         displayableObject.ObjectType = DisplayableObjectType.Unit;
                         displayableObject.ObjectId = unit.SpriteId;
-                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        displayableObject.DrawY2 = GetSpriteDrawY2(unit);
                         _objectsToDraw.Add(displayableObject);
                     }
                 }
@@ -110,7 +110,7 @@ public partial class Renderer
                         DisplayableObject displayableObject = GetDisplayableObject();
                         displayableObject.ObjectType = DisplayableObjectType.Unit;
                         displayableObject.ObjectId = unit.SpriteId;
-                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        displayableObject.DrawY2 = GetSpriteDrawY2(unit);
                         _objectsToDraw.Add(displayableObject);
                         _airAndSeaUnitsToDraw.Add(unit);
                     }
@@ -124,7 +124,7 @@ public partial class Renderer
                         DisplayableObject displayableObject = GetDisplayableObject();
                         displayableObject.ObjectType = DisplayableObjectType.Unit;
                         displayableObject.ObjectId = unit.SpriteId;
-                        displayableObject.DrawY2 = GetUnitDrawY2(unit);
+                        displayableObject.DrawY2 = GetSpriteDrawY2(unit);
                         _objectsToDrawAir.Add(displayableObject);
                         _airAndSeaUnitsToDraw.Add(unit);
                     }
@@ -157,6 +157,58 @@ public partial class Renderer
                         _objectsToDrawTop.Add(displayableObject);
                     }
                 }
+
+                if (location.FireStrength() > 0)
+                {
+                    DisplayableObject displayableObject = GetDisplayableObject();
+                    displayableObject.ObjectType = DisplayableObjectType.Fire;
+                    displayableObject.ObjectId = location.FireStrength();
+                    displayableObject.DrawLocX = locX;
+                    displayableObject.DrawLocY = locY;
+                    displayableObject.DrawY2 = GetScreenXAndY(locX, locY + 1).Item2 - ((locX + 13) * (locY + 17)) % (CellTextureHeight / 2);
+                    _objectsToDraw.Add(displayableObject);
+                    _objectsToDrawTop.Add(displayableObject);
+                }
+            }
+        }
+
+        foreach (Bullet bullet in BulletArray)
+        {
+            if (bullet.IsStealth())
+                continue;
+            
+            if (bullet.CurLocX >= startLocX && bullet.CurLocX <= endLocX && bullet.CurLocY >= startLocY && bullet.CurLocY <= endLocY)
+            {
+                DisplayableObject displayableObject = GetDisplayableObject();
+                displayableObject.ObjectType = DisplayableObjectType.Bullet;
+                displayableObject.ObjectId = bullet.SpriteId;
+                displayableObject.DrawY2 = GetSpriteDrawY2(bullet);
+                if (bullet.display_layer() == NormalLayer)
+                    _objectsToDraw.Add(displayableObject);
+                if (bullet.display_layer() == TopLayer)
+                    _objectsToDrawTop.Add(displayableObject);
+                if (bullet.display_layer() == AirLayer)
+                    _objectsToDrawAir.Add(displayableObject);
+            }
+        }
+
+        foreach (Effect effect in EffectArray)
+        {
+            if (effect.IsStealth())
+                continue;
+            
+            if (effect.CurLocX >= startLocX && effect.CurLocX <= endLocX && effect.CurLocY >= startLocY && effect.CurLocY <= endLocY)
+            {
+                DisplayableObject displayableObject = GetDisplayableObject();
+                displayableObject.ObjectType = DisplayableObjectType.Effect;
+                displayableObject.ObjectId = effect.SpriteId;
+                displayableObject.DrawY2 = GetSpriteDrawY2(effect);
+                if (effect.layer == NormalLayer)
+                    _objectsToDraw.Add(displayableObject);
+                if (effect.layer == TopLayer)
+                    _objectsToDrawTop.Add(displayableObject);
+                if (effect.layer == AirLayer)
+                    _objectsToDrawAir.Add(displayableObject);
             }
         }
 
@@ -195,6 +247,7 @@ public partial class Renderer
         }
         
         //TODO draw way points
+        //TODO add fire sound
         
         if (_leftMousePressed)
             DrawSelectionRectangle();
@@ -300,6 +353,11 @@ public partial class Renderer
         Graphics.DrawBitmapScaled(plantBitmap.GetTexture(Graphics), drawX, drawY, plantBitmap.BitmapWidth, plantBitmap.BitmapHeight);
     }
 
+    public void DrawFlame()
+    {
+        //TODO implement
+    }
+    
     public void DrawTown(Town town, int layer)
     {
         (int townX, int townY) = GetScreenXAndY(town.LocX1, town.LocY1);
@@ -584,10 +642,10 @@ public partial class Renderer
 
     public void DrawUnit(Unit unit, int layer)
     {
-        (int unitX, int unitY) = GetUnitScreenXAndY(unit);
+        (int unitX, int unitY) = GetSpriteScreenXAndY(unit);
         SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
         SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
-        Graphics.DrawBitmapScaled(spriteFrame.GetUnitTexture(Graphics, spriteInfo, unit.NationId, unit == _pointingUnit), unitX, unitY,
+        Graphics.DrawBitmapScaled(spriteFrame.GetSpriteTexture(Graphics, spriteInfo, unit.NationId, unit == _pointingUnit), unitX, unitY,
             spriteFrame.Width, spriteFrame.Height, needMirror ? FlipMode.Horizontal : FlipMode.None);
 
         //Draw skill icons
@@ -720,6 +778,67 @@ public partial class Renderer
         //TODO if unit is attacking another unit or firm, select it also
     }
 
+    private void DrawSprite(Sprite sprite)
+    {
+        (int spriteX, int spriteY) = GetSpriteScreenXAndY(sprite);
+        SpriteFrame spriteFrame = sprite.CurSpriteFrame(out bool needMirror);
+        SpriteInfo spriteInfo = SpriteRes[sprite.SpriteResId];
+        Graphics.DrawBitmapScaled(spriteFrame.GetSpriteTexture(Graphics, spriteInfo, 0, false), spriteX, spriteY,
+            spriteFrame.Width, spriteFrame.Height, needMirror ? FlipMode.Horizontal : FlipMode.None);
+    }
+
+    private void DrawSprite(Sprite sprite, int direction)
+    {
+        (int spriteX, int spriteY) = GetSpriteScreenXAndY(sprite);
+        SpriteFrame spriteFrame = sprite.CurSpriteFrame(direction, out bool needMirror);
+        SpriteInfo spriteInfo = SpriteRes[sprite.SpriteResId];
+        Graphics.DrawBitmapScaled(spriteFrame.GetSpriteTexture(Graphics, spriteInfo, 0, false), spriteX, spriteY,
+            spriteFrame.Width, spriteFrame.Height, needMirror ? FlipMode.Horizontal : FlipMode.None);
+    }
+    
+    public void DrawBullet(Bullet bullet)
+    {
+        if (bullet is Projectile)
+        {
+            Projectile projectile = (Projectile)bullet;
+            double z = (projectile.cur_step + 1) * (projectile.total_step + 1 - projectile.cur_step);
+            if (z < 0.0)
+                z = 0.0;
+
+            if (projectile.CurAction == Sprite.SPRITE_MOVE)
+            {
+                double dz = (projectile.total_step - 2 * (projectile.cur_step));
+                int finalDir = projectile.FinalDir;
+                if (dz >= 10.0)
+                    finalDir = (finalDir & 7 ) | 8; // pointing up
+                else if (dz <= -10.0)
+                    finalDir = (finalDir & 7 ) | 16; // pointing down
+                else
+                    finalDir &= 7;
+                
+                projectile.UpdateSprites(finalDir, z);
+                DrawSprite(projectile.Shadow);
+                DrawSprite(projectile.Bullet);
+            }
+            else
+            {
+                if (projectile.CurAction == Sprite.SPRITE_DIE)
+                    DrawSprite(projectile, (projectile.FinalDir & 7) | 16);
+                else
+                    DrawSprite(projectile);
+            }
+        }
+        else
+        {
+            DrawSprite(bullet);
+        }
+    }
+
+    public void DrawEffect(Effect effect)
+    {
+        DrawSprite(effect);
+    }
+    
     private void DrawUnitPaths(int layer)
     {
         if ((Config.show_unit_path & 1) == 0)
@@ -877,23 +996,23 @@ public partial class Renderer
         Graphics.DrawRect(x2 - Thickness, y1, Thickness, y2 - y1, color);
     }
 
-    private int GetUnitDrawY2(Unit unit)
+    private int GetSpriteDrawY2(Sprite sprite)
     {
-        SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
-        int unitY = MainViewY + Scale(unit.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight + Scale(spriteFrame.Height) - 1;
-        if (unit is UnitMarine)
-            unitY -= WaveHeight(6);
-        return unitY;
+        SpriteFrame spriteFrame = sprite.CurSpriteFrame(out _);
+        int spriteY = MainViewY + Scale(sprite.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight + Scale(spriteFrame.Height) - 1;
+        if (sprite is UnitMarine)
+            spriteY -= WaveHeight(6);
+        return spriteY;
     }
 
-    private (int, int) GetUnitScreenXAndY(Unit unit)
+    private (int, int) GetSpriteScreenXAndY(Sprite sprite)
     {
-        SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
-        int unitX = MainViewX + Scale(unit.CurX + spriteFrame.OffsetX) - _topLeftLocX * CellTextureWidth;
-        int unitY = MainViewY + Scale(unit.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight;
-        if (unit is UnitMarine)
-            unitY -= WaveHeight(6);
-        return (unitX, unitY);
+        SpriteFrame spriteFrame = sprite.CurSpriteFrame(out _);
+        int spriteX = MainViewX + Scale(sprite.CurX + spriteFrame.OffsetX) - _topLeftLocX * CellTextureWidth;
+        int spriteY = MainViewY + Scale(sprite.CurY + spriteFrame.OffsetY) - _topLeftLocY * CellTextureHeight;
+        if (sprite is UnitMarine)
+            spriteY -= WaveHeight(6);
+        return (spriteX, spriteY);
     }
     
     private int WaveHeight(int phase = 0)

@@ -73,7 +73,7 @@ public class SpriteFrame
     public int BitmapOffset;
     private readonly Dictionary<int, IntPtr> _unitTextures = new Dictionary<int, nint>();
 
-    public IntPtr GetUnitTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
+    public IntPtr GetSpriteTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
     {
         int colorScheme = ColorRemap.ColorSchemes[nationId];
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);

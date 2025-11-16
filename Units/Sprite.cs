@@ -158,10 +158,14 @@ public class Sprite : IIdObject
 	{
 		return (displayDir < 8 || SpriteInfo.TurnResolution <= 8) ? (displayDir & 7) >= 5 : (displayDir & 7) >= 4;
 	}
-	
+
 	public SpriteFrame CurSpriteFrame(out bool needMirror)
 	{
-		int curDir = DisplayDir();
+		return CurSpriteFrame(DisplayDir(), out needMirror);
+	}
+	
+	public SpriteFrame CurSpriteFrame(int curDir, out bool needMirror)
+	{
 		needMirror = NeedMirror(curDir);
 
 		switch (CurAction)
@@ -226,11 +230,9 @@ public class Sprite : IIdObject
 					return SpriteFrameRes[SpriteInfo.Die.FirstFrameId + CurFrame - 1];
 				}
 
-				return null;
-
-			default:
-				return SpriteFrameRes[SpriteInfo.Moves[curDir].FirstFrameId + CurFrame - 1];
+				break;
 		}
+		return SpriteFrameRes[SpriteInfo.Moves[curDir].FirstFrameId + CurFrame - 1];
 	}
 
 	protected void SpriteMove(int destX, int destY)
@@ -535,11 +537,11 @@ public class Sprite : IIdObject
 		{
 			case 0: // fall through
 			case 1:
-				curDir &= ~7; // direction less, remain upward or downard, but set to north
+				curDir &= ~7; // direction less, remain upward or downward, but set to north
 				break;
 			case 8:
 				// cur_dir can be 0 to 3*MAX_SPRITE_DIR_TYPE-1, such as projectile;
-				// curDir = cur_dir;
+				// curDir = CurDir;
 				break;
 			case 16:
 				// curDir should be (from due north, clockwisely) { 0,8,1,9,2,10,3,11,4,12,5,13,6,14,7,15 }

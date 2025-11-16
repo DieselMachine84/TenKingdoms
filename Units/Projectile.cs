@@ -2,9 +2,8 @@ namespace TenKingdoms;
 
 public class Projectile : Bullet
 {
-    public double z_coff; // height = z_coff * (cur_step) * (total_step - cur_step)
-    public Sprite act_bullet = new Sprite();
-    public Sprite bullet_shadow = new Sprite();
+    public Projectile Bullet { get; } = new Projectile();
+    public Projectile Shadow { get; } = new Projectile();
 
     public Projectile()
     {
@@ -14,24 +13,9 @@ public class Projectile : Bullet
     {
         base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
         int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
-        act_bullet.Init(spriteId, CurLocX, CurLocY);
+        Bullet.Init(spriteId, CurLocX, CurLocY);
         int shadowSpriteId = SpriteInfo.GetSubSpriteInfo(2).SpriteId;
-        bullet_shadow.Init(shadowSpriteId, CurLocX, CurLocY);
-
-        // calculate z_coff;
-        z_coff = 1.0;
-        /*
-        float dz = z_coff * total_step;
-        if( dz >= 10.0)
-            cur_dir = cur_dir & 7 | 8;					// pointing up
-        else if( dz <= -10.0)
-            cur_dir = cur_dir & 7 | 16;				// pointing down
-        else
-            cur_dir &= 7;
-        */
-
-        // --------- recalculate spriteFrame pointer ----------//
-        SpriteFrame spriteFrame = CurSpriteFrame(out _);
+        Shadow.Init(shadowSpriteId, CurLocX, CurLocY);
     }
 
     public override int display_layer()
@@ -40,5 +24,18 @@ public class Projectile : Bullet
             return 8;
         else
             return 2;
+    }
+
+    public void UpdateSprites(int finalDir, double z)
+    {
+        Shadow.SetDir(finalDir);
+        Shadow.CurFrame = CurFrame;
+        Shadow.CurAction = Sprite.SPRITE_MOVE;
+        Shadow.SetCur((int)(CurX - z / 8.0), (int)(CurY - z / 6.0));
+
+        Bullet.SetDir(finalDir);
+        Bullet.CurFrame = CurFrame;
+        Bullet.CurAction = Sprite.SPRITE_MOVE;
+        Bullet.SetCur(CurX, CurY - (int)z);
     }
 }
