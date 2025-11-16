@@ -283,6 +283,14 @@ public class Sys
                     lastFrameTime = currentMilliseconds;
                     FrameNumber++;
                     nextFrameReady = true;
+                    int hasEvent = SDL.SDL_PollEvent(out sdlEvent);
+                    if (hasEvent == 1)
+                    {
+                        if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                            return;
+
+                        needRedraw = ProcessEvent(sdlEvent);
+                    }
                 }
             }
             else
