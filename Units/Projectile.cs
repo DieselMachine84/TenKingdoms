@@ -2,11 +2,18 @@ namespace TenKingdoms;
 
 public class Projectile : Bullet
 {
-    public Projectile Bullet { get; } = new Projectile();
-    public Projectile Shadow { get; } = new Projectile();
+    public Projectile Bullet { get; }
+    public Projectile Shadow { get; }
 
     public Projectile()
     {
+        Bullet = new Projectile(0);
+        Shadow = new Projectile(0);
+    }
+
+    private Projectile(int dummy)
+    {
+        //
     }
 
     public override void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
