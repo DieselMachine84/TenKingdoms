@@ -101,8 +101,8 @@ public partial class Renderer
             }
             else
             {
-                loyalty = NationArray.player_recno != 0 ? (int)town.RacesResistance[i, NationArray.player_recno] : 0;
-                targetLoyalty = NationArray.player_recno != 0 ? town.RacesTargetResistance[i, NationArray.player_recno] : 0;
+                loyalty = NationArray.player_recno != 0 ? (int)town.RacesResistance[i, NationArray.player_recno - 1] : 0;
+                targetLoyalty = NationArray.player_recno != 0 ? town.RacesTargetResistance[i, NationArray.player_recno - 1] : 0;
                 if (targetLoyalty > loyalty)
                     targetLoyalty = loyalty;
             }
