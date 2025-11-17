@@ -178,7 +178,7 @@ public partial class Renderer
             _topLeftLocY++;
     }
 
-    private void GoToLocation(int locX, int locY)
+    public void GoToLocation(int locX, int locY)
     {
         _topLeftLocX = locX - MainViewWidthInCells / 2;
         if (_topLeftLocX < 0)

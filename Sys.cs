@@ -192,6 +192,21 @@ public class Sys
         MapGenerator mapGenerator = new MapGenerator();
         mapGenerator.Generate();
         Renderer.Reset();
+        GoToPlayerTown();
+    }
+
+    private void GoToPlayerTown()
+    {
+        if (NationArray.player_recno != 0)
+        {
+            foreach (Town town in TownArray)
+            {
+                if (town.TownId == NationArray.player_recno)
+                {
+                    Renderer.GoToLocation(town.LocCenterX, town.LocCenterY);
+                }
+            }
+        }
     }
 
     public void Run()
