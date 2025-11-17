@@ -9,10 +9,10 @@ public class EffectArray : SpriteArray
         return new Effect();
     }
 
-    public Effect AddEffect(int spriteId, int startX, int startY, int initAction, int initDir, int dispLayer, int effectLife)
+    public Effect AddEffect(int spriteId, int startX, int startY, int initAction, int initDir, int displayLayer, int effectLife)
     {
         Effect effect = (Effect)AddSprite(spriteId);
-        effect.init(spriteId, startX, startY, initAction, initDir, dispLayer, effectLife);
+        effect.Init(spriteId, startX, startY, initAction, initDir, displayLayer, effectLife);
         return effect;
     }
     

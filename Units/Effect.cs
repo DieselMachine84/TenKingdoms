@@ -2,16 +2,16 @@ namespace TenKingdoms;
 
 public class Effect : Sprite
 {
-    public int layer;
-    public int life;
+    public int DisplayLayer { get; private set; }
+    private int Life { get; set; }
 
     public Effect()
     {
-        layer = 1; // default in land display layer
-        life = 0; // disappear when life < 0
+        DisplayLayer = 1; // default in land display layer
+        Life = 0; // disappear when life < 0
     }
 
-    public void init(int spriteId, int startX, int startY, int initAction, int initDir, int dispLayer, int effectLife)
+    public void Init(int spriteId, int startX, int startY, int initAction, int initDir, int displayLayer, int effectLife)
     {
         SpriteResId = spriteId;
 
@@ -27,36 +27,29 @@ public class Effect : Sprite
         CurDir = initDir;
         CurFrame = 1;
 
-        //----- clone vars from sprite_res for fast access -----//
-
         SpriteInfo = SpriteRes[SpriteResId];
 
-        //sprite_info.load_bitmap_res();
-
-        // -------- adjust cur_dir -----------//
         if (SpriteInfo.TurnResolution <= 1)
             CurDir = 0;
         FinalDir = CurDir;
 
-        //------------- init other vars --------------//
-
         RemainAttackDelay = 0;
         RemainFramesPerStep = SpriteInfo.FramesPerStep;
 
-        layer = dispLayer;
+        DisplayLayer = displayLayer;
         if (effectLife > 0)
         {
-            life = effectLife;
+            Life = effectLife;
         }
         else
         {
             switch (CurAction)
             {
                 case SPRITE_IDLE:
-                    life = SpriteInfo.Stops[CurDir].FrameCount - CurFrame;
+                    Life = SpriteInfo.Stops[CurDir].FrameCount - CurFrame;
                     break;
                 case SPRITE_DIE:
-                    life = SpriteInfo.Die.FrameCount - CurFrame;
+                    Life = SpriteInfo.Die.FrameCount - CurFrame;
                     break;
             }
         }
@@ -64,7 +57,7 @@ public class Effect : Sprite
 
     public override void PreProcess()
     {
-        if (--life < 0)
+        if (--Life < 0)
         {
             Sys.Instance.EffectArray.DeleteEffect(this);
         }

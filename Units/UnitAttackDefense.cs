@@ -214,12 +214,12 @@ public partial class Unit
 				//------- seek location to attack by bullet ----------//
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType,
+				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType,
 					    RangeAttackLocX, RangeAttackLocY, UnitConstants.UNIT_LAND,
 					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
 					FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -298,7 +298,7 @@ public partial class Unit
 					SetCur(NextX, NextY);
 
 					AttackInfo attackInfo = AttackInfos[CurAttack];
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -437,11 +437,11 @@ public partial class Unit
 				//------- seek location to attack target by bullet --------//
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType, RangeAttackLocX,
+				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType, RangeAttackLocX,
 					    RangeAttackLocY,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -520,7 +520,7 @@ public partial class Unit
 					AttackInfo attackInfo = AttackInfos[CurAttack];
 					int curXLoc = NextLocX;
 					int curYLoc = NextLocY;
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -600,11 +600,11 @@ public partial class Unit
 				//---------- seek location to attack target by bullet --------//
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				if (!BulletArray.bullet_path_possible(curXLoc, curYLoc, MobileType,
+				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType,
 					    RangeAttackLocX, RangeAttackLocY,
 					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 				{
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -679,7 +679,7 @@ public partial class Unit
 					AttackInfo attackInfo = AttackInfos[CurAttack];
 					int curXLoc = NextLocX;
 					int curYLoc = NextLocY;
-					bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -2290,7 +2290,7 @@ public partial class Unit
 				//------------------ do range attack ----------------------//
 				AttackInfo attackInfo = AttackInfos[CurAttack];
 				// range attack possible
-				bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+				bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 				RangeAttackLocX = resultLocX;
@@ -2357,7 +2357,7 @@ public partial class Unit
 			if (CurFrame != attackInfo.bullet_out_frame)
 				return; // wait for bullet_out_frame
 
-			if (!BulletArray.bullet_path_possible(unitXLoc, unitYLoc, MobileType,
+			if (!BulletArray.BulletPathPossible(unitXLoc, unitYLoc, MobileType,
 				    RangeAttackLocX, RangeAttackLocY, targetUnit.MobileType,
 				    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
 			{
@@ -2365,7 +2365,7 @@ public partial class Unit
 				// seek for another possible point to attack if target size > 1x1
 				if (targetSpriteInfo.LocWidth > 1 || targetSpriteInfo.LocHeight > 1)
 				{
-					bool canAddBullet = BulletArray.add_bullet_possible(unitXLoc, unitYLoc, MobileType,
+					bool canAddBullet = BulletArray.AddBulletPossible(unitXLoc, unitYLoc, MobileType,
 						ActionLocX, ActionLocY, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
@@ -2493,7 +2493,7 @@ public partial class Unit
 				AttackInfo attackInfo = AttackInfos[CurAttack];
 				int curXLoc = NextLocX;
 				int curYLoc = NextLocY;
-				bool canAddBullet = BulletArray.add_bullet_possible(curXLoc, curYLoc, MobileType,
+				bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
 					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 				RangeAttackLocX = resultLocX;

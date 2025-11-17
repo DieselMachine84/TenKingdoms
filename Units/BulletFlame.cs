@@ -6,22 +6,22 @@ public class BulletFlame : Bullet
     {
     }
 
-    public override void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
+    public override void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
     {
         // note : BulletFlame should have at least one dummy moving frame for each direction
-        base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
+        base.Init(parentType, parentId, targetLocX, targetLocY, targetMobileType);
 
         CurAction = SPRITE_IDLE;
     }
 
     public override void ProcessIdle()
     {
-        // Sprite::process_idle();
+        //base.ProcessIdle();
         if (++CurFrame <= CurSpriteStop().FrameCount)
         {
-            // ----- warn/ attack target every frame -------//
-            warn_target();
-            check_hit();
+            // ----- warn/attack target every frame -------//
+            WarnTarget();
+            CheckHit();
         }
         else
         {
@@ -30,7 +30,7 @@ public class BulletFlame : Bullet
         }
     }
 
-    public override int display_layer()
+    public override int DisplayLayer()
     {
         switch (MobileType)
         {

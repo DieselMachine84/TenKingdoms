@@ -42,40 +42,39 @@ public class BulletArray : SpriteArray
 		// define parameters
 		//------------------------------------------------------//
 		SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
-		int attackXLoc = parentUnit.RangeAttackLocX;
-		int attackYLoc = parentUnit.RangeAttackLocY;
-		int targetXLoc = targetUnit.NextLocX;
-		int targetYLoc = targetUnit.NextLocY;
+		int attackLocX = parentUnit.RangeAttackLocX;
+		int attackLocY = parentUnit.RangeAttackLocY;
+		int targetLocX = targetUnit.NextLocX;
+		int targetLocY = targetUnit.NextLocY;
 
-		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + targetSpriteInfo.LocWidth &&
-		    attackYLoc >= targetYLoc && attackYLoc < targetYLoc + targetSpriteInfo.LocHeight)
+		if (attackLocX >= targetLocX && attackLocX < targetLocX + targetSpriteInfo.LocWidth &&
+		    attackLocY >= targetLocY && attackLocY < targetLocY + targetSpriteInfo.LocHeight)
 		{
 			//-------------------------------------------------------//
 			// the previous used range attack destination can be reused,
-			// time is saved 'cos no need to check for bullet_path_possible()
+			// time is saved 'cos no need to check for BulletPathPossible()
 			//-------------------------------------------------------//
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,
-				attackXLoc, attackYLoc, targetUnit.MobileType);
+			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, targetUnit.MobileType);
 			return bullet;
 		}
 
 		return null;
 	}
 
-	public Bullet AddBullet(Unit parentUnit, int xLoc, int yLoc) // unit attacks firm, town
+	public Bullet AddBullet(Unit parentUnit, int locX, int locY) // unit attacks firm, town
 	{
 		//------------------------------------------------------//
 		// define parameters
 		//------------------------------------------------------//
-		int attackXLoc = parentUnit.RangeAttackLocX;
-		int attackYLoc = parentUnit.RangeAttackLocY;
-		int targetXLoc = xLoc;
-		int targetYLoc = yLoc;
+		int attackLocX = parentUnit.RangeAttackLocX;
+		int attackLocY = parentUnit.RangeAttackLocY;
+		int targetLocX = locX;
+		int targetLocY = locY;
 		int width = 0, height = 0;
-		Location location = World.GetLoc(xLoc, yLoc);
+		Location location = World.GetLoc(locX, locY);
 
 		if (location.IsFirm())
 		{
@@ -93,51 +92,51 @@ public class BulletArray : SpriteArray
 		else if (location.IsWall())
 			width = height = 1;
 
-		if (attackXLoc >= targetXLoc && attackXLoc < targetXLoc + width &&
-		    attackYLoc >= targetYLoc && attackYLoc < targetYLoc + height)
+		if (attackLocX >= targetLocX && attackLocX < targetLocX + width &&
+		    attackLocY >= targetLocY && attackLocY < targetLocY + height)
 		{
 			//-------------------------------------------------------//
 			// the previous used range attack destination can be reused,
-			// time is saved 'cos no need to check for bullet_path_possible()
+			// time is saved 'cos no need to check for BulletPathPossible()
 			//-------------------------------------------------------//
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.bullet_sprite_id;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId,
-				attackXLoc, attackYLoc, UnitConstants.UNIT_LAND);
+			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, UnitConstants.UNIT_LAND);
 			return bullet;
 		}
 
 		return null;
 	}
 
-	public bool add_bullet_possible(int startXLoc, int startYLoc, int attackerMobileType,
-		int targetXLoc, int targetYLoc, int targetMobileType, int targetWidth, int targetHeight,
-		out int resultXLoc, out int resultYLoc, int bulletSpeed, int bulletSpriteId)
+	public bool AddBulletPossible(int startLocX, int startLocY, int attackerMobileType,
+		int targetLocX, int targetLocY, int targetMobileType, int targetWidth, int targetHeight,
+		out int resultLocX, out int resultLocY, int bulletSpeed, int bulletSpriteId)
 	{
-		resultXLoc = resultYLoc = -1;
+		resultLocX = resultLocY = -1;
 
 		//----------------------------------------------------------------------//
 		// for target with size 1x1
 		//----------------------------------------------------------------------//
 		if (targetWidth == 1 && targetHeight == 1)
 		{
-			if (bullet_path_possible(startXLoc, startYLoc, attackerMobileType,
-				    targetXLoc, targetYLoc, targetMobileType, bulletSpeed, bulletSpriteId))
+			if (BulletPathPossible(startLocX, startLocY, attackerMobileType,
+				    targetLocX, targetLocY, targetMobileType, bulletSpeed, bulletSpriteId))
 			{
-				resultXLoc = targetXLoc;
-				resultYLoc = targetYLoc;
+				resultLocX = targetLocX;
+				resultLocY = targetLocY;
 				return true;
 			}
 			else
+			{
 				return false;
+			}
 		}
 
 		//----------------------------------------------------------------------//
 		// choose the closest corner to be the default attacking point of range attack
 		//
-		// generalized case for range-attack is coded below. Work for target with
-		// size > 1x1 
+		// generalized case for range attack is coded below. Work for target with size > 1x1 
 		//----------------------------------------------------------------------//
 
 		//-------------- define parameters --------------------//
@@ -150,37 +149,37 @@ public class BulletArray : SpriteArray
 		//----------------------------------------------------------------------//
 		// determine initial xOffset
 		//----------------------------------------------------------------------//
-		if (startXLoc <= targetXLoc)
+		if (startLocX <= targetLocX)
 			xOffset = 0; // the left hand side of the target
-		else if (startXLoc >= targetXLoc + adjWidth)
+		else if (startLocX >= targetLocX + adjWidth)
 			xOffset = adjWidth; // the right hand side of the target
 		else
 		{
-			xOffset = startXLoc - targetXLoc; // in the middle(vertical) of the target
+			xOffset = startLocX - targetLocX; // in the middle(vertical) of the target
 			atEdge++;
 		}
 
 		//----------------------------------------------------------------------//
 		// determine initial yOffset
 		//----------------------------------------------------------------------//
-		if (startYLoc <= targetYLoc)
+		if (startLocY <= targetLocY)
 			yOffset = 0; // the upper of the target
-		else if (startYLoc >= targetYLoc + adjHeight)
+		else if (startLocY >= targetLocY + adjHeight)
 			yOffset = adjHeight;
 		else
 		{
-			yOffset = startYLoc - targetYLoc; // in the middle(horizontal) of the target
+			yOffset = startLocY - targetLocY; // in the middle(horizontal) of the target
 			atEdge++;
 		}
 
 		//----------------------------------------------------------------------//
 		// checking whether it is possible to add bullet
 		//----------------------------------------------------------------------//
-		if (bullet_path_possible(startXLoc, startYLoc, attackerMobileType,
-			    targetXLoc + xOffset, targetYLoc + yOffset, targetMobileType, bulletSpeed, bulletSpriteId))
+		if (BulletPathPossible(startLocX, startLocY, attackerMobileType,
+			    targetLocX + xOffset, targetLocY + yOffset, targetMobileType, bulletSpeed, bulletSpriteId))
 		{
-			resultXLoc = targetXLoc + xOffset;
-			resultYLoc = targetYLoc + yOffset;
+			resultLocX = targetLocX + xOffset;
+			resultLocY = targetLocY + yOffset;
 			return true;
 		}
 
@@ -225,11 +224,11 @@ public class BulletArray : SpriteArray
 			leftY += leftYOffset;
 			if (leftX >= 0 && leftX < targetWidth && leftY >= 0 && leftY < targetHeight)
 			{
-				if (bullet_path_possible(startXLoc, startYLoc, attackerMobileType,
-					    targetXLoc + leftX, targetYLoc + leftY, targetMobileType, bulletSpeed, bulletSpriteId))
+				if (BulletPathPossible(startLocX, startLocY, attackerMobileType,
+					    targetLocX + leftX, targetLocY + leftY, targetMobileType, bulletSpeed, bulletSpriteId))
 				{
-					resultXLoc = targetXLoc + leftX;
-					resultYLoc = targetYLoc + leftY;
+					resultLocX = targetLocX + leftX;
+					resultLocY = targetLocY + leftY;
 					return true;
 				}
 			}
@@ -245,11 +244,11 @@ public class BulletArray : SpriteArray
 			rightY += rightYOffset;
 			if (rightX >= 0 && rightX < targetWidth && rightY >= 0 && rightY < targetHeight)
 			{
-				if (bullet_path_possible(startXLoc, startYLoc, attackerMobileType,
-					    targetXLoc + rightX, targetYLoc + rightY, targetMobileType, bulletSpeed, bulletSpriteId))
+				if (BulletPathPossible(startLocX, startLocY, attackerMobileType,
+					    targetLocX + rightX, targetLocY + rightY, targetMobileType, bulletSpeed, bulletSpriteId))
 				{
-					resultXLoc = targetXLoc + rightX;
-					resultYLoc = targetYLoc + rightY;
+					resultLocX = targetLocX + rightX;
+					resultLocY = targetLocY + rightY;
 					return true;
 				}
 			}
@@ -261,8 +260,8 @@ public class BulletArray : SpriteArray
 		}
 	}
 
-	public bool bullet_path_possible(int startXLoc, int startYLoc, int attackerMobileType,
-		int destXLoc, int destYLoc, int targetMobileType, int bulletSpeed, int bulletSpriteId)
+	public bool BulletPathPossible(int startLocX, int startLocY, int attackerMobileType,
+		int destLocX, int destLocY, int targetMobileType, int bulletSpeed, int bulletSpriteId)
 	{
 		if (attackerMobileType == UnitConstants.UNIT_AIR || targetMobileType == UnitConstants.UNIT_AIR)
 			return true;
@@ -272,12 +271,10 @@ public class BulletArray : SpriteArray
 		if (spriteInfo.SpriteSubType == 'P')
 			return true;
 
-		//----------------------- define variables ---------------//
-
-		int originX = startXLoc * InternalConstants.CellWidth;
-		int originY = startYLoc * InternalConstants.CellHeight;
-		int goX = destXLoc * InternalConstants.CellWidth;
-		int goY = destYLoc * InternalConstants.CellHeight;
+		int originX = startLocX * InternalConstants.CellWidth;
+		int originY = startLocY * InternalConstants.CellHeight;
+		int goX = destLocX * InternalConstants.CellWidth;
+		int goY = destLocY * InternalConstants.CellHeight;
 
 		int xStep = (goX - originX) / bulletSpeed;
 		int yStep = (goY - originY) / bulletSpeed;
@@ -286,7 +283,7 @@ public class BulletArray : SpriteArray
 		int curStep = 0;
 
 		//------------------------------------------------------//
-		// if the path of the bullet is blocked, return 0
+		// if the path of the bullet is blocked, return false
 		//------------------------------------------------------//
 		int curX = originX + InternalConstants.CellWidth / 2;
 		int curY = originY + InternalConstants.CellHeight / 2;
@@ -296,18 +293,16 @@ public class BulletArray : SpriteArray
 			curX += xStep;
 			curY += yStep;
 
-			int curXLoc = curX / InternalConstants.CellWidth;
-			int curYLoc = curY / InternalConstants.CellHeight;
+			int curLocX = curX / InternalConstants.CellWidth;
+			int curLocY = curY / InternalConstants.CellHeight;
 
-			if (curXLoc == startXLoc && curYLoc == startYLoc)
+			if (curLocX == startLocX && curLocY == startLocY)
 				continue;
 
-			if (curXLoc == destXLoc && curYLoc == destYLoc)
+			if (curLocX == destLocX && curLocY == destLocY)
 				break; // is destination
 
-			Location location = World.GetLoc(curXLoc, curYLoc);
-
-			//if(!locPtr->walkable(3) || locPtr->has_unit(UNIT_LAND) || locPtr->has_unit(UNIT_SEA))
+			Location location = World.GetLoc(curLocX, curLocY);
 			if (!location.Walkable(Location.LOCATE_WALK_LAND | Location.LOCATE_WALK_SEA))
 				return false;
 		}

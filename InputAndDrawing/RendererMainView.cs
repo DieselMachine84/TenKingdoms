@@ -183,11 +183,11 @@ public partial class Renderer
                 displayableObject.ObjectType = DisplayableObjectType.Bullet;
                 displayableObject.ObjectId = bullet.SpriteId;
                 displayableObject.DrawY2 = GetSpriteDrawY2(bullet);
-                if (bullet.display_layer() == NormalLayer)
+                if (bullet.DisplayLayer() == NormalLayer)
                     _objectsToDraw.Add(displayableObject);
-                if (bullet.display_layer() == TopLayer)
+                if (bullet.DisplayLayer() == TopLayer)
                     _objectsToDrawTop.Add(displayableObject);
-                if (bullet.display_layer() == AirLayer)
+                if (bullet.DisplayLayer() == AirLayer)
                     _objectsToDrawAir.Add(displayableObject);
             }
         }
@@ -203,11 +203,11 @@ public partial class Renderer
                 displayableObject.ObjectType = DisplayableObjectType.Effect;
                 displayableObject.ObjectId = effect.SpriteId;
                 displayableObject.DrawY2 = GetSpriteDrawY2(effect);
-                if (effect.layer == NormalLayer)
+                if (effect.DisplayLayer == NormalLayer)
                     _objectsToDraw.Add(displayableObject);
-                if (effect.layer == TopLayer)
+                if (effect.DisplayLayer == TopLayer)
                     _objectsToDrawTop.Add(displayableObject);
-                if (effect.layer == AirLayer)
+                if (effect.DisplayLayer == AirLayer)
                     _objectsToDrawAir.Add(displayableObject);
             }
         }
@@ -801,13 +801,13 @@ public partial class Renderer
         if (bullet is Projectile)
         {
             Projectile projectile = (Projectile)bullet;
-            double z = (projectile.cur_step + 1) * (projectile.total_step + 1 - projectile.cur_step);
+            double z = (projectile.CurStep + 1) * (projectile.TotalStep + 1 - projectile.CurStep);
             if (z < 0.0)
                 z = 0.0;
 
             if (projectile.CurAction == Sprite.SPRITE_MOVE)
             {
-                double dz = (projectile.total_step - 2 * (projectile.cur_step));
+                double dz = (projectile.TotalStep - 2 * (projectile.CurStep));
                 int finalDir = projectile.FinalDir;
                 if (dz >= 10.0)
                     finalDir = (finalDir & 7 ) | 8; // pointing up

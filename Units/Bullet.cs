@@ -6,57 +6,53 @@ public class Bullet : Sprite
 {
 	public const int BULLET_BY_UNIT = 1;
 	public const int BULLET_BY_FIRM = 2;
-	public const int SCAN_RADIUS = 2;
-	public const int SCAN_RANGE = SCAN_RADIUS * 2 + 1;
+	private const int SCAN_RADIUS = 2;
+	private const int SCAN_RANGE = SCAN_RADIUS * 2 + 1;
 
-	public int parent_type;
-	public int parent_recno;
+	private static int[] TownHit { get; } = new int[SCAN_RANGE * SCAN_RANGE];
+	private static int[] FirmHit { get; } = new int[SCAN_RANGE * SCAN_RANGE];
+	private static int[] SpiralX { get; } = { 0, 0, -1, 0, 1, -1, -1, 1, 1, 0, -2, 0, 2, -1, -2, -2, -1, 1, 2, 2, 1, -2, -2, 2, 2 };
 
-	//char	mobile_type;			// mobile type of the bullet
-	public int target_mobile_type;
-	public double attack_damage;
-	public int damage_radius;
-	public int nation_recno;
-	public int fire_radius;
+	private static int[] SpiralY { get; } = { 0, -1, 0, 1, 0, -1, 1, 1, -1, -2, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, 2, 2, -2 };
+	
+	private int ParentType { get; set; }
+	private int ParentId { get; set; }
+	private int NationId { get; set; }
 
-	public int origin_x, origin_y;
-	public int target_x_loc, target_y_loc;
-	public int cur_step, total_step;
+	protected int TargetMobileType { get; private set; }
+	private double AttackDamage { get; set; }
+	private int DamageRadius { get; set; }
+	private int FireRadius { get; set; }
 
-	private static int[] spiral_x = { 0, 0, -1, 0, 1, -1, -1, 1, 1, 0, -2, 0, 2, -1, -2, -2, -1, 1, 2, 2, 1, -2, -2, 2, 2 };
-
-	private static int[] spiral_y = { 0, -1, 0, 1, 0, -1, 1, 1, -1, -2, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, 2, 2, -2 };
+	protected int OriginX { get; set; }
+	protected int OriginY { get; set; }
+	protected int TargetLocX { get; set; }
+	protected int TargetLocY { get; set; }
+	
+	public int CurStep { get; protected set; }
+	public int TotalStep { get; protected set; }
 
 	public Bullet()
 	{
 		SpriteResId = 0;
 	}
 
-	public virtual void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
+	public virtual void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
 	{
-		parent_type = parentType;
-		parent_recno = parentRecno;
-		target_mobile_type = targetMobileType;
+		ParentType = parentType;
+		ParentId = parentId;
+		TargetMobileType = targetMobileType;
 
-		//**** BUGHERE, using parentType and parentRecno to allow bullet by firm, town, etc.
-		//**** BUGHERE, only allow bullet by unit for this version
-		Unit parentUnit = UnitArray[parentRecno];
-
-		//---------- copy attack info from the parent unit --------//
-
+		Unit parentUnit = UnitArray[parentId];
 		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 
-		attack_damage = parentUnit.ActualDamage();
-		damage_radius = attackInfo.bullet_radius;
-		nation_recno = parentUnit.NationId;
-		fire_radius = attackInfo.fire_radius;
-
-		//----- clone vars from sprite_res for fast access -----//
+		AttackDamage = parentUnit.ActualDamage();
+		DamageRadius = attackInfo.bullet_radius;
+		NationId = parentUnit.NationId;
+		FireRadius = attackInfo.fire_radius;
 
 		SpriteResId = attackInfo.bullet_sprite_id;
 		SpriteInfo = SpriteRes[SpriteResId];
-
-		//sprite_info.load_bitmap_res(); 
 
 		//--------- set the starting position of the bullet -------//
 
@@ -64,19 +60,16 @@ public class Bullet : Sprite
 		CurFrame = 1;
 		SetDir(parentUnit.AttackDirection);
 
-		SpriteFrame spriteFrame = CurSpriteFrame(out _);
+		OriginX = CurX = parentUnit.CurX;
+		OriginY = CurY = parentUnit.CurY;
 
-		origin_x = CurX = parentUnit.CurX;
-		origin_y = CurY = parentUnit.CurY;
-
-		//------ set the target position and bullet mobile_type -------//
-
-		target_x_loc = targetXLoc;
-		target_y_loc = targetYLoc;
+		TargetLocX = targetLocX;
+		TargetLocY = targetLocY;
 
 		// -spriteFrame.offset_x to make abs_x1 & abs_y1 = original x1 & y1. So the bullet will be centered on the target
-		GoX = target_x_loc * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.OffsetX - spriteFrame.Width / 2;
-		GoY = target_y_loc * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.OffsetY - spriteFrame.Height / 2;
+		SpriteFrame spriteFrame = CurSpriteFrame(out _);
+		GoX = TargetLocX * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.OffsetX - spriteFrame.Width / 2;
+		GoY = TargetLocY * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.OffsetY - spriteFrame.Height / 2;
 
 		MobileType = parentUnit.MobileType;
 
@@ -85,69 +78,59 @@ public class Bullet : Sprite
 		int xStep = (GoX - CurX) / attackInfo.bullet_speed;
 		int yStep = (GoY - CurY) / attackInfo.bullet_speed;
 
-		total_step = Math.Max(1, Math.Max(Math.Abs(xStep), Math.Abs(yStep)));
-		cur_step = 0;
+		CurStep = 0;
+		TotalStep = Math.Max(1, Math.Max(Math.Abs(xStep), Math.Abs(yStep)));
 	}
 
 	public override void ProcessMove()
 	{
-		//-------------- update position -----------------//
-		//
-		// If it gets very close to the destination, fit it
-		// to the destination ignoring the normal vector.
-		//
-		//------------------------------------------------//
+		// if it gets very close to the destination, fit it to the destination ignoring the normal vector.
 
-		CurX = origin_x + (GoX - origin_x) * cur_step / total_step;
-		CurY = origin_y + (GoY - origin_y) * cur_step / total_step;
-
-		//cur_step++;
-
-		//------- update frame id. --------//
+		CurX = OriginX + (GoX - OriginX) * CurStep / TotalStep;
+		CurY = OriginY + (GoY - OriginY) * CurStep / TotalStep;
 
 		if (++CurFrame > CurSpriteMove().FrameCount)
 			CurFrame = 1;
 
-		//----- if the sprite has reach the destintion ----//
+		//----- if the sprite has reach the destination ----//
 
-		//if( cur_step > total_step )
-		if (++cur_step > total_step)
+		if (++CurStep > TotalStep)
 		{
-			check_hit();
+			CheckHit();
 
 			CurAction = SPRITE_DIE; // Explosion
 
-			// if it has die frame, adjust cur_x, cur_y to be align with the target_x_loc, target_y_loc
+			// if it has die frame, adjust CurX, CurY to be align with the TargetLocX, TargetLocY
 			if (SpriteInfo.Die.FirstFrameId != 0)
 			{
-				NextX = CurX = target_x_loc * InternalConstants.CellWidth;
-				NextY = CurY = target_y_loc * InternalConstants.CellHeight;
+				NextX = CurX = TargetLocX * InternalConstants.CellWidth;
+				NextY = CurY = TargetLocY * InternalConstants.CellHeight;
 			}
 
 			CurFrame = 1;
 		}
-		else if (total_step - cur_step == 1)
+		else if (TotalStep - CurStep <= 1)
 		{
-			warn_target();
+			WarnTarget();
 		}
 	}
 
 	public override bool ProcessDie()
 	{
-		// ------- sound effect --------//
 		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
+		//TODO check double if conditions
 		//--------- next frame ---------//
 		if (++CurFrame > SpriteInfo.Die.FrameCount)
-			// ####### begin Gilbert 28/6 ########//
+		{
 			if (++CurFrame > SpriteInfo.Die.FrameCount)
 			{
 				// ------- set fire on the target area --------//
-				if (fire_radius > 0)
+				if (FireRadius > 0)
 				{
-					if (fire_radius == 1)
+					if (FireRadius == 1)
 					{
-						Location location = World.GetLoc(target_x_loc, target_y_loc);
+						Location location = World.GetLoc(TargetLocX, TargetLocY);
 						if (location.CanSetFire() && location.FireStrength() < 30)
 							location.SetFireStrength(30);
 						if (location.Flammability() > 0)
@@ -155,36 +138,28 @@ public class Bullet : Sprite
 					}
 					else
 					{
-						int x1 = target_x_loc - fire_radius + 1;
-						if (x1 < 0)
-							x1 = 0;
-						int y1 = target_y_loc - fire_radius + 1;
-						if (y1 < 0)
-							y1 = 0;
-						int x2 = target_x_loc + fire_radius - 1;
-						if (x2 >= GameConstants.MapSize)
-							x2 = GameConstants.MapSize - 1;
-						int y2 = target_y_loc + fire_radius - 1;
-						if (y2 >= GameConstants.MapSize)
-							y2 = GameConstants.MapSize - 1;
+						int locX1 = TargetLocX - FireRadius + 1;
+						int locY1 = TargetLocY - FireRadius + 1;
+						Misc.BoundLocation(ref locX1, ref locY1);
+						int locX2 = TargetLocX + FireRadius - 1;
+						int locY2 = TargetLocY + FireRadius - 1;
+						Misc.BoundLocation(ref locX2, ref locY2);
 
-						for (int y = y1; y <= y2; ++y)
+						for (int locY = locY1; locY <= locY2; locY++)
 						{
-							for (int x = x1; x <= x2; ++x)
+							for (int locX = locX1; locX <= locX2; locX++)
 							{
-								Location location = World.GetLoc(x, y);
-								// ##### begin Gilbert 30/10 ######//
-								int dist = Math.Abs(x - target_x_loc) + Math.Abs(y - target_y_loc);
-								if (dist > fire_radius)
+								Location location = World.GetLoc(locX, locY);
+								int dist = Math.Abs(locX - TargetLocX) + Math.Abs(locY - TargetLocY);
+								if (dist > FireRadius)
 									continue;
-								int fl = 30 - dist * 7;
-								if (fl < 10)
-									fl = 10;
-								if (location.CanSetFire() && location.FireStrength() < fl)
-									location.SetFireStrength(fl);
+								int fireStrength = 30 - dist * 7;
+								if (fireStrength < 10)
+									fireStrength = 10;
+								if (location.CanSetFire() && location.FireStrength() < fireStrength)
+									location.SetFireStrength(fireStrength);
 								if (location.Flammability() > 0)
 									location.SetFlammability(1); // such that the fire will be put out quickly
-								// ##### begin Gilbert 30/10 ######//
 							}
 						}
 					}
@@ -192,48 +167,47 @@ public class Bullet : Sprite
 
 				return true;
 			}
+		}
 
-		// ####### end Gilbert 28/6 ########//
 		return false;
 	}
 
-	public void hit_target(int x, int y)
+	private void HitTarget(int locX, int locY)
 	{
 		//---- check if there is any unit in the target location ----//
 
-		Location location = World.GetLoc(x, y);
-		int targetUnitRecno = location.UnitId(target_mobile_type);
-		if (UnitArray.IsDeleted(targetUnitRecno))
-			return; // the target unit is deleted
+		Location location = World.GetLoc(locX, locY);
+		int targetUnitId = location.UnitId(TargetMobileType);
+		if (UnitArray.IsDeleted(targetUnitId))
+			return;
 
-		Unit targetUnit = UnitArray[targetUnitRecno];
-		Unit parentUnit;
-		if (UnitArray.IsDeleted(parent_recno))
+		Unit targetUnit = UnitArray[targetUnitId];
+		Unit parentUnit = null;
+		if (UnitArray.IsDeleted(ParentId))
 		{
-			parentUnit = null; // parent is dead
-			if (NationArray.IsDeleted(nation_recno))
+			if (NationArray.IsDeleted(NationId))
 				return;
 		}
 		else
 		{
-			parentUnit = UnitArray[parent_recno];
-			nation_recno = parentUnit.NationId;
+			parentUnit = UnitArray[ParentId];
+			NationId = parentUnit.NationId;
 		}
 
-		double attackDamage = attenuated_damage(targetUnit.CurX, targetUnit.CurY);
+		double attackDamage = AttenuatedDamage(targetUnit.CurX, targetUnit.CurY);
 
 		// -------- if the unit is guarding reduce damage ----------//
 		if (attackDamage == 0)
 			return;
 
-		if (targetUnit.NationId == nation_recno)
+		if (targetUnit.NationId == NationId)
 		{
 			if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
 				((UnitExpCart)targetUnit).trigger_explode();
 			return;
 		}
 
-		if (!NationArray.should_attack(nation_recno, targetUnit.NationId))
+		if (!NationArray.should_attack(NationId, targetUnit.NationId))
 			return;
 
 		if (targetUnit.IsGuarding())
@@ -261,127 +235,110 @@ public class Bullet : Sprite
 			}
 		}
 
-		targetUnit.HitTarget(parentUnit, targetUnit, attackDamage, nation_recno);
+		targetUnit.HitTarget(parentUnit, targetUnit, attackDamage, NationId);
 	}
 
-	public void hit_building(int x, int y)
+	private void HitBuilding(int locX, int locY)
 	{
-		Location location = World.GetLoc(x, y);
+		Location location = World.GetLoc(locX, locY);
 
 		if (location.IsFirm())
 		{
 			Firm firm = FirmArray[location.FirmId()];
-			if (!NationArray.should_attack(nation_recno, firm.NationId))
+			if (!NationArray.should_attack(NationId, firm.NationId))
 				return;
 		}
 		else if (location.IsTown())
 		{
 			Town town = TownArray[location.TownId()];
-			if (!NationArray.should_attack(nation_recno, town.NationId))
+			if (!NationArray.should_attack(NationId, town.NationId))
 				return;
 		}
 		else
+		{
 			return;
+		}
 
-		double attackDamage = attenuated_damage(x * InternalConstants.CellWidth, y * InternalConstants.CellHeight);
+		double attackDamage = AttenuatedDamage(locX * InternalConstants.CellWidth, locY * InternalConstants.CellHeight);
 		// BUGHERE : hit building of same nation?
 		if (attackDamage <= 0.0)
 			return;
 
-		Unit virtualUnit = null;
-		Unit parentUnit;
-		if (UnitArray.IsDeleted(parent_recno))
+		Unit parentUnit = null;
+		if (UnitArray.IsDeleted(ParentId))
 		{
-			parentUnit = null;
-			if (NationArray.IsDeleted(nation_recno))
+			if (NationArray.IsDeleted(NationId))
 				return;
-
-			foreach (Unit unit in UnitArray)
-			{
-				virtualUnit = unit;
-				break;
-			}
-
-			if (virtualUnit == null)
-				return; //**** BUGHERE
 		}
 		else
 		{
-			virtualUnit = parentUnit = UnitArray[parent_recno];
+			parentUnit = UnitArray[ParentId];
+			//TODO check if we need this line
+			//NationId = parentUnit.NationId;
 		}
 
-		virtualUnit.HitBuilding(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
+		Unit virtualUnit = parentUnit ?? new UnitHuman();
+		virtualUnit.HitBuilding(parentUnit, TargetLocX, TargetLocY, attackDamage, NationId);
 	}
 
-	public void hit_wall(int x, int y)
+	private void HitWall(int locX, int locY)
 	{
-		Location location = World.GetLoc(x, y);
+		Location location = World.GetLoc(locX, locY);
 
 		if (!location.IsWall())
 			return;
 
-		double attackDamage = attenuated_damage(x * InternalConstants.CellWidth, y * InternalConstants.CellHeight);
-		if (attackDamage == 0)
+		double attackDamage = AttenuatedDamage(locX * InternalConstants.CellWidth, locY * InternalConstants.CellHeight);
+		if (attackDamage <= 0.0)
 			return;
 
-		Unit virtualUnit = null;
-		Unit parentUnit;
-		if (UnitArray.IsDeleted(parent_recno))
+		Unit parentUnit = null;
+		if (UnitArray.IsDeleted(ParentId))
 		{
-			parentUnit = null;
-			if (NationArray.IsDeleted(nation_recno))
+			if (NationArray.IsDeleted(NationId))
 				return;
-
-			foreach (Unit unit in UnitArray)
-			{
-				virtualUnit = unit;
-				break;
-			}
-
-			if (virtualUnit == null)
-				return; //**** BUGHERE
 		}
 		else
 		{
-			virtualUnit = parentUnit = UnitArray[parent_recno];
+			parentUnit = UnitArray[ParentId];
+			//TODO check if we need this line
+			//NationId = parentUnit.NationId;
 		}
 
-		virtualUnit.HitWall(parentUnit, target_x_loc, target_y_loc, attackDamage, nation_recno);
+		Unit virtualUnit = new UnitHuman();
+		virtualUnit.HitWall(parentUnit, TargetLocX, TargetLocY, attackDamage, NationId);
 	}
 
-	public double attenuated_damage(int curX, int curY)
+	private double AttenuatedDamage(int curX, int curY)
 	{
-		int d = Misc.points_distance(curX, curY,
-			target_x_loc * InternalConstants.CellWidth,
-			target_y_loc * InternalConstants.CellHeight);
-		// damage drops from attack_damage to attack_damage/2, as range drops from 0 to damage_radius
-		if (d > damage_radius)
+		int distance = Misc.points_distance(curX, curY, TargetLocX * InternalConstants.CellWidth, TargetLocY * InternalConstants.CellHeight);
+		// damage drops from AttackDamage to AttackDamage / 2, as range drops from 0 to DamageRadius
+		if (distance > DamageRadius)
 			return 0.0;
 		else
-			//return ((attack_damage * (2*damage_radius-d) + 2*damage_radius-1)/ (2*damage_radius) );		// ceiling
-			return attack_damage - attack_damage * d / (2.0 * damage_radius);
+			return AttackDamage - AttackDamage * distance / (2.0 * DamageRadius);
 	}
 
-	public int check_hit()
+	protected int CheckHit()
 	{
-		int[] townHit = new int[SCAN_RANGE * SCAN_RANGE];
-		int[] firmHit = new int[SCAN_RANGE * SCAN_RANGE];
+		Array.Clear(TownHit);
+		Array.Clear(FirmHit);
 		int hitCount = 0;
 		int townHitCount = 0;
 		int firmHitCount = 0;
 
 		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; ++c)
 		{
-			int x = target_x_loc + spiral_x[c];
-			int y = target_y_loc + spiral_y[c];
-			if (x >= 0 && x < GameConstants.MapSize && y >= 0 && y < GameConstants.MapSize)
+			int locX = TargetLocX + SpiralX[c];
+			int locY = TargetLocY + SpiralY[c];
+			if (Misc.IsLocationValid(locX, locY))
 			{
-				Location location = World.GetLoc(x, y);
-				if (target_mobile_type == UnitConstants.UNIT_AIR)
+				Location location = World.GetLoc(locX, locY);
+				if (TargetMobileType == UnitConstants.UNIT_AIR)
 				{
 					if (location.HasUnit(UnitConstants.UNIT_AIR))
 					{
-						hit_target(x, y);
+						HitTarget(locX, locY);
 						hitCount++;
 					}
 				}
@@ -389,12 +346,12 @@ public class Bullet : Sprite
 				{
 					if (location.IsFirm())
 					{
-						int firmRecno = location.FirmId();
+						int firmId = location.FirmId();
 						// check this firm has not been attacked
 						bool found = false;
 						for (int i = firmHitCount - 1; i >= 0; i--)
 						{
-							if (firmHit[i] == firmRecno)
+							if (FirmHit[i] == firmId)
 							{
 								found = true;
 								break;
@@ -403,19 +360,19 @@ public class Bullet : Sprite
 
 						if (!found) // not found
 						{
-							firmHit[firmHitCount++] = firmRecno;
-							hit_building(x, y);
+							FirmHit[firmHitCount++] = firmId;
+							HitBuilding(locX, locY);
 							hitCount++;
 						}
 					}
 					else if (location.IsTown())
 					{
-						int townRecno = location.TownId();
+						int townId = location.TownId();
 						// check this town has not been attacked
 						bool found = false;
 						for (int i = townHitCount - 1; i >= 0; i--)
 						{
-							if (townHit[i] == townRecno)
+							if (TownHit[i] == townId)
 							{
 								found = true;
 								break;
@@ -424,20 +381,20 @@ public class Bullet : Sprite
 
 						if (!found) // not found
 						{
-							townHit[townHitCount++] = townRecno;
-							hit_building(x, y);
+							TownHit[townHitCount++] = townId;
+							HitBuilding(locX, locY);
 							hitCount++;
 						}
 					}
 					else if (location.IsWall())
 					{
-						hit_wall(x, y);
+						HitWall(locX, locY);
 						hitCount++;
 					}
 					else
 					{
-						// note: no error checking here because mobile_type should be taken into account
-						hit_target(x, y);
+						// note: no error checking here because MobileType should be taken into account
+						HitTarget(locX, locY);
 						hitCount++;
 					}
 				}
@@ -447,26 +404,22 @@ public class Bullet : Sprite
 		return hitCount;
 	}
 
-	public int warn_target()
+	protected int WarnTarget()
 	{
 		int warnCount = 0;
 
 		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; ++c)
 		{
-			int x = target_x_loc + spiral_x[c];
-			int y = target_y_loc + spiral_y[c];
-			if (x >= 0 && x < GameConstants.MapSize && y >= 0 && y < GameConstants.MapSize)
+			int locX = TargetLocX + SpiralX[c];
+			int locY = TargetLocY + SpiralY[c];
+			if (Misc.IsLocationValid(locX, locY))
 			{
-				Location locPtr = World.GetLoc(x, y);
-				//char targetMobileType;
-				//if( (targetMobileType = locPtr.has_any_unit()) != 0)
-				//{
-				//	short unitRecno = locPtr.unit_recno(UnitConstants.UNIT_LAND);
-				int unitRecno = locPtr.UnitId(target_mobile_type);
-				if (!UnitArray.IsDeleted(unitRecno))
+				Location location = World.GetLoc(locX, locY);
+				int unitId = location.UnitId(TargetMobileType);
+				if (!UnitArray.IsDeleted(unitId))
 				{
-					Unit unit = UnitArray[unitRecno];
-					if (attenuated_damage(unit.CurX, unit.CurY) > 0)
+					Unit unit = UnitArray[unitId];
+					if (AttenuatedDamage(unit.CurX, unit.CurY) > 0)
 					{
 						warnCount++;
 						switch (unit.CurAction)
@@ -479,8 +432,8 @@ public class Bullet : Sprite
 									unit.SetDir((CurDir + 4) & 7); // opposite direction of arrow
 									unit.SetGuardOn();
 								}
-
 								break;
+							
 							case SPRITE_MOVE:
 								if (unit.CanMoveGuard && !unit.IsGuarding() &&
 								    ((unit.CurDir & 7) == ((CurDir + 4) & 7) ||
@@ -489,8 +442,8 @@ public class Bullet : Sprite
 								{
 									unit.SetGuardOn();
 								}
-
 								break;
+							
 							case SPRITE_ATTACK:
 								if (unit.CanAttackGuard && !unit.IsGuarding() &&
 								    unit.RemainAttackDelay >= InternalConstants.GUARD_COUNT_MAX &&
@@ -500,21 +453,19 @@ public class Bullet : Sprite
 								{
 									unit.SetGuardOn();
 								}
-
 								break;
 						}
 					}
 				}
-				//}
 			}
 		}
 
 		return warnCount;
 	}
 
-	public virtual int display_layer()
+	public virtual int DisplayLayer()
 	{
-		if (MobileType == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
+		if (MobileType == UnitConstants.UNIT_AIR || TargetMobileType == UnitConstants.UNIT_AIR)
 			return 8;
 		else
 			return 1;

@@ -108,6 +108,7 @@ public class Location
 		return (_locFlag & LOCATE_WALK_SEA) != 0;
 	}
 
+	//TODO remove it
 	public bool Walkable(int teraMask)
 	{
 		return (_locFlag & teraMask) != 0;

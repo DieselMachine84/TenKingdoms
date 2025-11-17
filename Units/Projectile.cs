@@ -13,21 +13,20 @@ public class Projectile : Bullet
 
     private Projectile(int dummy)
     {
-        //
     }
 
-    public override void init(int parentType, int parentRecno, int targetXLoc, int targetYLoc, int targetMobileType)
+    public override void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
     {
-        base.init(parentType, parentRecno, targetXLoc, targetYLoc, targetMobileType);
+        base.Init(parentType, parentId, targetLocX, targetLocY, targetMobileType);
         int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
         Bullet.Init(spriteId, CurLocX, CurLocY);
         int shadowSpriteId = SpriteInfo.GetSubSpriteInfo(2).SpriteId;
         Shadow.Init(shadowSpriteId, CurLocX, CurLocY);
     }
 
-    public override int display_layer()
+    public override int DisplayLayer()
     {
-        if (MobileType == UnitConstants.UNIT_AIR || target_mobile_type == UnitConstants.UNIT_AIR)
+        if (MobileType == UnitConstants.UNIT_AIR || TargetMobileType == UnitConstants.UNIT_AIR)
             return 8;
         else
             return 2;
