@@ -676,8 +676,8 @@ public class UnitMarine : Unit
 	public bool appear_in_firm_surround(ref int xLoc, ref int yLoc, Firm firm)
 	{
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_HARBOR];
-		int firmWidth = firmInfo.loc_width;
-		int firmHeight = firmInfo.loc_height;
+		int firmWidth = firmInfo.LocWidth;
+		int firmHeight = firmInfo.LocHeight;
 		int smallestCount = firmWidth * firmHeight + 1;
 		int largestCount = (firmWidth + 2) * (firmHeight + 2);
 		int countLimit = largestCount - smallestCount;

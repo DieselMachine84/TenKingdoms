@@ -66,7 +66,7 @@ public class MonsterInfo
 
         // leave at least one location space around the building
         if (!World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1,
-                GameConstants.MapSize - 1, firmInfo.loc_width + 2, firmInfo.loc_height + 2,
+                GameConstants.MapSize - 1, firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
                 GameConstants.MapSize * GameConstants.MapSize, 0, true, teraMask))
         {
             return 0;
@@ -76,7 +76,7 @@ public class MonsterInfo
 
         foreach (Town town in TownArray)
         {
-            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.loc_width - 1, yLoc + firmInfo.loc_height - 1,
+            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.LocWidth - 1, yLoc + firmInfo.LocHeight - 1,
                     town.LocX1, town.LocY1, town.LocX2, town.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;
@@ -85,7 +85,7 @@ public class MonsterInfo
 
         foreach (Firm firm in FirmArray)
         {
-            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.loc_width - 1, yLoc + firmInfo.loc_height - 1,
+            if (Misc.RectsDistance(xLoc, yLoc, xLoc + firmInfo.LocWidth - 1, yLoc + firmInfo.LocHeight - 1,
                     firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
             {
                 return 0;

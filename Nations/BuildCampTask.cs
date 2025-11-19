@@ -104,9 +104,8 @@ public class BuildCampTask : AITask
         }
         
         FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
-        FirmBuild firmBuild = FirmRes.get_build(firmInfo.first_build_id);
-        int campWidth = firmBuild.loc_width;
-        int campHeight = firmBuild.loc_height;
+        int campWidth = firmInfo.LocWidth;
+        int campHeight = firmInfo.LocHeight;
 
         for (int buildLocY = townLocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - campHeight;
              buildLocY < townLocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + campHeight;

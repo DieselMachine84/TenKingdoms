@@ -207,7 +207,7 @@ public partial class Unit
 
 		FirmInfo firmInfo = FirmRes[miscNo];
 		Stop();
-		SetMoveToSurround(destX, destY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
+		SetMoveToSurround(destX, destY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
 
 		//----------------------------------------------------------------//
 		// store new order in action parameters
@@ -1565,12 +1565,12 @@ public partial class Unit
 				FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 				if (SpaceForAttack(ActionLocX, ActionLocY, UnitConstants.UNIT_LAND,
-					    firmInfo.loc_width, firmInfo.loc_height))
+					    firmInfo.LocWidth, firmInfo.LocHeight))
 				{
 					//------------ found surrounding place to attack the firm -------------//
 					if (MobileType == UnitConstants.UNIT_LAND)
 						SetMoveToSurround(firm.LocX1, firm.LocY1,
-							firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
+							firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 					else
 						AttackFirm(firm.LocX1, firm.LocY1);
 				}

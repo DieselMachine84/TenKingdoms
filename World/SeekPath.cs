@@ -315,8 +315,8 @@ public class SeekPath
 				_buildingX1 = dx; // upper left corner location
 				_buildingY1 = dy;
 				searchFirmInfo = Sys.Instance.FirmRes[_buildingId];
-				_buildingX2 = dx + searchFirmInfo.loc_width - 1;
-				_buildingY2 = dy + searchFirmInfo.loc_height - 1;
+				_buildingX2 = dx + searchFirmInfo.LocWidth - 1;
+				_buildingY2 = dy + searchFirmInfo.LocHeight - 1;
 				break;
 
 			case SEARCH_MODE_TO_TOWN:
@@ -352,8 +352,8 @@ public class SeekPath
 				_buildingX1 = Math.Max(dx - _attackRange, 0);
 				_buildingY1 = Math.Max(dy - _attackRange, 0);
 				searchFirmInfo = Sys.Instance.FirmRes[_buildingId];
-				_buildingX2 = Math.Min(dx + searchFirmInfo.loc_width - 1 + _attackRange, GameConstants.MapSize - 1);
-				_buildingY2 = Math.Min(dy + searchFirmInfo.loc_height - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingX2 = Math.Min(dx + searchFirmInfo.LocWidth - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingY2 = Math.Min(dy + searchFirmInfo.LocHeight - 1 + _attackRange, GameConstants.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
@@ -387,7 +387,7 @@ public class SeekPath
 				if (_searchMode == SEARCH_MODE_TO_TOWN)
 					area = InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT;
 				else // search_mode == SEARCH_MODE_TO_FIRM
-					area = searchFirmInfo.loc_width * searchFirmInfo.loc_height;
+					area = searchFirmInfo.LocWidth * searchFirmInfo.LocHeight;
 
 				int pathNum = (numOfPath > area) ? (numOfPath - 1) % area + 1 : numOfPath;
 
@@ -395,7 +395,7 @@ public class SeekPath
 				if (_searchMode == SEARCH_MODE_TO_TOWN)
 					Misc.cal_move_around_a_point(pathNum, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, out xShift, out yShift);
 				else
-					Misc.cal_move_around_a_point(pathNum, searchFirmInfo.loc_width, searchFirmInfo.loc_height, out xShift, out yShift);
+					Misc.cal_move_around_a_point(pathNum, searchFirmInfo.LocWidth, searchFirmInfo.LocHeight, out xShift, out yShift);
 
 				_finalDestX += xShift;
 				_finalDestY += yShift;

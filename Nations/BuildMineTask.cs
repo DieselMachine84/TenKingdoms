@@ -105,9 +105,8 @@ public class BuildMineTask : AITask, IUnitTask
         }
         
         FirmInfo firmInfo = FirmRes[Firm.FIRM_MINE];
-        FirmBuild firmBuild = FirmRes.get_build(firmInfo.first_build_id);
-        int mineWidth = firmBuild.loc_width;
-        int mineHeight = firmBuild.loc_height;
+        int mineWidth = firmInfo.LocWidth;
+        int mineHeight = firmInfo.LocHeight;
 
         int buildLocX = -1;
         int buildLocY = -1;

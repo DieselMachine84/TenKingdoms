@@ -220,14 +220,14 @@ public partial class Unit
 				{
 					FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
-						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
+						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
 					{
 						//------- no suitable location, so move to target again ---------//
-						SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
+						SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 						return;
 					}
 				}
@@ -284,7 +284,7 @@ public partial class Unit
 			int targetXLoc = targetFirm.LocX1;
 			int targetYLoc = targetFirm.LocY1;
 
-			int attackDistance = CalcDistance(targetXLoc, targetYLoc, firmInfo.loc_width, firmInfo.loc_height);
+			int attackDistance = CalcDistance(targetXLoc, targetYLoc, firmInfo.LocWidth, firmInfo.LocHeight);
 			int curXLoc = NextLocX;
 			int curYLoc = NextLocY;
 
@@ -299,7 +299,7 @@ public partial class Unit
 
 					AttackInfo attackInfo = AttackInfos[CurAttack];
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
-						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height,
+						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight,
 						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
@@ -307,7 +307,7 @@ public partial class Unit
 					{
 						//------- no suitable location, move to target ---------//
 						if (PathNodes.Count  == 0) // no step for continue moving
-							SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
+							SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 
 						return; // unable to attack, continue to move
 					}
@@ -1089,7 +1089,7 @@ public partial class Unit
 		{
 			maxRange = MaxAttackRange();
 			//Firm		*firm = FirmArray[loc.firm_recno()];
-			if (!PossiblePlaceForRangeAttack(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height, maxRange))
+			if (!PossiblePlaceForRangeAttack(firmXLoc, firmYLoc, firmInfo.LocWidth, firmInfo.LocHeight, maxRange))
 			{
 				if (ActionMode2 != UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
 				    ActionMode2 != UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET &&
@@ -1140,7 +1140,7 @@ public partial class Unit
 		Stop();
 		CurAttack = 0;
 
-		int attackDistance = CalcDistance(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height);
+		int attackDistance = CalcDistance(firmXLoc, firmYLoc, firmInfo.LocWidth, firmInfo.LocHeight);
 		ChooseBestAttackMode(attackDistance);
 
 		AttackInfo attackInfo = AttackInfos[CurAttack];
@@ -1179,7 +1179,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory of this unit.
 					//--------------------------------------------------------------------------------//
-					pathEdited = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.loc_width, firmInfo.loc_height,
+					pathEdited = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.LocWidth, firmInfo.LocHeight,
 						UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, 0, 0);
 				}
 			}
@@ -3690,7 +3690,7 @@ public partial class Unit
 					AttackFirm(ActionLocX2, ActionLocY2);
 
 					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
-						    ActionLocX2, ActionLocY2, firmInfo.loc_width, firmInfo.loc_height))
+						    ActionLocX2, ActionLocY2, firmInfo.LocWidth, firmInfo.LocHeight))
 						WaitingTerm = 0;
 					break;
 
@@ -4710,7 +4710,7 @@ public partial class Unit
 			return 0;
 
 		FirmInfo firmInfo = FirmRes[firm.FirmType];
-		if (SpaceForAttack(firm.LocX1, firm.LocY1, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
+		if (SpaceForAttack(firm.LocX1, firm.LocY1, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight))
 			return 1;
 		else
 			return 0;

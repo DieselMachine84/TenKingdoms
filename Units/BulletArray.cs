@@ -80,8 +80,8 @@ public class BulletArray : SpriteArray
 		{
 			Firm targetFirm = FirmArray[location.FirmId()];
 			FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
-			width = firmInfo.loc_width;
-			height = firmInfo.loc_height;
+			width = firmInfo.LocWidth;
+			height = firmInfo.LocHeight;
 		}
 		else if (location.IsTown())
 		{

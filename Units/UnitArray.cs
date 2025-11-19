@@ -2059,8 +2059,8 @@ public class UnitArray : SpriteArray
 	    //----------- initialize local parameters ------------//
 	    Firm firm = FirmArray[firmRecno];
 	    FirmInfo firmInfo = FirmRes[firm.FirmType];
-	    int firmWidth = firmInfo.loc_width;
-	    int firmHeight = firmInfo.loc_height;
+	    int firmWidth = firmInfo.LocWidth;
+	    int firmHeight = firmInfo.LocHeight;
 	    int targetXLoc2 = targetLocX + firmWidth - 1; // the lower right corner of the firm
 	    int targetYLoc2 = targetLocY + firmHeight - 1;
 

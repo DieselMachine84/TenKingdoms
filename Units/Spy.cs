@@ -489,7 +489,7 @@ public class Spy : IIdObject
 
 		//------- if the spy is the overseer of the firm --------//
 
-		if (FirmRes[firm.FirmType].need_overseer)
+		if (FirmRes[firm.FirmType].NeedOverseer)
 		{
 			//---------------------------------------------------//
 			//
@@ -503,7 +503,7 @@ public class Spy : IIdObject
 
 			Unit unit = UnitArray[firm.OverseerId];
 
-			if (!FirmRes[firm.FirmType].live_in_town) // if the workers of the firm do not live in towns
+			if (!FirmRes[firm.FirmType].LiveInTown) // if the workers of the firm do not live in towns
 			{
 				int unitLeadership = unit.Skill.SkillLevel;
 				int nationReputation = (int)NationArray[TrueNationId].reputation;
@@ -582,7 +582,7 @@ public class Spy : IIdObject
 
 		//------- if the spy is the overseer of the firm --------//
 
-		if (FirmRes[firm.FirmType].need_overseer)
+		if (FirmRes[firm.FirmType].NeedOverseer)
 		{
 			//-----------------------------------------------------//
 			//

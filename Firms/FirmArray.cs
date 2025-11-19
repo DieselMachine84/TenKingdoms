@@ -58,14 +58,14 @@ public class FirmArray : DynArray<Firm>
 		if (World.CanBuildFirm(locX, locY, firmType) == 0)
 			return 0;
 
-		if (nationId != 0 && NationArray[nationId].cash < FirmRes[firmType].setup_cost)
+		if (nationId != 0 && NationArray[nationId].cash < FirmRes[firmType].SetupCost)
 			return 0;
 
 		Firm firm = CreateNew(firmType);
 		firm.Init(nationId, firmType, locX, locY, buildCode, builderId);
 
 		if (nationId != 0)
-			NationArray[nationId].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmType].setup_cost);
+			NationArray[nationId].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmType].SetupCost);
 
 		return firm.FirmId;
 	}

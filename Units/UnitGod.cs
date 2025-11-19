@@ -190,7 +190,7 @@ public class UnitGod : Unit
 				cast_on_unit(firm.OverseerId, divider);
 			}
 
-			if (!FirmRes[firm.FirmType].live_in_town)
+			if (!FirmRes[firm.FirmType].LiveInTown)
 			{
 				for (int i = 0; i < firm.Workers.Count; i++)
 				{

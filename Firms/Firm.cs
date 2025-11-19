@@ -125,38 +125,38 @@ public abstract class Firm : IIdObject
 		FirmInfo firmInfo = FirmRes[firmType];
 
 		if (!String.IsNullOrEmpty(buildCode))
-			FirmBuildId = firmInfo.get_build_id(buildCode);
+			FirmBuildId = firmInfo.GetBuildId(buildCode);
 		else
-			FirmBuildId = firmInfo.first_build_id;
+			FirmBuildId = firmInfo.FirstBuildId;
 
 		NationId = nationId;
 		SetupDate = Info.game_date;
 
-		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
+		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
 
-		RaceId = firmBuild.race_id;
+		RaceId = firmBuild.RaceId;
 
 		LocX1 = locX;
 		LocY1 = locY;
-		LocX2 = LocX1 + firmBuild.loc_width - 1;
-		LocY2 = LocY1 + firmBuild.loc_height - 1;
+		LocX2 = LocX1 + firmBuild.LocWidth - 1;
+		LocY2 = LocY1 + firmBuild.LocHeight - 1;
 
 		LocCenterX = (LocX1 + LocX2) / 2;
 		LocCenterY = (LocY1 + LocY2) / 2;
 
 		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
 
-		if (firmBuild.animate_full_size)
+		if (firmBuild.AnimateFullSize)
 			CurFrame = 1;
 		else
 			CurFrame = 2; // start with the 2nd frame as the 1st frame is the common frame
 
-		RemainFrameDelay = firmBuild.frame_delay(CurFrame);
+		RemainFrameDelay = firmBuild.FrameDelay(CurFrame);
 
 		OverseerId = 0;
 		HitPoints = 0.0;
-		MaxHitPoints = firmInfo.max_hit_points;
-		UnderConstruction = firmInfo.buildable;
+		MaxHitPoints = firmInfo.MaxHitPoints;
+		UnderConstruction = firmInfo.Buildable;
 
 		if (!UnderConstruction)
 			HitPoints = MaxHitPoints;
@@ -336,7 +336,7 @@ public abstract class Firm : IIdObject
 	private void InitName()
 	{
 		// if this firm does not have any short name, display the full name without displaying the town name together
-		if (String.IsNullOrEmpty(FirmRes[FirmType].short_name))
+		if (String.IsNullOrEmpty(FirmRes[FirmType].ShortName))
 			return;
 
 		ClosestTownNameId = GetClosestTownNameId();
@@ -371,14 +371,14 @@ public abstract class Firm : IIdObject
 
 		if (ClosestTownNameId == 0)
 		{
-			result = FirmRes[FirmType].name;
+			result = FirmRes[FirmType].Name;
 		}
 		else
 		{
 			// display number when there are multiple linked firms of the same type
 			// TRANSLATORS: <Town> <Short Firm Name> <Firm #>
 			// This is the name of the firm when there are multiple linked firms to a town.
-			result = TownRes.GetName(ClosestTownNameId) + " " + FirmRes[FirmType].short_name;
+			result = TownRes.GetName(ClosestTownNameId) + " " + FirmRes[FirmType].ShortName;
 			if (FirmNameInstanceId > 1)
 			{
 				result += " " + FirmNameInstanceId;
@@ -415,7 +415,7 @@ public abstract class Firm : IIdObject
 		if (Info.TotalDays % 30 == FirmId % 30)
 			UpdateLoyalty();
 
-		if (!FirmRes[FirmType].live_in_town && Workers.Count > 0)
+		if (!FirmRes[FirmType].LiveInTown && Workers.Count > 0)
 			ConsumeFood();
 
 		if (Info.TotalDays % 30 == FirmId % 30)
@@ -426,7 +426,7 @@ public abstract class Firm : IIdObject
 		if (Info.TotalDays % 30 == FirmId % 30)
 			SpyArray.CatchSpy(Spy.SPY_FIRM, FirmId);
 
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 		{
 			ProcessIndependentTownWorker();
 		}
@@ -528,8 +528,8 @@ public abstract class Firm : IIdObject
 
 			FirmInfo firmInfo = FirmRes[FirmType];
 
-			if ((firmInfo.need_overseer || firmInfo.need_worker) &&
-			    (firmInfo.firm_skill_id == 0 || firmInfo.firm_skill_id == unit.Skill.SkillId)) // the builder with the skill required
+			if ((firmInfo.NeedOverseer || firmInfo.NeedWorker) &&
+			    (firmInfo.FirmSkillId == 0 || firmInfo.FirmSkillId == unit.Skill.SkillId)) // the builder with the skill required
 			{
 				unit.SetMode(0); // reset it from UNIT_MODE_CONSTRUCT
 				needAssignUnit = true;
@@ -587,7 +587,7 @@ public abstract class Firm : IIdObject
 		//------ get half of the construction cost back -------//
 
 		Nation nation = NationArray[NationId];
-		nation.add_expense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].setup_cost / 2.0);
+		nation.add_expense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].SetupCost / 2.0);
 
 		FirmArray.DeleteFirm(this);
 	}
@@ -777,7 +777,7 @@ public abstract class Firm : IIdObject
 
 		//-------- fixed expenses ---------//
 
-		double dayExpense = FirmRes[FirmType].year_cost / 365.0;
+		double dayExpense = FirmRes[FirmType].YearCost / 365.0;
 
 		if (nation.cash >= dayExpense)
 		{
@@ -799,7 +799,7 @@ public abstract class Firm : IIdObject
 
 		//----- paying salary to workers from other nations -----//
 
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 		{
 			int payWorkerCount = 0;
 
@@ -833,11 +833,11 @@ public abstract class Firm : IIdObject
 
 	public int YearExpense()
 	{
-		int totalExpense = FirmRes[FirmType].year_cost;
+		int totalExpense = FirmRes[FirmType].YearCost;
 
 		//---- pay salary to workers from foreign towns ----//
 
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 		{
 			int payWorkerCount = 0;
 
@@ -884,7 +884,7 @@ public abstract class Firm : IIdObject
 
 	private void UpdateLoyalty()
 	{
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 			return;
 
 		foreach (Worker worker in Workers)
@@ -972,13 +972,13 @@ public abstract class Firm : IIdObject
 
 		FirmInfo firmInfo = FirmRes[FirmType];
 
-		if (firmInfo.need_overseer &&
+		if (firmInfo.NeedOverseer &&
 		    (OverseerId == 0 || (unit.Skill.SkillId == FirmSkillId && UnitArray[OverseerId].Skill.SkillId != FirmSkillId) ||
 		     (unit.Skill.SkillId == FirmSkillId && unit.Skill.SkillLevel > UnitArray[OverseerId].Skill.SkillLevel)))
 		{
 			AssignOverseer(unitId);
 		}
-		else if (firmInfo.need_worker)
+		else if (firmInfo.NeedWorker)
 		{
 			AssignWorker(unitId);
 		}
@@ -986,7 +986,7 @@ public abstract class Firm : IIdObject
 
 	public virtual void AssignOverseer(int newOverseerId)
 	{
-		if (!FirmRes[FirmType].need_overseer)
+		if (!FirmRes[FirmType].NeedOverseer)
 			return;
 
 		if (newOverseerId == 0 && OverseerId == 0)
@@ -1032,7 +1032,7 @@ public abstract class Firm : IIdObject
 
 			Unit newOverseer = UnitArray[newOverseerId];
 
-			if (FirmRes[FirmType].live_in_town)
+			if (FirmRes[FirmType].LiveInTown)
 			{
 				// the overseer settles down
 				OverseerTownId = AssignSettle(newOverseer.RaceId, newOverseer.Loyalty);
@@ -1100,7 +1100,7 @@ public abstract class Firm : IIdObject
 
 		Worker newWorker = new Worker();
 
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 		{
 			newWorker.town_recno = AssignSettle(unit.RaceId, unit.Loyalty); // the worker settles down
 
@@ -1168,7 +1168,7 @@ public abstract class Firm : IIdObject
 		
 		SortWorkers();
 
-		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
+		if (!FirmRes[FirmType].LiveInTown) // if the unit does not live in town, increase the unit count now
 			UnitRes[unit.UnitType].inc_nation_unit_count(NationId);
 
 		UnitArray.DisappearInFirm(workerUnitId);
@@ -1280,7 +1280,7 @@ public abstract class Firm : IIdObject
 
 		//--- decrease the nation unit count as the Unit has already increased it ----//
 
-		if (!FirmRes[FirmType].live_in_town)
+		if (!FirmRes[FirmType].LiveInTown)
 			UnitRes[worker.unit_id].dec_nation_unit_count(NationId);
 
 		Workers.Remove(worker);
@@ -1323,7 +1323,7 @@ public abstract class Firm : IIdObject
 			if (!Misc.AreFirmsLinked(this, firm))
 				continue;
 
-			if (!firmInfo.is_linkable_to_firm(firm.FirmType))
+			if (!firmInfo.IsLinkableToFirm(firm.FirmType))
 				continue;
 
 			//------- determine the default link status ------//
@@ -1332,7 +1332,7 @@ public abstract class Firm : IIdObject
 			// if the two firms are of different nations, default link status is both side disabled
 			int defaultLinkStatus;
 			if (firm.NationId == NationId)
-				defaultLinkStatus = firmInfo.default_link_status(firm.FirmType);
+				defaultLinkStatus = firmInfo.DefaultLinkStatus(firm.FirmType);
 			else
 				defaultLinkStatus = InternalConstants.LINK_DD;
 
@@ -1364,7 +1364,7 @@ public abstract class Firm : IIdObject
 			if (!Misc.AreTownAndFirmLinked(town, this))
 				continue;
 
-			if (!firmInfo.is_linkable_to_town)
+			if (!firmInfo.IsLinkableToTown)
 				return;
 
 			//------- determine the default link status ------//
@@ -1467,7 +1467,7 @@ public abstract class Firm : IIdObject
 		if ((FirmType == FIRM_MARKET && firm.FirmType == FIRM_HARBOR) || (FirmType == FIRM_HARBOR && firm.FirmType == FIRM_MARKET))
 			return false;
 
-		return FirmRes[FirmType].is_linkable_to_firm(firm.FirmType);
+		return FirmRes[FirmType].IsLinkableToFirm(firm.FirmType);
 	}
 
 	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
@@ -1687,7 +1687,7 @@ public abstract class Firm : IIdObject
 		int unitRecno = 0;
 
 		// if does not live_in_town, resign_worker() create the unit already, so don't create it again here.
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 		{
 			//TODO check. It seems that resign_worker() also calls create_worker_unit()
 			unitRecno = CreateWorkerUnit(worker);
@@ -1721,7 +1721,7 @@ public abstract class Firm : IIdObject
 
 		//---- cancel the overseer's presence in the town -----//
 
-		if (FirmRes[FirmType].live_in_town)
+		if (FirmRes[FirmType].LiveInTown)
 			TownArray[OverseerTownId].DecPopulation(overseer.RaceId, true);
 
 		//----- get this overseer out of the firm -----//
@@ -1860,7 +1860,7 @@ public abstract class Firm : IIdObject
 
 		//--- decrease the nation unit count as the Unit has already increased it ----//
 
-		if (!FirmRes[FirmType].live_in_town) // if the unit does not live in town, increase the unit count now
+		if (!FirmRes[FirmType].LiveInTown) // if the unit does not live in town, increase the unit count now
 			UnitRes[unit.UnitType].dec_nation_unit_count(NationId);
 
 		//--- set non-military units to non-aggressive, except ai ---//
@@ -1992,7 +1992,7 @@ public abstract class Firm : IIdObject
 	protected void ThinkWorkerMigrate()
 	{
 
-		if (Workers.Count == 0 || !FirmRes[FirmType].live_in_town)
+		if (Workers.Count == 0 || !FirmRes[FirmType].LiveInTown)
 			return;
 
 		foreach (Town town in TownArray.EnumerateRandom())
@@ -2205,7 +2205,7 @@ public abstract class Firm : IIdObject
 
 				//----- get the chance of getting people to your command base is higher when the loyalty is higher ----//
 
-				if (FirmRes[FirmType].live_in_town)
+				if (FirmRes[FirmType].LiveInTown)
 				{
 					town.RacesJoblessPopulation[raceId - 1]--; // decrease the town's population
 					town.JoblessPopulation--;
@@ -2225,7 +2225,7 @@ public abstract class Firm : IIdObject
 				worker.unit_id = RaceRes[raceId].basic_unit_id;
 				worker.worker_loyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
 
-				if (FirmRes[FirmType].live_in_town)
+				if (FirmRes[FirmType].LiveInTown)
 					worker.town_recno = townRecno;
 
 				worker.combat_level = GameConstants.CITIZEN_COMBAT_LEVEL;
@@ -2244,7 +2244,7 @@ public abstract class Firm : IIdObject
 				//
 				//---------------------------------------------------//
 
-				if (!FirmRes[FirmType].live_in_town)
+				if (!FirmRes[FirmType].LiveInTown)
 					UnitRes[worker.unit_id].inc_nation_unit_count(NationId);
 
 				//------ if the recruited worker is a spy -----//
@@ -2338,7 +2338,7 @@ public abstract class Firm : IIdObject
 
 		//----- if this firm needs an overseer, can only capture it when the overseer is the spy ---//
 
-		if (FirmRes[FirmType].need_overseer)
+		if (FirmRes[FirmType].NeedOverseer)
 		{
 			return OverseerId != 0 && UnitArray[OverseerId].TrueNationId() == captureNationRecno;
 		}
@@ -2611,7 +2611,7 @@ public abstract class Firm : IIdObject
 
 		Nation nation = NationArray[NationId];
 
-		double sellIncome = FirmRes[FirmType].setup_cost / 2.0 * HitPoints / MaxHitPoints;
+		double sellIncome = FirmRes[FirmType].SetupCost / 2.0 * HitPoints / MaxHitPoints;
 
 		nation.add_income(NationBase.INCOME_SELL_FIRM, sellIncome);
 
@@ -2931,8 +2931,8 @@ public abstract class Firm : IIdObject
 	{
 		//-------- process animation ----------//
 
-		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
-		int frameCount = firmBuild.frame_count;
+		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
+		int frameCount = firmBuild.FrameCount;
 
 		if (frameCount == 1) // no animation for this firm
 			return;
@@ -2941,11 +2941,11 @@ public abstract class Firm : IIdObject
 
 		if (--RemainFrameDelay == 0) // if it is in the delay between frames
 		{
-			RemainFrameDelay = firmBuild.frame_delay(CurFrame);
+			RemainFrameDelay = firmBuild.FrameDelay(CurFrame);
 
 			if (++CurFrame > frameCount)
 			{
-				if (firmBuild.animate_full_size)
+				if (firmBuild.AnimateFullSize)
 					CurFrame = 1;
 				else
 				{
@@ -2957,10 +2957,10 @@ public abstract class Firm : IIdObject
 	
 	public int ConstructionFrame() // for under construction only
 	{
-		FirmBuild firmBuild = FirmRes.get_build(FirmBuildId);
-		int r = Convert.ToInt32(HitPoints * firmBuild.under_construction_bitmap_count / MaxHitPoints);
-		if (r >= firmBuild.under_construction_bitmap_count)
-			r = firmBuild.under_construction_bitmap_count - 1;
+		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
+		int r = Convert.ToInt32(HitPoints * firmBuild.UnderConstructionBitmapCount / MaxHitPoints);
+		if (r >= firmBuild.UnderConstructionBitmapCount)
+			r = firmBuild.UnderConstructionBitmapCount - 1;
 		return r;
 	}
 

@@ -363,7 +363,7 @@ public class Nation : NationBase
 
 		int firmId = actionNode.action_para;
 		int raceId = actionNode.action_para2;
-		int skillId = FirmRes[firmId].firm_skill_id;
+		int skillId = FirmRes[firmId].FirmSkillId;
 
 		// if the firm does not have a specific skill (e.g. Inn), use the general SKILL_CONSTRUCTION
 		if (skillId == 0)
@@ -429,7 +429,7 @@ public class Nation : NationBase
 		else
 		{
 			if (firm.FirmType == Firm.FIRM_BASE) // for seat of power, the race must be specific
-				raceId = FirmRes.get_build(firm.FirmBuildId).race_id;
+				raceId = FirmRes.GetBuild(firm.FirmBuildId).RaceId;
 			else
 				raceId = firm.MajorityRace();
 		}
@@ -1335,12 +1335,12 @@ public class Nation : NationBase
 					//------ can build or not ----------//
 					bool canBuild = false;
 
-					for (int ix = site.LocX - firmInfo.loc_width + 1; ix <= site.LocX && !canBuild; ix++)
+					for (int ix = site.LocX - firmInfo.LocWidth + 1; ix <= site.LocX && !canBuild; ix++)
 					{
 						if (ix < 0 || ix >= GameConstants.MapSize)
 							continue;
 
-						for (int iy = site.LocY - firmInfo.loc_height + 1; iy <= site.LocY && !canBuild; iy++)
+						for (int iy = site.LocY - firmInfo.LocHeight + 1; iy <= site.LocY && !canBuild; iy++)
 						{
 							if (iy < 0 || iy >= GameConstants.MapSize)
 								continue;
@@ -1455,8 +1455,8 @@ public class Nation : NationBase
 
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_MINE];
 		int weight = 0, maxWeight = 0;
-		int xLeftLimit = mapXLoc - firmInfo.loc_width + 1;
-		int yLeftLimit = mapYLoc - firmInfo.loc_height + 1;
+		int xLeftLimit = mapXLoc - firmInfo.LocWidth + 1;
+		int yLeftLimit = mapYLoc - firmInfo.LocHeight + 1;
 		int resultXLoc = xLoc;
 		int resultYLoc = yLoc;
 
@@ -1484,7 +1484,7 @@ public class Nation : NationBase
 					//----------------------------------------//
 					// calculate weight
 					//----------------------------------------//
-					cal_location_score(ix, iy, firmInfo.loc_width, firmInfo.loc_height, out weight);
+					cal_location_score(ix, iy, firmInfo.LocWidth, firmInfo.LocHeight, out weight);
 
 					if (weight > maxWeight)
 					{
@@ -1647,8 +1647,8 @@ public class Nation : NationBase
 		//------------------------------------------------------//
 
 		FirmInfo firmInfo = FirmRes[buildFirmId];
-		int firmLocWidth = firmInfo.loc_width;
-		int firmLocHeight = firmInfo.loc_height;
+		int firmLocWidth = firmInfo.LocWidth;
+		int firmLocHeight = firmInfo.LocHeight;
 
 		// since we use loc_x1 as the building reference, we need to shift it so it will match the use of center_x in effective distance
 		refX1 -= firmLocWidth / 2;
@@ -2812,7 +2812,7 @@ public class Nation : NationBase
 		{
 			if (destFirm.FirmType == Firm.FIRM_BASE) // for seat of power, the race must be specific
 			{
-				raceId = FirmRes.get_build(destFirm.FirmBuildId).race_id;
+				raceId = FirmRes.GetBuild(destFirm.FirmBuildId).RaceId;
 				needSpecificRace = 1;
 			}
 			else
@@ -3028,7 +3028,7 @@ public class Nation : NationBase
 
 	public bool can_ai_build(int firmId)
 	{
-		return cash > FirmRes[firmId].setup_cost;
+		return cash > FirmRes[firmId].SetupCost;
 	}
 
 	public bool think_succeed_king()
@@ -5660,7 +5660,7 @@ public class Nation : NationBase
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
 
 		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
-			    firmInfo.loc_width, firmInfo.loc_height, GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
+			    firmInfo.LocWidth, firmInfo.LocHeight, GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
 		{
 			return ai_patrol_to_region(xLoc, yLoc, SEA_ACTION_BUILD_CAMP);
 		}

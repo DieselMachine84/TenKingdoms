@@ -733,11 +733,11 @@ public abstract partial class Unit : Sprite
 
 					//---------- resume action if the unit has not reached the firm surrounding ----------//
 					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
-						    ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height))
+						    ActionLocX, ActionLocY, firmInfo.LocWidth, firmInfo.LocHeight))
 					{
 						//------------ not in the surrounding -----------//
 						if (ActionMode != ActionMode2) // for defense mode
-							SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.loc_width, firmInfo.loc_height, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
+							SetMoveToSurround(ActionLocX, ActionLocY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 						return;
 					}
 
@@ -989,8 +989,8 @@ public abstract partial class Unit : Sprite
 			if (CurLocX == MoveToLocX && CurLocY == MoveToLocY)
 			{
 				FirmInfo firmInfo = FirmRes[ActionParam];
-				int width = firmInfo.loc_width;
-				int height = firmInfo.loc_height;
+				int width = firmInfo.LocWidth;
+				int height = firmInfo.LocHeight;
 
 				//---------------------------------------------------------//
 				// check whether the unit in the building surrounding
@@ -1009,7 +1009,7 @@ public abstract partial class Unit : Sprite
 				if (NationId != 0)
 				{
 					Nation nation = NationArray[NationId];
-					if (nation.cash < firmInfo.setup_cost)
+					if (nation.cash < firmInfo.SetupCost)
 						shouldProceed = false; // out of cash
 				}
 
@@ -1180,7 +1180,7 @@ public abstract partial class Unit : Sprite
 							break;
 
 						default:
-							return Rank == RANK_SOLDIER && firmInfo.need_unit() ? 1 : 0;
+							return Rank == RANK_SOLDIER && firmInfo.NeedUnit() ? 1 : 0;
 					}
 				}
 
@@ -1311,8 +1311,8 @@ public abstract partial class Unit : Sprite
 			}
 
 			newActionParam = firmId;
-			width = firmInfo.loc_width;
-			height = firmInfo.loc_height;
+			width = firmInfo.LocWidth;
+			height = firmInfo.LocHeight;
 			buildingType = UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO;
 		}
 		else if (loc.IsTown())
@@ -1583,7 +1583,7 @@ public abstract partial class Unit : Sprite
 
 		int harborDir = World.CanBuildFirm(buildLocX, buildLocY, firmType, SpriteId);
 		int goLocX = buildLocX, goLocY = buildLocY;
-		if (FirmRes[firmType].tera_type == 4)
+		if (FirmRes[firmType].TeraType == 4)
 		{
 			switch (harborDir)
 			{
@@ -1646,8 +1646,8 @@ public abstract partial class Unit : Sprite
 
 		//---------------- define parameters -------------------//
 		FirmInfo firmInfo = FirmRes[firmType];
-		int firmWidth = firmInfo.loc_width;
-		int firmHeight = firmInfo.loc_height;
+		int firmWidth = firmInfo.LocWidth;
+		int firmHeight = firmInfo.LocHeight;
 
 		if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
 			    buildLocX, buildLocY, firmWidth, firmHeight))
@@ -2064,7 +2064,7 @@ public abstract partial class Unit : Sprite
 					Firm firm = FirmArray[ActionPara2];
 					FirmInfo firmInfo = FirmRes[firm.FirmType];
 
-					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, firmInfo.loc_width, firmInfo.loc_height))
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight))
 					{
 						AttackFirm(ActionLocX2, ActionLocY2, 0, 0, 0);
 						hasSearch = true;
@@ -3834,7 +3834,7 @@ public abstract partial class Unit : Sprite
 			return false;
 
 		FirmInfo firmInfo = FirmRes[firmType];
-		if (!firmInfo.buildable)
+		if (!firmInfo.Buildable)
 			return false;
 
 		if (firmInfo.get_nation_tech_level(NationId) == 0)
@@ -3865,17 +3865,17 @@ public abstract partial class Unit : Sprite
 
 		//------ unit with construction skill knows how to build all buildings -----//
 
-		if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firmInfo.firm_race_id == 0)
+		if (Skill.SkillId == Skill.SKILL_CONSTRUCTION && firmInfo.FirmRaceId == 0)
 			return true;
 
 		//----- if the firm is race specific, if the unit is right race, return true ----//
 
-		if (firmInfo.firm_race_id == RaceId)
+		if (firmInfo.FirmRaceId == RaceId)
 			return true;
 
 		//---- if the unit has the skill needed by the firm or the unit has general construction skill ----//
 
-		if (firmInfo.firm_skill_id != 0 && firmInfo.firm_skill_id == Skill.SkillId)
+		if (firmInfo.FirmSkillId != 0 && firmInfo.FirmSkillId == Skill.SkillId)
 			return true;
 
 		return false;
@@ -5311,7 +5311,7 @@ public abstract partial class Unit : Sprite
 				//---- try to build one if this unit can ----//
 
 				// if this unit is commanded by a leader, let the leader build the camp
-				if (ownNation.cash > FirmRes[Firm.FIRM_CAMP].setup_cost && CanBuild(Firm.FIRM_CAMP) && LeaderId == 0)
+				if (ownNation.cash > FirmRes[Firm.FIRM_CAMP].SetupCost && CanBuild(Firm.FIRM_CAMP) && LeaderId == 0)
 				{
 					AIBuildCamp();
 				}
@@ -5793,7 +5793,7 @@ public abstract partial class Unit : Sprite
 
 		// leave at least one location space around the building
 		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
-			    firmInfo.loc_width + 2, firmInfo.loc_height + 2,
+			    firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
 			    GameConstants.MapSize * GameConstants.MapSize, curRegionId, true, teraMask))
 		{
 			return ownNation.add_action(xLoc, yLoc, -1, -1,

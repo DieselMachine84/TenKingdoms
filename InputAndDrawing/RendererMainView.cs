@@ -449,22 +449,22 @@ public partial class Renderer
     public void DrawFirm(Firm firm, int layer)
     {
         (int firmX, int firmY) = GetScreenXAndY(firm.LocX1, firm.LocY1);
-        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
+        FirmBuild firmBuild = FirmRes.GetBuild(firm.FirmBuildId);
         // if in construction, don't draw ground unless the last construction frame
-        if (firmBuild.ground_bitmap_recno != 0 &&
-            (!firm.UnderConstruction || firm.ConstructionFrame() >= firmBuild.under_construction_bitmap_count - 1))
+        if (firmBuild.GroundBitmapId != 0 &&
+            (!firm.UnderConstruction || firm.ConstructionFrame() >= firmBuild.UnderConstructionBitmapCount - 1))
         {
-            FirmBitmap firmBitmap = FirmRes.get_bitmap(firmBuild.ground_bitmap_recno);
-            if (firmBitmap.display_layer == layer)
+            FirmBitmap firmBitmap = FirmRes.GetBitmap(firmBuild.GroundBitmapId);
+            if (firmBitmap.DisplayLayer == layer)
             {
                 bool isSelected = (firm.FirmId == _selectedFirmId);
-                int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
-                int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+                int firmBitmapX = firmX + Scale(firmBitmap.OffsetX);
+                int firmBitmapY = firmY + Scale(firmBitmap.OffsetY);
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.BitmapWidth, firmBitmap.BitmapHeight);
             }
         }
         
-        if (firmBuild.animate_full_size)
+        if (firmBuild.AnimateFullSize)
         {
             DrawFirmFullSize(firm, firmX, firmY, layer);
         }
@@ -476,7 +476,7 @@ public partial class Renderer
             }
             else if (!firm.IsOperating())
             {
-                if (FirmRes.get_bitmap(firmBuild.idle_bitmap_recno) != null)
+                if (FirmRes.GetBitmap(firmBuild.IdleBitmapId) != null)
                 {
                     DrawFirmFullSize(firm, firmX, firmY, layer);
                 }
@@ -568,29 +568,29 @@ public partial class Renderer
             Graphics.DrawBitmapScaled(firmInfo.GetFlagTexture(Graphics, firm.NationId), flag2X, firmY, firmInfo.FlagBitmapWidth, firmInfo.FlagBitmapHeight);
         }
 
-        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
+        FirmBuild firmBuild = FirmRes.GetBuild(firm.FirmBuildId);
         FirmBitmap firmBitmap;
         if (firm.UnderConstruction)
         {
             int buildFraction = firm.ConstructionFrame();
-            firmBitmap = FirmRes.get_bitmap(firmBuild.under_construction_bitmap_recno + buildFraction);
+            firmBitmap = FirmRes.GetBitmap(firmBuild.UnderConstructionBitmapId + buildFraction);
         }
         else if (!firm.IsOperating())
         {
-            firmBitmap = FirmRes.get_bitmap(firmBuild.idle_bitmap_recno);
+            firmBitmap = FirmRes.GetBitmap(firmBuild.IdleBitmapId);
         }
         else
         {
-            firmBitmap = FirmRes.get_bitmap(firmBuild.first_bitmap(firm.CurFrame));
+            firmBitmap = FirmRes.GetBitmap(firmBuild.FirstBitmap(firm.CurFrame));
         }
 
-        if (firmBitmap == null || firmBitmap.display_layer != displayLayer)
+        if (firmBitmap == null || firmBitmap.DisplayLayer != displayLayer)
             return;
 
         bool isSelected = (firm.FirmId == _selectedFirmId);
-        int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
-        int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-        Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+        int firmBitmapX = firmX + Scale(firmBitmap.OffsetX);
+        int firmBitmapY = firmY + Scale(firmBitmap.OffsetY);
+        Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.BitmapWidth, firmBitmap.BitmapHeight);
 
         if (firm.UnderConstruction)
         {
@@ -606,19 +606,19 @@ public partial class Renderer
 
     private void DrawFirmFrame(Firm firm, int firmX, int firmY, int frameId, int layer)
     {
-        FirmBuild firmBuild = FirmRes.get_build(firm.FirmBuildId);
-        int firstBitmap = firmBuild.first_bitmap(frameId);
-        int bitmapCount = firmBuild.bitmap_count(frameId);
+        FirmBuild firmBuild = FirmRes.GetBuild(firm.FirmBuildId);
+        int firstBitmap = firmBuild.FirstBitmap(frameId);
+        int bitmapCount = firmBuild.BitmapCount(frameId);
 
         for (int i = 0, bitmapId = firstBitmap; i < bitmapCount; i++, bitmapId++)
         {
-            FirmBitmap firmBitmap = FirmRes.get_bitmap(bitmapId);
-            if (firmBitmap.display_layer == layer)
+            FirmBitmap firmBitmap = FirmRes.GetBitmap(bitmapId);
+            if (firmBitmap.DisplayLayer == layer)
             {
                 bool isSelected = (firm.FirmId == _selectedFirmId);
-                int firmBitmapX = firmX + Scale(firmBitmap.offset_x);
-                int firmBitmapY = firmY + Scale(firmBitmap.offset_y);
-                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.bitmapWidth, firmBitmap.bitmapHeight);
+                int firmBitmapX = firmX + Scale(firmBitmap.OffsetX);
+                int firmBitmapY = firmY + Scale(firmBitmap.OffsetY);
+                Graphics.DrawBitmapScaled(firmBitmap.GetTexture(Graphics, firm.NationId, isSelected), firmBitmapX, firmBitmapY, firmBitmap.BitmapWidth, firmBitmap.BitmapHeight);
             }
         }
     }
@@ -640,15 +640,15 @@ public partial class Renderer
     public void DrawFirmDie(FirmDie firmDie, int layer)
     {
         FirmBuild firmBuild = FirmDieRes.GetBuild(firmDie.FirmBuildId);
-        int firstBitmap = firmBuild.first_bitmap(firmDie.Frame);
+        int firstBitmap = firmBuild.FirstBitmap(firmDie.Frame);
         FirmBitmap firmDieBitmap = FirmDieRes.GetBitmap(firstBitmap);
-        if (firmDieBitmap.display_layer == layer)
+        if (firmDieBitmap.DisplayLayer == layer)
         {
             (int firmDieX, int firmDieY) = GetScreenXAndY(firmDie.LocX1, firmDie.LocY1);
-            int firmBitmapX = firmDieX + Scale(firmDieBitmap.offset_x);
-            int firmBitmapY = firmDieY + Scale(firmDieBitmap.offset_y);
+            int firmBitmapX = firmDieX + Scale(firmDieBitmap.OffsetX);
+            int firmBitmapY = firmDieY + Scale(firmDieBitmap.OffsetY);
             Graphics.DrawBitmapScaled(firmDieBitmap.GetTexture(Graphics, firmDie.NationId, false),
-                firmBitmapX, firmBitmapY, firmDieBitmap.bitmapWidth, firmDieBitmap.bitmapHeight);
+                firmBitmapX, firmBitmapY, firmDieBitmap.BitmapWidth, firmDieBitmap.BitmapHeight);
         }
     }
 

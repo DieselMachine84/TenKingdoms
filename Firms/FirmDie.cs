@@ -35,10 +35,10 @@ public class FirmDie : IIdObject
     public bool Process()
     {
         FirmBuild firmBuild = FirmDieRes.GetBuild(FirmBuildId);
-        if (++FrameDelayCount > firmBuild.frame_delay_array[Frame - 1])
+        if (++FrameDelayCount > firmBuild.FrameDelays[Frame - 1])
         {
             FrameDelayCount = 0;
-            if (++Frame > firmBuild.frame_count)
+            if (++Frame > firmBuild.FrameCount)
             {
                 return true;
             }

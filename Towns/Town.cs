@@ -1896,7 +1896,7 @@ public class Town : IIdObject
 
 				//---- only for firms whose workers live in towns ----//
 
-				if (!FirmRes[firm.FirmType].live_in_town)
+				if (!FirmRes[firm.FirmType].LiveInTown)
 					continue;
 
 				//---- if the target town is within the effective range of this firm ----//
@@ -2564,7 +2564,7 @@ public class Town : IIdObject
 		{
 			FirmInfo firmInfo = FirmRes[firm.FirmType];
 
-			if (!firmInfo.is_linkable_to_town)
+			if (!firmInfo.IsLinkableToTown)
 				continue;
 
 			//---------- check if the firm is close enough to this firm -------//
@@ -2714,7 +2714,7 @@ public class Town : IIdObject
 					return false;
 
 				default:
-					return FirmRes[firm.FirmType].is_linkable_to_town;
+					return FirmRes[firm.FirmType].IsLinkableToTown;
 			}
 		}
 

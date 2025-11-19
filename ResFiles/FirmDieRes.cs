@@ -44,15 +44,15 @@ public class FirmDieRes
 			FirmBuild firmBuild = new FirmBuild();
 			FirmBuilds[i] = firmBuild;
 
-			firmBuild.build_code = Misc.ToString(firmBuildRec.race_code);
-			firmBuild.animate_full_size = (firmBuildRec.animate_full_size == '1');
+			firmBuild.BuildCode = Misc.ToString(firmBuildRec.race_code);
+			firmBuild.AnimateFullSize = (firmBuildRec.animate_full_size == '1');
 
-			firmBuild.race_id = Misc.ToInt32(firmBuildRec.race_id);
-			firmBuild.frame_count = Misc.ToInt32(firmBuildRec.frame_count);
+			firmBuild.RaceId = Misc.ToInt32(firmBuildRec.race_id);
+			firmBuild.FrameCount = Misc.ToInt32(firmBuildRec.frame_count);
 
-			firmBuild.under_construction_bitmap_recno = Misc.ToInt32(firmBuildRec.under_construction_bitmap_recno);
-			firmBuild.idle_bitmap_recno = Misc.ToInt32(firmBuildRec.idle_bitmap_recno);
-			firmBuild.ground_bitmap_recno = Misc.ToInt32(firmBuildRec.ground_bitmap_recno);
+			firmBuild.UnderConstructionBitmapId = Misc.ToInt32(firmBuildRec.under_construction_bitmap_recno);
+			firmBuild.IdleBitmapId = Misc.ToInt32(firmBuildRec.idle_bitmap_recno);
+			firmBuild.GroundBitmapId = Misc.ToInt32(firmBuildRec.ground_bitmap_recno);
 
 			firstFrameIds[i] = Misc.ToInt32(firmBuildRec.first_frame);
 
@@ -70,15 +70,15 @@ public class FirmDieRes
 			int maxX2 = 0;
 			int maxY2 = 0;
 
-			for (int j = 0; j < firmBuild.frame_count; j++, firstFrameId++)
+			for (int j = 0; j < firmBuild.FrameCount; j++, firstFrameId++)
 			{
 				FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame, firstFrameId);
 
 				//------ following animation frames, bitmap sections -----//
 
-				firmBuild.first_bitmap_array[j] = Misc.ToInt32(firmFrameRec.first_bitmap);
-				firmBuild.bitmap_count_array[j] = Misc.ToInt32(firmFrameRec.bitmap_count);
-				firmBuild.frame_delay_array[j] = Misc.ToInt32(firmFrameRec.delay);
+				firmBuild.FirstBitmaps[j] = Misc.ToInt32(firmFrameRec.first_bitmap);
+				firmBuild.BitmapCounts[j] = Misc.ToInt32(firmFrameRec.bitmap_count);
+				firmBuild.FrameDelays[j] = Misc.ToInt32(firmFrameRec.delay);
 
 				//---- get the MIN offset_x, offset_y and MAX width, height ----//
 				//
@@ -89,41 +89,41 @@ public class FirmDieRes
 				//--------------------------------------------------------------//
 
 				int firmBitmapIndex = 0;
-				for (int k = firmBuild.bitmap_count_array[j]; k > 0; k--, firmBitmapIndex++)
+				for (int k = firmBuild.BitmapCounts[j]; k > 0; k--, firmBitmapIndex++)
 				{
-					FirmBitmap firmBitmap = FirmBitmaps[firmBuild.first_bitmap_array[j] - 1 + firmBitmapIndex];
-					if (firmBitmap.offset_x < minOffsetX)
-						minOffsetX = firmBitmap.offset_x;
+					FirmBitmap firmBitmap = FirmBitmaps[firmBuild.FirstBitmaps[j] - 1 + firmBitmapIndex];
+					if (firmBitmap.OffsetX < minOffsetX)
+						minOffsetX = firmBitmap.OffsetX;
 
-					if (firmBitmap.offset_y < minOffsetY)
-						minOffsetY = firmBitmap.offset_y;
+					if (firmBitmap.OffsetY < minOffsetY)
+						minOffsetY = firmBitmap.OffsetY;
 
-					if (firmBitmap.offset_x + firmBitmap.bitmapWidth > maxX2)
-						maxX2 = firmBitmap.offset_x + firmBitmap.bitmapWidth;
+					if (firmBitmap.OffsetX + firmBitmap.BitmapWidth > maxX2)
+						maxX2 = firmBitmap.OffsetX + firmBitmap.BitmapWidth;
 
-					if (firmBitmap.offset_y + firmBitmap.bitmapHeight > maxY2)
-						maxY2 = firmBitmap.offset_y + firmBitmap.bitmapHeight;
+					if (firmBitmap.OffsetY + firmBitmap.BitmapHeight > maxY2)
+						maxY2 = firmBitmap.OffsetY + firmBitmap.BitmapHeight;
 				}
 			}
 
-			int bitmapId = firmBuild.first_bitmap_array[0];
+			int bitmapId = firmBuild.FirstBitmaps[0];
 
 			FirmBitmap firstBitmap = FirmBitmaps[bitmapId - 1];
 
-			firmBuild.loc_width = firstBitmap.loc_width;
-			firmBuild.loc_height = firstBitmap.loc_height;
+			firmBuild.LocWidth = firstBitmap.LocWidth;
+			firmBuild.LocHeight = firstBitmap.LocHeight;
 
-			firmBuild.min_offset_x = minOffsetX;
-			firmBuild.min_offset_y = minOffsetY;
+			firmBuild.MinOffsetX = minOffsetX;
+			firmBuild.MinOffsetY = minOffsetY;
 
-			firmBuild.max_bitmap_width = maxX2 - minOffsetX;
-			firmBuild.max_bitmap_height = maxY2 - minOffsetY;
+			firmBuild.MaxBitmapWidth = maxX2 - minOffsetX;
+			firmBuild.MaxBitmapHeight = maxY2 - minOffsetY;
 
-			if (firmBuild.under_construction_bitmap_recno == 0)
-				firmBuild.under_construction_bitmap_recno = bitmapId;
+			if (firmBuild.UnderConstructionBitmapId == 0)
+				firmBuild.UnderConstructionBitmapId = bitmapId;
 
-			if (firmBuild.idle_bitmap_recno == 0)
-				firmBuild.idle_bitmap_recno = bitmapId;
+			if (firmBuild.IdleBitmapId == 0)
+				firmBuild.IdleBitmapId = bitmapId;
 		}
 	}
 
@@ -139,18 +139,18 @@ public class FirmDieRes
 			FirmBitmap firmDieBitmap = new FirmBitmap();
 			FirmBitmaps[i] = firmDieBitmap;
 
-			firmDieBitmap.offset_x = Misc.ToInt32(firmBitmapRec.offset_x);
-			firmDieBitmap.offset_y = Misc.ToInt32(firmBitmapRec.offset_y);
+			firmDieBitmap.OffsetX = Misc.ToInt32(firmBitmapRec.offset_x);
+			firmDieBitmap.OffsetY = Misc.ToInt32(firmBitmapRec.offset_y);
 
-			firmDieBitmap.loc_width = Misc.ToInt32(firmBitmapRec.loc_width);
-			firmDieBitmap.loc_height = Misc.ToInt32(firmBitmapRec.loc_height);
-			firmDieBitmap.display_layer = firmBitmapRec.layer - '0';
+			firmDieBitmap.LocWidth = Misc.ToInt32(firmBitmapRec.loc_width);
+			firmDieBitmap.LocHeight = Misc.ToInt32(firmBitmapRec.loc_height);
+			firmDieBitmap.DisplayLayer = firmBitmapRec.layer - '0';
 
 			int bitmapOffset = BitConverter.ToInt32(firmBitmapRec.bitmap_ptr, 0);
-			firmDieBitmap.bitmap = firmDieBitmaps.Read(bitmapOffset);
-			firmDieBitmap.bitmapWidth = BitConverter.ToInt16(firmDieBitmap.bitmap, 0);
-			firmDieBitmap.bitmapHeight = BitConverter.ToInt16(firmDieBitmap.bitmap, 2);
-			firmDieBitmap.bitmap = firmDieBitmap.bitmap.Skip(4).ToArray();
+			firmDieBitmap.Bitmap = firmDieBitmaps.Read(bitmapOffset);
+			firmDieBitmap.BitmapWidth = BitConverter.ToInt16(firmDieBitmap.Bitmap, 0);
+			firmDieBitmap.BitmapHeight = BitConverter.ToInt16(firmDieBitmap.Bitmap, 2);
+			firmDieBitmap.Bitmap = firmDieBitmap.Bitmap.Skip(4).ToArray();
 		}
 	}
 }

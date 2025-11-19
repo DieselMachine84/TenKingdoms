@@ -199,7 +199,7 @@ public class FirmMonster : Firm
 		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
 
 		// can assign if the build code are the same
-		return FirmRes.get_build(FirmBuildId).build_code == MonsterRes[unit.MonsterId].firm_build_code;
+		return FirmRes.GetBuild(FirmBuildId).BuildCode == MonsterRes[unit.MonsterId].firm_build_code;
 	}
 
 	public void set_king(int monsterId, int combatLevel)
@@ -699,7 +699,7 @@ public class FirmMonster : Firm
 		int scanLimit = scanLocWidth * scanLocHeight;
 		int targetNation = 0;
 
-		for (int i = firmInfo.loc_width * firmInfo.loc_height + 1; i <= scanLimit; i++)
+		for (int i = firmInfo.LocWidth * firmInfo.LocHeight + 1; i <= scanLimit; i++)
 		{
 			Misc.cal_move_around_a_point(i, scanLocWidth, scanLocHeight, out xOffset, out yOffset);
 
@@ -926,8 +926,8 @@ public class FirmMonster : Firm
 		int yLoc2 = Math.Min(GameConstants.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
 
 		if (!World.LocateSpaceRandom(ref xLoc1, ref yLoc1, xLoc2, yLoc2,
-			    firmInfo.loc_width + GameConstants.FREE_SPACE_DISTANCE * 2,
-			    firmInfo.loc_height + GameConstants.FREE_SPACE_DISTANCE * 2, // leave at least 3 location space around the building
+			    firmInfo.LocWidth + GameConstants.FREE_SPACE_DISTANCE * 2,
+			    firmInfo.LocHeight + GameConstants.FREE_SPACE_DISTANCE * 2, // leave at least 3 location space around the building
 			    (xLoc2 - xLoc1 + 1) * (yLoc2 - yLoc1 + 1), 0, true, teraMask))
 		{
 			return 0;

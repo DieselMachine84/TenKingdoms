@@ -313,17 +313,17 @@ public class World
 			return 0;
 
 		FirmInfo firmInfo = FirmRes[firmType];
-		int locX2 = locX1 + firmInfo.loc_width - 1;
-		int locY2 = locY1 + firmInfo.loc_height - 1;
+		int locX2 = locX1 + firmInfo.LocWidth - 1;
+		int locY2 = locY1 + firmInfo.LocHeight - 1;
 		if (!Misc.IsLocationValid(locX2, locY2))
 			return 0;
 
-		switch (firmInfo.tera_type)
+		switch (firmInfo.TeraType)
 		{
 			case Location.LOCATE_WALK_LAND: // default : land firm
 			case Location.LOCATE_WALK_SEA: // sea firm
 			case Location.LOCATE_WALK_LAND | Location.LOCATE_WALK_SEA: // land or sea firm
-				int teraMask = firmInfo.tera_type;
+				int teraMask = firmInfo.TeraType;
 				for (int locY = locY1; locY <= locY2; locY++)
 				{
 					for (int locX = locX1; locX <= locX2; locX++)
@@ -345,7 +345,7 @@ public class World
 				// center square of one side is land (teraMask == 1),
 				// two squares on that side can be land or sea (teraMask == 3)
 				// and other (6 squares) are sea (teraMask == 2)
-				if (firmInfo.loc_width != 3 || firmInfo.loc_height != 3)
+				if (firmInfo.LocWidth != 3 || firmInfo.LocHeight != 3)
 					return 0;
 
 				int[,] northPierTera = { { 2, 2, 2 }, { 2, 2, 2 }, { 3, 1, 3 } };
@@ -1292,7 +1292,7 @@ public class World
 						if (targetUnit.HitPoints <= 0.0)
 							targetUnit.HitPoints = 0.0;
 					}
-					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].FirmType].buildable)
+					else if (location.IsFirm() && FirmRes[FirmArray[location.FirmId()].FirmType].Buildable)
 					{
 						Firm targetFirm = FirmArray[location.FirmId()];
 						targetFirm.HitPoints -= flameDamage;
@@ -1439,7 +1439,7 @@ public class World
 
 		foreach (Firm firm in FirmArray)
 		{
-			if (!FirmRes[firm.FirmType].buildable)
+			if (!FirmRes[firm.FirmType].Buildable)
 				continue;
 
 			int locX = firm.LocCenterX;
@@ -1546,7 +1546,7 @@ public class World
 		List<Firm> firmsToDelete = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (!FirmRes[firm.FirmType].buildable)
+			if (!FirmRes[firm.FirmType].Buildable)
 				continue;
 
 			if (firm.LocX1 <= locX + radius && firm.LocX2 >= locX - radius && firm.LocY1 <= locY + radius && firm.LocY2 >= locY - radius)

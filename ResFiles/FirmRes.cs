@@ -6,14 +6,14 @@ namespace TenKingdoms;
 
 public class FirmRec
 {
-    public const int CODE_LEN = 8;
-    public const int NAME_LEN = 20;
-    public const int SHORT_NAME_LEN = 12;
-    public const int TITLE_LEN = 10;
-    public const int FIRST_BUILD_LEN = 3;
-    public const int BUILD_COUNT_LEN = 3;
-    public const int HIT_POINTS_LEN = 5;
-    public const int COST_LEN = 5;
+    private const int CODE_LEN = 8;
+    private const int NAME_LEN = 20;
+    private const int SHORT_NAME_LEN = 12;
+    private const int TITLE_LEN = 10;
+    private const int FIRST_BUILD_LEN = 3;
+    private const int BUILD_COUNT_LEN = 3;
+    private const int HIT_POINTS_LEN = 5;
+    private const int COST_LEN = 5;
 
     public char[] code = new char[CODE_LEN];
     public char[] name = new char[NAME_LEN];
@@ -83,12 +83,12 @@ public class FirmRec
 
 public class FirmBuildRec
 {
-    public const int FIRM_CODE_LEN = 8;
-    public const int RACE_CODE_LEN = 8;
-    public const int BITMAP_RECNO_LEN = 5;
-    public const int FIRST_FRAME_LEN = 5;
-    public const int FRAME_COUNT_LEN = 2;
-    public const int RACE_ID_LEN = 3;
+    private const int FIRM_CODE_LEN = 8;
+    private const int RACE_CODE_LEN = 8;
+    private const int BITMAP_RECNO_LEN = 5;
+    private const int FIRST_FRAME_LEN = 5;
+    private const int FRAME_COUNT_LEN = 2;
+    private const int RACE_ID_LEN = 3;
 
     public char[] firm_code = new char[FIRM_CODE_LEN];
     public char[] race_code = new char[RACE_CODE_LEN];
@@ -143,12 +143,12 @@ public class FirmBuildRec
 
 public class FirmFrameRec
 {
-    public const int FIRM_CODE_LEN = 8;
-    public const int RACE_CODE_LEN = 8;
-    public const int FRAME_ID_LEN = 2;
-    public const int DELAY_LEN = 2;
-    public const int FIRST_BITMAP_LEN = 5;
-    public const int BITMAP_COUNT_LEN = 2;
+    private const int FIRM_CODE_LEN = 8;
+    private const int RACE_CODE_LEN = 8;
+    private const int FRAME_ID_LEN = 2;
+    private const int DELAY_LEN = 2;
+    private const int FIRST_BITMAP_LEN = 5;
+    private const int BITMAP_COUNT_LEN = 2;
 
     public char[] firm_code = new char[FIRM_CODE_LEN];
     public char[] race_code = new char[RACE_CODE_LEN];
@@ -185,14 +185,14 @@ public class FirmFrameRec
 
 public class FirmBitmapRec
 {
-    public const int FIRM_CODE_LEN = 8;
-    public const int RACE_CODE_LEN = 8;
-    public const int FRAME_ID_LEN = 2;
-    public const int LOC_LEN = 3;
-    public const int OFFSET_LEN = 3;
-    public const int DELAY_LEN = 2;
-    public const int FILE_NAME_LEN = 8;
-    public const int BITMAP_PTR_LEN = 4;
+    private const int FIRM_CODE_LEN = 8;
+    private const int RACE_CODE_LEN = 8;
+    private const int FRAME_ID_LEN = 2;
+    private const int LOC_LEN = 3;
+    private const int OFFSET_LEN = 3;
+    private const int DELAY_LEN = 2;
+    private const int FILE_NAME_LEN = 8;
+    private const int BITMAP_PTR_LEN = 4;
 
     public char[] firm_code = new char[FIRM_CODE_LEN];
     public char[] race_code = new char[RACE_CODE_LEN];
@@ -255,89 +255,84 @@ public class FirmBitmapRec
 
 public class FirmInfo
 {
-    public int firm_id;
-    public string name;
-    public string short_name;
+    public int FirmType { get; set; }
+    public string Name { get; set; }
+    public string ShortName { get; set; }
 
-    public string overseer_title;
-    public string worker_title;
+    public string OverseerTitle { get; set; }
+    public string WorkerTitle { get; set; }
 
-    public int tera_type;
+    public int TeraType { get; set; }
 
     // whether this building can be built by the player or it exists in the game since the beginning of the game. If setup_cost==0, this firm is not buildable
-    public bool buildable;
-    public bool live_in_town; // whether the workers of the firm lives in towns or not.
-    public int max_hit_points;
+    public bool Buildable { get; set; }
+    public bool LiveInTown { get; set; } // whether the workers of the firm lives in towns or not.
+    public int MaxHitPoints { get; set; }
 
-    public bool need_overseer;
-    public bool need_worker;
+    public bool NeedOverseer { get; set; }
+    public bool NeedWorker { get; set; }
 
-    public bool need_unit()
-    {
-        return need_overseer || need_worker;
-    }
+    public int SetupCost { get; set; }
+    public int YearCost { get; set; }
 
-    public int setup_cost;
-    public int year_cost;
+    public int FirstBuildId { get; set; }
+    public int BuildCount { get; set; }
 
-    public int first_build_id;
-    public int build_count;
+    public int LocWidth { get; set; }
+    public int LocHeight { get; set; }
 
-    public int loc_width;
-    public int loc_height;
+    public int FirmSkillId { get; set; } // the id. of the skill that fits this firm
+    public int FirmRaceId { get; set; } // only can be built and operated by this race
+    public bool IsLinkableToTown { get; set; }
 
-    public int firm_skill_id; // the id. of the skill that fits this firm
-    public int firm_race_id; // only can be built and operated by this race
-    
     public byte[] FlagBitmap { get; set; }
     public int FlagBitmapWidth { get; set; }
     public int FlagBitmapHeight { get; set; }
-    private Dictionary<int, IntPtr> _flagTextures = new Dictionary<int, nint>();
+    private readonly Dictionary<int, IntPtr> _flagTextures = new Dictionary<int, nint>();
     
-    public FirmRes FirmRes { get; }
+    private FirmRes FirmRes { get; }
 
     private NationArray NationArray => Sys.Instance.NationArray;
-    private UnitArray UnitArray => Sys.Instance.UnitArray;
 
     public FirmInfo(FirmRes firmRes)
     {
         FirmRes = firmRes;
     }
 
-    public bool is_linkable_to_town;
-
-    public bool is_linkable_to_firm(int linkFirmId)
+    public bool NeedUnit()
     {
-        switch (firm_id)
+        return NeedOverseer || NeedWorker;
+    }
+    
+    public bool IsLinkableToFirm(int linkFirmId)
+    {
+        switch (FirmType)
         {
             case Firm.FIRM_FACTORY:
                 return linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_HARBOR;
 
             case Firm.FIRM_MINE:
-                return linkFirmId == Firm.FIRM_FACTORY || linkFirmId == Firm.FIRM_MARKET ||
-                       linkFirmId == Firm.FIRM_HARBOR;
+                return linkFirmId == Firm.FIRM_FACTORY || linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_HARBOR;
 
             case Firm.FIRM_MARKET:
-                return linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_FACTORY ||
-                       linkFirmId == Firm.FIRM_HARBOR;
+                return linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_FACTORY || linkFirmId == Firm.FIRM_HARBOR;
 
             case Firm.FIRM_INN: // for an inn to scan for neighbor inns quickly, the link line is not displayed
                 return linkFirmId == Firm.FIRM_INN;
 
             case Firm.FIRM_HARBOR:
-                return linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_MINE ||
-                       linkFirmId == Firm.FIRM_FACTORY;
+                return linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_FACTORY;
 
             default:
                 return false;
         }
     }
 
-    public int default_link_status(int linkFirmId)
+    public int DefaultLinkStatus(int linkFirmId)
     {
         bool enabled = false;
 
-        switch (firm_id)
+        switch (FirmType)
         {
             case Firm.FIRM_MINE:
                 enabled = (linkFirmId != Firm.FIRM_MARKET);
@@ -352,8 +347,7 @@ public class FirmInfo
                 break;
 
             case Firm.FIRM_HARBOR:
-                enabled = (linkFirmId == Firm.FIRM_MARKET) || (linkFirmId == Firm.FIRM_MINE) ||
-                          (linkFirmId == Firm.FIRM_FACTORY);
+                enabled = (linkFirmId == Firm.FIRM_MARKET) || (linkFirmId == Firm.FIRM_MINE) || (linkFirmId == Firm.FIRM_FACTORY);
                 break;
 
             default:
@@ -364,11 +358,43 @@ public class FirmInfo
         return enabled ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
     }
 
+    public int GetBuildId(string buildCode)
+    {
+        if (BuildCount == 1) // if this firm has only one building type
+            return FirstBuildId;
+
+        int firmBuildId = FirstBuildId;
+
+        for (int i = 0; i < BuildCount; i++, firmBuildId++) // if this firm has one graphics for each race
+        {
+            if (buildCode == FirmRes.GetBuild(firmBuildId).BuildCode)
+                return firmBuildId;
+        }
+
+        return 0;
+    }
+    
+    public IntPtr GetFlagTexture(Graphics graphics, int nationColor)
+    {
+        int colorScheme = ColorRemap.ColorSchemes[nationColor];
+        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
+        if (!_flagTextures.ContainsKey(textureKey))
+        {
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(FlagBitmap, FlagBitmapWidth, FlagBitmapHeight,
+                ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, FlagBitmapWidth, FlagBitmapHeight);
+            _flagTextures.Add(textureKey, texture);
+        }
+
+        return _flagTextures[textureKey];
+    }
+
+    //TODO remove
     //---------- game vars -----------//
 
-    public int total_firm_count; // total no. of this firm type on the map
-    public int[] nation_firm_count_array = new int[GameConstants.MAX_NATION];
-    public int[] nation_tech_level_array = new int[GameConstants.MAX_NATION];
+    public int total_firm_count { get; set; } // total no. of this firm type on the map
+    public int[] nation_firm_count_array { get; } = new int[GameConstants.MAX_NATION];
+    public int[] nation_tech_level_array { get; } = new int[GameConstants.MAX_NATION];
 
     public int get_nation_tech_level(int nationRecno)
     {
@@ -378,22 +404,6 @@ public class FirmInfo
     public void set_nation_tech_level(int nationRecno, int techLevel)
     {
         nation_tech_level_array[nationRecno - 1] = techLevel;
-    }
-
-    public int get_build_id(string buildCode)
-    {
-        if (build_count == 1) // if this firm has only one building type
-            return first_build_id;
-
-        int firmBuildId = first_build_id;
-
-        for (int i = 0; i < build_count; i++, firmBuildId++) // if this firm has one graphics for each race
-        {
-            if (buildCode == FirmRes.get_build(firmBuildId).build_code)
-                return firmBuildId;
-        }
-
-        return 0;
     }
 
     public void inc_nation_firm_count(int nationRecno)
@@ -410,84 +420,66 @@ public class FirmInfo
         if (nation_firm_count_array[nationRecno - 1] < 0) // run-time bug fixing
             nation_firm_count_array[nationRecno - 1] = 0;
     }
-
-    public IntPtr GetFlagTexture(Graphics graphics, int nationColor)
-    {
-        int colorScheme = ColorRemap.ColorSchemes[nationColor];
-        int textureKey = ColorRemap.GetTextureKey(colorScheme, false);
-        if (!_flagTextures.ContainsKey(textureKey))
-        {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(FlagBitmap, FlagBitmapWidth, FlagBitmapHeight,
-                ColorRemap.GetColorRemap(colorScheme, false).ColorTable);
-            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, FlagBitmapWidth, FlagBitmapHeight);
-            _flagTextures.Add(textureKey, texture);
-        }
-
-        return _flagTextures[textureKey];
-    }
 }
 
 public class FirmBuild
 {
-    public const int MAX_FIRM_FRAME = 11;
+    private const int MAX_FIRM_FRAME = 11;
 
     // building code, either a race code or a custom code for each firm's own use, it is actually read from FirmBuildRec::race_code[]
-    public string build_code;
-    public int race_id;
-    public bool animate_full_size;
+    public string BuildCode { get; set; }
+    public int RaceId { get; set; }
+    public bool AnimateFullSize { get; set; }
 
-    //----- info of the first frame -----//
+    public int LocWidth { get; set; } // no. of locations it takes horizontally and vertically
+    public int LocHeight { get; set; }
 
-    public int loc_width; // no. of locations it takes horizontally and vertically
-    public int loc_height;
+    public int MinOffsetX { get; set; }
+    public int MinOffsetY { get; set; }
+    public int MaxBitmapWidth { get; set; }
+    public int MaxBitmapHeight { get; set; }
 
-    public int min_offset_x, min_offset_y;
-    public int max_bitmap_width, max_bitmap_height;
+    public int FrameCount { get; set; }
 
-    //----------- frame info ------------//
+    public int UnderConstructionBitmapId { get; set; }
 
-    public int frame_count;
+    public int UnderConstructionBitmapCount { get; set; }
 
-    public int[] first_bitmap_array = new int[MAX_FIRM_FRAME];
-    public int[] bitmap_count_array = new int[MAX_FIRM_FRAME];
-    public int[] frame_delay_array = new int[MAX_FIRM_FRAME]; // unit: 1/10 second
+    public int GroundBitmapId { get; set; }
+    public int IdleBitmapId { get; set; }
+    
+    public int[] FirstBitmaps { get; } = new int[MAX_FIRM_FRAME];
+    public int[] BitmapCounts { get; } = new int[MAX_FIRM_FRAME];
+    public int[] FrameDelays { get; } = new int[MAX_FIRM_FRAME]; // unit: 1/10 second
 
-    public int under_construction_bitmap_recno; // bitmap recno of the firm that is under construction
 
-    // ##### begin Gilbert 18/10 ########//
-    public int under_construction_bitmap_count;
-
-    // ##### end Gilbert 18/10 ########//
-    public int idle_bitmap_recno; // bitmap recno of the firm that is idle
-    public int ground_bitmap_recno;
-
-    public int first_bitmap(int frameId)
+    public int FirstBitmap(int frameId)
     {
-        return first_bitmap_array[frameId - 1];
+        return FirstBitmaps[frameId - 1];
     }
 
-    public int bitmap_count(int frameId)
+    public int BitmapCount(int frameId)
     {
-        return bitmap_count_array[frameId - 1];
+        return BitmapCounts[frameId - 1];
     }
 
-    public int frame_delay(int frameId)
+    public int FrameDelay(int frameId)
     {
-        return frame_delay_array[frameId - 1];
+        return FrameDelays[frameId - 1];
     }
 }
 
 public class FirmBitmap
 {
-    public int loc_width; // no. of locations it takes horizontally and vertically
-    public int loc_height;
-    public int offset_x;
-    public int offset_y;
-    public int display_layer;
+    public int LocWidth { get; set; }
+    public int LocHeight { get; set; }
+    public int OffsetX { get; set; }
+    public int OffsetY { get; set; }
+    public int DisplayLayer { get; set; }
 
-    public byte[] bitmap;
-    public int bitmapWidth;
-    public int bitmapHeight;
+    public byte[] Bitmap { get; set; }
+    public int BitmapWidth { get; set; }
+    public int BitmapHeight { get; set; }
     private readonly Dictionary<int, IntPtr> _textures = new Dictionary<int, nint>();
 
     public IntPtr GetTexture(Graphics graphics, int nationColor, bool isSelected)
@@ -496,9 +488,9 @@ public class FirmBitmap
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
         if (!_textures.ContainsKey(textureKey))
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, bitmapWidth, bitmapHeight,
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(Bitmap, BitmapWidth, BitmapHeight,
                 ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
-            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, BitmapWidth, BitmapHeight);
             _textures.Add(textureKey, texture);
         }
         
@@ -508,93 +500,82 @@ public class FirmBitmap
 
 public class FirmRes
 {
-    public const string FIRM_DB = "FIRM";
-    public const string FIRM_BUILD_DB = "FBUILD";
-    public const string FIRM_FRAME_DB = "FFRAME";
-    public const string FIRM_BITMAP_DB = "FBITMAP";
+    private const string FIRM_DB = "FIRM";
+    private const string FIRM_BUILD_DB = "FBUILD";
+    private const string FIRM_FRAME_DB = "FFRAME";
+    private const string FIRM_BITMAP_DB = "FBITMAP";
 
-    public FirmInfo[] firm_info_array;
-    public FirmBuild[] firm_build_array;
-    public FirmBitmap[] firm_bitmap_array;
+    private FirmInfo[] FirmInfos { get; set; }
+    private FirmBuild[] FirmBuilds { get; set; }
+    private FirmBitmap[] FirmBitmaps { get; set; }
 
-    public ResourceDb res_bitmap;
-    
-    public GameSet GameSet { get; }
+    private GameSet GameSet { get; }
 
     public FirmRes(GameSet gameSet)
     {
         GameSet = gameSet;
         
-        res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_FIRM.RES");
-
         // call LoadFirmBitmap() first as LoadFirmInfo() will need info loaded by LoadFirmBitmap()
         LoadFirmBitmap();
         LoadFirmBuild();
         LoadFirmInfo();
 
-        //------------ set firm skill ------------//
-
-        this[Firm.FIRM_BASE].firm_skill_id = Skill.SKILL_LEADING;
-        this[Firm.FIRM_CAMP].firm_skill_id = Skill.SKILL_LEADING;
-        this[Firm.FIRM_MINE].firm_skill_id = Skill.SKILL_MINING;
-        this[Firm.FIRM_FACTORY].firm_skill_id = Skill.SKILL_MFT;
-        this[Firm.FIRM_RESEARCH].firm_skill_id = Skill.SKILL_RESEARCH;
-        this[Firm.FIRM_WAR_FACTORY].firm_skill_id = Skill.SKILL_MFT;
+        this[Firm.FIRM_BASE].FirmSkillId = Skill.SKILL_LEADING;
+        this[Firm.FIRM_CAMP].FirmSkillId = Skill.SKILL_LEADING;
+        this[Firm.FIRM_MINE].FirmSkillId = Skill.SKILL_MINING;
+        this[Firm.FIRM_FACTORY].FirmSkillId = Skill.SKILL_MFT;
+        this[Firm.FIRM_RESEARCH].FirmSkillId = Skill.SKILL_RESEARCH;
+        this[Firm.FIRM_WAR_FACTORY].FirmSkillId = Skill.SKILL_MFT;
     }
 
-    public FirmBitmap get_bitmap(int bitmapId)
+    public FirmBitmap GetBitmap(int bitmapId)
     {
-        return firm_bitmap_array[bitmapId - 1];
+        return FirmBitmaps[bitmapId - 1];
     }
 
-    public FirmBuild get_build(int buildId)
+    public FirmBuild GetBuild(int buildId)
     {
-        return firm_build_array[buildId - 1];
+        return FirmBuilds[buildId - 1];
     }
 
-    public FirmInfo this[int firmId] => firm_info_array[firmId - 1];
+    public FirmInfo this[int firmId] => FirmInfos[firmId - 1];
 
     private void LoadFirmInfo()
     {
         ResourceIdx flagResources = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
-        //---- read in firm count and initialize firm info array ----//
 
-        // only one database can be opened at a time, so we read FIRM.DBF first
         Database dbFirm = GameSet.OpenDb(FIRM_DB);
+        FirmInfos = new FirmInfo[dbFirm.RecordCount];
 
-        firm_info_array = new FirmInfo[dbFirm.RecordCount];
-
-        //---------- read in FIRM.DBF ---------//
-
-        for (int i = 0; i < firm_info_array.Length; i++)
+        for (int i = 0; i < FirmInfos.Length; i++)
         {
             FirmRec firmRec = new FirmRec(dbFirm, i + 1);
             FirmInfo firmInfo = new FirmInfo(this);
-            firm_info_array[i] = firmInfo;
+            FirmInfos[i] = firmInfo;
 
-            firmInfo.name = Misc.ToString(firmRec.name);
-            firmInfo.short_name = Misc.ToString(firmRec.short_name);
-            firmInfo.overseer_title = Misc.ToString(firmRec.overseer_title);
-            firmInfo.worker_title = Misc.ToString(firmRec.worker_title);
+            firmInfo.Name = Misc.ToString(firmRec.name);
+            firmInfo.ShortName = Misc.ToString(firmRec.short_name);
+            firmInfo.OverseerTitle = Misc.ToString(firmRec.overseer_title);
+            firmInfo.WorkerTitle = Misc.ToString(firmRec.worker_title);
 
-            firmInfo.firm_id = i + 1;
-            firmInfo.tera_type = firmRec.tera_type - '0';
-            firmInfo.live_in_town = (firmRec.live_in_town == '1');
+            firmInfo.FirmType = i + 1;
+            firmInfo.TeraType = firmRec.tera_type - '0';
+            firmInfo.LiveInTown = (firmRec.live_in_town == '1');
 
-            firmInfo.max_hit_points = Misc.ToInt32(firmRec.hit_points);
+            firmInfo.MaxHitPoints = Misc.ToInt32(firmRec.hit_points);
 
-            firmInfo.first_build_id = Misc.ToInt32(firmRec.first_build);
-            firmInfo.build_count = Misc.ToInt32(firmRec.build_count);
+            firmInfo.FirstBuildId = Misc.ToInt32(firmRec.first_build);
+            firmInfo.BuildCount = Misc.ToInt32(firmRec.build_count);
 
-            firmInfo.need_overseer = !String.IsNullOrEmpty(firmInfo.overseer_title);
-            firmInfo.need_worker = !String.IsNullOrEmpty(firmInfo.worker_title);
+            firmInfo.NeedOverseer = !String.IsNullOrEmpty(firmInfo.OverseerTitle);
+            firmInfo.NeedWorker = !String.IsNullOrEmpty(firmInfo.WorkerTitle);
 
-            firmInfo.is_linkable_to_town = (firmRec.is_linkable_to_town == '1');
+            firmInfo.IsLinkableToTown = (firmRec.is_linkable_to_town == '1');
 
-            firmInfo.setup_cost = Misc.ToInt32(firmRec.setup_cost);
-            firmInfo.year_cost = Misc.ToInt32(firmRec.year_cost);
+            firmInfo.SetupCost = Misc.ToInt32(firmRec.setup_cost);
+            firmInfo.YearCost = Misc.ToInt32(firmRec.year_cost);
 
-            firmInfo.buildable = (firmInfo.setup_cost > 0);
+            firmInfo.Buildable = (firmInfo.SetupCost > 0);
 
             if (firmRec.all_know == '1')
             {
@@ -604,18 +585,14 @@ public class FirmRes
                 }
             }
 
-            //------- set loc_width & loc_height in FirmInfo --------//
+            FirmBuild firmBuild = FirmBuilds[firmInfo.FirstBuildId - 1];
 
-            FirmBuild firmBuild = firm_build_array[firmInfo.first_build_id - 1];
-
-            firmInfo.loc_width = firmBuild.loc_width;
-            firmInfo.loc_height = firmBuild.loc_height;
-
-            //------------- set firm_race_id --------------//
+            firmInfo.LocWidth = firmBuild.LocWidth;
+            firmInfo.LocHeight = firmBuild.LocHeight;
 
             // if only one building style for this firm, take the race id. of the building as the race of the firm
-            if (firmInfo.build_count == 1)
-                firmInfo.firm_race_id = firmBuild.race_id;
+            if (firmInfo.BuildCount == 1)
+                firmInfo.FirmRaceId = firmBuild.RaceId;
             
             byte[] flagData = flagResources.Read("FLAG-S0");
             firmInfo.FlagBitmapWidth = BitConverter.ToInt16(flagData, 0);
@@ -626,62 +603,51 @@ public class FirmRes
 
     private void LoadFirmBuild()
     {
-        //---- read in firm count and initialize firm info array ----//
-
-        // only one database can be opened at a time, so we read FIRM.DBF first
         Database dbFirmBuild = GameSet.OpenDb(FIRM_BUILD_DB);
+        FirmBuilds = new FirmBuild[dbFirmBuild.RecordCount];
+        int[] firstFrameIds = new int[dbFirmBuild.RecordCount];
 
-        firm_build_array = new FirmBuild[dbFirmBuild.RecordCount];
-        int[] firstFrameArray = new int[dbFirmBuild.RecordCount];
-
-        //------ allocate an array for storing firstFrameRecno -----//
-
-        //---------- read in FBUILD.DBF ---------//
-
-        for (int i = 0; i < firm_build_array.Length; i++)
+        for (int i = 0; i < FirmBuilds.Length; i++)
         {
             FirmBuildRec firmBuildRec = new FirmBuildRec(dbFirmBuild, i + 1);
             FirmBuild firmBuild = new FirmBuild();
-            firm_build_array[i] = firmBuild;
+            FirmBuilds[i] = firmBuild;
 
-            firmBuild.build_code = Misc.ToString(firmBuildRec.race_code);
+            firmBuild.BuildCode = Misc.ToString(firmBuildRec.race_code);
 
-            firmBuild.animate_full_size = (firmBuildRec.animate_full_size == '1');
+            firmBuild.AnimateFullSize = (firmBuildRec.animate_full_size == '1');
 
-            firmBuild.race_id = Misc.ToInt32(firmBuildRec.race_id);
-            firmBuild.frame_count = Misc.ToInt32(firmBuildRec.frame_count);
+            firmBuild.RaceId = Misc.ToInt32(firmBuildRec.race_id);
+            firmBuild.FrameCount = Misc.ToInt32(firmBuildRec.frame_count);
 
-            firmBuild.under_construction_bitmap_recno = Misc.ToInt32(firmBuildRec.under_construction_bitmap_recno);
-            firmBuild.under_construction_bitmap_count = Misc.ToInt32(firmBuildRec.under_construction_bitmap_count);
-            firmBuild.idle_bitmap_recno = Misc.ToInt32(firmBuildRec.idle_bitmap_recno);
-            firmBuild.ground_bitmap_recno = Misc.ToInt32(firmBuildRec.ground_bitmap_recno);
+            firmBuild.UnderConstructionBitmapId = Misc.ToInt32(firmBuildRec.under_construction_bitmap_recno);
+            firmBuild.UnderConstructionBitmapCount = Misc.ToInt32(firmBuildRec.under_construction_bitmap_count);
+            firmBuild.IdleBitmapId = Misc.ToInt32(firmBuildRec.idle_bitmap_recno);
+            firmBuild.GroundBitmapId = Misc.ToInt32(firmBuildRec.ground_bitmap_recno);
 
-            firstFrameArray[i] = Misc.ToInt32(firmBuildRec.first_frame);
+            firstFrameIds[i] = Misc.ToInt32(firmBuildRec.first_frame);
         }
 
-        //-------- read in FFRAME.DBF --------//
-
         Database dbFirmFrame = GameSet.OpenDb(FIRM_FRAME_DB);
-        int minOffsetX, minOffsetY;
-        int maxX2, maxY2;
-
-        for (int i = 0; i < firm_build_array.Length; i++)
+        for (int i = 0; i < FirmBuilds.Length; i++)
         {
-            FirmBuild firmBuild = firm_build_array[i];
-            int frameRecno = firstFrameArray[i];
+            FirmBuild firmBuild = FirmBuilds[i];
+            int firstFrameId = firstFrameIds[i];
 
-            minOffsetX = minOffsetY = 0xFFFF;
-            maxX2 = maxY2 = 0;
+            int minOffsetX = Int32.MaxValue / 2;
+            int minOffsetY = Int32.MaxValue / 2;
+            int maxX2 = 0;
+            int maxY2 = 0;
 
-            for (int j = 0; j < firmBuild.frame_count; j++, frameRecno++)
+            for (int j = 0; j < firmBuild.FrameCount; j++, firstFrameId++)
             {
-                FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame, frameRecno);
+                FirmFrameRec firmFrameRec = new FirmFrameRec(dbFirmFrame, firstFrameId);
 
                 //------ following animation frames, bitmap sections -----//
 
-                firmBuild.first_bitmap_array[j] = Misc.ToInt32(firmFrameRec.first_bitmap);
-                firmBuild.bitmap_count_array[j] = Misc.ToInt32(firmFrameRec.bitmap_count);
-                firmBuild.frame_delay_array[j] = Misc.ToInt32(firmFrameRec.delay);
+                firmBuild.FirstBitmaps[j] = Misc.ToInt32(firmFrameRec.first_bitmap);
+                firmBuild.BitmapCounts[j] = Misc.ToInt32(firmFrameRec.bitmap_count);
+                firmBuild.FrameDelays[j] = Misc.ToInt32(firmFrameRec.delay);
 
                 //---- get the MIN offset_x, offset_y and MAX width, height ----//
                 //
@@ -691,77 +657,72 @@ public class FirmRes
                 //
                 //--------------------------------------------------------------//
 
-                for (int k = firmBuild.bitmap_count_array[j]; k > 0; k--)
+                int firmBitmapIndex = 0;
+                for (int k = firmBuild.BitmapCounts[j]; k > 0; k--, firmBitmapIndex++)
                 {
-                    FirmBitmap firmBitmap = firm_bitmap_array[k - 1];
-                    if (firmBitmap.offset_x < minOffsetX)
-                        minOffsetX = firmBitmap.offset_x;
+                    FirmBitmap firmBitmap = FirmBitmaps[firmBuild.FirstBitmaps[j] - 1 + firmBitmapIndex];
+                    if (firmBitmap.OffsetX < minOffsetX)
+                        minOffsetX = firmBitmap.OffsetX;
 
-                    if (firmBitmap.offset_y < minOffsetY)
-                        minOffsetY = firmBitmap.offset_y;
+                    if (firmBitmap.OffsetY < minOffsetY)
+                        minOffsetY = firmBitmap.OffsetY;
 
-                    if (firmBitmap.offset_x + firmBitmap.bitmapWidth > maxX2)
-                        maxX2 = firmBitmap.offset_x + firmBitmap.bitmapWidth;
+                    if (firmBitmap.OffsetX + firmBitmap.BitmapWidth > maxX2)
+                        maxX2 = firmBitmap.OffsetX + firmBitmap.BitmapWidth;
 
-                    if (firmBitmap.offset_y + firmBitmap.bitmapHeight > maxY2)
-                        maxY2 = firmBitmap.offset_y + firmBitmap.bitmapHeight;
+                    if (firmBitmap.OffsetY + firmBitmap.BitmapHeight > maxY2)
+                        maxY2 = firmBitmap.OffsetY + firmBitmap.BitmapHeight;
                 }
             }
 
-            //------- set FirmBuild Info -------//
+            int bitmapId = firmBuild.FirstBitmaps[0];
 
-            int bitmapRecno = firmBuild.first_bitmap_array[0];
+            FirmBitmap firstBitmap = FirmBitmaps[bitmapId - 1];
 
-            //----- get the info of the first frame bitmap ----//
+            firmBuild.LocWidth = firstBitmap.LocWidth;
+            firmBuild.LocHeight = firstBitmap.LocHeight;
 
-            FirmBitmap firstBitmap = firm_bitmap_array[bitmapRecno - 1];
+            firmBuild.MinOffsetX = minOffsetX;
+            firmBuild.MinOffsetY = minOffsetY;
 
-            firmBuild.loc_width = firstBitmap.loc_width;
-            firmBuild.loc_height = firstBitmap.loc_height;
+            firmBuild.MaxBitmapWidth = maxX2 - minOffsetX;
+            firmBuild.MaxBitmapHeight = maxY2 - minOffsetY;
 
-            firmBuild.min_offset_x = minOffsetX;
-            firmBuild.min_offset_y = minOffsetY;
-
-            firmBuild.max_bitmap_width = maxX2 - minOffsetX;
-            firmBuild.max_bitmap_height = maxY2 - minOffsetY;
-
-            //------ set firmBuild's under construction and idle bitmap recno -----//
-
-            if (firmBuild.under_construction_bitmap_recno == 0)
+            if (firmBuild.UnderConstructionBitmapId == 0)
             {
-                firmBuild.under_construction_bitmap_recno = bitmapRecno;
-                firmBuild.under_construction_bitmap_count = 1;
+                firmBuild.UnderConstructionBitmapId = bitmapId;
+                firmBuild.UnderConstructionBitmapCount = 1;
             }
 
-            if (firmBuild.idle_bitmap_recno == 0)
-                firmBuild.idle_bitmap_recno = bitmapRecno;
+            if (firmBuild.IdleBitmapId == 0)
+                firmBuild.IdleBitmapId = bitmapId;
         }
     }
 
     private void LoadFirmBitmap()
     {
+        ResourceDb firmBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_FIRM.RES");
         Database dbFirmBitmap = GameSet.OpenDb(FIRM_BITMAP_DB);
+        FirmBitmaps = new FirmBitmap[dbFirmBitmap.RecordCount];
 
-        firm_bitmap_array = new FirmBitmap[dbFirmBitmap.RecordCount];
-
-        for (int i = 0; i < firm_bitmap_array.Length; i++)
+        for (int i = 0; i < FirmBitmaps.Length; i++)
         {
             FirmBitmapRec firmBitmapRec = new FirmBitmapRec(dbFirmBitmap, i + 1);
             FirmBitmap firmBitmap = new FirmBitmap();
-            firm_bitmap_array[i] = firmBitmap;
+            FirmBitmaps[i] = firmBitmap;
 
+            firmBitmap.OffsetX = Misc.ToInt32(firmBitmapRec.offset_x);
+            firmBitmap.OffsetY = Misc.ToInt32(firmBitmapRec.offset_y);
+
+            firmBitmap.LocWidth = Misc.ToInt32(firmBitmapRec.loc_width);
+            firmBitmap.LocHeight = Misc.ToInt32(firmBitmapRec.loc_height);
+            firmBitmap.DisplayLayer = firmBitmapRec.layer - '0';
+            
             int bitmapOffset = BitConverter.ToInt32(firmBitmapRec.bitmap_ptr, 0);
-            firmBitmap.bitmap = res_bitmap.Read(bitmapOffset);
-            firmBitmap.bitmapWidth = BitConverter.ToInt16(firmBitmap.bitmap, 0);
-            firmBitmap.bitmapHeight = BitConverter.ToInt16(firmBitmap.bitmap, 2);
-            firmBitmap.bitmap = firmBitmap.bitmap.Skip(4).ToArray();
-
-            firmBitmap.offset_x = Misc.ToInt32(firmBitmapRec.offset_x);
-            firmBitmap.offset_y = Misc.ToInt32(firmBitmapRec.offset_y);
-
-            firmBitmap.loc_width = Misc.ToInt32(firmBitmapRec.loc_width);
-            firmBitmap.loc_height = Misc.ToInt32(firmBitmapRec.loc_height);
-            firmBitmap.display_layer = firmBitmapRec.layer - '0';
+            firmBitmap.Bitmap = firmBitmaps.Read(bitmapOffset);
+            firmBitmap.BitmapWidth = BitConverter.ToInt16(firmBitmap.Bitmap, 0);
+            firmBitmap.BitmapHeight = BitConverter.ToInt16(firmBitmap.Bitmap, 2);
+            firmBitmap.Bitmap = firmBitmap.Bitmap.Skip(4).ToArray();
         }
     }
 }

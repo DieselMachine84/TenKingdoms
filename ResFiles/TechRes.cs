@@ -155,7 +155,7 @@ public class TechInfo
             return UnitRes[unit_id].name;
 
         else if (firm_id != 0)
-            return FirmRes[firm_id].name;
+            return FirmRes[firm_id].Name;
 
         else
             return String.Empty;
