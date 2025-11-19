@@ -605,7 +605,7 @@ public class FirmRes
     {
         Database dbFirmBuild = GameSet.OpenDb(FIRM_BUILD_DB);
         FirmBuilds = new FirmBuild[dbFirmBuild.RecordCount];
-        int[] firstFrameIds = new int[dbFirmBuild.RecordCount];
+        int[] firstFrameIds = new int[FirmBuilds.Length];
 
         for (int i = 0; i < FirmBuilds.Length; i++)
         {
@@ -614,7 +614,6 @@ public class FirmRes
             FirmBuilds[i] = firmBuild;
 
             firmBuild.BuildCode = Misc.ToString(firmBuildRec.race_code);
-
             firmBuild.AnimateFullSize = (firmBuildRec.animate_full_size == '1');
 
             firmBuild.RaceId = Misc.ToInt32(firmBuildRec.race_id);

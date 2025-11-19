@@ -51,6 +51,7 @@ public class FirmDieRes
 			firmBuild.FrameCount = Misc.ToInt32(firmBuildRec.frame_count);
 
 			firmBuild.UnderConstructionBitmapId = Misc.ToInt32(firmBuildRec.under_construction_bitmap_recno);
+			firmBuild.UnderConstructionBitmapCount = Misc.ToInt32(firmBuildRec.under_construction_bitmap_count);
 			firmBuild.IdleBitmapId = Misc.ToInt32(firmBuildRec.idle_bitmap_recno);
 			firmBuild.GroundBitmapId = Misc.ToInt32(firmBuildRec.ground_bitmap_recno);
 
@@ -120,7 +121,10 @@ public class FirmDieRes
 			firmBuild.MaxBitmapHeight = maxY2 - minOffsetY;
 
 			if (firmBuild.UnderConstructionBitmapId == 0)
+			{
 				firmBuild.UnderConstructionBitmapId = bitmapId;
+				firmBuild.UnderConstructionBitmapCount = 1;
+			}
 
 			if (firmBuild.IdleBitmapId == 0)
 				firmBuild.IdleBitmapId = bitmapId;
