@@ -9,6 +9,7 @@ public interface IRenderer
 
     void DrawTown(Town town, int layer);
     void DrawFirm(Firm firm, int layer);
+    void DrawFirmDie(FirmDie firmDie, int layer);
     void DrawSite(Site site, int layer);
     void DrawUnit(Unit unit, int layer);
     void DrawBullet(Bullet bullet);
@@ -16,6 +17,7 @@ public interface IRenderer
     void DrawPlant(PlantBitmap plantBitmap, int locX, int locY);
     void DrawHill(HillBlockInfo hillBlockInfo, int layer, int locX, int locY);
     void DrawFlame();
+    void DrawTornado(Tornado tornado);
 
 
     void DrawMineDetails(FirmMine mine);

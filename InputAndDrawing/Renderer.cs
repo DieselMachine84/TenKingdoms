@@ -78,6 +78,7 @@ public partial class Renderer : IRenderer
     private static RaceRes RaceRes => Sys.Instance.RaceRes;
     private static TownRes TownRes => Sys.Instance.TownRes;
     private static FirmRes FirmRes => Sys.Instance.FirmRes;
+    private static FirmDieRes FirmDieRes => Sys.Instance.FirmDieRes;
     private static SpriteRes SpriteRes => Sys.Instance.SpriteRes;
     private static UnitRes UnitRes => Sys.Instance.UnitRes;
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
@@ -96,11 +97,13 @@ public partial class Renderer : IRenderer
     private static NationArray NationArray => Sys.Instance.NationArray;
     private static TownArray TownArray => Sys.Instance.TownArray;
     private static FirmArray FirmArray => Sys.Instance.FirmArray;
+    private static FirmDieArray FirmDieArray => Sys.Instance.FirmDieArray;
     private static UnitArray UnitArray => Sys.Instance.UnitArray;
     private static SpyArray SpyArray => Sys.Instance.SpyArray;
     private static SiteArray SiteArray => Sys.Instance.SiteArray;
     private static BulletArray BulletArray => Sys.Instance.BulletArray;
     private static EffectArray EffectArray => Sys.Instance.EffectArray;
+    private static TornadoArray TornadoArray => Sys.Instance.TornadoArray;
 
     public Renderer(Graphics graphics)
     {

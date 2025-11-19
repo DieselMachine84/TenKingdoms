@@ -287,8 +287,11 @@ public partial class Renderer
             
             //TODO draw waypoints
         }
-        
-        //TODO Draw tornadoes
+
+        foreach (Tornado tornado in TornadoArray)
+        {
+            DrawRectOnMiniMap(tornado.CurLocX - 1, tornado.CurLocY - 1, 3, 3, Colors.TORNADO_COLOR);
+        }
 
         //TODO Draw war points
         

@@ -172,6 +172,19 @@ public partial class Renderer
             }
         }
 
+        foreach (FirmDie firmDie in FirmDieArray)
+        {
+            if (firmDie.LocX2 >= startLocX && firmDie.LocX1 <= endLocX && firmDie.LocY2 >= startLocY && firmDie.LocY1 <= endLocY)
+            {
+                DisplayableObject displayableObject = GetDisplayableObject();
+                displayableObject.ObjectType = DisplayableObjectType.FirmDie;
+                displayableObject.ObjectId = firmDie.FirmDieId;
+                displayableObject.DrawY2 = GetScreenXAndY(firmDie.LocX2, firmDie.LocY2 + 1).Item2 - 1;
+                _objectsToDrawBottom.Add(displayableObject);
+                _objectsToDraw.Add(displayableObject);
+            }
+        }
+
         foreach (Bullet bullet in BulletArray)
         {
             if (bullet.IsStealth())
@@ -209,6 +222,21 @@ public partial class Renderer
                     _objectsToDrawTop.Add(displayableObject);
                 if (effect.DisplayLayer == AirLayer)
                     _objectsToDrawAir.Add(displayableObject);
+            }
+        }
+
+        foreach (Tornado tornado in TornadoArray)
+        {
+            if (tornado.IsStealth())
+                continue;
+            
+            if (tornado.CurLocX >= startLocX && tornado.CurLocX <= endLocX && tornado.CurLocY >= startLocY && tornado.CurLocY <= endLocY)
+            {
+                DisplayableObject displayableObject = GetDisplayableObject();
+                displayableObject.ObjectType = DisplayableObjectType.Tornado;
+                displayableObject.ObjectId = tornado.SpriteId;
+                displayableObject.DrawY2 = GetSpriteDrawY2(tornado);
+                _objectsToDrawAir.Add(displayableObject);
             }
         }
 
@@ -609,6 +637,21 @@ public partial class Renderer
         }
     }
 
+    public void DrawFirmDie(FirmDie firmDie, int layer)
+    {
+        FirmBuild firmBuild = FirmDieRes.GetBuild(firmDie.FirmBuildId);
+        int firstBitmap = firmBuild.first_bitmap(firmDie.Frame);
+        FirmBitmap firmDieBitmap = FirmDieRes.GetBitmap(firstBitmap);
+        if (firmDieBitmap.display_layer == layer)
+        {
+            (int firmDieX, int firmDieY) = GetScreenXAndY(firmDie.LocX1, firmDie.LocY1);
+            int firmBitmapX = firmDieX + Scale(firmDieBitmap.offset_x);
+            int firmBitmapY = firmDieY + Scale(firmDieBitmap.offset_y);
+            Graphics.DrawBitmapScaled(firmDieBitmap.GetTexture(Graphics, firmDie.NationId, false),
+                firmBitmapX, firmBitmapY, firmDieBitmap.bitmapWidth, firmDieBitmap.bitmapHeight);
+        }
+    }
+
     public void DrawSite(Site site, int layer)
     {
         (int siteX, int siteY) = GetScreenXAndY(site.LocX, site.LocY);
@@ -837,6 +880,11 @@ public partial class Renderer
     public void DrawEffect(Effect effect)
     {
         DrawSprite(effect);
+    }
+
+    public void DrawTornado(Tornado tornado)
+    {
+        DrawSprite(tornado);
     }
     
     private void DrawUnitPaths(int layer)

@@ -205,8 +205,9 @@ public class Weather
 
 		}
 
+		//TODO check conditions
 		// -------- update tornado_count, at least 20 days between two tornadoes -------//
-		if (tornado_count > 20 && base_temp() >= 30 && wind_speed() >= 40 && rand_seed(10) == 0)
+		if (tornado_count > 20/* && base_temp() >= 30 && wind_speed() >= 40*/ && rand_seed(10) == 0)
 		{
 			tornado_count = 0; // today has a tornado
 		}

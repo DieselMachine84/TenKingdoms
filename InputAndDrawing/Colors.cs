@@ -39,8 +39,7 @@ public class Colors
     public const byte WALL_COLOR = VGA_GRAY + 6;
     public const byte HILL_COLOR = VGA_BROWN + 3;
     public const byte FIRE_COLOR = V_RED;
-    public const byte TORNADO_COLOR1 = VGA_GRAY + 7;
-    public const byte TORNADO_COLOR2 = VGA_GRAY + 8;
+    public const byte TORNADO_COLOR = VGA_GRAY + 8;
 
     public const byte INDEPENDENT_NATION_COLOR = V_WHITE;
 

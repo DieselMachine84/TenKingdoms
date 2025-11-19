@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-public enum DisplayableObjectType { None, Town, Firm, Site, Unit, Bullet, Effect, Plant, Hill, Fire }
+public enum DisplayableObjectType { None, Town, Firm, FirmDie, Site, Unit, Bullet, Effect, Plant, Hill, Fire, Tornado }
 
 public class DisplayableObject
 {
@@ -19,6 +19,9 @@ public class DisplayableObject
                 break;
             case DisplayableObjectType.Firm:
                 renderer.DrawFirm(Sys.Instance.FirmArray[ObjectId], layer);
+                break;
+            case DisplayableObjectType.FirmDie:
+                renderer.DrawFirmDie(Sys.Instance.FirmDieArray[ObjectId], layer);
                 break;
             case DisplayableObjectType.Site:
                 renderer.DrawSite(Sys.Instance.SiteArray[ObjectId], layer);
@@ -40,6 +43,9 @@ public class DisplayableObject
                 break;
             case DisplayableObjectType.Fire:
                 renderer.DrawFlame();
+                break;
+            case DisplayableObjectType.Tornado:
+                renderer.DrawTornado(Sys.Instance.TornadoArray[ObjectId]);
                 break;
         }
     }

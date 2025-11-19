@@ -19,30 +19,14 @@ public class FirmDieArray : DynArray<FirmDie>
         firmDie.Init(firm);
     }
 
-    public override bool IsDeleted(int recNo)
-    {
-        if (base.IsDeleted(recNo))
-            return true;
-
-        FirmDie firmDie = this[recNo];
-        return firmDie.firm_id == 0;
-    }
-
     public void Process()
     {
-        List<FirmDie> firmDiesToDelete = new List<FirmDie>();
-        
         foreach (FirmDie firmDie in this)
         {
             if (firmDie.Process())
             {
-                firmDiesToDelete.Add(firmDie);
+                Delete(firmDie.FirmDieId);
             }
-        }
-
-        foreach (FirmDie firmDie in firmDiesToDelete)
-        {
-            Delete(firmDie.firmdie_recno);
         }
     }
 }

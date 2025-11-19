@@ -5,27 +5,22 @@ namespace TenKingdoms;
 
 public class TornadoArray : SpriteArray
 {
+    public override Tornado this[int recNo] => (Tornado)base[recNo];
+
     protected override Tornado CreateNewObject(int objectType)
     {
         return new Tornado();
     }
 
-    public Tornado AddTornado(int xLoc, int yLoc, int lifeTime)
+    public Tornado AddTornado(int locX, int locY, int lifeTime)
     {
         Tornado tornado = (Tornado)CreateNew();
-        tornado.init(xLoc, yLoc, lifeTime);
+        tornado.Init(locX, locY, lifeTime);
         return tornado;
-    }
-
-    public void DeleteTornado(Tornado tornado)
-    {
-        Delete(tornado.SpriteId);
     }
 
     public override void Process()
     {
-        List<Tornado> tornadoesToDelete = new List<Tornado>();
-
         foreach (Tornado tornado in this)
         {
             tornado.PreProcess();
@@ -54,14 +49,9 @@ public class TornadoArray : SpriteArray
 
                 case Sprite.SPRITE_DIE:
                     if (tornado.ProcessDie())
-                        tornadoesToDelete.Add(tornado);
+                        Delete(tornado.SpriteId);
                     break;
             }
-        }
-
-        foreach (Tornado tornado in tornadoesToDelete)
-        {
-            DeleteTornado(tornado);
         }
     }
 }

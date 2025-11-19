@@ -4,32 +4,30 @@ namespace TenKingdoms;
 
 public class Tornado : Sprite
 {
-    public const int TORNADO_SPRITE_ID = 12;
+    private const int TORNADO_SPRITE_ID = 12;
 
-    public double attack_damage;
-    public int life_time;
-    public int dmg_offset_x;
-    public int dmg_offset_y;
+    private double AttackDamage { get; set; }
+    private int LifeTime { get; set; }
+    private int DamageOffsetX { get; set; }
+    private int DamageOffsetY { get; set; }
 
-    public new void init(int startX, int startY, int lifeTime)
+    public new void Init(int locX, int locY, int lifeTime)
     {
-        base.Init(TORNADO_SPRITE_ID, startX, startY);
+        base.Init(TORNADO_SPRITE_ID, locX, locY);
 
-        attack_damage = 2.0 / InternalConstants.ATTACK_SLOW_DOWN;
-        life_time = lifeTime;
+        AttackDamage = 2.0 / InternalConstants.ATTACK_SLOW_DOWN;
+        LifeTime = lifeTime;
 
         SetDir(InternalConstants.DIR_N);
         CurAction = SPRITE_MOVE; // always moving
-        dmg_offset_x = 0;
-        dmg_offset_y = 0;
     }
 
     public override void PreProcess()
     {
         double angle = Misc.Random(32) / 16.0 * Math.PI;
-        dmg_offset_x = Convert.ToInt32(InternalConstants.DAMAGE_POINT_RADIUS * Math.Cos(angle));
-        dmg_offset_y = Convert.ToInt32(InternalConstants.DAMAGE_POINT_RADIUS * Math.Sin(angle));
-        if (--life_time <= 0)
+        DamageOffsetX = (int)(InternalConstants.DAMAGE_POINT_RADIUS * Math.Cos(angle));
+        DamageOffsetY = (int)(InternalConstants.DAMAGE_POINT_RADIUS * Math.Sin(angle));
+        if (--LifeTime <= 0)
             CurAction = SPRITE_DIE;
     }
 
@@ -44,124 +42,79 @@ public class Tornado : Sprite
 
         //TODO check this
         double windDir = Sys.Instance.Weather.wind_direct_rad() + (Misc.Random(31) - 15) * Math.PI / 180.0;
-        CurX += Convert.ToInt32(speed * Math.Cos(windDir));
-        CurY -= Convert.ToInt32(speed * Math.Sin(windDir));
+        CurX += (int)(speed * Math.Cos(windDir));
+        CurY -= (int)(speed * Math.Sin(windDir));
         if (++CurFrame > CurSpriteMove().FrameCount)
             CurFrame = 1;
 
-        hit_target();
+        HitTarget();
     }
 
-    public void hit_target()
+    private void HitTarget()
     {
         //---- check if there is any unit in the target location ----//
 
-        int damageXLoc = damage_x_loc();
-        int damageYLoc = damage_y_loc();
-        if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
+        int damageLocX = (CurX + DamageOffsetX) >> InternalConstants.CellWidthShift;
+        int damageLocY = (CurY + DamageOffsetY) >> InternalConstants.CellHeightShift;
+        if (!Misc.IsLocationValid(damageLocX, damageLocY))
             return;
 
-        Location location = World.GetLoc(damageXLoc, damageYLoc);
+        Location location = World.GetLoc(damageLocX, damageLocY);
 
         Unit targetUnit;
         if (location.HasUnit(UnitConstants.UNIT_AIR))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
-            targetUnit.HitPoints -= 2 * (int)attack_damage;
-            if (targetUnit.HitPoints <= 0)
-                targetUnit.HitPoints = 0;
+            targetUnit.HitPoints -= 2.0 * AttackDamage;
+            if (targetUnit.HitPoints <= 0.0)
+                targetUnit.HitPoints = 0.0;
         }
 
         if (location.HasUnit(UnitConstants.UNIT_LAND))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-            targetUnit.HitPoints -= (int)attack_damage;
-            if (targetUnit.HitPoints <= 0)
-                targetUnit.HitPoints = 0;
+            targetUnit.HitPoints -= AttackDamage;
+            if (targetUnit.HitPoints <= 0.0)
+                targetUnit.HitPoints = 0.0;
         }
-        else if (location.HasUnit(UnitConstants.UNIT_SEA))
+        if (location.HasUnit(UnitConstants.UNIT_SEA))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
-            targetUnit.HitPoints -= (int)attack_damage;
-            if (targetUnit.HitPoints <= 0)
-                targetUnit.HitPoints = 0;
+            targetUnit.HitPoints -= AttackDamage;
+            if (targetUnit.HitPoints <= 0.0)
+                targetUnit.HitPoints = 0.0;
         }
-        else
-        {
-            hit_building(); // pass to hit_building to check whether a building is in the location
-        }
-
-        hit_plant();
-        hit_fire();
-    }
-
-    public void hit_building()
-    {
-        int damageXLoc = damage_x_loc();
-        int damageYLoc = damage_y_loc();
-        if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
-            return;
-
-        Location location = World.GetLoc(damageXLoc, damageYLoc);
 
         if (location.IsFirm())
         {
             Firm firm = FirmArray[location.FirmId()];
-            firm.HitPoints -= attack_damage * 2;
-            if (firm.HitPoints <= 0)
+            firm.HitPoints -= 2.0 * AttackDamage;
+            if (firm.HitPoints <= 0.0)
             {
                 firm.HitPoints = 0.0;
 
                 SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 
-                FirmArray.DeleteFirm(location.FirmId());
+                FirmArray.DeleteFirm(firm.FirmId);
             }
         }
 
         if (location.IsTown())
         {
             Town town = TownArray[location.TownId()];
-            if (life_time % 30 == 0)
+            if (LifeTime % 30 == 0)
                 town.KillTownPeople(0);
         }
-    }
 
-    public void hit_plant()
-    {
-        int damageXLoc = damage_x_loc();
-        int damageYLoc = damage_y_loc();
-        if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
-            return;
-
-        Location location = World.GetLoc(damageXLoc, damageYLoc);
         if (location.IsPlant())
         {
             location.RemovePlant();
             World.PlantCount--;
         }
-    }
 
-    public void hit_fire()
-    {
-        int damageXLoc = damage_x_loc();
-        int damageYLoc = damage_y_loc();
-        if (damageXLoc < 0 || damageXLoc >= GameConstants.MapSize || damageYLoc < 0 || damageYLoc >= GameConstants.MapSize)
-            return;
-
-        Location location = World.GetLoc(damageXLoc, damageYLoc);
         if (location.FireStrength() > 0)
         {
             location.SetFireStrength(1);
         }
-    }
-
-    public int damage_x_loc()
-    {
-        return (CurX + dmg_offset_x) >> InternalConstants.CellWidthShift;
-    }
-
-    public int damage_y_loc()
-    {
-        return (CurY + dmg_offset_y) >> InternalConstants.CellHeightShift;
     }
 }
