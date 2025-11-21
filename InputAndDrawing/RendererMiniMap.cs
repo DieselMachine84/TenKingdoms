@@ -343,4 +343,24 @@ public partial class Renderer
             }
         }
     }
+    
+    private bool IsExplored(int locX1, int locX2, int locY1, int locY2)
+    {
+        if (Config.explore_whole_map)
+            return true;
+        
+        for (int locY = locY1; locY <= locY2; locY++)
+        {
+            for (int locX = locX1; locX <= locX2; locX++)
+            {
+                Location location = World.GetLoc(locX, locY);
+                if (location.IsExplored())
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

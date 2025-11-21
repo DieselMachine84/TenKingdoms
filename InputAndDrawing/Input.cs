@@ -558,6 +558,7 @@ public partial class Renderer
 
             if (!location.IsTown() && !location.IsFirm())
             {
+                //TODO unit.ForceMove
                 UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
                 UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
             }
@@ -623,7 +624,8 @@ public partial class Renderer
             _mouseMotionY >= MainViewY && _mouseMotionY < MainViewY + MainViewHeight)
         {
             (ScreenObjectType selectedObjectType, int selectedObjectId) = GetSelectedObjectType();
-            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType), mobileType);
+            Location pointingLocation = GetPointingLocation(_mouseMotionX, _mouseMotionY, out int mobileType);
+            (ScreenObjectType pointingObjectType, int pointingObjectId) = GetPointingObjectType(pointingLocation, mobileType);
             newCursor = ChooseCursor(selectedObjectType, selectedObjectId, pointingObjectType, pointingObjectId);
         }
 

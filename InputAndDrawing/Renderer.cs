@@ -162,6 +162,8 @@ public partial class Renderer : IRenderer
         
         Graphics.ResetClipRectangle();
         DrawMainScreen();
+        DrawMainView();
+        DrawMiniMap(nextFrame);
 
         if (_selectedTownId != 0)
         {
@@ -182,9 +184,6 @@ public partial class Renderer : IRenderer
         {
             DrawSiteDetails(SiteArray[_selectedSiteId]);
         }
-
-        DrawMainView();
-        DrawMiniMap(nextFrame);
     }
 
     private void DrawMainScreen()
@@ -265,25 +264,5 @@ public partial class Renderer : IRenderer
         _screenSquareFrameStep = 1;
         ResetSelection();
         NeedFullRedraw = true;
-    }
-
-    private bool IsExplored(int locX1, int locX2, int locY1, int locY2)
-    {
-        if (Config.explore_whole_map)
-            return true;
-        
-        for (int locY = locY1; locY <= locY2; locY++)
-        {
-            for (int locX = locX1; locX <= locX2; locX++)
-            {
-                Location location = World.GetLoc(locX, locY);
-                if (location.IsExplored())
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

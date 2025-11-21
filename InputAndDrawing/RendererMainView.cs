@@ -250,16 +250,17 @@ public partial class Renderer
             }
         }
 
-        _objectsToDrawBottom.Sort((x, y) => x.DrawY2 - y.DrawY2);
-        _objectsToDraw.Sort((x, y) => x.DrawY2 - y.DrawY2);
-        _objectsToDrawTop.Sort((x, y) => x.DrawY2 - y.DrawY2);
-        _objectsToDrawAir.Sort((x, y) => x.DrawY2 - y.DrawY2);
+        int Comparison(DisplayableObject x, DisplayableObject y) => x.DrawY2 - y.DrawY2;
+        _objectsToDrawBottom.Sort(Comparison);
+        _objectsToDraw.Sort(Comparison);
+        _objectsToDrawTop.Sort(Comparison);
+        _objectsToDrawAir.Sort(Comparison);
 
         for (int i = 0; i < _objectsToDrawBottom.Count; i++)
         {
             _objectsToDrawBottom[i].Draw(this, BottomLayer);
         }
-        DrawUnitPaths(NormalLayer);
+        DrawUnitPathsOnMainView(NormalLayer);
         for (int i = 0; i < _objectsToDraw.Count; i++)
         {
             _objectsToDraw[i].Draw(this, NormalLayer);
@@ -268,13 +269,19 @@ public partial class Renderer
         {
             _objectsToDrawTop[i].Draw(this, TopLayer);
         }
-        DrawUnitPaths(AirLayer);
+        DrawUnitPathsOnMainView(AirLayer);
         for (int i = 0; i < _objectsToDrawAir.Count; i++)
         {
             _objectsToDrawAir[i].Draw(this, AirLayer);
         }
         
         //TODO draw way points
+        //TODO draw weather effects
+        //TODO draw build marker
+        //TODO draw god cast power
+        //TODO blacken fog of war
+        //TODO blacken unexplored
+        //TODO draw text
         //TODO add fire sound
         
         if (_leftMousePressed)
@@ -887,7 +894,7 @@ public partial class Renderer
         DrawSprite(tornado);
     }
     
-    private void DrawUnitPaths(int layer)
+    private void DrawUnitPathsOnMainView(int layer)
     {
         if ((Config.show_unit_path & 1) == 0)
             return;
