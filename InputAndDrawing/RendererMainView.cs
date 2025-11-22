@@ -282,6 +282,7 @@ public partial class Renderer
         //TODO blacken fog of war
         //TODO blacken unexplored
         //TODO draw text
+        //TODO draw link lines
         //TODO add fire sound
         
         if (_leftMousePressed)
@@ -915,8 +916,6 @@ public partial class Renderer
             if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
                 continue;
             
-            //TODO draw paths of air units on top of land units
-
             if (unit.PathNodes.Count > 0)
             {
                 if (unit.CurX != unit.GoX || unit.CurY != unit.GoY)

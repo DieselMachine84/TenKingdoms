@@ -141,16 +141,16 @@ public partial class Renderer : IRenderer
         int locX = screenX - MiniMapX;
         int locY = screenY - MiniMapY;
         
-        if (MiniMapSize > GameConstants.MapSize)
+        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
         {
             locX /= MiniMapScale;
             locY /= MiniMapScale;
         }
 
-        if (MiniMapSize < GameConstants.MapSize)
+        if (GameConstants.MapSize == 300)
         {
-            locX *= MiniMapScale;
-            locY *= MiniMapScale;
+            locX = locX * 3 / 4;
+            locY = locY * 3 / 4;
         }
 
         return (locX, locY);
@@ -164,6 +164,7 @@ public partial class Renderer : IRenderer
         DrawMainScreen();
         DrawMainView();
         DrawMiniMap(nextFrame);
+        Graphics.ResetClipRectangle();
 
         if (_selectedTownId != 0)
         {
