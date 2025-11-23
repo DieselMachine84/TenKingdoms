@@ -224,19 +224,63 @@ public partial class Renderer
 
             if (unit.PathNodes.Count > 0)
             {
-                //TODO optimize drawing lines - join them
+                int prevDirection = -1;
+                int startNodeLocX = -1;
+                int startNodeLocY = -1;
+                World.GetLocXAndLocY(unit.PathNodes[unit.PathNodeIndex], out int prevNodeLocX, out int prevNodeLocY);
                 for (int j = unit.PathNodeIndex + 1; j < unit.PathNodes.Count; j++)
                 {
-                    int resultNode1 = unit.PathNodes[j - 1];
-                    World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
-                    int resultNode2 = unit.PathNodes[j];
-                    World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
-                    DrawLineOnMiniMap(resultNode2LocX, resultNode2LocY, resultNode1LocX, resultNode1LocY, lineColor);
+                    World.GetLocXAndLocY(unit.PathNodes[j], out int nodeLocX, out int nodeLocY);
+                    int nextDirection = GetPathDirection(prevNodeLocX, prevNodeLocY, nodeLocX, nodeLocY);
+
+                    if ((prevDirection != -1 && nextDirection != prevDirection) || j == unit.PathNodes.Count - 1)
+                    {
+                        DrawLineOnMiniMap(startNodeLocX, startNodeLocY, prevNodeLocX, prevNodeLocY, lineColor);
+                    }
+
+                    if (prevDirection == -1 || nextDirection != prevDirection)
+                    {
+                        prevDirection = nextDirection;
+                        startNodeLocX = prevNodeLocX;
+                        startNodeLocY = prevNodeLocY;
+                    }
+
+                    prevNodeLocX = nodeLocX;
+                    prevNodeLocY = nodeLocY;
                 }
             }
         }
         
         //TODO draw waypoints
+    }
+
+    private int GetPathDirection(int locX1, int locY1, int locX2, int locY2)
+    {
+        if (locX1 == locX2)
+        {
+            if (locY1 < locY2)
+                return InternalConstants.DIR_S;
+            if (locY1 > locY2)
+                return InternalConstants.DIR_N;
+        }
+
+        if (locY1 == locY2)
+        {
+            if (locX1 < locX2)
+                return InternalConstants.DIR_E;
+            if (locX1 > locX2)
+                return InternalConstants.DIR_W;
+        }
+
+        if (locX1 != locX2 && locY1 != locY2)
+        {
+            if (locX1 < locX2)
+                return locY1 < locY2 ? InternalConstants.DIR_SE : InternalConstants.DIR_NE;
+            if (locX1 > locX2)
+                return locY1 < locY2 ? InternalConstants.DIR_SW : InternalConstants.DIR_NW;
+        }
+
+        return -1;
     }
     
     private bool IsExplored(int locX1, int locY1, int locX2, int locY2)
