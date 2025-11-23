@@ -2,20 +2,20 @@ namespace TenKingdoms;
 
 public class WarPoint
 {
-    public const int WARPOINT_STRENGTH = 0x100000;
-    public const int WARPOINT_STRENGTH_MAX = 0x1000000;
+    private const int WARPOINT_STRENGTH = 0x100000;
+    private const int WARPOINT_STRENGTH_MAX = 0x1000000;
 
-    public int strength;
+    public int Strength { get; private set; }
 
     public void Inc()
     {
-        strength += WARPOINT_STRENGTH;
-        if (strength > WARPOINT_STRENGTH_MAX)
-            strength = WARPOINT_STRENGTH_MAX;
+        Strength += WARPOINT_STRENGTH;
+        if (Strength > WARPOINT_STRENGTH_MAX)
+            Strength = WARPOINT_STRENGTH_MAX;
     }
 
     public void Decay()
     {
-        strength >>= 1;
+        Strength >>= 1;
     }
 }

@@ -188,8 +188,25 @@ public partial class Renderer
                 DrawRectOnMiniMap(tornado.CurLocX - 1, tornado.CurLocY - 1, 3, 3, Colors.TORNADO_COLOR);
         }
 
-        //TODO Draw war points
-        
+        if (Sys.Instance.FrameNumber % 2 == 0)
+        {
+            int warPointColor = _warPointColors[(Sys.Instance.FrameNumber % 16) / 2];
+            for (int i = 0; i < WarPointArray.WarPoints.GetLength(0); i++)
+            {
+                for (int j = 0; j < WarPointArray.WarPoints.GetLength(1); j++)
+                {
+                    WarPoint warPoint = WarPointArray.WarPoints[i, j];
+                    if (warPoint.Strength > 0)
+                    {
+                        DrawLineOnMiniMap(i * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
+                            (i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
+                        DrawLineOnMiniMap((i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
+                            i * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
+                    }
+                }
+            }
+        }
+
         DrawFrameOnMiniMap(_topLeftLocX - 1, _topLeftLocY - 1, MainViewWidthInCells + 2, MainViewHeightInCells + 2,
             Colors.VGA_YELLOW + _screenSquareFrameCount);
 
@@ -233,7 +250,7 @@ public partial class Renderer
                     World.GetLocXAndLocY(unit.PathNodes[j], out int nodeLocX, out int nodeLocY);
                     int nextDirection = GetPathDirection(prevNodeLocX, prevNodeLocY, nodeLocX, nodeLocY);
 
-                    if ((prevDirection != -1 && nextDirection != prevDirection) || j == unit.PathNodes.Count - 1)
+                    if (prevDirection != -1 && nextDirection != prevDirection)
                     {
                         DrawLineOnMiniMap(startNodeLocX, startNodeLocY, prevNodeLocX, prevNodeLocY, lineColor);
                     }
@@ -243,6 +260,11 @@ public partial class Renderer
                         prevDirection = nextDirection;
                         startNodeLocX = prevNodeLocX;
                         startNodeLocY = prevNodeLocY;
+                    }
+
+                    if (j == unit.PathNodes.Count - 1)
+                    {
+                        DrawLineOnMiniMap(startNodeLocX, startNodeLocY, nodeLocX, nodeLocY, lineColor);
                     }
 
                     prevNodeLocX = nodeLocX;

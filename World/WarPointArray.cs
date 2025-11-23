@@ -5,26 +5,27 @@ namespace TenKingdoms;
 
 public class WarPointArray
 {
-    //TODO use List instead
-    public WarPoint[] warPoints = new WarPoint[GameConstants.MapSize / InternalConstants.WARPOINT_ZONE_SIZE];
-    public int draw_phase;
-
+    public WarPoint[,] WarPoints { get; } = new WarPoint[
+        GameConstants.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1,
+        GameConstants.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1];
+ 
     public WarPointArray()
     {
-        for (int i = 0; i < warPoints.Length; i++)
-            warPoints[i] = new WarPoint();
+        for (int i = 0; i < WarPoints.GetLength(0); i++)
+            for (int j = 0; j < WarPoints.GetLength(1); j++)
+                WarPoints[i, j] = new WarPoint();
     }
 
     public void Process()
     {
-        foreach (WarPoint warPoint in warPoints)
+        foreach (WarPoint warPoint in WarPoints)
         {
             warPoint.Decay();
         }
     }
 
-    public void AddPoint(int xLoc, int yLoc)
+    public void AddPoint(int locX, int locY)
     {
-        warPoints[GameConstants.MapSize / xLoc].Inc();
+        WarPoints[locX / InternalConstants.WARPOINT_ZONE_SIZE, locY / InternalConstants.WARPOINT_ZONE_SIZE].Inc();
     }
 }

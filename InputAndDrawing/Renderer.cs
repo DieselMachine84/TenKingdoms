@@ -50,6 +50,7 @@ public partial class Renderer : IRenderer
     public bool NeedFullRedraw { get; set; }
     private int _screenSquareFrameCount = 0;
     private int _screenSquareFrameStep = 1;
+    private readonly int[] _warPointColors = { 0xa0, 0xa4, 0xa8, 0x00, 0xb0, 0xb4, 0xb8, 0x00 };
     private readonly byte[] _miniMapImage = new byte[MiniMapSize * MiniMapSize];
 
     private int _selectedTownId;
@@ -104,6 +105,7 @@ public partial class Renderer : IRenderer
     private static BulletArray BulletArray => Sys.Instance.BulletArray;
     private static EffectArray EffectArray => Sys.Instance.EffectArray;
     private static TornadoArray TornadoArray => Sys.Instance.TornadoArray;
+    private static WarPointArray WarPointArray => Sys.Instance.WarPointArray;
 
     public Renderer(Graphics graphics)
     {
