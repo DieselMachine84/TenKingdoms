@@ -1011,8 +1011,8 @@ public class NationBase : IIdObject
                 {
                     //--------- update loyalty change ----------//
 
-                    worker.change_loyalty(loyaltyChange +
-                                          succeed_king_loyalty_change(worker.race_id, newKing.RaceId, race_id));
+                    worker.ChangeLoyalty(loyaltyChange +
+                                          succeed_king_loyalty_change(worker.RaceId, newKing.RaceId, race_id));
                 }
             }
         }
@@ -1574,8 +1574,8 @@ public class NationBase : IIdObject
             {
                 foreach (Worker worker in firm.Workers)
                 {
-                    if (raceId == 0 || worker.race_id == raceId)
-                        worker.change_loyalty((int)loyaltyChange);
+                    if (raceId == 0 || worker.RaceId == raceId)
+                        worker.ChangeLoyalty((int)loyaltyChange);
                 }
             }
         }

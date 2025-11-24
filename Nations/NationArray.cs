@@ -426,7 +426,7 @@ public class NationArray : DynArray<Nation>
 			{
 				for (int j = firm.Workers.Count - 1; j >= 0; j--)
 				{
-					if (firm.Workers[j].race_id != 0)
+					if (firm.Workers[j].RaceId != 0)
 					{
 						totalHumanCountArray[firm.NationId - 1]++;
 					}

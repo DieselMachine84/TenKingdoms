@@ -4,56 +4,55 @@ namespace TenKingdoms;
 
 public class Worker
 {
-    public int race_id;
-    public int unit_id;
-    public int town_recno;
-    public int name_id;
+    public int RaceId { get; set; }
+    public int UnitId { get; set; }
+    public int NameId { get; set; }
+    public int RankId { get; set; }
 
-    public int skill_id;
-    public int skill_level;
-    public int skill_level_minor;
-    public int skill_potential;
+    public int SkillId { get; set; }
+    public int SkillLevel { get; set; }
+    public int SkillLevelMinor { get; set; }
+    public int SkillPotential { get; set; }
 
-    public int combat_level;
-    public int combat_level_minor;
+    public int HitPoints { get; set; }
+    public int CombatLevel { get; set; }
+    public int CombatLevelMinor { get; set; }
 
-    public int spy_recno;
-
-    public int rank_id;
-    public int worker_loyalty; // only for firms with live_in_town being 0
-    public int hit_points;
-    public int extra_para; // weapon version for weapons and power attack points for human units
+    public int SpyId { get; set; }
+    public int TownId { get; set; }
+    public int WorkerLoyalty { get; set; } // only for firms with LiveInTown being false
+    public int ExtraPara { get; set; } // weapon version for weapons and power attack points for human units
 
     private RaceRes RaceRes => Sys.Instance.RaceRes;
     private UnitRes UnitRes => Sys.Instance.UnitRes;
-    private UnitArray UnitArray => Sys.Instance.UnitArray;
-    private SpyArray SpyArray => Sys.Instance.SpyArray;
     private FirmArray FirmArray => Sys.Instance.FirmArray;
     private TownArray TownArray => Sys.Instance.TownArray;
+    private UnitArray UnitArray => Sys.Instance.UnitArray;
+    private SpyArray SpyArray => Sys.Instance.SpyArray;
 
     public Worker()
     {
     }
 
-    public int max_hit_points()
+    public int MaxHitPoints()
     {
-        return UnitRes[unit_id].hit_points * combat_level / 100;
+        return UnitRes[UnitId].hit_points * CombatLevel / 100;
     }
 
-    public int loyalty()
+    public int Loyalty()
     {
         // TODO: town may be deleted if last worker is out
-        if (town_recno != 0) // if the worker lives in a town
-            return Convert.ToInt32(TownArray[town_recno].RacesLoyalty[race_id - 1]);
+        if (TownId != 0) // if the worker lives in a town
+            return Convert.ToInt32(TownArray[TownId].RacesLoyalty[RaceId - 1]);
         else
-            return worker_loyalty;
+            return WorkerLoyalty;
     }
 
-    public int target_loyalty(int firmRecno)
+    public int TargetLoyalty(int firmRecno)
     {
-        if (town_recno != 0) // if the worker lives in a town
+        if (TownId != 0) // if the worker lives in a town
         {
-            return Convert.ToInt32(TownArray[town_recno].RacesLoyalty[race_id - 1]);
+            return Convert.ToInt32(TownArray[TownId].RacesLoyalty[RaceId - 1]);
         }
         else
         {
@@ -74,15 +73,15 @@ public class Worker
                 //
                 //---------------------------------------------------//
 
-                targetLoyalty -= combat_level / 2;
+                targetLoyalty -= CombatLevel / 2;
 
-                if (skill_level > overseerSkill)
-                    targetLoyalty -= skill_level - overseerSkill;
+                if (SkillLevel > overseerSkill)
+                    targetLoyalty -= SkillLevel - overseerSkill;
 
                 if (overseerUnit.Rank == Unit.RANK_KING)
                     targetLoyalty += 20;
 
-                if (RaceRes.is_same_race(race_id, overseerUnit.RaceId))
+                if (RaceRes.is_same_race(RaceId, overseerUnit.RaceId))
                     targetLoyalty += 20;
 
                 if (targetLoyalty < 0)
@@ -95,59 +94,59 @@ public class Worker
             }
             else //-- if there is no overseer, just return the current loyalty --//
             {
-                return worker_loyalty;
+                return WorkerLoyalty;
             }
         }
     }
 
-    public bool is_nation(int firmRecno, int nationRecno, bool checkSpy = false)
+    public bool IsNation(int firmRecno, int nationRecno, bool checkSpy = false)
     {
-        if (checkSpy && spy_recno != 0)
-            return SpyArray[spy_recno].TrueNationId == nationRecno;
+        if (checkSpy && SpyId != 0)
+            return SpyArray[SpyId].TrueNationId == nationRecno;
 
-        if (town_recno != 0)
-            return TownArray[town_recno].NationId == nationRecno;
+        if (TownId != 0)
+            return TownArray[TownId].NationId == nationRecno;
         else
             return FirmArray[firmRecno].NationId == nationRecno;
     }
 
-    public void init_potential()
+    public void InitPotential()
     {
         if (Misc.Random(10) == 0) // 1 out of 10 has a higher than normal potential in this skill
         {
-            skill_potential = 50 + Misc.Random(51); // 50 to 100 potential
+            SkillPotential = 50 + Misc.Random(51); // 50 to 100 potential
         }
     }
 
-    public void change_loyalty(int loyaltyChange)
+    public void ChangeLoyalty(int loyaltyChange)
     {
-        if (town_recno != 0) // for those live in town, their loyalty are based on town people loyalty.
+        if (TownId != 0) // for those live in town, their loyalty are based on town people loyalty.
             return;
 
-        int newLoyalty = worker_loyalty + loyaltyChange;
+        int newLoyalty = WorkerLoyalty + loyaltyChange;
 
         newLoyalty = Math.Min(100, newLoyalty);
-        worker_loyalty = Math.Max(0, newLoyalty);
+        WorkerLoyalty = Math.Max(0, newLoyalty);
     }
 
-    public void change_hit_points(int changePoints)
+    public void ChangeHitPoints(int changePoints)
     {
-        int newHitPoints = hit_points + changePoints;
-        int maxHitPoints = max_hit_points();
+        int newHitPoints = HitPoints + changePoints;
+        int maxHitPoints = MaxHitPoints();
 
         newHitPoints = Math.Min(maxHitPoints, newHitPoints);
-        hit_points = Math.Max(0, newHitPoints);
+        HitPoints = Math.Max(0, newHitPoints);
     }
 
-    public int max_attack_range()
+    public int MaxAttackRange()
     {
         int maxRange = 0;
-        int attackCount = UnitRes[unit_id].attack_count;
+        int attackCount = UnitRes[UnitId].attack_count;
 
         for (int i = 0; i < attackCount; i++)
         {
-            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[unit_id].first_attack + i);
-            if (combat_level >= attackInfo.combat_level && attackInfo.attack_range > maxRange)
+            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[UnitId].first_attack + i);
+            if (CombatLevel >= attackInfo.combat_level && attackInfo.attack_range > maxRange)
             {
                 maxRange = attackInfo.attack_range;
             }

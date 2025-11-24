@@ -42,10 +42,10 @@ public partial class Renderer
         for (int i = 0; i < firm.Workers.Count; i++)
         {
             Worker worker = firm.Workers[i];
-            UnitInfo unitInfo = UnitRes[worker.unit_id];
-            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.rank_id), DetailsX1 + 12 + 100 * (i % 4), y + 7 + 50 * (i / 4),
+            UnitInfo unitInfo = UnitRes[worker.UnitId];
+            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.RankId), DetailsX1 + 12 + 100 * (i % 4), y + 7 + 50 * (i / 4),
                 unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
-            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.combat_level.ToString() : worker.skill_level.ToString(),
+            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel.ToString() : worker.SkillLevel.ToString(),
                 DetailsX1 + 64 + 100 * (i % 4), y + 13 + 50 * (i / 4));
             
             // TODO worker hit points bar

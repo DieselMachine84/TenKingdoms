@@ -529,22 +529,22 @@ public abstract partial class Unit : Sprite
 
 	public void InitFromWorker(Worker worker)
 	{
-		Skill.SkillId = worker.skill_id;
-		Skill.SkillLevel = worker.skill_level;
-		Skill.SkillLevelMinor = worker.skill_level_minor;
-		SetCombatLevel(worker.combat_level);
-		Skill.CombatLevelMinor = worker.combat_level_minor;
-		HitPoints = worker.hit_points;
-		Loyalty = worker.loyalty();
-		Rank = worker.rank_id;
+		Skill.SkillId = worker.SkillId;
+		Skill.SkillLevel = worker.SkillLevel;
+		Skill.SkillLevelMinor = worker.SkillLevelMinor;
+		SetCombatLevel(worker.CombatLevel);
+		Skill.CombatLevelMinor = worker.CombatLevelMinor;
+		HitPoints = worker.HitPoints;
+		Loyalty = worker.Loyalty();
+		Rank = worker.RankId;
 
 		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			WeaponVersion = worker.extra_para;
+			WeaponVersion = worker.ExtraPara;
 		}
 		else if (RaceId != 0)
 		{
-			CurPower = worker.extra_para;
+			CurPower = worker.ExtraPara;
 
 			if (CurPower < 0)
 				CurPower = 0;
@@ -555,14 +555,14 @@ public abstract partial class Unit : Sprite
 
 		FixAttackInfo();
 
-		if (worker.name_id != 0 && worker.race_id != 0) // if this worker is formerly a unit who has a name
-			SetName(worker.name_id);
+		if (worker.NameId != 0 && worker.RaceId != 0) // if this worker is formerly a unit who has a name
+			SetName(worker.NameId);
 
 		//------ if the unit is a spy -------//
 
-		if (worker.spy_recno != 0)
+		if (worker.SpyId != 0)
 		{
-			SpyId = worker.spy_recno;
+			SpyId = worker.SpyId;
 			Spy spy = SpyArray[SpyId];
 			AIUnit = spy.CloakedNationId != 0 && NationArray[spy.CloakedNationId].is_ai();
 			SetName(spy.NameId);
@@ -5109,8 +5109,8 @@ public abstract partial class Unit : Sprite
 							for (int j = 0; j < firm.Workers.Count; j++)
 							{
 								Worker worker = firm.Workers[j];
-								if (worker.skill_level < minSkill)
-									minSkill = worker.skill_level;
+								if (worker.SkillLevel < minSkill)
+									minSkill = worker.SkillLevel;
 							}
 
 							//------------------------------//
@@ -5137,14 +5137,14 @@ public abstract partial class Unit : Sprite
 							for (int j = 0; j < firm.Workers.Count; j++)
 							{
 								Worker worker = firm.Workers[j];
-								if (worker.max_hit_points() < minMaxHitPoints)
-									minMaxHitPoints = worker.max_hit_points();
+								if (worker.MaxHitPoints() < minMaxHitPoints)
+									minMaxHitPoints = worker.MaxHitPoints();
 
-								if (worker.race_id != firm.MajorityRace())
+								if (worker.RaceId != firm.MajorityRace())
 								{
 									hasOtherRace = true;
-									if (worker.max_hit_points() < minMaxHitPointsOtherRace)
-										minMaxHitPointsOtherRace = worker.max_hit_points();
+									if (worker.MaxHitPoints() < minMaxHitPointsOtherRace)
+										minMaxHitPointsOtherRace = worker.MaxHitPoints();
 								}
 							}
 
@@ -5196,11 +5196,11 @@ public abstract partial class Unit : Sprite
 					for (int j = 0; j < bestFirm.Workers.Count; j++)
 					{
 						Worker worker = bestFirm.Workers[j];
-						if (worker.race_id != RaceId)
+						if (worker.RaceId != RaceId)
 						{
-							if (worker.max_hit_points() < minMaxHitPointsOtherRace)
+							if (worker.MaxHitPoints() < minMaxHitPointsOtherRace)
 							{
-								minMaxHitPointsOtherRace = worker.max_hit_points();
+								minMaxHitPointsOtherRace = worker.MaxHitPoints();
 								bestWorkerId = j + 1;
 							}
 						}
@@ -5212,9 +5212,9 @@ public abstract partial class Unit : Sprite
 						for (int j = 0; j < bestFirm.Workers.Count; j++)
 						{
 							Worker worker = bestFirm.Workers[j];
-							if (worker.max_hit_points() < minMaxHitPoints)
+							if (worker.MaxHitPoints() < minMaxHitPoints)
 							{
-								minMaxHitPoints = worker.max_hit_points();
+								minMaxHitPoints = worker.MaxHitPoints();
 								bestWorkerId = j + 1;
 							}
 						}

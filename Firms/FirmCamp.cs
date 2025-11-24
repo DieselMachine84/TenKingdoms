@@ -103,15 +103,15 @@ public class FirmCamp : Firm
 		foreach (Worker worker in Workers)
 		{
 			// use it points instead of combat level because hit_points represent both combat level and hit points left
-			totalCombatLevel += worker.hit_points;
+			totalCombatLevel += worker.HitPoints;
 
 			//---- the combat level of weapons are higher ------//
 
-			UnitInfo unitInfo = UnitRes[worker.unit_id];
+			UnitInfo unitInfo = UnitRes[worker.UnitId];
 
 			// extra_para keeps the weapon version
 			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				totalCombatLevel += (unitInfo.weapon_power + worker.extra_para - 1) * 30;
+				totalCombatLevel += (unitInfo.weapon_power + worker.ExtraPara - 1) * 30;
 		}
 
 		if (OverseerId != 0)
@@ -298,7 +298,7 @@ public class FirmCamp : Firm
 
 		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
 		{
-			if (Workers[mobileWorkerId - 1].skill_id == Skill.SKILL_LEADING)
+			if (Workers[mobileWorkerId - 1].SkillId == Skill.SKILL_LEADING)
 			{
 				unitRecno = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
 
@@ -485,7 +485,7 @@ public class FirmCamp : Firm
 			//------------------------------------------------------------------//
 			//### begin alex 13/10 ###//
 			//if(worker_array[mobilizePos].unit_id==UNIT_EXPLOSIVE_CART)
-			if (Workers[i].unit_id == UnitConstants.UNIT_EXPLOSIVE_CART || (useRangeAttack && Workers[i].max_attack_range() == 1))
+			if (Workers[i].UnitId == UnitConstants.UNIT_EXPLOSIVE_CART || (useRangeAttack && Workers[i].MaxAttackRange() == 1))
 				//#### end alex 13/10 ####//
 			{
 				continue;
@@ -611,7 +611,7 @@ public class FirmCamp : Firm
 
 		foreach (Worker worker in Workers)
 		{
-			UnitRes[worker.unit_id].unit_change_nation(newNationRecno, NationId, worker.rank_id);
+			UnitRes[worker.UnitId].unit_change_nation(newNationRecno, NationId, worker.RankId);
 		}
 
 		//----- reset unit's home camp to this firm -----//
@@ -949,42 +949,42 @@ public class FirmCamp : Firm
 
 		foreach (Worker worker in Workers)
 		{
-			if (worker.race_id == 0)
+			if (worker.RaceId == 0)
 				continue;
 
 			//------- increase worker skill -----------//
 
-			if (worker.combat_level < overseerSkill)
+			if (worker.CombatLevel < overseerSkill)
 			{
-				incValue = Math.Max(20, overseerSkill - worker.combat_level)
-					* worker.hit_points / worker.max_hit_points()
-					* (100 + worker.skill_potential * 2) / 100;
+				incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
+					* worker.HitPoints / worker.MaxHitPoints()
+					* (100 + worker.SkillPotential * 2) / 100;
 				// with random factors, resulting in 75% to 125% of the original
-				int levelMinor = worker.combat_level_minor + incValue;
+				int levelMinor = worker.CombatLevelMinor + incValue;
 
 				while (levelMinor >= 100)
 				{
 					levelMinor -= 100;
-					worker.combat_level++;
+					worker.CombatLevel++;
 				}
 
-				worker.combat_level_minor = levelMinor;
+				worker.CombatLevelMinor = levelMinor;
 			}
 
 			//-- if the soldier has leadership potential, he learns leadership --//
 
-			if (worker.skill_potential > 0 && worker.skill_level < 100)
+			if (worker.SkillPotential > 0 && worker.SkillLevel < 100)
 			{
-				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.skill_level)
-					* worker.hit_points / worker.max_hit_points()
-					* worker.skill_potential * 2 / 100;
+				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.SkillLevel)
+					* worker.HitPoints / worker.MaxHitPoints()
+					* worker.SkillPotential * 2 / 100;
 
-				worker.skill_level_minor += incValue;
+				worker.SkillLevelMinor += incValue;
 
-				if (worker.skill_level_minor > 100)
+				if (worker.SkillLevelMinor > 100)
 				{
-					worker.skill_level++;
-					worker.skill_level_minor -= 100;
+					worker.SkillLevel++;
+					worker.SkillLevelMinor -= 100;
 				}
 			}
 		}
@@ -996,8 +996,8 @@ public class FirmCamp : Firm
 	{
 		foreach (Worker worker in Workers)
 		{
-			if (worker.hit_points < worker.max_hit_points())
-				worker.hit_points++;
+			if (worker.HitPoints < worker.MaxHitPoints())
+				worker.HitPoints++;
 		}
 	}
 
@@ -1008,19 +1008,19 @@ public class FirmCamp : Firm
 		for (int i = Workers.Count - 1; i >= 0; i--)
 		{
 			Worker worker = Workers[i];
-			if (worker.unit_id != 0 && UnitRes[worker.unit_id].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+			if (worker.UnitId != 0 && UnitRes[worker.UnitId].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 			{
 				if (nation.cash > 0)
 				{
 					nation.add_expense(NationBase.EXPENSE_WEAPON,
-						Convert.ToDouble(UnitRes[worker.unit_id].year_cost) / 365.0, true);
+						Convert.ToDouble(UnitRes[worker.UnitId].year_cost) / 365.0, true);
 				}
 				else // decrease hit points if the nation cannot pay the unit
 				{
-					if (worker.hit_points > 0)
-						worker.hit_points--;
+					if (worker.HitPoints > 0)
+						worker.HitPoints--;
 
-					if (worker.hit_points == 0)
+					if (worker.HitPoints == 0)
 						KillWorker(worker); // if its hit points is zero, delete it
 				}
 			}
@@ -1919,12 +1919,12 @@ public class FirmCamp : Firm
 		for (int i = 0; i < Workers.Count; i++)
 		{
 			Worker worker = Workers[i];
-			if (worker.race_id == 0)
+			if (worker.RaceId == 0)
 				continue;
 
-			int workerLeadership = worker.skill_level;
+			int workerLeadership = worker.SkillLevel;
 
-			if (worker.race_id != bestRaceId)
+			if (worker.RaceId != bestRaceId)
 				workerLeadership /= 2;
 
 			if (workerLeadership > bestLeadership)
@@ -1952,12 +1952,12 @@ public class FirmCamp : Firm
 				for (int j = 0; j < Workers.Count; j++)
 				{
 					Worker worker = Workers[j];
-					if (worker.race_id == 0)
+					if (worker.RaceId == 0)
 						continue;
 
-					int workerLeadership = worker.skill_level;
+					int workerLeadership = worker.SkillLevel;
 
-					if (worker.race_id != bestRaceId)
+					if (worker.RaceId != bestRaceId)
 						workerLeadership /= 2;
 
 					if (workerLeadership > bestLeadership)
@@ -2050,7 +2050,7 @@ public class FirmCamp : Firm
 		bool hasSoldierOfDifferentRace = false;
 		foreach (Worker worker in Workers)
 		{
-			if (worker.race_id > 0 && worker.race_id != overseer.RaceId)
+			if (worker.RaceId > 0 && worker.RaceId != overseer.RaceId)
 			{
 				hasSoldierOfDifferentRace = true;
 				break;
@@ -2079,7 +2079,7 @@ public class FirmCamp : Firm
 
 			for (int j = 0; j < firmCamp.Workers.Count; j++)
 			{
-				if (firmCamp.Workers[j].race_id == overseer.RaceId)
+				if (firmCamp.Workers[j].RaceId == overseer.RaceId)
 				{
 					int distance = Misc.points_distance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 					if (distance < bestDistance)

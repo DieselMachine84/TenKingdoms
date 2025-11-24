@@ -284,15 +284,15 @@ public class Spy : IIdObject
 			for (int i = 0; i < firm.Workers.Count; i++)
 			{
 				Worker worker = firm.Workers[i];
-				if (worker.race_id != RaceId)
+				if (worker.RaceId != RaceId)
 					continue;
 
 				//---- if the worker lives in a town ----//
 
-				if (worker.town_recno != 0)
+				if (worker.TownId != 0)
 				{
-					Town town = TownArray[worker.town_recno];
-					int raceId = worker.race_id;
+					Town town = TownArray[worker.TownId];
+					int raceId = worker.RaceId;
 
 					if (town.RacesPopulation[raceId - 1] > town.RacesSpyCount[raceId - 1]) // only when there are non-spy people
 					{
@@ -302,11 +302,11 @@ public class Spy : IIdObject
 				}
 				else //---- if the worker does not live in a town ----//
 				{
-					if (worker.spy_recno == 0) // the loyalty of the spy himself does not change
+					if (worker.SpyId == 0) // the loyalty of the spy himself does not change
 					{
 						bool decLoyaltyChance = (Misc.Random(10 - SpySkill / 10 + 1) == 0);
-						if (decLoyaltyChance && worker.worker_loyalty > 0)
-							worker.worker_loyalty--;
+						if (decLoyaltyChance && worker.WorkerLoyalty > 0)
+							worker.WorkerLoyalty--;
 					}
 				}
 			}
@@ -404,9 +404,9 @@ public class Spy : IIdObject
 
 			foreach (var worker in firm.Workers)
 			{
-				if (worker.spy_recno == SpyId)
+				if (worker.SpyId == SpyId)
 				{
-					worker.spy_recno = 0;
+					worker.SpyId = 0;
 					break;
 				}
 			}
@@ -514,14 +514,14 @@ public class Spy : IIdObject
 
 					//-- if this worker is a spy, it will stay with you --//
 
-					if (worker.spy_recno != 0)
+					if (worker.SpyId != 0)
 						continue;
 
 					//---- if this is a normal worker -----//
 
 					int obeyChance = unitLeadership / 2 + nationReputation / 2;
 
-					if (RaceRes.is_same_race(worker.race_id, RaceId))
+					if (RaceRes.is_same_race(worker.RaceId, RaceId))
 						obeyChance += 50;
 
 					bool obeyFlag = (Misc.Random(100) < obeyChance); // if obeyChance >= 100, all units will object the overseer
@@ -529,7 +529,7 @@ public class Spy : IIdObject
 					//--- if the worker obey, update its loyalty ---//
 
 					if (obeyFlag)
-						worker.worker_loyalty = Math.Max(GameConstants.UNIT_BETRAY_LOYALTY, obeyChance / 2);
+						worker.WorkerLoyalty = Math.Max(GameConstants.UNIT_BETRAY_LOYALTY, obeyChance / 2);
 
 					//--- if the worker does not obey, it is mobilized and attack the base ---//
 
@@ -602,10 +602,10 @@ public class Spy : IIdObject
 
 			foreach (var worker in firm.Workers)
 			{
-				if (worker.spy_recno == 0) // this worker is not a spy
+				if (worker.SpyId == 0) // this worker is not a spy
 					return false;
 
-				if (SpyArray[worker.spy_recno].TrueNationId != TrueNationId)
+				if (SpyArray[worker.SpyId].TrueNationId != TrueNationId)
 					return false; // this worker is a spy, but not belong to the same nation
 			}
 
@@ -708,7 +708,7 @@ public class Spy : IIdObject
 			int i;
 			for (i = 0; i < firm.Workers.Count; i++)
 			{
-				if (firm.Workers[i].spy_recno == SpyId)
+				if (firm.Workers[i].SpyId == SpyId)
 					break;
 			}
 
@@ -1072,9 +1072,9 @@ public class Spy : IIdObject
 
 		foreach (var worker in firm.Workers)
 		{
-			if (worker.spy_recno == SpyId)
+			if (worker.SpyId == SpyId)
 			{
-				spyHitPoints = worker.hit_points;
+				spyHitPoints = worker.HitPoints;
 				break;
 			}
 		}
@@ -1092,7 +1092,7 @@ public class Spy : IIdObject
 
 		for (int i = 0; i < firm.Workers.Count; i++)
 		{
-			int spyId = firm.Workers[i].spy_recno;
+			int spyId = firm.Workers[i].SpyId;
 
 			//------ if this worker is a spy ------//
 
@@ -1112,7 +1112,7 @@ public class Spy : IIdObject
 			}
 			else //----- if this worker is not a spy ------//
 			{
-				defenseRating += 4 + firm.Workers[i].hit_points / 30;
+				defenseRating += 4 + firm.Workers[i].HitPoints / 30;
 				defenderCount++;
 			}
 		}
@@ -1175,7 +1175,7 @@ public class Spy : IIdObject
 			for (int i = firm.Workers.Count - 1; i >= 0; i--)
 			{
 				Worker worker = firm.Workers[i];
-				if (worker.spy_recno == SpyId)
+				if (worker.SpyId == SpyId)
 				{
 					firm.KillWorker(worker);
 					// TODO too early return?

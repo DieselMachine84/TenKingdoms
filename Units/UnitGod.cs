@@ -426,13 +426,13 @@ public class UnitGod : Unit
 	{
 		//-- only heal human units belonging to our nation --//
 
-		if (nationRecno == NationId && worker.race_id > 0)
+		if (nationRecno == NationId && worker.RaceId > 0)
 		{
-			int changePoints = worker.max_hit_points() / (4 + Misc.Random(4)); // divided by (4 to 7)
+			int changePoints = worker.MaxHitPoints() / (4 + Misc.Random(4)); // divided by (4 to 7)
 
 			changePoints = Math.Max(changePoints, 10);
 
-			worker.change_hit_points(Math.Max(1, changePoints / divider));
+			worker.ChangeHitPoints(Math.Max(1, changePoints / divider));
 		}
 	}
 
@@ -440,11 +440,11 @@ public class UnitGod : Unit
 	{
 		//-- only cast on enemy units -----//
 
-		if (nationRecno != NationId && worker.race_id > 0)
+		if (nationRecno != NationId && worker.RaceId > 0)
 		{
 			int changePoints = 7 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
-			worker.change_loyalty(-Math.Max(1, changePoints / divider));
+			worker.ChangeLoyalty(-Math.Max(1, changePoints / divider));
 		}
 	}
 
@@ -452,16 +452,16 @@ public class UnitGod : Unit
 	{
 		//-- only cast on mayan units belonging to our nation --//
 
-		if (nationRecno == NationId && worker.race_id == (int)Race.RACE_MAYA)
+		if (nationRecno == NationId && worker.RaceId == (int)Race.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
-			int newCombatLevel = worker.combat_level + Math.Max(1, changePoints / divider);
+			int newCombatLevel = worker.CombatLevel + Math.Max(1, changePoints / divider);
 
 			if (newCombatLevel > 100)
 				newCombatLevel = 100;
 
-			worker.combat_level = newCombatLevel;
+			worker.CombatLevel = newCombatLevel;
 		}
 	}
 
@@ -568,7 +568,7 @@ public class UnitGod : Unit
 			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
 				Worker worker = firm.Workers[j];
-				if (worker.race_id == (int)Race.RACE_MAYA && worker.combat_level < 100)
+				if (worker.RaceId == (int)Race.RACE_MAYA && worker.CombatLevel < 100)
 					curRating += 5;
 			}
 
@@ -626,8 +626,8 @@ public class UnitGod : Unit
 			for (int j = 0; j < firm.Workers.Count; j++)
 			{
 				Worker worker = firm.Workers[j];
-				totalHitPoints += worker.hit_points;
-				totalMaxHitPoints += worker.max_hit_points();
+				totalHitPoints += worker.HitPoints;
+				totalMaxHitPoints += worker.MaxHitPoints();
 			}
 
 			if (totalMaxHitPoints == 0)
@@ -926,10 +926,10 @@ public class UnitGod : Unit
 				for (int j = firm.Workers.Count - 1; j >= 0; j--)
 				{
 					Worker worker = firm.Workers[j];
-					if (worker.race_id == (int)Race.RACE_ZULU)
-						curRating += (unit.Skill.CombatLevel - worker.combat_level) * 2;
+					if (worker.RaceId == (int)Race.RACE_ZULU)
+						curRating += (unit.Skill.CombatLevel - worker.CombatLevel) * 2;
 					else
-						curRating += unit.Skill.CombatLevel - worker.combat_level;
+						curRating += unit.Skill.CombatLevel - worker.CombatLevel;
 				}
 
 				if (curRating > bestRating)

@@ -93,7 +93,7 @@ public class AssignGeneralTask : AITask
 
             for (int i = 0; i < firm.Workers.Count; i++)
             {
-                int rating = firm.Workers[i].skill_level * GameConstants.MapSize / 100;
+                int rating = firm.Workers[i].SkillLevel * GameConstants.MapSize / 100;
                 rating += GameConstants.MapSize - Misc.points_distance(firm.LocCenterX, firm.LocCenterY, firmLocX, firmLocY);
                 //TODO take general race into account
 

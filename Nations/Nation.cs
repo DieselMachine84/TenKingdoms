@@ -2955,14 +2955,14 @@ public class Nation : NationBase
 
 			foreach (Worker worker in firm.Workers)
 			{
-				if (worker.race_id != 0)
+				if (worker.RaceId != 0)
 					hasHuman = true;
 
-				if (worker.race_id == preferedRaceId)
+				if (worker.RaceId == preferedRaceId)
 				{
 					//---- can't recruit this unit if he lives in a foreign town ----//
 
-					if (worker.town_recno != 0 && TownArray[worker.town_recno].NationId != nation_recno)
+					if (worker.TownId != 0 && TownArray[worker.TownId].NationId != nation_recno)
 						continue;
 
 					//--------------------------//
@@ -2992,15 +2992,15 @@ public class Nation : NationBase
 
 			//---- can't recruit this unit if he lives in a foreign town ----//
 
-			if (worker.town_recno != 0 && TownArray[worker.town_recno].NationId != nation_recno)
+			if (worker.TownId != 0 && TownArray[worker.TownId].NationId != nation_recno)
 				continue;
 
 			//--------------------------------//
 
-			if (worker.race_id != 0) // if this is a human unit, take it first
+			if (worker.RaceId != 0) // if this is a human unit, take it first
 				workerId = i + 1;
 
-			if (worker.race_id == preferedRaceId) // if we have a better one, take the better one
+			if (worker.RaceId == preferedRaceId) // if we have a better one, take the better one
 			{
 				workerId = i + 1;
 				break;
@@ -3080,19 +3080,19 @@ public class Nation : NationBase
 				for (int i = 0; i < firm.Workers.Count; i++)
 				{
 					Worker worker = firm.Workers[i];
-					if (worker.race_id == 0)
+					if (worker.RaceId == 0)
 						continue;
 
 					int curRating = 0;
 
-					if (worker.race_id == race_id)
+					if (worker.RaceId == race_id)
 						curRating += 50;
 
-					if (worker.rank_id == Unit.RANK_GENERAL)
+					if (worker.RankId == Unit.RANK_GENERAL)
 						curRating += 50;
 
-					if (worker.skill_id == Skill.SKILL_LEADING)
-						curRating += worker.skill_level;
+					if (worker.SkillId == Skill.SKILL_LEADING)
+						curRating += worker.SkillLevel;
 
 					if (curRating > bestRating)
 					{
@@ -4935,11 +4935,11 @@ public class Nation : NationBase
 			for (int j = 0; j < firmCamp.Workers.Count; j++)
 			{
 				Worker worker = firmCamp.Workers[j];
-				if ((worker.race_id == 0) || (raceId != 0 && worker.race_id != raceId))
+				if ((worker.RaceId == 0) || (raceId != 0 && worker.RaceId != raceId))
 					continue;
 
-				int workerLeadership = worker.skill_level;
-				int workerInfluence = worker.skill_level * 2 / 3; // 66% of the leadership
+				int workerLeadership = worker.SkillLevel;
+				int workerInfluence = worker.SkillLevel * 2 / 3; // 66% of the leadership
 
 				//if (race_res.is_same_race(race_id, worker.race_id))
 				//workerInfluence += workerInfluence / 3;		// 33% bonus if the king's race is also the same as the general

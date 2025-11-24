@@ -87,7 +87,7 @@ public class FirmBase : Firm
 
         foreach (Worker worker in Workers)
         {
-            UnitRes[worker.unit_id].unit_change_nation(newNationRecno, NationId, worker.rank_id);
+            UnitRes[worker.UnitId].unit_change_nation(newNationRecno, NationId, worker.RankId);
         }
 
         //------ update base_count_array[] --------//
@@ -214,22 +214,22 @@ public class FirmBase : Firm
         {
             //------- increase prayer skill -----------//
 
-            if (worker.skill_level < overseerSkill)
+            if (worker.SkillLevel < overseerSkill)
             {
-                int incValue = Math.Max(20, overseerSkill - worker.skill_level)
-                    * worker.hit_points / worker.max_hit_points()
-                    * (100 + worker.skill_potential * 2) / 100;
+                int incValue = Math.Max(20, overseerSkill - worker.SkillLevel)
+                    * worker.HitPoints / worker.MaxHitPoints()
+                    * (100 + worker.SkillPotential * 2) / 100;
 
                 // with random factors, resulting in 75% to 125% of the original
-                int levelMinor = worker.skill_level_minor + incValue;
+                int levelMinor = worker.SkillLevelMinor + incValue;
 
                 while (levelMinor >= 100)
                 {
                     levelMinor -= 100;
-                    worker.skill_level++;
+                    worker.SkillLevel++;
                 }
 
-                worker.skill_level_minor = levelMinor;
+                worker.SkillLevelMinor = levelMinor;
             }
         }
     }
@@ -238,8 +238,8 @@ public class FirmBase : Firm
     {
         foreach (Worker worker in Workers)
         {
-            if (worker.hit_points < worker.max_hit_points())
-                worker.hit_points++;
+            if (worker.HitPoints < worker.MaxHitPoints())
+                worker.HitPoints++;
         }
     }
 

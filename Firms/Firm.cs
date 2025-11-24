@@ -723,7 +723,7 @@ public abstract class Firm : IIdObject
 	{
 		foreach (Worker worker in Workers)
 		{
-			if (worker.is_nation(FirmId, NationArray.player_recno, checkSpy))
+			if (worker.IsNation(FirmId, NationArray.player_recno, checkSpy))
 				return true;
 		}
 
@@ -745,7 +745,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			totalSkill += Convert.ToDouble(worker.skill_level * worker.hit_points) / Convert.ToDouble(worker.max_hit_points());
+			totalSkill += Convert.ToDouble(worker.SkillLevel * worker.HitPoints) / Convert.ToDouble(worker.MaxHitPoints());
 		}
 
 		//----- include skill in the calculation ------//
@@ -805,7 +805,7 @@ public abstract class Firm : IIdObject
 
 			foreach (Worker worker in Workers)
 			{
-				int townNationId = TownArray[worker.town_recno].NationId;
+				int townNationId = TownArray[worker.TownId].NationId;
 
 				if (townNationId != NationId)
 				{
@@ -843,7 +843,7 @@ public abstract class Firm : IIdObject
 
 			foreach (Worker worker in Workers)
 			{
-				if (TownArray[worker.town_recno].NationId != NationId)
+				if (TownArray[worker.TownId].NationId != NationId)
 					payWorkerCount++;
 			}
 
@@ -862,7 +862,7 @@ public abstract class Firm : IIdObject
 
 			foreach (Worker worker in Workers)
 			{
-				if (worker.race_id != 0)
+				if (worker.RaceId != 0)
 					humanUnitCount++;
 			}
 
@@ -875,8 +875,8 @@ public abstract class Firm : IIdObject
 			{
 				foreach (Worker worker in Workers)
 				{
-					if (worker.race_id != 0)
-						worker.change_loyalty(-1);
+					if (worker.RaceId != 0)
+						worker.ChangeLoyalty(-1);
 				}
 			}
 		}
@@ -889,22 +889,22 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			int targetLoyalty = worker.target_loyalty(FirmId);
+			int targetLoyalty = worker.TargetLoyalty(FirmId);
 
-			if (targetLoyalty > worker.worker_loyalty)
+			if (targetLoyalty > worker.WorkerLoyalty)
 			{
-				int incValue = (targetLoyalty - worker.worker_loyalty) / 10;
+				int incValue = (targetLoyalty - worker.WorkerLoyalty) / 10;
 
-				int newLoyalty = worker.worker_loyalty + Math.Max(1, incValue);
+				int newLoyalty = worker.WorkerLoyalty + Math.Max(1, incValue);
 
 				if (newLoyalty > targetLoyalty)
 					newLoyalty = targetLoyalty;
 
-				worker.worker_loyalty = newLoyalty;
+				worker.WorkerLoyalty = newLoyalty;
 			}
-			else if (targetLoyalty < worker.worker_loyalty)
+			else if (targetLoyalty < worker.WorkerLoyalty)
 			{
-				worker.worker_loyalty--;
+				worker.WorkerLoyalty--;
 			}
 		}
 	}
@@ -925,8 +925,8 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			if (worker.race_id != 0)
-				raceCountArray[worker.race_id - 1]++;
+			if (worker.RaceId != 0)
+				raceCountArray[worker.RaceId - 1]++;
 		}
 
 		//---------------------------------------------//
@@ -1079,7 +1079,7 @@ public abstract class Firm : IIdObject
 
 			foreach (Worker worker in Workers)
 			{
-				int workerSkill = worker.skill_level;
+				int workerSkill = worker.SkillLevel;
 
 				if (workerSkill < minWorkerSkill)
 				{
@@ -1102,9 +1102,9 @@ public abstract class Firm : IIdObject
 
 		if (FirmRes[FirmType].LiveInTown)
 		{
-			newWorker.town_recno = AssignSettle(unit.RaceId, unit.Loyalty); // the worker settles down
+			newWorker.TownId = AssignSettle(unit.RaceId, unit.Loyalty); // the worker settles down
 
-			if (newWorker.town_recno == 0)
+			if (newWorker.TownId == 0)
 			{
 				//--- the unit was DeinitSprite(), and now the assign settle action failed, we need to InitSprite() to restore it ---//
 
@@ -1116,45 +1116,45 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			newWorker.town_recno = 0;
-			newWorker.worker_loyalty = unit.Loyalty;
+			newWorker.TownId = 0;
+			newWorker.WorkerLoyalty = unit.Loyalty;
 		}
 
 		//------- add the worker to the firm -------//
 
 		Workers.Add(newWorker);
 
-		newWorker.name_id = unit.NameId;
-		newWorker.race_id = unit.RaceId;
-		newWorker.unit_id = unit.UnitType;
-		newWorker.rank_id = unit.Rank;
+		newWorker.NameId = unit.NameId;
+		newWorker.RaceId = unit.RaceId;
+		newWorker.UnitId = unit.UnitType;
+		newWorker.RankId = unit.Rank;
 
-		newWorker.skill_id = FirmSkillId;
-		newWorker.skill_level = unit.Skill.GetSkillLevel(FirmSkillId);
+		newWorker.SkillId = FirmSkillId;
+		newWorker.SkillLevel = unit.Skill.GetSkillLevel(FirmSkillId);
 
-		if (newWorker.skill_level == 0 && newWorker.race_id != 0)
-			newWorker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
+		if (newWorker.SkillLevel == 0 && newWorker.RaceId != 0)
+			newWorker.SkillLevel = GameConstants.CITIZEN_SKILL_LEVEL;
 
-		newWorker.combat_level = unit.Skill.CombatLevel;
-		newWorker.hit_points = (int)unit.HitPoints;
+		newWorker.CombatLevel = unit.Skill.CombatLevel;
+		newWorker.HitPoints = (int)unit.HitPoints;
 
-		if (newWorker.hit_points == 0) // 0.? will become 0 in (double) to (int) conversion
-			newWorker.hit_points = 1;
+		if (newWorker.HitPoints == 0) // 0.? will become 0 in (double) to (int) conversion
+			newWorker.HitPoints = 1;
 
 		if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			newWorker.extra_para = unit.WeaponVersion;
+			newWorker.ExtraPara = unit.WeaponVersion;
 		}
 		else if (unit.RaceId != 0)
 		{
-			newWorker.extra_para = unit.CurPower;
+			newWorker.ExtraPara = unit.CurPower;
 		}
 		else
 		{
-			newWorker.extra_para = 0;
+			newWorker.ExtraPara = 0;
 		}
 
-		newWorker.init_potential();
+		newWorker.InitPotential();
 
 		//------ if the recruited worker is a spy -----//
 
@@ -1162,7 +1162,7 @@ public abstract class Firm : IIdObject
 		{
 			SpyArray[unit.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
 
-			newWorker.spy_recno = unit.SpyId;
+			newWorker.SpyId = unit.SpyId;
 			unit.SpyId = 0; // reset it now so Unit.Deinit() won't delete the Spy in SpyArray
 		}
 		
@@ -1263,17 +1263,17 @@ public abstract class Firm : IIdObject
 	{
 		//------- decrease worker no. and create an unit -----//
 
-		if (worker.race_id != 0 && worker.name_id != 0)
-			RaceRes[worker.race_id].free_name_id(worker.name_id);
+		if (worker.RaceId != 0 && worker.NameId != 0)
+			RaceRes[worker.RaceId].free_name_id(worker.NameId);
 
-		if (worker.town_recno != 0)
-			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
+		if (worker.TownId != 0)
+			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
 
 		//-------- if this worker is a spy ---------//
 
-		if (worker.spy_recno != 0)
+		if (worker.SpyId != 0)
 		{
-			Spy spy = SpyArray[worker.spy_recno];
+			Spy spy = SpyArray[worker.SpyId];
 			spy.SetPlace(Spy.SPY_UNDEFINED, 0);
 			SpyArray.DeleteSpy(spy);
 		}
@@ -1281,7 +1281,7 @@ public abstract class Firm : IIdObject
 		//--- decrease the nation unit count as the Unit has already increased it ----//
 
 		if (!FirmRes[FirmType].LiveInTown)
-			UnitRes[worker.unit_id].dec_nation_unit_count(NationId);
+			UnitRes[worker.UnitId].dec_nation_unit_count(NationId);
 
 		Workers.Remove(worker);
 
@@ -1623,7 +1623,7 @@ public abstract class Firm : IIdObject
 		{
 			Worker worker = Workers[mobileWorkerId - 1];
 
-			if (!worker.is_nation(FirmId, NationId))
+			if (!worker.IsNation(FirmId, NationId))
 			{
 				// prohibit mobilizing workers not under your color
 				mobileWorkerId++;
@@ -1656,7 +1656,7 @@ public abstract class Firm : IIdObject
 	{
 		Worker worker = Workers[workerId - 1];
 
-		if (remoteAction <= InternalConstants.COMMAND_REMOTE && !worker.is_nation(FirmId, NationId))
+		if (remoteAction <= InternalConstants.COMMAND_REMOTE && !worker.IsNation(FirmId, NationId))
 		{
 			// cannot order mobilization of foreign workers
 			return 0;
@@ -1791,8 +1791,8 @@ public abstract class Firm : IIdObject
 		while (Workers.Count > 0)
 		{
 			Worker worker = Workers[0];
-			int townRecno = worker.town_recno;
-			int raceId = worker.race_id;
+			int townRecno = worker.TownId;
+			int raceId = worker.RaceId;
 			int oldWorkerCount = Workers.Count;
 
 			if (ResignWorker(worker) == 0)
@@ -1811,20 +1811,20 @@ public abstract class Firm : IIdObject
 		//------- decrease worker no. and create an unit -----//
 		int unitRecno = 0;
 
-		if (worker.race_id != 0 && worker.name_id != 0)
-			RaceRes[worker.race_id].free_name_id(worker.name_id);
+		if (worker.RaceId != 0 && worker.NameId != 0)
+			RaceRes[worker.RaceId].free_name_id(worker.NameId);
 
-		if (worker.town_recno != 0) // town_recno is 0 if the workers in the firm do not live in towns
+		if (worker.TownId != 0) // town_recno is 0 if the workers in the firm do not live in towns
 		{
-			Town town = TownArray[worker.town_recno];
+			Town town = TownArray[worker.TownId];
 
-			town.RacesJoblessPopulation[worker.race_id - 1]++; // move into jobless population
+			town.RacesJoblessPopulation[worker.RaceId - 1]++; // move into jobless population
 			town.JoblessPopulation++;
 
 			//------ put the spy in the town -------//
 
-			if (worker.spy_recno != 0)
-				SpyArray[worker.spy_recno].SetPlace(Spy.SPY_TOWN, worker.town_recno);
+			if (worker.SpyId != 0)
+				SpyArray[worker.SpyId].SetPlace(Spy.SPY_TOWN, worker.TownId);
 		}
 		else
 		{
@@ -1850,7 +1850,7 @@ public abstract class Firm : IIdObject
 		//------------ create a unit --------------//
 
 		// this worker no longer has a job as it has been resigned
-		int unitRecno = CreateUnit(worker.unit_id, worker.town_recno, false);
+		int unitRecno = CreateUnit(worker.UnitId, worker.TownId, false);
 
 		if (unitRecno == 0)
 			return 0;
@@ -1953,36 +1953,36 @@ public abstract class Firm : IIdObject
 		{
 			//------- increase worker skill -----------//
 
-			if (IsOperating() && worker.skill_level < 100) // only train when the workers are working
+			if (IsOperating() && worker.SkillLevel < 100) // only train when the workers are working
 			{
-				incValue = Math.Max(10, 100 - worker.skill_level)
-					* worker.hit_points / worker.max_hit_points()
-					* (100 + worker.skill_potential) / 100 / 2;
+				incValue = Math.Max(10, 100 - worker.SkillLevel)
+					* worker.HitPoints / worker.MaxHitPoints()
+					* (100 + worker.SkillPotential) / 100 / 2;
 
 				//-------- increase level minor now --------//
 
 				// with random factors, resulting in 75% to 125% of the original
-				levelMinor = worker.skill_level_minor + incValue * (75 + Misc.Random(50)) / 100;
+				levelMinor = worker.SkillLevelMinor + incValue * (75 + Misc.Random(50)) / 100;
 
 				while (levelMinor >= 100)
 				{
 					levelMinor -= 100;
-					worker.skill_level++;
+					worker.SkillLevel++;
 				}
 
-				worker.skill_level_minor = levelMinor;
+				worker.SkillLevelMinor = levelMinor;
 			}
 
 			//------- increase worker hit points --------//
 
-			int maxHitPoints = worker.max_hit_points();
+			int maxHitPoints = worker.MaxHitPoints();
 
-			if (worker.hit_points < maxHitPoints)
+			if (worker.HitPoints < maxHitPoints)
 			{
-				worker.hit_points += 2; // units in firms recover twice as fast as they are mobile
+				worker.HitPoints += 2; // units in firms recover twice as fast as they are mobile
 
-				if (worker.hit_points > maxHitPoints)
-					worker.hit_points = maxHitPoints;
+				if (worker.HitPoints > maxHitPoints)
+					worker.HitPoints = maxHitPoints;
 			}
 		}
 
@@ -2044,11 +2044,11 @@ public abstract class Firm : IIdObject
 
 				Worker worker = Workers[workerId - 1];
 
-				if (worker.town_recno == town.TownId)
+				if (worker.TownId == town.TownId)
 					continue;
 
-				int raceId = worker.race_id;
-				Town workerTown = TownArray[worker.town_recno];
+				int raceId = worker.RaceId;
+				Town workerTown = TownArray[worker.TownId];
 
 				//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
 
@@ -2075,7 +2075,7 @@ public abstract class Firm : IIdObject
 					continue;
 
 				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.loyalty() - 40);
+				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.Loyalty() - 40);
 
 				if (ConfigAdv.firm_migrate_stricter_rules
 					    ? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
@@ -2094,8 +2094,8 @@ public abstract class Firm : IIdObject
 	{
 		Worker worker = Workers[workerId - 1];
 
-		int raceId = worker.race_id;
-		Town srcTown = TownArray[worker.town_recno];
+		int raceId = worker.RaceId;
+		Town srcTown = TownArray[worker.TownId];
 		Town destTown = TownArray[destTownRecno];
 
 		//------------- add news --------------//
@@ -2108,7 +2108,7 @@ public abstract class Firm : IIdObject
 
 		//--------- migrate now ----------//
 
-		worker.town_recno = destTownRecno;
+		worker.TownId = destTownRecno;
 
 		//--------- decrease the population of the home town ------//
 
@@ -2126,15 +2126,15 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			Town town = TownArray[worker.town_recno];
+			Town town = TownArray[worker.TownId];
 
 			if (town.NationId == 0) // if it's an independent town
 			{
-				town.RacesResistance[worker.race_id - 1, NationId - 1] -=
+				town.RacesResistance[worker.RaceId - 1, NationId - 1] -=
 					GameConstants.RESISTANCE_DECREASE_PER_WORKER;
 
-				if (town.RacesResistance[worker.race_id - 1, NationId - 1] < 0.0)
-					town.RacesResistance[worker.race_id - 1, NationId - 1] = 0.0;
+				if (town.RacesResistance[worker.RaceId - 1, NationId - 1] < 0.0)
+					town.RacesResistance[worker.RaceId - 1, NationId - 1] = 0.0;
 			}
 		}
 	}
@@ -2220,21 +2220,21 @@ public abstract class Firm : IIdObject
 				Worker worker = new Worker();
 				Workers.Add(worker);
 
-				worker.race_id = raceId;
-				worker.rank_id = Unit.RANK_SOLDIER;
-				worker.unit_id = RaceRes[raceId].basic_unit_id;
-				worker.worker_loyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
+				worker.RaceId = raceId;
+				worker.RankId = Unit.RANK_SOLDIER;
+				worker.UnitId = RaceRes[raceId].basic_unit_id;
+				worker.WorkerLoyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
 
 				if (FirmRes[FirmType].LiveInTown)
-					worker.town_recno = townRecno;
+					worker.TownId = townRecno;
 
-				worker.combat_level = GameConstants.CITIZEN_COMBAT_LEVEL;
-				worker.hit_points = GameConstants.CITIZEN_HIT_POINTS;
+				worker.CombatLevel = GameConstants.CITIZEN_COMBAT_LEVEL;
+				worker.HitPoints = GameConstants.CITIZEN_HIT_POINTS;
 
-				worker.skill_id = FirmSkillId;
-				worker.skill_level = GameConstants.CITIZEN_SKILL_LEVEL;
+				worker.SkillId = FirmSkillId;
+				worker.SkillLevel = GameConstants.CITIZEN_SKILL_LEVEL;
 
-				worker.init_potential();
+				worker.InitPotential();
 
 				//--------- if this is a military camp ---------//
 				//
@@ -2245,7 +2245,7 @@ public abstract class Firm : IIdObject
 				//---------------------------------------------------//
 
 				if (!FirmRes[FirmType].LiveInTown)
-					UnitRes[worker.unit_id].inc_nation_unit_count(NationId);
+					UnitRes[worker.UnitId].inc_nation_unit_count(NationId);
 
 				//------ if the recruited worker is a spy -----//
 
@@ -2256,7 +2256,7 @@ public abstract class Firm : IIdObject
 					// the 3rd parameter is which spy to recruit
 					int spyRecno = SpyArray.FindTownSpy(townRecno, raceId, Misc.Random(spyCount) + 1);
 
-					worker.spy_recno = spyRecno;
+					worker.SpyId = spyRecno;
 
 					SpyArray[spyRecno].SetPlace(Spy.SPY_FIRM, FirmId);
 				}
@@ -2282,9 +2282,9 @@ public abstract class Firm : IIdObject
 		Town town = TownArray[townRecno];
 		Worker worker = Workers[workerId - 1];
 
-		if (worker.town_recno != townRecno)
+		if (worker.TownId != townRecno)
 		{
-			if (!worker.is_nation(FirmId, NationId))
+			if (!worker.IsNation(FirmId, NationId))
 				return;
 			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				return;
@@ -2302,23 +2302,23 @@ public abstract class Firm : IIdObject
 
 		//-------------------------------------------------//
 
-		if (worker.town_recno == townRecno)
+		if (worker.TownId == townRecno)
 		{
 			ResignWorker(worker);
 		}
 
 		//--- otherwise, set the worker's home town to the new one ---//
 
-		else if (worker.is_nation(FirmId, NationId) &&
+		else if (worker.IsNation(FirmId, NationId) &&
 		         town.NationId ==
 		         NationId) // only allow when the worker lives in a town belonging to the same nation and moving domestically
 		{
-			int workerLoyalty = worker.loyalty();
+			int workerLoyalty = worker.Loyalty();
 
-			TownArray[worker.town_recno].DecPopulation(worker.race_id, true);
-			town.IncPopulation(worker.race_id, true, workerLoyalty);
+			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
+			town.IncPopulation(worker.RaceId, true, workerLoyalty);
 
-			worker.town_recno = townRecno;
+			worker.TownId = townRecno;
 		}
 	}
 	
@@ -2349,13 +2349,13 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			if (worker.spy_recno != 0 && SpyArray[worker.spy_recno].TrueNationId == captureNationRecno)
+			if (worker.SpyId != 0 && SpyArray[worker.SpyId].TrueNationId == captureNationRecno)
 			{
 				captureUnitCount++;
 			}
-			else if (worker.town_recno != 0)
+			else if (worker.TownId != 0)
 			{
-				if (TownArray[worker.town_recno].NationId == captureNationRecno)
+				if (TownArray[worker.TownId].NationId == captureNationRecno)
 					captureUnitCount++;
 				else
 					otherUnitCount++;
@@ -2642,7 +2642,7 @@ public abstract class Firm : IIdObject
 		int spyRecno;
 
 		if (bribeWorkerId != 0) // the overseer is selected
-			spyRecno = Workers[bribeWorkerId - 1].spy_recno;
+			spyRecno = Workers[bribeWorkerId - 1].SpyId;
 		else
 			spyRecno = UnitArray[OverseerId].SpyId;
 
@@ -2654,7 +2654,7 @@ public abstract class Firm : IIdObject
 		else
 		{
 			if (bribeWorkerId != 0)
-				canBribe = Workers[bribeWorkerId - 1].race_id > 0; // cannot bribe if it's a weapon
+				canBribe = Workers[bribeWorkerId - 1].RaceId > 0; // cannot bribe if it's a weapon
 			else
 				canBribe = UnitArray[OverseerId].Rank != Unit.RANK_KING; // cannot bribe a king
 		}
@@ -2691,9 +2691,9 @@ public abstract class Firm : IIdObject
 			if (workerId != 0)
 			{
 				Worker worker = Workers[workerId - 1];
-				worker.spy_recno = newSpy.SpyId;
-				newSpy.RaceId = worker.race_id;
-				newSpy.NameId = worker.name_id;
+				worker.SpyId = newSpy.SpyId;
+				newSpy.RaceId = worker.RaceId;
+				newSpy.NameId = worker.NameId;
 
 				// if this worker does not have a name, give him one now as a spy must reserve a name (see below on use_name_id() for reasons)
 				if (newSpy.NameId == 0)
@@ -2739,10 +2739,10 @@ public abstract class Firm : IIdObject
 		{
 			Worker worker = Workers[workerId - 1];
 
-			unitLoyalty = worker.loyalty();
-			unitRaceId = worker.race_id;
+			unitLoyalty = worker.Loyalty();
+			unitRaceId = worker.RaceId;
 			unitCommandPower = 0;
-			targetSpyRecno = worker.spy_recno;
+			targetSpyRecno = worker.SpyId;
 		}
 		else if (OverseerId != 0)
 		{
@@ -2919,7 +2919,7 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			Workers[workerId - 1].change_loyalty(GameConstants.REWARD_LOYALTY_INCREASE);
+			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 
 			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 		}
@@ -3235,7 +3235,7 @@ public abstract class Firm : IIdObject
 		{
 			foreach (var worker in Workers)
 			{
-				if (worker.race_id != majorityRace)
+				if (worker.RaceId != majorityRace)
 					foreignRaceCount++;
 			}
 		}

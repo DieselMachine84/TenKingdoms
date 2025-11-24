@@ -1910,11 +1910,11 @@ public class Town : IIdObject
 				{
 					//--- if the worker lives in this town ----//
 
-					if (worker.race_id == raceId && worker.town_recno == TownId)
+					if (worker.RaceId == raceId && worker.TownId == TownId)
 					{
 						if (migrateNow)
 						{
-							worker.town_recno = destTownId;
+							worker.TownId = destTownId;
 							MovePopulation(destTown, raceId, true);
 						}
 
@@ -2465,12 +2465,12 @@ public class Town : IIdObject
 			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
 				Worker worker = firm.Workers[j];
-				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.spy_recno != 0)
+				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.SpyId != 0)
 					continue;
 
 				//--- if the worker lives in this town ----//
 
-				if (worker.race_id == raceId && worker.town_recno == TownId)
+				if (worker.RaceId == raceId && worker.TownId == TownId)
 				{
 					if (firm.ResignWorker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
 						return false;
@@ -3526,7 +3526,7 @@ public class Town : IIdObject
 					Firm firm = FirmArray[LinkedFirms[j]];
 					foreach (Worker worker in firm.Workers)
 					{
-						if (worker.spy_recno != 0 && worker.town_recno == TownId)
+						if (worker.SpyId != 0 && worker.TownId == TownId)
 							restrictRebelCount[i]++;
 					}
 				}
@@ -4902,7 +4902,7 @@ public class Town : IIdObject
 							for (int i = 0; i < firm.Workers.Count; i++)
 							{
 								Worker worker = firm.Workers[i];
-								enemyCombatLevel += worker.hit_points;
+								enemyCombatLevel += worker.HitPoints;
 							}
 						}
 
@@ -5430,7 +5430,7 @@ public class Town : IIdObject
 				for (int j = 0; j < firmCamp.Workers.Count; j++)
 				{
 					Worker worker = firmCamp.Workers[j];
-					if (worker.hit_points < 50.0)
+					if (worker.HitPoints < 50.0)
 					{
 						lowHitPointsSoldiersCount++;
 					}

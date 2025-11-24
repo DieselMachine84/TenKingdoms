@@ -200,7 +200,7 @@ public class NationNew : NationBase
 
                 foreach (Worker worker in firm.Workers)
                 {
-                    if (worker.skill_id == Skill.SKILL_LEADING && worker.skill_level > 50) // TODO constant should depend on preferences
+                    if (worker.SkillId == Skill.SKILL_LEADING && worker.SkillLevel > 50) // TODO constant should depend on preferences
                         possibleCapturerSoldiers.Add((firm, worker));
                 }
             }
