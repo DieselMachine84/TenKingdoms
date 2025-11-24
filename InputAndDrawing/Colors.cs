@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-public class Colors
+public static class Colors
 {
     public const byte VGA_RED = 0xA0;
     public const byte VGA_LIGHT_BLUE = 0xA4;
@@ -25,7 +25,7 @@ public class Colors
     public const byte V_YELLOW = VGA_YELLOW;
     public const byte V_BROWN = VGA_BROWN + 2;
 
-    public const byte V_BACKGROUND = 0xFF; // background color, pixels of this color are not put in VGAputIcon
+    public const byte V_BACKGROUND = 0xFF;
 
     //---------- Define Game Colors --------------//
 
@@ -53,6 +53,17 @@ public class Colors
     public const byte SELECTED_COLOR = 0xEF;
 }
 
+public class ColorRemapMethod
+{
+    public byte PrimaryColor { get; }
+    public byte SecondaryColor { get; }
+
+    public ColorRemapMethod(byte primaryColor, byte secondaryColor)
+    {
+        PrimaryColor = primaryColor;
+        SecondaryColor = secondaryColor;
+    }
+}
 public class ColorRemap
 {
     public byte MainColor { get; private set; }
@@ -60,16 +71,13 @@ public class ColorRemap
 
     public static int[] ColorSchemes { get; } = new int[InternalConstants.MAX_COLOR_SCHEME + 1];
     
-    public static ColorRemap[] color_remap_array = new ColorRemap[InternalConstants.MAX_COLOR_SCHEME + 1];
+    public static ColorRemap[] ColorRemaps { get; } = new ColorRemap[InternalConstants.MAX_COLOR_SCHEME + 1];
 
-    public static byte[,] excitedColorArray = new byte[GameConstants.MAX_NATION + 1, 4];    
     public static void InitRemapTable()
     {
-        const int FIRST_REMAP_KEY = 0xE0; // the source color code of the colors to be remapped
-
         //-------- define color remap scheme -------//
 
-        ColorRemapMethod[] remap_method_array =
+        ColorRemapMethod[] colorRemapPairs =
         {
             new ColorRemapMethod(0xBC, 0xDC), // the first remap table is for independent units
             new ColorRemapMethod(0xA0, 0xC0), // following are eight remap table for each color code
@@ -79,86 +87,107 @@ public class ColorRemap
             new ColorRemapMethod(0xB0, 0xD0),
             new ColorRemapMethod(0xB4, 0xD4),
             new ColorRemapMethod(0xB8, 0xD8),
-            new ColorRemapMethod(0xC4, 0x13),
-            new ColorRemapMethod(0xC8, 0xA8),
-            new ColorRemapMethod(0xCC, 0xAC),
-            new ColorRemapMethod(0xBC, 0xDC)
+            new ColorRemapMethod(0x34, 0x13),
+            new ColorRemapMethod(0x0D, 0xA8),
+            new ColorRemapMethod(0x8A, 0xAC)
         };
+
+        const int firstRemapKey = 0xE0; // the source color code of the colors to be remapped
 
         //---- define the main color code for each color scheme ----//
 
-        byte[] main_color_array = { 0xDC, 0xC0, 0xC4, 0xC8, 0xCC, 0xD0, 0xD4, 0xD8, 0x13, 0xA8, 0xAC };
+        byte[] mainColors = { 0xDC, 0xC0, 0xC4, 0xC8, 0xCC, 0xD0, 0xD4, 0xD8, 0x13, 0xA8, 0xAC };
 
         //-------- initialize color remap table -------//
 
         for (int i = 0; i < InternalConstants.MAX_COLOR_SCHEME + 1; i++) // +1 for independent units
         {
             ColorRemap colorRemap = new ColorRemap();
-            color_remap_array[i] = colorRemap;
+            ColorRemaps[i] = colorRemap;
             
-            colorRemap.MainColor = main_color_array[i];
+            colorRemap.MainColor = mainColors[i];
 
             for (int j = 0; j < 256; j++)
                 colorRemap.ColorTable[j] = (byte)j;
 
-            for (int j = 0; j < 4; j++)
-                colorRemap.ColorTable[FIRST_REMAP_KEY + j] = (byte)(remap_method_array[i].primary_color + j);
+            if (i <= 7)
+            {
+                for (int j = 0; j < 4; j++)
+                    colorRemap.ColorTable[firstRemapKey + j] = (byte)(colorRemapPairs[i].PrimaryColor + j);
 
-            for (int j = 0; j < 4; j++)
-                colorRemap.ColorTable[FIRST_REMAP_KEY + 4 + j] = (byte)(remap_method_array[i].secondary_color + j);
-        }
-        
-        for (int i = 0; i <= InternalConstants.MAX_COLOR_SCHEME; i++)
-        {
-            if (i == 0)
-            {
-                byte[] remapTable = GetColorRemap(ColorSchemes[i], false).ColorTable;
-                excitedColorArray[i, 0] = remapTable[0xe0];
-                excitedColorArray[i, 1] = remapTable[0xe1];
-                excitedColorArray[i, 2] = remapTable[0xe2];
-                excitedColorArray[i, 3] = remapTable[0xe3];
+                for (int j = 0; j < 4; j++)
+                    colorRemap.ColorTable[firstRemapKey + 4 + j] = (byte)(colorRemapPairs[i].SecondaryColor + j);
             }
-            else
+
+            if (i == 8)
             {
-                excitedColorArray[i, 0] = excitedColorArray[i, 1] = excitedColorArray[i, 2] = excitedColorArray[i, 3] = Colors.V_WHITE;
+                colorRemap.ColorTable[firstRemapKey + 0] = 0x34;
+                colorRemap.ColorTable[firstRemapKey + 1] = 0x33;
+                colorRemap.ColorTable[firstRemapKey + 2] = 0x32;
+                colorRemap.ColorTable[firstRemapKey + 3] = 0x31;
+                colorRemap.ColorTable[firstRemapKey + 4] = 0x13;
+                colorRemap.ColorTable[firstRemapKey + 5] = 0x32;
+                colorRemap.ColorTable[firstRemapKey + 6] = 0x31;
+                colorRemap.ColorTable[firstRemapKey + 7] = 0x30;
+            }
+
+            if (i == 9)
+            {
+                colorRemap.ColorTable[firstRemapKey + 0] = 0x0D;
+                colorRemap.ColorTable[firstRemapKey + 1] = 0x0C;
+                colorRemap.ColorTable[firstRemapKey + 2] = 0x0B;
+                colorRemap.ColorTable[firstRemapKey + 3] = 0x0A;
+                colorRemap.ColorTable[firstRemapKey + 4] = 0xA8;
+                colorRemap.ColorTable[firstRemapKey + 5] = 0xA9;
+                colorRemap.ColorTable[firstRemapKey + 6] = 0xAA;
+                colorRemap.ColorTable[firstRemapKey + 7] = 0xAB;
+            }
+
+            if (i == 10)
+            {
+                colorRemap.ColorTable[firstRemapKey + 0] = 0x8A;
+                colorRemap.ColorTable[firstRemapKey + 1] = 0x89;
+                colorRemap.ColorTable[firstRemapKey + 2] = 0x87;
+                colorRemap.ColorTable[firstRemapKey + 3] = 0xAC;
+                colorRemap.ColorTable[firstRemapKey + 4] = 0xAC;
+                colorRemap.ColorTable[firstRemapKey + 5] = 0xAD;
+                colorRemap.ColorTable[firstRemapKey + 6] = 0xAE;
+                colorRemap.ColorTable[firstRemapKey + 7] = 0xAF;
             }
         }
     }
     
     public static ColorRemap GetColorRemap(int scheme, bool isSelected)
     {
-        ColorRemap colorRemap = color_remap_array[scheme];
-
-        byte[] colorRemapTable = colorRemap.ColorTable;
+        ColorRemap colorRemap = ColorRemaps[scheme];
 
         if (isSelected)
         {
-            colorRemapTable[Colors.OUTLINE_CODE] = Colors.SELECTED_COLOR;
-            colorRemapTable[Colors.OUTLINE_SHADOW_CODE] = Colors.SELECTED_COLOR;
+            colorRemap.ColorTable[Colors.OUTLINE_CODE] = Colors.SELECTED_COLOR;
+            colorRemap.ColorTable[Colors.OUTLINE_SHADOW_CODE] = Colors.SELECTED_COLOR;
         }
         else
         {
-            colorRemapTable[Colors.OUTLINE_CODE] = Colors.TRANSPARENT_CODE;
-            colorRemapTable[Colors.OUTLINE_SHADOW_CODE] = Colors.SHADOW_CODE;
+            colorRemap.ColorTable[Colors.OUTLINE_CODE] = Colors.TRANSPARENT_CODE;
+            colorRemap.ColorTable[Colors.OUTLINE_SHADOW_CODE] = Colors.SHADOW_CODE;
         }
 
         return colorRemap;
+    }
+
+    public static byte[] GetExcitedColors(int scheme)
+    {
+        byte[] excitedColors = new byte[4];
+        byte[] remapTable = GetColorRemap(ColorSchemes[scheme], false).ColorTable;
+        excitedColors[0] = remapTable[0xe0];
+        excitedColors[1] = remapTable[0xe1];
+        excitedColors[2] = remapTable[0xe2];
+        excitedColors[3] = remapTable[0xe3];
+        return excitedColors;
     }
     
     public static int GetTextureKey(int nationColor, bool isSelected)
     {
         return nationColor + (isSelected ? GameConstants.MAX_NATION + 1 : 0);
-    }
-}
-
-public class ColorRemapMethod
-{
-    public byte primary_color;
-    public byte secondary_color;
-
-    public ColorRemapMethod(byte primaryColor, byte secondaryColor)
-    {
-        primary_color = primaryColor;
-        secondary_color = secondaryColor;
     }
 }

@@ -77,10 +77,6 @@ public partial class Renderer
 
         Graphics.DrawMiniMapGround(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
 
-        byte[] nationColorArray = NationArray.nation_color_array;
-        byte[,] excitedColorArray = ColorRemap.excitedColorArray;
-        int excitedColorCount = excitedColorArray.GetLength(1);
-        
         //Draw shadows first
         foreach (Town town in TownArray)
         {
@@ -111,11 +107,13 @@ public partial class Renderer
             }
         }
 
+        byte[] nationColors = NationArray.nation_color_array;
+
         foreach (Town town in TownArray)
         {
             byte nationColor = (town.LastBeingAttackedDate == default) || (Info.game_date - town.LastBeingAttackedDate).Days > 2
-                ? nationColorArray[town.NationId]
-                : excitedColorArray[ColorRemap.ColorSchemes[town.NationId], Sys.Instance.FrameNumber % excitedColorCount];
+                ? nationColors[town.NationId]
+                : ColorRemap.GetExcitedColors(town.NationId)[Sys.Instance.FrameNumber % 4];
 
             if (IsExplored(town.LocX1, town.LocY1, town.LocX2, town.LocY2))
             {
@@ -126,8 +124,8 @@ public partial class Renderer
         foreach (Firm firm in FirmArray)
         {
             byte nationColor = (firm.LastAttackedDate == default) || (Info.game_date - firm.LastAttackedDate).Days > 2
-                ? nationColorArray[firm.NationId]
-                : excitedColorArray[ColorRemap.ColorSchemes[firm.NationId], Sys.Instance.FrameNumber % excitedColorCount];
+                ? nationColors[firm.NationId]
+                : ColorRemap.GetExcitedColors(firm.NationId)[Sys.Instance.FrameNumber % 4];
 
             int locX1 = firm.LocX1;
             int locX2 = firm.LocX2;
@@ -162,8 +160,8 @@ public partial class Renderer
                 continue;
 
             byte nationColor = unit.CurAction != Sprite.SPRITE_ATTACK
-                ? nationColorArray[unit.NationId]
-                : excitedColorArray[ColorRemap.ColorSchemes[unit.NationId], Sys.Instance.FrameNumber % excitedColorCount];
+                ? nationColors[unit.NationId]
+                : ColorRemap.GetExcitedColors(unit.NationId)[Sys.Instance.FrameNumber % 4];
 
             int locX = unit.CurLocX;
             int locY = unit.CurLocY;
@@ -188,21 +186,18 @@ public partial class Renderer
                 DrawRectOnMiniMap(tornado.CurLocX - 1, tornado.CurLocY - 1, 3, 3, Colors.TORNADO_COLOR);
         }
 
-        if (Sys.Instance.FrameNumber % 2 == 0)
+        int warPointColor = _warPointColors[Sys.Instance.FrameNumber % 6];
+        for (int i = 0; i < WarPointArray.WarPoints.GetLength(0); i++)
         {
-            int warPointColor = _warPointColors[(Sys.Instance.FrameNumber % 16) / 2];
-            for (int i = 0; i < WarPointArray.WarPoints.GetLength(0); i++)
+            for (int j = 0; j < WarPointArray.WarPoints.GetLength(1); j++)
             {
-                for (int j = 0; j < WarPointArray.WarPoints.GetLength(1); j++)
+                WarPoint warPoint = WarPointArray.WarPoints[i, j];
+                if (warPoint.Strength > 0)
                 {
-                    WarPoint warPoint = WarPointArray.WarPoints[i, j];
-                    if (warPoint.Strength > 0)
-                    {
-                        DrawLineOnMiniMap(i * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
-                            (i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
-                        DrawLineOnMiniMap((i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
-                            i * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
-                    }
+                    DrawLineOnMiniMap(i * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
+                        (i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
+                    DrawLineOnMiniMap((i + 1) * InternalConstants.WARPOINT_ZONE_SIZE, j * InternalConstants.WARPOINT_ZONE_SIZE,
+                        i * InternalConstants.WARPOINT_ZONE_SIZE, (j + 1) * InternalConstants.WARPOINT_ZONE_SIZE, warPointColor);
                 }
             }
         }

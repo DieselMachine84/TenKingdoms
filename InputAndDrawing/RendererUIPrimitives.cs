@@ -990,7 +990,7 @@ public partial class Renderer
 					i += colLength;
 					textChar = text[i];
 
-					byte colorCode = ColorRemap.color_remap_array[textChar - '0'].MainColor;
+					byte colorCode = ColorRemap.ColorRemaps[textChar - '0'].MainColor;
 
 					//TODO
 					//NationArray.disp_nation_color(x, y + 2, colorCode);
