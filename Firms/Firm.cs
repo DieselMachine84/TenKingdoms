@@ -43,7 +43,7 @@ public abstract class Firm : IIdObject
 	
 	public int ClosestTownNameId { get; private set; }
 	private int FirmNameInstanceId { get; set; }
-	public int FirmSkillId { get; protected set; }
+	public int FirmSkillId { get; protected init; }
 	public int OverseerId { get; protected set; }
 	public int OverseerTownId { get; private set; }
 	public int BuilderId { get; set; }
@@ -187,7 +187,6 @@ public abstract class Firm : IIdObject
 		AILinkChecked = true;
 
 		SetupLink();
-
 		SetWorldMatrix();
 
 		InitName();
@@ -226,7 +225,7 @@ public abstract class Firm : IIdObject
 			FirmDieArray.Add(this);
 		}
 
-		// this function must be called before restore_world_matrix(), otherwise the power area can't be completely reset
+		// this function must be called before RestoreWorldMatrix(), otherwise the power area can't be completely reset
 		AssignOverseer(0);
 
 		ResignAllWorker(); // the workers in the firm will be killed if there is no space for creating the workers
@@ -357,7 +356,7 @@ public abstract class Firm : IIdObject
 		{
 			if (usedNumbers[i] != i + 1)
 			{
-				unusedNumber = i;
+				unusedNumber = i + 1;
 				break;
 			}
 		}
@@ -597,7 +596,7 @@ public abstract class Firm : IIdObject
 		if (BuilderId == 0)
 			return;
 
-		if (NationArray[NationId].cash < 0) // if you don't have cash, the repair workers will not work
+		if (NationArray[NationId].cash <= 0.0) // if you don't have cash, the repair workers will not work
 			return;
 
 		Unit unit = UnitArray[BuilderId];
@@ -713,7 +712,7 @@ public abstract class Firm : IIdObject
 
 		//---- if there is a phoenix of the player over this firm ----//
 
-		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(LocX1, LocY1))
+		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(LocCenterX, LocCenterY))
 			return true;
 
 		return false;
@@ -752,7 +751,7 @@ public abstract class Firm : IIdObject
 
 		Productivity = totalSkill / MAX_WORKER - SabotageLevel;
 
-		if (Productivity < 0)
+		if (Productivity < 0.0)
 			Productivity = 0.0;
 	}
 
@@ -831,32 +830,10 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public int YearExpense()
-	{
-		int totalExpense = FirmRes[FirmType].YearCost;
-
-		//---- pay salary to workers from foreign towns ----//
-
-		if (FirmRes[FirmType].LiveInTown)
-		{
-			int payWorkerCount = 0;
-
-			foreach (Worker worker in Workers)
-			{
-				if (TownArray[worker.TownId].NationId != NationId)
-					payWorkerCount++;
-			}
-
-			totalExpense += GameConstants.WORKER_YEAR_SALARY * payWorkerCount;
-		}
-
-		return totalExpense;
-	}
-
 	private void ConsumeFood()
 	{
 		// TODO bug. Only those workers who doesn't live in town should consume food
-		if (NationArray[NationId].food > 0)
+		if (NationArray[NationId].food > 0.0)
 		{
 			int humanUnitCount = 0;
 
@@ -866,7 +843,7 @@ public abstract class Firm : IIdObject
 					humanUnitCount++;
 			}
 
-			NationArray[NationId].consume_food(Convert.ToDouble(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+			NationArray[NationId].consume_food((double)(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
 		}
 		else //--- decrease loyalty if the food has been run out ---//
 		{

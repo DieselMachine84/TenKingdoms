@@ -34,99 +34,12 @@ public class Worker
     {
     }
 
-    public int MaxHitPoints()
-    {
-        return UnitRes[UnitId].hit_points * CombatLevel / 100;
-    }
-
-    public int Loyalty()
-    {
-        // TODO: town may be deleted if last worker is out
-        if (TownId != 0) // if the worker lives in a town
-            return Convert.ToInt32(TownArray[TownId].RacesLoyalty[RaceId - 1]);
-        else
-            return WorkerLoyalty;
-    }
-
-    public int TargetLoyalty(int firmRecno)
-    {
-        if (TownId != 0) // if the worker lives in a town
-        {
-            return Convert.ToInt32(TownArray[TownId].RacesLoyalty[RaceId - 1]);
-        }
-        else
-        {
-            Firm firmPtr = FirmArray[firmRecno];
-
-            if (firmPtr.OverseerId != 0)
-            {
-                Unit overseerUnit = UnitArray[firmPtr.OverseerId];
-
-                int overseerSkill = overseerUnit.Skill.GetSkillLevel(Skill.SKILL_LEADING);
-                int targetLoyalty = 30 + overseerSkill / 2;
-
-                //---------------------------------------------------//
-                //
-                // Soldiers with higher combat and leadership skill
-                // will get discontented if they are led by a general
-                // with low leadership.
-                //
-                //---------------------------------------------------//
-
-                targetLoyalty -= CombatLevel / 2;
-
-                if (SkillLevel > overseerSkill)
-                    targetLoyalty -= SkillLevel - overseerSkill;
-
-                if (overseerUnit.Rank == Unit.RANK_KING)
-                    targetLoyalty += 20;
-
-                if (RaceRes.is_same_race(RaceId, overseerUnit.RaceId))
-                    targetLoyalty += 20;
-
-                if (targetLoyalty < 0)
-                    targetLoyalty = 0;
-
-                if (targetLoyalty > 100)
-                    targetLoyalty = 100;
-
-                return targetLoyalty;
-            }
-            else //-- if there is no overseer, just return the current loyalty --//
-            {
-                return WorkerLoyalty;
-            }
-        }
-    }
-
-    public bool IsNation(int firmRecno, int nationRecno, bool checkSpy = false)
-    {
-        if (checkSpy && SpyId != 0)
-            return SpyArray[SpyId].TrueNationId == nationRecno;
-
-        if (TownId != 0)
-            return TownArray[TownId].NationId == nationRecno;
-        else
-            return FirmArray[firmRecno].NationId == nationRecno;
-    }
-
     public void InitPotential()
     {
         if (Misc.Random(10) == 0) // 1 out of 10 has a higher than normal potential in this skill
         {
             SkillPotential = 50 + Misc.Random(51); // 50 to 100 potential
         }
-    }
-
-    public void ChangeLoyalty(int loyaltyChange)
-    {
-        if (TownId != 0) // for those live in town, their loyalty are based on town people loyalty.
-            return;
-
-        int newLoyalty = WorkerLoyalty + loyaltyChange;
-
-        newLoyalty = Math.Min(100, newLoyalty);
-        WorkerLoyalty = Math.Max(0, newLoyalty);
     }
 
     public void ChangeHitPoints(int changePoints)
@@ -136,6 +49,11 @@ public class Worker
 
         newHitPoints = Math.Min(maxHitPoints, newHitPoints);
         HitPoints = Math.Max(0, newHitPoints);
+    }
+
+    public int MaxHitPoints()
+    {
+        return UnitRes[UnitId].hit_points * CombatLevel / 100;
     }
 
     public int MaxAttackRange()
@@ -153,5 +71,80 @@ public class Worker
         }
 
         return maxRange;
+    }
+    
+    public int Loyalty()
+    {
+        // TODO: town may be deleted if last worker is out
+        return TownId != 0 ? (int)TownArray[TownId].RacesLoyalty[RaceId - 1] : WorkerLoyalty;
+    }
+
+    public int TargetLoyalty(int firmId)
+    {
+        if (TownId != 0) // if the worker lives in a town
+        {
+            return (int)TownArray[TownId].RacesLoyalty[RaceId - 1];
+        }
+
+        Firm firm = FirmArray[firmId];
+
+        if (firm.OverseerId != 0)
+        {
+            Unit overseer = UnitArray[firm.OverseerId];
+
+            int overseerSkill = overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING);
+            int targetLoyalty = 30 + overseerSkill / 2;
+
+            //---------------------------------------------------//
+            //
+            // Soldiers with higher combat and leadership skill
+            // will get discontented if they are led by a general with low leadership.
+            //
+            //---------------------------------------------------//
+
+            targetLoyalty -= CombatLevel / 2;
+
+            if (SkillLevel > overseerSkill)
+                targetLoyalty -= SkillLevel - overseerSkill;
+
+            if (overseer.Rank == Unit.RANK_KING)
+                targetLoyalty += 20;
+
+            if (RaceRes.is_same_race(RaceId, overseer.RaceId))
+                targetLoyalty += 20;
+
+            if (targetLoyalty < 0)
+                targetLoyalty = 0;
+
+            if (targetLoyalty > 100)
+                targetLoyalty = 100;
+
+            return targetLoyalty;
+        }
+        else //-- if there is no overseer, just return the current loyalty --//
+        {
+            return WorkerLoyalty;
+        }
+    }
+
+    public void ChangeLoyalty(int loyaltyChange)
+    {
+        if (TownId != 0) // for those live in town, their loyalty are based on town people loyalty.
+            return;
+
+        int newLoyalty = WorkerLoyalty + loyaltyChange;
+        newLoyalty = Math.Min(100, newLoyalty);
+        WorkerLoyalty = Math.Max(0, newLoyalty);
+    }
+    
+    public bool IsNation(int firmId, int nationId, bool checkSpy = false)
+    {
+        if (checkSpy && SpyId != 0)
+            return SpyArray[SpyId].TrueNationId == nationId;
+
+        if (TownId != 0)
+            return TownArray[TownId].NationId == nationId;
+        
+        return FirmArray[firmId].NationId == nationId;
     }
 }
