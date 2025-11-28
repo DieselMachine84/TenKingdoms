@@ -23,6 +23,11 @@ public partial class Renderer
 
     private void HandleUnitDetailsInput(Unit unit)
     {
+        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+                                        _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
+        if (colorSquareButtonPressed)
+            GoToLocation(unit.CurLocX, unit.CurLocY);
+
         unit.HandleDetailsInput(this);
     }
 }

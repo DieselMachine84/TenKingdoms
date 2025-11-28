@@ -11,7 +11,6 @@ public partial class Renderer
     // TODO Controlled by Rebels panel
     // TODO train unit progress
     // TODO display auto collect and auto grant values
-    // TODO go to town location when pressing color square
     // TODO list box scroll
 
     private const int TrainSkillPanelX = DetailsX1 + 2;
@@ -262,6 +261,11 @@ public partial class Renderer
 
     private void HandleTownDetailsInput(Town town)
     {
+        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+                                        _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
+        if (colorSquareButtonPressed)
+            GoToLocation(town.LocCenterX, town.LocCenterY);
+
         if (TownDetailsMode == TownDetailsMode.Train)
         {
             HandleTrainMenuInput(town);

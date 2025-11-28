@@ -21,9 +21,7 @@ public partial class Renderer
 
         // TODO display hit points
         
-        bool mouseOnBuilderOrRequestBuilderButton = _mouseButtonX >= DetailsX1 + 10 && _mouseButtonX <= DetailsX1 + 38 &&
-                                                    _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
-        if (_leftMousePressed && mouseOnBuilderOrRequestBuilderButton)
+        if (_leftMousePressed && IsMouseOnBuilderOrRequestBuilderButton())
         {
             if (ShowBuilderButton(firm))
                 Graphics.DrawBitmapScaled(_buttonRepairDownTexture, DetailsX1 + 10, DetailsY1 + 54, _buttonRepairDownTextureWidth, _buttonRepairDownTextureHeight);
@@ -40,9 +38,7 @@ public partial class Renderer
 
         if (firm.OwnFirm())
         {
-            bool mouseOnSellDestructButton = _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
-                                             _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
-            if (_leftMousePressed && mouseOnSellDestructButton)
+            if (_leftMousePressed && IsMouseOnSellOrDestructButton())
             {
                 if (!firm.UnderConstruction && firm.CanSell())
                     Graphics.DrawBitmapScaled(_buttonSellDownTexture, DetailsX1 + 370, DetailsY1 + 52, _buttonSellDownTextureWidth, _buttonSellDownTextureHeight);
@@ -91,26 +87,14 @@ public partial class Renderer
         }
     }
 
-    private bool ShowBuilderButton(Firm firm)
-    {
-        return !firm.UnderConstruction && firm.BuilderId != 0 && firm.ShouldShowInfo();
-    }
-
-    private bool ShowRequestBuilderButton(Firm firm)
-    {
-        return !firm.UnderConstruction && firm.BuilderId == 0 && firm.OwnFirm() && firm.FindIdleBuilder() != 0;
-    }
-
-    private bool IsFirmSpyListEnabled(Firm firm)
-    {
-        return firm.PlayerSpyCount > 0;
-    }
-
     private void HandleFirmDetailsInput(Firm firm)
     {
-        bool repairOrRequestRepairButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 10 && _mouseButtonX <= DetailsX1 + 38 &&
-                                                  _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
-        if (repairOrRequestRepairButtonPressed)
+        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+                                        _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
+        if (colorSquareButtonPressed)
+            GoToLocation(firm.LocCenterX, firm.LocCenterY);
+        
+        if (_leftMouseReleased && IsMouseOnBuilderOrRequestBuilderButton())
         {
             if (ShowBuilderButton(firm) && UnitArray[firm.BuilderId].IsOwn())
             {
@@ -134,9 +118,7 @@ public partial class Renderer
             }
         }
 
-        bool sellOrDestructButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
-                                           _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
-        if (sellOrDestructButtonPressed)
+        if (_leftMouseReleased && IsMouseOnSellOrDestructButton())
         {
             if (firm.OwnFirm())
             {
@@ -155,5 +137,32 @@ public partial class Renderer
         }
 
         firm.HandleDetailsInput(this);
+    }
+    
+    private bool ShowBuilderButton(Firm firm)
+    {
+        return !firm.UnderConstruction && firm.BuilderId != 0 && firm.ShouldShowInfo();
+    }
+
+    private bool ShowRequestBuilderButton(Firm firm)
+    {
+        return !firm.UnderConstruction && firm.BuilderId == 0 && firm.OwnFirm() && firm.FindIdleBuilder() != 0;
+    }
+
+    private bool IsFirmSpyListEnabled(Firm firm)
+    {
+        return firm.PlayerSpyCount > 0;
+    }
+
+    private bool IsMouseOnBuilderOrRequestBuilderButton()
+    {
+        return _mouseButtonX >= DetailsX1 + 10 && _mouseButtonX <= DetailsX1 + 38 &&
+               _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+    }
+
+    private bool IsMouseOnSellOrDestructButton()
+    {
+        return _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
+               _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
     }
 }
