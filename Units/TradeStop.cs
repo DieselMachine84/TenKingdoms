@@ -104,7 +104,7 @@ public class CaravanStop : TradeStop
 				break;
 
 			case Firm.FIRM_FACTORY:
-				id = ((FirmFactory)firm).ProductRawId + PICK_UP_PRODUCT_FIRST - 1;
+				id = ((FirmFactory)firm).ProductId + PICK_UP_PRODUCT_FIRST - 1;
 				if (id != 0)
 				{
 					goodsNum++;
@@ -196,7 +196,7 @@ public class ShipStop : TradeStop
 					break;
 
 				case Firm.FIRM_FACTORY:
-					if ((id = ((FirmFactory)firm).ProductRawId) != 0) // 1-3
+					if ((id = ((FirmFactory)firm).ProductId) != 0) // 1-3
 					{
 						id += GameConstants.MAX_RAW; // 4-6
 						goodsNum++;

@@ -18,9 +18,46 @@ public partial class Renderer
         PutTextCenter(FontSan, firm.FirmName(), firmNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
-        // TODO display sell, destroy, repair and request repair buttons
+
         // TODO display hit points
         
+        bool mouseOnBuilderOrRequestBuilderButton = _mouseButtonX >= DetailsX1 + 10 && _mouseButtonX <= DetailsX1 + 38 &&
+                                                    _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+        if (_leftMousePressed && mouseOnBuilderOrRequestBuilderButton)
+        {
+            if (ShowBuilderButton(firm))
+                Graphics.DrawBitmapScaled(_buttonRepairDownTexture, DetailsX1 + 10, DetailsY1 + 54, _buttonRepairDownTextureWidth, _buttonRepairDownTextureHeight);
+            if (ShowRequestBuilderButton(firm))
+                Graphics.DrawBitmapScaled(_buttonRequestRepairDownTexture, DetailsX1 + 10, DetailsY1 + 54, _buttonRequestRepairDownTextureWidth, _buttonRequestRepairDownTextureHeight);
+        }
+        else
+        {
+            if (ShowBuilderButton(firm))
+                Graphics.DrawBitmapScaled(_buttonRepairUpTexture, DetailsX1 + 10, DetailsY1 + 54, _buttonRepairUpTextureWidth, _buttonRepairUpTextureHeight);
+            if (ShowRequestBuilderButton(firm))
+                Graphics.DrawBitmapScaled(_buttonRequestRepairUpTexture, DetailsX1 + 10, DetailsY1 + 54, _buttonRequestRepairUpTextureWidth, _buttonRequestRepairUpTextureHeight);
+        }
+
+        if (firm.OwnFirm())
+        {
+            bool mouseOnSellDestructButton = _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
+                                             _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+            if (_leftMousePressed && mouseOnSellDestructButton)
+            {
+                if (!firm.UnderConstruction && firm.CanSell())
+                    Graphics.DrawBitmapScaled(_buttonSellDownTexture, DetailsX1 + 370, DetailsY1 + 52, _buttonSellDownTextureWidth, _buttonSellDownTextureHeight);
+                else
+                    Graphics.DrawBitmapScaled(_buttonDestructDownTexture, DetailsX1 + 370, DetailsY1 + 52, _buttonDestructDownTextureWidth, _buttonDestructDownTextureHeight);
+            }
+            else
+            {
+                if (!firm.UnderConstruction && firm.CanSell())
+                    Graphics.DrawBitmapScaled(_buttonSellUpTexture, DetailsX1 + 370, DetailsY1 + 52, _buttonSellUpTextureWidth, _buttonSellUpTextureHeight);
+                else
+                    Graphics.DrawBitmapScaled(_buttonDestructUpTexture, DetailsX1 + 370, DetailsY1 + 52, _buttonDestructUpTextureWidth, _buttonDestructUpTextureHeight);
+            }
+        }
+
         if (firm.UnderConstruction)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 96);
@@ -54,6 +91,16 @@ public partial class Renderer
         }
     }
 
+    private bool ShowBuilderButton(Firm firm)
+    {
+        return !firm.UnderConstruction && firm.BuilderId != 0 && firm.ShouldShowInfo();
+    }
+
+    private bool ShowRequestBuilderButton(Firm firm)
+    {
+        return !firm.UnderConstruction && firm.BuilderId == 0 && firm.OwnFirm() && firm.FindIdleBuilder() != 0;
+    }
+
     private bool IsFirmSpyListEnabled(Firm firm)
     {
         return firm.PlayerSpyCount > 0;
@@ -61,8 +108,52 @@ public partial class Renderer
 
     private void HandleFirmDetailsInput(Firm firm)
     {
-        // TODO handle sell, destroy, repair and request repair buttons
-        
+        bool repairOrRequestRepairButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 10 && _mouseButtonX <= DetailsX1 + 38 &&
+                                                  _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+        if (repairOrRequestRepairButtonPressed)
+        {
+            if (ShowBuilderButton(firm) && UnitArray[firm.BuilderId].IsOwn())
+            {
+                /*if (remote.is_enable())
+                {
+                    // packet structure : <firm recno>
+			        short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_BUILDER, sizeof(short));
+			        *shortPtr = firm_recno;
+                }
+                else
+                {*/
+                    firm.SetBuilder(0);
+                //}
+            }
+            else
+            {
+                if (ShowRequestBuilderButton(firm))
+                {
+                    firm.SendIdleBuilderHere(InternalConstants.COMMAND_PLAYER);
+                }
+            }
+        }
+
+        bool sellOrDestructButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
+                                           _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+        if (sellOrDestructButtonPressed)
+        {
+            if (firm.OwnFirm())
+            {
+                if (!firm.UnderConstruction && firm.CanSell())
+                {
+                    firm.SellFirm(InternalConstants.COMMAND_PLAYER);
+                }
+                else
+                {
+                    if (firm.UnderConstruction)
+                        firm.CancelConstruction(InternalConstants.COMMAND_PLAYER);
+                    else
+                        firm.DestructFirm(InternalConstants.COMMAND_PLAYER);
+                }
+            }
+        }
+
         firm.HandleDetailsInput(this);
     }
 }

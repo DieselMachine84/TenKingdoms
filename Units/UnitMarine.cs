@@ -887,7 +887,7 @@ public class UnitMarine : Unit
 				if (factory.AIStatus == Firm.FACTORY_RELOCATE)
 					continue; // clearing the factory stock, so no unloading
 
-				if (factory.ProductRawId - 1 == i)
+				if (factory.ProductId - 1 == i)
 				{
 					totalDemand = (int)(factory.MaxRawStockQty - factory.RawStockQty);
 					firmSelectedIndex++;
@@ -1097,7 +1097,7 @@ public class UnitMarine : Unit
 			}
 
 			//---------- check the supply of this goods in the factory ---------//
-			if (factory.ProductRawId != goodsId + 1)
+			if (factory.ProductId != goodsId + 1)
 				continue; // incorrect product
 
 			totalSupply += Math.Max((int)(factory.StockQty - keepStockQty), 0);
@@ -1811,7 +1811,7 @@ public class UnitMarine : Unit
 
 					break;
 				case Firm.FIRM_FACTORY:
-					id = ((FirmFactory)firm).ProductRawId + GameConstants.MAX_RAW;
+					id = ((FirmFactory)firm).ProductId + GameConstants.MAX_RAW;
 					if (id != 0)
 					{
 						if (goodsNum == 0)

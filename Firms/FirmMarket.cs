@@ -267,14 +267,14 @@ public class FirmMarket : Firm
 			{
 				FirmFactory firmFactory = (FirmFactory)firm;
 
-				if (firmFactory.ProductRawId != 0)
+				if (firmFactory.ProductId != 0)
 				{
 					int j;
 					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = market_goods_array[j];
 
-						if (marketGoods.ProductId == firmFactory.ProductRawId)
+						if (marketGoods.ProductId == firmFactory.ProductId)
 						{
 							is_inputing_array[j] = true;
 
@@ -330,7 +330,7 @@ public class FirmMarket : Firm
 
 					if (firm.FirmType == FIRM_FACTORY && IsRetailMarket())
 					{
-						SetGoods(false, ((FirmFactory)firm).ProductRawId, i);
+						SetGoods(false, ((FirmFactory)firm).ProductId, i);
 						break;
 					}
 				}
@@ -708,7 +708,7 @@ public class FirmMarket : Firm
 			{
 				FirmFactory firmFactory = (FirmFactory)firm;
 
-				if (firmFactory.ProductRawId == productId && firmFactory.StockQty > firmFactory.MaxStockQty / 5.0)
+				if (firmFactory.ProductId == productId && firmFactory.StockQty > firmFactory.MaxStockQty / 5.0)
 				{
 					product_supply_firm_array.Add(firm.FirmId);
 				}
@@ -766,7 +766,7 @@ public class FirmMarket : Firm
 
 				FirmFactory firmFactory = (FirmFactory)firm;
 
-				if (firmFactory.ProductRawId == productId)
+				if (firmFactory.ProductId == productId)
 					stockLevel = 100.0 * firmFactory.StockQty / firmFactory.MaxStockQty;
 			}
 

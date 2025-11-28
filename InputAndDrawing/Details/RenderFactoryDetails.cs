@@ -6,11 +6,11 @@ public partial class Renderer
     {
         DrawMineFactoryPanel(DetailsX1 + 2, DetailsY1 + 96);
         
-        RawInfo rawInfo = RawRes[factory.ProductRawId];
+        RawInfo rawInfo = RawRes[factory.ProductId];
         Graphics.DrawBitmap(rawInfo.GetLargeProductTexture(Graphics), DetailsX1 + 12, DetailsY1 + 104,
             rawInfo.LargeProductIconWidth * 3 / 4, rawInfo.LargeProductIconHeight * 3 / 4);
         
-        string manufacturingProduct = "Producing " + factory.ProductRawId switch
+        string manufacturingProduct = "Producing " + factory.ProductId switch
         {
             1 => "Clay",
             2 => "Copper",

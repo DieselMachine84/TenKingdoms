@@ -86,7 +86,6 @@ public class FirmArray : DynArray<Firm>
 
 	public void Process()
 	{
-		List<Firm> firmsToDelete = new List<Firm>();
 		var dayFrameNumber = Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY;
 
 		foreach (Firm firm in this)
@@ -115,7 +114,8 @@ public class FirmArray : DynArray<Firm>
 
 					if (firm.HitPoints <= 0.0)
 					{
-						firmsToDelete.Add(firm);
+						SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DEST");
+						DeleteFirm(firm);
 						continue;
 					}
 
@@ -140,12 +140,6 @@ public class FirmArray : DynArray<Firm>
 			}
 
 			firm.ProcessAnimation();
-		}
-
-		foreach (Firm firm in firmsToDelete)
-		{
-			SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DEST");
-			DeleteFirm(firm);
 		}
 	}
 

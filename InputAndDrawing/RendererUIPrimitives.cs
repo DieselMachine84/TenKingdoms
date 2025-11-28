@@ -259,6 +259,31 @@ public partial class Renderer
 	private IntPtr _buttonSpySkillTexture;
 	private int _buttonSpySkillWidth;
 	private int _buttonSpySkillHeight;
+
+	private IntPtr _buttonRepairUpTexture;
+	private int _buttonRepairUpTextureWidth;
+	private int _buttonRepairUpTextureHeight;
+	private IntPtr _buttonRepairDownTexture;
+	private int _buttonRepairDownTextureWidth;
+	private int _buttonRepairDownTextureHeight;
+	private IntPtr _buttonRequestRepairUpTexture;
+	private int _buttonRequestRepairUpTextureWidth;
+	private int _buttonRequestRepairUpTextureHeight;
+	private IntPtr _buttonRequestRepairDownTexture;
+	private int _buttonRequestRepairDownTextureWidth;
+	private int _buttonRequestRepairDownTextureHeight;
+	private IntPtr _buttonSellUpTexture;
+	private int _buttonSellUpTextureWidth;
+	private int _buttonSellUpTextureHeight;
+	private IntPtr _buttonSellDownTexture;
+	private int _buttonSellDownTextureWidth;
+	private int _buttonSellDownTextureHeight;
+	private IntPtr _buttonDestructUpTexture;
+	private int _buttonDestructUpTextureWidth;
+	private int _buttonDestructUpTextureHeight;
+	private IntPtr _buttonDestructDownTexture;
+	private int _buttonDestructDownTextureWidth;
+	private int _buttonDestructDownTextureHeight;
 	
 	private void CreateUITextures()
 	{
@@ -679,6 +704,47 @@ public partial class Renderer
 		_buttonSpySkillHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpySkillWidth, _buttonSpySkillHeight);
 		_buttonSpySkillTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpySkillWidth, _buttonSpySkillHeight);
+		
+		buttonData = buttonImages.Read("REPAIRU");
+		_buttonRepairUpTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonRepairUpTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRepairUpTextureWidth, _buttonRepairUpTextureHeight);
+		_buttonRepairUpTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRepairUpTextureWidth, _buttonRepairUpTextureHeight);
+		buttonData = buttonImages.Read("REPAIRD");
+		_buttonRepairDownTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonRepairDownTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRepairDownTextureWidth, _buttonRepairDownTextureHeight);
+		_buttonRepairDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRepairDownTextureWidth, _buttonRepairDownTextureHeight);
+		buttonData = buttonImages.Read("REPAIRQU");
+		_buttonRequestRepairUpTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonRequestRepairUpTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRequestRepairUpTextureWidth, _buttonRequestRepairUpTextureHeight);
+		_buttonRequestRepairUpTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRequestRepairUpTextureWidth, _buttonRequestRepairUpTextureHeight);
+		buttonData = buttonImages.Read("REPAIRQD");
+		_buttonRequestRepairDownTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonRequestRepairDownTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRequestRepairDownTextureWidth, _buttonRequestRepairDownTextureHeight);
+		_buttonRequestRepairDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonRequestRepairDownTextureWidth, _buttonRequestRepairDownTextureHeight);
+		buttonData = buttonImages.Read("V_SEL-U");
+		_buttonSellUpTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSellUpTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSellUpTextureWidth, _buttonSellUpTextureHeight);
+		_buttonSellUpTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSellUpTextureWidth, _buttonSellUpTextureHeight);
+		buttonData = buttonImages.Read("V_SEL-D");
+		_buttonSellDownTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSellDownTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSellDownTextureWidth, _buttonSellDownTextureHeight);
+		_buttonSellDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSellDownTextureWidth, _buttonSellDownTextureHeight);
+		buttonData = buttonImages.Read("V_DEM-U");
+		_buttonDestructUpTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDestructUpTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDestructUpTextureWidth, _buttonDestructUpTextureHeight);
+		_buttonDestructUpTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDestructUpTextureWidth, _buttonDestructUpTextureHeight);
+		buttonData = buttonImages.Read("V_DEM-D");
+		_buttonDestructDownTextureWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonDestructDownTextureHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDestructDownTextureWidth, _buttonDestructDownTextureHeight);
+		_buttonDestructDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDestructDownTextureWidth, _buttonDestructDownTextureHeight);
 	}
 
 	private void CreateBuildButtonTextures(int colorScheme)

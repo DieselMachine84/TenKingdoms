@@ -2491,7 +2491,7 @@ public abstract class Firm : IIdObject
 		return true;
 	}
 
-	public int FindIdleBuilder(bool nearest)
+	public int FindIdleBuilder()
 	{
 		int minDist = Int32.MaxValue;
 		int resultRecno = 0;
@@ -2528,9 +2528,6 @@ public abstract class Firm : IIdObject
 				continue;
 			}
 
-			if (!nearest)
-				return unit.SpriteId;
-
 			int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, LocX1, LocY1);
 			if (curDist < minDist)
 			{
@@ -2542,7 +2539,7 @@ public abstract class Firm : IIdObject
 		return resultRecno;
 	}
 
-	public void SendIdleBuilderHere(char remoteAction)
+	public void SendIdleBuilderHere(int remoteAction)
 	{
 		if (BuilderId != 0)
 			return;
@@ -2555,7 +2552,7 @@ public abstract class Firm : IIdObject
 		//return;
 		//}
 
-		int unitRecno = FindIdleBuilder(true);
+		int unitRecno = FindIdleBuilder();
 		if (unitRecno == 0)
 			return;
 
@@ -3065,7 +3062,7 @@ public abstract class Firm : IIdObject
 				continue;
 
 			FirmFactory firmFactory = (FirmFactory)firm;
-			if (firmFactory.ProductRawId != rawId)
+			if (firmFactory.ProductId != rawId)
 				continue;
 
 			//--- if one of own factories still has not recruited enough workers ---//

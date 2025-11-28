@@ -4,8 +4,7 @@ namespace TenKingdoms;
 
 public class FirmFactory : Firm
 {
-	//TODO ProductId
-	public int ProductRawId { get; set; } // the raw id. of the product
+	public int ProductId { get; set; } // the raw id. of the product
 
 	public double RawStockQty { get; set; } // raw materials stock
 	public double MaxRawStockQty { get; private set; }
@@ -18,19 +17,19 @@ public class FirmFactory : Firm
 	private int NextOutputLinkId { get; set; }
 	public int NextOutputFirmId { get; private set; }
 
-	private double CurMonthProduction { get; set; }
 	private double LastMonthProduction { get; set; }
+	private double CurMonthProduction { get; set; }
 
 	public FirmFactory()
 	{
 		FirmSkillId = Skill.SKILL_MFT;
-		ProductRawId = 1;
-
-		StockQty = 0.0;
-		MaxStockQty = GameConstants.FACTORY_MAX_STOCK_QTY;
+		ProductId = 1;
 
 		RawStockQty = 0.0;
 		MaxRawStockQty = GameConstants.FACTORY_MAX_RAW_STOCK_QTY;
+
+		StockQty = 0.0;
+		MaxStockQty = GameConstants.FACTORY_MAX_STOCK_QTY;
 	}
 
 	protected override void InitDerived()
@@ -64,7 +63,7 @@ public class FirmFactory : Firm
 						continue;
 
 					Firm otherFirm = FirmArray[firm.LinkedFirms[j]];
-					if (otherFirm.FirmType == FIRM_FACTORY && ((FirmFactory)otherFirm).ProductRawId == rawId)
+					if (otherFirm.FirmType == FIRM_FACTORY && ((FirmFactory)otherFirm).ProductId == rawId)
 					{
 						mineHasLinkedFactory = true;
 						break;
@@ -74,13 +73,13 @@ public class FirmFactory : Firm
 
 				if (!mineHasLinkedFactory)
 				{
-					ProductRawId = rawId;
+					ProductId = rawId;
 					return;
 				}
 
 				if (firmDistance < minDistance)
 				{
-					ProductRawId = firmMine.RawId;
+					ProductId = firmMine.RawId;
 					minDistance = firmDistance;
 				}
 			}
@@ -106,7 +105,7 @@ public class FirmFactory : Firm
 							continue;
 
 						Firm otherFirm = FirmArray[firm.LinkedFirms[k]];
-						if (otherFirm.FirmType == FIRM_FACTORY && ((FirmFactory)otherFirm).ProductRawId == rawId)
+						if (otherFirm.FirmType == FIRM_FACTORY && ((FirmFactory)otherFirm).ProductId == rawId)
 						{
 							marketHasLinkedFactory = true;
 							break;
@@ -115,13 +114,13 @@ public class FirmFactory : Firm
 
 					if (!marketHasLinkedFactory)
 					{
-						ProductRawId = rawId;
+						ProductId = rawId;
 						return;
 					}
 
 					if (firmDistance < minDistance)
 					{
-						ProductRawId = rawId;
+						ProductId = rawId;
 						minDistance = firmDistance;
 					}
 				}
@@ -137,8 +136,7 @@ public class FirmFactory : Firm
 
 		UpdateWorker();
 
-		//--------- daily manufacturing activities ---------//
-
+		// produce product once every 3 days
 		if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == FirmId % GameConstants.PROCESS_GOODS_INTERVAL)
 		{
 			InputRaw();
@@ -170,7 +168,7 @@ public class FirmFactory : Firm
 			{
 				FirmMine firmMine = (FirmMine)firm;
 
-				if (firmMine.NextOutputFirmId == FirmId && firmMine.RawId == ProductRawId && firmMine.StockQty > 0.0)
+				if (firmMine.NextOutputFirmId == FirmId && firmMine.RawId == ProductId && firmMine.StockQty > 0.0)
 				{
 					double inputQty = Math.Min(firmMine.StockQty, MaxRawStockQty - RawStockQty);
 
@@ -200,7 +198,7 @@ public class FirmFactory : Firm
 					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = firmMarket.market_goods_array[j];
-						if (marketGoods.RawId == ProductRawId && marketGoods.StockQty > 0.0)
+						if (marketGoods.RawId == ProductId && marketGoods.StockQty > 0.0)
 						{
 							double inputQty = Math.Min(marketGoods.StockQty, MaxRawStockQty - RawStockQty);
 
@@ -242,7 +240,6 @@ public class FirmFactory : Firm
 		//------- manufacture product --------//
 
 		double produceQty = 20.0 * Productivity / 100.0;
-
 		produceQty = Math.Min(produceQty, RawStockQty);
 		produceQty = Math.Min(produceQty, MaxStockQty - StockQty);
 
@@ -263,8 +260,9 @@ public class FirmFactory : Firm
 			if (LinkedFirmsEnable[NextOutputLinkId - 1] == InternalConstants.LINK_EE)
 			{
 				int firmId = LinkedFirms[NextOutputLinkId - 1];
+				int firmType = FirmArray[firmId].FirmType;
 
-				if (FirmArray[firmId].FirmType == FIRM_MARKET)
+				if (firmType == FIRM_MARKET)
 				{
 					NextOutputFirmId = firmId;
 					return;
@@ -272,7 +270,7 @@ public class FirmFactory : Firm
 			}
 		}
 
-		NextOutputFirmId = 0; // this mine has no linked output firms
+		NextOutputFirmId = 0; // this factory has no linked output firms
 	}
 	
 	public void ChangeProduction()
@@ -286,16 +284,16 @@ public class FirmFactory : Firm
 			//return;
 		//}
 
-		ProductRawId++;
-		if (ProductRawId > GameConstants.MAX_PRODUCT)
-			ProductRawId = 1;
+		ProductId++;
+		if (ProductId > GameConstants.MAX_PRODUCT)
+			ProductId = 1;
 
-		SetProduction(ProductRawId);
+		SetProduction(ProductId);
 	}
 
 	private void SetProduction(int newProductId)
 	{
-		ProductRawId = newProductId;
+		ProductId = newProductId;
 
 		StockQty = 0.0;
 		MaxStockQty = GameConstants.FACTORY_MAX_STOCK_QTY;

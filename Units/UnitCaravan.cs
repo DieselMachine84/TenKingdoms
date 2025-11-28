@@ -140,7 +140,7 @@ public class UnitCaravan : Unit
 				break;
 
 			case Firm.FIRM_FACTORY:
-				goodsId = ((FirmFactory)firm).ProductRawId + GameConstants.MAX_RAW;
+				goodsId = ((FirmFactory)firm).ProductId + GameConstants.MAX_RAW;
 				if (goodsId != 0)
 					stop.pick_up_toggle(goodsId); // enable
 				else
@@ -1222,11 +1222,11 @@ public class UnitCaravan : Unit
 			//-- only if the caravan only carries one type of raw material --//
 
 			if (rawCount == 1 && rawId != 0)
-				curFactory.ProductRawId = rawId;
+				curFactory.ProductId = rawId;
 		}
 
 		//---------- unload materials automatically --------//
-		int goodsId = curFactory.ProductRawId - 1;
+		int goodsId = curFactory.ProductId - 1;
 
 		if (raw_qty_array[goodsId] != 0) // caravan has this raw materials
 		{
@@ -1249,9 +1249,9 @@ public class UnitCaravan : Unit
 
 		//------------- load goods -----------//
 		int searchProductRawId = pickUpType - TradeStop.PICK_UP_PRODUCT_FIRST + 1;
-		if (pickUpType == TradeStop.AUTO_PICK_UP || curFactory.ProductRawId == searchProductRawId) // auto_pick_up or is the product to pick up
+		if (pickUpType == TradeStop.AUTO_PICK_UP || curFactory.ProductId == searchProductRawId) // auto_pick_up or is the product to pick up
 		{
-			int goodsId = curFactory.ProductRawId - 1;
+			int goodsId = curFactory.ProductId - 1;
 			int maxLoadQty = (pickUpType != TradeStop.AUTO_PICK_UP)
 				? (int)curFactory.StockQty
 				: Math.Max(0, (int)curFactory.StockQty - GameConstants.MIN_FIRM_STOCK_QTY); // MAX Qty factory can supply

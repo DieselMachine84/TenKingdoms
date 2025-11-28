@@ -13,8 +13,8 @@ public class FirmMine : Firm
     private int NextOutputLinkId { get; set; }
     public int NextOutputFirmId { get; private set; }
 
-    private double CurMonthProduction { get; set; }
     private double LastMonthProduction { get; set; }
+    private double CurMonthProduction { get; set; }
 
     private SiteArray SiteArray => Sys.Instance.SiteArray;
 
@@ -34,10 +34,11 @@ public class FirmMine : Firm
         if (location != null)
         {
             SiteId = location.SiteId();
-            RawId = SiteArray[SiteId].ObjectId;
-            ReserveQty = SiteArray[SiteId].ReserveQty;
+            Site site = SiteArray[SiteId];
+            RawId = site.ObjectId;
+            ReserveQty = site.ReserveQty;
 
-            SiteArray[SiteId].HasMine = true;
+            site.HasMine = true;
             SiteArray.UntappedRawCount--;
         }
         else
@@ -55,8 +56,6 @@ public class FirmMine : Firm
     {
         if (SiteId != 0)
         {
-            SiteArray.UntappedRawCount++;
-
             Site site = SiteArray[SiteId];
             if (ReserveQty <= 0.0) // if the reserve has been used up
             {
@@ -67,6 +66,7 @@ public class FirmMine : Firm
                 site.ReserveQty = (int)ReserveQty;
                 site.HasMine = false;
             }
+            SiteArray.UntappedRawCount++;
         }
 
         if (RawId != 0)
@@ -150,13 +150,12 @@ public class FirmMine : Firm
         //-------- mine raw materials -------//
 
         double produceQty = Productivity;
-
         produceQty = Math.Min(produceQty, ReserveQty);
         produceQty = Math.Min(produceQty, MaxStockQty - StockQty);
 
         ReserveQty -= produceQty;
-        if (ConfigAdv.mine_unlimited_reserve && ReserveQty < 1500)
-            ReserveQty = 1500;
+        if (ConfigAdv.mine_unlimited_reserve && ReserveQty < 1500.0)
+            ReserveQty = 1500.0;
 
         StockQty += produceQty;
         CurMonthProduction += produceQty;

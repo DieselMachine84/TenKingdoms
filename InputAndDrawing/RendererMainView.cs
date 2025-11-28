@@ -516,10 +516,10 @@ public partial class Renderer
         if (firm.FirmType == Firm.FIRM_FACTORY)
         {
             FirmFactory factory = (FirmFactory)firm;
-            if (layer == NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && factory.ProductRawId != 0)
+            if (layer == NormalLayer && firm.ShouldShowInfo() && !firm.UnderConstruction && factory.ProductId != 0)
             {
                 int cargoCount = (int)(Firm.MAX_CARGO * factory.StockQty / factory.MaxStockQty);
-                RawInfo rawInfo = RawRes[factory.ProductRawId];
+                RawInfo rawInfo = RawRes[factory.ProductId];
                 DrawFirmCargo(Math.Max(cargoCount, 1), firmX, firmY, rawInfo.GetSmallProductTexture(Graphics), rawInfo.SmallProductIconWidth, rawInfo.SmallProductIconHeight);
             }
         }
