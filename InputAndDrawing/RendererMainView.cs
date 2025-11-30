@@ -722,31 +722,16 @@ public partial class Renderer
 
             int skillIconX = unitX - Scale(spriteFrame.OffsetX) + 32;
             int skillIconY = unitY - Scale(spriteFrame.OffsetY) - 37;
-            int iconWidth = Scale(_skillWidth);
-            int iconHeight = Scale(_skillHeight);
             if (skillTexture != IntPtr.Zero)
             {
-                Graphics.DrawBitmap(skillTexture, skillIconX, skillIconY, iconWidth, iconHeight);
+                Graphics.DrawBitmapScaled(skillTexture, skillIconX, skillIconY, _skillWidth, _skillHeight);
             }
 
             if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
             {
                 int spyIconX = skillIconX;
-                int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + iconHeight + 1 : skillIconY;
-                Graphics.DrawBitmap(_spyingTexture, spyIconX, spyIconY, iconWidth, iconHeight);
-
-                if (Config.show_ai_info)
-                {
-                    int color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[unit.TrueNationId()], false).MainColor;
-                    Graphics.DrawLine(spyIconX, spyIconY, spyIconX + iconWidth - 1, spyIconY, color);
-                    Graphics.DrawLine(spyIconX, spyIconY + 1, spyIconX + iconWidth - 1, spyIconY + 1, color);
-                    Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 2, spyIconX + iconWidth - 1, spyIconY + iconHeight - 2, color);
-                    Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 1, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
-                    Graphics.DrawLine(spyIconX, spyIconY, spyIconX, spyIconY + iconHeight - 1, color);
-                    Graphics.DrawLine(spyIconX + 1, spyIconY, spyIconX + 1, spyIconY + iconHeight - 1, color);
-                    Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
-                    Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
-                }
+                int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + Scale(_skillHeight) + 1 : skillIconY;
+                DrawSpyIcon(spyIconX, spyIconY, unit.TrueNationId());
             }
         }
         

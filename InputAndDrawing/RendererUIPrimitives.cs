@@ -1004,7 +1004,27 @@ public partial class Renderer
 		Graphics.DrawRect(x1 + 3, y2 - 3, x2 - x1 - 3, 3, 0, 0, 0);
 		Graphics.DrawRect(x2 - 3, y1 + 3, 3, y2 - y1 - 3, 0, 0, 0);
 	}
-	
+
+	private void DrawSpyIcon(int spyIconX, int spyIconY, int trueNationId)
+	{
+		Graphics.DrawBitmapScaled(_spyingTexture, spyIconX, spyIconY, _skillWidth, _skillHeight);
+
+		if (Config.show_ai_info)
+		{
+			int iconWidth = Scale(_skillWidth);
+			int iconHeight = Scale(_skillHeight);
+			int color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[trueNationId], false).MainColor;
+			Graphics.DrawLine(spyIconX, spyIconY, spyIconX + iconWidth - 1, spyIconY, color);
+			Graphics.DrawLine(spyIconX, spyIconY + 1, spyIconX + iconWidth - 1, spyIconY + 1, color);
+			Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 2, spyIconX + iconWidth - 1, spyIconY + iconHeight - 2, color);
+			Graphics.DrawLine(spyIconX, spyIconY + iconHeight - 1, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
+			Graphics.DrawLine(spyIconX, spyIconY, spyIconX, spyIconY + iconHeight - 1, color);
+			Graphics.DrawLine(spyIconX + 1, spyIconY, spyIconX + 1, spyIconY + iconHeight - 1, color);
+			Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
+			Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
+		}
+	}
+
 	private void PutTextCenter(Font font, string text, int x1, int y1, int x2, int y2)
 	{
 		int textX = x1 + ((x2 - x1 + 1) - font.TextWidth(text)) / 2;

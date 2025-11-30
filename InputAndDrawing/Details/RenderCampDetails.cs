@@ -33,11 +33,26 @@ public partial class Renderer
             }
             else
             {
+                string leadershipText = "Leadership: " + overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING);
+                string loyaltyText = "Loyalty: " + overseer.Loyalty;
                 PutText(FontSan, overseer.GetUnitName(false), DetailsX1 + 111, DetailsY1 + 96);
-                PutText(FontSan, "Leadership: " + overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 126);
-                PutText(FontSan, "Loyalty: " + overseer.Loyalty + " " + overseer.TargetLoyalty, DetailsX1 + 111, DetailsY1 + 156);
-                // TODO loyalty arrow
-                // TODO spy icon
+                PutText(FontSan, leadershipText, DetailsX1 + 111, DetailsY1 + 126);
+                PutText(FontSan, loyaltyText, DetailsX1 + 111, DetailsY1 + 156);
+                int targetLoyalty = overseer.TargetLoyalty;
+                if (NationArray[camp.NationId].cash <= 0.0)
+                    targetLoyalty = 0;
+                if (targetLoyalty != overseer.Loyalty)
+                {
+                    int targetLoyaltyX = DetailsX1 + 111 + FontSan.TextWidth(loyaltyText) + 2;
+                    int targetLoyaltyY = DetailsY1 + 156;
+                    if (targetLoyalty < overseer.Loyalty)
+                        Graphics.DrawBitmap(_arrowDownTexture, targetLoyaltyX, targetLoyaltyY + 4, _arrowDownWidth * 2, _arrowDownHeight * 2);
+                    if (targetLoyalty > overseer.Loyalty)
+                        Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 4, _arrowUpWidth * 2, _arrowUpHeight * 2);
+                    PutText(FontSan, overseer.TargetLoyalty.ToString(), targetLoyaltyX + 16, targetLoyaltyY);
+                }
+                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+                    DrawSpyIcon(DetailsX1 + 111 + FontSan.TextWidth(leadershipText) + 2, DetailsY1 + 132, overseer.TrueNationId());
             }
         }
         
@@ -50,23 +65,52 @@ public partial class Renderer
         if (overseer == null || overseer.Rank != Unit.RANK_KING)
             DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 337);
 
-        if (_selectedWorkerId == 0 && overseer != null)
+        if (overseer != null || _selectedWorkerId != 0)
         {
             PutText(FontSan, "Leadership", DetailsX1 + 13, DetailsY1 + 311, -1, true);
-            PutText(FontSan, overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING).ToString(), DetailsX1 + 113, DetailsY1 + 313, -1, true);
             PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 340, -1, true);
-            PutText(FontSan, overseer.Skill.CombatLevel.ToString(), DetailsX1 + 113, DetailsY1 + 342, -1, true);
             PutText(FontSan, "Hit Points", DetailsX1 + 214, DetailsY1 + 311, -1, true);
-            PutText(FontSan, (int)overseer.HitPoints + "/" + overseer.MaxHitPoints, DetailsX1 + 307, DetailsY1 + 313, -1, true);
-            if (overseer.Rank != Unit.RANK_KING)
+            if (overseer != null && overseer.Rank != Unit.RANK_KING)
             {
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 340, -1, true);
-                PutText(FontSan, overseer.Loyalty + " " + overseer.TargetLoyalty, DetailsX1 + 307, DetailsY1 + 342, -1, true);
             }
-        }
-        else
-        {
-            // TODO draw worker details
+
+            string leadershipText;
+            string combatLevelText;
+            string hitPointsText;
+            int loyalty;
+            int targetLoyalty;
+            if (overseer != null)
+            {
+                leadershipText = overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING).ToString();
+                combatLevelText = overseer.Skill.CombatLevel.ToString();
+                hitPointsText = (int)overseer.HitPoints + "/" + overseer.MaxHitPoints;
+                loyalty = overseer.Loyalty;
+                targetLoyalty = overseer.TargetLoyalty;
+            }
+            else
+            {
+                Worker worker = camp.Workers[_selectedWorkerId - 1];
+                leadershipText = worker.SkillLevel.ToString();
+                combatLevelText = worker.CombatLevel.ToString();
+                hitPointsText = worker.HitPoints + "/" + worker.MaxHitPoints();
+                loyalty = worker.Loyalty();
+                targetLoyalty = worker.TargetLoyalty(camp.FirmId);
+            }
+            PutText(FontSan, leadershipText, DetailsX1 + 113, DetailsY1 + 313, -1, true);
+            PutText(FontSan, combatLevelText, DetailsX1 + 113, DetailsY1 + 342, -1, true);
+            PutText(FontSan, hitPointsText, DetailsX1 + 307, DetailsY1 + 313, -1, true);
+            PutText(FontSan, loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 342, -1, true);
+            if (loyalty != targetLoyalty)
+            {
+                int targetLoyaltyX = DetailsX1 + 296 + FontSan.TextWidth(loyalty.ToString()) + 2;
+                int targetLoyaltyY = DetailsY1 + 342;
+                if (targetLoyalty < loyalty)
+                    Graphics.DrawBitmap(_arrowDownTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowDownWidth, _arrowDownHeight);
+                if (targetLoyalty > loyalty)
+                    Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowUpWidth, _arrowUpHeight);
+                PutText(FontSan, targetLoyalty.ToString(), targetLoyaltyX + 8, targetLoyaltyY, -1, true);
+            }
         }
 
         if (camp.OwnFirm())

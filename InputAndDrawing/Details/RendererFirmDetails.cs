@@ -3,23 +3,21 @@ namespace TenKingdoms;
 public partial class Renderer
 {
     // TODO show spies list, show bribe menu, show assassination result, show view secret menu
-    // TODO go to firm location when pressing color square
     
     private void DrawFirmDetails(Firm firm)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-        int firmNameX1 = DetailsX1 + 2;
         if (firm.NationId != 0)
         {
-            firmNameX1 += 8 + _colorSquareWidth * 2;
             int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.NationId], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
-        PutTextCenter(FontSan, firm.FirmName(), firmNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+        PutTextCenter(FontSan, firm.FirmName(), DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
 
         // TODO display hit points
+        PutTextCenter(FontSan, (int)firm.HitPoints + "/" + (int)firm.MaxHitPoints, DetailsX1 + 2, DetailsY1 + 68, DetailsX2 - 4, DetailsY1 + 68);
         
         if (_leftMousePressed && IsMouseOnBuilderOrRequestBuilderButton())
         {
@@ -81,8 +79,35 @@ public partial class Renderer
             PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel.ToString() : worker.SkillLevel.ToString(),
                 DetailsX1 + 64 + 100 * (i % 4), y + 13 + 50 * (i / 4));
             
-            // TODO worker hit points bar
-            // TODO spy icon
+            int hitBarX1 = DetailsX1 + 12 + 100 * (i % 4);
+            int hitBarY = y + 48 + 50 * (i / 4);
+            int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * worker.HitPoints / worker.MaxHitPoints();
+            const int hitBarLightBorder = 0;
+            const int hitBarDarkBorder = 3;
+            const int hitBarBody = 1;
+            int hitBarColor = 0xA8;
+            if (worker.MaxHitPoints() >= 51 && worker.MaxHitPoints() <= 100)
+                hitBarColor = 0xB4;
+            if (worker.MaxHitPoints() >= 101)
+                hitBarColor = 0xAC;
+            Graphics.DrawLine(hitBarX1, hitBarY, hitBarX2, hitBarY, hitBarColor + hitBarLightBorder); //top
+            Graphics.DrawLine(hitBarX1, hitBarY + 1, hitBarX2, hitBarY + 1, hitBarColor + hitBarLightBorder); //top
+            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 4, hitBarX2, hitBarY + 4, hitBarColor + hitBarDarkBorder); //bottom
+            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 5, hitBarX2, hitBarY + 5, hitBarColor + hitBarDarkBorder); //bottom
+            Graphics.DrawLine(hitBarX1, hitBarY, hitBarX1, hitBarY + 5, hitBarColor + hitBarLightBorder); //left
+            Graphics.DrawLine(hitBarX1 + 1, hitBarY, hitBarX1 + 1, hitBarY + 5, hitBarColor + hitBarLightBorder); //left
+            Graphics.DrawLine(hitBarX2 - 1, hitBarY + 2, hitBarX2 - 1, hitBarY + 3, hitBarColor + hitBarDarkBorder); //right
+            Graphics.DrawLine(hitBarX2, hitBarY + 2, hitBarX2, hitBarY + 3, hitBarColor + hitBarDarkBorder); //right
+            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 2, hitBarX2 - 2, hitBarY + 2, hitBarColor + hitBarBody); //body
+            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 3, hitBarX2 - 2, hitBarY + 3, hitBarColor + hitBarBody); //body
+            
+            if (worker.SpyId != 0 && (SpyArray[worker.SpyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
+            {
+                int spyIconX = DetailsX1 + 90 + 100 * (i % 4);
+                int spyIconY = y + 19 + 50 * (i / 4);
+                DrawSpyIcon(spyIconX, spyIconY, SpyArray[worker.SpyId].TrueNationId);
+            }
+            
             // TODO selected worker
         }
     }
