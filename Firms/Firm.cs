@@ -933,6 +933,317 @@ public abstract class Firm : IIdObject
 	}
 	
 
+	private void SetupLink()
+	{
+		//-----------------------------------------------------------------------------//
+		// check the connected firms location and structure if AILinkChecked is true
+		//-----------------------------------------------------------------------------//
+
+		if (AIFirm)
+			AILinkChecked = false;
+
+
+		FirmInfo firmInfo = FirmRes[FirmType];
+
+		//----- build firm-to-firm link relationship -------//
+
+		foreach (Firm firm in FirmArray)
+		{
+			if (firm.FirmId == FirmId)
+				continue;
+
+			//---- do not allow links between firms of different nation ----//
+
+			if (firm.NationId != NationId)
+				continue;
+
+			//---------- check if the firm is close enough to this firm -------//
+
+			if (!Misc.AreFirmsLinked(this, firm))
+				continue;
+
+			if (!firmInfo.IsLinkableToFirm(firm.FirmType))
+				continue;
+
+			//------- determine the default link status ------//
+
+			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
+			// if the two firms are of different nations, default link status is both side disabled
+			int defaultLinkStatus;
+			if (firm.NationId == NationId)
+				defaultLinkStatus = firmInfo.DefaultLinkStatus(firm.FirmType);
+			else
+				defaultLinkStatus = InternalConstants.LINK_DD;
+
+			//-------- add the link now -------//
+
+			LinkedFirms.Add(firm.FirmId);
+			LinkedFirmsEnable.Add(defaultLinkStatus);
+
+			// now from the other firm's side
+			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
+				defaultLinkStatus = InternalConstants.LINK_DE;
+
+			else if (defaultLinkStatus == InternalConstants.LINK_DE)
+				defaultLinkStatus = InternalConstants.LINK_ED;
+
+			firm.LinkedFirms.Add(FirmId);
+			firm.LinkedFirmsEnable.Add(defaultLinkStatus);
+
+			if (firm.AIFirm)
+				firm.AILinkChecked = false;
+		}
+
+		//----- build firm-to-town link relationship -------//
+
+		foreach (Town town in TownArray)
+		{
+			//------ check if the town is close enough to this firm -------//
+
+			if (!Misc.AreTownAndFirmLinked(town, this))
+				continue;
+
+			if (!firmInfo.IsLinkableToTown)
+				return;
+
+			//------- determine the default link status ------//
+			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
+			// if the two firms are of different nations, default link status is both side disabled
+			int defaultLinkStatus;
+			if (town.NationId == NationId)
+				defaultLinkStatus = InternalConstants.LINK_EE;
+			else
+				defaultLinkStatus = InternalConstants.LINK_DD;
+
+			//---------------------------------------------------//
+			// If this is a camp, it can be linked to the town when either the town is an independent one
+			// or the town is not linked to any camps of its own.
+			//---------------------------------------------------//
+
+			if (FirmType == FIRM_CAMP)
+			{
+				// TODO enable link only for enemy town?
+				if (town.NationId == 0 || !town.HasLinkedOwnCamp)
+					defaultLinkStatus = InternalConstants.LINK_EE;
+			}
+
+			//-------- add the link now -------//
+
+			LinkedTowns.Add(town.TownId);
+			LinkedTownsEnable.Add(defaultLinkStatus);
+
+			// now from the town's side
+			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
+				defaultLinkStatus = InternalConstants.LINK_DE;
+
+			else if (defaultLinkStatus == InternalConstants.LINK_DE)
+				defaultLinkStatus = InternalConstants.LINK_ED;
+
+			town.LinkedFirms.Add(FirmId);
+			town.LinkedFirmsEnable.Add(defaultLinkStatus);
+
+			if (town.AITown)
+				town.AILinkChecked = false;
+		}
+	}
+
+	private void ReleaseLink()
+	{
+		foreach (var linkedFirm in LinkedFirms)
+		{
+			FirmArray[linkedFirm].ReleaseFirmLink(FirmId);
+		}
+
+		foreach (var linkedTown in LinkedTowns)
+		{
+			TownArray[linkedTown].ReleaseFirmLink(FirmId);
+		}
+		
+		LinkedFirms.Clear();
+		LinkedFirmsEnable.Clear();
+		LinkedTowns.Clear();
+		LinkedTownsEnable.Clear();
+	}
+
+	private void ReleaseFirmLink(int releaseFirmId)
+	{
+		if (AIFirm)
+			AILinkChecked = false;
+
+		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+		{
+			if (LinkedFirms[i] == releaseFirmId)
+			{
+				LinkedFirms.RemoveAt(i);
+				LinkedFirmsEnable.RemoveAt(i);
+				return;
+			}
+		}
+	}
+
+	public void ReleaseTownLink(int releaseTownId)
+	{
+		if (AIFirm)
+			AILinkChecked = false;
+
+		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
+		{
+			if (LinkedTowns[i] == releaseTownId)
+			{
+				LinkedTowns.RemoveAt(i);
+				LinkedTownsEnable.RemoveAt(i);
+				return;
+			}
+		}
+	}
+
+	public bool CanToggleFirmLink(int firmId)
+	{
+		Firm firm = FirmArray[firmId];
+
+		//--- market to harbor link is determined by trade treaty ---//
+
+		if ((FirmType == FIRM_MARKET && firm.FirmType == FIRM_HARBOR) || (FirmType == FIRM_HARBOR && firm.FirmType == FIRM_MARKET))
+			return false;
+
+		return FirmRes[FirmType].IsLinkableToFirm(firm.FirmType);
+	}
+
+	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
+	{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+			//// packet structure : <firm recno> <link Id> <toggle Flag>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_FIRM, 3*sizeof(short));
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = linkId;
+			//shortPtr[2] = toggleFlag;
+			//return;
+		//}
+
+		Firm linkedFirm = FirmArray[LinkedFirms[linkId - 1]];
+		int linkedNationId = linkedFirm.NationId;
+
+		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
+		bool sameNation = (linkedNationId == NationId || linkedNationId == 0 || NationId == 0);
+
+		if (toggleFlag)
+		{
+			if ((sameNation && !setBoth) || setBoth)
+				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
+			else
+				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;
+		}
+		else
+		{
+			if ((sameNation && !setBoth) || setBoth)
+				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_DD;
+			else
+				LinkedFirmsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
+		}
+
+		//------ set the linked flag of the opposite firm -----//
+
+		for (int i = 0; i < linkedFirm.LinkedFirms.Count; i++)
+		{
+			if (linkedFirm.LinkedFirms[i] == FirmId)
+			{
+				if (toggleFlag)
+				{
+					if ((sameNation && !setBoth) || setBoth)
+						linkedFirm.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
+					else
+						linkedFirm.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
+				}
+				else
+				{
+					if ((sameNation && !setBoth) || setBoth)
+						linkedFirm.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
+					else
+						linkedFirm.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
+				}
+
+				break;
+			}
+		}
+	}
+
+	public bool CanToggleTownLink()
+	{
+		return FirmType != FIRM_MARKET; // only a market cannot toggle its link as it is
+	}
+
+	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
+	{
+		//if( !remoteAction && remote.is_enable() )
+		//{
+			//// packet structure : <firm recno> <link Id> <toggle Flag>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_TOWN, 3*sizeof(short));
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = linkId;
+			//shortPtr[2] = toggleFlag;
+			//return;
+		//}
+
+		Town linkedTown = TownArray[LinkedTowns[linkId - 1]];
+		int linkedNationId = linkedTown.NationId;
+
+		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
+		// town cannot decide whether it wants to link to Command Base or not, it is the Command Base which influences the town.
+		bool sameNation = (linkedNationId == NationId || FirmType == FIRM_BASE);
+
+		if (toggleFlag)
+		{
+			if ((sameNation && !setBoth) || setBoth)
+				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_EE;
+			else
+				LinkedTownsEnable[linkId - 1] |= InternalConstants.LINK_ED;
+		}
+		else
+		{
+			if ((sameNation && !setBoth) || setBoth)
+				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_DD;
+			else
+				LinkedTownsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
+		}
+
+		//------ set the linked flag of the opposite town -----//
+
+		for (int i = 0; i < linkedTown.LinkedFirms.Count; i++)
+		{
+			if (linkedTown.LinkedFirms[i] == FirmId)
+			{
+				if (toggleFlag)
+				{
+					if ((sameNation && !setBoth) || setBoth)
+						linkedTown.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
+					else
+						linkedTown.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
+				}
+				else
+				{
+					if ((sameNation && !setBoth) || setBoth)
+						linkedTown.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
+					else
+						linkedTown.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
+				}
+
+				break;
+			}
+		}
+
+		//-------- update the town's influence --------//
+
+		if (linkedTown.NationId == 0)
+			linkedTown.UpdateTargetResistance();
+
+		//--- redistribute demand if a link to market place has been toggled ---//
+
+		if (FirmType == FIRM_MARKET)
+			TownArray.DistributeDemand();
+	}
+	
+	
 	public virtual void AssignUnit(int unitId)
 	{
 		Unit unit = UnitArray[unitId];
@@ -1245,318 +1556,6 @@ public abstract class Firm : IIdObject
 		RemoveWorker(worker);
 	}
 
-
-	private void SetupLink()
-	{
-		//-----------------------------------------------------------------------------//
-		// check the connected firms location and structure if AILinkChecked is true
-		//-----------------------------------------------------------------------------//
-
-		if (AIFirm)
-			AILinkChecked = false;
-
-
-		FirmInfo firmInfo = FirmRes[FirmType];
-
-		//----- build firm-to-firm link relationship -------//
-
-		foreach (Firm firm in FirmArray)
-		{
-			if (firm.FirmId == FirmId)
-				continue;
-
-			//---- do not allow links between firms of different nation ----//
-
-			if (firm.NationId != NationId)
-				continue;
-
-			//---------- check if the firm is close enough to this firm -------//
-
-			if (!Misc.AreFirmsLinked(this, firm))
-				continue;
-
-			if (!firmInfo.IsLinkableToFirm(firm.FirmType))
-				continue;
-
-			//------- determine the default link status ------//
-
-			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
-			// if the two firms are of different nations, default link status is both side disabled
-			int defaultLinkStatus;
-			if (firm.NationId == NationId)
-				defaultLinkStatus = firmInfo.DefaultLinkStatus(firm.FirmType);
-			else
-				defaultLinkStatus = InternalConstants.LINK_DD;
-
-			//-------- add the link now -------//
-
-			LinkedFirms.Add(firm.FirmId);
-			LinkedFirmsEnable.Add(defaultLinkStatus);
-
-			// now from the other firm's side
-			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
-				defaultLinkStatus = InternalConstants.LINK_DE;
-
-			else if (defaultLinkStatus == InternalConstants.LINK_DE)
-				defaultLinkStatus = InternalConstants.LINK_ED;
-
-			firm.LinkedFirms.Add(FirmId);
-			firm.LinkedFirmsEnable.Add(defaultLinkStatus);
-
-			if (firm.AIFirm)
-				firm.AILinkChecked = false;
-		}
-
-		//----- build firm-to-town link relationship -------//
-
-		foreach (Town town in TownArray)
-		{
-			//------ check if the town is close enough to this firm -------//
-
-			if (!Misc.AreTownAndFirmLinked(town, this))
-				continue;
-
-			if (!firmInfo.IsLinkableToTown)
-				return;
-
-			//------- determine the default link status ------//
-			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
-			// if the two firms are of different nations, default link status is both side disabled
-			int defaultLinkStatus;
-			if (town.NationId == NationId)
-				defaultLinkStatus = InternalConstants.LINK_EE;
-			else
-				defaultLinkStatus = InternalConstants.LINK_DD;
-
-			//---------------------------------------------------//
-			// If this is a camp, it can be linked to the town when either the town is an independent one
-			// or the town is not linked to any camps of its own.
-			//---------------------------------------------------//
-
-			if (FirmType == FIRM_CAMP)
-			{
-				// TODO enable link only for enemy town?
-				if (town.NationId == 0 || !town.HasLinkedOwnCamp)
-					defaultLinkStatus = InternalConstants.LINK_EE;
-			}
-
-			//-------- add the link now -------//
-
-			LinkedTowns.Add(town.TownId);
-			LinkedTownsEnable.Add(defaultLinkStatus);
-
-			// now from the town's side
-			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
-				defaultLinkStatus = InternalConstants.LINK_DE;
-
-			else if (defaultLinkStatus == InternalConstants.LINK_DE)
-				defaultLinkStatus = InternalConstants.LINK_ED;
-
-			town.LinkedFirms.Add(FirmId);
-			town.LinkedFirmsEnable.Add(defaultLinkStatus);
-
-			if (town.AITown)
-				town.AILinkChecked = false;
-		}
-	}
-
-	private void ReleaseLink()
-	{
-		foreach (var linkedFirm in LinkedFirms)
-		{
-			FirmArray[linkedFirm].ReleaseFirmLink(FirmId);
-		}
-
-		foreach (var linkedTown in LinkedTowns)
-		{
-			TownArray[linkedTown].ReleaseFirmLink(FirmId);
-		}
-		
-		LinkedFirms.Clear();
-		LinkedFirmsEnable.Clear();
-		LinkedTowns.Clear();
-		LinkedTownsEnable.Clear();
-	}
-
-	private void ReleaseFirmLink(int releaseFirmId)
-	{
-		if (AIFirm)
-			AILinkChecked = false;
-
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
-		{
-			if (LinkedFirms[i] == releaseFirmId)
-			{
-				LinkedFirms.RemoveAt(i);
-				LinkedFirmsEnable.RemoveAt(i);
-				return;
-			}
-		}
-	}
-
-	public void ReleaseTownLink(int releaseTownId)
-	{
-		if (AIFirm)
-			AILinkChecked = false;
-
-		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
-		{
-			if (LinkedTowns[i] == releaseTownId)
-			{
-				LinkedTowns.RemoveAt(i);
-				LinkedTownsEnable.RemoveAt(i);
-				return;
-			}
-		}
-	}
-
-	public bool CanToggleFirmLink(int firmId)
-	{
-		Firm firm = FirmArray[firmId];
-
-		//--- market to harbor link is determined by trade treaty ---//
-
-		if ((FirmType == FIRM_MARKET && firm.FirmType == FIRM_HARBOR) || (FirmType == FIRM_HARBOR && firm.FirmType == FIRM_MARKET))
-			return false;
-
-		return FirmRes[FirmType].IsLinkableToFirm(firm.FirmType);
-	}
-
-	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-			//// packet structure : <firm recno> <link Id> <toggle Flag>
-			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_FIRM, 3*sizeof(short));
-			//shortPtr[0] = firm_recno;
-			//shortPtr[1] = linkId;
-			//shortPtr[2] = toggleFlag;
-			//return;
-		//}
-
-		Firm linkedFirm = FirmArray[LinkedFirms[linkId - 1]];
-		int linkedNationId = linkedFirm.NationId;
-
-		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
-		bool sameNation = (linkedNationId == NationId || linkedNationId == 0 || NationId == 0);
-
-		if (toggleFlag)
-		{
-			if ((sameNation && !setBoth) || setBoth)
-				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_EE;
-			else
-				LinkedFirmsEnable[linkId - 1] |= InternalConstants.LINK_ED;
-		}
-		else
-		{
-			if ((sameNation && !setBoth) || setBoth)
-				LinkedFirmsEnable[linkId - 1] = InternalConstants.LINK_DD;
-			else
-				LinkedFirmsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
-		}
-
-		//------ set the linked flag of the opposite firm -----//
-
-		for (int i = 0; i < linkedFirm.LinkedFirms.Count; i++)
-		{
-			if (linkedFirm.LinkedFirms[i] == FirmId)
-			{
-				if (toggleFlag)
-				{
-					if ((sameNation && !setBoth) || setBoth)
-						linkedFirm.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
-					else
-						linkedFirm.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
-				}
-				else
-				{
-					if ((sameNation && !setBoth) || setBoth)
-						linkedFirm.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
-					else
-						linkedFirm.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
-				}
-
-				break;
-			}
-		}
-	}
-
-	public bool CanToggleTownLink()
-	{
-		return FirmType != FIRM_MARKET; // only a market cannot toggle its link as it is
-	}
-
-	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
-	{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-			//// packet structure : <firm recno> <link Id> <toggle Flag>
-			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_TOWN, 3*sizeof(short));
-			//shortPtr[0] = firm_recno;
-			//shortPtr[1] = linkId;
-			//shortPtr[2] = toggleFlag;
-			//return;
-		//}
-
-		Town linkedTown = TownArray[LinkedTowns[linkId - 1]];
-		int linkedNationId = linkedTown.NationId;
-
-		// if one of the linked end is an independent firm/nation, consider this link as a single nation link
-		// town cannot decide whether it wants to link to Command Base or not, it is the Command Base which influences the town.
-		bool sameNation = (linkedNationId == NationId || FirmType == FIRM_BASE);
-
-		if (toggleFlag)
-		{
-			if ((sameNation && !setBoth) || setBoth)
-				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_EE;
-			else
-				LinkedTownsEnable[linkId - 1] |= InternalConstants.LINK_ED;
-		}
-		else
-		{
-			if ((sameNation && !setBoth) || setBoth)
-				LinkedTownsEnable[linkId - 1] = InternalConstants.LINK_DD;
-			else
-				LinkedTownsEnable[linkId - 1] &= ~InternalConstants.LINK_ED;
-		}
-
-		//------ set the linked flag of the opposite town -----//
-
-		for (int i = 0; i < linkedTown.LinkedFirms.Count; i++)
-		{
-			if (linkedTown.LinkedFirms[i] == FirmId)
-			{
-				if (toggleFlag)
-				{
-					if ((sameNation && !setBoth) || setBoth)
-						linkedTown.LinkedFirmsEnable[i] = InternalConstants.LINK_EE;
-					else
-						linkedTown.LinkedFirmsEnable[i] |= InternalConstants.LINK_DE;
-				}
-				else
-				{
-					if ((sameNation && !setBoth) || setBoth)
-						linkedTown.LinkedFirmsEnable[i] = InternalConstants.LINK_DD;
-					else
-						linkedTown.LinkedFirmsEnable[i] &= ~InternalConstants.LINK_DE;
-				}
-
-				break;
-			}
-		}
-
-		//-------- update the town's influence --------//
-
-		if (linkedTown.NationId == 0)
-			linkedTown.UpdateTargetResistance();
-
-		//--- redistribute demand if a link to market place has been toggled ---//
-
-		if (FirmType == FIRM_MARKET)
-			TownArray.DistributeDemand();
-	}
-	
-	
 	public void MobilizeAllWorkers(int remoteAction)
 	{
 		//if (!remoteAction && remote.is_enable())
