@@ -25,6 +25,7 @@ public static class Colors
     public const byte V_YELLOW = VGA_YELLOW;
     public const byte V_BROWN = VGA_BROWN + 2;
 
+    public const byte V_UP = 0x9D;
     public const byte V_BACKGROUND = 0xFF;
 
     //---------- Define Game Colors --------------//

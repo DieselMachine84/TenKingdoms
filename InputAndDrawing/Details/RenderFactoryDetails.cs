@@ -29,7 +29,7 @@ public partial class Renderer
         PutText(FontSan, "Product Stock", DetailsX1 + 13, DetailsY1 + 197, -1, true);
         PutText(FontSan, (int)factory.StockQty + " / " + (int)factory.MaxStockQty, DetailsX1 + 191, DetailsY1 + 199, -1, true);
         
-        DrawWorkers(factory, DetailsY1 + 228);
+        DrawWorkers(factory);
         
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 339);
         

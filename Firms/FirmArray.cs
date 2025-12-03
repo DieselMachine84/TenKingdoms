@@ -183,7 +183,6 @@ public class FirmArray : DynArray<Firm>
 			if (!World.GetLoc(firm.LocCenterX, firm.LocCenterY).IsExplored())
 				continue;
 
-			firm.SortWorkers();
 			return firmId;
 		}
 

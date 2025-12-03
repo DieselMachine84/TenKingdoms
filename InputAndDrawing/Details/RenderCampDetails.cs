@@ -15,7 +15,7 @@ public partial class Renderer
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, overseer.Rank), DetailsX1 + 12, DetailsY1 + 104,
                 unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
             
-            if (_selectedWorkerId == 0)
+            if (camp.SelectedWorkerId == 0)
             {
                 Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, unitInfo.soldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
                 Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101 + unitInfo.soldierIconHeight * 2 + 3,
@@ -56,31 +56,39 @@ public partial class Renderer
             }
         }
         
-        DrawWorkers(camp, DetailsY1 + 192);
+        DrawWorkers(camp);
 
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 303);
         DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 308);
         DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 337);
         DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 308);
-        if (overseer == null || overseer.Rank != Unit.RANK_KING)
+        bool drawLoyaltyPanel = overseer == null || overseer.Rank != Unit.RANK_KING || camp.SelectedWorkerId != 0;
+        if (drawLoyaltyPanel)
             DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 337);
 
-        if (overseer != null || _selectedWorkerId != 0)
+        if (overseer != null || camp.SelectedWorkerId != 0)
         {
             PutText(FontSan, "Leadership", DetailsX1 + 13, DetailsY1 + 311, -1, true);
             PutText(FontSan, "Combat", DetailsX1 + 13, DetailsY1 + 340, -1, true);
             PutText(FontSan, "Hit Points", DetailsX1 + 214, DetailsY1 + 311, -1, true);
-            if (overseer != null && overseer.Rank != Unit.RANK_KING)
-            {
+            if (drawLoyaltyPanel)
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, DetailsY1 + 340, -1, true);
-            }
 
             string leadershipText;
             string combatLevelText;
             string hitPointsText;
             int loyalty;
             int targetLoyalty;
-            if (overseer != null)
+            if (camp.SelectedWorkerId != 0)
+            {
+                Worker worker = camp.Workers[camp.SelectedWorkerId - 1];
+                leadershipText = worker.SkillLevel.ToString();
+                combatLevelText = worker.CombatLevel.ToString();
+                hitPointsText = worker.HitPoints + "/" + worker.MaxHitPoints();
+                loyalty = worker.Loyalty();
+                targetLoyalty = worker.TargetLoyalty(camp.FirmId);
+            }
+            else
             {
                 leadershipText = overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING).ToString();
                 combatLevelText = overseer.Skill.CombatLevel.ToString();
@@ -88,28 +96,22 @@ public partial class Renderer
                 loyalty = overseer.Loyalty;
                 targetLoyalty = overseer.TargetLoyalty;
             }
-            else
-            {
-                Worker worker = camp.Workers[_selectedWorkerId - 1];
-                leadershipText = worker.SkillLevel.ToString();
-                combatLevelText = worker.CombatLevel.ToString();
-                hitPointsText = worker.HitPoints + "/" + worker.MaxHitPoints();
-                loyalty = worker.Loyalty();
-                targetLoyalty = worker.TargetLoyalty(camp.FirmId);
-            }
             PutText(FontSan, leadershipText, DetailsX1 + 113, DetailsY1 + 313, -1, true);
             PutText(FontSan, combatLevelText, DetailsX1 + 113, DetailsY1 + 342, -1, true);
             PutText(FontSan, hitPointsText, DetailsX1 + 307, DetailsY1 + 313, -1, true);
-            PutText(FontSan, loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 342, -1, true);
-            if (loyalty != targetLoyalty)
+            if (drawLoyaltyPanel)
             {
-                int targetLoyaltyX = DetailsX1 + 296 + FontSan.TextWidth(loyalty.ToString()) + 2;
-                int targetLoyaltyY = DetailsY1 + 342;
-                if (targetLoyalty < loyalty)
-                    Graphics.DrawBitmap(_arrowDownTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowDownWidth, _arrowDownHeight);
-                if (targetLoyalty > loyalty)
-                    Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowUpWidth, _arrowUpHeight);
-                PutText(FontSan, targetLoyalty.ToString(), targetLoyaltyX + 8, targetLoyaltyY, -1, true);
+                PutText(FontSan, loyalty.ToString(), DetailsX1 + 307, DetailsY1 + 342, -1, true);
+                if (loyalty != targetLoyalty)
+                {
+                    int targetLoyaltyX = DetailsX1 + 308 + FontSan.TextWidth(loyalty.ToString()) * 2 / 3;
+                    int targetLoyaltyY = DetailsY1 + 342;
+                    if (targetLoyalty < loyalty)
+                        Graphics.DrawBitmap(_arrowDownTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowDownWidth, _arrowDownHeight);
+                    if (targetLoyalty > loyalty)
+                        Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 3, _arrowUpWidth, _arrowUpHeight);
+                    PutText(FontSan, targetLoyalty.ToString(), targetLoyaltyX + 8, targetLoyaltyY, -1, true);
+                }
             }
         }
 
@@ -131,7 +133,7 @@ public partial class Renderer
                 Graphics.DrawBitmap(_buttonPatrolDisabledTexture, Button1X + 3, ButtonsCampY + 3, Scale(_buttonPatrolWidth), Scale(_buttonPatrolHeight));
             }
 
-            if (IsCampRewardEnabled(overseer))
+            if (IsCampRewardEnabled(camp, overseer))
             {
                 bool mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsCampY + 2 && _mouseButtonY <= ButtonsCampY + ButtonHeight;
@@ -182,6 +184,9 @@ public partial class Renderer
         if (camp.OverseerId != 0)
             overseer = UnitArray[camp.OverseerId];
 
+        if (_leftMouseReleased && IsMouseOnCampLeaderIcon())
+            camp.SelectedWorkerId = 0;
+
         bool button1Pressed = _leftMouseReleased && _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsCampY + 2 && _mouseButtonY <= ButtonsCampY + ButtonHeight;
         bool button2Pressed = _leftMouseReleased && _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
@@ -207,9 +212,9 @@ public partial class Renderer
                 //}
             }
             
-            if (button2Pressed && IsCampRewardEnabled(overseer))
+            if (button2Pressed && IsCampRewardEnabled(camp, overseer))
             {
-                camp.Reward(_selectedWorkerId, InternalConstants.COMMAND_PLAYER);
+                camp.Reward(camp.SelectedWorkerId, InternalConstants.COMMAND_PLAYER);
                 SECtrl.immediate_sound("TURN_ON");
             }
 
@@ -236,14 +241,20 @@ public partial class Renderer
         }
     }
     
+    private bool IsMouseOnCampLeaderIcon()
+    {
+        return _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 104 &&
+               _mouseButtonY >= DetailsY1 + 104 && _mouseButtonY <= DetailsY1 + 180;
+    }
+    
     private bool IsCampPatrolEnabled(Firm firm, Unit overseer)
     {
         return overseer != null || firm.Workers.Count > 0;
     }
 
-    private bool IsCampRewardEnabled(Unit overseer)
+    private bool IsCampRewardEnabled(Firm firm, Unit overseer)
     {
         return NationArray.player.cash >= GameConstants.REWARD_COST &&
-               (overseer != null && overseer.Rank != Unit.RANK_KING || _selectedWorkerId != 0);
+               (overseer != null && overseer.Rank != Unit.RANK_KING || firm.SelectedWorkerId != 0);
     }
 }

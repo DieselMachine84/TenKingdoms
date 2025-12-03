@@ -63,24 +63,23 @@ public partial class Renderer
             firm.DrawDetails(this);
     }
 
-    private void DrawWorkers(Firm firm, int y)
+    private void DrawWorkers(Firm firm)
     {
-        DrawWorkersPanel(DetailsX1 + 2, y);
-
-        if (_selectedWorkerId > firm.Workers.Count)
-            _selectedWorkerId = 0;
+        int workersY = GetWorkersY(firm);
+        DrawWorkersPanel(DetailsX1 + 2, workersY);
 
         for (int i = 0; i < firm.Workers.Count; i++)
         {
+            int workerX = DetailsX1 + 12 + 100 * (i % 4);
+            int workerY = workersY + 7 + 50 * (i / 4);
             Worker worker = firm.Workers[i];
             UnitInfo unitInfo = UnitRes[worker.UnitId];
-            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.RankId), DetailsX1 + 12 + 100 * (i % 4), y + 7 + 50 * (i / 4),
+            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.RankId), workerX, workerY,
                 unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
-            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel.ToString() : worker.SkillLevel.ToString(),
-                DetailsX1 + 64 + 100 * (i % 4), y + 13 + 50 * (i / 4));
+            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel.ToString() : worker.SkillLevel.ToString(), workerX + 52, workerY + 6);
             
-            int hitBarX1 = DetailsX1 + 12 + 100 * (i % 4);
-            int hitBarY = y + 48 + 50 * (i / 4);
+            int hitBarX1 = workerX;
+            int hitBarY = workerY + 41;
             int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * worker.HitPoints / worker.MaxHitPoints();
             const int hitBarLightBorder = 0;
             const int hitBarDarkBorder = 3;
@@ -103,12 +102,16 @@ public partial class Renderer
             
             if (worker.SpyId != 0 && (SpyArray[worker.SpyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
             {
-                int spyIconX = DetailsX1 + 90 + 100 * (i % 4);
-                int spyIconY = y + 19 + 50 * (i / 4);
+                int spyIconX = workerX + 78;
+                int spyIconY = workerY + 12;
                 DrawSpyIcon(spyIconX, spyIconY, SpyArray[worker.SpyId].TrueNationId);
             }
-            
-            // TODO selected worker
+
+            int frameColor = (i == firm.SelectedWorkerId - 1) ? Colors.V_YELLOW : Colors.V_UP;
+            Graphics.DrawRect(workerX - 1, workerY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
+            Graphics.DrawRect(workerX - 1, workerY + unitInfo.soldierSmallIconHeight * 2 - 2, unitInfo.soldierSmallIconWidth * 2, 3, frameColor);
+            Graphics.DrawRect(workerX - 1, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(workerX + unitInfo.soldierSmallIconWidth * 2 - 2, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
         }
     }
 
@@ -161,6 +164,12 @@ public partial class Renderer
             }
         }
 
+        int mouseWorkerId = GetMouseWorkerId(firm);
+        if (_leftMouseReleased && mouseWorkerId != 0)
+        {
+            firm.SelectedWorkerId = firm.SelectedWorkerId != mouseWorkerId ? mouseWorkerId : 0;
+        }
+
         firm.HandleDetailsInput(this);
     }
     
@@ -189,5 +198,24 @@ public partial class Renderer
     {
         return _mouseButtonX >= DetailsX1 + 375 && _mouseButtonX <= DetailsX1 + 399 &&
                _mouseButtonY >= DetailsY1 + 54 && _mouseButtonY <= DetailsY1 + 85;
+    }
+
+    private int GetWorkersY(Firm firm)
+    {
+        return (firm.FirmType == Firm.FIRM_CAMP) ? DetailsY1 + 192 : DetailsY1 + 228;
+    }
+
+    private int GetMouseWorkerId(Firm firm)
+    {
+        int workersY = GetWorkersY(firm);
+        for (int i = 0; i < firm.Workers.Count; i++)
+        {
+            int workerX = DetailsX1 + 12 + 100 * (i % 4);
+            int workerY = workersY + 7 + 50 * (i / 4);
+            if (_mouseButtonX >= workerX && _mouseButtonX <= workerX + 48 && _mouseButtonY >= workerY && _mouseButtonY <= workerY + 40)
+                return i + 1;
+        }
+
+        return 0;
     }
 }

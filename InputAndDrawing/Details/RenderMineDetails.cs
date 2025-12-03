@@ -35,7 +35,7 @@ public partial class Renderer
         PutText(FontSan, "Untapped Reserve", DetailsX1 + 13, DetailsY1 + 197, -1, true);
         PutText(FontSan, ((int)mine.ReserveQty).ToString(), DetailsX1 + 179, DetailsY1 + 199, -1, true);
         
-        DrawWorkers(mine, DetailsY1 + 228);
+        DrawWorkers(mine);
         
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 339);
 

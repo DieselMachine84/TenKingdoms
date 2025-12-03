@@ -244,6 +244,7 @@ public class RaceInfo
 		return (firstNameId << 8) + lastNameId;
 	}
 
+	//TODO check that name is not feed twice when killing a spy inside a firm
 	public void free_name_id(int nameId)
 	{
 		int firstNameId = (nameId >> 8);

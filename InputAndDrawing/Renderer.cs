@@ -61,7 +61,6 @@ public partial class Renderer : IRenderer
     private readonly List<int> _selectedUnits = new List<int>();
     private int _selectedSiteId;
     private int _selectedRaceId;
-    private int _selectedWorkerId;
 
     private Graphics Graphics { get; }
 
@@ -255,7 +254,7 @@ public partial class Renderer : IRenderer
 
     private void ResetSelection()
     {
-        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedWorkerId = 0;
+        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = 0;
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
         HumanDetailsMode = HumanDetailsMode.Normal;

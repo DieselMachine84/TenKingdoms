@@ -1051,26 +1051,12 @@ public abstract class Firm : IIdObject
 
 		if (Workers.Count == MAX_WORKER)
 		{
-			int minWorkerSkill = Int32.MaxValue;
-			Worker worstWorker = Workers[0];
-
-			foreach (Worker worker in Workers)
-			{
-				int workerSkill = worker.SkillLevel;
-
-				if (workerSkill < minWorkerSkill)
-				{
-					minWorkerSkill = workerSkill;
-					worstWorker = worker;
-				}
-			}
-
 			unitLocX = unit.NextLocX;
 			unitLocY = unit.NextLocY;
 
 			unit.DeinitSprite(); // free the location for creating the worst unit
 
-			ResignWorker(worstWorker);
+			ResignWorker(Workers[^1]);
 		}
 
 		//---------- there is room for the new worker ------------//
@@ -1238,15 +1224,11 @@ public abstract class Firm : IIdObject
 
 	public void KillWorker(Worker worker)
 	{
-		//------- decrease worker no. and create an unit -----//
-
 		if (worker.RaceId != 0 && worker.NameId != 0)
 			RaceRes[worker.RaceId].free_name_id(worker.NameId);
 
 		if (worker.TownId != 0)
 			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
-
-		//-------- if this worker is a spy ---------//
 
 		if (worker.SpyId != 0)
 		{
@@ -1260,14 +1242,7 @@ public abstract class Firm : IIdObject
 		if (!FirmRes[FirmType].LiveInTown)
 			UnitRes[worker.UnitId].dec_nation_unit_count(NationId);
 
-		Workers.Remove(worker);
-
-		//TODO rewrite it
-		//if( selected_worker_id > workerId || selected_worker_id == worker_count )
-		//selected_worker_id--;
-
-		if (Workers.Count == 0)
-			SelectedWorkerId = 0;
+		RemoveWorker(worker);
 	}
 
 
@@ -1783,43 +1758,65 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public virtual int ResignWorker(Worker worker)
+	public int ResignWorker(Worker worker)
 	{
-		//------- decrease worker no. and create an unit -----//
-		int unitRecno = 0;
-
 		if (worker.RaceId != 0 && worker.NameId != 0)
 			RaceRes[worker.RaceId].free_name_id(worker.NameId);
 
-		if (worker.TownId != 0) // town_recno is 0 if the workers in the firm do not live in towns
+		if (worker.TownId != 0)
 		{
 			Town town = TownArray[worker.TownId];
-
 			town.RacesJoblessPopulation[worker.RaceId - 1]++; // move into jobless population
 			town.JoblessPopulation++;
 
-			//------ put the spy in the town -------//
-
 			if (worker.SpyId != 0)
 				SpyArray[worker.SpyId].SetPlace(Spy.SPY_TOWN, worker.TownId);
+			
+			RemoveWorker(worker);
+			return 0;
 		}
 		else
 		{
-			unitRecno = CreateWorkerUnit(worker); // if he is a spy, create_worker_unit wil call set_place(SPY_MOBILE)
+			int unitId = CreateWorkerUnit(worker); // if he is a spy, CreateWorkerUnit will call SetPlace(Spy.SPY_MOBILE)
 
-			if (unitRecno == 0)
-				return 0; // return 0 eg there is no space to create the unit
+			if (unitId != 0)
+				RemoveWorker(worker);
+
+			return unitId;
 		}
+	}
 
-		//------- delete the record from the worker_array ------//
-
+	protected void SortWorkers()
+	{
+		Worker oldSelectedWorker = SelectedWorkerId != 0 ? Workers[SelectedWorkerId - 1] : null;
+		Workers.Sort((worker1, worker2) => (worker1.SkillLevel != worker2.SkillLevel)
+			? worker2.SkillLevel - worker1.SkillLevel
+			: worker2.CombatLevel - worker1.CombatLevel);
+		SetNewSelectedWorker(oldSelectedWorker);
+	}
+	
+	private void RemoveWorker(Worker worker)
+	{
+		Worker oldSelectedWorker = SelectedWorkerId != 0 ? Workers[SelectedWorkerId - 1] : null;
 		Workers.Remove(worker);
+		SetNewSelectedWorker(oldSelectedWorker);
+	}
 
-		//TODO rewrite it
-		//if (selected_worker_id > workerId || selected_worker_id == worker_count)
-		//selected_worker_id--;
-
-		return unitRecno;
+	private void SetNewSelectedWorker(Worker oldSelectedWorker)
+	{
+		if (oldSelectedWorker == null)
+			return;
+		
+		int newSelectedWorkerId = 0;
+		for (int i = 0; i < Workers.Count; i++)
+		{
+			if (Workers[i] == oldSelectedWorker)
+			{
+				newSelectedWorkerId = i + 1;
+				break;
+			}
+		}
+		SelectedWorkerId = newSelectedWorkerId;
 	}
 
 	public int CreateWorkerUnit(Worker worker)
@@ -1873,11 +1870,6 @@ public abstract class Firm : IIdObject
 		return unit.SpriteId;
 	}
 	
-	public void SortWorkers()
-	{
-		//TODO this function is for UI
-	}
-
 	protected void RecruitWorker()
 	{
 		if (Workers.Count == MAX_WORKER)
@@ -2248,18 +2240,12 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 	
-	public void SetWorkerHomeTown(int townRecno, char remoteAction, int workerId = 0)
+	public void SetWorkerHomeTown(int townId, int remoteAction, int workerId = 0)
 	{
-		if (workerId == 0)
-			workerId = SelectedWorkerId;
-
-		if (workerId == 0 || workerId > Workers.Count)
-			return;
-
-		Town town = TownArray[townRecno];
+		Town town = TownArray[townId];
 		Worker worker = Workers[workerId - 1];
 
-		if (worker.TownId != townRecno)
+		if (worker.TownId != townId)
 		{
 			if (!worker.IsNation(FirmId, NationId))
 				return;
@@ -2267,35 +2253,31 @@ public abstract class Firm : IIdObject
 				return;
 		}
 
-		//if(!remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <firm recno> <town recno> <workderId>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SET_WORKER_HOME, 3*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = townRecno;
-		//shortPtr[2] = workerId;
-		//return;
+			//// packet structure : <firm recno> <town recno> <workderId>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SET_WORKER_HOME, 3*sizeof(short));
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = townRecno;
+			//shortPtr[2] = workerId;
+			//return;
 		//}
 
-		//-------------------------------------------------//
-
-		if (worker.TownId == townRecno)
+		if (worker.TownId == townId)
 		{
 			ResignWorker(worker);
+			return;
 		}
 
-		//--- otherwise, set the worker's home town to the new one ---//
-
-		else if (worker.IsNation(FirmId, NationId) &&
-		         town.NationId ==
-		         NationId) // only allow when the worker lives in a town belonging to the same nation and moving domestically
+		// only allow when the worker lives in a town belonging to the same nation and moving domestically
+		if (worker.IsNation(FirmId, NationId) && town.NationId == NationId)
 		{
 			int workerLoyalty = worker.Loyalty();
 
 			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
 			town.IncPopulation(worker.RaceId, true, workerLoyalty);
 
-			worker.TownId = townRecno;
+			worker.TownId = townId;
 		}
 	}
 	
@@ -2610,7 +2592,7 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public bool CanSpyBribe(int bribeWorkerId, int briberNationRecno)
+	public bool CanSpyBribe(int bribeWorkerId, int briberNationId)
 	{
 		bool canBribe = false;
 		int spyRecno;
@@ -2623,7 +2605,7 @@ public abstract class Firm : IIdObject
 		if (spyRecno != 0)
 		{
 			// only when the unit is not yet a spy of the player. Still display the bribe button when it's a spy of another nation
-			canBribe = SpyArray[spyRecno].TrueNationId != briberNationRecno;
+			canBribe = SpyArray[spyRecno].TrueNationId != briberNationId;
 		}
 		else
 		{
@@ -2874,18 +2856,14 @@ public abstract class Firm : IIdObject
 
 	public void Reward(int workerId, int remoteAction)
 	{
-		//if( remoteAction==InternalConstants.COMMAND_PLAYER && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//if( !remoteAction && remote.is_enable() )
-		//{
-		//// packet structure : <firm recno> <worker id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
-		//*shortPtr = firm_recno;
-		//shortPtr[1] = workerId;
+			//// packet structure : <firm recno> <worker id>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
+			//*shortPtr = firm_recno;
+			//shortPtr[1] = workerId;
+			//return;
 		//}
-		//}
-		//else
-		//{
 		if (workerId == 0)
 		{
 			if (OverseerId != 0)
@@ -2894,10 +2872,8 @@ public abstract class Firm : IIdObject
 		else
 		{
 			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
-
 			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 		}
-		//}
 	}
 
 
