@@ -165,9 +165,13 @@ public partial class Renderer
         }
 
         int mouseWorkerId = GetMouseWorkerId(firm);
-        if (_leftMouseReleased && mouseWorkerId != 0)
+        if (mouseWorkerId != 0)
         {
-            firm.SelectedWorkerId = firm.SelectedWorkerId != mouseWorkerId ? mouseWorkerId : 0;
+            if (_leftMouseReleased)
+                firm.SelectedWorkerId = firm.SelectedWorkerId != mouseWorkerId ? mouseWorkerId : 0;
+            
+            if (_rightMouseReleased && firm.OwnFirm())
+                firm.MobilizeWorker(mouseWorkerId, InternalConstants.COMMAND_PLAYER);
         }
 
         firm.HandleDetailsInput(this);

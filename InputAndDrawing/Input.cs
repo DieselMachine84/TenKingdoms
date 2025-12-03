@@ -89,6 +89,9 @@ public partial class Renderer
             {
                 if (_selectedTownId != 0)
                     HandleTownDetailsInput(TownArray[_selectedTownId]);
+                
+                if (_selectedFirmId != 0)
+                    HandleFirmDetailsInput(FirmArray[_selectedFirmId]);
             }
 
             CancelSettleAndBuild();
