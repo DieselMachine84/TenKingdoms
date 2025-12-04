@@ -228,7 +228,7 @@ public abstract class Firm : IIdObject
 		// this function must be called before RestoreWorldMatrix(), otherwise the power area can't be completely reset
 		AssignOverseer(0);
 
-		ResignAllWorker(); // the workers in the firm will be killed if there is no space for creating the workers
+		ResignAllWorkers(); // the workers in the firm will be killed if there is no space for creating the workers
 
 		if (BuilderId != 0)
 			MobilizeBuilder(BuilderId);
@@ -935,13 +935,8 @@ public abstract class Firm : IIdObject
 
 	private void SetupLink()
 	{
-		//-----------------------------------------------------------------------------//
-		// check the connected firms location and structure if AILinkChecked is true
-		//-----------------------------------------------------------------------------//
-
 		if (AIFirm)
 			AILinkChecked = false;
-
 
 		FirmInfo firmInfo = FirmRes[FirmType];
 
@@ -969,13 +964,7 @@ public abstract class Firm : IIdObject
 
 			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
 			// if the two firms are of different nations, default link status is both side disabled
-			int defaultLinkStatus;
-			if (firm.NationId == NationId)
-				defaultLinkStatus = firmInfo.DefaultLinkStatus(firm.FirmType);
-			else
-				defaultLinkStatus = InternalConstants.LINK_DD;
-
-			//-------- add the link now -------//
+			int defaultLinkStatus = firm.NationId == NationId ? firmInfo.DefaultLinkStatus(firm.FirmType) : InternalConstants.LINK_DD;
 
 			LinkedFirms.Add(firm.FirmId);
 			LinkedFirmsEnable.Add(defaultLinkStatus);
@@ -998,22 +987,17 @@ public abstract class Firm : IIdObject
 
 		foreach (Town town in TownArray)
 		{
+			if (!firmInfo.IsLinkableToTown)
+				return;
+			
 			//------ check if the town is close enough to this firm -------//
 
 			if (!Misc.AreTownAndFirmLinked(town, this))
 				continue;
 
-			if (!firmInfo.IsLinkableToTown)
-				return;
-
 			//------- determine the default link status ------//
-			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
-			// if the two firms are of different nations, default link status is both side disabled
-			int defaultLinkStatus;
-			if (town.NationId == NationId)
-				defaultLinkStatus = InternalConstants.LINK_EE;
-			else
-				defaultLinkStatus = InternalConstants.LINK_DD;
+
+			int defaultLinkStatus = town.NationId == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
 
 			//---------------------------------------------------//
 			// If this is a camp, it can be linked to the town when either the town is an independent one
@@ -1027,17 +1011,16 @@ public abstract class Firm : IIdObject
 					defaultLinkStatus = InternalConstants.LINK_EE;
 			}
 
-			//-------- add the link now -------//
-
 			LinkedTowns.Add(town.TownId);
 			LinkedTownsEnable.Add(defaultLinkStatus);
 
 			// now from the town's side
-			if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
+			// these conditions are always false
+			/*if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
 				defaultLinkStatus = InternalConstants.LINK_DE;
 
 			else if (defaultLinkStatus == InternalConstants.LINK_DE)
-				defaultLinkStatus = InternalConstants.LINK_ED;
+				defaultLinkStatus = InternalConstants.LINK_ED;*/
 
 			town.LinkedFirms.Add(FirmId);
 			town.LinkedFirmsEnable.Add(defaultLinkStatus);
@@ -1111,7 +1094,7 @@ public abstract class Firm : IIdObject
 
 	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <firm recno> <link Id> <toggle Flag>
 			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_FIRM, 3*sizeof(short));
@@ -1175,7 +1158,7 @@ public abstract class Firm : IIdObject
 
 	public void ToggleTownLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <firm recno> <link Id> <toggle Flag>
 			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_LINK_TOWN, 3*sizeof(short));
@@ -1248,8 +1231,6 @@ public abstract class Firm : IIdObject
 	{
 		Unit unit = UnitArray[unitId];
 
-		//------- if this is a construction worker -------//
-
 		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			SetBuilder(unitId);
@@ -1297,6 +1278,7 @@ public abstract class Firm : IIdObject
 
 			if (!LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			{
+				//TODO check
 				if (IsDeleting)
 					KillOverseer();
 			}
@@ -1335,8 +1317,6 @@ public abstract class Firm : IIdObject
 			
 			OverseerId = newOverseerId;
 			newOverseer.SetMode(UnitConstants.UNIT_MODE_OVERSEE, FirmId);
-
-			//--------- if the unit is a spy -----------//
 
 			if (newOverseer.SpyId != 0)
 				SpyArray[newOverseer.SpyId].SetPlace(Spy.SPY_FIRM, FirmId);
@@ -1581,13 +1561,12 @@ public abstract class Firm : IIdObject
 				continue;
 			}
 
-			// always record 1 as the workers info are moved forward from the back to the front
-			int unitRecno = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
+			int unitId = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
 
-			if (unitRecno == 0)
+			if (unitId == 0)
 				break; // keep the rest workers as there is no space for creating the unit
 
-			Unit unit = UnitArray[unitRecno];
+			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId;
 
 			//TODO selection
@@ -1613,55 +1592,45 @@ public abstract class Firm : IIdObject
 			return 0;
 		}
 
-		//if(!remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet strcture : <firm_recno> <workerId>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_WORKER, 2*sizeof(short) );
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = workerId;
-		//return 0;
+			//// packet strcture : <firm_recno> <workerId>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_MOBL_WORKER, 2*sizeof(short) );
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = workerId;
+			//return 0;
 		//}
-
-		//err_when( !worker_array );    // this function shouldn't be called if this firm does not need worker
-
-		//------------- resign worker --------------//
 
 		int oldWorkerCount = Workers.Count;
 
-		int unitRecno2 = ResignWorker(worker);
+		int unitId2 = ResignWorker(worker);
 
-		if (unitRecno2 == 0 && Workers.Count == oldWorkerCount)
+		if (unitId2 == 0 && Workers.Count == oldWorkerCount)
 			return 0;
 
 		//------ create a mobile unit -------//
 
-		int unitRecno = 0;
+		int unitId = 0;
 
-		// if does not live_in_town, resign_worker() create the unit already, so don't create it again here.
+		// if does not live in town, ResignWorker() create the unit already, so don't create it again here.
 		if (FirmRes[FirmType].LiveInTown)
 		{
-			//TODO check. It seems that resign_worker() also calls create_worker_unit()
-			unitRecno = CreateWorkerUnit(worker);
+			//TODO check. It seems that ResignWorker() also calls CreateWorkerUnit()
+			unitId = CreateUnitFromWorker(worker);
 
-			if (unitRecno == 0) // no space for creating units
+			if (unitId == 0) // no space for creating units
 				return 0;
 		}
 
-		//------------------------------------//
-
 		SortWorkers();
 
-		return unitRecno != 0 ? unitRecno : unitRecno2;
+		return unitId != 0 ? unitId : unitId2;
 	}
 
 	public virtual int MobilizeOverseer()
 	{
 		if (OverseerId == 0)
 			return 0;
-
-		//--------- restore overseer's harmony ---------//
-
-		int overseerRecno = OverseerId;
 
 		Unit overseer = UnitArray[OverseerId];
 
@@ -1677,56 +1646,48 @@ public abstract class Firm : IIdObject
 
 		//----- get this overseer out of the firm -----//
 
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[overseer.UnitType].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
+		SpriteInfo spriteInfo = overseer.SpriteInfo;
+		int locX = LocX1;
+		int locY = LocY1;
 
-		bool spaceFound = LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
-			spriteInfo.LocWidth, spriteInfo.LocHeight);
+		bool spaceFound = LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight);
 
-		if (spaceFound)
-		{
-			overseer.InitSprite(xLoc, yLoc);
-			overseer.SetMode(0); // reset overseen firm recno
-		}
-		else
+		if (!spaceFound)
 		{
 			UnitArray.DeleteUnit(overseer); // delete it when there is no space for the unit
 			return 0;
 		}
-
-		//--------- reset overseer_recno -------------//
-
+		
 		OverseerId = 0;
 		OverseerTownId = 0;
 
-		//------- update loyalty -------//
-
-		if (overseerRecno != 0 && !UnitArray.IsDeleted(overseerRecno))
-			UnitArray[overseerRecno].UpdateLoyalty();
-
-		return overseerRecno;
+		overseer.InitSprite(locX, locY);
+		overseer.SetMode(0);
+		overseer.UpdateLoyalty();
+		return overseer.SpriteId;
 	}
 
-	public bool MobilizeBuilder(int recno)
+	public bool MobilizeBuilder(int builderId)
 	{
-		//----------- mobilize the builder -------------//
-		Unit unit = UnitArray[recno];
+		Unit unit = UnitArray[builderId];
 
 		SpriteInfo spriteInfo = unit.SpriteInfo;
-		int xLoc = LocX1, yLoc = LocY1;
+		int locX = LocX1;
+		int locY = LocY1;
 
-		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
+		//TODO compare this code with LocateSpace in MobilizeOverseer
+		if (!LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId) &&
-		    !World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
+		    !World.LocateSpace(ref locX, ref locY, LocX2, LocY2,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
 		{
-			UnitArray.DeleteUnit(UnitArray[recno]);
+			UnitArray.DeleteUnit(UnitArray[builderId]);
 			return false;
 		}
 
-		unit.InitSprite(xLoc, yLoc);
-		unit.Stop2(); // clear all previously defined action
+		unit.InitSprite(locX, locY);
 		unit.SetMode(0);
+		unit.Stop2(); // clear all previously defined action
 
 		//--- set builder to non-aggressive, except ai ---//
 		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
@@ -1735,25 +1696,14 @@ public abstract class Firm : IIdObject
 		return true;
 	}
 
-	public void ResignAllWorker(bool disappearFlag = false)
+	private void ResignAllWorkers()
 	{
-		//------- detect buttons on hiring firm workers -------//
-
 		while (Workers.Count > 0)
 		{
-			Worker worker = Workers[0];
-			int townRecno = worker.TownId;
-			int raceId = worker.RaceId;
 			int oldWorkerCount = Workers.Count;
-
-			if (ResignWorker(worker) == 0)
-			{
-				if (oldWorkerCount == Workers.Count)
-					break; // no space to resign the worker, keep them in firm
-			}
-
-			if (disappearFlag && townRecno != 0)
-				TownArray[townRecno].DecPopulation(raceId, false);
+			ResignWorker(Workers[0]);
+			if (oldWorkerCount == Workers.Count)
+				break; // no space to resign the worker, keep them in firm
 		}
 	}
 
@@ -1776,7 +1726,7 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			int unitId = CreateWorkerUnit(worker); // if he is a spy, CreateWorkerUnit will call SetPlace(Spy.SPY_MOBILE)
+			int unitId = CreateUnitFromWorker(worker); // if he is a spy, CreateWorkerUnit will call SetPlace(Spy.SPY_MOBILE)
 
 			if (unitId != 0)
 				RemoveWorker(worker);
@@ -1818,53 +1768,43 @@ public abstract class Firm : IIdObject
 		SelectedWorkerId = newSelectedWorkerId;
 	}
 
-	public int CreateWorkerUnit(Worker worker)
+	private int CreateUnitFromWorker(Worker worker)
 	{
-		//------------ create a unit --------------//
-
 		// this worker no longer has a job as it has been resigned
-		int unitRecno = CreateUnit(worker.UnitId, worker.TownId, false);
+		int unitId = CreateUnit(worker.UnitId, worker.TownId, false);
 
-		if (unitRecno == 0)
+		if (unitId == 0)
 			return 0;
 
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 		unit.InitFromWorker(worker);
 
 		//--- decrease the nation unit count as the Unit has already increased it ----//
-
 		if (!FirmRes[FirmType].LiveInTown) // if the unit does not live in town, increase the unit count now
 			UnitRes[unit.UnitType].dec_nation_unit_count(NationId);
 
 		//--- set non-military units to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId > 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
+		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId != 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
 			unit.AggressiveMode = false;
 
-		return unitRecno;
+		return unitId;
 	}
 
-	protected int CreateUnit(int unitId, int townRecno = 0, bool unitHasJob = false)
+	protected int CreateUnit(int unitType, int townId = 0, bool unitHasJob = false)
 	{
-		//----look for an empty location for the unit to stand ----//
-		//--- scan for the 5 rows right below the building ---//
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].sprite_id];
+		int locX = LocX1;
+		int locY = LocY1;
 
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
-		int xLoc = LocX1, yLoc = LocY1;
-
-		if (!LocateSpace(IsDeleting, ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight))
+		if (!LocateSpace(IsDeleting, ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return 0;
 
-		//------------ add the unit now ----------------//
+		int unitNationId = townId != 0 ? TownArray[townId].NationId : NationId;
 
-		int unitNationRecno = townRecno != 0 ? TownArray[townRecno].NationId : NationId;
+		Unit unit = UnitArray.AddUnit(unitType, unitNationId, Unit.RANK_SOLDIER, 0, locX, locY);
 
-		Unit unit = UnitArray.AddUnit(unitId, unitNationRecno, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
-
-		//----- update the population of the town ------//
-
-		if (townRecno != 0)
-			TownArray[townRecno].DecPopulation(unit.RaceId, unitHasJob);
+		if (townId != 0)
+			TownArray[townId].DecPopulation(unit.RaceId, unitHasJob);
 
 		return unit.SpriteId;
 	}
@@ -1874,7 +1814,7 @@ public abstract class Firm : IIdObject
 		if (Workers.Count == MAX_WORKER)
 			return;
 
-		if (Info.TotalDays % 5 != FirmId % 5) // update population once 10 days
+		if (Info.TotalDays % 5 != FirmId % 5) // update population once 5 days
 			return;
 
 		//-------- pull from neighbor towns --------//
@@ -1890,15 +1830,13 @@ public abstract class Firm : IIdObject
 
 			//--- don't hire foreign workers if we don't have cash to pay them ---//
 
-			if (nation.cash < 0 && NationId != town.NationId)
+			if (nation.cash < 0.0 && NationId != town.NationId)
 				continue;
 
 			//-------- if the town has any unit ready for jobs -------//
 
 			if (town.JoblessPopulation == 0)
 				continue;
-
-			//---- if nation of the town is not hositle to this firm's nation ---//
 
 			if (PullTownPeople(town.TownId, InternalConstants.COMMAND_AUTO))
 				return;
@@ -1913,24 +1851,20 @@ public abstract class Firm : IIdObject
 		if (Workers.Count == 0)
 			return;
 
-		//------- update the worker's para ---------//
-
-		int incValue, levelMinor;
-
 		foreach (Worker worker in Workers)
 		{
 			//------- increase worker skill -----------//
 
 			if (IsOperating() && worker.SkillLevel < 100) // only train when the workers are working
 			{
-				incValue = Math.Max(10, 100 - worker.SkillLevel)
+				int incValue = Math.Max(10, 100 - worker.SkillLevel)
 					* worker.HitPoints / worker.MaxHitPoints()
 					* (100 + worker.SkillPotential) / 100 / 2;
 
 				//-------- increase level minor now --------//
 
 				// with random factors, resulting in 75% to 125% of the original
-				levelMinor = worker.SkillLevelMinor + incValue * (75 + Misc.Random(50)) / 100;
+				int levelMinor = worker.SkillLevelMinor + incValue * (75 + Misc.Random(50)) / 100;
 
 				while (levelMinor >= 100)
 				{
@@ -1957,9 +1891,8 @@ public abstract class Firm : IIdObject
 		SortWorkers();
 	}
 
-	protected void ThinkWorkerMigrate()
+	private void ThinkWorkerMigrate()
 	{
-
 		if (Workers.Count == 0 || !FirmRes[FirmType].LiveInTown)
 			return;
 
@@ -1970,17 +1903,17 @@ public abstract class Firm : IIdObject
 
 			//------ check if this town is linked to the current firm -----//
 
-			int j;
-			for (j = town.LinkedFirms.Count - 1; j >= 0; j--)
+			bool linked = false;
+			for (int i = 0; i < town.LinkedFirms.Count; i++)
 			{
-				if (town.LinkedFirms[j] == FirmId &&
-				    town.LinkedFirmsEnable[j] != 0)
+				if (town.LinkedFirms[i] == FirmId && town.LinkedFirmsEnable[i] != InternalConstants.LINK_DD)
 				{
+					linked = true;
 					break;
 				}
 			}
 
-			if (j < 0)
+			if (!linked)
 				continue;
 
 			//------------------------------------------------//
@@ -2001,11 +1934,11 @@ public abstract class Firm : IIdObject
 			if (town.NationId != 0)
 				targetBaseAttractLevel += (int)NationArray[town.NationId].reputation;
 
-			//---- scan all workers, see if any of them want to worker_migrate ----//
+			//---- scan all workers, see if any of them want to migrate ----//
 
 			int workerId = Misc.Random(Workers.Count) + 1;
 
-			for (j = 0; j < Workers.Count; j++)
+			for (int i = 0; i < Workers.Count; i++)
 			{
 				if (++workerId > Workers.Count)
 					workerId = 1;
@@ -2025,32 +1958,28 @@ public abstract class Firm : IIdObject
 
 				//-- do not migrate if the target town might not be a place this worker will stay --//
 
-				if (ConfigAdv.firm_migrate_stricter_rules &&
-				    town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
+				if (ConfigAdv.firm_migrate_stricter_rules && town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
 					continue;
 
 				//------ calc the current and target attractiveness level ------//
 
-				int curBaseAttractLevel;
+				int curBaseAttractLevel = 0;
 				if (workerTown.NationId != 0)
 					curBaseAttractLevel = (int)NationArray[workerTown.NationId].reputation;
-				else
-					curBaseAttractLevel = 0;
 
 				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
-
 				if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
 					continue;
 
 				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
 				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.Loyalty() - 40);
 
-				if (ConfigAdv.firm_migrate_stricter_rules
-					    ? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
-					    : targetAttractLevel > curAttractLevel)
+				bool shouldMigrate = ConfigAdv.firm_migrate_stricter_rules
+					? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
+					: targetAttractLevel > curAttractLevel;
+				if (shouldMigrate)
 				{
 					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);
-
 					WorkerMigrate(workerId, town.TownId, newLoyalty);
 					return;
 				}
@@ -2058,36 +1987,28 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	protected void WorkerMigrate(int workerId, int destTownRecno, int newLoyalty)
+	private void WorkerMigrate(int workerId, int destTownId, int newLoyalty)
 	{
 		Worker worker = Workers[workerId - 1];
 
 		int raceId = worker.RaceId;
 		Town srcTown = TownArray[worker.TownId];
-		Town destTown = TownArray[destTownRecno];
+		Town destTown = TownArray[destTownId];
 
 		//------------- add news --------------//
 
 		if (srcTown.NationId == NationArray.player_recno || destTown.NationId == NationArray.player_recno)
 		{
 			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
-				NewsArray.migrate(srcTown.TownId, destTownRecno, raceId, 1, FirmId);
+				NewsArray.migrate(srcTown.TownId, destTownId, raceId, 1, FirmId);
 		}
 
-		//--------- migrate now ----------//
-
-		worker.TownId = destTownRecno;
-
-		//--------- decrease the population of the home town ------//
-
 		srcTown.DecPopulation(raceId, true);
-
-		//--------- increase the population of the target town ------//
-
 		destTown.IncPopulation(raceId, true, newLoyalty);
+		worker.TownId = destTownId;
 	}
 
-	protected void ProcessIndependentTownWorker()
+	private void ProcessIndependentTownWorker()
 	{
 		if (Info.TotalDays % 15 != FirmId % 15)
 			return;
@@ -2098,8 +2019,7 @@ public abstract class Firm : IIdObject
 
 			if (town.NationId == 0) // if it's an independent town
 			{
-				town.RacesResistance[worker.RaceId - 1, NationId - 1] -=
-					GameConstants.RESISTANCE_DECREASE_PER_WORKER;
+				town.RacesResistance[worker.RaceId - 1, NationId - 1] -= GameConstants.RESISTANCE_DECREASE_PER_WORKER;
 
 				if (town.RacesResistance[worker.RaceId - 1, NationId - 1] < 0.0)
 					town.RacesResistance[worker.RaceId - 1, NationId - 1] = 0.0;
@@ -2107,28 +2027,27 @@ public abstract class Firm : IIdObject
 		}
 	}
 
-	public virtual bool PullTownPeople(int townRecno, int remoteAction, int raceId = 0, bool forcePull = false)
+	public bool PullTownPeople(int townId, int remoteAction, int raceId = 0, bool forcePull = false)
 	{
-		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
+		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old Workers.Count and thus allow this function being called.
 		if (Workers.Count == MAX_WORKER)
 			return false;
 
-		//if(!remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <firm recno> <town recno> <race Id or 0> <force Pull>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_PULL_TOWN_PEOPLE, 4*sizeof(short));
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = townRecno;
-		//shortPtr[2] = raceId;	
-		//// if raceId == 0, let each player choose the race by random number, to sychronize the random number
-		//shortPtr[3] = forcePull;
-		//return 0;
+			//// packet structure : <firm recno> <town recno> <race Id or 0> <force Pull>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_PULL_TOWN_PEOPLE, 4*sizeof(short));
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = townRecno;
+			//shortPtr[2] = raceId;	
+			//// if raceId == 0, let each player choose the race by random number, to synchronize the random number
+			//shortPtr[3] = forcePull;
+			//return 0;
 		//}
 
 		//---- people in the town go to work for the firm ---//
 
-		Town town = TownArray[townRecno];
-		int popAdded = 0;
+		Town town = TownArray[townId];
 
 		//---- if doesn't specific a race, randomly pick one ----//
 
@@ -2137,11 +2056,11 @@ public abstract class Firm : IIdObject
 
 		//----------- scan the races -----------//
 
-		for (int i = 0; i < GameConstants.MAX_RACE; i++) // maximum 8 tries
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			//---- see if there is any population of this race to move to the firm ----//
 
-			int recruitableCount = town.RecruitableRacePopulation(raceId, true); // 1-allow recruiting spies
+			int recruitableCount = town.RecruitableRacePopulation(raceId, true);
 
 			if (recruitableCount > 0)
 			{
@@ -2149,8 +2068,7 @@ public abstract class Firm : IIdObject
 
 				if (forcePull) // right-click to force pulling a worker from the village
 				{
-					if (town.RacesLoyalty[raceId - 1] <
-					    GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
+					if (town.RacesLoyalty[raceId - 1] < GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
 						return false;
 
 					town.RecruitDecLoyalty(raceId);
@@ -2161,12 +2079,12 @@ public abstract class Firm : IIdObject
 
 					if (town.NationId != 0)
 					{
-						if (Misc.Random((100 - Convert.ToInt32(town.RacesLoyalty[raceId - 1])) / 10) > 0)
+						if (Misc.Random((100 - (int)town.RacesLoyalty[raceId - 1]) / 10) > 0)
 							return false;
 					}
 					else
 					{
-						if (Misc.Random(Convert.ToInt32(town.RacesResistance[raceId - 1, NationId - 1]) / 10) > 0)
+						if (Misc.Random((int)town.RacesResistance[raceId - 1, NationId - 1] / 10) > 0)
 							return false;
 					}
 				}
@@ -2191,10 +2109,10 @@ public abstract class Firm : IIdObject
 				worker.RaceId = raceId;
 				worker.RankId = Unit.RANK_SOLDIER;
 				worker.UnitId = RaceRes[raceId].basic_unit_id;
-				worker.WorkerLoyalty = Convert.ToInt32(town.RacesLoyalty[raceId - 1]);
+				worker.WorkerLoyalty = (int)town.RacesLoyalty[raceId - 1];
 
 				if (FirmRes[FirmType].LiveInTown)
-					worker.TownId = townRecno;
+					worker.TownId = townId;
 
 				worker.CombatLevel = GameConstants.CITIZEN_COMBAT_LEVEL;
 				worker.HitPoints = GameConstants.CITIZEN_HIT_POINTS;
@@ -2207,7 +2125,7 @@ public abstract class Firm : IIdObject
 				//--------- if this is a military camp ---------//
 				//
 				// Increase armed unit count of the race of the worker assigned,
-				// as when a unit is assigned to a camp, Unit::deinit() will decrease
+				// as when a unit is assigned to a camp, Unit.Deinit() will decrease
 				// the counter, so we need to increase it back here.
 				//
 				//---------------------------------------------------//
@@ -2222,11 +2140,9 @@ public abstract class Firm : IIdObject
 				if (spyCount >= Misc.Random(recruitableCount) + 1)
 				{
 					// the 3rd parameter is which spy to recruit
-					int spyRecno = SpyArray.FindTownSpy(townRecno, raceId, Misc.Random(spyCount) + 1);
-
-					worker.SpyId = spyRecno;
-
-					SpyArray[spyRecno].SetPlace(Spy.SPY_FIRM, FirmId);
+					int spyId = SpyArray.FindTownSpy(townId, raceId, Misc.Random(spyCount) + 1);
+					worker.SpyId = spyId;
+					SpyArray[spyId].SetPlace(Spy.SPY_FIRM, FirmId);
 				}
 
 				return true;
@@ -2275,7 +2191,6 @@ public abstract class Firm : IIdObject
 
 			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
 			town.IncPopulation(worker.RaceId, true, workerLoyalty);
-
 			worker.TownId = townId;
 		}
 	}

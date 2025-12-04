@@ -2577,17 +2577,15 @@ public class Town : IIdObject
 			var defaultLinkStatus = firm.NationId == NationId ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
 
 			//----- a town cannot disable a camp's link to it ----//
-			if (firm.FirmType == Firm.FIRM_CAMP) // for capturing the town
+			// TODO enable link only for enemy camp?
+			if (firm.FirmType == Firm.FIRM_CAMP)
 				defaultLinkStatus = InternalConstants.LINK_EE;
-
-			//-------- add the link now -------//
 
 			LinkedFirms.Add(firm.FirmId);
 			LinkedFirmsEnable.Add(defaultLinkStatus);
 
 			// now link from the firm's side
-			
-			// these condition are always false
+			// these conditions are always false
 			/*if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
 				defaultLinkStatus = InternalConstants.LINK_DE;
 
@@ -2623,7 +2621,6 @@ public class Town : IIdObject
 			LinkedTownsEnable.Add(defaultLinkStatus);
 
 			// now link from the other town's side
-			
 			// these condition are always false
 			/*if (defaultLinkStatus == InternalConstants.LINK_ED) // Reverse the link status for the opposite linker
 				defaultLinkStatus = InternalConstants.LINK_DE;
@@ -2723,7 +2720,7 @@ public class Town : IIdObject
 
 	private void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <town recno> <link Id> <toggle Flag>
 			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TOGGLE_LINK_FIRM, 3*sizeof(short));
@@ -2756,7 +2753,7 @@ public class Town : IIdObject
 
 		//------ set the linked flag of the opposite firm -----//
 
-		for (int i = linkedFirm.LinkedTowns.Count - 1; i >= 0; i--)
+		for (int i = 0; i < linkedFirm.LinkedTowns.Count; i++)
 		{
 			if (linkedFirm.LinkedTowns[i] == TownId)
 			{
@@ -2993,6 +2990,8 @@ public class Town : IIdObject
 		World.SetPower(LocX1, LocY1, LocX2, LocY2, newNationId); // set power of the new nation
 
 		SpyArray.ChangeCloakedNation(Spy.SPY_TOWN, TownId, NationId, newNationId);
+		
+		//TODO maybe we should update links to firms and towns here
 
 		NationId = newNationId;
 
