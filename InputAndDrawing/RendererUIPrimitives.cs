@@ -17,6 +17,7 @@ public partial class Renderer
 	private const int ButtonsTownY = DetailsY1 + 385;
 	private const int ButtonsMineY = DetailsY1 + 412;
 	private const int ButtonsFactoryY = DetailsY1 + 412;
+	private const int ButtonsResearchY = DetailsY1 + 367;
 	private const int ButtonsCampY = DetailsY1 + 376;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
@@ -126,6 +127,10 @@ public partial class Renderer
 	private IntPtr _numberPanelDownTexture;
 	private int _numberPanelWidth;
 	private int _numberPanelHeight;
+	private IntPtr _researchPanelUpTexture;
+	private IntPtr _researchPanelDownTexture;
+	private int _researchPanelWidth;
+	private int _researchPanelHeight;
 
 	private IntPtr _listBoxPanelTexture;
 	private int _listBoxPanelWidth;
@@ -193,6 +198,9 @@ public partial class Renderer
 	private IntPtr _buttonChangeProductionTexture;
 	private int _buttonChangeProductionWidth;
 	private int _buttonChangeProductionHeight;
+	private IntPtr _buttonResearchTexture;
+	private int _buttonResearchWidth;
+	private int _buttonResearchHeight;
 	private IntPtr _buttonSucceedKingTexture;
 	private int _buttonSucceedKingWidth;
 	private int _buttonSucceedKingHeight;
@@ -466,6 +474,12 @@ public partial class Renderer
 		_numberPanelUpTexture = Graphics.CreateTextureFromBmp(numberPanelUpBitmap, _numberPanelWidth, _numberPanelHeight, 32);
 		byte[] numberPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _numberPanelWidth, _numberPanelHeight);
 		_numberPanelDownTexture = Graphics.CreateTextureFromBmp(numberPanelDownBitmap, _numberPanelWidth, _numberPanelHeight, 32);
+		_researchPanelWidth = _smallPanelWidth;
+		_researchPanelHeight = 56;
+		byte[] researchPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _researchPanelWidth, _researchPanelHeight);
+		_researchPanelUpTexture = Graphics.CreateTextureFromBmp(researchPanelUpBitmap, _researchPanelWidth, _researchPanelHeight, 32);
+		byte[] researchPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _researchPanelWidth, _researchPanelHeight);
+		_researchPanelDownTexture = Graphics.CreateTextureFromBmp(researchPanelDownBitmap, _researchPanelWidth, _researchPanelHeight, 32);
 	}
 
 	private void CreateListBoxPanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
@@ -590,6 +604,11 @@ public partial class Renderer
 		_buttonChangeProductionHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonChangeProductionWidth, _buttonChangeProductionHeight);
 		_buttonChangeProductionTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonChangeProductionWidth, _buttonChangeProductionHeight);
+		buttonData = buttonImages.Read("RESEARCH");
+		_buttonResearchWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonResearchHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonResearchWidth, _buttonResearchHeight);
+		_buttonResearchTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonResearchWidth, _buttonResearchHeight);
 		buttonData = buttonImages.Read("SUCCEED");
 		_buttonSucceedKingWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonSucceedKingHeight = BitConverter.ToInt16(buttonData, 2);
@@ -980,6 +999,16 @@ public partial class Renderer
 	private void DrawNumberPanelDown(int x, int y)
 	{
 		Graphics.DrawBitmap(_numberPanelDownTexture, x, y, Scale(_numberPanelWidth), Scale(_numberPanelHeight));
+	}
+	
+	private void DrawResearchPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmap(_researchPanelUpTexture, x, y, Scale(_researchPanelWidth), Scale(_researchPanelHeight));
+	}
+
+	private void DrawResearchPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmap(_researchPanelDownTexture, x, y, Scale(_researchPanelWidth), Scale(_researchPanelHeight));
 	}
 	
 	private void DrawListBoxPanel(int x, int y)

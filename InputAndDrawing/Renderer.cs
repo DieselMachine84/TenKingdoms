@@ -83,6 +83,7 @@ public partial class Renderer : IRenderer
     private static UnitRes UnitRes => Sys.Instance.UnitRes;
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private static GodRes GodRes => Sys.Instance.GodRes;
+    private static TechRes TechRes => Sys.Instance.TechRes;
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
 
     private static Config Config => Sys.Instance.Config;
@@ -257,6 +258,7 @@ public partial class Renderer : IRenderer
         _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = 0;
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
+        FirmDetailsMode = FirmDetailsMode.Normal;
         HumanDetailsMode = HumanDetailsMode.Normal;
     }
     

@@ -8011,7 +8011,7 @@ public class Nation : NationBase
 			//---- scan which tech that the nation has but we don't have ----//
 
 			int techId;
-			for (techId = 1; techId <= TechRes.tech_info_array.Length; techId++)
+			for (techId = 1; techId <= TechRes.TechInfos.Length; techId++)
 			{
 				TechInfo techInfo = TechRes[techId];
 
@@ -8021,7 +8021,7 @@ public class Nation : NationBase
 				}
 			}
 
-			if (techId > TechRes.tech_info_array.Length)
+			if (techId > TechRes.TechInfos.Length)
 				continue;
 
 			//-------- send the message now ---------//

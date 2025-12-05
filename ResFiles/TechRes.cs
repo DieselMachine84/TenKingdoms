@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -107,7 +108,7 @@ public class TechClass
 
     public byte[] tech_icon()
     {
-        return TechRes.res_bitmap.GetData(icon_index);
+        return TechRes.res_bitmap.GetData(icon_index + 1);
     }
 }
 
@@ -132,12 +133,14 @@ public class TechInfo
     public UnitRes UnitRes => Sys.Instance.UnitRes;
     public FirmArray FirmArray => Sys.Instance.FirmArray;
 
-    public byte[] tech_large_icon()
+    public int TechLargeIconWidth { get; set; }
+    public int TechLargeIconHeight { get; set; }
+
+    public IntPtr GetTechLargeIconTexture(Graphics graphics)
     {
-        if (unit_id != 0)
-            return UnitRes[unit_id].get_large_icon_ptr(0);
-        else
-            return TechRes.res_bitmap.GetData(icon_index);
+        TechLargeIconWidth = UnitRes[unit_id].soldierIconWidth;
+        TechLargeIconHeight = UnitRes[unit_id].soldierIconHeight;
+        return UnitRes[unit_id].GetSoldierIconTexture(graphics);
     }
 
     public byte[] tech_small_icon()
@@ -148,17 +151,15 @@ public class TechInfo
             return TechRes.res_bitmap.GetData(icon_index);
     }
 
-    // description of the technology
-    public string tech_des()
+    public string Description()
     {
         if (unit_id != 0)
             return UnitRes[unit_id].name;
 
-        else if (firm_id != 0)
+        if (firm_id != 0)
             return FirmRes[firm_id].Name;
 
-        else
-            return String.Empty;
+        return String.Empty;
     }
 
     //-------- dynamic game vars --------//
@@ -270,8 +271,8 @@ public class TechRes
 
     public int total_tech_level; // the sum of research levels of all technology
 
-    public TechClass[] tech_class_array;
-    public TechInfo[] tech_info_array;
+    public TechClass[] TechClasses { get; set; }
+    public TechInfo[] TechInfos { get; set; }
 
     public ResourceIdx res_bitmap;
 
@@ -291,7 +292,7 @@ public class TechRes
 
     public void init_nation_tech(int nationId)
     {
-        foreach (var techInfo in tech_info_array)
+        foreach (var techInfo in TechInfos)
         {
             techInfo.set_nation_tech_level(nationId, 0);
         }
@@ -299,7 +300,7 @@ public class TechRes
 
     public void inc_all_tech_level(int nationId)
     {
-        foreach (var techInfo in tech_info_array)
+        foreach (var techInfo in TechInfos)
         {
             int curTechLevel = techInfo.get_nation_tech_level(nationId);
 
@@ -308,24 +309,23 @@ public class TechRes
         }
     }
 
-    public TechInfo this[int techId] => tech_info_array[techId - 1];
+    public TechInfo this[int techId] => TechInfos[techId - 1];
 
     private TechClass GetTechClass(int techClassId)
     {
-        return tech_class_array[techClassId - 1];
+        return TechClasses[techClassId - 1];
     }
 
     private void LoadTechClass()
     {
         Database dbTechClass = GameSet.OpenDb(TECH_CLASS_DB);
+        TechClasses = new TechClass[dbTechClass.RecordCount];
 
-        tech_class_array = new TechClass[dbTechClass.RecordCount];
-
-        for (int i = 0; i < tech_class_array.Length; i++)
+        for (int i = 0; i < TechClasses.Length; i++)
         {
             TechClassRec techClassRec = new TechClassRec(dbTechClass, i + 1);
             TechClass techClass = new TechClass();
-            tech_class_array[i] = techClass;
+            TechClasses[i] = techClass;
 
             techClass.class_id = i + 1;
             techClass.icon_index = res_bitmap.GetIndex(Misc.ToString(techClassRec.icon_name));
@@ -335,18 +335,17 @@ public class TechRes
     private void LoadTechInfo()
     {
         Database dbTech = GameSet.OpenDb(TECH_DB);
-
-        tech_info_array = new TechInfo[dbTech.RecordCount];
+        TechInfos = new TechInfo[dbTech.RecordCount];
 
         int techClassId = 0;
         total_tech_level = 0;
 
         TechClass techClass = null;
-        for (int i = 0; i < tech_info_array.Length; i++)
+        for (int i = 0; i < TechInfos.Length; i++)
         {
             TechRec techRec = new TechRec(dbTech, i + 1);
             TechInfo techInfo = new TechInfo();
-            tech_info_array[i] = techInfo;
+            TechInfos[i] = techInfo;
 
             techInfo.tech_id = i + 1;
             techInfo.class_id = Misc.ToInt32(techRec.class_id);

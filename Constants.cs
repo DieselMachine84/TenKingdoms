@@ -146,6 +146,9 @@ public static class InternalConstants
     public const int TOWN_MAX_TRAIN_QUEUE = 10;
     // Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
     public const int TOWN_TRAIN_BATCH_COUNT = 8;
+
+    public const int FIRMWAR_MAX_BUILD_QUEUE = 20;
+    public const int FIRMWAR_BUILD_BATCH_COUNT = 10;
     
     public const int EFFECTIVE_TOWN_TOWN_DISTANCE = 6;
     public const int EFFECTIVE_FIRM_TOWN_DISTANCE = 6;

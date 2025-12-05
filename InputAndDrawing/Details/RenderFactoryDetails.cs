@@ -25,40 +25,52 @@ public partial class Renderer
         PutText(FontSan, "Monthly Production", DetailsX1 + 13, DetailsY1 + 137, -1, true);
         PutText(FontSan, ((int)factory.Production30Days()).ToString(), DetailsX1 + 191, DetailsY1 + 139, -1, true);
         PutText(FontSan, "Raw Material Stock", DetailsX1 + 13, DetailsY1 + 167, -1, true);
-        PutText(FontSan, (int)factory.RawStockQty + " / " + (int)factory.MaxRawStockQty, DetailsX1 + 191, DetailsY1 + 169, -1, true);
+        PutText(FontSan, (int)factory.RawStockQty + "/" + (int)factory.MaxRawStockQty, DetailsX1 + 191, DetailsY1 + 169, -1, true);
         PutText(FontSan, "Product Stock", DetailsX1 + 13, DetailsY1 + 197, -1, true);
-        PutText(FontSan, (int)factory.StockQty + " / " + (int)factory.MaxStockQty, DetailsX1 + 191, DetailsY1 + 199, -1, true);
+        PutText(FontSan, (int)factory.StockQty + "/" + (int)factory.MaxStockQty, DetailsX1 + 191, DetailsY1 + 199, -1, true);
         
         DrawWorkers(factory);
         
         DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 339);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 344);
+        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 373);
+        DrawFieldPanel75(DetailsX1 + 208, DetailsY1 + 373);
+        PutText(FontSan, "Residence", DetailsX1 + 13, DetailsY1 + 347, -1, true);
+        PutText(FontSan, "Loyalty", DetailsX1 + 13, DetailsY1 + 376, -1, true);
+        PutText(FontSan, "Manufacture", DetailsX1 + 214, DetailsY1 + 376, -1, true);
+        if (factory.SelectedWorkerId != 0)
+        {
+            Worker worker = factory.Workers[factory.SelectedWorkerId - 1];
+            PutText(FontSan, TownArray[worker.TownId].Name, DetailsX1 + 113, DetailsY1 + 349, -1, true);
+            PutText(FontSan, worker.Loyalty().ToString(), DetailsX1 + 113, DetailsY1 + 378, -1, true);
+            PutText(FontSan, worker.SkillLevel.ToString(), DetailsX1 + 327, DetailsY1 + 378, -1, true);
+        }
         
         if (factory.OwnFirm())
         {
             bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                                  _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsFactoryY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsFactoryY, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsFactoryY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonChangeProductionTexture, Button1X + 3, ButtonsFactoryY + 3,
-                Scale(_buttonChangeProductionWidth), Scale(_buttonChangeProductionHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsFactoryY, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonChangeProductionTexture, Button1X + 5, ButtonsFactoryY + 3,
+                _buttonChangeProductionWidth, _buttonChangeProductionHeight);
 
             if (factory.HaveOwnWorkers())
             {
                 mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
-                                     _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
+                                _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsFactoryY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button2X, ButtonsFactoryY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsFactoryY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonRecruitTexture, Button2X + 3, ButtonsFactoryY + 3, Scale(_buttonRecruitWidth), Scale(_buttonRecruitHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button2X, ButtonsFactoryY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonRecruitTexture, Button2X + 3, ButtonsFactoryY + 7, _buttonRecruitWidth, _buttonRecruitHeight);
             }
             else
             {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button2X, ButtonsFactoryY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonRecruitDisabledTexture, Button2X + 3, ButtonsFactoryY + 3, Scale(_buttonRecruitWidth),
-                    Scale(_buttonRecruitHeight));
+                Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button2X, ButtonsFactoryY, _buttonDisabledWidth, _buttonDisabledHeight);
+                Graphics.DrawBitmapScaled(_buttonRecruitDisabledTexture, Button2X + 3, ButtonsFactoryY + 7, _buttonRecruitWidth, _buttonRecruitHeight);
             }
         }
         

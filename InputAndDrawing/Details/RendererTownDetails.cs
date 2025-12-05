@@ -261,16 +261,16 @@ public partial class Renderer
 
     private void HandleTownDetailsInput(Town town)
     {
-        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
-                                        _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
-        if (colorSquareButtonPressed)
-            GoToLocation(town.LocCenterX, town.LocCenterY);
-
         if (TownDetailsMode == TownDetailsMode.Train)
         {
             HandleTrainMenuInput(town);
             return;
         }
+
+        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+                                        _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
+        if (colorSquareButtonPressed)
+            GoToLocation(town.LocCenterX, town.LocCenterY);
 
         bool race1Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
                              _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;

@@ -822,11 +822,11 @@ public class TalkRes
         {
             choice_question = "Which technology?";
 
-            for (int i = 1; i <= TechRes.tech_info_array.Length; i++)
+            for (int i = 1; i <= TechRes.TechInfos.Length; i++)
             {
                 if (TechRes[i].get_nation_tech_level(techNationRecno) > 0)
                 {
-                    add_talk_choice(TechRes[i].tech_des(), i);
+                    add_talk_choice(TechRes[i].Description(), i);
                 }
             }
 

@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
 public class FirmWar : Firm
 {
-    public const int MAX_BUILD_QUEUE = 20;
-    public const int FIRMWAR_BUILD_BATCH_COUNT = 10;
-
     public int BuildUnitId { get; set; }
     private long LastProcessBuildFrameNumber { get; set; }
     private double BuildProgressInDays { get; set; }
@@ -41,7 +37,7 @@ public class FirmWar : Firm
         //--- empty the build queue ---//
 
         // Note: this fixes a bug with a nation-changed war factory building a weapon that the nation doesn't have,
-        //       which leads to a crash (when selecting attack sprite) because cur_attack is not set properly.
+        //       which leads to a crash (when selecting attack sprite) because CurAttack is not set properly.
         if (BuildUnitId != 0)
             CancelBuildUnit();
         BuildQueue.Clear();
@@ -51,15 +47,15 @@ public class FirmWar : Firm
     
     public override bool IsOperating()
     {
-        return Productivity > 0 && BuildUnitId != 0;
+        return Productivity > 0.0 && BuildUnitId != 0;
     }
 
     public void AddQueue(int unitId, int amount = 1)
     {
-        if (amount < 0)
+        if (amount <= 0)
             return;
 
-        int queueSpace = MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
+        int queueSpace = InternalConstants.FIRMWAR_MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
         int enqueueAmount = Math.Min(queueSpace, amount);
 
         for (int i = 0; i < enqueueAmount; i++)
@@ -114,8 +110,6 @@ public class FirmWar : Firm
 
     private void ProcessBuild()
     {
-        UnitInfo unitInfo = UnitRes[BuildUnitId];
-
         //TODO strange formula
         BuildProgressInDays += (Workers.Count * 6 + Productivity / 2.0) / 100.0;
 
@@ -124,6 +118,7 @@ public class FirmWar : Firm
         if (Config.fast_build && NationId == NationArray.player_recno)
             BuildProgressInDays += 2.0;
 
+        UnitInfo unitInfo = UnitRes[BuildUnitId];
         int totalBuildDays = unitInfo.build_days;
         if (BuildProgressInDays > totalBuildDays)
         {
@@ -140,13 +135,22 @@ public class FirmWar : Firm
             UnitArray.AddUnit(BuildUnitId, NationId, 0, 0, locX, locY);
 
             if (OwnFirm())
-                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
-                    UnitRes[BuildUnitId].sprite_id);
+                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitId].sprite_id);
 
             BuildUnitId = 0;
         }
     }
     
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawWarFactoryDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleWarFactoryDetailsInput(this);
+    }
+
     #region Old AI Functions
 
     public override void ProcessAI()
@@ -286,14 +290,4 @@ public class FirmWar : Firm
     }
     
     #endregion
-    
-    public override void DrawDetails(IRenderer renderer)
-    {
-        renderer.DrawWarFactoryDetails(this);
-    }
-
-    public override void HandleDetailsInput(IRenderer renderer)
-    {
-        renderer.HandleWarFactoryDetailsInput(this);
-    }
 }

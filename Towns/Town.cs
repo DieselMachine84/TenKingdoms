@@ -3741,7 +3741,7 @@ public class Town : IIdObject
 		switch (Misc.Random(10))
 		{
 			case 1: // knowledge of weapon in the beginning.
-				TechRes[Misc.Random(TechRes.tech_info_array.Length) + 1].set_nation_tech_level(newNation.nation_recno, 1);
+				TechRes[Misc.Random(TechRes.TechInfos.Length) + 1].set_nation_tech_level(newNation.nation_recno, 1);
 				break;
 
 			case 2: // random additional cash

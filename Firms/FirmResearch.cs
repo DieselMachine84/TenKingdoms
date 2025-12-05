@@ -38,7 +38,7 @@ public class FirmResearch : Firm
 
     public override bool IsOperating()
     {
-        return Productivity > 0 && TechId != 0;
+        return Productivity > 0.0 && TechId != 0;
     }
 
     public void StartResearch(int techId, int remoteAction)
@@ -123,6 +123,16 @@ public class FirmResearch : Firm
         }
     }
 
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawResearchDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleResearchDetailsInput(this);
+    }
+
     #region Old AI Functions    
 
     public override void ProcessAI()
@@ -154,7 +164,7 @@ public class FirmResearch : Firm
     {
         int bestTechId = 0, bestRating = 0;
 
-        for (int techId = TechRes.tech_info_array.Length; techId > 0; techId--)
+        for (int techId = TechRes.TechInfos.Length; techId > 0; techId--)
         {
             TechInfo techInfo = TechRes[techId];
 
@@ -200,14 +210,4 @@ public class FirmResearch : Firm
     }
     
     #endregion
-    
-    public override void DrawDetails(IRenderer renderer)
-    {
-        renderer.DrawResearchDetails(this);
-    }
-
-    public override void HandleDetailsInput(IRenderer renderer)
-    {
-        renderer.HandleResearchDetailsInput(this);
-    }
 }

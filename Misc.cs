@@ -328,12 +328,12 @@ public class Misc
         StringBuilder result = new StringBuilder(chars.Length);
         foreach (var c in chars)
         {
-            if (c != '\0' && !Char.IsWhiteSpace(c))
+            if (c != '\0')
             {
                 result.Append(c);
             }
         }
-
-        return result.ToString();
+        
+        return result.ToString().TrimEnd();
     }
 }

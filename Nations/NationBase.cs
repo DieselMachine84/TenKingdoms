@@ -532,7 +532,7 @@ public class NationBase : IIdObject
     {
         int totalTechLevel = 0;
 
-        for (int i = 1; i <= TechRes.tech_info_array.Length; i++)
+        for (int i = 1; i <= TechRes.TechInfos.Length; i++)
         {
             TechInfo techInfo = TechRes[i];
             int techLevel = techInfo.get_nation_tech_level(nation_recno);

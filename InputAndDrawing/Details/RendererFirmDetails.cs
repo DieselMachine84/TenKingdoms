@@ -1,11 +1,21 @@
 namespace TenKingdoms;
 
+enum FirmDetailsMode { Normal, Research, Spy }
+
 public partial class Renderer
 {
     // TODO show spies list, show bribe menu, show assassination result, show view secret menu
     
+    private FirmDetailsMode FirmDetailsMode { get; set; } = FirmDetailsMode.Normal;
+    
     private void DrawFirmDetails(Firm firm)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Research)
+        {
+            firm.DrawDetails(this);
+            return;
+        }
+        
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
         if (firm.NationId != 0)
         {
@@ -117,6 +127,11 @@ public partial class Renderer
 
     private void HandleFirmDetailsInput(Firm firm)
     {
+        firm.HandleDetailsInput(this);
+
+        if (FirmDetailsMode == FirmDetailsMode.Research)
+            return;
+
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
                                         _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
         if (colorSquareButtonPressed)
@@ -173,8 +188,6 @@ public partial class Renderer
             if (_rightMouseReleased && firm.OwnFirm())
                 firm.MobilizeWorker(mouseWorkerId, InternalConstants.COMMAND_PLAYER);
         }
-
-        firm.HandleDetailsInput(this);
     }
     
     private bool ShowBuilderButton(Firm firm)
@@ -206,7 +219,13 @@ public partial class Renderer
 
     private int GetWorkersY(Firm firm)
     {
-        return (firm.FirmType == Firm.FIRM_CAMP) ? DetailsY1 + 192 : DetailsY1 + 228;
+        if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY)
+            return DetailsY1 + 228;
+        if (firm.FirmType == Firm.FIRM_CAMP)
+            return DetailsY1 + 192;
+        if (firm.FirmType == Firm.FIRM_RESEARCH)
+            return DetailsY1 + 183;
+        return DetailsY1;
     }
 
     private int GetMouseWorkerId(Firm firm)
