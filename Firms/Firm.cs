@@ -2195,25 +2195,47 @@ public abstract class Firm : IIdObject
 		}
 	}
 	
+	public void Reward(int workerId, int remoteAction)
+	{
+		//if (!remoteAction && remote.is_enable())
+		//{
+			//// packet structure : <firm recno> <worker id>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
+			//*shortPtr = firm_recno;
+			//shortPtr[1] = workerId;
+			//return;
+		//}
+		if (workerId == 0)
+		{
+			if (OverseerId != 0)
+				UnitArray[OverseerId].Reward(NationId);
+		}
+		else
+		{
+			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
+			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
+		}
+	}
+	
 
 	public bool CanAssignCapture()
 	{
 		return OverseerId == 0 && Workers.Count == 0;
 	}
 
-	public bool CanWorkerCapture(int captureNationRecno)
+	public bool CanWorkerCapture(int captureNationId)
 	{
-		if (captureNationRecno == 0) // neutral units cannot capture
+		if (captureNationId == 0) // neutral units cannot capture
 			return false;
 
-		if (NationId == captureNationRecno) // cannot capture its own firm
+		if (NationId == captureNationId) // cannot capture its own firm
 			return false;
 
 		//----- if this firm needs an overseer, can only capture it when the overseer is the spy ---//
 
 		if (FirmRes[FirmType].NeedOverseer)
 		{
-			return OverseerId != 0 && UnitArray[OverseerId].TrueNationId() == captureNationRecno;
+			return OverseerId != 0 && UnitArray[OverseerId].TrueNationId() == captureNationId;
 		}
 
 		//--- if this firm doesn't need an overseer, can capture it if all the units in the firm are the player's spies ---//
@@ -2222,13 +2244,13 @@ public abstract class Firm : IIdObject
 
 		foreach (Worker worker in Workers)
 		{
-			if (worker.SpyId != 0 && SpyArray[worker.SpyId].TrueNationId == captureNationRecno)
+			if (worker.SpyId != 0 && SpyArray[worker.SpyId].TrueNationId == captureNationId)
 			{
 				captureUnitCount++;
 			}
 			else if (worker.TownId != 0)
 			{
-				if (TownArray[worker.TownId].NationId == captureNationRecno)
+				if (TownArray[worker.TownId].NationId == captureNationId)
 					captureUnitCount++;
 				else
 					otherUnitCount++;
@@ -2242,29 +2264,26 @@ public abstract class Firm : IIdObject
 		return captureUnitCount > 0 && otherUnitCount == 0;
 	}
 
-	public void CaptureFirm(int newNationRecno)
+	public void CaptureFirm(int newNationId)
 	{
 		if (NationId == NationArray.player_recno)
-			NewsArray.firm_captured(FirmId, newNationRecno, 0); // 0 - the capturer is not a spy
-
-		//-------- if this is an AI firm --------//
+			NewsArray.firm_captured(FirmId, newNationId, 0); // 0 - the capturer is not a spy
 
 		if (AIFirm)
-			AIFirmCaptured(newNationRecno);
+			AIFirmCaptured(newNationId);
 
 		//------------------------------------------//
 		//
-		// If there is an overseer in this firm, then the only
-		// unit who can capture this firm will be the overseer only,
-		// so calling its betray() function will capture the whole
-		// firm already.
+		// If there is an overseer in this firm, then the only unit
+		// who can capture this firm will be the overseer only,
+		// so calling its betray() function will capture the whole firm already.
 		//
 		//------------------------------------------//
 
 		if (OverseerId != 0 && UnitArray[OverseerId].SpyId != 0)
-			UnitArray[OverseerId].SpyChangeNation(newNationRecno, InternalConstants.COMMAND_AUTO);
+			UnitArray[OverseerId].SpyChangeNation(newNationId, InternalConstants.COMMAND_AUTO);
 		else
-			ChangeNation(newNationRecno);
+			ChangeNation(newNationId);
 	}
 
 	public virtual void ChangeNation(int newNationId)
@@ -2289,9 +2308,6 @@ public abstract class Firm : IIdObject
 				SpyArray[unit.SpyId].CloakedNationId = newNationId;
 		}
 
-		if (FirmType == FIRM_CAMP)
-			((FirmCamp)this).clear_defense_mode(FirmId);
-
 		FirmInfo firmInfo = FirmRes[FirmType];
 
 		if (NationId != 0)
@@ -2299,8 +2315,6 @@ public abstract class Firm : IIdObject
 
 		if (newNationId != 0)
 			firmInfo.inc_nation_firm_count(newNationId);
-
-		//---- reset should_close_flag -----//
 
 		if (AIFirm)
 		{
@@ -2352,13 +2366,10 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public bool SetBuilder(int newBuilderRecno)
+	public bool SetBuilder(int newBuilderId)
 	{
-		//------------------------------------//
-
-		int oldBuilderRecno = BuilderId; // store the old builder recno
-
-		BuilderId = newBuilderRecno;
+		int oldBuilderId = BuilderId;
+		BuilderId = newBuilderId;
 
 		//-------- assign the new builder ---------//
 
@@ -2381,16 +2392,16 @@ public abstract class Firm : IIdObject
 			unit.SetMode(UnitConstants.UNIT_MODE_CONSTRUCT, FirmId);
 		}
 
-		if (oldBuilderRecno != 0)
-			MobilizeBuilder(oldBuilderRecno);
+		if (oldBuilderId != 0)
+			MobilizeBuilder(oldBuilderId);
 
 		return true;
 	}
 
 	public int FindIdleBuilder()
 	{
-		int minDist = Int32.MaxValue;
-		int resultRecno = 0;
+		int minDist = 50;
+		int builderId = 0;
 
 		foreach (Unit unit in UnitArray)
 		{
@@ -2424,15 +2435,15 @@ public abstract class Firm : IIdObject
 				continue;
 			}
 
-			int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, LocX1, LocY1);
+			int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, LocCenterX, LocCenterY);
 			if (curDist < minDist)
 			{
-				resultRecno = unit.SpriteId;
+				builderId = unit.SpriteId;
 				minDist = curDist;
 			}
 		}
 
-		return resultRecno;
+		return builderId;
 	}
 
 	public void SendIdleBuilderHere(int remoteAction)
@@ -2440,19 +2451,19 @@ public abstract class Firm : IIdObject
 		if (BuilderId != 0)
 			return;
 
-		//if( remote.is_enable() && !remoteAction )
+		//if (remote.is_enable() && !remoteAction)
 		//{
-		//// packet structure : <firm recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REQ_BUILDER, sizeof(short));
-		//*shortPtr = firm_recno;
-		//return;
+			//// packet structure : <firm recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REQ_BUILDER, sizeof(short));
+			//*shortPtr = firm_recno;
+			//return;
 		//}
 
-		int unitRecno = FindIdleBuilder();
-		if (unitRecno == 0)
+		int builderId = FindIdleBuilder();
+		if (builderId == 0)
 			return;
 
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[builderId];
 		if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 		{
 			Firm firm = FirmArray[unit.UnitModeParam];
@@ -2468,15 +2479,16 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public virtual void SellFirm(int remoteAction)
+	public void SellFirm(int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <firm recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SELL, sizeof(short));
-		//*shortPtr = firm_recno;
-		//return;
+			//// packet structure : <firm recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_SELL, sizeof(short));
+			//*shortPtr = firm_recno;
+			//return;
 		//}
+
 		//------- sell at 50% of the original cost -------//
 
 		Nation nation = NationArray[NationId];
@@ -2492,12 +2504,12 @@ public abstract class Firm : IIdObject
 
 	public void DestructFirm(int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <firm recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_DESTRUCT, sizeof(short));
-		//*shortPtr = firm_recno;
-		//return;
+			//// packet structure : <firm recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_DESTRUCT, sizeof(short));
+			//*shortPtr = firm_recno;
+			//return;
 		//}
 
 		SERes.sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "DEST");
@@ -2506,25 +2518,24 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public bool CanSpyBribe(int bribeWorkerId, int briberNationId)
+	public bool CanSpyBribe(int workerId, int briberNationId)
 	{
-		bool canBribe = false;
-		int spyRecno;
-
-		if (bribeWorkerId != 0) // the overseer is selected
-			spyRecno = Workers[bribeWorkerId - 1].SpyId;
+		int spyId;
+		if (workerId != 0)
+			spyId = Workers[workerId - 1].SpyId;
 		else
-			spyRecno = UnitArray[OverseerId].SpyId;
+			spyId = UnitArray[OverseerId].SpyId;
 
-		if (spyRecno != 0)
+		bool canBribe;
+		if (spyId != 0)
 		{
 			// only when the unit is not yet a spy of the player. Still display the bribe button when it's a spy of another nation
-			canBribe = SpyArray[spyRecno].TrueNationId != briberNationId;
+			canBribe = SpyArray[spyId].TrueNationId != briberNationId;
 		}
 		else
 		{
-			if (bribeWorkerId != 0)
-				canBribe = Workers[bribeWorkerId - 1].RaceId > 0; // cannot bribe if it's a weapon
+			if (workerId != 0)
+				canBribe = Workers[workerId - 1].RaceId > 0; // cannot bribe if it's a weapon
 			else
 				canBribe = UnitArray[OverseerId].Rank != Unit.RANK_KING; // cannot bribe a king
 		}
@@ -2532,23 +2543,24 @@ public abstract class Firm : IIdObject
 		return canBribe;
 	}
 
-	public int SpyBribe(int bribeAmount, int briberSpyRecno, int workerId)
+	public int SpyBribe(int bribeAmount, int briberSpyId, int workerId)
 	{
+		Spy briber = SpyArray[briberSpyId];
+		
 		// this can happen in multiplayer as there is a one frame delay when the message is sent and when it is processed
-		if (!CanSpyBribe(workerId, SpyArray[briberSpyRecno].TrueNationId))
+		if (!CanSpyBribe(workerId, briber.TrueNationId))
 			return 0;
 
 		//---------------------------------------//
 
-		int succeedChance = SpyBribeSucceedChance(bribeAmount, briberSpyRecno, workerId);
+		int succeedChance = SpyBribeSucceedChance(bribeAmount, briberSpyId, workerId);
 
-		NationArray[SpyArray[briberSpyRecno].TrueNationId].add_expense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
+		NationArray[briber.TrueNationId].add_expense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
 
 		//------ if the bribe succeeds ------//
 
 		if (succeedChance > 0 && Misc.Random(100) < succeedChance)
 		{
-			Spy briber = SpyArray[briberSpyRecno];
 			// TODO crash NameId == 0
 			Spy newSpy = SpyArray.AddSpy(0, 10); // add a new Spy record
 
@@ -2579,7 +2591,8 @@ public abstract class Firm : IIdObject
 
 			newSpy.SetPlace(Spy.SPY_FIRM, FirmId);
 
-			//-- Spy always registers its name twice as his name will be freed up in deinit(). Keep an additional right because when a spy is assigned to a town, the normal program will free up the name id., so we have to keep an additional copy
+			//-- Spy always registers its name twice as his name will be freed up in Deinit().
+			//-- Keep an additional right because when a spy is assigned to a town, the normal program will free up the name id., so we have to keep an additional copy
 
 			RaceRes[newSpy.RaceId].use_name_id(newSpy.NameId);
 
@@ -2589,56 +2602,49 @@ public abstract class Firm : IIdObject
 		}
 		else //------- if the bribe fails --------//
 		{
-			SpyArray[briberSpyRecno].GetKilled(0); // the spy gets killed when the action failed.
 			// 0 - don't display new message for the spy being killed, so we already display the msg on the interface
+			briber.GetKilled(0); // the spy gets killed when the action failed.
 			BribeResult = Spy.BRIBE_FAIL;
 			return 0;
 		}
 	}
 
-	public int SpyBribeSucceedChance(int bribeAmount, int briberSpyRecno, int workerId)
+	public int SpyBribeSucceedChance(int bribeAmount, int briberSpyId, int workerId)
 	{
-		Spy spy = SpyArray[briberSpyRecno];
-
-		//---- if the bribing target is a worker ----//
+		Spy spy = SpyArray[briberSpyId];
 
 		int unitLoyalty = 0, unitRaceId = 0, unitCommandPower = 0;
-		int targetSpyRecno = 0;
+		int targetSpyId = 0;
 
 		if (workerId != 0)
 		{
 			Worker worker = Workers[workerId - 1];
-
 			unitLoyalty = worker.Loyalty();
 			unitRaceId = worker.RaceId;
 			unitCommandPower = 0;
-			targetSpyRecno = worker.SpyId;
+			targetSpyId = worker.SpyId;
 		}
 		else if (OverseerId != 0)
 		{
 			Unit unit = UnitArray[OverseerId];
-
 			unitLoyalty = unit.Loyalty;
 			unitRaceId = unit.RaceId;
 			unitCommandPower = unit.CommanderPower();
-			targetSpyRecno = unit.SpyId;
+			targetSpyId = unit.SpyId;
 		}
 
 		//---- determine whether the bribe will be successful ----//
+		//---- if the bribe target is also a spy succeedChance is zero ----//
 
-		int succeedChance;
+		int succeedChance = 0;
 
-		if (targetSpyRecno != 0) // if the bribe target is also a spy
-		{
-			succeedChance = 0;
-		}
-		else
+		if (targetSpyId == 0)
 		{
 			succeedChance = spy.SpySkill - unitLoyalty - unitCommandPower
 			                + (int)NationArray[spy.TrueNationId].reputation
 			                + 200 * bribeAmount / GameConstants.MAX_BRIBE_AMOUNT;
 
-			//-- the chance is higher if the spy or the spy's king is racially homongenous to the bribe target,
+			//-- the chance is higher if the spy or the spy's king is racially homogenous to the bribe target
 
 			int spyKingRaceId = NationArray[spy.TrueNationId].race_id;
 
@@ -2664,10 +2670,10 @@ public abstract class Firm : IIdObject
 		return succeedChance;
 	}
 
+	//TODO move to UI
 	public bool ValidateCurBribe()
 	{
-		if (SpyArray.IsDeleted(ActionSpyId) ||
-		    SpyArray[ActionSpyId].TrueNationId != NationArray.player_recno)
+		if (SpyArray.IsDeleted(ActionSpyId) || SpyArray[ActionSpyId].TrueNationId != NationArray.player_recno)
 		{
 			return false;
 		}
@@ -2676,33 +2682,22 @@ public abstract class Firm : IIdObject
 	}
 
 
-	public virtual void BeingAttacked(int attackerUnitRecno)
+	public virtual void BeingAttacked(int attackerUnitId)
 	{
 		LastAttackedDate = Info.game_date;
 
 		if (NationId != 0 && AIFirm)
 		{
 			// this can happen when the unit has just changed nation
-			if (UnitArray[attackerUnitRecno].NationId == NationId)
+			if (UnitArray[attackerUnitId].NationId == NationId)
 				return;
 
-			NationArray[NationId].ai_defend(attackerUnitRecno);
+			NationArray[NationId].ai_defend(attackerUnitId);
 		}
 	}
 
-	public virtual void AutoDefense(int targetRecno)
+	public virtual void AutoDefense(int targetId)
 	{
-		//--------------------------------------------------------//
-		// if the firm_id is FIRM_CAMP, send the units to defense
-		// the firm
-		//--------------------------------------------------------//
-		if (FirmType == FIRM_CAMP)
-		{
-			FirmCamp camp = (FirmCamp)this;
-			camp.defend_target_recno = targetRecno;
-			camp.defense(targetRecno);
-		}
-
 		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
 		{
 			if (LinkedTowns[i] == 0 || TownArray.IsDeleted(LinkedTowns[i]))
@@ -2711,39 +2706,34 @@ public abstract class Firm : IIdObject
 			Town town = TownArray[LinkedTowns[i]];
 
 			//-------------------------------------------------------//
-			// find whether military camp is linked to this town. If
-			// so, defense for this firm
+			// find whether military camp is linked to this town. If so, defense for this firm
 			//-------------------------------------------------------//
 			if (town.NationId == NationId)
-				town.AutoDefense(targetRecno);
+				town.AutoDefense(targetId);
 
 			//-------------------------------------------------------//
-			// some linked town may be deleted after calling auto_defense().
-			// Also, the data in the linked_town_array may also be changed.
+			// some linked towns may be deleted after calling AutoDefense().
+			// Also, the data in the LinkedTowns may also be changed.
 			//-------------------------------------------------------//
 			if (i > LinkedTowns.Count)
 				i = LinkedTowns.Count;
 		}
 	}
 
-	public bool LocateSpace(bool removeFirm, ref int xLoc, ref int yLoc, int xLoc2, int yLoc2,
+	//TODO it seems that LocateSpace is not needed 
+	private bool LocateSpace(bool removeFirm, ref int locX, ref int locY, int locX2, int locY2,
 		int width, int height, int mobileType = UnitConstants.UNIT_LAND, int regionId = 0)
 	{
-		int checkXLoc, checkYLoc;
-
 		if (removeFirm)
 		{
-			//*** note only for land unit with size 1x1 ***//
-			int mType = UnitConstants.UNIT_LAND;
-
-			for (checkYLoc = LocY1; checkYLoc <= LocY2; checkYLoc++)
+			for (int checkLocY = LocY1; checkLocY <= LocY2; checkLocY++)
 			{
-				for (checkXLoc = LocX1; checkXLoc <= LocX2; checkXLoc++)
+				for (int checkLocX = LocX1; checkLocX <= LocX2; checkLocX++)
 				{
-					if (World.GetLoc(checkXLoc, checkYLoc).CanMove(mType))
+					if (World.GetLoc(checkLocX, checkLocY).CanMove(UnitConstants.UNIT_LAND)) //note only for land unit with size 1x1
 					{
-						xLoc = checkXLoc;
-						yLoc = checkYLoc;
+						locX = checkLocX;
+						locY = checkLocY;
 						return true;
 					}
 				}
@@ -2751,16 +2741,12 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
-			checkXLoc = LocX1;
-			checkYLoc = LocY1;
-			if (!World.LocateSpace(ref checkXLoc, ref checkYLoc, xLoc2, yLoc2, width, height, mobileType, regionId))
+			int checkLocX = LocX1;
+			int checkLocY = LocY1;
+			if (World.LocateSpace(ref checkLocX, ref checkLocY, locX2, locY2, width, height, mobileType, regionId))
 			{
-				return false;
-			}
-			else
-			{
-				xLoc = checkXLoc;
-				yLoc = checkYLoc;
+				locX = checkLocX;
+				locY = checkLocY;
 				return true;
 			}
 		}
@@ -2768,33 +2754,9 @@ public abstract class Firm : IIdObject
 		return false;
 	}
 
-	public void Reward(int workerId, int remoteAction)
-	{
-		//if (!remoteAction && remote.is_enable())
-		//{
-			//// packet structure : <firm recno> <worker id>
-			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_REWARD, 2*sizeof(short) );
-			//*shortPtr = firm_recno;
-			//shortPtr[1] = workerId;
-			//return;
-		//}
-		if (workerId == 0)
-		{
-			if (OverseerId != 0)
-				UnitArray[OverseerId].Reward(NationId);
-		}
-		else
-		{
-			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
-			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
-		}
-	}
-
 
 	public void ProcessAnimation()
 	{
-		//-------- process animation ----------//
-
 		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
 		int frameCount = firmBuild.FrameCount;
 
@@ -2812,9 +2774,7 @@ public abstract class Firm : IIdObject
 				if (firmBuild.AnimateFullSize)
 					CurFrame = 1;
 				else
-				{
 					CurFrame = 2; // start with the 2nd frame as the 1st frame is the common frame
-				}
 			}
 		}
 	}
@@ -2822,10 +2782,10 @@ public abstract class Firm : IIdObject
 	public int ConstructionFrame() // for under construction only
 	{
 		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
-		int r = Convert.ToInt32(HitPoints * firmBuild.UnderConstructionBitmapCount / MaxHitPoints);
-		if (r >= firmBuild.UnderConstructionBitmapCount)
-			r = firmBuild.UnderConstructionBitmapCount - 1;
-		return r;
+		int constructionFrame = (int)(HitPoints * firmBuild.UnderConstructionBitmapCount / MaxHitPoints);
+		if (constructionFrame >= firmBuild.UnderConstructionBitmapCount)
+			constructionFrame = firmBuild.UnderConstructionBitmapCount - 1;
+		return constructionFrame;
 	}
 
 	public abstract void DrawDetails(IRenderer renderer);
@@ -3132,8 +3092,7 @@ public abstract class Firm : IIdObject
 				//
 				//-------------------------------------------//
 
-				curRating = World.DistanceRating(LocCenterX, LocCenterY,
-					firmInn.LocCenterX, firmInn.LocCenterY);
+				curRating = World.DistanceRating(LocCenterX, LocCenterY, firmInn.LocCenterX, firmInn.LocCenterY);
 
 				curRating += innUnit.skill.SkillLevel;
 

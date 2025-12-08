@@ -689,6 +689,7 @@ public abstract partial class Unit : Sprite
 					else
 					{
 						Firm firm = FirmArray[ActionParam];
+						//TODO check this condition
 						if (firm.NationId != NationId && !firm.CanAssignCapture())
 						{
 							Stop2();

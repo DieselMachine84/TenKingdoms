@@ -614,6 +614,8 @@ public class FirmCamp : Firm
 			UnitRes[worker.UnitId].unit_change_nation(newNationRecno, NationId, worker.RankId);
 		}
 
+		clear_defense_mode(FirmId);
+
 		//----- reset unit's home camp to this firm -----//
 
 		reset_unit_home_camp(FirmId);
@@ -630,6 +632,14 @@ public class FirmCamp : Firm
 		//-------- change the nation of this firm now ----------//
 
 		base.ChangeNation(newNationRecno);
+	}
+
+	public override void AutoDefense(int targetId)
+	{
+		defend_target_recno = targetId;
+		defense(targetId);
+		
+		base.AutoDefense(targetId);
 	}
 
 	public void update_defense_unit(int unitRecno)
