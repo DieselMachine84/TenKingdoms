@@ -24,8 +24,8 @@ public partial class Renderer
     private const int MouseOnTrainButtonY2 = DetailsY1 + 102;
     private const int MouseOnTrainNumberButtonX1 = TrainButtonNumberX + 4;
     private const int MouseOnTrainNumberButtonX2 = TrainButtonNumberX + 40;
-    private const int MouseOnTrainNumberButtonY1 = DetailsY1 + 59;
-    private const int MouseOnTrainNumberButtonY2 = DetailsY1 + 59 + 38;
+    private const int MouseOnTrainNumberButtonY1 = TrainButtonNumberY + 4;
+    private const int MouseOnTrainNumberButtonY2 = TrainButtonNumberY + 42;
 
     private TownDetailsMode TownDetailsMode { get; set; } = TownDetailsMode.Normal;
     

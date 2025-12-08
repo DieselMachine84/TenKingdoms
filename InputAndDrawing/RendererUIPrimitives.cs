@@ -18,6 +18,7 @@ public partial class Renderer
 	private const int ButtonsMineY = DetailsY1 + 412;
 	private const int ButtonsFactoryY = DetailsY1 + 412;
 	private const int ButtonsResearchY = DetailsY1 + 367;
+	private const int ButtonsWarFactoryY = DetailsY1 + 367;
 	private const int ButtonsCampY = DetailsY1 + 376;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
@@ -88,6 +89,9 @@ public partial class Renderer
 	private IntPtr _mineFactoryPanelTexture;
 	private int _mineFactoryPanelWidth;
 	private int _mineFactoryPanelHeight;
+	private IntPtr _researchWarFactoryPanelTexture;
+	private int _researchWarFactoryPanelWidth;
+	private int _researchWarFactoryPanelHeight;
 	private IntPtr _unitPanelTexture;
 	private int _unitPanelWidth;
 	private int _unitPanelHeight;
@@ -127,10 +131,10 @@ public partial class Renderer
 	private IntPtr _numberPanelDownTexture;
 	private int _numberPanelWidth;
 	private int _numberPanelHeight;
-	private IntPtr _researchPanelUpTexture;
-	private IntPtr _researchPanelDownTexture;
-	private int _researchPanelWidth;
-	private int _researchPanelHeight;
+	private IntPtr _researchBuildWeaponPanelUpTexture;
+	private IntPtr _researchBuildWeaponPanelDownTexture;
+	private int _researchBuildWeaponPanelWidth;
+	private int _researchBuildWeaponPanelHeight;
 
 	private IntPtr _listBoxPanelTexture;
 	private int _listBoxPanelWidth;
@@ -201,6 +205,9 @@ public partial class Renderer
 	private IntPtr _buttonResearchTexture;
 	private int _buttonResearchWidth;
 	private int _buttonResearchHeight;
+	private IntPtr _buttonBuildWeaponTexture;
+	private int _buttonBuildWeaponWidth;
+	private int _buttonBuildWeaponHeight;
 	private IntPtr _buttonSucceedKingTexture;
 	private int _buttonSucceedKingWidth;
 	private int _buttonSucceedKingHeight;
@@ -292,6 +299,10 @@ public partial class Renderer
 	private IntPtr _buttonDestructDownTexture;
 	private int _buttonDestructDownTextureWidth;
 	private int _buttonDestructDownTextureHeight;
+
+	private IntPtr _indicatorTexture;
+	private int _indicatorWidth;
+	private int _indicatorHeight;
 	
 	private void CreateUITextures()
 	{
@@ -420,6 +431,10 @@ public partial class Renderer
 		_mineFactoryPanelHeight = 86;
 		byte[] mineFactoryPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _mineFactoryPanelWidth, _mineFactoryPanelHeight);
 		_mineFactoryPanelTexture = Graphics.CreateTextureFromBmp(mineFactoryPanelBitmap, _mineFactoryPanelWidth, _mineFactoryPanelHeight, 32);
+		_researchWarFactoryPanelWidth = _smallPanelWidth;
+		_researchWarFactoryPanelHeight = 56;
+		byte[] researchWarFactoryPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _researchWarFactoryPanelWidth, _researchWarFactoryPanelHeight);
+		_researchWarFactoryPanelTexture = Graphics.CreateTextureFromBmp(researchWarFactoryPanelBitmap, _researchWarFactoryPanelWidth, _researchWarFactoryPanelHeight, 32);
 		_unitPanelWidth = _smallPanelWidth;
 		_unitPanelHeight = 62;
 		byte[] unitPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _unitPanelWidth, _unitPanelHeight);
@@ -474,12 +489,12 @@ public partial class Renderer
 		_numberPanelUpTexture = Graphics.CreateTextureFromBmp(numberPanelUpBitmap, _numberPanelWidth, _numberPanelHeight, 32);
 		byte[] numberPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _numberPanelWidth, _numberPanelHeight);
 		_numberPanelDownTexture = Graphics.CreateTextureFromBmp(numberPanelDownBitmap, _numberPanelWidth, _numberPanelHeight, 32);
-		_researchPanelWidth = _smallPanelWidth;
-		_researchPanelHeight = 56;
-		byte[] researchPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _researchPanelWidth, _researchPanelHeight);
-		_researchPanelUpTexture = Graphics.CreateTextureFromBmp(researchPanelUpBitmap, _researchPanelWidth, _researchPanelHeight, 32);
-		byte[] researchPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _researchPanelWidth, _researchPanelHeight);
-		_researchPanelDownTexture = Graphics.CreateTextureFromBmp(researchPanelDownBitmap, _researchPanelWidth, _researchPanelHeight, 32);
+		_researchBuildWeaponPanelWidth = _smallPanelWidth;
+		_researchBuildWeaponPanelHeight = 44;
+		byte[] researchBuildWeaponPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight);
+		_researchBuildWeaponPanelUpTexture = Graphics.CreateTextureFromBmp(researchBuildWeaponPanelUpBitmap, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight, 32);
+		byte[] researchBuildWeaponPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight);
+		_researchBuildWeaponPanelDownTexture = Graphics.CreateTextureFromBmp(researchBuildWeaponPanelDownBitmap, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight, 32);
 	}
 
 	private void CreateListBoxPanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
@@ -609,6 +624,11 @@ public partial class Renderer
 		_buttonResearchHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonResearchWidth, _buttonResearchHeight);
 		_buttonResearchTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonResearchWidth, _buttonResearchHeight);
+		buttonData = buttonImages.Read("MAKEWEAP");
+		_buttonBuildWeaponWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonBuildWeaponHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonBuildWeaponWidth, _buttonBuildWeaponHeight);
+		_buttonBuildWeaponTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonBuildWeaponWidth, _buttonBuildWeaponHeight);
 		buttonData = buttonImages.Read("SUCCEED");
 		_buttonSucceedKingWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonSucceedKingHeight = BitConverter.ToInt16(buttonData, 2);
@@ -764,6 +784,12 @@ public partial class Renderer
 		_buttonDestructDownTextureHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDestructDownTextureWidth, _buttonDestructDownTextureHeight);
 		_buttonDestructDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDestructDownTextureWidth, _buttonDestructDownTextureHeight);
+		
+		buttonData = buttonImages.Read("V_PW-BX");
+		_indicatorWidth = BitConverter.ToInt16(buttonData, 0);
+		_indicatorHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _indicatorWidth, _indicatorHeight);
+		_indicatorTexture = Graphics.CreateTextureFromBmp(buttonData, _indicatorWidth, _indicatorHeight);
 	}
 
 	private void CreateBuildButtonTextures(int colorScheme)
@@ -926,6 +952,11 @@ public partial class Renderer
 		Graphics.DrawBitmap(_mineFactoryPanelTexture, x, y, Scale(_mineFactoryPanelWidth), Scale(_mineFactoryPanelHeight));
 	}
 	
+	private void DrawResearchWarFactoryPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_researchWarFactoryPanelTexture, x, y, Scale(_researchWarFactoryPanelWidth), Scale(_researchWarFactoryPanelHeight));
+	}
+	
 	private void DrawUnitPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_unitPanelTexture, x, y, Scale(_unitPanelWidth), Scale(_unitPanelHeight));
@@ -1001,14 +1032,14 @@ public partial class Renderer
 		Graphics.DrawBitmap(_numberPanelDownTexture, x, y, Scale(_numberPanelWidth), Scale(_numberPanelHeight));
 	}
 	
-	private void DrawResearchPanelUp(int x, int y)
+	private void DrawResearchBuildWeaponPanelUp(int x, int y)
 	{
-		Graphics.DrawBitmap(_researchPanelUpTexture, x, y, Scale(_researchPanelWidth), Scale(_researchPanelHeight));
+		Graphics.DrawBitmap(_researchBuildWeaponPanelUpTexture, x, y, Scale(_researchBuildWeaponPanelWidth), Scale(_researchBuildWeaponPanelHeight));
 	}
 
-	private void DrawResearchPanelDown(int x, int y)
+	private void DrawResearchBuildWeaponPanelDown(int x, int y)
 	{
-		Graphics.DrawBitmap(_researchPanelDownTexture, x, y, Scale(_researchPanelWidth), Scale(_researchPanelHeight));
+		Graphics.DrawBitmap(_researchBuildWeaponPanelDownTexture, x, y, Scale(_researchBuildWeaponPanelWidth), Scale(_researchBuildWeaponPanelHeight));
 	}
 	
 	private void DrawListBoxPanel(int x, int y)
@@ -1052,6 +1083,11 @@ public partial class Renderer
 			Graphics.DrawLine(spyIconX + iconWidth - 2, spyIconY, spyIconX + iconWidth - 2, spyIconY + iconHeight - 1, color);
 			Graphics.DrawLine(spyIconX + iconWidth - 1, spyIconY, spyIconX + iconWidth - 1, spyIconY + iconHeight - 1, color);
 		}
+	}
+
+	private void DrawIndicator(int x, int y, double value, double maxValue)
+	{
+		Graphics.DrawBitmap(_indicatorTexture, x, y, _indicatorWidth * 2, _indicatorHeight * 2);
 	}
 
 	private void PutTextCenter(Font font, string text, int x1, int y1, int x2, int y2)

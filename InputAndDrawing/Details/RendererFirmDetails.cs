@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-enum FirmDetailsMode { Normal, Research, Spy }
+enum FirmDetailsMode { Normal, Research, WarMachine, Spy }
 
 public partial class Renderer
 {
@@ -10,7 +10,7 @@ public partial class Renderer
     
     private void DrawFirmDetails(Firm firm)
     {
-        if (FirmDetailsMode == FirmDetailsMode.Research)
+        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine)
         {
             firm.DrawDetails(this);
             return;
@@ -27,6 +27,7 @@ public partial class Renderer
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
 
         // TODO display hit points
+        //DrawIndicator(DetailsX1 + 48, DetailsY1 + 48, firm.HitPoints, firm.MaxHitPoints);
         PutTextCenter(FontSan, (int)firm.HitPoints + "/" + (int)firm.MaxHitPoints, DetailsX1 + 2, DetailsY1 + 68, DetailsX2 - 4, DetailsY1 + 68);
         
         if (_leftMousePressed && IsMouseOnBuilderOrRequestBuilderButton())
@@ -129,7 +130,7 @@ public partial class Renderer
     {
         firm.HandleDetailsInput(this);
 
-        if (FirmDetailsMode == FirmDetailsMode.Research)
+        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine)
             return;
 
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
@@ -221,10 +222,10 @@ public partial class Renderer
     {
         if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY)
             return DetailsY1 + 228;
+        if (firm.FirmType == Firm.FIRM_RESEARCH || firm.FirmType == Firm.FIRM_WAR_FACTORY)
+            return DetailsY1 + 183;
         if (firm.FirmType == Firm.FIRM_CAMP)
             return DetailsY1 + 192;
-        if (firm.FirmType == Firm.FIRM_RESEARCH)
-            return DetailsY1 + 183;
         return DetailsY1;
     }
 

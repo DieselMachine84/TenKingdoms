@@ -7,7 +7,7 @@ public class FirmWar : Firm
 {
     public int BuildUnitId { get; set; }
     private long LastProcessBuildFrameNumber { get; set; }
-    private double BuildProgressInDays { get; set; }
+    public double BuildProgressInDays { get; set; }
 
     public List<int> BuildQueue { get; } = new List<int>();
 

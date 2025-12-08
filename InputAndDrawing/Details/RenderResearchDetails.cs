@@ -7,8 +7,8 @@ public partial class Renderer
     private const int MouseOnResearchButtonX1 = DetailsX1 + 8;
     private const int MouseOnResearchButtonX2 = DetailsX1 + 320;
     private const int MouseOnResearchButtonY1 = DetailsY1 + 2;
-    private const int MouseOnResearchButtonY2 = DetailsY1 + 84;
-    private const int MaxResearchItems = 4;
+    private const int MouseOnResearchButtonY2 = DetailsY1 + 66;
+    private const int MaxResearchItems = 6;
 
     public void DrawResearchDetails(FirmResearch research)
     {
@@ -18,7 +18,7 @@ public partial class Renderer
             return;
         }
 
-        DrawResearchPanelUp(DetailsX1 + 2, DetailsY1 + 96);
+        DrawResearchWarFactoryPanel(DetailsX1 + 2, DetailsY1 + 96);
 
         if (research.TechId != 0)
         {
@@ -30,9 +30,9 @@ public partial class Renderer
             int researchVersion = techInfo.get_nation_tech_level(research.NationId) + 1;
             if (researchVersion > 1)
                 description += " " + Misc.roman_number(researchVersion);
-            PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 120);
+            PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
-            PutText(FontSan, techInfo.get_progress(research.NationId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 150);
+            PutText(FontSan, techInfo.get_progress(research.NationId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
         }
 
         DrawWorkers(research);
@@ -97,28 +97,29 @@ public partial class Renderer
             bool mouseOnButton = _mouseButtonX >= MouseOnResearchButtonX1 && _mouseButtonX <= MouseOnResearchButtonX2 &&
                                  _mouseButtonY >= MouseOnResearchButtonY1 + dy && _mouseButtonY <= MouseOnResearchButtonY2 + dy;
             if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-                DrawResearchPanelDown(ResearchPanelX, ResearchPanelY + dy);
+                DrawResearchBuildWeaponPanelDown(ResearchPanelX, ResearchPanelY + dy);
             else
-                DrawResearchPanelUp(ResearchPanelX, ResearchPanelY + dy);
+                DrawResearchBuildWeaponPanelUp(ResearchPanelX, ResearchPanelY + dy);
 
             if (!showCancelButton)
             {
                 Graphics.DrawBitmap(techInfo.GetTechLargeIconTexture(Graphics), ResearchPanelX + 4, ResearchPanelY + dy + 4,
-                    techInfo.TechLargeIconWidth * 2, techInfo.TechLargeIconHeight * 2);
+                    techInfo.TechLargeIconWidth * 3 / 2, techInfo.TechLargeIconHeight * 3 / 2);
                 
                 string description = techInfo.Description();
                 int researchVersion = techInfo.get_nation_tech_level(research.NationId) + 1;
                 if (researchVersion > 1)
                     description += " " + Misc.roman_number(researchVersion);
-                PutText(FontBible, description, ResearchPanelX + 120, ResearchPanelY + dy + 18);
+                PutText(FontBible, description, ResearchPanelX + 96, ResearchPanelY + dy + 10);
                 shownItems++;
             }
             else
             {
-                PutText(FontBible, "Cancel", ResearchPanelX + 120, ResearchPanelY + dy + 18);
+                PutText(FontBible, "Cancel", ResearchPanelX + 158, ResearchPanelY + dy + 10);
+                break;
             }
             
-            dy += 86;
+            dy += 70;
         }
     }
     
@@ -127,6 +128,7 @@ public partial class Renderer
         if (FirmDetailsMode == FirmDetailsMode.Research)
         {
             HandleResearchMenu(research);
+            return;
         }
 
         bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
@@ -194,8 +196,10 @@ public partial class Renderer
 
             if (!onCancelButton)
                 shownItems++;
+            else
+                break;
             
-            dy += 86;
+            dy += 70;
         }
     }
 }
