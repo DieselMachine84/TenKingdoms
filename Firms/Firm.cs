@@ -2933,7 +2933,7 @@ public abstract class Firm : IIdObject
 
 			//---------------------------------------------------//
 			//
-			// Check if this factory is just outputing goods to
+			// Check if this factory is just outputting goods to
 			// a market and it is actually not overcapacity.
 			//
 			//---------------------------------------------------//
@@ -2950,8 +2950,7 @@ public abstract class Firm : IIdObject
 
 				//--- if this factory is producing enough goods to the market place, then it means it is still quite efficient
 
-				MarketGoods marketGoods = ((FirmMarket)linkedFirm).market_product_array[rawId - 1];
-
+				MarketGoods marketGoods = ((FirmMarket)linkedFirm).GetRawGoods(rawId);
 				if (marketGoods != null && marketGoods.StockQty > 100)
 					return false;
 			}

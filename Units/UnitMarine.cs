@@ -786,7 +786,7 @@ public class UnitMarine : Unit
 					continue; // clearing the market stock, so no unloading
 
 				//---------- check the demand of this goods in the market ---------//
-				marketProduct = market.market_product_array[i];
+				marketProduct = market.GetProductGoods(i + 1);
 				if (marketProduct != null)
 				{
 					totalDemand += (int)(market.MaxStockQty - marketProduct.StockQty);
@@ -821,7 +821,7 @@ public class UnitMarine : Unit
 
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				marketProduct = market.market_product_array[i];
+				marketProduct = market.GetProductGoods(i + 1);
 				if (marketProduct == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
 				{
 					useEmptySlot = true;
@@ -837,7 +837,7 @@ public class UnitMarine : Unit
 				if (unloadQty != 0)
 				{
 					if (useEmptySlot)
-						market.SetGoods(false, i + 1, empty_slot_position_array[j]);
+						market.SetProductGoods(i + 1, empty_slot_position_array[j]);
 
 					marketProduct.StockQty += unloadQty;
 					product_raw_qty_array[i] -= unloadQty;
@@ -909,7 +909,7 @@ public class UnitMarine : Unit
 					continue; // clearing the market stock, so no unloading
 
 				//---------- check the demand of this goods in the market ---------//
-				marketRaw = market.market_raw_array[i];
+				marketRaw = market.GetRawGoods(i + 1);
 				if (marketRaw != null)
 				{
 					totalDemand += (int)(market.MaxStockQty - marketRaw.StockQty);
@@ -964,7 +964,7 @@ public class UnitMarine : Unit
 
 				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-				marketRaw = market.market_raw_array[i];
+				marketRaw = market.GetRawGoods(i + 1);
 				if (marketRaw == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
 				{
 					useEmptySlot = true;
@@ -980,7 +980,7 @@ public class UnitMarine : Unit
 				if (unloadQty != 0)
 				{
 					if (useEmptySlot)
-						market.SetGoods(true, i + 1, empty_slot_position_array[j]);
+						market.SetRawGoods(i + 1, empty_slot_position_array[j]);
 
 					marketRaw.StockQty += unloadQty;
 					raw_qty_array[i] -= unloadQty;
@@ -1133,7 +1133,7 @@ public class UnitMarine : Unit
 			}
 
 			//---------- check the supply of this goods in the market ---------//
-			marketProduct = market.market_product_array[goodsId];
+			marketProduct = market.GetProductGoods(goodsId + 1);
 			if (marketProduct != null)
 			{
 				totalSupply += Math.Max((int)(marketProduct.StockQty - keepStockQty), 0);
@@ -1192,7 +1192,7 @@ public class UnitMarine : Unit
 
 			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-			marketProduct = market.market_product_array[goodsId];
+			marketProduct = market.GetProductGoods(goodsId + 1);
 
 			loadQty = Math.Max((int)marketProduct.StockQty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
@@ -1295,7 +1295,7 @@ public class UnitMarine : Unit
 			}
 
 			//---------- check the supply of this goods in the market ---------//
-			marketRaw = market.market_raw_array[goodsId];
+			marketRaw = market.GetRawGoods(goodsId + 1);
 			if (marketRaw != null)
 			{
 				totalSupply += Math.Max((int)(marketRaw.StockQty - keepStockQty), 0);
@@ -1354,7 +1354,7 @@ public class UnitMarine : Unit
 
 			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
 
-			marketRaw = market.market_raw_array[goodsId];
+			marketRaw = market.GetRawGoods(goodsId + 1);
 
 			loadQty = Math.Max((int)marketRaw.StockQty - keepStockQty, 0);
 			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;

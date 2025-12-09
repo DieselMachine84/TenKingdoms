@@ -1542,16 +1542,18 @@ public class Town : IIdObject
 
 			for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
 			{
-				MarketGoods marketGoods = market.market_product_array[i];
-				MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+				MarketGoods marketGoods = market.GetProductGoods(i + 1);
+				if (marketGoods != null)
+				{
+					double thisSupply = marketGoods.StockQty;
+					MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+					marketGoodsInfo.Markets.Add(market);
+					marketGoodsInfo.TotalSupply += thisSupply;
 
-				double thisSupply = marketGoods.StockQty;
-				marketGoodsInfo.Markets.Add(market);
-				marketGoodsInfo.TotalSupply += thisSupply;
-
-				// vars for later use, so that towns will always try to buy goods from their own markets first.
-				if (firm.NationId == NationId)
-					marketGoodsInfo.TotalOwnSupply += thisSupply;
+					// vars for later use, so that towns will always try to buy goods from their own markets first.
+					if (firm.NationId == NationId)
+						marketGoodsInfo.TotalOwnSupply += thisSupply;
+				}
 			}
 		}
 
@@ -1577,8 +1579,7 @@ public class Town : IIdObject
 				//
 				//----------------------------------//
 
-				MarketGoods marketGoods = market.market_product_array[i];
-
+				MarketGoods marketGoods = market.GetProductGoods(i + 1);
 				if (marketGoods != null)
 				{
 					//---- if the demand is larger than the supply -----//

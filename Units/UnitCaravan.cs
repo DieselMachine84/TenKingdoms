@@ -1095,10 +1095,9 @@ public class UnitCaravan : Unit
 			if (!tradeStop.pick_up_array[i - 1])
 				continue;
 
-			MarketGoods marketGoods = fromMarket.market_raw_array[i - TradeStop.PICK_UP_RAW_FIRST];
-
 			//----- if there is no supply, drop the pick up type -----//
 
+			MarketGoods marketGoods = fromMarket.GetRawGoods(i - TradeStop.PICK_UP_RAW_FIRST + 1);
 			if (marketGoods == null || marketGoods.Supply30Days() == 0)
 				set_stop_pick_up(fromStopId, i, InternalConstants.COMMAND_AI);
 		}
@@ -1108,10 +1107,9 @@ public class UnitCaravan : Unit
 			if (!tradeStop.pick_up_array[i - 1])
 				continue;
 
-			MarketGoods marketGoods = fromMarket.market_product_array[i - TradeStop.PICK_UP_PRODUCT_FIRST];
-
 			//--- if the supply is not enough, drop the pick up type ---//
-
+			
+			MarketGoods marketGoods = fromMarket.GetProductGoods(i - TradeStop.PICK_UP_PRODUCT_FIRST + 1);
 			if (marketGoods == null || marketGoods.Supply30Days() == 0)
 				set_stop_pick_up(fromStopId, i, InternalConstants.COMMAND_AI);
 		}
@@ -1420,7 +1418,7 @@ public class UnitCaravan : Unit
 			marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
 			//-**************************************************-//
 			processed_product_raw_qty_array[j] += 2;
-			curMarket.SetGoods(false, j + 1, position);
+			curMarket.SetProductGoods(j + 1, position);
 
 			int unloadQty = Math.Min(product_raw_qty_array[j], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 			product_raw_qty_array[j] -= unloadQty;
@@ -1464,7 +1462,7 @@ public class UnitCaravan : Unit
 				marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods->stock_qty > 0
 				//-**************************************************-//
 				processed_raw_qty_array[j] += 2;
-				curMarket.SetGoods(true, j + 1, position);
+				curMarket.SetRawGoods(j + 1, position);
 
 				int unloadQty = Math.Min(raw_qty_array[j], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 				raw_qty_array[j] -= unloadQty;

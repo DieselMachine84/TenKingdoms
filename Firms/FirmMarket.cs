@@ -22,8 +22,6 @@ public class FirmMarket : Firm
 	private DateTime LastImportNewGoodsDate { get; set; }
 
 	public MarketGoods[] market_goods_array { get; } = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
-	public MarketGoods[] market_raw_array { get; } = new MarketGoods[GameConstants.MAX_RAW];
-	public MarketGoods[] market_product_array { get; } = new MarketGoods[GameConstants.MAX_PRODUCT];
 	
 	public FirmMarket()
 	{
@@ -32,12 +30,6 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < market_goods_array.Length; i++)
 			market_goods_array[i] = new MarketGoods();
-		
-		for (int i = 0; i < market_raw_array.Length; i++)
-			market_raw_array[i] = new MarketGoods();
-
-		for (int i = 0; i < market_product_array.Length; i++)
-			market_product_array[i] = new MarketGoods();
 	}
 
 	protected override void InitDerived()
@@ -323,13 +315,13 @@ public class FirmMarket : Firm
 				{
 					if (firm.FirmType == FIRM_MINE && IsRawMarket())
 					{
-						SetGoods(true, ((FirmMine)firm).RawId, i);
+						SetRawGoods(((FirmMine)firm).RawId, i);
 						break;
 					}
 
 					if (firm.FirmType == FIRM_FACTORY && IsRetailMarket())
 					{
-						SetGoods(false, ((FirmFactory)firm).ProductId, i);
+						SetProductGoods(((FirmFactory)firm).ProductId, i);
 						break;
 					}
 				}
@@ -355,32 +347,40 @@ public class FirmMarket : Firm
 		}
 	}
 
-	public void SetGoods(bool isRaw, int goodsId, int position)
+	public MarketGoods GetRawGoods(int rawId)
+	{
+		for (int i = 0; i < market_goods_array.Length; i++)
+		{
+			if (market_goods_array[i].RawId == rawId)
+				return market_goods_array[i];
+		}
+
+		return null;
+	}
+	
+	public MarketGoods GetProductGoods(int productId)
+	{
+		for (int i = 0; i < market_goods_array.Length; i++)
+		{
+			if (market_goods_array[i].ProductId == productId)
+				return market_goods_array[i];
+		}
+
+		return null;
+	}
+
+	public void SetRawGoods(int goodsId, int position)
 	{
 		MarketGoods marketGoods = market_goods_array[position];
+		marketGoods.RawId = goodsId;
+		marketGoods.ProductId = 0;
+	}
 
-		if (isRaw)
-		{
-			if (marketGoods.RawId != 0)
-				market_raw_array[marketGoods.RawId - 1] = null;
-			else if (marketGoods.ProductId != 0)
-				market_product_array[marketGoods.ProductId - 1] = null;
-
-			marketGoods.RawId = goodsId;
-			marketGoods.ProductId = 0;
-			market_raw_array[goodsId - 1] = marketGoods;
-		}
-		else
-		{
-			if (marketGoods.ProductId != 0)
-				market_product_array[marketGoods.ProductId - 1] = null;
-			else if (marketGoods.RawId != 0)
-				market_raw_array[marketGoods.RawId - 1] = null;
-
-			marketGoods.RawId = 0;
-			marketGoods.ProductId = goodsId;
-			market_product_array[goodsId - 1] = marketGoods;
-		}
+	public void SetProductGoods(int goodsId, int position)
+	{
+		MarketGoods marketGoods = market_goods_array[position];
+		marketGoods.RawId = 0;
+		marketGoods.ProductId = goodsId;
 	}
 	
 	public void SwitchRestock()
@@ -394,17 +394,8 @@ public class FirmMarket : Firm
 	{
 		MarketGoods marketGoods = market_goods_array[position - 1];
 		marketGoods.StockQty = 0.0;
-
-		if (marketGoods.RawId != 0)
-		{
-			market_raw_array[marketGoods.RawId - 1] = null;
-			marketGoods.RawId = 0;
-		}
-		else
-		{
-			market_product_array[marketGoods.ProductId - 1] = null;
-			marketGoods.ProductId = 0;
-		}
+		marketGoods.RawId = 0;
+		marketGoods.ProductId = 0;
 	}
 
 	public bool CanHireCaravan()
@@ -791,10 +782,9 @@ public class FirmMarket : Firm
 				if (!NationArray[firm.NationId].get_relation(NationId).trade_treaty)
 					continue;
 
-				MarketGoods marketGoods = ((FirmMarket)firm).market_product_array[productId - 1];
-
 				//--- if this market has the supply of this goods ----//
 
+				MarketGoods marketGoods = ((FirmMarket)firm).GetProductGoods(productId);
 				if (marketGoods != null && marketGoods.Supply30Days() > 0)
 				{
 					stockLevel = 100.0 * marketGoods.StockQty / GameConstants.MARKET_MAX_STOCK_QTY;
