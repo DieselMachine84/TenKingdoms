@@ -11,7 +11,7 @@ public class FirmMarket : Firm
 	private const int RESTOCK_NONE = 3;
 
 	private int RestockType { get; set; }
-	public double MaxStockQty { get; set; } // maximum stock qty of each market goods
+	public double MaxStockQty { get; }
 
 	private int NextOutputLinkId { get; set; }
 	public int NextOutputFirmId { get; private set; }
@@ -21,16 +21,14 @@ public class FirmMarket : Firm
 	private DateTime NoLinkedTownSinceDate { get; set; }
 	private DateTime LastImportNewGoodsDate { get; set; }
 
-	//--------------------------------//
-
 	public MarketGoods[] market_goods_array { get; } = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
 	public MarketGoods[] market_raw_array { get; } = new MarketGoods[GameConstants.MAX_RAW];
 	public MarketGoods[] market_product_array { get; } = new MarketGoods[GameConstants.MAX_PRODUCT];
 	
 	public FirmMarket()
 	{
-		MaxStockQty = GameConstants.MARKET_MAX_STOCK_QTY;
 		RestockType = RESTOCK_ANY;
+		MaxStockQty = GameConstants.MARKET_MAX_STOCK_QTY;
 
 		for (int i = 0; i < market_goods_array.Length; i++)
 			market_goods_array[i] = new MarketGoods();
@@ -46,7 +44,7 @@ public class FirmMarket : Firm
 	{
 		TownArray.DistributeDemand();
 
-		//-------- set restock_type for AI only --------//
+		//-------- set RestockType for AI only --------//
 
 		if (AIFirm)
 		{
@@ -68,9 +66,11 @@ public class FirmMarket : Firm
 				for (int j = 0; j < firm.LinkedFirms.Count; j++)
 				{
 					Firm otherFirm = FirmArray[firm.LinkedFirms[j]];
+					
+					if (otherFirm.FirmType != FIRM_MARKET || otherFirm.NationId != NationId)
+						continue;
 
-					if (otherFirm.NationId == NationId && otherFirm.FirmId != FirmId && otherFirm.FirmType == FIRM_MARKET &&
-					    ((FirmMarket)otherFirm).IsRawMarket())
+					if (otherFirm.FirmId != FirmId && ((FirmMarket)otherFirm).IsRawMarket())
 					{
 						mineHasLinkedMarket = true;
 						break;
@@ -188,8 +188,9 @@ public class FirmMarket : Firm
 			if (LinkedFirmsEnable[NextOutputLinkId - 1] == InternalConstants.LINK_EE)
 			{
 				int firmId = LinkedFirms[NextOutputLinkId - 1];
+				int firmType = FirmArray[firmId].FirmType;
 
-				if (FirmArray[firmId].FirmType == FIRM_FACTORY)
+				if (firmType == FIRM_FACTORY)
 				{
 					NextOutputFirmId = firmId;
 					return;
@@ -232,8 +233,7 @@ public class FirmMarket : Firm
 						{
 							is_inputing_array[j] = true;
 
-							if (firmMine.NextOutputFirmId == FirmId &&
-							    firmMine.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
+							if (firmMine.NextOutputFirmId == FirmId && firmMine.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
 							{
 								double inputQty = Math.Min(firmMine.StockQty, maxInputQty);
 								inputQty = Math.Min(inputQty, MaxStockQty - marketGoods.StockQty);
@@ -278,8 +278,7 @@ public class FirmMarket : Firm
 						{
 							is_inputing_array[j] = true;
 
-							if (firmFactory.NextOutputFirmId == FirmId &&
-							    firmFactory.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
+							if (firmFactory.NextOutputFirmId == FirmId && firmFactory.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
 							{
 								double inputQty = Math.Min(firmFactory.StockQty, maxInputQty);
 								inputQty = Math.Min(inputQty, MaxStockQty - marketGoods.StockQty);
@@ -348,7 +347,6 @@ public class FirmMarket : Firm
 				double saleQty = Math.Min(marketGoods.MonthDemand / 30.0, marketGoods.StockQty);
 
 				marketGoods.StockQty -= saleQty;
-
 				marketGoods.CurMonthSaleQty += saleQty;
 				marketGoods.CurYearSales += saleQty * GameConstants.CONSUMER_PRICE;
 
@@ -395,7 +393,6 @@ public class FirmMarket : Firm
 	public void ClearMarketGoods(int position)
 	{
 		MarketGoods marketGoods = market_goods_array[position - 1];
-
 		marketGoods.StockQty = 0.0;
 
 		if (marketGoods.RawId != 0)
@@ -427,8 +424,6 @@ public class FirmMarket : Firm
 	{
 		if (!CanHireCaravan())
 			return 0;
-
-		//---------------------------------------//
 
 		//if (!remoteAction && remote.is_enable())
 		//{
