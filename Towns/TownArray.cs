@@ -80,6 +80,7 @@ public class TownArray : DynArray<Town>
 		}
 
 		//------ distribute demand -------//
+		//TODO distribute demand more often?
 
 		if (dayFrameNumber == 0 && Info.TotalDays % 15 == 0) // distribute demand every 15 days
 			DistributeDemand();

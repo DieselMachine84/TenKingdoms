@@ -1518,11 +1518,9 @@ public class Town : IIdObject
 	
 	public void DistributeDemand()
 	{
-		//------ scan for a firm to input raw materials --------//
-
-		MarketGoodsInfo[] marketGoodsInfoArray = new MarketGoodsInfo[GameConstants.MAX_PRODUCT];
-		for (int i = 0; i < marketGoodsInfoArray.Length; i++)
-			marketGoodsInfoArray[i] = new MarketGoodsInfo();
+		MarketGoodsInfo[] marketGoodsInfos = new MarketGoodsInfo[GameConstants.MAX_PRODUCT];
+		for (int i = 0; i < marketGoodsInfos.Length; i++)
+			marketGoodsInfos[i] = new MarketGoodsInfo();
 
 		//------- count the no. of market place that are near to this town ----//
 
@@ -1538,15 +1536,13 @@ public class Town : IIdObject
 
 			FirmMarket market = (FirmMarket)firm;
 
-			//---------- process market -------------//
-
 			for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
 			{
 				MarketGoods marketGoods = market.GetProductGoods(i + 1);
 				if (marketGoods != null)
 				{
 					double thisSupply = marketGoods.StockQty;
-					MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+					MarketGoodsInfo marketGoodsInfo = marketGoodsInfos[i];
 					marketGoodsInfo.Markets.Add(market);
 					marketGoodsInfo.TotalSupply += thisSupply;
 
@@ -1565,14 +1561,14 @@ public class Town : IIdObject
 
 		for (int i = 0; i < GameConstants.MAX_PRODUCT; i++)
 		{
-			MarketGoodsInfo marketGoodsInfo = marketGoodsInfoArray[i];
+			MarketGoodsInfo marketGoodsInfo = marketGoodsInfos[i];
 
 			foreach (FirmMarket market in marketGoodsInfo.Markets)
 			{
 				//----------------------------------//
 				//
 				// If the totalSupply < town demand:
-				// a market's demand = its_supply + (town_demand-totalSupply) / market_count
+				// a market's demand = its_supply + (town_demand - totalSupply) / market_count
 				//
 				// If the totalSupply > town demand:
 				// a market's demand = town_demand * its_supply / totalSupply
@@ -1597,44 +1593,17 @@ public class Town : IIdObject
 
 						if (market.NationId == NationId)
 						{
-							// if total_own_supply is 0 then ownShareDemand is also 0 and we put no demand on the product
+							// if TotalOwnSupply is 0 then ownShareDemand is also 0 and we put no demand on the product
 							if (marketGoodsInfo.TotalOwnSupply > 0.0)
 								marketGoods.MonthDemand += ownShareDemand * marketGoods.StockQty / marketGoodsInfo.TotalOwnSupply;
 						}
 						else
 						{
-							// Note: total_supply > 0.0, because else the first case above (demand larger than supply) will be triggered
+							// Note: TotalSupply > 0.0, because else the first case above (demand larger than supply) will be triggered
 							marketGoods.MonthDemand += (townDemand - ownShareDemand) * marketGoods.StockQty / marketGoodsInfo.TotalSupply;
 						}
 					}
 				}
-			}
-		}
-	}
-
-	public void UpdateProductSupply()
-	{
-		for (int i = 0; i < HasProductSupply.Length; i++)
-			HasProductSupply[i] = false;
-
-		//----- scan for linked market place -----//
-
-		for (int i = 0; i < LinkedFirms.Count; i++)
-		{
-			Firm firm = FirmArray[LinkedFirms[i]];
-
-			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_MARKET)
-				continue;
-
-			FirmMarket firmMarket = (FirmMarket)firm;
-			
-			//---- check what type of products they are selling ----//
-
-			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
-			{
-				int productId = firmMarket.MarketGoods[j].ProductId;
-				if (productId > 1)
-					HasProductSupply[productId - 1] = true;
 			}
 		}
 	}
@@ -5557,5 +5526,31 @@ public class Town : IIdObject
 		return true;
 	}
 
+	public void UpdateProductSupply()
+	{
+		for (int i = 0; i < HasProductSupply.Length; i++)
+			HasProductSupply[i] = false;
+
+		//----- scan for linked market place -----//
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
+		{
+			Firm firm = FirmArray[LinkedFirms[i]];
+
+			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_MARKET)
+				continue;
+
+			FirmMarket firmMarket = (FirmMarket)firm;
+			
+			//---- check what type of products they are selling ----//
+
+			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
+			{
+				int productId = firmMarket.MarketGoods[j].ProductId;
+				if (productId > 0)
+					HasProductSupply[productId - 1] = true;
+			}
+		}
+	}
 	#endregion
 }

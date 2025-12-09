@@ -198,7 +198,7 @@ public class FirmMarket : Firm
 		//------ scan for a firm to input raw materials --------//
 
 		Nation nation = NationArray[NationId];
-		bool[] is_inputing_array = new bool[GameConstants.MAX_MARKET_GOODS];
+		bool[] usedSlots = new bool[GameConstants.MAX_MARKET_GOODS];
 		int queuedFirmId = 0;
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
@@ -218,12 +218,9 @@ public class FirmMarket : Firm
 					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = MarketGoods[j];
-
-						//--- only assign a slot to the product if it comes from a firm of our own ---//
-
 						if (marketGoods.RawId == firmMine.RawId)
 						{
-							is_inputing_array[j] = true;
+							usedSlots[j] = true;
 
 							if (firmMine.NextOutputFirmId == FirmId && firmMine.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
 							{
@@ -236,12 +233,6 @@ public class FirmMarket : Firm
 
 								if (firm.NationId != NationId)
 									nation.import_goods(NationBase.IMPORT_RAW, firm.NationId, inputQty * GameConstants.RAW_PRICE);
-							}
-							else if (marketGoods.StockQty >= MaxStockQty)
-							{
-								// add it so the other functions can know that this market has direct supply links
-								// TODO check
-								marketGoods.CurMonthSupply++;
 							}
 
 							break;
@@ -265,10 +256,9 @@ public class FirmMarket : Firm
 					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
 						MarketGoods marketGoods = MarketGoods[j];
-
 						if (marketGoods.ProductId == firmFactory.ProductId)
 						{
-							is_inputing_array[j] = true;
+							usedSlots[j] = true;
 
 							if (firmFactory.NextOutputFirmId == FirmId && firmFactory.StockQty > 0.0 && marketGoods.StockQty < MaxStockQty)
 							{
@@ -281,12 +271,6 @@ public class FirmMarket : Firm
 
 								if (firm.NationId != NationId)
 									nation.import_goods(NationBase.IMPORT_PRODUCT, firm.NationId, inputQty * GameConstants.PRODUCT_PRICE);
-							}
-							else if (marketGoods.StockQty >= MaxStockQty)
-							{
-								// add it so the other functions can know that this market has direct supply links
-								// TODO check
-								marketGoods.CurMonthSupply++;
 							}
 
 							break;
@@ -311,7 +295,7 @@ public class FirmMarket : Firm
 			{
 				MarketGoods marketGoods = MarketGoods[i];
 
-				if (!is_inputing_array[i] && marketGoods.StockQty <= 0.0)
+				if (!usedSlots[i] && marketGoods.StockQty <= 0.0)
 				{
 					if (firm.FirmType == FIRM_MINE && IsRawMarket())
 					{
