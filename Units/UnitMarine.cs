@@ -796,7 +796,7 @@ public class UnitMarine : Unit
 				{
 					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 					{
-						marketGoods = market.market_goods_array[k];
+						marketGoods = market.MarketGoods[k];
 						if (marketGoods.StockQty == 0 && marketGoods.Supply30Days() <= 0.0)
 						{
 							empty_slot_position_array[j] = k;
@@ -825,7 +825,7 @@ public class UnitMarine : Unit
 				if (marketProduct == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
 				{
 					useEmptySlot = true;
-					marketProduct = market.market_goods_array[empty_slot_position_array[j]];
+					marketProduct = market.MarketGoods[empty_slot_position_array[j]];
 				}
 				else
 					useEmptySlot = false;
@@ -919,7 +919,7 @@ public class UnitMarine : Unit
 				{
 					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 					{
-						marketGoods = market.market_goods_array[k];
+						marketGoods = market.MarketGoods[k];
 						if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0)
 						{
 							empty_slot_position_array[j] = k;
@@ -968,7 +968,7 @@ public class UnitMarine : Unit
 				if (marketRaw == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
 				{
 					useEmptySlot = true;
-					marketRaw = market.market_goods_array[empty_slot_position_array[j]];
+					marketRaw = market.MarketGoods[empty_slot_position_array[j]];
 				}
 				else
 					useEmptySlot = false;
@@ -1823,7 +1823,7 @@ public class UnitMarine : Unit
 				case Firm.FIRM_MARKET:
 					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS && goodsNum < 2; j++)
 					{
-						MarketGoods goods = ((FirmMarket)firm).market_goods_array[j];
+						MarketGoods goods = ((FirmMarket)firm).MarketGoods[j];
 						if (goods.RawId != 0)
 						{
 							id = goods.RawId;

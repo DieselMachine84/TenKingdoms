@@ -1632,7 +1632,7 @@ public class Town : IIdObject
 
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
-				int productId = firmMarket.market_goods_array[j].ProductId;
+				int productId = firmMarket.MarketGoods[j].ProductId;
 				if (productId > 1)
 					HasProductSupply[productId - 1] = true;
 			}
@@ -1663,7 +1663,7 @@ public class Town : IIdObject
 
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
-				MarketGoods marketGoods = firmMarket.market_goods_array[j];
+				MarketGoods marketGoods = firmMarket.MarketGoods[j];
 				if (marketGoods.ProductId == 0 || marketGoods.MonthDemand == 0)
 					continue;
 

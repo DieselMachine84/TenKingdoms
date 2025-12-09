@@ -119,7 +119,7 @@ public class CaravanStop : TradeStop
 			case Firm.FIRM_MARKET:
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
-					MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[i];
+					MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[i];
 					if ((id = marketGoods.RawId) != 0) // 1-3
 					{
 						goodsNum++;
@@ -210,7 +210,7 @@ public class ShipStop : TradeStop
 				case Firm.FIRM_MARKET:
 					for (int j = 1; j <= GameConstants.MAX_MARKET_GOODS; j++)
 					{
-						MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[i];
+						MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[i];
 						if ((id = marketGoods.RawId) != 0) // 1-3
 						{
 							goodsNum++;

@@ -4384,7 +4384,7 @@ public class Nation : NationBase
 
 			for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 			{
-				MarketGoods marketGoods = firmMarket.market_goods_array[j];
+				MarketGoods marketGoods = firmMarket.MarketGoods[j];
 				if (marketGoods.RawId != 0 || marketGoods.ProductId != 0)
 				{
 					double stockQty = marketGoods.StockQty;

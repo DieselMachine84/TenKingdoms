@@ -101,7 +101,7 @@ public class TownArray : DynArray<Town>
 				FirmMarket firmMarket = (FirmMarket)firm;
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
-					firmMarket.market_goods_array[i].MonthDemand = 0.0;
+					firmMarket.MarketGoods[i].MonthDemand = 0.0;
 				}
 			}
 		}

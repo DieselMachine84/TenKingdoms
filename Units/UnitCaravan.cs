@@ -151,7 +151,7 @@ public class UnitCaravan : Unit
 				int goodsNum = 0;
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
-					MarketGoods goods = ((FirmMarket)firm).market_goods_array[i];
+					MarketGoods goods = ((FirmMarket)firm).MarketGoods[i];
 					if (goods.RawId != 0)
 					{
 						if (goodsNum == 0)
@@ -933,7 +933,7 @@ public class UnitCaravan : Unit
 
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
-					MarketGoods marketGoods = firmMarket.market_goods_array[j];
+					MarketGoods marketGoods = firmMarket.MarketGoods[j];
 					if (marketGoods.Supply30Days() > 0)
 						return 0;
 				}
@@ -1069,7 +1069,7 @@ public class UnitCaravan : Unit
 		int i;
 		for (i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = fromMarket.market_goods_array[i];
+			MarketGoods marketGoods = fromMarket.MarketGoods[i];
 			if (marketGoods.ProductId == 0)
 				continue;
 
@@ -1287,7 +1287,7 @@ public class UnitCaravan : Unit
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = curMarket.market_goods_array[i];
+			MarketGoods marketGoods = curMarket.MarketGoods[i];
 			int unloadQty;
 			int goodsId;
 			if (marketGoods.RawId != 0)
@@ -1366,7 +1366,7 @@ public class UnitCaravan : Unit
 		{
 			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS && withEmptySlot > 0; i++)
 			{
-				MarketGoods marketGoods = curMarket.market_goods_array[i];
+				MarketGoods marketGoods = curMarket.MarketGoods[i];
 				if (marketGoods.StockQty > 0.0 || marketGoods.Supply30Days() > 0.0)
 					continue;
 
@@ -1379,7 +1379,7 @@ public class UnitCaravan : Unit
 	private bool market_unload_goods_in_empty_slot(FirmMarket curMarket, int position)
 	{
 		bool moreToUnload = false;
-		MarketGoods marketGoods = curMarket.market_goods_array[position];
+		MarketGoods marketGoods = curMarket.MarketGoods[position];
 
 		//-------------------------------------------------//
 		// unload product and then raw
@@ -1397,7 +1397,7 @@ public class UnitCaravan : Unit
 			bool productExistInOtherSlot = false;
 			for (int k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 			{
-				MarketGoods checkGoods = curMarket.market_goods_array[k];
+				MarketGoods checkGoods = curMarket.MarketGoods[k];
 				if (checkGoods.ProductId == j + 1)
 				{
 					productExistInOtherSlot = true;
@@ -1441,7 +1441,7 @@ public class UnitCaravan : Unit
 				bool rawExistInOtherSlot = false;
 				for (int k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
 				{
-					MarketGoods checkGoods = curMarket.market_goods_array[k];
+					MarketGoods checkGoods = curMarket.MarketGoods[k];
 					if (checkGoods.RawId == j + 1)
 					{
 						rawExistInOtherSlot = true;
@@ -1486,7 +1486,7 @@ public class UnitCaravan : Unit
 		//------------------------------------------------------------//
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = curMarket.market_goods_array[i];
+			MarketGoods marketGoods = curMarket.MarketGoods[i];
 			if (marketGoods.RawId != 0)
 			{
 				if (stop.pick_up_array[marketGoods.RawId - 1])
@@ -1514,7 +1514,7 @@ public class UnitCaravan : Unit
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = curMarket.market_goods_array[i];
+			MarketGoods marketGoods = curMarket.MarketGoods[i];
 			if (marketGoods.StockQty <= 0.0)
 				continue;
 

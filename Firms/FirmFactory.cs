@@ -90,7 +90,7 @@ public class FirmFactory : Firm
 
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
-					int rawId = firmMarket.market_goods_array[j].RawId;
+					int rawId = firmMarket.MarketGoods[j].RawId;
 
 					if (rawId == 0)
 						continue;
@@ -197,7 +197,7 @@ public class FirmFactory : Firm
 				{
 					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
-						MarketGoods marketGoods = firmMarket.market_goods_array[j];
+						MarketGoods marketGoods = firmMarket.MarketGoods[j];
 						if (marketGoods.RawId == ProductId && marketGoods.StockQty > 0.0)
 						{
 							double inputQty = Math.Min(marketGoods.StockQty, MaxRawStockQty - RawStockQty);
@@ -488,7 +488,7 @@ public class FirmFactory : Firm
 
 				for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
-					MarketGoods marketGoods = firmMarket.market_goods_array[j];
+					MarketGoods marketGoods = firmMarket.MarketGoods[j];
 					if (marketGoods.RawId != 0 && marketGoods.StockQty >= GameConstants.MIN_FACTORY_IMPORT_STOCK_QTY)
 					{
 						curRating = Convert.ToInt32(marketGoods.StockQty);

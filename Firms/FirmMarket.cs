@@ -21,15 +21,15 @@ public class FirmMarket : Firm
 	private DateTime NoLinkedTownSinceDate { get; set; }
 	private DateTime LastImportNewGoodsDate { get; set; }
 
-	public MarketGoods[] market_goods_array { get; } = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
+	public MarketGoods[] MarketGoods { get; } = new MarketGoods[GameConstants.MAX_MARKET_GOODS];
 	
 	public FirmMarket()
 	{
 		RestockType = RESTOCK_ANY;
 		MaxStockQty = GameConstants.MARKET_MAX_STOCK_QTY;
 
-		for (int i = 0; i < market_goods_array.Length; i++)
-			market_goods_array[i] = new MarketGoods();
+		for (int i = 0; i < MarketGoods.Length; i++)
+			MarketGoods[i] = new MarketGoods();
 	}
 
 	protected override void InitDerived()
@@ -101,7 +101,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			marketGoods.LastMonthSupply = marketGoods.CurMonthSupply;
 			marketGoods.CurMonthSupply = 0.0;
 
@@ -118,7 +118,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			marketGoods.LastYearSales = marketGoods.CurYearSales;
 			marketGoods.CurYearSales = 0.0;
 		}
@@ -217,7 +217,7 @@ public class FirmMarket : Firm
 					int j;
 					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
-						MarketGoods marketGoods = market_goods_array[j];
+						MarketGoods marketGoods = MarketGoods[j];
 
 						//--- only assign a slot to the product if it comes from a firm of our own ---//
 
@@ -264,7 +264,7 @@ public class FirmMarket : Firm
 					int j;
 					for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
-						MarketGoods marketGoods = market_goods_array[j];
+						MarketGoods marketGoods = MarketGoods[j];
 
 						if (marketGoods.ProductId == firmFactory.ProductId)
 						{
@@ -309,7 +309,7 @@ public class FirmMarket : Firm
 
 			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 			{
-				MarketGoods marketGoods = market_goods_array[i];
+				MarketGoods marketGoods = MarketGoods[i];
 
 				if (!is_inputing_array[i] && marketGoods.StockQty <= 0.0)
 				{
@@ -333,7 +333,7 @@ public class FirmMarket : Firm
 	{
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.ProductId != 0 && marketGoods.StockQty > 0.0)
 			{
 				double saleQty = Math.Min(marketGoods.MonthDemand / 30.0, marketGoods.StockQty);
@@ -349,10 +349,10 @@ public class FirmMarket : Firm
 
 	public MarketGoods GetRawGoods(int rawId)
 	{
-		for (int i = 0; i < market_goods_array.Length; i++)
+		for (int i = 0; i < MarketGoods.Length; i++)
 		{
-			if (market_goods_array[i].RawId == rawId)
-				return market_goods_array[i];
+			if (MarketGoods[i].RawId == rawId)
+				return MarketGoods[i];
 		}
 
 		return null;
@@ -360,10 +360,10 @@ public class FirmMarket : Firm
 	
 	public MarketGoods GetProductGoods(int productId)
 	{
-		for (int i = 0; i < market_goods_array.Length; i++)
+		for (int i = 0; i < MarketGoods.Length; i++)
 		{
-			if (market_goods_array[i].ProductId == productId)
-				return market_goods_array[i];
+			if (MarketGoods[i].ProductId == productId)
+				return MarketGoods[i];
 		}
 
 		return null;
@@ -371,14 +371,14 @@ public class FirmMarket : Firm
 
 	public void SetRawGoods(int goodsId, int position)
 	{
-		MarketGoods marketGoods = market_goods_array[position];
+		MarketGoods marketGoods = MarketGoods[position];
 		marketGoods.RawId = goodsId;
 		marketGoods.ProductId = 0;
 	}
 
 	public void SetProductGoods(int goodsId, int position)
 	{
-		MarketGoods marketGoods = market_goods_array[position];
+		MarketGoods marketGoods = MarketGoods[position];
 		marketGoods.RawId = 0;
 		marketGoods.ProductId = goodsId;
 	}
@@ -392,7 +392,7 @@ public class FirmMarket : Firm
 
 	public void ClearMarketGoods(int position)
 	{
-		MarketGoods marketGoods = market_goods_array[position - 1];
+		MarketGoods marketGoods = MarketGoods[position - 1];
 		marketGoods.StockQty = 0.0;
 		marketGoods.RawId = 0;
 		marketGoods.ProductId = 0;
@@ -562,7 +562,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.ProductId == 0 && marketGoods.RawId == 0)
 				emptySlot++;
 		}
@@ -662,7 +662,7 @@ public class FirmMarket : Firm
 	{
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.ProductId != 0)
 			{
 				// the supply falls behind the demand by at least 20%
@@ -706,9 +706,9 @@ public class FirmMarket : Firm
 			{
 				FirmMarket firmMarket = (FirmMarket)firm;
 
-				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
+				for (int i = 0; i < firmMarket.MarketGoods.Length; i++)
 				{
-					MarketGoods marketGoods = firmMarket.market_goods_array[i];
+					MarketGoods marketGoods = firmMarket.MarketGoods[i];
 					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5.0)
 					{
 						if (marketGoods.ProductId == productId)
@@ -859,9 +859,9 @@ public class FirmMarket : Firm
 			{
 				FirmMarket firmMarket = (FirmMarket)firm;
 
-				for (int i = 0; i < firmMarket.market_goods_array.Length; i++)
+				for (int i = 0; i < firmMarket.MarketGoods.Length; i++)
 				{
-					MarketGoods marketGoods = firmMarket.market_goods_array[i];
+					MarketGoods marketGoods = firmMarket.MarketGoods[i];
 					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5.0)
 					{
 						if (marketGoods.RawId == rawId)
@@ -930,7 +930,7 @@ public class FirmMarket : Firm
 
 				for (j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 				{
-					MarketGoods marketGoods = ((FirmMarket)firm).market_goods_array[j];
+					MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[j];
 					if (marketGoods.StockQty > GameConstants.MARKET_MAX_STOCK_QTY / 5)
 					{
 						if (marketGoods.RawId == rawId)
@@ -980,7 +980,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.ProductId != 0)
 			{
 				// the supply is at least double of the demand
@@ -1116,7 +1116,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.RawId == 0)
 				continue;
 
@@ -1157,7 +1157,7 @@ public class FirmMarket : Firm
 			bool hasRawResource = false;
 			for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 			{
-				MarketGoods marketGoods = market_goods_array[i];
+				MarketGoods marketGoods = MarketGoods[i];
 				if (marketGoods.RawId != 0)
 				{
 					hasRawResource = true;
@@ -1288,7 +1288,7 @@ public class FirmMarket : Firm
 
 		for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 		{
-			MarketGoods marketGoods = market_goods_array[i];
+			MarketGoods marketGoods = MarketGoods[i];
 			if (marketGoods.RawId != 0)
 			{
 				totalValue += marketGoods.StockQty * GameConstants.RAW_PRICE;

@@ -535,7 +535,7 @@ public partial class Renderer
                     int width = 0;
                     int height = 0;
                     
-                    MarketGoods marketGoods = market.market_goods_array[i];
+                    MarketGoods marketGoods = market.MarketGoods[i];
                     if (marketGoods.RawId != 0)
                     {
                         RawInfo rawInfo = RawRes[marketGoods.RawId];
