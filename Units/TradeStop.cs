@@ -11,79 +11,76 @@ public class TradeStop
 	public const int NO_PICK_UP = MAX_PICK_UP_GOODS + 1;
 	public const int MAX_GOODS_SELECT_BUTTON = MAX_PICK_UP_GOODS + 2;
 
-	public int firm_recno; // firm recno of the station
-	public int firm_loc_x1; //-******* used temporarily
-	public int firm_loc_y1;
-	public int pick_up_type; // auto, selective, none
-	public bool[] pick_up_array = new bool[MAX_PICK_UP_GOODS]; // useful for selective mode
+	public int FirmId { get; set; } // firm recno of the station
+	public int FirmLocX1 { get; set; }
+	public int FirmLocY1 { get; set; }
+	public int PickUpType { get; protected set; }
+	public bool[] PickUpEnabled { get; } = new bool[MAX_PICK_UP_GOODS]; // useful for selective mode
 
 	protected FirmArray FirmArray => Sys.Instance.FirmArray;
 	
-	public void pick_up_set_auto()
+	public void PickUpSetAuto()
 	{
-		for (int i = 0; i < pick_up_array.Length; i++)
-			pick_up_array[i] = false;
+		for (int i = 0; i < PickUpEnabled.Length; i++)
+			PickUpEnabled[i] = false;
 
-		pick_up_type = AUTO_PICK_UP;
+		PickUpType = AUTO_PICK_UP;
 	}
 
-	public void pick_up_set_none()
+	public void PickUpSetNone()
 	{
-		for (int i = 0; i < pick_up_array.Length; i++)
-			pick_up_array[i] = false;
+		for (int i = 0; i < PickUpEnabled.Length; i++)
+			PickUpEnabled[i] = false;
 
-		pick_up_type = NO_PICK_UP;
+		PickUpType = NO_PICK_UP;
 	}
 
-	public void pick_up_toggle(int pos)
+	public void PickUpToggle(int pos)
 	{
 		int index = pos - 1;
-		if (pick_up_array[index])
+		if (PickUpEnabled[index])
 		{
-			pick_up_array[index] = false;
+			PickUpEnabled[index] = false;
 
-			int firmId = FirmArray[firm_recno].FirmType;
-			if (firmId == Firm.FIRM_MARKET || firmId == Firm.FIRM_HARBOR)
+			int firmType = FirmArray[FirmId].FirmType;
+			if (firmType == Firm.FIRM_MARKET || firmType == Firm.FIRM_HARBOR)
 			{
 				bool allZero = true;
 				for (int i = 0; i < MAX_PICK_UP_GOODS; ++i)
 				{
-					if (pick_up_array[i])
+					if (PickUpEnabled[i])
 					{
 						allZero = false;
-						pick_up_type = i + 1;
+						PickUpType = i + 1;
 						break;
 					}
 				}
 
 				if (allZero)
-					pick_up_type = NO_PICK_UP;
+					PickUpType = NO_PICK_UP;
 			}
 			else
-				pick_up_type = NO_PICK_UP;
+			{
+				PickUpType = NO_PICK_UP;
+			}
 		}
 		else
 		{
-			pick_up_array[index] = true;
-			pick_up_type = pos; // that means selective
+			PickUpEnabled[index] = true;
+			PickUpType = pos; // that means selective
 		}
 	}
 }
 
 public class CaravanStop : TradeStop
 {
-	public int firm_id;
+	public int FirmType { get; set; }
 
-	public int update_pick_up(bool[] enableFlag = null)
+	public void UpdatePickUp()
 	{
-		bool[] dummyBuffer = new bool[MAX_GOODS_SELECT_BUTTON];
-		if (enableFlag == null)
-			enableFlag = dummyBuffer;
+		bool[] enableFlag = new bool[MAX_GOODS_SELECT_BUTTON];
 
-		for (int i = 0; i < enableFlag.Length; i++)
-			enableFlag[i] = false;
-
-		Firm firm = FirmArray[firm_recno];
+		Firm firm = FirmArray[FirmId];
 		int goodsNum = 0; // represent the number of cargo displayed in the menu for this stop
 		int firstGoodsId = 0;
 		int id;
@@ -91,27 +88,28 @@ public class CaravanStop : TradeStop
 		switch (firm.FirmType)
 		{
 			case Firm.FIRM_MINE:
-				id = ((FirmMine)firm).RawId + PICK_UP_RAW_FIRST - 1;
+				id = ((FirmMine)firm).RawId;
 				if (id != 0)
 				{
 					goodsNum++;
 					enableFlag[id] = true;
 
-					if (!pick_up_array[id - 1])
-						pick_up_set_none(); // nothing can be taken if no cargo is matched
+					if (!PickUpEnabled[id - 1])
+						PickUpSetNone(); // nothing can be taken if no cargo is matched
 				}
 
 				break;
 
 			case Firm.FIRM_FACTORY:
-				id = ((FirmFactory)firm).ProductId + PICK_UP_PRODUCT_FIRST - 1;
+				id = ((FirmFactory)firm).ProductId;
 				if (id != 0)
 				{
+					id += GameConstants.MAX_RAW; // 4-6
 					goodsNum++;
 					enableFlag[id] = true;
 
-					if (!pick_up_array[id - 1])
-						pick_up_set_none(); // nothing can be taken if no cargo is matched
+					if (!PickUpEnabled[id - 1])
+						PickUpSetNone(); // nothing can be taken if no cargo is matched
 				}
 
 				break;
@@ -120,15 +118,18 @@ public class CaravanStop : TradeStop
 				for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
 				{
 					MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[i];
-					if ((id = marketGoods.RawId) != 0) // 1-3
+					if (marketGoods.RawId != 0) // 1-3
 					{
+						id = marketGoods.RawId;
 						goodsNum++;
 						enableFlag[id] = true;
 						if (firstGoodsId == 0)
 							firstGoodsId = id;
 					}
-					else if ((id = marketGoods.ProductId) != 0) // 1-3
+					
+					if (marketGoods.ProductId != 0) // 1-3
 					{
+						id = marketGoods.ProductId;
 						id += GameConstants.MAX_RAW; // 4-6
 						goodsNum++;
 						enableFlag[id] = true;
@@ -137,55 +138,46 @@ public class CaravanStop : TradeStop
 					}
 				}
 
-				for (int i = 0; i < MAX_PICK_UP_GOODS; i++)
-				{
-					if (pick_up_array[i])
-					{
-						if (!enableFlag[i + 1])
-							pick_up_array[i] = false;
-					}
-				}
-
 				break;
 		}
 
-		if (goodsNum == 0 && pick_up_type != NO_PICK_UP)
-			pick_up_set_none();
-
-		if (goodsNum == 1 && pick_up_type == AUTO_PICK_UP)
+		for (int i = 0; i < MAX_PICK_UP_GOODS; i++)
 		{
-			pick_up_type = firstGoodsId; // change to selective
-			pick_up_array[pick_up_type - 1] = true;
+			if (!enableFlag[i + 1])
+				PickUpEnabled[i] = false;
 		}
+		
+		if (goodsNum == 0 && PickUpType != NO_PICK_UP)
+			PickUpSetNone();
 
-		return goodsNum;
+		if (goodsNum == 1 && PickUpType == AUTO_PICK_UP)
+		{
+			PickUpType = firstGoodsId; // change to selective
+			PickUpEnabled[PickUpType - 1] = true;
+		}
 	}
 }
 
 public class ShipStop : TradeStop
 {
-	public int update_pick_up(bool[] enableFlag = null)
+	public void UpdatePickUp()
 	{
-		bool[] dummyBuffer = new bool[MAX_GOODS_SELECT_BUTTON];
-		if (enableFlag == null)
-			enableFlag = dummyBuffer;
+		bool[] enableFlag = new bool[MAX_GOODS_SELECT_BUTTON];
 
-		for (int i = 0; i < enableFlag.Length; i++)
-			enableFlag[i] = false;
-
-		Firm harbor = FirmArray[firm_recno];
+		Firm harbor = FirmArray[FirmId];
 		int goodsNum = 0; // represent the number of cargo displayed in the menu for this stop
 		int firstGoodsId = 0;
-		int id;
 
-		for (int i = harbor.LinkedFirms.Count - 1; i >= 0; --i)
+		for (int i = 0; i < harbor.LinkedFirms.Count; i++)
 		{
 			Firm firm = FirmArray[harbor.LinkedFirms[i]];
 
+			int id;
 			switch (firm.FirmType)
 			{
 				case Firm.FIRM_MINE:
-					if ((id = ((FirmMine)firm).RawId) != 0) // 1-3
+					id = ((FirmMine)firm).RawId;
+					if (id != 0) // 1-3
 					{
 						goodsNum++;
 						enableFlag[id] = true;
@@ -196,7 +188,8 @@ public class ShipStop : TradeStop
 					break;
 
 				case Firm.FIRM_FACTORY:
-					if ((id = ((FirmFactory)firm).ProductId) != 0) // 1-3
+					id = ((FirmFactory)firm).ProductId;
+					if (id != 0)
 					{
 						id += GameConstants.MAX_RAW; // 4-6
 						goodsNum++;
@@ -208,18 +201,20 @@ public class ShipStop : TradeStop
 					break;
 
 				case Firm.FIRM_MARKET:
-					for (int j = 1; j <= GameConstants.MAX_MARKET_GOODS; j++)
+					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS; j++)
 					{
-						MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[i];
-						if ((id = marketGoods.RawId) != 0) // 1-3
+						MarketGoods marketGoods = ((FirmMarket)firm).MarketGoods[j];
+						if (marketGoods.RawId != 0) // 1-3
 						{
+							id = marketGoods.RawId;
 							goodsNum++;
 							enableFlag[id] = true;
 							if (firstGoodsId == 0)
 								firstGoodsId = id;
 						}
-						else if ((id = marketGoods.ProductId) != 0) // 1-3
+						else if (marketGoods.ProductId != 0) // 1-3
 						{
+							id = marketGoods.ProductId;
 							id += GameConstants.MAX_RAW; // 4-6
 							goodsNum++;
 							enableFlag[id] = true;
@@ -234,22 +229,17 @@ public class ShipStop : TradeStop
 
 		for (int i = 0; i < MAX_PICK_UP_GOODS; ++i)
 		{
-			if (pick_up_array[i])
-			{
-				if (!enableFlag[i + 1])
-					pick_up_array[i] = false;
-			}
+			if (!enableFlag[i + 1])
+				PickUpEnabled[i] = false;
 		}
 
-		if (goodsNum == 0 && pick_up_type != NO_PICK_UP)
-			pick_up_set_none();
+		if (goodsNum == 0 && PickUpType != NO_PICK_UP)
+			PickUpSetNone();
 
-		if (goodsNum == 1 && pick_up_type == AUTO_PICK_UP)
+		if (goodsNum == 1 && PickUpType == AUTO_PICK_UP)
 		{
-			pick_up_type = firstGoodsId; // change to selective
-			pick_up_array[pick_up_type - 1] = true;
+			PickUpType = firstGoodsId; // change to selective
+			PickUpEnabled[PickUpType - 1] = true;
 		}
-
-		return goodsNum;
 	}
 }

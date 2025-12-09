@@ -1197,14 +1197,14 @@ public class FirmMarket : Firm
 			if (unitCaravan.stop_defined_num < 2)
 				continue;
 
-			if (unitCaravan.stop_array[0].firm_recno == FirmId &&
-			    unitCaravan.stop_array[1].firm_recno == firm.FirmId)
+			if (unitCaravan.stop_array[0].FirmId == FirmId &&
+			    unitCaravan.stop_array[1].FirmId == firm.FirmId)
 			{
 				stop1Id = 1;
 				stop2Id = 2;
 			}
-			else if (unitCaravan.stop_array[1].firm_recno == FirmId &&
-			         unitCaravan.stop_array[0].firm_recno == firm.FirmId)
+			else if (unitCaravan.stop_array[1].FirmId == FirmId &&
+			         unitCaravan.stop_array[0].FirmId == firm.FirmId)
 			{
 				stop1Id = 2;
 				stop2Id = 1;

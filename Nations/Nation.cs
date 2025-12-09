@@ -6459,10 +6459,10 @@ public class Nation : NationBase
 			if (unitMarine.stop_defined_num < 2)
 				continue;
 
-			if ((unitMarine.stop_array[0].firm_recno == firmRecno1 &&
-			     unitMarine.stop_array[1].firm_recno == firmRecno2) ||
-			    (unitMarine.stop_array[1].firm_recno == firmRecno1 &&
-			     unitMarine.stop_array[0].firm_recno == firmRecno2))
+			if ((unitMarine.stop_array[0].FirmId == firmRecno1 &&
+			     unitMarine.stop_array[1].FirmId == firmRecno2) ||
+			    (unitMarine.stop_array[1].FirmId == firmRecno1 &&
+			     unitMarine.stop_array[0].FirmId == firmRecno2))
 			{
 				return unitMarine.SpriteId != 0;
 			}

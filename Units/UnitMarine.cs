@@ -110,7 +110,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		// backup original destination stop firm recno
 		//-------------------------------------------------------//
-		int nextStopRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].firm_recno : 0;
+		int nextStopRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].FirmId : 0;
 
 		//----------------------------------------------------------------------//
 		// check stop existence and the relationship between firm's nation
@@ -120,21 +120,21 @@ public class UnitMarine : Unit
 		for (i = 0; i < MAX_STOP_FOR_SHIP; i++)
 		{
 			stop = stop_array[i];
-			if (stop.firm_recno == 0)
+			if (stop.FirmId == 0)
 				continue;
 
-			if (FirmArray.IsDeleted(stop.firm_recno))
+			if (FirmArray.IsDeleted(stop.FirmId))
 			{
-				stop.firm_recno = 0; // clear the recno
+				stop.FirmId = 0; // clear the recno
 				stop_defined_num--;
 				continue;
 			}
 
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 
-			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
+			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
 			{
-				stop.firm_recno = 0;
+				stop.FirmId = 0;
 				stop_defined_num--;
 				continue;
 			}
@@ -162,9 +162,9 @@ public class UnitMarine : Unit
 		for (i = 0; i < MAX_STOP_FOR_SHIP; i++, nodeIndex++)
 		{
 			stop = stop_array[nodeIndex];
-			if (stop.firm_recno != 0)
+			if (stop.FirmId != 0)
 			{
-				compareRecno = stop.firm_recno;
+				compareRecno = stop.FirmId;
 				break;
 			}
 		}
@@ -191,17 +191,17 @@ public class UnitMarine : Unit
 		for (; i < MAX_STOP_FOR_SHIP && unprocessed > 0; i++, nodeIndex++)
 		{
 			stop = stop_array[nodeIndex];
-			if (stop.firm_recno == 0)
+			if (stop.FirmId == 0)
 				continue; // empty
 
-			if (stop.firm_recno == compareRecno)
+			if (stop.FirmId == compareRecno)
 			{
-				stop.firm_recno = 0;
+				stop.FirmId = 0;
 				stop_defined_num--;
 			}
 			else
 			{
-				compareRecno = stop.firm_recno;
+				compareRecno = stop.FirmId;
 
 				if (insertNodeIndex != nodeIndex)
 					stop_array[insertNodeIndex] = stop_array[nodeIndex];
@@ -217,9 +217,9 @@ public class UnitMarine : Unit
 			//-------- compare the first and the end record -------//
 			nodeIndex = stop_defined_num - 1;
 			stop = stop_array[nodeIndex]; // point to the end
-			if (stop.firm_recno == stop_array[0].firm_recno)
+			if (stop.FirmId == stop_array[0].FirmId)
 			{
-				stop.firm_recno = 0; // remove the end record
+				stop.FirmId = 0; // remove the end record
 				stop_defined_num--;
 			}
 		}
@@ -237,7 +237,7 @@ public class UnitMarine : Unit
 		for (i = 0; i < stop_defined_num; i++)
 		{
 			stop = stop_array[i];
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 			if (firm.NationId == NationId)
 			{
 				ourFirmExist = true;
@@ -266,14 +266,14 @@ public class UnitMarine : Unit
 		for (i = 0, dest_stop_id = 0; i < stop_defined_num; i++)
 		{
 			stop = stop_array[i];
-			if (stop.firm_recno == nextStopRecno)
+			if (stop.FirmId == nextStopRecno)
 			{
 				dest_stop_id = i + 1;
 				break;
 			}
 			else
 			{
-				Firm firm = FirmArray[stop.firm_recno];
+				Firm firm = FirmArray[stop.FirmId];
 				int dist = Misc.points_distance(xLoc, yLoc, firm.LocCenterX, firm.LocCenterY);
 
 				if (dist < minDist)
@@ -294,15 +294,15 @@ public class UnitMarine : Unit
 
 		bool needUpdate = false;
 
-		if (FirmArray.IsDeleted(stop.firm_recno))
+		if (FirmArray.IsDeleted(stop.FirmId))
 		{
 			needUpdate = true;
 		}
 		else
 		{
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 
-			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
+			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
 			{
 				needUpdate = true;
 			}
@@ -310,7 +310,7 @@ public class UnitMarine : Unit
 
 		if (needUpdate)
 		{
-			int preStopRecno = stop_array[curStopId - 1].firm_recno;
+			int preStopRecno = stop_array[curStopId - 1].FirmId;
 			update_stop_list();
 
 			if (stop_defined_num == 0)
@@ -319,7 +319,7 @@ public class UnitMarine : Unit
 			for (int i = 0; i < stop_defined_num; i++)
 			{
 				stop = stop_array[i];
-				if (stop.firm_recno == preStopRecno)
+				if (stop.FirmId == preStopRecno)
 					nextStopId = (i >= stop_defined_num) ? 1 : i + 1;
 			}
 		}
@@ -352,14 +352,14 @@ public class UnitMarine : Unit
 			{
 				ShipStop stop = stop_array[0];
 
-				if (FirmArray.IsDeleted(stop.firm_recno))
+				if (FirmArray.IsDeleted(stop.FirmId))
 				{
 					update_stop_list();
 					return;
 				}
 
-				Firm firm = FirmArray[stop.firm_recno];
-				if (firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
+				Firm firm = FirmArray[stop.FirmId];
+				if (firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
 				{
 					update_stop_list();
 					return;
@@ -396,7 +396,7 @@ public class UnitMarine : Unit
 							if (wait_count <= 0)
 							{
 								//---------- unloading goods -------------//
-								cur_firm_recno = stop_array[0].firm_recno;
+								cur_firm_recno = stop_array[0].FirmId;
 								get_harbor_linked_firm_info();
 								harbor_unload_goods();
 								wait_count = GameConstants.MAX_SHIP_WAIT_TERM * InternalConstants.SURROUND_FIRM_WAIT_FACTOR;
@@ -479,15 +479,15 @@ public class UnitMarine : Unit
 		switch (newPickUpType)
 		{
 			case TradeStop.AUTO_PICK_UP:
-				stop_array[stopId - 1].pick_up_set_auto();
+				stop_array[stopId - 1].PickUpSetAuto();
 				break;
 
 			case TradeStop.NO_PICK_UP:
-				stop_array[stopId - 1].pick_up_set_none();
+				stop_array[stopId - 1].PickUpSetNone();
 				break;
 
 			default:
-				stop_array[stopId - 1].pick_up_toggle(newPickUpType);
+				stop_array[stopId - 1].PickUpToggle(newPickUpType);
 				break;
 		}
 
@@ -566,7 +566,7 @@ public class UnitMarine : Unit
 		}
 
 		dest_stop_id = nextStopId;
-		firm = FirmArray[stop_array[dest_stop_id - 1].firm_recno];
+		firm = FirmArray[stop_array[dest_stop_id - 1].FirmId];
 
 		cur_firm_recno = 0;
 		journey_status = InternalConstants.ON_WAY_TO_FIRM;
@@ -585,9 +585,9 @@ public class UnitMarine : Unit
 
 		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
 		{
-			if (!FirmArray.IsDeleted(shipStop.firm_recno))
+			if (!FirmArray.IsDeleted(shipStop.FirmId))
 			{
-				firm = FirmArray[shipStop.firm_recno];
+				firm = FirmArray[shipStop.FirmId];
 				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
 				nextXLoc = NextLocX;
 				nextYLoc = NextLocY;
@@ -603,13 +603,13 @@ public class UnitMarine : Unit
 		if (UnitArray.IsDeleted(SpriteId))
 			return; //-***************** BUGHERE ***************//
 
-		if (FirmArray.IsDeleted(shipStop.firm_recno))
+		if (FirmArray.IsDeleted(shipStop.FirmId))
 		{
 			update_stop_list();
 
 			if (stop_defined_num != 0) // move to next stop
 			{
-				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
+				firm = FirmArray[stop_array[stop_defined_num - 1].FirmId];
 				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 			}
 
@@ -617,7 +617,7 @@ public class UnitMarine : Unit
 		}
 
 		//ShipStop *stop = stop_array + dest_stop_id - 1;
-		firm = FirmArray[shipStop.firm_recno];
+		firm = FirmArray[shipStop.FirmId];
 
 		nextXLoc = NextLocX;
 		nextYLoc = NextLocY;
@@ -629,20 +629,20 @@ public class UnitMarine : Unit
 		{
 			extra_move_in_beach = NO_EXTRA_MOVE; // since the ship may enter the firm in odd location		
 
-			shipStop.update_pick_up();
+			shipStop.UpdatePickUp();
 
 			//-------------------------------------------------------//
 			// load/unload goods
 			//-------------------------------------------------------//
-			cur_firm_recno = shipStop.firm_recno;
+			cur_firm_recno = shipStop.FirmId;
 
 			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
 			{
 				get_harbor_linked_firm_info();
 				harbor_unload_goods();
-				if (shipStop.pick_up_type == TradeStop.AUTO_PICK_UP)
+				if (shipStop.PickUpType == TradeStop.AUTO_PICK_UP)
 					harbor_auto_load_goods();
-				else if (shipStop.pick_up_type != TradeStop.NO_PICK_UP)
+				else if (shipStop.PickUpType != TradeStop.NO_PICK_UP)
 					harbor_load_goods();
 			}
 
@@ -996,12 +996,12 @@ public class UnitMarine : Unit
 			return;
 
 		ShipStop shipStop = stop_array[dest_stop_id - 1];
-		if (shipStop.pick_up_type == TradeStop.NO_PICK_UP)
+		if (shipStop.PickUpType == TradeStop.NO_PICK_UP)
 			return; // return if not allowed to load any goods
 
 		for (int i = 0; i < TradeStop.MAX_PICK_UP_GOODS; i++)
 		{
-			if (!shipStop.pick_up_array[i])
+			if (!shipStop.PickUpEnabled[i])
 				continue;
 
 			int pickUpType = i + 1;
@@ -1770,27 +1770,27 @@ public class UnitMarine : Unit
 			//return;
 		//}
 
-		if (stop_array[stopId - 1].firm_recno == 0)
+		if (stop_array[stopId - 1].FirmId == 0)
 			stop_defined_num++; // no plus one if the recno is defined originally
 
 		//-------------------------------------------------------//
 		// set the station recno of the stop
 		//-------------------------------------------------------//
 		ShipStop shipStop = stop_array[stopId - 1];
-		if (shipStop.firm_recno == firm.FirmId)
+		if (shipStop.FirmId == firm.FirmId)
 		{
 			return; // same stop as before
 		}
 
-		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].firm_recno : 0;
-		shipStop.firm_recno = firm.FirmId;
-		shipStop.firm_loc_x1 = firm.LocX1;
-		shipStop.firm_loc_y1 = firm.LocY1;
+		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].FirmId : 0;
+		shipStop.FirmId = firm.FirmId;
+		shipStop.FirmLocX1 = firm.LocX1;
+		shipStop.FirmLocY1 = firm.LocY1;
 
 		//-------------------------------------------------------//
 		// set pick up selection based on availability
 		//-------------------------------------------------------//
-		shipStop.pick_up_set_auto();
+		shipStop.PickUpSetAuto();
 
 		int goodsId = 0, goodsNum = 0;
 		for (int i = harbor.LinkedFirms.Count - 1; i >= 0 && goodsNum < 2; --i)
@@ -1849,9 +1849,9 @@ public class UnitMarine : Unit
 		}
 
 		if (goodsNum == 1)
-			shipStop.pick_up_toggle(goodsId); // cancel auto_pick_up
+			shipStop.PickUpToggle(goodsId); // cancel auto_pick_up
 		else if (goodsNum == 0)
-			shipStop.pick_up_set_none();
+			shipStop.PickUpSetNone();
 
 		//-------------------------------------------------------//
 		// remove duplicate stop or stop change nation
@@ -1863,7 +1863,7 @@ public class UnitMarine : Unit
 		//-------------------------------------------------------//
 		if (dest_stop_id != 0 && journey_status != InternalConstants.INSIDE_FIRM)
 		{
-			int newStopFirmRecno = stop_array[dest_stop_id - 1].firm_recno;
+			int newStopFirmRecno = stop_array[dest_stop_id - 1].FirmId;
 			if (newStopFirmRecno != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
@@ -1889,7 +1889,7 @@ public class UnitMarine : Unit
 		//if (remote.is_enable() && stop_array[stopId - 1].firm_recno == 0)
 			//return;
 
-		stop_array[stopId - 1].firm_recno = 0;
+		stop_array[stopId - 1].FirmId = 0;
 		stop_defined_num--;
 		update_stop_list();
 	}
@@ -1967,21 +1967,21 @@ public class UnitMarine : Unit
 		{
 			ShipStop shipStopA = copyUnit.stop_array[i];
 			ShipStop shipStopB = stop_array[i];
-			if (shipStopA.firm_recno == 0)
+			if (shipStopA.FirmId == 0)
 				break;
 
-			if (FirmArray.IsDeleted(shipStopA.firm_recno))
+			if (FirmArray.IsDeleted(shipStopA.FirmId))
 				continue;
 
-			Firm firm = FirmArray[shipStopA.firm_recno];
-			set_stop(i + 1, shipStopA.firm_loc_x1, shipStopA.firm_loc_y1, InternalConstants.COMMAND_AUTO);
+			Firm firm = FirmArray[shipStopA.FirmId];
+			set_stop(i + 1, shipStopA.FirmLocX1, shipStopA.FirmLocY1, InternalConstants.COMMAND_AUTO);
 
-			if (shipStopA.pick_up_type == TradeStop.AUTO_PICK_UP)
+			if (shipStopA.PickUpType == TradeStop.AUTO_PICK_UP)
 			{
 				set_stop_pick_up(i + 1, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AUTO);
 			}
 
-			else if (shipStopA.pick_up_type == TradeStop.NO_PICK_UP)
+			else if (shipStopA.PickUpType == TradeStop.NO_PICK_UP)
 			{
 				set_stop_pick_up(i + 1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AUTO);
 			}
@@ -1990,7 +1990,7 @@ public class UnitMarine : Unit
 			{
 				for (int b = 0; b < TradeStop.MAX_PICK_UP_GOODS; ++b)
 				{
-					if (shipStopA.pick_up_array[b] != shipStopB.pick_up_array[b])
+					if (shipStopA.PickUpEnabled[b] != shipStopB.PickUpEnabled[b])
 						set_stop_pick_up(i + 1, b + 1, InternalConstants.COMMAND_PLAYER);
 				}
 			}
@@ -2056,7 +2056,7 @@ public class UnitMarine : Unit
 
 		for (int i = stop_defined_num; i > 0; i--)
 		{
-			if (FirmArray.IsDeleted(stop_array[i - 1].firm_recno))
+			if (FirmArray.IsDeleted(stop_array[i - 1].FirmId))
 			{
 				del_stop(i, InternalConstants.COMMAND_AI);
 				continue;
@@ -2064,7 +2064,7 @@ public class UnitMarine : Unit
 
 			//----------------------------------------------//
 
-			int nationRecno = FirmArray[stop_array[i - 1].firm_recno].NationId;
+			int nationRecno = FirmArray[stop_array[i - 1].FirmId].NationId;
 
 			if (nation.get_relation_status(nationRecno) == NationBase.NATION_HOSTILE)
 			{

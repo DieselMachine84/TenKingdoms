@@ -99,7 +99,7 @@ public class UnitCaravan : Unit
 		//return;
 		//}
 
-		if (stop_array[stopId - 1].firm_recno == 0)
+		if (stop_array[stopId - 1].FirmId == 0)
 		{
 			stop_defined_num++; // no plus one if the recno is defined originally
 		}
@@ -108,7 +108,7 @@ public class UnitCaravan : Unit
 		// set the station recno of the stop
 		//-------------------------------------------------------//
 		CaravanStop stop = stop_array[stopId - 1];
-		if (stop.firm_recno == firm.FirmId)
+		if (stop.FirmId == firm.FirmId)
 		{
 			return; // same stop as before
 		}
@@ -116,14 +116,14 @@ public class UnitCaravan : Unit
 		//-------------- reset ignore_power_nation -------------//
 		IgnorePowerNation = 0;
 
-		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].firm_recno : 0;
+		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].FirmId : 0;
 		int newStopFirmRecno;
-		for (int i = 0; i < stop.pick_up_array.Length; i++)
-			stop.pick_up_array[i] = false;
-		stop.firm_recno = firm.FirmId;
-		stop.firm_id = firm.FirmType;
-		stop.firm_loc_x1 = firm.LocX1;
-		stop.firm_loc_y1 = firm.LocY1;
+		for (int i = 0; i < stop.PickUpEnabled.Length; i++)
+			stop.PickUpEnabled[i] = false;
+		stop.FirmId = firm.FirmId;
+		stop.FirmType = firm.FirmType;
+		stop.FirmLocX1 = firm.LocX1;
+		stop.FirmLocY1 = firm.LocY1;
 
 		int goodsId = 0;
 		//------------------------------------------------------------------------------------//
@@ -134,17 +134,17 @@ public class UnitCaravan : Unit
 			case Firm.FIRM_MINE:
 				goodsId = ((FirmMine)firm).RawId;
 				if (goodsId != 0)
-					stop.pick_up_toggle(goodsId); // enable
+					stop.PickUpToggle(goodsId); // enable
 				else
-					stop.pick_up_set_none();
+					stop.PickUpSetNone();
 				break;
 
 			case Firm.FIRM_FACTORY:
 				goodsId = ((FirmFactory)firm).ProductId + GameConstants.MAX_RAW;
 				if (goodsId != 0)
-					stop.pick_up_toggle(goodsId); // enable
+					stop.PickUpToggle(goodsId); // enable
 				else
-					stop.pick_up_set_none();
+					stop.PickUpSetNone();
 				break;
 
 			case Firm.FIRM_MARKET:
@@ -169,11 +169,11 @@ public class UnitCaravan : Unit
 				}
 
 				if (goodsNum == 1)
-					stop.pick_up_toggle(goodsId); // cancel auto_pick_up
+					stop.PickUpToggle(goodsId); // cancel auto_pick_up
 				else if (goodsNum == 0)
-					stop.pick_up_set_none();
+					stop.PickUpSetNone();
 				else
-					stop.pick_up_set_auto();
+					stop.PickUpSetAuto();
 				break;
 
 			default:
@@ -192,10 +192,10 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		if (dest_stop_id != 0 && journey_status != InternalConstants.INSIDE_FIRM)
 		{
-			if ((newStopFirmRecno = stop_array[dest_stop_id - 1].firm_recno) != oldStopFirmRecno)
+			if ((newStopFirmRecno = stop_array[dest_stop_id - 1].FirmId) != oldStopFirmRecno)
 			{
 				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, stop_array[dest_stop_id - 1].firm_id);
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, stop_array[dest_stop_id - 1].FirmType);
 				journey_status = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -218,7 +218,7 @@ public class UnitCaravan : Unit
 		//if (remote.is_enable() && stop_array[stopId - 1].firm_recno == 0)
 		//return;
 
-		stop_array[stopId - 1].firm_recno = 0;
+		stop_array[stopId - 1].FirmId = 0;
 		stop_defined_num--;
 
 		update_stop_list();
@@ -229,7 +229,7 @@ public class UnitCaravan : Unit
 		//-------------------------------------------------------//
 		// backup original destination stop firm recno
 		//-------------------------------------------------------//
-		int nextStopRecno = stop_array[dest_stop_id - 1].firm_recno;
+		int nextStopRecno = stop_array[dest_stop_id - 1].FirmId;
 
 		//----------------------------------------------------------------------//
 		// check stop existence and the relationship between firm's nation
@@ -239,21 +239,21 @@ public class UnitCaravan : Unit
 		for (i = 0; i < MAX_STOP_FOR_CARAVAN; i++)
 		{
 			stop = stop_array[i];
-			if (stop.firm_recno == 0)
+			if (stop.FirmId == 0)
 				continue;
 
-			if (FirmArray.IsDeleted(stop.firm_recno))
+			if (FirmArray.IsDeleted(stop.FirmId))
 			{
-				stop.firm_recno = 0; // clear the recno
+				stop.FirmId = 0; // clear the recno
 				stop_defined_num--;
 				continue;
 			}
 
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 
-			if (!can_set_stop(stop.firm_recno) || firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
+			if (!can_set_stop(stop.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
 			{
-				stop.firm_recno = 0;
+				stop.FirmId = 0;
 				stop_defined_num--;
 				continue;
 			}
@@ -282,9 +282,9 @@ public class UnitCaravan : Unit
 		for (i = 0; i < MAX_STOP_FOR_CARAVAN; i++, nodeIndex++)
 		{
 			stop = stop_array[nodeIndex];
-			if (stop.firm_recno != 0)
+			if (stop.FirmId != 0)
 			{
-				compareRecno = stop.firm_recno;
+				compareRecno = stop.FirmId;
 				break;
 			}
 		}
@@ -311,17 +311,17 @@ public class UnitCaravan : Unit
 		for (; i < MAX_STOP_FOR_CARAVAN && unprocessed > 0; i++, nodeIndex++)
 		{
 			stop = stop_array[nodeIndex];
-			if (stop.firm_recno == 0)
+			if (stop.FirmId == 0)
 				continue; // empty
 
-			if (stop.firm_recno == compareRecno)
+			if (stop.FirmId == compareRecno)
 			{
-				stop.firm_recno = 0;
+				stop.FirmId = 0;
 				stop_defined_num--;
 			}
 			else
 			{
-				compareRecno = stop.firm_recno;
+				compareRecno = stop.FirmId;
 
 				if (insertNodeIndex != nodeIndex)
 					stop_array[insertNodeIndex] = stop_array[nodeIndex];
@@ -337,9 +337,9 @@ public class UnitCaravan : Unit
 			//-------- compare the first and the end record -------//
 			nodeIndex = stop_defined_num - 1;
 			stop = stop_array[nodeIndex]; // point to the end
-			if (stop.firm_recno == stop_array[0].firm_recno)
+			if (stop.FirmId == stop_array[0].FirmId)
 			{
-				stop.firm_recno = 0; // remove the end record
+				stop.FirmId = 0; // remove the end record
 				stop_defined_num--;
 			}
 		}
@@ -357,7 +357,7 @@ public class UnitCaravan : Unit
 		for (i = 0; i < stop_defined_num; i++)
 		{
 			stop = stop_array[i];
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 			if (firm.NationId == NationId)
 			{
 				ourFirmExist = true;
@@ -386,14 +386,14 @@ public class UnitCaravan : Unit
 		for (i = 0, dest_stop_id = 0; i < stop_defined_num; i++)
 		{
 			stop = stop_array[i];
-			if (stop.firm_recno == nextStopRecno)
+			if (stop.FirmId == nextStopRecno)
 			{
 				dest_stop_id = i + 1;
 				break;
 			}
 			else
 			{
-				Firm firm = FirmArray[stop.firm_recno];
+				Firm firm = FirmArray[stop.FirmId];
 				int dist = Misc.points_distance(xLoc, yLoc, firm.LocCenterX, firm.LocCenterY);
 
 				if (dist < minDist)
@@ -460,15 +460,15 @@ public class UnitCaravan : Unit
 		switch (newPickUpType)
 		{
 			case TradeStop.AUTO_PICK_UP:
-				stop_array[stopId - 1].pick_up_set_auto();
+				stop_array[stopId - 1].PickUpSetAuto();
 				break;
 
 			case TradeStop.NO_PICK_UP:
-				stop_array[stopId - 1].pick_up_set_none();
+				stop_array[stopId - 1].PickUpSetNone();
 				break;
 
 			default:
-				stop_array[stopId - 1].pick_up_toggle(newPickUpType);
+				stop_array[stopId - 1].PickUpToggle(newPickUpType);
 				break;
 		}
 	}
@@ -496,7 +496,7 @@ public class UnitCaravan : Unit
 
 	public bool has_pick_up_type(int stopId, int pickUpType)
 	{
-		return stop_array[stopId - 1].pick_up_array[pickUpType - 1];
+		return stop_array[stopId - 1].PickUpEnabled[pickUpType - 1];
 	}
 
 	public new void caravan_in_firm()
@@ -558,7 +558,7 @@ public class UnitCaravan : Unit
 		}
 
 		dest_stop_id = nextStopId;
-		firm = FirmArray[stop_array[dest_stop_id - 1].firm_recno];
+		firm = FirmArray[stop_array[dest_stop_id - 1].FirmId];
 
 		ActionParam = 0; // since action_para is used to store the current market recno, reset before searching
 		MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
@@ -575,9 +575,9 @@ public class UnitCaravan : Unit
 
 		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
 		{
-			if (!FirmArray.IsDeleted(stop.firm_recno))
+			if (!FirmArray.IsDeleted(stop.FirmId))
 			{
-				firm = FirmArray[stop.firm_recno];
+				firm = FirmArray[stop.FirmId];
 				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 				nextXLoc = NextLocX;
 				nextYLoc = NextLocY;
@@ -599,13 +599,13 @@ public class UnitCaravan : Unit
 		if (UnitArray.IsDeleted(unitRecno))
 			return; //-***************** BUGHERE ***************//
 
-		if (FirmArray.IsDeleted(stop.firm_recno))
+		if (FirmArray.IsDeleted(stop.FirmId))
 		{
 			update_stop_list();
 
 			if (stop_defined_num != 0) // move to next stop
 			{
-				firm = FirmArray[stop_array[stop_defined_num - 1].firm_recno];
+				firm = FirmArray[stop_array[stop_defined_num - 1].FirmId];
 				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 			}
 
@@ -613,7 +613,7 @@ public class UnitCaravan : Unit
 		}
 
 		//CaravanStop *stop = stop_array + dest_stop_id - 1;
-		firm = FirmArray[stop.firm_recno];
+		firm = FirmArray[stop.FirmId];
 
 		nextXLoc = NextLocX;
 		nextYLoc = NextLocY;
@@ -624,7 +624,7 @@ public class UnitCaravan : Unit
 		      nextYLoc >= firm.LocY1 - 1 && nextYLoc <= firm.LocY2 + 1))) // in the surrounding of the firm
 		{
 			//-------------------- update pick_up_array --------------------//
-			stop.update_pick_up();
+			stop.UpdatePickUp();
 
 			//-------------------------------------------------------//
 			// load/unload goods
@@ -634,20 +634,20 @@ public class UnitCaravan : Unit
 				switch (firm.FirmType)
 				{
 					case Firm.FIRM_MINE:
-						mine_load_goods(stop.pick_up_type);
+						mine_load_goods(stop.PickUpType);
 						break;
 
 					case Firm.FIRM_FACTORY:
 						factory_unload_goods();
-						factory_load_goods(stop.pick_up_type);
+						factory_load_goods(stop.PickUpType);
 						break;
 
 					case Firm.FIRM_MARKET:
 						market_unload_goods();
 
-						if (stop.pick_up_type == TradeStop.AUTO_PICK_UP)
+						if (stop.PickUpType == TradeStop.AUTO_PICK_UP)
 							market_auto_load_goods();
-						else if (stop.pick_up_type != TradeStop.NO_PICK_UP)
+						else if (stop.PickUpType != TradeStop.NO_PICK_UP)
 							market_load_goods();
 						break;
 				}
@@ -657,7 +657,7 @@ public class UnitCaravan : Unit
 			// action_para is used to store the firm_recno of the market
 			// where the caravan move in.
 			//-------------------------------------------------------//
-			ActionParam = stop.firm_recno;
+			ActionParam = stop.FirmId;
 
 			stop_x_loc = MoveToLocX; // store entering location
 			stop_y_loc = MoveToLocY;
@@ -730,19 +730,19 @@ public class UnitCaravan : Unit
 		{
 			CaravanStop stop = stop_array[0];
 
-			if (FirmArray.IsDeleted(stop.firm_recno))
+			if (FirmArray.IsDeleted(stop.FirmId))
 			{
 				update_stop_list();
 				return;
 			}
 
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 			int firmXLoc1 = firm.LocX1;
 			int firmYLoc1 = firm.LocY1;
 			int firmXLoc2 = firm.LocX2;
 			int firmYLoc2 = firm.LocY2;
 			int firmId = firm.FirmType;
-			if (firmXLoc1 != stop.firm_loc_x1 || firmYLoc1 != stop.firm_loc_y1 ||
+			if (firmXLoc1 != stop.FirmLocX1 || firmYLoc1 != stop.FirmLocY1 ||
 			    (firmId != Firm.FIRM_MINE && firmId != Firm.FIRM_FACTORY && firmId != Firm.FIRM_MARKET))
 			{
 				update_stop_list();
@@ -768,7 +768,7 @@ public class UnitCaravan : Unit
 					if (wait_count <= 0)
 					{
 						//---------- unloading goods -------------//
-						switch (stop.firm_id)
+						switch (stop.FirmType)
 						{
 							case Firm.FIRM_MINE:
 								break; // no goods unload to mine
@@ -828,21 +828,21 @@ public class UnitCaravan : Unit
 		{
 			CaravanStop caravanStopA = copyUnit.stop_array[i];
 			CaravanStop caravanStopB = stop_array[i];
-			if (caravanStopA.firm_recno == 0)
+			if (caravanStopA.FirmId == 0)
 				break;
 
-			if (FirmArray.IsDeleted(caravanStopA.firm_recno))
+			if (FirmArray.IsDeleted(caravanStopA.FirmId))
 				continue;
 
-			Firm firm = FirmArray[caravanStopA.firm_recno];
-			set_stop(i + 1, caravanStopA.firm_loc_x1, caravanStopA.firm_loc_y1, InternalConstants.COMMAND_AUTO);
+			Firm firm = FirmArray[caravanStopA.FirmId];
+			set_stop(i + 1, caravanStopA.FirmLocX1, caravanStopA.FirmLocY1, InternalConstants.COMMAND_AUTO);
 
-			if (caravanStopA.pick_up_type == TradeStop.AUTO_PICK_UP)
+			if (caravanStopA.PickUpType == TradeStop.AUTO_PICK_UP)
 			{
 				set_stop_pick_up(i + 1, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AUTO);
 			}
 
-			else if (caravanStopA.pick_up_type == TradeStop.NO_PICK_UP)
+			else if (caravanStopA.PickUpType == TradeStop.NO_PICK_UP)
 			{
 				set_stop_pick_up(i + 1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AUTO);
 			}
@@ -851,7 +851,7 @@ public class UnitCaravan : Unit
 			{
 				for (int b = 0; b < TradeStop.MAX_PICK_UP_GOODS; ++b)
 				{
-					if (caravanStopA.pick_up_array[b] != caravanStopB.pick_up_array[b])
+					if (caravanStopA.PickUpEnabled[b] != caravanStopB.PickUpEnabled[b])
 						set_stop_pick_up(i + 1, b + 1, InternalConstants.COMMAND_PLAYER);
 				}
 			}
@@ -919,7 +919,7 @@ public class UnitCaravan : Unit
 		{
 			for (int i = stop_defined_num; i > 0; i--)
 			{
-				int firmRecno = stop_array[i - 1].firm_recno;
+				int firmRecno = stop_array[i - 1].FirmId;
 
 				if (FirmArray.IsDeleted(firmRecno) || FirmArray[firmRecno].FirmType != Firm.FIRM_MARKET)
 				{
@@ -959,7 +959,7 @@ public class UnitCaravan : Unit
 		int i;
 		for (i = stop_defined_num; i > 0; i--)
 		{
-			int firmRecno = stop_array[i - 1].firm_recno;
+			int firmRecno = stop_array[i - 1].FirmId;
 
 			if (FirmArray.IsDeleted(firmRecno))
 			{
@@ -980,7 +980,7 @@ public class UnitCaravan : Unit
 
 			//--- If this market is not linked to any towns ---//
 
-			FirmMarket firmMarket = (FirmMarket)FirmArray[stop_array[i - 1].firm_recno];
+			FirmMarket firmMarket = (FirmMarket)FirmArray[stop_array[i - 1].FirmId];
 
 			if (!firmMarket.IsMarketLinkedToTown())
 			{
@@ -992,13 +992,13 @@ public class UnitCaravan : Unit
 				int j;
 				for (j = TradeStop.PICK_UP_RAW_FIRST; j <= TradeStop.PICK_UP_RAW_LAST; j++)
 				{
-					if (tradeStop.pick_up_array[j - 1])
+					if (tradeStop.PickUpEnabled[j - 1])
 						hasPickUp = true;
 				}
 
 				for (j = TradeStop.PICK_UP_PRODUCT_FIRST; j <= TradeStop.PICK_UP_PRODUCT_LAST; j++)
 				{
-					if (tradeStop.pick_up_array[j - 1])
+					if (tradeStop.PickUpEnabled[j - 1])
 						hasPickUp = true;
 				}
 
@@ -1033,8 +1033,8 @@ public class UnitCaravan : Unit
 		if (stop_defined_num < 2)
 			return;
 
-		Firm firm1 = FirmArray[stop_array[0].firm_recno];
-		Firm firm2 = FirmArray[stop_array[1].firm_recno];
+		Firm firm1 = FirmArray[stop_array[0].FirmId];
+		Firm firm2 = FirmArray[stop_array[1].FirmId];
 
 		// only when both firms are markets
 		if (firm1.FirmType != Firm.FIRM_MARKET || firm2.FirmType != Firm.FIRM_MARKET)
@@ -1054,8 +1054,8 @@ public class UnitCaravan : Unit
 
 	public void think_set_pick_up_type2(int fromStopId, int toStopId)
 	{
-		FirmMarket fromMarket = (FirmMarket)FirmArray[stop_array[fromStopId - 1].firm_recno];
-		FirmMarket toMarket = (FirmMarket)FirmArray[stop_array[toStopId - 1].firm_recno];
+		FirmMarket fromMarket = (FirmMarket)FirmArray[stop_array[fromStopId - 1].FirmId];
+		FirmMarket toMarket = (FirmMarket)FirmArray[stop_array[toStopId - 1].FirmId];
 
 		//----- AI only knows about market to market trade -----//
 
@@ -1084,7 +1084,7 @@ public class UnitCaravan : Unit
 
 			//------ toggle it if the current flag and the flag we need are different ----//
 
-			if (!tradeStop.pick_up_array[pickUpType - 1])
+			if (!tradeStop.PickUpEnabled[pickUpType - 1])
 				set_stop_pick_up(fromStopId, pickUpType, InternalConstants.COMMAND_AI);
 		}
 
@@ -1092,7 +1092,7 @@ public class UnitCaravan : Unit
 
 		for (i = TradeStop.PICK_UP_RAW_FIRST; i <= TradeStop.PICK_UP_RAW_LAST; i++)
 		{
-			if (!tradeStop.pick_up_array[i - 1])
+			if (!tradeStop.PickUpEnabled[i - 1])
 				continue;
 
 			//----- if there is no supply, drop the pick up type -----//
@@ -1104,7 +1104,7 @@ public class UnitCaravan : Unit
 
 		for (i = TradeStop.PICK_UP_PRODUCT_FIRST; i <= TradeStop.PICK_UP_PRODUCT_LAST; i++)
 		{
-			if (!tradeStop.pick_up_array[i - 1])
+			if (!tradeStop.PickUpEnabled[i - 1])
 				continue;
 
 			//--- if the supply is not enough, drop the pick up type ---//
@@ -1123,16 +1123,16 @@ public class UnitCaravan : Unit
 
 		bool needUpdate = false;
 
-		if (FirmArray.IsDeleted(stop.firm_recno))
+		if (FirmArray.IsDeleted(stop.FirmId))
 		{
 			needUpdate = true;
 		}
 		else
 		{
-			Firm firm = FirmArray[stop.firm_recno];
+			Firm firm = FirmArray[stop.FirmId];
 
-			if (!can_set_stop(stop.firm_recno) ||
-			    firm.LocX1 != stop.firm_loc_x1 || firm.LocY1 != stop.firm_loc_y1)
+			if (!can_set_stop(stop.FirmId) ||
+			    firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
 			{
 				needUpdate = true;
 			}
@@ -1140,7 +1140,7 @@ public class UnitCaravan : Unit
 
 		if (needUpdate)
 		{
-			int preStopRecno = stop_array[curStopId - 1].firm_recno;
+			int preStopRecno = stop_array[curStopId - 1].FirmId;
 
 			update_stop_list();
 
@@ -1150,7 +1150,7 @@ public class UnitCaravan : Unit
 			for (int i = 1; i <= stop_defined_num; i++)
 			{
 				stop = stop_array[i - 1];
-				if (stop.firm_recno == preStopRecno)
+				if (stop.FirmId == preStopRecno)
 					return (i >= stop_defined_num) ? 1 : i + 1;
 			}
 
@@ -1169,7 +1169,7 @@ public class UnitCaravan : Unit
 			return; // return if not allowed to load any goods
 
 		CaravanStop stop = stop_array[dest_stop_id - 1];
-		FirmMine curMine = (FirmMine)FirmArray[stop.firm_recno];
+		FirmMine curMine = (FirmMine)FirmArray[stop.FirmId];
 
 		if (curMine.NationId != NationId)
 			return; // no action if this is not our own mine
@@ -1196,7 +1196,7 @@ public class UnitCaravan : Unit
 	private void factory_unload_goods()
 	{
 		CaravanStop stop = stop_array[dest_stop_id - 1];
-		FirmFactory curFactory = (FirmFactory)FirmArray[stop.firm_recno];
+		FirmFactory curFactory = (FirmFactory)FirmArray[stop.FirmId];
 
 		if (curFactory.NationId != NationId)
 			return; // don't unload goods if this isn't our own factory
@@ -1240,7 +1240,7 @@ public class UnitCaravan : Unit
 			return; // return not allowed to load any goods
 
 		CaravanStop stop = stop_array[dest_stop_id - 1];
-		FirmFactory curFactory = (FirmFactory)FirmArray[stop.firm_recno];
+		FirmFactory curFactory = (FirmFactory)FirmArray[stop.FirmId];
 
 		if (curFactory.NationId != NationId)
 			return; // don't load goods if this isn't our own factory
@@ -1266,7 +1266,7 @@ public class UnitCaravan : Unit
 	//-------- for market ---------//
 	private void market_unload_goods()
 	{
-		FirmMarket curMarket = (FirmMarket)FirmArray[stop_array[dest_stop_id - 1].firm_recno];
+		FirmMarket curMarket = (FirmMarket)FirmArray[stop_array[dest_stop_id - 1].FirmId];
 
 		for (int i = 0; i < processed_raw_qty_array.Length; i++)
 			processed_raw_qty_array[i] = 0;
@@ -1479,7 +1479,7 @@ public class UnitCaravan : Unit
 	{
 		CaravanStop stop = stop_array[dest_stop_id - 1];
 
-		FirmMarket curMarket = (FirmMarket)FirmArray[stop.firm_recno];
+		FirmMarket curMarket = (FirmMarket)FirmArray[stop.FirmId];
 
 		//------------------------------------------------------------//
 		// scan the market, see if it has the specified pickup goods
@@ -1489,12 +1489,12 @@ public class UnitCaravan : Unit
 			MarketGoods marketGoods = curMarket.MarketGoods[i];
 			if (marketGoods.RawId != 0)
 			{
-				if (stop.pick_up_array[marketGoods.RawId - 1])
+				if (stop.PickUpEnabled[marketGoods.RawId - 1])
 					market_load_goods_now(marketGoods, marketGoods.StockQty);
 			}
 			else if (marketGoods.ProductId != 0)
 			{
-				if (stop.pick_up_array[marketGoods.ProductId - 1 + GameConstants.MAX_RAW])
+				if (stop.PickUpEnabled[marketGoods.ProductId - 1 + GameConstants.MAX_RAW])
 					market_load_goods_now(marketGoods, marketGoods.StockQty);
 			}
 		}
@@ -1502,7 +1502,7 @@ public class UnitCaravan : Unit
 
 	private void market_auto_load_goods()
 	{
-		FirmMarket curMarket = (FirmMarket)FirmArray[stop_array[dest_stop_id - 1].firm_recno];
+		FirmMarket curMarket = (FirmMarket)FirmArray[stop_array[dest_stop_id - 1].FirmId];
 
 		//int	isOurMarket = (curMarket->nation_recno==nation_recno); // is 1 or 0
 
@@ -1553,7 +1553,7 @@ public class UnitCaravan : Unit
 	private void market_load_goods_now(MarketGoods marketGoods, double loadQty)
 	{
 		Nation nation = NationArray[NationId];
-		int marketNationRecno = FirmArray[stop_array[dest_stop_id - 1].firm_recno].NationId;
+		int marketNationRecno = FirmArray[stop_array[dest_stop_id - 1].FirmId].NationId;
 		int qty = 0;
 		int goodsId;
 
