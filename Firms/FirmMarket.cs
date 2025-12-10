@@ -415,7 +415,7 @@ public class FirmMarket : Firm
 			return 0;
 
 		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitId];
-		unitCaravan.set_stop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
+		unitCaravan.SetStop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
 		Nation nation = NationArray[NationId];
 		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
 
@@ -1194,17 +1194,17 @@ public class FirmMarket : Firm
 		{
 			unitCaravan = (UnitCaravan)UnitArray[ownNation.ai_caravan_array[i]];
 
-			if (unitCaravan.stop_defined_num < 2)
+			if (unitCaravan.StopDefinedNum < 2)
 				continue;
 
-			if (unitCaravan.stop_array[0].FirmId == FirmId &&
-			    unitCaravan.stop_array[1].FirmId == firm.FirmId)
+			if (unitCaravan.Stops[0].FirmId == FirmId &&
+			    unitCaravan.Stops[1].FirmId == firm.FirmId)
 			{
 				stop1Id = 1;
 				stop2Id = 2;
 			}
-			else if (unitCaravan.stop_array[1].FirmId == FirmId &&
-			         unitCaravan.stop_array[0].FirmId == firm.FirmId)
+			else if (unitCaravan.Stops[1].FirmId == FirmId &&
+			         unitCaravan.Stops[0].FirmId == firm.FirmId)
 			{
 				stop1Id = 2;
 				stop2Id = 1;
@@ -1218,17 +1218,17 @@ public class FirmMarket : Firm
 
 			bool rc = false;
 
-			if (stop1PickUpType != 0 && !unitCaravan.has_pick_up_type(stop1Id, stop1PickUpType))
+			if (stop1PickUpType != 0 && !unitCaravan.HasPickUpType(stop1Id, stop1PickUpType))
 			{
 				if (unitCaravan.IsVisible()) // can't set stop when the caravan is in a firm
-					unitCaravan.set_stop_pick_up(stop1Id, stop1PickUpType, InternalConstants.COMMAND_AI);
+					unitCaravan.SetStopPickUp(stop1Id, stop1PickUpType, InternalConstants.COMMAND_AI);
 				rc = true;
 			}
 
-			if (stop2PickUpType != 0 && !unitCaravan.has_pick_up_type(stop2Id, stop2PickUpType))
+			if (stop2PickUpType != 0 && !unitCaravan.HasPickUpType(stop2Id, stop2PickUpType))
 			{
 				if (unitCaravan.IsVisible()) // can't set stop when the caravan is in a firm
-					unitCaravan.set_stop_pick_up(stop2Id, stop2PickUpType, InternalConstants.COMMAND_AI);
+					unitCaravan.SetStopPickUp(stop2Id, stop2PickUpType, InternalConstants.COMMAND_AI);
 				rc = true;
 			}
 
@@ -1252,16 +1252,16 @@ public class FirmMarket : Firm
 
 		unitCaravan = (UnitCaravan)UnitArray[unitRecno];
 
-		unitCaravan.set_stop(2, firm.LocX1, firm.LocY1, InternalConstants.COMMAND_AI);
+		unitCaravan.SetStop(2, firm.LocX1, firm.LocY1, InternalConstants.COMMAND_AI);
 
-		unitCaravan.set_stop_pick_up(1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
-		unitCaravan.set_stop_pick_up(2, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+		unitCaravan.SetStopPickUp(1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+		unitCaravan.SetStopPickUp(2, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
 
 		if (stop1PickUpType != 0)
-			unitCaravan.set_stop_pick_up(1, stop1PickUpType, InternalConstants.COMMAND_AI);
+			unitCaravan.SetStopPickUp(1, stop1PickUpType, InternalConstants.COMMAND_AI);
 
 		if (stop2PickUpType != 0)
-			unitCaravan.set_stop_pick_up(2, stop2PickUpType, InternalConstants.COMMAND_AI);
+			unitCaravan.SetStopPickUp(2, stop2PickUpType, InternalConstants.COMMAND_AI);
 
 		return true;
 	}
