@@ -155,6 +155,389 @@ public class UnitCaravan : Unit
 		CaravanOnWay();
 	}
 
+	private void CaravanInFirm()
+	{
+		//-----------------------------------------------------------------------------//
+		// the market is deleted while the caravan is in market
+		//-----------------------------------------------------------------------------//
+		if (FirmArray.IsDeleted(ActionParam))
+		{
+			HitPoints = 0.0; // caravan also die if the market is deleted
+			UnitArray.DisappearInFirm(SpriteId); // caravan also die if the market is deleted
+			return;
+		}
+
+		//-----------------------------------------------------------------------------//
+		// waiting (time to upload/download cargo)
+		//-----------------------------------------------------------------------------//
+		if (WaitCount > 0)
+		{
+			WaitCount--;
+			return;
+		}
+
+		//-----------------------------------------------------------------------------//
+		// leave the market and go to another market if possible
+		//-----------------------------------------------------------------------------//
+		int locX = StopLocX;
+		int locY = StopLocY;
+		Location location = World.GetLoc(locX, locY);
+		Firm firm;
+
+		if (location.CanMove(MobileType))
+		{
+			InitSprite(locX, locY); // appear in the location the unit disappeared before
+		}
+		else
+		{
+			//---- the entering location is blocked, select another location to leave ----//
+			firm = FirmArray[ActionParam];
+
+			if (AppearInFirmSurround(ref locX, ref locY, firm))
+			{
+				InitSprite(locX, locY);
+				Stop();
+			}
+			else
+			{
+				WaitCount = GameConstants.MAX_CARAVAN_WAIT_TERM * 10; //********* BUGHERE, continue to wait or ....
+				return;
+			}
+		}
+
+		int nextStopId = GetNextStopId(DestStopId);
+		if (nextStopId == 0 || DestStopId == nextStopId)
+		{
+			DestStopId = nextStopId;
+			JourneyStatus = (nextStopId == 0) ? InternalConstants.NO_STOP_DEFINED : InternalConstants.SURROUND_FIRM;
+			return; // no stop or only one stop is valid
+		}
+
+		DestStopId = nextStopId;
+		firm = FirmArray[Stops[DestStopId - 1].FirmId];
+
+		ActionParam = 0; // since ActionParam is used to store the current market id, reset before searching
+		MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+
+		JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
+	}
+
+	//TODO rewrite with Misc.MoveAroundAPoint
+	private bool AppearInFirmSurround(ref int locX, ref int locY, Firm firm)
+	{
+		int upperLeftBoundX = firm.LocX1 - 1; // the surrounding coordinates of the firm
+		int upperLeftBoundY = firm.LocY1 - 1;
+		int lowerRightBoundX = firm.LocX2 + 1;
+		int lowerRightBoundY = firm.LocY2 + 1;
+
+		int count = 1;
+		int testLocX = locX;
+		int testLocY = locY;
+		bool found = false;
+		bool inside = true;
+
+		//---------------------------------------------------------//
+		//		9  10  11  12		the location is tested in the order
+		//		8   1   2  13		shown, if the location is the surrounding
+		//		7   x   3  14		of the firm and non-blocked, break
+		//		6   5   4  ...		the test
+		//---------------------------------------------------------//
+
+		while (inside)
+		{
+			inside = false;
+			int limit = count << 1;
+
+			//------------ upper --------------//
+			testLocX = locX - count + 1;
+			testLocY = locY - count;
+			for (int i = 0; i < limit; i++)
+			{
+				if (!Misc.IsLocationValid(testLocX, testLocY))
+					continue;
+
+				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
+					continue;
+
+				Location location = World.GetLoc(testLocX, testLocY);
+				if (location.CanMove(MobileType))
+				{
+					found = true;
+					break;
+				}
+				
+				locX++;
+				inside = true;
+			}
+
+			if (found)
+				break;
+
+			//------------ right --------------//
+			testLocX = locX + count;
+			testLocY = locY - count + 1;
+			for (int i = 0; i < limit; i++)
+			{
+				if (!Misc.IsLocationValid(testLocX, testLocY))
+					continue;
+
+				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
+					continue;
+
+				Location location = World.GetLoc(testLocX, testLocY);
+				if (location.CanMove(MobileType))
+				{
+					found = true;
+					break;
+				}
+				
+				locY++;
+				inside = true;
+			}
+
+			if (found)
+				break;
+
+			//------------- down --------------//
+			testLocX = locX + count - 1;
+			testLocY = locY + count;
+			for (int i = 0; i < limit; i++)
+			{
+				if (!Misc.IsLocationValid(testLocX, testLocY))
+					continue;
+
+				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
+					continue;
+
+				Location location = World.GetLoc(testLocX, testLocY);
+				if (location.CanMove(MobileType))
+				{
+					found = true;
+					break;
+				}
+				
+				locX--;
+				inside = true;
+			}
+
+			if (found)
+				break;
+
+			//------------- left --------------//
+			testLocX = locX - count;
+			testLocY = locY + count - 1;
+			for (int i = 0; i < limit; i++)
+			{
+				if (!Misc.IsLocationValid(testLocX, testLocY))
+					continue;
+
+				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
+					continue;
+
+				Location location = World.GetLoc(testLocX, testLocY);
+				if (location.CanMove(MobileType))
+				{
+					found = true;
+					break;
+				}
+				
+				locY--;
+				inside = true;
+			}
+
+			if (found)
+				break;
+
+			count++;
+		}
+
+		if (found)
+		{
+			locX = testLocX;
+			locY = testLocY;
+			return true;
+		}
+
+		return false;
+	}
+
+	private int GetNextStopId(int curStopId = MAX_STOP_FOR_CARAVAN)
+	{
+		int nextStopId = (curStopId >= StopDefinedNum) ? 1 : curStopId + 1;
+
+		CaravanStop stop = Stops[nextStopId - 1];
+
+		bool needUpdate = false;
+
+		if (FirmArray.IsDeleted(stop.FirmId))
+		{
+			needUpdate = true;
+		}
+		else
+		{
+			Firm firm = FirmArray[stop.FirmId];
+
+			if (!CanSetStop(stop.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
+			{
+				needUpdate = true;
+			}
+		}
+
+		if (needUpdate)
+		{
+			int preStopId = Stops[curStopId - 1].FirmId;
+
+			UpdateStopList();
+
+			if (StopDefinedNum == 0)
+				return 0; // no stop is valid
+
+			for (int i = 1; i <= StopDefinedNum; i++)
+			{
+				stop = Stops[i - 1];
+				if (stop.FirmId == preStopId)
+					return (i >= StopDefinedNum) ? 1 : i + 1;
+			}
+
+			return 1;
+		}
+		else
+		{
+			return nextStopId;
+		}
+	}
+
+	private void CaravanOnWay()
+	{
+		CaravanStop stop = Stops[DestStopId - 1];
+		Firm firm = null;
+		int nextLocX = -1;
+		int nextLocY = -1;
+
+		if (CurAction == SPRITE_IDLE && JourneyStatus != InternalConstants.SURROUND_FIRM)
+		{
+			if (!FirmArray.IsDeleted(stop.FirmId))
+			{
+				firm = FirmArray[stop.FirmId];
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+				nextLocX = NextLocX;
+				nextLocY = NextLocY;
+
+				// hard code 1 for caravan size 1x1
+				if (nextLocX >= firm.LocX1 - 1 && nextLocX <= firm.LocX2 + 1 && nextLocY >= firm.LocY1 - 1 && nextLocY <= firm.LocY2 + 1)
+					JourneyStatus = InternalConstants.SURROUND_FIRM;
+
+				if (nextLocX == MoveToLocX && nextLocY == MoveToLocY && IgnorePowerNation == 0)
+					IgnorePowerNation = 1;
+
+				return;
+			}
+		}
+
+		if (UnitArray.IsDeleted(SpriteId))
+			return; //-***************** BUGHERE ***************//
+
+		if (FirmArray.IsDeleted(stop.FirmId))
+		{
+			UpdateStopList();
+
+			if (StopDefinedNum != 0) // move to next stop
+			{
+				firm = FirmArray[Stops[StopDefinedNum - 1].FirmId];
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+			}
+
+			return;
+		}
+
+		firm = FirmArray[stop.FirmId];
+		nextLocX = NextLocX;
+		nextLocY = NextLocY;
+
+		if (JourneyStatus == InternalConstants.SURROUND_FIRM ||
+		    (nextLocX == MoveToLocX && nextLocY == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
+		     nextLocX >= firm.LocX1 - 1 && nextLocX <= firm.LocX2 + 1 && nextLocY >= firm.LocY1 - 1 && nextLocY <= firm.LocY2 + 1)) // in the surrounding of the firm
+		{
+			stop.UpdatePickUp();
+
+			//-------------------------------------------------------//
+			// load/unload goods
+			//-------------------------------------------------------//
+			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+			{
+				switch (firm.FirmType)
+				{
+					case Firm.FIRM_MINE:
+						MineLoadGoods(stop.PickUpType);
+						break;
+
+					case Firm.FIRM_FACTORY:
+						FactoryUnloadGoods();
+						FactoryLoadGoods(stop.PickUpType);
+						break;
+
+					case Firm.FIRM_MARKET:
+						MarketUnloadGoods();
+
+						if (stop.PickUpType == TradeStop.AUTO_PICK_UP)
+							MarketAutoLoadGoods();
+						else if (stop.PickUpType != TradeStop.NO_PICK_UP)
+							MarketLoadGoods();
+						break;
+				}
+			}
+
+			//-------------------------------------------------------//
+			// ActionParam is used to store the FirmId of the market where the caravan move in.
+			//-------------------------------------------------------//
+			ActionParam = stop.FirmId;
+
+			StopLocX = MoveToLocX; // store entering location
+			StopLocY = MoveToLocY;
+			WaitCount = GameConstants.MAX_CARAVAN_WAIT_TERM; // set waiting term
+
+			ResetPath();
+			DeinitSprite(true); // the caravan enters the market now
+
+			CurX = -2; // set CurX to -2, such that invisible but still process in PreProcess()
+
+			JourneyStatus = InternalConstants.INSIDE_FIRM;
+		}
+		else
+		{
+			if (CurAction != SPRITE_MOVE)
+			{
+				//----------------------------------------------------//
+				// blocked by something, go to the destination again
+				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
+				//----------------------------------------------------//
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+				JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
+			}
+		}
+	}
+
+	public bool CanSetStop(int firmId)
+	{
+		Firm firm = FirmArray[firmId];
+
+		if (firm.UnderConstruction)
+			return false;
+
+		switch (firm.FirmType)
+		{
+			case Firm.FIRM_MARKET:
+				return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
+
+			case Firm.FIRM_MINE:
+			case Firm.FIRM_FACTORY:
+				return NationId == firm.NationId;
+
+			default:
+				return false;
+		}
+	}
+
 	public void SetStop(int stopId, int stopXLoc, int stopYLoc, int remoteAction)
 	{
 		//-------------------------------------------------------//
@@ -523,394 +906,11 @@ public class UnitCaravan : Unit
 		}
 	}
 
-	public bool CanSetStop(int firmId)
-	{
-		Firm firm = FirmArray[firmId];
-
-		if (firm.UnderConstruction)
-			return false;
-
-		switch (firm.FirmType)
-		{
-			case Firm.FIRM_MARKET:
-				return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
-
-			case Firm.FIRM_MINE:
-			case Firm.FIRM_FACTORY:
-				return NationId == firm.NationId;
-
-			default:
-				return false;
-		}
-	}
-
 	public bool HasPickUpType(int stopId, int pickUpType)
 	{
 		return Stops[stopId - 1].PickUpEnabled[pickUpType - 1];
 	}
 
-	private void CaravanInFirm()
-	{
-		//-----------------------------------------------------------------------------//
-		// the market is deleted while the caravan is in market
-		//-----------------------------------------------------------------------------//
-		if (FirmArray.IsDeleted(ActionParam))
-		{
-			HitPoints = 0.0; // caravan also die if the market is deleted
-			UnitArray.DisappearInFirm(SpriteId); // caravan also die if the market is deleted
-			return;
-		}
-
-		//-----------------------------------------------------------------------------//
-		// waiting (time to upload/download cargo)
-		//-----------------------------------------------------------------------------//
-		if (WaitCount > 0)
-		{
-			WaitCount--;
-			return;
-		}
-
-		//-----------------------------------------------------------------------------//
-		// leave the market and go to another market if possible
-		//-----------------------------------------------------------------------------//
-		int locX = StopLocX;
-		int locY = StopLocY;
-		Location location = World.GetLoc(locX, locY);
-		Firm firm;
-
-		if (location.CanMove(MobileType))
-		{
-			InitSprite(locX, locY); // appear in the location the unit disappeared before
-		}
-		else
-		{
-			//---- the entering location is blocked, select another location to leave ----//
-			firm = FirmArray[ActionParam];
-
-			if (AppearInFirmSurround(ref locX, ref locY, firm))
-			{
-				InitSprite(locX, locY);
-				Stop();
-			}
-			else
-			{
-				WaitCount = GameConstants.MAX_CARAVAN_WAIT_TERM * 10; //********* BUGHERE, continue to wait or ....
-				return;
-			}
-		}
-
-		int nextStopId = GetNextStopId(DestStopId);
-		if (nextStopId == 0 || DestStopId == nextStopId)
-		{
-			DestStopId = nextStopId;
-			JourneyStatus = (nextStopId == 0) ? InternalConstants.NO_STOP_DEFINED : InternalConstants.SURROUND_FIRM;
-			return; // no stop or only one stop is valid
-		}
-
-		DestStopId = nextStopId;
-		firm = FirmArray[Stops[DestStopId - 1].FirmId];
-
-		ActionParam = 0; // since ActionParam is used to store the current market id, reset before searching
-		MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-
-		JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
-	}
-
-	private void CaravanOnWay()
-	{
-		CaravanStop stop = Stops[DestStopId - 1];
-		Firm firm = null;
-		int nextLocX = -1;
-		int nextLocY = -1;
-
-		if (CurAction == SPRITE_IDLE && JourneyStatus != InternalConstants.SURROUND_FIRM)
-		{
-			if (!FirmArray.IsDeleted(stop.FirmId))
-			{
-				firm = FirmArray[stop.FirmId];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-				nextLocX = NextLocX;
-				nextLocY = NextLocY;
-
-				// hard code 1 for caravan size 1x1
-				if (nextLocX >= firm.LocX1 - 1 && nextLocX <= firm.LocX2 + 1 && nextLocY >= firm.LocY1 - 1 && nextLocY <= firm.LocY2 + 1)
-					JourneyStatus = InternalConstants.SURROUND_FIRM;
-
-				if (nextLocX == MoveToLocX && nextLocY == MoveToLocY && IgnorePowerNation == 0)
-					IgnorePowerNation = 1;
-
-				return;
-			}
-		}
-
-		if (UnitArray.IsDeleted(SpriteId))
-			return; //-***************** BUGHERE ***************//
-
-		if (FirmArray.IsDeleted(stop.FirmId))
-		{
-			UpdateStopList();
-
-			if (StopDefinedNum != 0) // move to next stop
-			{
-				firm = FirmArray[Stops[StopDefinedNum - 1].FirmId];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-			}
-
-			return;
-		}
-
-		firm = FirmArray[stop.FirmId];
-		nextLocX = NextLocX;
-		nextLocY = NextLocY;
-
-		if (JourneyStatus == InternalConstants.SURROUND_FIRM ||
-		    (nextLocX == MoveToLocX && nextLocY == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
-		     nextLocX >= firm.LocX1 - 1 && nextLocX <= firm.LocX2 + 1 && nextLocY >= firm.LocY1 - 1 && nextLocY <= firm.LocY2 + 1)) // in the surrounding of the firm
-		{
-			stop.UpdatePickUp();
-
-			//-------------------------------------------------------//
-			// load/unload goods
-			//-------------------------------------------------------//
-			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
-			{
-				switch (firm.FirmType)
-				{
-					case Firm.FIRM_MINE:
-						MineLoadGoods(stop.PickUpType);
-						break;
-
-					case Firm.FIRM_FACTORY:
-						FactoryUnloadGoods();
-						FactoryLoadGoods(stop.PickUpType);
-						break;
-
-					case Firm.FIRM_MARKET:
-						MarketUnloadGoods();
-
-						if (stop.PickUpType == TradeStop.AUTO_PICK_UP)
-							MarketAutoLoadGoods();
-						else if (stop.PickUpType != TradeStop.NO_PICK_UP)
-							MarketLoadGoods();
-						break;
-				}
-			}
-
-			//-------------------------------------------------------//
-			// ActionParam is used to store the FirmId of the market where the caravan move in.
-			//-------------------------------------------------------//
-			ActionParam = stop.FirmId;
-
-			StopLocX = MoveToLocX; // store entering location
-			StopLocY = MoveToLocY;
-			WaitCount = GameConstants.MAX_CARAVAN_WAIT_TERM; // set waiting term
-
-			ResetPath();
-			DeinitSprite(true); // the caravan enters the market now
-
-			CurX = -2; // set CurX to -2, such that invisible but still process in PreProcess()
-
-			JourneyStatus = InternalConstants.INSIDE_FIRM;
-		}
-		else
-		{
-			if (CurAction != SPRITE_MOVE)
-			{
-				//----------------------------------------------------//
-				// blocked by something, go to the destination again
-				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
-				//----------------------------------------------------//
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-				JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
-			}
-		}
-	}
-
-	private int GetNextStopId(int curStopId = MAX_STOP_FOR_CARAVAN)
-	{
-		int nextStopId = (curStopId >= StopDefinedNum) ? 1 : curStopId + 1;
-
-		CaravanStop stop = Stops[nextStopId - 1];
-
-		bool needUpdate = false;
-
-		if (FirmArray.IsDeleted(stop.FirmId))
-		{
-			needUpdate = true;
-		}
-		else
-		{
-			Firm firm = FirmArray[stop.FirmId];
-
-			if (!CanSetStop(stop.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
-			{
-				needUpdate = true;
-			}
-		}
-
-		if (needUpdate)
-		{
-			int preStopId = Stops[curStopId - 1].FirmId;
-
-			UpdateStopList();
-
-			if (StopDefinedNum == 0)
-				return 0; // no stop is valid
-
-			for (int i = 1; i <= StopDefinedNum; i++)
-			{
-				stop = Stops[i - 1];
-				if (stop.FirmId == preStopId)
-					return (i >= StopDefinedNum) ? 1 : i + 1;
-			}
-
-			return 1;
-		}
-		else
-		{
-			return nextStopId;
-		}
-	}
-
-	//TODO rewrite with Misc.MoveAroundAPoint
-	private bool AppearInFirmSurround(ref int locX, ref int locY, Firm firm)
-	{
-		int upperLeftBoundX = firm.LocX1 - 1; // the surrounding coordinates of the firm
-		int upperLeftBoundY = firm.LocY1 - 1;
-		int lowerRightBoundX = firm.LocX2 + 1;
-		int lowerRightBoundY = firm.LocY2 + 1;
-
-		int count = 1;
-		int testLocX = locX;
-		int testLocY = locY;
-		bool found = false;
-		bool inside = true;
-
-		//---------------------------------------------------------//
-		//		9  10  11  12		the location is tested in the order
-		//		8   1   2  13		shown, if the location is the surrounding
-		//		7   x   3  14		of the firm and non-blocked, break
-		//		6   5   4  ...		the test
-		//---------------------------------------------------------//
-
-		while (inside)
-		{
-			inside = false;
-			int limit = count << 1;
-
-			//------------ upper --------------//
-			testLocX = locX - count + 1;
-			testLocY = locY - count;
-			for (int i = 0; i < limit; i++)
-			{
-				if (!Misc.IsLocationValid(testLocX, testLocY))
-					continue;
-
-				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
-					continue;
-
-				Location location = World.GetLoc(testLocX, testLocY);
-				if (location.CanMove(MobileType))
-				{
-					found = true;
-					break;
-				}
-				
-				locX++;
-				inside = true;
-			}
-
-			if (found)
-				break;
-
-			//------------ right --------------//
-			testLocX = locX + count;
-			testLocY = locY - count + 1;
-			for (int i = 0; i < limit; i++)
-			{
-				if (!Misc.IsLocationValid(testLocX, testLocY))
-					continue;
-
-				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
-					continue;
-
-				Location location = World.GetLoc(testLocX, testLocY);
-				if (location.CanMove(MobileType))
-				{
-					found = true;
-					break;
-				}
-				
-				locY++;
-				inside = true;
-			}
-
-			if (found)
-				break;
-
-			//------------- down --------------//
-			testLocX = locX + count - 1;
-			testLocY = locY + count;
-			for (int i = 0; i < limit; i++)
-			{
-				if (!Misc.IsLocationValid(testLocX, testLocY))
-					continue;
-
-				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
-					continue;
-
-				Location location = World.GetLoc(testLocX, testLocY);
-				if (location.CanMove(MobileType))
-				{
-					found = true;
-					break;
-				}
-				
-				locX--;
-				inside = true;
-			}
-
-			if (found)
-				break;
-
-			//------------- left --------------//
-			testLocX = locX - count;
-			testLocY = locY + count - 1;
-			for (int i = 0; i < limit; i++)
-			{
-				if (!Misc.IsLocationValid(testLocX, testLocY))
-					continue;
-
-				if (testLocX < upperLeftBoundX || testLocX > lowerRightBoundX || testLocY < upperLeftBoundY || testLocY > lowerRightBoundY)
-					continue;
-
-				Location location = World.GetLoc(testLocX, testLocY);
-				if (location.CanMove(MobileType))
-				{
-					found = true;
-					break;
-				}
-				
-				locY--;
-				inside = true;
-			}
-
-			if (found)
-				break;
-
-			count++;
-		}
-
-		if (found)
-		{
-			locX = testLocX;
-			locY = testLocY;
-			return true;
-		}
-
-		return false;
-	}
-	
 	public void CopyRoute(int copyUnitId, int remoteAction)
 	{
 		if (SpriteId == copyUnitId)
