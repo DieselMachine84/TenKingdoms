@@ -1,16 +1,18 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace TenKingdoms;
 
 public class NationNew : NationBase
 {
-    private List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
-    private List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
-    private List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
-    private List<SettleTask> _settleTasks = new List<SettleTask>();
-    private List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
-    private List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
+    private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
+    private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
+    private readonly List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
+    private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
+    private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
+    private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
+    private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
     {
@@ -44,15 +46,32 @@ public class NationNew : NationBase
             ThinkBuildCamp();
         }
 
-        if ((Info.TotalDays + nation_recno + 1) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 1)
+        {
+            ThinkAssignGeneral();
+        }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 2)
         {
             ThinkSettle();
         }
         
-        if ((Info.TotalDays + nation_recno + 2) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 2)
         {
-            ThinkAssignGeneral();
+            ThinkRelocatePeasants();
         }
+    }
+
+    private void ProcessTask(AITask task, IList tasks, int index)
+    {
+        if (task.ShouldCancel())
+        {
+            task.Cancel();
+            tasks.RemoveAt(index);
+            return;
+        }
+
+        task.Process();
     }
 
     private void ProcessTasks()
@@ -61,79 +80,47 @@ public class NationNew : NationBase
         {
             for (int i = _buildMineTasks.Count - 1; i >= 0; i--)
             {
-                BuildMineTask task = _buildMineTasks[i];
-                if (task.ShouldCancel())
-                {
-                    task.Cancel();
-                    _buildMineTasks.RemoveAt(i);
-                    continue;
-                }
-
-                task.Process();
+                ProcessTask(_buildMineTasks[i], _buildMineTasks, i);
             }
         }
 
-        if ((Info.TotalDays + nation_recno + 1) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 1)
         {
             for (int i = _buildCampTasks.Count - 1; i >= 0; i--)
             {
-                BuildCampTask task = _buildCampTasks[i];
-                if (task.ShouldCancel())
-                {
-                    task.Cancel();
-                    _buildCampTasks.RemoveAt(i);
-                    continue;
-                }
-                
-                task.Process();
+                ProcessTask(_buildCampTasks[i], _buildCampTasks, i);
             }
         }
 
-        if ((Info.TotalDays + nation_recno + 2) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 2)
         {
             for (int i = _settleTasks.Count - 1; i >= 0; i--)
             {
-                SettleTask task = _settleTasks[i];
-                if (task.ShouldCancel())
-                {
-                    task.Cancel();
-                    _settleTasks.RemoveAt(i);
-                    continue;
-                }
-                
-                task.Process();
+                ProcessTask(_settleTasks[i], _settleTasks, i);
             }
         }
         
-        if ((Info.TotalDays + nation_recno + 3) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 3)
         {
             for (int i = _idleUnitTasks.Count - 1; i >= 0; i--)
             {
-                IdleUnitTask task = _idleUnitTasks[i];
-                if (task.ShouldCancel())
-                {
-                    task.Cancel();
-                    _idleUnitTasks.RemoveAt(i);
-                    continue;
-                }
-                
-                task.Process();
+                ProcessTask(_idleUnitTasks[i], _idleUnitTasks, i);
             }
         }
         
-        if ((Info.TotalDays + nation_recno + 4) % 10 == 0)
+        if ((Info.TotalDays + nation_recno) % 10 == 4)
         {
             for (int i = _assignGeneralTasks.Count - 1; i >= 0; i--)
             {
-                AssignGeneralTask task = _assignGeneralTasks[i];
-                if (task.ShouldCancel())
-                {
-                    task.Cancel();
-                    _assignGeneralTasks.RemoveAt(i);
-                    continue;
-                }
-                
-                task.Process();
+                ProcessTask(_assignGeneralTasks[i], _assignGeneralTasks, i);
+            }
+        }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 5)
+        {
+            for (int i = _relocatePeasantsTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_relocatePeasantsTasks[i], _relocatePeasantsTasks, i);
             }
         }
     }
@@ -258,7 +245,7 @@ public class NationNew : NationBase
 
     private void ThinkBuildMine()
     {
-        //TODO check if we have not enough population and should not build mine at all
+        //TODO check if we have not enough population, enough money and should not build mine at all
         
         // find non-mined raw resource
         // rate by region, distance, distance from enemy
@@ -330,6 +317,34 @@ public class NationNew : NationBase
         }
     }
 
+    private void ThinkAssignGeneral()
+    {
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno)
+                continue;
+
+            if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
+                continue;
+            
+            if (firm.UnderConstruction)
+                continue;
+
+            if (firm.OverseerId == 0)
+            {
+                bool hasAssignGeneralTask = false;
+                foreach (AssignGeneralTask assignGeneralTask in _assignGeneralTasks)
+                {
+                    if (assignGeneralTask.FirmId == firm.FirmId)
+                        hasAssignGeneralTask = true;
+                }
+                
+                if (!hasAssignGeneralTask)
+                    _assignGeneralTasks.Add(new AssignGeneralTask(this, firm.FirmId));
+            }
+        }
+    }
+
     private void ThinkSettle()
     {
         // Settle when
@@ -365,30 +380,31 @@ public class NationNew : NationBase
         }
     }
 
-    private void ThinkAssignGeneral()
+    private void ThinkRelocatePeasants()
     {
+        // Relocate peasants when firm don't have enough workers
+
         foreach (Firm firm in FirmArray)
         {
             if (firm.NationId != nation_recno)
                 continue;
-
-            if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
-                continue;
             
-            if (firm.UnderConstruction)
+            if (firm.UnderConstruction || firm.Workers.Count == Firm.MAX_WORKER)
                 continue;
 
-            if (firm.OverseerId == 0)
+            if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY ||
+                firm.FirmType == Firm.FIRM_RESEARCH || firm.FirmType == Firm.FIRM_WAR_FACTORY)
             {
-                bool hasAssignGeneralTask = false;
-                foreach (AssignGeneralTask assignGeneralTask in _assignGeneralTasks)
+                bool hasJoblessPopulation = false;
+                foreach (int townId in firm.LinkedTowns)
                 {
-                    if (assignGeneralTask.FirmId == firm.FirmId)
-                        hasAssignGeneralTask = true;
+                    Town town = TownArray[townId];
+                    if (town.NationId == nation_recno && town.JoblessPopulation > 0)
+                        hasJoblessPopulation = true;
                 }
                 
-                if (!hasAssignGeneralTask)
-                    _assignGeneralTasks.Add(new AssignGeneralTask(this, firm.FirmId));
+                if (!hasJoblessPopulation)
+                    _relocatePeasantsTasks.Add(new RelocatePeasantsTask(this, firm.FirmId));
             }
         }
     }

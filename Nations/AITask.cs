@@ -32,7 +32,7 @@ public abstract class AITask
         int builderId = 0;
         Location location = World.GetLoc(buildLocX, buildLocY);
         
-        int minFirmDistance = Int32.MaxValue / 2;
+        int minFirmDistance = Int16.MaxValue;
         Firm bestFirm = null;
         foreach (Firm firm in FirmArray)
         {
@@ -59,7 +59,7 @@ public abstract class AITask
             }
         }
 
-        int minTownDistance = Int32.MaxValue / 2;
+        int minTownDistance = Int16.MaxValue;
         Town bestTown = null;
         int bestRace = 0;
         foreach (Town town in TownArray)

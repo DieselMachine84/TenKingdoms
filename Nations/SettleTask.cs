@@ -88,7 +88,7 @@ public class SettleTask : AITask, IUnitTask
     {
         Location firmLocation = World.GetLoc(firmLocX1, firmLocY1);
         
-        int minTownDistance = Int32.MaxValue / 2;
+        int minTownDistance = Int16.MaxValue;
         Town bestTown = null;
         int bestRace = 0;
 
@@ -130,7 +130,7 @@ public class SettleTask : AITask, IUnitTask
     private (int, int) FindBestSettleLocation(int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
     {
         Location firmLocation = World.GetLoc(firmLocX1, firmLocY1);
-        int maxRating = Int32.MinValue / 2;
+        int maxRating = Int16.MinValue;
         List<(int, int)> maxRatingLocations = new List<(int, int)>();
 
         List<Firm> nearFirms = new List<Firm>();

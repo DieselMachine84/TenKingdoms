@@ -83,7 +83,7 @@ public class BuildMineTask : AITask, IUnitTask
         Location siteLocation = World.GetLoc(siteLocX, siteLocY);
         
         Town nearestTown = null;
-        int minDistance = Int32.MaxValue / 2;
+        int minDistance = Int16.MaxValue;
         foreach (Town town in TownArray)
         {
             if (town.NationId != Nation.nation_recno)
@@ -110,7 +110,7 @@ public class BuildMineTask : AITask, IUnitTask
 
         int buildLocX = -1;
         int buildLocY = -1;
-        minDistance = Int32.MaxValue / 2;
+        minDistance = Int16.MaxValue;
         for (int locY = siteLocY - mineWidth + 1; locY < siteLocY; locY++)
         {
             for (int locX = siteLocX - mineHeight + 1; locX < siteLocX; locX++)
