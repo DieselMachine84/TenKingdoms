@@ -15,6 +15,7 @@ public partial class Renderer
                 Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
             }
             // TODO draw hit points bar and X button
+            PutTextCenter(FontSan, (int)unit.HitPoints + "/" + unit.MaxHitPoints, DetailsX1 + 2, DetailsY1 + 21, DetailsX2 - 4, DetailsY1 + 21);
         }
 
         if (unit.ShouldShowInfo())

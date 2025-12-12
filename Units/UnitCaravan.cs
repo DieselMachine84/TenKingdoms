@@ -4,7 +4,7 @@ namespace TenKingdoms;
 
 public class UnitCaravan : Unit
 {
-	private const int MAX_STOP_FOR_CARAVAN = 3;
+	public const int MAX_STOP_FOR_CARAVAN = 3;
 
 	private int JourneyStatus { get; set; } // 1 for not unload but can up load, 2 for unload but not up load
 	private int DestStopId { get; set; } // destination stop id. the stop which the train currently is moving towards
@@ -18,8 +18,8 @@ public class UnitCaravan : Unit
 
 	private DateTime LastLoadGoodsDate { get; set; } // the last date when the caravan load goods from a firm  
 
-	private int[] RawQty { get; } = new int[GameConstants.MAX_RAW];
-	private int[] ProductQty { get; } = new int[GameConstants.MAX_PRODUCT];
+	public int[] RawQty { get; } = new int[GameConstants.MAX_RAW];
+	public int[] ProductQty { get; } = new int[GameConstants.MAX_PRODUCT];
 
 	private int[] ProcessedRawQty { get; } = new int[GameConstants.MAX_RAW];
 	private int[] ProcessedProductQty { get; } = new int[GameConstants.MAX_PRODUCT];

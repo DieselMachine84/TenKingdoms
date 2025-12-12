@@ -6,12 +6,12 @@ public partial class Renderer
     //DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight * 2);
     //button_return_camp.paint( x, dispY1, 'A', "RETCAMP" );
 
-    public void DrawWeaponDetails(UnitWeapon unit)
+    public void DrawWeaponDetails(UnitWeapon weapon)
     {
         //
     }
 
-    public void HandleWeaponDetailsInput(UnitWeapon unit)
+    public void HandleWeaponDetailsInput(UnitWeapon weapon)
     {
         //
     }

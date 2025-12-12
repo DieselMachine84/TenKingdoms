@@ -32,11 +32,11 @@ public interface IRenderer
     void DrawMonsterLairDetails(FirmMonster monsterLair);
 
     void DrawHumanDetails(UnitHuman unit);
-    void DrawWeaponDetails(UnitWeapon unit);
-    void DrawCaravanDetails(UnitCaravan unit);
-    void DrawShipDetails(UnitMarine unit);
-    void DrawGodDetails(UnitGod unit);
-    void DrawMonsterDetails(UnitMonster unit);
+    void DrawWeaponDetails(UnitWeapon weapon);
+    void DrawCaravanDetails(UnitCaravan caravan);
+    void DrawShipDetails(UnitMarine ship);
+    void DrawGodDetails(UnitGod god);
+    void DrawMonsterDetails(UnitMonster monster);
 
     
     void HandleMineDetailsInput(FirmMine mine);
@@ -51,9 +51,9 @@ public interface IRenderer
     void HandleMonsterLairDetailsInput(FirmMonster monsterLair);
     
     void HandleHumanDetailsInput(UnitHuman unit);
-    void HandleWeaponDetailsInput(UnitWeapon unit);
-    void HandleCaravanDetailsInput(UnitCaravan unit);
-    void HandleShipDetailsInput(UnitMarine unit);
-    void HandleGodDetailsInput(UnitGod unit);
-    void HandleMonsterDetailsInput(UnitMonster unit);
+    void HandleWeaponDetailsInput(UnitWeapon weapon);
+    void HandleCaravanDetailsInput(UnitCaravan caravan);
+    void HandleShipDetailsInput(UnitMarine ship);
+    void HandleGodDetailsInput(UnitGod god);
+    void HandleMonsterDetailsInput(UnitMonster monster);
 }

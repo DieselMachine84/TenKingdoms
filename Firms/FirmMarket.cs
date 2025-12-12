@@ -10,7 +10,7 @@ public class FirmMarket : Firm
 	private const int RESTOCK_RAW = 2;
 	private const int RESTOCK_NONE = 3;
 
-	private int RestockType { get; set; }
+	public int RestockType { get; private set; }
 	public double MaxStockQty { get; }
 
 	private int NextOutputLinkId { get; set; }
