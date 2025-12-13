@@ -15,6 +15,7 @@ public class NationNew : NationBase
     private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
+    private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
@@ -67,6 +68,7 @@ public class NationNew : NationBase
         if ((Info.TotalDays + nation_recno) % 10 == 4)
         {
             ThinkBuildFactory();
+            ThinkChangeFactoryProduction();
         }
         
         if ((Info.TotalDays + nation_recno) % 10 == 4)
@@ -143,6 +145,10 @@ public class NationNew : NationBase
             {
                 ProcessTask(_buildFactoryTasks[i], _buildFactoryTasks, i);
             }
+            for (int i = _changeFactoryProductionTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_changeFactoryProductionTasks[i], _changeFactoryProductionTasks, i);
+            }
         }
         
         if ((Info.TotalDays + nation_recno) % 10 == 7)
@@ -172,11 +178,13 @@ public class NationNew : NationBase
             yield return task;
         foreach (var task in _assignGeneralTasks)
             yield return task;
+        foreach (var task in _changeFactoryProductionTasks)
+            yield return task;
         foreach (var task in _idleUnitTasks)
             yield return task;
     }
 
-    private bool IsUnitOnTask(int unitId)
+    public bool IsUnitOnTask(int unitId)
     {
         foreach (AITask task in EnumerateAllTasks())
         {
@@ -403,7 +411,7 @@ public class NationNew : NationBase
                 {
                     if (!HasFactory(firm, mine.RawId) && !HasBuildFactoryTask(firm))
                     {
-                        _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId));
+                        _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId, mine.RawId));
                     }
                 }
             }
@@ -418,7 +426,7 @@ public class NationNew : NationBase
                     {
                         if (!HasFactory(firm, marketGoods.RawId) && !HasBuildFactoryTask(firm))
                         {
-                            _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId));
+                            _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId, marketGoods.RawId));
                         }
                     }
                 }
@@ -611,6 +619,16 @@ public class NationNew : NationBase
                     _relocatePeasantsTasks.Add(new RelocatePeasantsTask(this, firm.FirmId));
             }
         }
+    }
+
+    private void ThinkChangeFactoryProduction()
+    {
+        //
+    }
+
+    public void AddChangeFactoryProductionTask(int factoryId, int productId)
+    {
+        _changeFactoryProductionTasks.Add(new ChangeFactoryProductionTask(this, factoryId, productId));
     }
 
     private void FindIdleUnits()

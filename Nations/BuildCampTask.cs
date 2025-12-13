@@ -12,7 +12,7 @@ public class BuildCampTask : AITask, IUnitTask
     public int TownId { get; }
     public int UnitId => _builderId;
     
-    public BuildCampTask(NationBase nation, int townId) : base(nation)
+    public BuildCampTask(Nation nation, int townId) : base(nation)
     {
         TownId = townId;
     }

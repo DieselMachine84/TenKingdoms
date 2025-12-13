@@ -4,7 +4,7 @@ namespace TenKingdoms;
 
 public abstract class AITask
 {
-    protected NationBase Nation { get; }
+    protected Nation Nation { get; }
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected World World => Sys.Instance.World;
@@ -14,7 +14,7 @@ public abstract class AITask
     protected UnitArray UnitArray => Sys.Instance.UnitArray;
     protected SiteArray SiteArray => Sys.Instance.SiteArray;
 
-    protected AITask(NationBase nation)
+    protected AITask(Nation nation)
     {
         Nation = nation;
     }
@@ -47,7 +47,7 @@ public abstract class AITask
                 continue;
 
             // TODO use pref
-            if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0)
+            if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0 && !Nation.IsUnitOnTask(firm.BuilderId))
             {
                 int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, buildLocX, buildLocY);
                 if (firmDistance < minFirmDistance)

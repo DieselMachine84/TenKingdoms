@@ -7,7 +7,7 @@ public class CaptureIndependentTask : AITask
     public int TownId { get; }
     public List<int> Capturers { get; } = new List<int>();
 
-    public CaptureIndependentTask(NationBase nation, int townId) : base(nation)
+    public CaptureIndependentTask(Nation nation, int townId) : base(nation)
     {
         TownId = townId;
     }

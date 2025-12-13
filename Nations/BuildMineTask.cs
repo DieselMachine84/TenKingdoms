@@ -11,7 +11,7 @@ public class BuildMineTask : AITask, IUnitTask
     public int SiteId { get; }
     public int UnitId => _builderId;
 
-    public BuildMineTask(NationBase nation, int siteId) : base(nation)
+    public BuildMineTask(Nation nation, int siteId) : base(nation)
     {
         SiteId = siteId;
     }

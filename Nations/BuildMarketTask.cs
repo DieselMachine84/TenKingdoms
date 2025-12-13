@@ -16,7 +16,7 @@ public class BuildMarketTask : AITask, IUnitTask
     public int TownId { get; }
     public int UnitId => _builderId;
 
-    public BuildMarketTask(NationBase nation, int firmId, int townId) : base(nation)
+    public BuildMarketTask(Nation nation, int firmId, int townId) : base(nation)
     {
         FirmId = firmId;
         TownId = townId;

@@ -16,11 +16,13 @@ public class BuildFactoryTask : AITask, IUnitTask
     private bool _noPlaceToBuild;
     private bool _shouldCancel;
     public int FirmId { get; }
+    public int ProductId { get; }
     public int UnitId => _builderId;
 
-    public BuildFactoryTask(NationBase nation, int firmId) : base(nation)
+    public BuildFactoryTask(Nation nation, int firmId, int productId) : base(nation)
     {
         FirmId = firmId;
+        ProductId = productId;
     }
 
     public override bool ShouldCancel()
@@ -66,6 +68,7 @@ public class BuildFactoryTask : AITask, IUnitTask
 
         if (builder.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
         {
+            Nation.AddChangeFactoryProductionTask(builder.UnitModeParam, ProductId);
             _shouldCancel = true;
             return;
         }

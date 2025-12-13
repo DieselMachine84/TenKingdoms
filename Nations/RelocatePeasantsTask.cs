@@ -6,7 +6,7 @@ public class RelocatePeasantsTask : AITask
 {
     public int FirmId { get; }
 
-    public RelocatePeasantsTask(NationBase nation, int firmId) : base(nation)
+    public RelocatePeasantsTask(Nation nation, int firmId) : base(nation)
     {
         FirmId = firmId;
     }

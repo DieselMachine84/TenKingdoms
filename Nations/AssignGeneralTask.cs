@@ -10,7 +10,7 @@ public class AssignGeneralTask : AITask, IUnitTask
     public int FirmId { get; }
     public int UnitId => _generalId;
     
-    public AssignGeneralTask(NationBase nation, int firmId) : base(nation)
+    public AssignGeneralTask(Nation nation, int firmId) : base(nation)
     {
         FirmId = firmId;
     }
