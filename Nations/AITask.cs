@@ -143,4 +143,45 @@ public abstract class AITask
 
         return false;
     }
+
+    protected int CountBlockedNearLocations(int locX1, int locY1, int locX2, int locY2)
+    {
+        int blockedLocations = 0;
+        
+        for (int locX = locX1 - 1; locX <= locX2 + 1; locX++)
+        {
+            if (Misc.IsLocationValid(locX, locY1 - 1))
+            {
+                Location location = World.GetLoc(locX, locY1 - 1);
+                if (!location.Walkable())
+                    blockedLocations++;
+            }
+            
+            if (Misc.IsLocationValid(locX, locY2 + 1))
+            {
+                Location location = World.GetLoc(locX, locY2 + 1);
+                if (!location.Walkable())
+                    blockedLocations++;
+            }
+        }
+
+        for (int locY = locY1; locY <= locY2; locY++)
+        {
+            if (Misc.IsLocationValid(locX1 - 1, locY))
+            {
+                Location location = World.GetLoc(locX1 - 1, locY);
+                if (!location.Walkable())
+                    blockedLocations++;
+            }
+            
+            if (Misc.IsLocationValid(locX2 + 1, locY))
+            {
+                Location location = World.GetLoc(locX2 + 1, locY);
+                if (!location.Walkable())
+                    blockedLocations++;
+            }
+        }
+
+        return blockedLocations;
+    }
 }

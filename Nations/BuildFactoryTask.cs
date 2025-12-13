@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
@@ -84,7 +85,7 @@ public class BuildFactoryTask : AITask, IUnitTask
         }
         else
         {
-            //TODO check that builder is on the way, not stuck and is able to build mine
+            //TODO check that builder is on the way, not stuck and is able to build factory
             if (builder.IsAIAllStop())
                 _builderSent = false;
         }
@@ -121,9 +122,8 @@ public class BuildFactoryTask : AITask, IUnitTask
         FirmInfo factoryInfo = FirmRes[Firm.FIRM_FACTORY];
         int factoryWidth = factoryInfo.LocWidth;
         int factoryHeight = factoryInfo.LocHeight;
-        int buildLocX = -1;
-        int buildLocY = -1;
-        int minDistance = Int16.MaxValue;
+        List<(int, int)> bestBuildLocations = new List<(int, int)>();
+        int minRating = Int16.MaxValue;
         if (bestTown != null)
         {
             for (int locY = bestTown.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - factoryHeight;
@@ -139,25 +139,28 @@ public class BuildFactoryTask : AITask, IUnitTask
 
                     int locX2 = locX + factoryWidth - 1;
                     int locY2 = locY + factoryHeight - 1;
-                    if (Misc.AreTownAndFirmLinked(locX, locY, locX2, locY2,
-                            bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2))
+                    if (Misc.AreTownAndFirmLinked(bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2,
+                            locX, locY, locX2, locY2))
                     {
-                        int distance = Misc.RectsDistance(locX, locY, locX2, locY2,
+                        int rating = Misc.RectsDistance(locX, locY, locX2, locY2,
                             bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2);
-                        distance += Misc.RectsDistance(locX, locY, locX2, locY2,
+                        rating += Misc.RectsDistance(locX, locY, locX2, locY2,
                             rawFirmLocX1, rawFirmLocY1, rawFirmLocX2, rawFirmLocY2);
-                        if (distance < minDistance)
+                        rating += CountBlockedNearLocations(locX, locY, locX2, locY2);
+                        
+                        if (rating < minRating)
                         {
-                            buildLocX = locX;
-                            buildLocY = locY;
-                            minDistance = distance;
+                            bestBuildLocations.Clear();
+                            minRating = rating;
                         }
-
+                        
+                        if (rating == minRating)
+                            bestBuildLocations.Add((locX, locY));
                     }
                 }
             }
         }
 
-        return (buildLocX, buildLocY);
+        return bestBuildLocations.Count > 0 ? bestBuildLocations[Misc.Random(bestBuildLocations.Count)] : (-1, -1);
     }
 }

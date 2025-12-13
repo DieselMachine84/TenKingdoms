@@ -97,7 +97,7 @@ public class BuildCampTask : AITask, IUnitTask
     private (int, int) FindBestBuildLocation(int townLocX1, int townLocY1, int townLocX2, int townLocY2)
     {
         Location townLocation = World.GetLoc(townLocX1, townLocY1);
-        int maxRating = Int32.MinValue / 2;
+        int maxRating = Int16.MinValue;
         List<(int, int)> maxRatingLocations = new List<(int, int)>();
 
         List<Town> nearTowns = new List<Town>();
@@ -132,7 +132,7 @@ public class BuildCampTask : AITask, IUnitTask
                 if (!Misc.IsLocationValid(buildLocX, buildLocY) || !Misc.IsLocationValid(buildLocX2, buildLocY2))
                     continue;
 
-                if (!Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2, townLocX1, townLocY1, townLocX2, townLocY2))
+                if (!Misc.AreTownAndFirmLinked(townLocX1, townLocY1, townLocX2, townLocY2, buildLocX, buildLocY, buildLocX2, buildLocY2))
                     continue;
                 
                 Location buildLocation = World.GetLoc(buildLocX, buildLocY);
@@ -145,8 +145,8 @@ public class BuildCampTask : AITask, IUnitTask
                 int rating = 0;
                 foreach (Town nearTown in nearTowns)
                 {
-                    if (!Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2,
-                            nearTown.LocX1, nearTown.LocY1, nearTown.LocX2, nearTown.LocY2))
+                    if (!Misc.AreTownAndFirmLinked(nearTown.LocX1, nearTown.LocY1, nearTown.LocX2, nearTown.LocY2,
+                            buildLocX, buildLocY, buildLocX2, buildLocY2))
                         continue;
                     
                     if (nearTown.NationId == Nation.nation_recno)
@@ -163,6 +163,7 @@ public class BuildCampTask : AITask, IUnitTask
 
                 rating -= Misc.RectsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
                     townLocX1, townLocY1, townLocX2, townLocY2) * 5;
+                rating -= CountBlockedNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2);
                 
                 if (rating > maxRating)
                 {
@@ -175,11 +176,6 @@ public class BuildCampTask : AITask, IUnitTask
             }
         }
 
-        if (maxRatingLocations.Count > 0)
-        {
-            return maxRatingLocations[Misc.Random(maxRatingLocations.Count)];
-        }
-
-        return (-1, -1);
+        return maxRatingLocations.Count > 0 ? maxRatingLocations[Misc.Random(maxRatingLocations.Count)] : (-1, -1);
     }
 }

@@ -152,7 +152,8 @@ public class Misc
 
     public static bool AreFirmsLinked(Firm firm1, Firm firm2)
     {
-        return AreFirmsLinked(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm2.LocY2, firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
+        return AreFirmsLinked(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm2.LocY2,
+            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
     }
 
     public static bool AreFirmsLinked(int firm1LocX1, int firm1LocY1, int firm1LocX2, int firm1LocY2,

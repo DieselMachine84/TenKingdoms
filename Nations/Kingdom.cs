@@ -10,6 +10,7 @@ public class NationNew : NationBase
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
+    private readonly List<BuildMarketTask> _buildMarketTasks = new List<BuildMarketTask>();
     private readonly List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
     private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
@@ -66,6 +67,11 @@ public class NationNew : NationBase
         if ((Info.TotalDays + nation_recno) % 10 == 4)
         {
             ThinkBuildFactory();
+        }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 4)
+        {
+            ThinkBuildMarket();
         }
     }
 
@@ -138,6 +144,14 @@ public class NationNew : NationBase
                 ProcessTask(_buildFactoryTasks[i], _buildFactoryTasks, i);
             }
         }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 7)
+        {
+            for (int i = _buildMarketTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_buildMarketTasks[i], _buildMarketTasks, i);
+            }
+        }
     }
 
     private IEnumerable<AITask> EnumerateAllTasks()
@@ -147,6 +161,8 @@ public class NationNew : NationBase
         foreach (var task in _buildMineTasks)
             yield return task;
         foreach (var task in _buildFactoryTasks)
+            yield return task;
+        foreach (var task in _buildMarketTasks)
             yield return task;
         foreach (var task in _buildCampTasks)
             yield return task;
@@ -406,6 +422,78 @@ public class NationNew : NationBase
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void ThinkBuildMarket()
+    {
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno || firm.UnderConstruction)
+                continue;
+
+            if (firm.FirmType == Firm.FIRM_MINE)
+            {
+                FirmMine mine = (FirmMine)firm;
+                if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
+                {
+                    bool hasLinkedMarket = false;
+                    foreach (int linkedFirmId in mine.LinkedFirms)
+                    {
+                        Firm linkedFirm = FirmArray[linkedFirmId];
+                        if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
+                        {
+                            FirmMarket market = (FirmMarket)linkedFirm;
+                            if (market.UnderConstruction || market.IsRawMarket())
+                                hasLinkedMarket = true;
+                        }
+                    }
+
+                    if (!hasLinkedMarket)
+                    {
+                        bool hasBuildMarketTask = false;
+                        foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+                        {
+                            if (buildMarketTask.FirmId == mine.FirmId)
+                                hasBuildMarketTask = true;
+                        }
+                        
+                        if (!hasBuildMarketTask)
+                            _buildMarketTasks.Add(new BuildMarketTask(this, firm.FirmId, 0));
+                    }
+                }
+            }
+        }
+
+        foreach (Town town in TownArray)
+        {
+            if (town.NationId != nation_recno)
+                continue;
+            
+            bool hasLinkedMarket = false;
+            foreach (int linkedFirmId in town.LinkedFirms)
+            {
+                Firm linkedFirm = FirmArray[linkedFirmId];
+                if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
+                {
+                    FirmMarket market = (FirmMarket)linkedFirm;
+                    if (market.UnderConstruction || market.IsRetailMarket())
+                        hasLinkedMarket = true;
+                }
+            }
+
+            if (!hasLinkedMarket)
+            {
+                bool hasBuildMarketTask = false;
+                foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+                {
+                    if (buildMarketTask.TownId == town.TownId)
+                        hasBuildMarketTask = true;
+                }
+                        
+                if (!hasBuildMarketTask)
+                    _buildMarketTasks.Add(new BuildMarketTask(this, 0, town.TownId));
             }
         }
     }
