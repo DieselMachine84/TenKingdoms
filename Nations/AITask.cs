@@ -115,4 +115,32 @@ public abstract class AITask
         //TODO check idle construction workers
         return builderId;
     }
+
+    protected bool CanBuildFirmNearTown(int firmType, Town town)
+    {
+        FirmInfo firmInfo = FirmRes[firmType];
+        int firmWidth = firmInfo.LocWidth;
+        int firmHeight = firmInfo.LocHeight;
+        
+        for (int buildLocY = town.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - firmHeight;
+             buildLocY < town.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + firmHeight;
+             buildLocY++)
+        {
+            for (int buildLocX = town.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - firmWidth;
+                 buildLocX < town.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + firmWidth;
+                 buildLocX++)
+            {
+                if (World.CanBuildFirm(buildLocX, buildLocY, firmType) == 0)
+                    continue;
+
+                int buildLocX2 = buildLocX + firmWidth - 1;
+                int buildLocY2 = buildLocY + firmHeight - 1;
+                if (Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2,
+                        town.LocX1, town.LocY1, town.LocX2, town.LocY2))
+                    return true;
+            }
+        }
+
+        return false;
+    }
 }

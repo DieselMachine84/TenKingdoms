@@ -57,6 +57,9 @@ public class RelocatePeasantsTask : AITask
                 if (otherTown.JoblessPopulation == 0)
                     continue;
 
+                if (otherTown.AverageLoyalty() < 40)
+                    continue;
+
                 //TODO other region
                 if (otherTown.RegionId != town.RegionId)
                     continue;
@@ -75,7 +78,8 @@ public class RelocatePeasantsTask : AITask
                         if (!otherTown.CanRecruit(i))
                             continue;
                         
-                        if (town.RacesPopulation[i - 1] != 0 && otherTown.RacesJoblessPopulation[i - 1] != 0 && town.RacesPopulation[i - 1] > maxRacePop)
+                        if (town.RacesPopulation[i - 1] != 0 && town.RacesPopulation[i - 1] > maxRacePop &&
+                            otherTown.RacesJoblessPopulation[i - 1] != 0 && otherTown.RacesLoyalty[i - 1] > 40.0)
                         {
                             bestTown = otherTown;
                             minDistance = distance;

@@ -9,7 +9,6 @@ public class SettleTask : AITask, IUnitTask
     private bool _settlerSent;
     private bool _noPlaceToSettle;
     public int FirmId { get; }
-
     public int UnitId => _settlerId;
     
     public SettleTask(NationBase nation, int firmId) : base(nation)

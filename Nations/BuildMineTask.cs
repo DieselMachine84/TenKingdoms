@@ -7,8 +7,8 @@ public class BuildMineTask : AITask, IUnitTask
     private int _builderId;
     private bool _builderSent;
     private bool _noPlaceToBuild;
+    private bool _shouldCancel;
     public int SiteId { get; }
-
     public int UnitId => _builderId;
 
     public BuildMineTask(NationBase nation, int siteId) : base(nation)
@@ -18,6 +18,9 @@ public class BuildMineTask : AITask, IUnitTask
 
     public override bool ShouldCancel()
     {
+        if (_shouldCancel)
+            return true;
+        
         if (_noPlaceToBuild)
             return true;
         
@@ -36,7 +39,8 @@ public class BuildMineTask : AITask, IUnitTask
         if (_builderId != 0 && !UnitArray.IsDeleted(_builderId))
         {
             Unit builder = UnitArray[_builderId];
-            builder.Stop2();
+            if (builder.IsVisible())
+                builder.Stop2();
         }
     }
     
@@ -57,6 +61,12 @@ public class BuildMineTask : AITask, IUnitTask
         if (builder.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
 
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
         if (!_builderSent)
         {
             (int buildLocX, int buildLocY) = FindBestBuildLocation(site.LocX, site.LocY);

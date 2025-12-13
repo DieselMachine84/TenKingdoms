@@ -2,12 +2,13 @@ using System;
 
 namespace TenKingdoms;
 
-public class AssignGeneralTask : AITask
+public class AssignGeneralTask : AITask, IUnitTask
 {
     private int _generalId;
     private bool _generalSent;
-    
+    private bool _shouldCancel;
     public int FirmId { get; }
+    public int UnitId => _generalId;
     
     public AssignGeneralTask(NationBase nation, int firmId) : base(nation)
     {
@@ -16,6 +17,9 @@ public class AssignGeneralTask : AITask
 
     public override bool ShouldCancel()
     {
+        if (_shouldCancel)
+            return true;
+
         if (FirmArray.IsDeleted(FirmId))
             return true;
 
@@ -31,7 +35,8 @@ public class AssignGeneralTask : AITask
         if (_generalId != 0 && !UnitArray.IsDeleted(_generalId))
         {
             Unit general = UnitArray[_generalId];
-            general.Stop2();
+            if (general.IsVisible())
+                general.Stop2();
         }
     }
     
@@ -55,6 +60,12 @@ public class AssignGeneralTask : AITask
         if (general.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
 
+        if (general.UnitMode == UnitConstants.UNIT_MODE_OVERSEE)
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
         if (!_generalSent)
         {
             if (general.Skill.SkillId == Skill.SKILL_LEADING && general.Rank == Unit.RANK_SOLDIER)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TenKingdoms;
 
@@ -8,6 +9,7 @@ public class NationNew : NationBase
 {
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
+    private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
     private readonly List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
     private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
@@ -56,9 +58,14 @@ public class NationNew : NationBase
             ThinkSettle();
         }
         
-        if ((Info.TotalDays + nation_recno) % 10 == 2)
+        if ((Info.TotalDays + nation_recno) % 10 == 3)
         {
             ThinkRelocatePeasants();
+        }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 4)
+        {
+            ThinkBuildFactory();
         }
     }
 
@@ -123,8 +130,48 @@ public class NationNew : NationBase
                 ProcessTask(_relocatePeasantsTasks[i], _relocatePeasantsTasks, i);
             }
         }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 6)
+        {
+            for (int i = _buildFactoryTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_buildFactoryTasks[i], _buildFactoryTasks, i);
+            }
+        }
     }
 
+    private IEnumerable<AITask> EnumerateAllTasks()
+    {
+        foreach (var task in _captureIndependentTasks)
+            yield return task;
+        foreach (var task in _buildMineTasks)
+            yield return task;
+        foreach (var task in _buildFactoryTasks)
+            yield return task;
+        foreach (var task in _buildCampTasks)
+            yield return task;
+        foreach (var task in _settleTasks)
+            yield return task;
+        foreach (var task in _relocatePeasantsTasks)
+            yield return task;
+        foreach (var task in _assignGeneralTasks)
+            yield return task;
+        foreach (var task in _idleUnitTasks)
+            yield return task;
+    }
+
+    private bool IsUnitOnTask(int unitId)
+    {
+        foreach (AITask task in EnumerateAllTasks())
+        {
+            IUnitTask unitTask = task as IUnitTask;
+            if (unitTask != null && unitTask.UnitId == unitId)
+                return true;
+        }
+
+        return false;
+    }
+    
     private void ThinkCaptureIndependent()
     {
         List<Town> possibleTowns = new List<Town>();
@@ -294,6 +341,75 @@ public class NationNew : NationBase
         }
     }
 
+    private void ThinkBuildFactory()
+    {
+        bool HasFactory(Firm rawFirm, int rawId)
+        {
+            foreach (Firm firm in FirmArray)
+            {
+                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_FACTORY)
+                    continue;
+
+                //TODO other region
+                if (firm.RegionId != rawFirm.RegionId)
+                    continue;
+
+                FirmFactory factory = (FirmFactory)firm;
+                if (factory.UnderConstruction || factory.ProductId == rawId)
+                    return true;
+            }
+            
+            return false;
+        }
+
+        bool HasBuildFactoryTask(Firm rawFirm)
+        {
+            foreach (BuildFactoryTask buildFactoryTask in _buildFactoryTasks)
+            {
+                if (buildFactoryTask.FirmId == rawFirm.FirmId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        //TODO check if we have enough money
+
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno || firm.UnderConstruction)
+                continue;
+
+            if (firm.FirmType == Firm.FIRM_MINE)
+            {
+                FirmMine mine = (FirmMine)firm;
+                if (mine.RawId != 0 && mine.StockQty > 0.0)
+                {
+                    if (!HasFactory(firm, mine.RawId) && !HasBuildFactoryTask(firm))
+                    {
+                        _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId));
+                    }
+                }
+            }
+
+            if (firm.FirmType == Firm.FIRM_MARKET)
+            {
+                FirmMarket market = (FirmMarket)firm;
+                for (int i = 0; i < market.MarketGoods.Length; i++)
+                {
+                    MarketGoods marketGoods = market.MarketGoods[i];
+                    if (marketGoods.RawId != 0 && marketGoods.StockQty > 0.0)
+                    {
+                        if (!HasFactory(firm, marketGoods.RawId) && !HasBuildFactoryTask(firm))
+                        {
+                            _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void ThinkBuildCamp()
     {
         foreach (Town town in TownArray)
@@ -388,7 +504,7 @@ public class NationNew : NationBase
         {
             if (firm.NationId != nation_recno)
                 continue;
-            
+
             if (firm.UnderConstruction || firm.Workers.Count == Firm.MAX_WORKER)
                 continue;
 
@@ -402,7 +518,7 @@ public class NationNew : NationBase
                     if (town.NationId == nation_recno && town.JoblessPopulation > 0)
                         hasJoblessPopulation = true;
                 }
-                
+
                 if (!hasJoblessPopulation)
                     _relocatePeasantsTasks.Add(new RelocatePeasantsTask(this, firm.FirmId));
             }
@@ -411,48 +527,27 @@ public class NationNew : NationBase
 
     private void FindIdleUnits()
     {
-        List<int> unitsOnTasks = new List<int>();
-        
-        foreach (var buildMineTask in _buildMineTasks)
-        {
-            unitsOnTasks.Add(buildMineTask.UnitId);
-        }
-        
-        foreach (var settleTask in _settleTasks)
-        {
-            unitsOnTasks.Add(settleTask.UnitId);
-        }
-        
         foreach (Unit unit in UnitArray)
         {
             if (unit.NationId != nation_recno)
                 continue;
-            
-            if (!unit.IsAIAllStop())
+
+            if (!unit.IsVisible() || !unit.IsAIAllStop())
                 continue;
 
-            bool isIdle = true;
-            foreach (int unitOnTask in unitsOnTasks)
+            if (IsUnitOnTask(unit.SpriteId))
+                continue;
+            
+            bool hasIdleUnitTask = false;
+            foreach (IdleUnitTask idleUnitTask in _idleUnitTasks)
             {
-                if (unit.SpriteId == unitOnTask)
-                {
-                    isIdle = false;
-                    break;
-                }
+                if (idleUnitTask.UnitId == unit.SpriteId)
+                    hasIdleUnitTask = true;
             }
 
-            if (isIdle)
-            {
-                bool hasIdleUnitTask = false;
-                foreach (IdleUnitTask idleUnitTask in _idleUnitTasks)
-                {
-                    if (idleUnitTask.UnitId == unit.SpriteId)
-                        hasIdleUnitTask = true;
-                }
-                
-                if (!hasIdleUnitTask)
-                    _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
-            }
+            if (!hasIdleUnitTask)
+                _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
+
         }
     }
 

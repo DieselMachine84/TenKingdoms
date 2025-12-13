@@ -3,13 +3,14 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class BuildCampTask : AITask
+public class BuildCampTask : AITask, IUnitTask
 {
     private int _builderId;
     private bool _builderSent;
     private bool _noPlaceToBuild;
-    
+    private bool _shouldCancel;
     public int TownId { get; }
+    public int UnitId => _builderId;
     
     public BuildCampTask(NationBase nation, int townId) : base(nation)
     {
@@ -18,6 +19,9 @@ public class BuildCampTask : AITask
 
     public override bool ShouldCancel()
     {
+        if (_shouldCancel)
+            return true;
+        
         if (_noPlaceToBuild)
             return true;
 
@@ -39,7 +43,8 @@ public class BuildCampTask : AITask
         if (_builderId != 0 && !UnitArray.IsDeleted(_builderId))
         {
             Unit builder = UnitArray[_builderId];
-            builder.Stop2();
+            if (builder.IsVisible())
+                builder.Stop2();
         }
     }
 
@@ -62,6 +67,12 @@ public class BuildCampTask : AITask
         if (builder.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
 
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
         if (!_builderSent)
         {
             (int buildLocX, int buildLocY) = FindBestBuildLocation(town.LocX1, town.LocY1, town.LocX2, town.LocY2);
