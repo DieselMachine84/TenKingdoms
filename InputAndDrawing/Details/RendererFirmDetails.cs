@@ -22,7 +22,9 @@ public partial class Renderer
             int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.NationId], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
-        PutTextCenter(FontSan, firm.FirmName(), DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+
+        string firmName = firm.FirmName() + (Config.show_ai_info ? " (" + firm.FirmId + ")" : "");
+        PutTextCenter(FontSan, firmName, DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
 

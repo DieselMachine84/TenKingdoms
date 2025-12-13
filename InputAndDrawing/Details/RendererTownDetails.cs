@@ -45,7 +45,9 @@ public partial class Renderer
             int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[town.NationId], false);
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
-        PutTextCenter(FontSan, town.Name, townNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+        
+        string townName = town.Name + (Config.show_ai_info ? " (" + town.TownId + ")" : "");
+        PutTextCenter(FontSan, townName, townNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
         
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
         int populationTextY = DetailsY1 + 55;

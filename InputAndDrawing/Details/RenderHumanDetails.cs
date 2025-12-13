@@ -150,6 +150,13 @@ public partial class Renderer
             PutText(FontSan, "Spying", DetailsX1 + 214, DetailsY1 + 181, -1, true);
             PutText(FontSan, SpyArray[unit.SpyId].SpySkill.ToString(), DetailsX1 + 307, DetailsY1 + 183, -1, true);
         }
+
+        if (Config.show_ai_info)
+        {
+            DrawFieldPanel62(DetailsX1 + 208, DetailsY1 + 207);
+            PutText(FontSan, "Unit ID", DetailsX1 + 214, DetailsY1 + 210, -1, true);
+            PutText(FontSan, unit.SpriteId.ToString(), DetailsX1 + 307, DetailsY1 + 212, -1, true);
+        }
         
         if (unit.IsOwn())
             DrawButtons(unit);
