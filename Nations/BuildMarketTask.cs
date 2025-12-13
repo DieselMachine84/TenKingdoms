@@ -75,6 +75,12 @@ public class BuildMarketTask : AITask, IUnitTask
 
         if (builder.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
         {
+            int restockType = FirmMarket.RESTOCK_ANY;
+            if (FirmId != 0)
+                restockType = FirmMarket.RESTOCK_RAW;
+            if (TownId != 0)
+                restockType = FirmMarket.RESTOCK_PRODUCT;
+            Nation.AddChangeMarketRestockTask(builder.UnitModeParam, restockType);
             _shouldCancel = true;
             return;
         }

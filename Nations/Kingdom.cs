@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
@@ -16,6 +15,7 @@ public class NationNew : NationBase
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
+    private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
@@ -157,6 +157,10 @@ public class NationNew : NationBase
             {
                 ProcessTask(_buildMarketTasks[i], _buildMarketTasks, i);
             }
+            for (int i = _changeMarketRestockTask.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_changeMarketRestockTask[i], _changeMarketRestockTask, i);
+            }
         }
     }
 
@@ -179,6 +183,8 @@ public class NationNew : NationBase
         foreach (var task in _assignGeneralTasks)
             yield return task;
         foreach (var task in _changeFactoryProductionTasks)
+            yield return task;
+        foreach (var task in _changeMarketRestockTask)
             yield return task;
         foreach (var task in _idleUnitTasks)
             yield return task;
@@ -393,6 +399,9 @@ public class NationNew : NationBase
                 if (buildFactoryTask.FirmId == rawFirm.FirmId)
                     return true;
             }
+
+            if (_changeFactoryProductionTasks.Count > 0)
+                return true;
 
             return false;
         }
@@ -629,6 +638,11 @@ public class NationNew : NationBase
     public void AddChangeFactoryProductionTask(int factoryId, int productId)
     {
         _changeFactoryProductionTasks.Add(new ChangeFactoryProductionTask(this, factoryId, productId));
+    }
+
+    public void AddChangeMarketRestockTask(int marketId, int restockType)
+    {
+        _changeMarketRestockTask.Add(new ChangeMarketRestockTask(this, marketId, restockType));
     }
 
     private void FindIdleUnits()

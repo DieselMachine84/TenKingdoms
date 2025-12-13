@@ -5,10 +5,10 @@ namespace TenKingdoms;
 
 public class FirmMarket : Firm
 {
-	private const int RESTOCK_ANY = 0;
-	private const int RESTOCK_PRODUCT = 1;
-	private const int RESTOCK_RAW = 2;
-	private const int RESTOCK_NONE = 3;
+	public const int RESTOCK_ANY = 0;
+	public const int RESTOCK_PRODUCT = 1;
+	public const int RESTOCK_RAW = 2;
+	public const int RESTOCK_NONE = 3;
 
 	public int RestockType { get; private set; }
 	public double MaxStockQty { get; }
