@@ -16,6 +16,7 @@ public partial class Nation : NationBase
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
+    private readonly List<StartCaravanTask> _startCaravanTasks = new List<StartCaravanTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public void ProcessAI()
@@ -75,9 +76,14 @@ public partial class Nation : NationBase
             ThinkChangeFactoryProduction();
         }
         
-        if ((Info.TotalDays + nation_recno) % 10 == 4)
+        if ((Info.TotalDays + nation_recno) % 10 == 5)
         {
             ThinkBuildMarket();
+        }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 6)
+        {
+            ThinkStartCaravan();
         }
     }
 
@@ -166,6 +172,14 @@ public partial class Nation : NationBase
                 ProcessTask(_changeMarketRestockTask[i], _changeMarketRestockTask, i);
             }
         }
+        
+        if ((Info.TotalDays + nation_recno) % 10 == 8)
+        {
+            for (int i = _startCaravanTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_startCaravanTasks[i], _startCaravanTasks, i);
+            }
+        }
     }
 
     private IEnumerable<AITask> EnumerateAllTasks()
@@ -189,6 +203,8 @@ public partial class Nation : NationBase
         foreach (var task in _changeFactoryProductionTasks)
             yield return task;
         foreach (var task in _changeMarketRestockTask)
+            yield return task;
+        foreach (var task in _startCaravanTasks)
             yield return task;
         foreach (var task in _idleUnitTasks)
             yield return task;
@@ -679,6 +695,51 @@ public partial class Nation : NationBase
     {
         //TODO
         return true;
+    }
+
+    private void ThinkStartCaravan()
+    {
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno)
+                continue;
+            
+            if (firm is FirmMine mine)
+            {
+                if (mine.ReserveQty <= 0.0 || mine.StockQty < mine.MaxStockQty * 3.0 / 4.0)
+                    continue;
+                
+                bool hasLinkedFactory = false;
+                for (int i = 0; i < mine.LinkedFirms.Count; i++)
+                {
+                    Firm linkedFirm = FirmArray[mine.LinkedFirms[i]];
+                    if (linkedFirm.NationId != mine.NationId)
+                        continue;
+                    
+                    if (mine.LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
+                        continue;
+
+                    if (linkedFirm is FirmFactory linkedFactory)
+                    {
+                        if (linkedFactory.UnderConstruction || linkedFactory.ProductId == mine.RawId)
+                            hasLinkedFactory = true;
+                    }
+                }
+
+                if (!hasLinkedFactory)
+                {
+                    bool hasStartCaravanTask = false;
+                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
+                    {
+                        if (startCaravanTask.MineId == mine.FirmId)
+                            hasStartCaravanTask = true;
+                    }
+
+                    if (!hasStartCaravanTask)
+                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId));
+                }
+            }
+        }
     }
     
     #region Old AI stubs

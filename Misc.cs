@@ -132,6 +132,12 @@ public class Misc
 
         return Math.Max(diffX, diffY);
     }
+
+    public static int FirmsDistance(Firm firm1, Firm firm2)
+    {
+        return RectsDistance(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm1.LocY2,
+            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
+    }
     
     public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {
