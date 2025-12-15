@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class IdleUnitTask : AITask
+public class IdleUnitTask : AITask, IUnitTask
 {
     private bool _shouldCancel;
     public int UnitId { get; }

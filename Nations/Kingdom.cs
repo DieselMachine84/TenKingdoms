@@ -192,10 +192,8 @@ public partial class Nation : NationBase
         }
     }
 
-    private IEnumerable<AITask> EnumerateAllTasks()
+    private IEnumerable<AITask> EnumerateAllUnitTasks()
     {
-        foreach (var task in _captureIndependentTasks)
-            yield return task;
         foreach (var task in _buildMineTasks)
             yield return task;
         foreach (var task in _buildFactoryTasks)
@@ -206,17 +204,7 @@ public partial class Nation : NationBase
             yield return task;
         foreach (var task in _settleTasks)
             yield return task;
-        foreach (var task in _relocatePeasantsTasks)
-            yield return task;
         foreach (var task in _assignGeneralTasks)
-            yield return task;
-        foreach (var task in _changeFactoryProductionTasks)
-            yield return task;
-        foreach (var task in _changeMarketRestockTask)
-            yield return task;
-        foreach (var task in _startCaravanTasks)
-            yield return task;
-        foreach (var task in _watchCaravanTasks)
             yield return task;
         foreach (var task in _idleUnitTasks)
             yield return task;
@@ -224,10 +212,9 @@ public partial class Nation : NationBase
 
     public bool IsUnitOnTask(int unitId)
     {
-        foreach (AITask task in EnumerateAllTasks())
+        foreach (AITask task in EnumerateAllUnitTasks())
         {
-            IUnitTask unitTask = task as IUnitTask;
-            if (unitTask != null && unitTask.UnitId == unitId)
+            if (task is IUnitTask unitTask && unitTask.UnitId == unitId)
                 return true;
         }
 
