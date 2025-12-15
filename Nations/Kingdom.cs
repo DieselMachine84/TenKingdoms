@@ -701,11 +701,11 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
-                continue;
-            
             if (firm is FirmMine mine)
             {
+                if (mine.NationId != nation_recno)
+                    continue;
+                
                 if (mine.UnderConstruction || mine.ReserveQty <= 0.0 || mine.StockQty < mine.MaxStockQty * 3.0 / 4.0)
                     continue;
                 
@@ -736,12 +736,15 @@ public partial class Nation : NationBase
                     }
 
                     if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId, 0));
+                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId, 0, 0));
                 }
             }
 
             if (firm is FirmFactory factory)
             {
+                if (factory.NationId != nation_recno)
+                    continue;
+                
                 if (factory.UnderConstruction || factory.StockQty <= 0.0 || factory.StockQty < factory.MaxStockQty * 3.0 / 4.0)
                     continue;
                 
@@ -772,7 +775,36 @@ public partial class Nation : NationBase
                     }
 
                     if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, factory.FirmId));
+                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, factory.FirmId, 0));
+                }
+            }
+
+            if (firm is FirmMarket market)
+            {
+                if (market.NationId == nation_recno)
+                    continue;
+
+                if (!get_relation(market.NationId).trade_treaty)
+                    continue;
+
+                bool hasGoodsToImport = false;
+                foreach (MarketGoods marketGoods in market.MarketGoods)
+                {
+                    if (marketGoods.ProductId != 0 && marketGoods.StockQty > market.MaxStockQty / 2.0)
+                        hasGoodsToImport = true;
+                }
+
+                if (hasGoodsToImport)
+                {
+                    bool hasStartCaravanTask = false;
+                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
+                    {
+                        if (startCaravanTask.MarketId == market.FirmId)
+                            hasStartCaravanTask = true;
+                    }
+
+                    if (!hasStartCaravanTask)
+                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, 0, market.FirmId));
                 }
             }
         }

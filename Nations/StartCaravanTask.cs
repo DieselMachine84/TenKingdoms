@@ -17,11 +17,13 @@ public class StartCaravanTask : AITask
     private bool _shouldCancel;
     public int MineId { get; }
     public int FactoryId { get; }
+    public int MarketId { get; }
 
-    public StartCaravanTask(Nation nation, int mineId, int factoryId) : base(nation)
+    public StartCaravanTask(Nation nation, int mineId, int factoryId, int marketId) : base(nation)
     {
         MineId = mineId;
         FactoryId = factoryId;
+        MarketId = marketId;
     }
 
     public override bool ShouldCancel()
@@ -34,6 +36,9 @@ public class StartCaravanTask : AITask
 
         if (FactoryId != 0 && FirmArray.IsDeleted(FactoryId))
             return true;
+
+        if (MarketId != 0 && FirmArray.IsDeleted(MarketId))
+            return true;
         
         return false;
     }
@@ -45,6 +50,9 @@ public class StartCaravanTask : AITask
         
         if (FactoryId != 0)
             StartFactoryCaravan();
+        
+        if (MarketId != 0)
+            StartForeignMarketCaravan();
     }
 
     private void StartMineCaravan()
@@ -111,6 +119,38 @@ public class StartCaravanTask : AITask
         
         if (bestMarket != null)
             StartCaravan(factory, bestMarket);
+    }
+
+    private void StartForeignMarketCaravan()
+    {
+        FirmMarket foreignMarket = (FirmMarket)FirmArray[MarketId];
+        
+        FirmMarket bestMarket = null;
+        int bestRating = Int16.MaxValue;
+        foreach (Firm otherFirm in FirmArray)
+        {
+            if (otherFirm.NationId != Nation.nation_recno)
+                continue;
+
+            if (otherFirm.RegionId != foreignMarket.RegionId)
+                continue;
+
+            if (otherFirm is FirmMarket otherMarket)
+            {
+                if (!otherMarket.UnderConstruction && otherMarket.IsRetailMarket())
+                {
+                    int rating = Misc.FirmsDistance(foreignMarket, otherMarket);
+                    if (rating < bestRating)
+                    {
+                        bestMarket = otherMarket;
+                        bestRating = rating;
+                    }
+                }
+            }
+        }
+        
+        if (bestMarket != null)
+            StartCaravan(foreignMarket, bestMarket);
     }
 
     private void StartCaravan(FirmMine mine, FirmFactory factory)
@@ -180,6 +220,28 @@ public class StartCaravanTask : AITask
         }
     }
 
+    private void StartCaravan(FirmMarket foreignMarket, FirmMarket market)
+    {
+        if (HasCaravan(foreignMarket, market))
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
+        int caravanId = market.HireCaravan(InternalConstants.COMMAND_AI);
+        if (caravanId != 0)
+        {
+            UnitCaravan caravan = (UnitCaravan)UnitArray[caravanId];
+            caravan.SetStop(1, foreignMarket.LocX1, foreignMarket.LocY1, InternalConstants.COMMAND_AI);
+            caravan.SetStopPickUp(1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+            for(int i = TradeStop.PICK_UP_PRODUCT_FIRST; i <= TradeStop.PICK_UP_PRODUCT_LAST; i++)
+                caravan.SetStopPickUp(1, i, InternalConstants.COMMAND_AI);
+            caravan.SetStop(2, market.LocX1, market.LocY1, InternalConstants.COMMAND_AI);
+            caravan.SetStopPickUp(2, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+            _shouldCancel = true;
+        }
+    }
+    
     private bool HasCaravan(Firm firm1, Firm firm2)
     {
         foreach (Unit unit in UnitArray)
