@@ -16,10 +16,12 @@ public class StartCaravanTask : AITask
 {
     private bool _shouldCancel;
     public int MineId { get; }
+    public int FactoryId { get; }
 
-    public StartCaravanTask(Nation nation, int mineId) : base(nation)
+    public StartCaravanTask(Nation nation, int mineId, int factoryId) : base(nation)
     {
         MineId = mineId;
+        FactoryId = factoryId;
     }
 
     public override bool ShouldCancel()
@@ -27,7 +29,10 @@ public class StartCaravanTask : AITask
         if (_shouldCancel)
             return true;
         
-        if (FirmArray.IsDeleted(MineId))
+        if (MineId != 0 && FirmArray.IsDeleted(MineId))
+            return true;
+
+        if (FactoryId != 0 && FirmArray.IsDeleted(FactoryId))
             return true;
         
         return false;
@@ -35,13 +40,22 @@ public class StartCaravanTask : AITask
 
     public override void Process()
     {
+        if (MineId != 0)
+            StartMineCaravan();
+        
+        if (FactoryId != 0)
+            StartFactoryCaravan();
+    }
+
+    private void StartMineCaravan()
+    {
         FirmMine mine = (FirmMine)FirmArray[MineId];
         
         FirmFactory bestFactory = null;
         int bestRating = Int16.MaxValue;
         foreach (Firm otherFirm in FirmArray)
         {
-            if (otherFirm.NationId != mine.NationId)
+            if (otherFirm.NationId != Nation.nation_recno)
                 continue;
 
             //TODO other region
@@ -67,30 +81,46 @@ public class StartCaravanTask : AITask
             StartCaravan(mine, bestFactory);
     }
 
-    private void StartCaravan(FirmMine mine, FirmFactory factory)
+    private void StartFactoryCaravan()
     {
-        foreach (Unit unit in UnitArray)
-        {
-            if (unit is UnitCaravan caravan)
-            {
-                bool hasMineStop = false;
-                bool hasFactoryStop = false;
-                for (int i = 0; i < caravan.Stops.Length; i++)
-                {
-                    CaravanStop stop = caravan.Stops[i];
-                    if (stop.FirmId == mine.FirmId)
-                        hasMineStop = true;
-                    if (stop.FirmId == factory.FirmId)
-                        hasFactoryStop = true;
-                }
+        FirmFactory factory = (FirmFactory)FirmArray[FactoryId];
 
-                if (hasMineStop && hasFactoryStop)
-                    return;
+        FirmMarket bestMarket = null;
+        int bestRating = Int16.MaxValue;
+        foreach (Firm otherFirm in FirmArray)
+        {
+            if (otherFirm.NationId != Nation.nation_recno)
+                continue;
+
+            if (otherFirm.RegionId != factory.RegionId)
+                continue;
+
+            if (otherFirm is FirmMarket otherMarket)
+            {
+                if (!otherMarket.UnderConstruction && otherMarket.IsRetailMarket())
+                {
+                    int rating = Misc.FirmsDistance(factory, otherMarket);
+                    if (rating < bestRating)
+                    {
+                        bestMarket = otherMarket;
+                        bestRating = rating;
+                    }
+                }
             }
         }
         
-        //No such caravan found - create a new one
+        if (bestMarket != null)
+            StartCaravan(factory, bestMarket);
+    }
 
+    private void StartCaravan(FirmMine mine, FirmFactory factory)
+    {
+        if (HasCaravan(mine, factory))
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
         FirmMarket bestMarket = null;
         int bestRating = Int16.MaxValue;
         foreach (Firm firm in FirmArray)
@@ -127,5 +157,53 @@ public class StartCaravanTask : AITask
                 _shouldCancel = true;
             }
         }
+    }
+
+    private void StartCaravan(FirmFactory factory, FirmMarket market)
+    {
+        if (HasCaravan(factory, market))
+        {
+            _shouldCancel = true;
+            return;
+        }
+        
+        int caravanId = market.HireCaravan(InternalConstants.COMMAND_AI);
+        if (caravanId != 0)
+        {
+            UnitCaravan caravan = (UnitCaravan)UnitArray[caravanId];
+            caravan.SetStop(1, factory.LocX1, factory.LocY1, InternalConstants.COMMAND_AI);
+            caravan.SetStopPickUp(1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+            caravan.SetStopPickUp(1, TradeStop.PICK_UP_PRODUCT_FIRST + factory.ProductId - 1, InternalConstants.COMMAND_AI);
+            caravan.SetStop(2, market.LocX1, market.LocY1, InternalConstants.COMMAND_AI);
+            caravan.SetStopPickUp(2, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
+            _shouldCancel = true;
+        }
+    }
+
+    private bool HasCaravan(Firm firm1, Firm firm2)
+    {
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit is UnitCaravan caravan)
+            {
+                bool hasMineStop = false;
+                bool hasFactoryStop = false;
+                for (int i = 0; i < caravan.Stops.Length; i++)
+                {
+                    CaravanStop stop = caravan.Stops[i];
+                    if (stop.FirmId == firm1.FirmId)
+                        hasMineStop = true;
+                    if (stop.FirmId == firm2.FirmId)
+                        hasFactoryStop = true;
+                }
+
+                if (hasMineStop && hasFactoryStop)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

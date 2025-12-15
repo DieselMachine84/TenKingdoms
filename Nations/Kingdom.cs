@@ -706,7 +706,7 @@ public partial class Nation : NationBase
             
             if (firm is FirmMine mine)
             {
-                if (mine.ReserveQty <= 0.0 || mine.StockQty < mine.MaxStockQty * 3.0 / 4.0)
+                if (mine.UnderConstruction || mine.ReserveQty <= 0.0 || mine.StockQty < mine.MaxStockQty * 3.0 / 4.0)
                     continue;
                 
                 bool hasLinkedFactory = false;
@@ -736,7 +736,43 @@ public partial class Nation : NationBase
                     }
 
                     if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId));
+                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId, 0));
+                }
+            }
+
+            if (firm is FirmFactory factory)
+            {
+                if (factory.UnderConstruction || factory.StockQty <= 0.0 || factory.StockQty < factory.MaxStockQty * 3.0 / 4.0)
+                    continue;
+                
+                bool hasLinkedMarket = false;
+                for (int i = 0; i < factory.LinkedFirms.Count; i++)
+                {
+                    Firm linkedFirm = FirmArray[factory.LinkedFirms[i]];
+                    if (linkedFirm.NationId != factory.NationId)
+                        continue;
+                    
+                    if (factory.LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
+                        continue;
+
+                    if (linkedFirm is FirmMarket linkedMarket)
+                    {
+                        if (linkedMarket.UnderConstruction || linkedMarket.IsRetailMarket())
+                            hasLinkedMarket = true;
+                    }
+                }
+                
+                if (!hasLinkedMarket)
+                {
+                    bool hasStartCaravanTask = false;
+                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
+                    {
+                        if (startCaravanTask.FactoryId == factory.FirmId)
+                            hasStartCaravanTask = true;
+                    }
+
+                    if (!hasStartCaravanTask)
+                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, factory.FirmId));
                 }
             }
         }
