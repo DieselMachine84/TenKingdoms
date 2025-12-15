@@ -17,7 +17,13 @@ public partial class Nation : NationBase
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
     private readonly List<StartCaravanTask> _startCaravanTasks = new List<StartCaravanTask>();
+    private readonly List<WatchCaravanTask> _watchCaravanTasks = new List<WatchCaravanTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
+
+    public Nation()
+    {
+        _watchCaravanTasks.Add(new WatchCaravanTask(this));
+    }
 
     public void ProcessAI()
     {
@@ -179,6 +185,10 @@ public partial class Nation : NationBase
             {
                 ProcessTask(_startCaravanTasks[i], _startCaravanTasks, i);
             }
+            for (int i = _watchCaravanTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_watchCaravanTasks[i], _watchCaravanTasks, i);
+            }
         }
     }
 
@@ -205,6 +215,8 @@ public partial class Nation : NationBase
         foreach (var task in _changeMarketRestockTask)
             yield return task;
         foreach (var task in _startCaravanTasks)
+            yield return task;
+        foreach (var task in _watchCaravanTasks)
             yield return task;
         foreach (var task in _idleUnitTasks)
             yield return task;
