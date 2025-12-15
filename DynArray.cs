@@ -14,6 +14,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
     private int _nextId = 1;
     private readonly List<T> _list = new List<T>();
     private readonly Dictionary<int, int> _idIndexes = new Dictionary<int, int>();
+    private readonly List<int> _keysForEnumeration = new List<int>();
 
     protected abstract T CreateNewObject(int objectType);
 
@@ -91,38 +92,43 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
 
     protected IEnumerable<T> EnumerateWithDeleted()
     {
-        List<int> keys = _idIndexes.Keys.ToList();
-        for (int i = 0; i < keys.Count; i++)
+        _keysForEnumeration.Clear();
+        _keysForEnumeration.AddRange(_idIndexes.Keys);
+        
+        for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            if (_idIndexes.ContainsKey(keys[i]))
+            if (_idIndexes.ContainsKey(_keysForEnumeration[i]))
             {
-                yield return _list[_idIndexes[keys[i]]];
+                yield return _list[_idIndexes[_keysForEnumeration[i]]];
             }
         }
     }
 
     public IEnumerable<T> EnumerateRandom()
     {
-        List<int> keys = _idIndexes.Keys.ToList();
-        int keyIndex = Misc.Random(keys.Count);
-        for (int i = 0; i < keys.Count; i++)
+        _keysForEnumeration.Clear();
+        _keysForEnumeration.AddRange(_idIndexes.Keys);
+        
+        int keyIndex = Misc.Random(_keysForEnumeration.Count);
+        for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            yield return _list[_idIndexes[keys[keyIndex]]];
+            yield return _list[_idIndexes[_keysForEnumeration[keyIndex]]];
 
             keyIndex++;
-            if (keyIndex == keys.Count)
+            if (keyIndex == _keysForEnumeration.Count)
                 keyIndex = 0;
         }
     }
 
     protected IEnumerable<int> EnumerateAll(int startId, bool forward)
     {
-        List<int> keys = _idIndexes.Keys.ToList();
+        _keysForEnumeration.Clear();
+        _keysForEnumeration.AddRange(_idIndexes.Keys);
         
         int startIndex = -1;
-        for (int i = 0; i < keys.Count; i++)
+        for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            if (keys[i] == startId)
+            if (_keysForEnumeration[i] == startId)
             {
                 startIndex = i;
                 break;
@@ -133,22 +139,22 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
             yield break;
 
         int index = startIndex;
-        for (int i = 0; i < keys.Count; i++)
+        for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
             if (forward)
             {
                 index++;
-                if (index == keys.Count)
+                if (index == _keysForEnumeration.Count)
                     index = 0;
             }
             else
             {
                 index--;
                 if (index == -1)
-                    index = keys.Count - 1;
+                    index = _keysForEnumeration.Count - 1;
             }
 
-            yield return keys[index];
+            yield return _keysForEnumeration[index];
         }
     }
 }
