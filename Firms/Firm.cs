@@ -70,9 +70,14 @@ public abstract class Firm : IIdObject
 	public List<int> LinkedTowns { get; } = new List<int>();
 	public List<int> LinkedFirmsEnable { get; } = new List<int>();
 	public List<int> LinkedTownsEnable { get; } = new List<int>();
-	
-	
-	public bool AIFirm { get; private set; } // whether Computer AI control this firm or not
+
+
+	private bool _aiFirm;
+	public bool AIFirm
+	{
+		get => false;
+		private set => _aiFirm = value;
+	} // whether Computer AI control this firm or not
 
 	// some ai actions are processed once only in the processing day. To prevent multiple checking in the processing day
 	public bool AIProcessed { get; set; }

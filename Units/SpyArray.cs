@@ -42,8 +42,9 @@ public class SpyArray : DynArray<Spy>
             if (IsDeleted(spy.SpyId))
                 continue;
 
-            if (NationArray[spy.TrueNationId].is_ai())
-                spy.ProcessAI();
+            //TODO AI
+            //if (NationArray[spy.TrueNationId].is_ai())
+                //spy.ProcessAI();
         }
 
         if (Info.TotalDays % 15 == 0)

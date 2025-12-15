@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TenKingdoms;
 
-public class Nation : NationBase
+public class NationOld : NationBase
 {
 	public const int ACTION_AI_BUILD_FIRM = 1;
 	public const int ACTION_AI_ASSIGN_OVERSEER = 2;

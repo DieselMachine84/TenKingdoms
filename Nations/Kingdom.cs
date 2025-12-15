@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class NationNew : NationBase
+public class Nation : NationBase
 {
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();

@@ -86,7 +86,13 @@ public class Town : IIdObject
 
 
 	//----------- AI vars ------------//
-	public bool AITown { get; private set; }
+	private bool _aiTown;
+	public bool AITown
+	{
+		get => false;
+		private set => _aiTown = value;
+	}
+
 	// AI check firm and town location by links, disable checking by setting this parameter to 1
 	public bool AILinkChecked { get; set; }
 	public bool IsBaseTown { get; private set; }
@@ -3599,7 +3605,8 @@ public class Town : IIdObject
 
 		//--- tell the AI spies in the town that a rebellion is happening ---//
 
-		SpyArray.AISpyTownRebel(TownId);
+		//TODO AI
+		//SpyArray.AISpyTownRebel(TownId);
 	}
 	
 	private Unit CreateRebelUnit(int raceId, bool isLeader)
