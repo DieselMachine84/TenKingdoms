@@ -606,6 +606,8 @@ public partial class Renderer
     {
         int nextUnitId = UnitArray.GetNextUnit(_selectedUnitId, seekDir, sameNation);
         _selectedUnitId = nextUnitId;
+        _selectedUnits.Clear();
+        _selectedUnits.Add(_selectedUnitId);
         Unit selectedUnit = UnitArray[_selectedUnitId];
         GoToLocation(selectedUnit.NextLocX, selectedUnit.NextLocY);
     }
