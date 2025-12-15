@@ -18,11 +18,13 @@ public partial class Nation : NationBase
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
     private readonly List<StartCaravanTask> _startCaravanTasks = new List<StartCaravanTask>();
     private readonly List<WatchCaravanTask> _watchCaravanTasks = new List<WatchCaravanTask>();
+    private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public Nation()
     {
         _watchCaravanTasks.Add(new WatchCaravanTask(this));
+        _collectTaxTasks.Add(new CollectTaxTask(this));
     }
 
     public void ProcessAI()
@@ -34,7 +36,7 @@ public partial class Nation : NationBase
 
     private void ThinkAboutNewTask()
     {
-        int[] intervalDaysArray = { 90, 30, 15, 15 };
+        int[] intervalDaysArray = { 80, 40, 20, 10 };
         int intervalDays = intervalDaysArray[Config.ai_aggressiveness - Config.OPTION_LOW];
 
         switch ((Info.TotalDays + nation_recno * 8) % intervalDays)
@@ -188,6 +190,10 @@ public partial class Nation : NationBase
             for (int i = _watchCaravanTasks.Count - 1; i >= 0; i--)
             {
                 ProcessTask(_watchCaravanTasks[i], _watchCaravanTasks, i);
+            }
+            for (int i = _collectTaxTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_collectTaxTasks[i], _collectTaxTasks, i);
             }
         }
     }
@@ -694,23 +700,8 @@ public partial class Nation : NationBase
             if (IsUnitOnTask(unit.SpriteId))
                 continue;
             
-            bool hasIdleUnitTask = false;
-            foreach (IdleUnitTask idleUnitTask in _idleUnitTasks)
-            {
-                if (idleUnitTask.UnitId == unit.SpriteId)
-                    hasIdleUnitTask = true;
-            }
-
-            if (!hasIdleUnitTask)
-                _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
-
+            _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
         }
-    }
-
-    private bool ShouldHire(FirmInn inn, InnUnit innUnit)
-    {
-        //TODO
-        return true;
     }
 
     private void ThinkStartCaravan()
@@ -824,6 +815,12 @@ public partial class Nation : NationBase
                 }
             }
         }
+    }
+    
+    private bool ShouldHire(FirmInn inn, InnUnit innUnit)
+    {
+        //TODO
+        return true;
     }
     
     #region Old AI stubs
