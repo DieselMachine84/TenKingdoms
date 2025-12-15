@@ -185,6 +185,7 @@ public class Sys
 
     private void Reset()
     {
+        //TODO reset all static variables
         FrameNumber = 0;
         FrameOfDay = 0;
         GameEnded = false;
