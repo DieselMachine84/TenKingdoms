@@ -34,7 +34,7 @@ public class TalkRes
 
     public bool msg_add_nation_color;
 
-    private List<TalkMsg> talk_msg_array = new List<TalkMsg>();
+    public List<TalkMsg> talk_msg_array { get; } = new List<TalkMsg>();
 
     private static string[] nation_name_str_array = new string[GameConstants.MAX_NATION];
 

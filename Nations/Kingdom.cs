@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class Nation : NationBase
+public partial class Nation : NationBase
 {
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
@@ -42,6 +42,10 @@ public class Nation : NationBase
             
             case 2:
                 FindIdleUnits();
+                break;
+            
+            case 3:
+                ThinkDiplomacy();
                 break;
         }
 
