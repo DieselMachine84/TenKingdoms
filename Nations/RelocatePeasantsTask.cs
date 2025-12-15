@@ -47,7 +47,6 @@ public class RelocatePeasantsTask : AITask
             Town bestTown = null;
             int minDistance = Int16.MaxValue;
             int bestRace = -1;
-            int maxRacePop = 0;
 
             foreach (Town otherTown in TownArray)
             {
@@ -72,7 +71,7 @@ public class RelocatePeasantsTask : AITask
                     otherTown.LocX1, otherTown.LocY1, otherTown.LocX2, otherTown.LocY2);
                 if (distance < minDistance)
                 {
-                    maxRacePop = 0;
+                    int maxRacePop = 0;
                     for (int i = 1; i <= GameConstants.MAX_RACE; i++)
                     {
                         if (!otherTown.CanRecruit(i))
@@ -97,6 +96,7 @@ public class RelocatePeasantsTask : AITask
                 {
                     Unit unit = UnitArray[unitId];
                     unit.Settle(town.LocX1, town.LocY1);
+                    return;
                 }
             }
         }
