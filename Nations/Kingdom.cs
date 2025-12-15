@@ -522,15 +522,32 @@ public partial class Nation : NationBase
 
             if (!hasLinkedMarket)
             {
-                bool hasBuildMarketTask = false;
-                foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+                bool hasOtherFirmsToTrade = false;
+                foreach (Firm firm in FirmArray)
                 {
-                    if (buildMarketTask.TownId == town.TownId)
-                        hasBuildMarketTask = true;
+                    if (firm.RegionId != town.RegionId)
+                        continue;
+
+                    if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY ||
+                        firm.FirmType == Firm.FIRM_MARKET || firm.FirmType == Firm.FIRM_HARBOR)
+                    {
+                        hasOtherFirmsToTrade = true;
+                        break;
+                    }
                 }
-                        
-                if (!hasBuildMarketTask)
-                    _buildMarketTasks.Add(new BuildMarketTask(this, 0, town.TownId));
+
+                if (hasOtherFirmsToTrade)
+                {
+                    bool hasBuildMarketTask = false;
+                    foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+                    {
+                        if (buildMarketTask.TownId == town.TownId)
+                            hasBuildMarketTask = true;
+                    }
+
+                    if (!hasBuildMarketTask)
+                        _buildMarketTasks.Add(new BuildMarketTask(this, 0, town.TownId));
+                }
             }
         }
     }
