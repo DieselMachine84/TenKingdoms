@@ -277,7 +277,10 @@ public partial class Renderer
         
         //TODO draw way points
         //TODO draw weather effects
-        //TODO draw build marker
+
+        if (UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle)
+            DrawBuildMarker();
+
         //TODO draw god cast power
         //TODO blacken fog of war
         //TODO blacken unexplored
@@ -1000,6 +1003,47 @@ public partial class Renderer
             (screenX1 < screenX2) ? screenX1 : screenX2, (screenY1 < screenY2) ? screenY1 : screenY2, CellTextureWidth, CellTextureHeight, diagonalFlip);
     }
 
+    private void DrawBuildMarker()
+    {
+        int width = 0;
+        int height = 0;
+        int color = Colors.V_BLACK;
+        (int locX, int locY) = GetMainViewLocation(_mouseMotionX, _mouseMotionY);
+        
+        if (UnitDetailsMode == UnitDetailsMode.Build)
+        {
+            FirmInfo firmInfo = FirmRes[_buildFirmType];
+            width = firmInfo.LocWidth;
+            height = firmInfo.LocHeight;
+            color = World.CanBuildFirm(locX, locY, _buildFirmType, _selectedUnitId) != 0 ? Colors.V_DARK_GREEN : Colors.V_RED;
+        }
+
+        if (UnitDetailsMode == UnitDetailsMode.Settle)
+        {
+            width = InternalConstants.TOWN_WIDTH;
+            height = InternalConstants.TOWN_HEIGHT;
+            color = World.CanBuildTown(locX, locY, _selectedUnitId) ? Colors.V_DARK_GREEN : Colors.V_RED;
+        }
+
+        for (int i = 0; i < width; i++)
+        {
+            (int screenX, int screenY) = GetScreenXAndY(locX + i, locY);
+            int thickness = i == 0 ? 4 : 2;
+            Graphics.DrawRect(screenX, screenY, thickness, height * CellTextureHeight, color);
+            thickness = i == width - 1 ? 4 : 2;
+            Graphics.DrawRect(screenX + CellTextureWidth - thickness, screenY, thickness, height * CellTextureHeight, color);
+        }
+
+        for (int j = 0; j < height; j++)
+        {
+            (int screenX, int screenY) = GetScreenXAndY(locX, locY + j);
+            int thickness = j == 0 ? 4 : 2;
+            Graphics.DrawRect(screenX, screenY, width * CellTextureWidth, thickness, color);
+            thickness = j == height - 1 ? 4 : 2;
+            Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, width * CellTextureWidth, thickness, color);
+        }
+    }
+
     private void DrawSelectionRectangle()
     {
         if (_mouseButtonX < MainViewX || _mouseButtonX >= MainViewX + MainViewWidth)
@@ -1022,17 +1066,17 @@ public partial class Renderer
             return y;
         }
 
-        const int Thickness = 3;
-        int color = Colors.VGA_YELLOW;
+        const int thickness = 3;
+        int color = Colors.V_YELLOW;
 
         int x1 = BoundX(Math.Min(_mouseButtonX, _mouseMotionX));
         int x2 = BoundX(Math.Max(_mouseButtonX, _mouseMotionX));
         int y1 = BoundY(Math.Min(_mouseButtonY, _mouseMotionY));
         int y2 = BoundY(Math.Max(_mouseButtonY, _mouseMotionY));
-        Graphics.DrawRect(x1, y1, x2 - x1, Thickness, color);
-        Graphics.DrawRect(x1, y2 - Thickness, x2 - x1, Thickness, color);
-        Graphics.DrawRect(x1, y1, Thickness, y2 - y1, color);
-        Graphics.DrawRect(x2 - Thickness, y1, Thickness, y2 - y1, color);
+        Graphics.DrawRect(x1, y1, x2 - x1, thickness, color);
+        Graphics.DrawRect(x1, y2 - thickness, x2 - x1, thickness, color);
+        Graphics.DrawRect(x1, y1, thickness, y2 - y1, color);
+        Graphics.DrawRect(x2 - thickness, y1, thickness, y2 - y1, color);
     }
 
     private int GetSpriteDrawY2(Sprite sprite)
