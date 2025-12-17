@@ -161,34 +161,34 @@ public partial class Renderer
             dy += 70;
         }
     }
-    
+
     public void HandleWarFactoryDetailsInput(FirmWar warFactory)
     {
+        if (!warFactory.OwnFirm())
+            return;
+
         if (FirmDetailsMode == FirmDetailsMode.WarMachine)
         {
             HandleWarFactoryMenu(warFactory);
             return;
         }
 
-        bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
-        bool button2Pressed = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+        bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
 
-        if (warFactory.OwnFirm())
+        if (_leftMouseReleased && mouseOnButton1)
         {
-            if (button1Pressed)
-            {
-                FirmDetailsMode = FirmDetailsMode.WarMachine;
-            }
-            
-            if (button2Pressed && warFactory.HaveOwnWorkers())
-            {
-                warFactory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
-            }
+            FirmDetailsMode = FirmDetailsMode.WarMachine;
+        }
+
+        if (_leftMouseReleased && mouseOnButton2 && warFactory.HaveOwnWorkers())
+        {
+            warFactory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
         }
     }
-    
+
     private void HandleWarFactoryMenu(FirmWar warFactory)
     {
         int shownItems = 0;

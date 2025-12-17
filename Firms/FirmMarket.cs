@@ -87,7 +87,7 @@ public class FirmMarket : Firm
 		if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == FirmId % GameConstants.PROCESS_GOODS_INTERVAL)
 		{
 			InputGoods(50); // input maximum 50 qty of goods per day
-			SetNextOutputFirm(); // set next output firm
+			SetNextOutputFirm();
 		}
 
 		SellGoods();
@@ -353,18 +353,18 @@ public class FirmMarket : Firm
 		return null;
 	}
 
-	public void SetRawGoods(int goodsId, int position)
+	public void SetRawGoods(int rawId, int position)
 	{
 		MarketGoods marketGoods = MarketGoods[position];
-		marketGoods.RawId = goodsId;
+		marketGoods.RawId = rawId;
 		marketGoods.ProductId = 0;
 	}
 
-	public void SetProductGoods(int goodsId, int position)
+	public void SetProductGoods(int productId, int position)
 	{
 		MarketGoods marketGoods = MarketGoods[position];
 		marketGoods.RawId = 0;
-		marketGoods.ProductId = goodsId;
+		marketGoods.ProductId = productId;
 	}
 	
 	public void SwitchRestock()

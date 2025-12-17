@@ -2,6 +2,8 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
+    private int _setStopId;
+    
     public void DrawCaravanDetails(UnitCaravan caravan)
     {
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
@@ -15,8 +17,16 @@ public partial class Renderer
         {
             DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 96 + dy);
 
-            DrawFieldPanel75(DetailsX1 + 16, DetailsY1 + 159 + dy);
-            PutText(FontSan, "Set Stop", DetailsX1 + 34, DetailsY1 + 162 + dy, -1, true);
+            if (caravan.IsOwn())
+            {
+                bool mouseOnSetStopButton = _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 123 &&
+                                          _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+                if (_leftMousePressed && mouseOnSetStopButton)
+                    DrawSetStopPanelDown(DetailsX1 + 16, DetailsY1 + 159 + dy);
+                else
+                    DrawSetStopPanelUp(DetailsX1 + 16, DetailsY1 + 159 + dy);
+                PutText(FontSan, "Set Stop", DetailsX1 + 34, DetailsY1 + 162 + dy, -1, true);
+            }
 
             int pickupGoods = 0;
             CaravanStop caravanStop = caravan.Stops[i];
@@ -31,10 +41,24 @@ public partial class Renderer
                 PutText(FontSan, "Pick up", DetailsX1 + 16, DetailsY1 + 132 + dy, -1, true);
                 PutText(FontSan, ":", DetailsX1 + 79, DetailsY1 + 134 + dy, -1, true);
 
-                DrawFieldPanel75(DetailsX1 + 168, DetailsY1 + 159 + dy);
-                PutText(FontSan, "View Stop", DetailsX1 + 180, DetailsY1 + 162 + dy, -1, true);
-                DrawClearPanelUp(DetailsX1 + 320, DetailsY1 + 159 + dy);
-                PutText(FontSan, "Clear", DetailsX1 + 336, DetailsY1 + 162 + dy, -1, true);
+                if (caravan.IsOwn())
+                {
+                    bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
+                                                 _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+                    if (_leftMousePressed && mouseOnViewStopButton)
+                        DrawSetStopPanelDown(DetailsX1 + 168, DetailsY1 + 159 + dy);
+                    else
+                        DrawSetStopPanelUp(DetailsX1 + 168, DetailsY1 + 159 + dy);
+                    PutText(FontSan, "View Stop", DetailsX1 + 180, DetailsY1 + 162 + dy, -1, true);
+
+                    bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
+                                              _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+                    if (_leftMousePressed && mouseOnClearButton)
+                        DrawClearPanelDown(DetailsX1 + 320, DetailsY1 + 159 + dy);
+                    else
+                        DrawClearPanelUp(DetailsX1 + 320, DetailsY1 + 159 + dy);
+                    PutText(FontSan, "Clear", DetailsX1 + 336, DetailsY1 + 162 + dy, -1, true);
+                }
 
                 int dx = 0;
                 for (int j = 1; j <= TradeStop.MAX_PICK_UP_GOODS; j++)
@@ -113,7 +137,7 @@ public partial class Renderer
                     if (caravanStop.PickUpType == TradeStop.AUTO_PICK_UP)
                     {
                         DrawResourcePanelDown(DetailsX1 + 110, DetailsY1 + 126 + dy);
-                        Graphics.DrawRect(DetailsX1 + 112, DetailsY1 + 129 + dy, 24, 24, Colors.V_YELLOW);
+                        Graphics.DrawRect(DetailsX1 + 112, DetailsY1 + 129 + dy, 27, 27, Colors.V_YELLOW);
                     }
                     else
                     {
@@ -150,6 +174,59 @@ public partial class Renderer
 
     public void HandleCaravanDetailsInput(UnitCaravan caravan)
     {
-        //
+        if (!caravan.IsOwn())
+            return;
+        
+        int dy = 0;
+        for (int i = 0; i < UnitCaravan.MAX_STOP_FOR_CARAVAN; i++)
+        {
+            bool mouseOnSetStopButton = _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 123 &&
+                                        _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+            if (_leftMouseReleased && mouseOnSetStopButton)
+            {
+                _setStopId = i + 1;
+                UnitDetailsMode = UnitDetailsMode.SetStop;
+            }
+
+            bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
+                                         _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+            if (_leftMouseReleased && mouseOnViewStopButton)
+            {
+                Firm firm = FirmArray[caravan.Stops[i].FirmId];
+                GoToLocation(firm.LocCenterX, firm.LocCenterY);
+            }
+            
+            bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
+                                      _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+            if (_leftMouseReleased && mouseOnClearButton)
+            {
+                caravan.DelStop(i + 1, InternalConstants.COMMAND_PLAYER);
+                SECtrl.immediate_sound("TURN_OFF");
+            }
+
+            int dx = 0;
+            for (int j = TradeStop.AUTO_PICK_UP; j <= TradeStop.NO_PICK_UP; j++)
+            {
+                bool mouseOnResourceButton = _mouseButtonX >= DetailsX1 + 112 + dx && _mouseButtonX <= DetailsX1 + 139 + dx &&
+                                             _mouseButtonY >= DetailsY1 + 129 + dy && _mouseButtonY <= DetailsY1 + 156 + dy;
+                if (_leftMousePressed && mouseOnResourceButton)
+                {
+                    caravan.SetStopPickUp(i + 1, j, InternalConstants.COMMAND_PLAYER);
+                }
+                
+                dx += 36;
+            }
+
+            dy += 97;
+        }
+    }
+    
+    private void CancelSetStop()
+    {
+        if (UnitDetailsMode == UnitDetailsMode.SetStop)
+        {
+            UnitDetailsMode = UnitDetailsMode.Normal;
+            _setStopId = 0;
+        }
     }
 }

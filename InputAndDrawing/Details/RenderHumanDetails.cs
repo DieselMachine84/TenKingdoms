@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-enum HumanDetailsMode { Normal, Settle, BuildMenu, Build }
+enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop }
 
 public partial class Renderer
 {
@@ -33,23 +33,23 @@ public partial class Renderer
 
     private int _buildFirmType;
 
-    private HumanDetailsMode HumanDetailsMode { get; set; } = HumanDetailsMode.Normal;
+    private UnitDetailsMode UnitDetailsMode { get; set; } = UnitDetailsMode.Normal;
 
     public void DrawHumanDetails(UnitHuman unit)
     {
-        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        if (UnitDetailsMode == UnitDetailsMode.Settle)
         {
             DrawSettlePanel();
             return;
         }
 
-        if (HumanDetailsMode == HumanDetailsMode.BuildMenu)
+        if (UnitDetailsMode == UnitDetailsMode.BuildMenu)
         {
             DrawBuildMenu(unit);
             return;
         }
 
-        if (HumanDetailsMode == HumanDetailsMode.Build)
+        if (UnitDetailsMode == UnitDetailsMode.Build)
         {
             DrawBuildPanel();
             return;
@@ -332,19 +332,19 @@ public partial class Renderer
     
     public void HandleHumanDetailsInput(UnitHuman unit)
     {
-        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        if (UnitDetailsMode == UnitDetailsMode.Settle)
         {
             HandleSettlePanelInput();
             return;
         }
 
-        if (HumanDetailsMode == HumanDetailsMode.BuildMenu)
+        if (UnitDetailsMode == UnitDetailsMode.BuildMenu)
         {
             HandleBuildMenuInput(unit);
             return;
         }
 
-        if (HumanDetailsMode == HumanDetailsMode.Build)
+        if (UnitDetailsMode == UnitDetailsMode.Build)
         {
             HandleBuildPanelInput();
             return;
@@ -425,12 +425,12 @@ public partial class Renderer
 
             if (button3Pressed && IsSettleEnabled(unit))
             {
-                HumanDetailsMode = HumanDetailsMode.Settle;
+                UnitDetailsMode = UnitDetailsMode.Settle;
             }
 
             if (button4Pressed && IsBuildEnabled(unit))
             {
-                HumanDetailsMode = HumanDetailsMode.BuildMenu;
+                UnitDetailsMode = UnitDetailsMode.BuildMenu;
             }
 
             if (button5Pressed && (IsPromoteEnabled(unit) || IsDemoteEnabled(unit)))
@@ -626,7 +626,7 @@ public partial class Renderer
                                        _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
             if (mouseOnCancelButton)
             {
-                HumanDetailsMode = HumanDetailsMode.Normal;
+                UnitDetailsMode = UnitDetailsMode.Normal;
             }
         }
     }
@@ -684,7 +684,7 @@ public partial class Renderer
                         _mouseButtonY >= buttonY && _mouseButtonY <= buttonY + Scale(_buildButtonHeight))
                     {
                         _buildFirmType = firmType;
-                        HumanDetailsMode = HumanDetailsMode.Build;
+                        UnitDetailsMode = UnitDetailsMode.Build;
                     }
                     buttonsCount++;
                 }
@@ -695,7 +695,7 @@ public partial class Renderer
             if (_mouseButtonX >= buttonCancelX && _mouseButtonX <= buttonCancelX + ButtonWidth &&
                 _mouseButtonY >= buttonCancelY && _mouseButtonY <= buttonCancelY + ButtonHeight)
             {
-                HumanDetailsMode = HumanDetailsMode.Normal;
+                UnitDetailsMode = UnitDetailsMode.Normal;
             }
         }
     }
@@ -736,7 +736,7 @@ public partial class Renderer
                                        _mouseButtonY >= MouseOnBuildSettleCancelButtonY1 && _mouseButtonY <= MouseOnBuildSettleCancelButtonY2;
             if (mouseOnCancelButton)
             {
-                HumanDetailsMode = HumanDetailsMode.Normal;
+                UnitDetailsMode = UnitDetailsMode.Normal;
                 _buildFirmType = 0;
             }
         }
@@ -744,9 +744,9 @@ public partial class Renderer
 
     private void CancelSettleAndBuild()
     {
-        if (HumanDetailsMode == HumanDetailsMode.Build || HumanDetailsMode == HumanDetailsMode.Settle)
+        if (UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle)
         {
-            HumanDetailsMode = HumanDetailsMode.Normal;
+            UnitDetailsMode = UnitDetailsMode.Normal;
             _buildFirmType = 0;
         }
     }

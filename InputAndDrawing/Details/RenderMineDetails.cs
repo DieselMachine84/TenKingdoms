@@ -76,15 +76,15 @@ public partial class Renderer
     
     public void HandleMineDetailsInput(FirmMine mine)
     {
-        bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        if (!mine.OwnFirm())
+            return;
+        
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsMineY + 2 && _mouseButtonY <= ButtonsMineY + ButtonHeight;
         
-        if (mine.OwnFirm())
+        if (_leftMouseReleased && mouseOnButton1 && mine.HaveOwnWorkers())
         {
-            if (button1Pressed && mine.HaveOwnWorkers())
-            {
-                mine.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
-            }
+            mine.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
         }
     }
 }

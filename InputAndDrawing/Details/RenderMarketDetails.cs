@@ -115,5 +115,63 @@ public partial class Renderer
     
     public void HandleMarketDetailsInput(FirmMarket market)
     {
+        bool button1Pressed = _leftMouseReleased && _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+                              _mouseButtonY >= ButtonsMarketY + 2 && _mouseButtonY <= ButtonsMarketY + ButtonHeight;
+
+        bool mouseOnSwitchButton = _mouseButtonX >= DetailsX1 + 330 && _mouseButtonX <= DetailsX1 + 399 &&
+                                   _mouseButtonY >= DetailsY1 + 424 && _mouseButtonY <= DetailsY1 + 445;
+
+        if (market.OwnFirm())
+        {
+            if (button1Pressed)
+                market.HireCaravan(InternalConstants.COMMAND_PLAYER);
+
+            if (_leftMouseReleased && mouseOnSwitchButton)
+            {
+                /*if (remote.is_enable())
+                {
+			        // message structure : <firm recno>
+			        short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_MARKET_RESTOCK, sizeof(short) );
+			        shortPtr[0] = firm_recno;
+                }*/
+                //else
+                //{
+                    market.SwitchRestock();
+                //}
+                SECtrl.immediate_sound("TURN_ON");
+            }
+
+            int dy = 0;
+            for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
+            {
+                MarketGoods marketGoods = market.MarketGoods[i];
+                if (marketGoods.RawId != 0 || marketGoods.ProductId != 0)
+                {
+                    if (market.OwnFirm())
+                    {
+                        bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 330 && _mouseButtonX <= DetailsX1 + 399 &&
+                                                  _mouseButtonY >= DetailsY1 + 105 + dy && _mouseButtonY <= DetailsY1 + 126 + dy;
+                        if (_leftMouseReleased && mouseOnClearButton)
+                        {
+                            /*if (remote.is_enable())
+                            {
+                                // message structure : <firm recno> <cell no 0-3>
+                                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_MARKET_SCRAP, sizeof(short)+sizeof(short) );
+                                shortPtr[0] = firm_recno;
+                                shortPtr[1] = i;
+                            }*/
+                            //else
+                            //{
+                                market.ClearMarketGoods(i + 1);
+                            //}
+
+                            SECtrl.immediate_sound("TURN_OFF");
+                        }
+                    }
+                }
+
+                dy += 97;
+            }
+        }
     }
 }

@@ -122,34 +122,34 @@ public partial class Renderer
             dy += 70;
         }
     }
-    
+
     public void HandleResearchDetailsInput(FirmResearch research)
     {
+        if (!research.OwnFirm())
+            return;
+
         if (FirmDetailsMode == FirmDetailsMode.Research)
         {
             HandleResearchMenu(research);
             return;
         }
 
-        bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
-        bool button2Pressed = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+        bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
 
-        if (research.OwnFirm())
+        if (_leftMouseReleased && mouseOnButton1)
         {
-            if (button1Pressed)
-            {
-                FirmDetailsMode = FirmDetailsMode.Research;
-            }
-            
-            if (button2Pressed && research.HaveOwnWorkers())
-            {
-                research.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
-            }
+            FirmDetailsMode = FirmDetailsMode.Research;
+        }
+
+        if (_leftMouseReleased && mouseOnButton2 && research.HaveOwnWorkers())
+        {
+            research.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
         }
     }
-    
+
     private void HandleResearchMenu(FirmResearch research)
     {
         int shownItems = 0;

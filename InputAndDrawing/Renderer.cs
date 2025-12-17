@@ -259,7 +259,7 @@ public partial class Renderer : IRenderer
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
         FirmDetailsMode = FirmDetailsMode.Normal;
-        HumanDetailsMode = HumanDetailsMode.Normal;
+        UnitDetailsMode = UnitDetailsMode.Normal;
     }
     
     public void Reset()

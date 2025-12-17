@@ -6,7 +6,7 @@ public partial class Renderer
 {
     private void DrawUnitDetails(Unit unit)
     {
-        if (HumanDetailsMode != HumanDetailsMode.BuildMenu)
+        if (UnitDetailsMode != UnitDetailsMode.BuildMenu)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1);
             if (unit.NationId != 0)

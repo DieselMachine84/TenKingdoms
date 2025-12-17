@@ -76,26 +76,26 @@ public partial class Renderer
         
         // TODO display spy list and capture buttons
     }
-    
+
     public void HandleFactoryDetailsInput(FirmFactory factory)
     {
-        bool button1Pressed = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        if (!factory.OwnFirm())
+            return;
+
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
-        bool button2Pressed = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+        bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
 
-        if (factory.OwnFirm())
+        if (_leftMouseReleased && mouseOnButton1)
         {
-            if (button1Pressed)
-            {
-                factory.ChangeProduction();
-                SECtrl.immediate_sound("TURN_ON");
-            }
-            
-            if (button2Pressed && factory.HaveOwnWorkers())
-            {
-                factory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
-            }
+            factory.ChangeProduction();
+            SECtrl.immediate_sound("TURN_ON");
+        }
+
+        if (_leftMouseReleased && mouseOnButton2 && factory.HaveOwnWorkers())
+        {
+            factory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
         }
     }
 }

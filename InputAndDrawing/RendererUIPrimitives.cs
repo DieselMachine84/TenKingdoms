@@ -142,6 +142,10 @@ public partial class Renderer
 	private IntPtr _researchBuildWeaponPanelDownTexture;
 	private int _researchBuildWeaponPanelWidth;
 	private int _researchBuildWeaponPanelHeight;
+	private IntPtr _setStopPanelUpTexture;
+	private IntPtr _setStopPanelDownTexture;
+	private int _setStopPanelWidth;
+	private int _setStopPanelHeight;
 	private IntPtr _clearPanelUpTexture;
 	private IntPtr _clearPanelDownTexture;
 	private int _clearPanelWidth;
@@ -521,6 +525,12 @@ public partial class Renderer
 		_researchBuildWeaponPanelUpTexture = Graphics.CreateTextureFromBmp(researchBuildWeaponPanelUpBitmap, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight, 32);
 		byte[] researchBuildWeaponPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight);
 		_researchBuildWeaponPanelDownTexture = Graphics.CreateTextureFromBmp(researchBuildWeaponPanelDownBitmap, _researchBuildWeaponPanelWidth, _researchBuildWeaponPanelHeight, 32);
+		_setStopPanelWidth = 75;
+		_setStopPanelHeight = 18;
+		byte[] setStopPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _setStopPanelWidth, _setStopPanelHeight);
+		_setStopPanelUpTexture = Graphics.CreateTextureFromBmp(setStopPanelUpBitmap, _setStopPanelWidth, _setStopPanelHeight, 32);
+		byte[] setStopPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _setStopPanelWidth, _setStopPanelHeight);
+		_setStopPanelDownTexture = Graphics.CreateTextureFromBmp(setStopPanelDownBitmap, _setStopPanelWidth, _setStopPanelHeight, 32);
 		_clearPanelWidth = 50;
 		_clearPanelHeight = 18;
 		byte[] clearPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _clearPanelWidth, _clearPanelHeight);
@@ -1095,6 +1105,16 @@ public partial class Renderer
 		Graphics.DrawBitmap(_researchBuildWeaponPanelDownTexture, x, y, Scale(_researchBuildWeaponPanelWidth), Scale(_researchBuildWeaponPanelHeight));
 	}
 
+	private void DrawSetStopPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmap(_setStopPanelUpTexture, x, y, Scale(_setStopPanelWidth), Scale(_setStopPanelHeight));
+	}
+
+	private void DrawSetStopPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmap(_setStopPanelDownTexture, x, y, Scale(_setStopPanelWidth), Scale(_setStopPanelHeight));
+	}
+	
 	private void DrawClearPanelUp(int x, int y)
 	{
 		Graphics.DrawBitmap(_clearPanelUpTexture, x, y, Scale(_clearPanelWidth), Scale(_clearPanelHeight));

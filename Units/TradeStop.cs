@@ -11,7 +11,7 @@ public class TradeStop
 	public const int NO_PICK_UP = MAX_PICK_UP_GOODS + 1;
 	public const int MAX_GOODS_SELECT_BUTTON = MAX_PICK_UP_GOODS + 2;
 
-	public int FirmId { get; set; } // firm recno of the station
+	public int FirmId { get; set; }
 	public int FirmLocX1 { get; set; }
 	public int FirmLocY1 { get; set; }
 	public int PickUpType { get; protected set; }

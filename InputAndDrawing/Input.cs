@@ -95,8 +95,9 @@ public partial class Renderer
             }
 
             CancelSettleAndBuild();
+            CancelSetStop();
             SelectMouseCursor();
-            // TODO cancel caravan stop, ship stop and cast power
+            // TODO cancel ship stop and cast power
 
             _rightMouseReleased = false;
         }
@@ -341,7 +342,7 @@ public partial class Renderer
         int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
         Location location = World.GetLoc(locX, locY);
 
-        if (HumanDetailsMode == HumanDetailsMode.Build)
+        if (UnitDetailsMode == UnitDetailsMode.Build)
         {
             if (!UnitArray.IsDeleted(_selectedUnitId))
             {
@@ -353,10 +354,11 @@ public partial class Renderer
                         SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
+            
             CancelSettleAndBuild();
         }
 
-        if (HumanDetailsMode == HumanDetailsMode.Settle)
+        if (UnitDetailsMode == UnitDetailsMode.Settle)
         {
             if (!UnitArray.IsDeleted(_selectedUnitId))
             {
@@ -380,7 +382,24 @@ public partial class Renderer
                         SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
+            
             CancelSettleAndBuild();
+        }
+
+        if (UnitDetailsMode == UnitDetailsMode.SetStop)
+        {
+            if (!UnitArray.IsDeleted(_selectedUnitId))
+            {
+                UnitCaravan caravan = (UnitCaravan)UnitArray[_selectedUnitId];
+                if (location.IsFirm() && caravan.CanSetStop(location.FirmId()))
+                {
+                    caravan.SetStop(_setStopId, locX, locY, InternalConstants.COMMAND_PLAYER);
+                    if (SERes.mark_command_time() != 0)
+                        SERes.far_sound(caravan.CurLocX, caravan.CurLocY, 1, 'S', caravan.SpriteId, "ACK");
+                }
+            }
+
+            CancelSetStop();
         }
         
         SelectMouseCursor();
@@ -788,15 +807,29 @@ public partial class Renderer
     private int ChooseCursor(ScreenObjectType selectedObjectType, int selectedId, ScreenObjectType pointingObjectType, int pointingId)
     {
         //TODO CursorType.ASSIGN
-        //TODO CursorType.CARAVAN_STOP
         //TODO CursorType.SHIP_STOP
         //TODO CursorType.CURSOR_ON_LINK
         
-        if (HumanDetailsMode == HumanDetailsMode.Build)
+        if (UnitDetailsMode == UnitDetailsMode.Build)
             return CursorType.BUILD;
 
-        if (HumanDetailsMode == HumanDetailsMode.Settle && NationArray.player != null)
+        if (UnitDetailsMode == UnitDetailsMode.Settle && NationArray.player != null)
             return CursorType.SETTLE_0 + NationArray.player.color_scheme_id;
+
+        if (UnitDetailsMode == UnitDetailsMode.SetStop)
+        {
+            if (pointingObjectType == ScreenObjectType.FriendFirm || pointingObjectType == ScreenObjectType.EnemyFirm)
+            {
+                if (!FirmArray.IsDeleted(pointingId) && !UnitArray.IsDeleted(selectedId))
+                {
+                    UnitCaravan caravan = (UnitCaravan)UnitArray[selectedId];
+                    if (caravan.CanSetStop(pointingId))
+                        return CursorType.CARAVAN_STOP;
+                }
+            }
+
+            return CursorType.CANT_CARAVAN_STOP;
+        }
 
         if (pointingObjectType == ScreenObjectType.None || pointingObjectType == ScreenObjectType.Site)
             return CursorType.NORMAL;
