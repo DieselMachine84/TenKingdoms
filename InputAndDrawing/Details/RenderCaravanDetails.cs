@@ -28,7 +28,6 @@ public partial class Renderer
                 PutText(FontSan, "Set Stop", DetailsX1 + 34, DetailsY1 + 162 + dy, -1, true);
             }
 
-            int pickupGoods = 0;
             CaravanStop caravanStop = caravan.Stops[i];
             int firmId = caravanStop.FirmId;
             if (firmId != 0 && !FirmArray.IsDeleted(firmId))
@@ -60,6 +59,7 @@ public partial class Renderer
                     PutText(FontSan, "Clear", DetailsX1 + 336, DetailsY1 + 162 + dy, -1, true);
                 }
 
+                int pickupGoods = 0;
                 int dx = 0;
                 for (int j = 1; j <= TradeStop.MAX_PICK_UP_GOODS; j++)
                 {
@@ -100,7 +100,7 @@ public partial class Renderer
                             stock = (int)marketGoods.StockQty;
                     }
 
-                    if (stock >= 0)
+                    if ((rawId != 0 && stock > 0) || productId != 0)
                     {
                         pickupGoods++;
                         bool pressed = caravanStop.PickUpEnabled[j - 1];
@@ -137,7 +137,7 @@ public partial class Renderer
                     if (caravanStop.PickUpType == TradeStop.AUTO_PICK_UP)
                     {
                         DrawResourcePanelDown(DetailsX1 + 110, DetailsY1 + 126 + dy);
-                        Graphics.DrawRect(DetailsX1 + 112, DetailsY1 + 129 + dy, 27, 27, Colors.V_YELLOW);
+                        Graphics.DrawRect(DetailsX1 + 113, DetailsY1 + 129 + dy, 27, 27, Colors.V_YELLOW);
                     }
                     else
                     {
@@ -188,33 +188,78 @@ public partial class Renderer
                 UnitDetailsMode = UnitDetailsMode.SetStop;
             }
 
-            bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
-                                         _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-            if (_leftMouseReleased && mouseOnViewStopButton)
+            CaravanStop caravanStop = caravan.Stops[i];
+            int firmId = caravanStop.FirmId;
+            if (firmId != 0 && !FirmArray.IsDeleted(firmId))
             {
-                Firm firm = FirmArray[caravan.Stops[i].FirmId];
-                GoToLocation(firm.LocCenterX, firm.LocCenterY);
-            }
-            
-            bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
-                                      _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-            if (_leftMouseReleased && mouseOnClearButton)
-            {
-                caravan.DelStop(i + 1, InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_OFF");
-            }
-
-            int dx = 0;
-            for (int j = TradeStop.AUTO_PICK_UP; j <= TradeStop.NO_PICK_UP; j++)
-            {
-                bool mouseOnResourceButton = _mouseButtonX >= DetailsX1 + 112 + dx && _mouseButtonX <= DetailsX1 + 139 + dx &&
-                                             _mouseButtonY >= DetailsY1 + 129 + dy && _mouseButtonY <= DetailsY1 + 156 + dy;
-                if (_leftMousePressed && mouseOnResourceButton)
+                Firm firm = FirmArray[firmId];
+                bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
+                                             _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+                if (_leftMouseReleased && mouseOnViewStopButton)
                 {
-                    caravan.SetStopPickUp(i + 1, j, InternalConstants.COMMAND_PLAYER);
+                    GoToLocation(firm.LocCenterX, firm.LocCenterY);
                 }
-                
-                dx += 36;
+
+                bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
+                                          _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
+                if (_leftMouseReleased && mouseOnClearButton)
+                {
+                    caravan.DelStop(i + 1, InternalConstants.COMMAND_PLAYER);
+                    SECtrl.immediate_sound("TURN_OFF");
+                }
+
+                int dx = 0;
+                for (int j = TradeStop.AUTO_PICK_UP; j <= TradeStop.NO_PICK_UP; j++)
+                {
+                    int rawId = j;
+                    if (rawId < 1 || rawId > GameConstants.MAX_RAW)
+                        rawId = 0;
+                    int productId = j - GameConstants.MAX_RAW;
+                    if (productId < 1 || productId > GameConstants.MAX_PRODUCT)
+                        productId = 0;
+
+                    int stock = -1;
+
+                    if (firm.FirmType == Firm.FIRM_MINE)
+                    {
+                        FirmMine mine = (FirmMine)firm;
+                        if (rawId != 0 && mine.RawId == rawId)
+                            stock = (int)mine.StockQty;
+                    }
+
+                    if (firm.FirmType == Firm.FIRM_FACTORY)
+                    {
+                        FirmFactory factory = (FirmFactory)firm;
+                        if (productId != 0 && factory.ProductId == productId)
+                            stock = (int)factory.StockQty;
+                    }
+
+                    if (firm.FirmType == Firm.FIRM_MARKET)
+                    {
+                        FirmMarket market = (FirmMarket)firm;
+                        MarketGoods marketGoods = null;
+                        if (rawId != 0)
+                            marketGoods = market.MarketGoods[rawId - 1];
+
+                        if (productId != 0)
+                            marketGoods = market.MarketGoods[productId - 1];
+
+                        if (marketGoods != null)
+                            stock = (int)marketGoods.StockQty;
+                    }
+
+                    if ((rawId != 0 && stock > 0) || productId != 0 || j == TradeStop.AUTO_PICK_UP || j == TradeStop.NO_PICK_UP)
+                    {
+                        bool mouseOnResourceButton = _mouseButtonX >= DetailsX1 + 112 + dx && _mouseButtonX <= DetailsX1 + 139 + dx &&
+                                                     _mouseButtonY >= DetailsY1 + 129 + dy && _mouseButtonY <= DetailsY1 + 156 + dy;
+                        if (_leftMousePressed && mouseOnResourceButton)
+                        {
+                            caravan.SetStopPickUp(i + 1, j, InternalConstants.COMMAND_PLAYER);
+                        }
+                    }
+
+                    dx += 36;
+                }
             }
 
             dy += 97;

@@ -14,6 +14,7 @@ public partial class Renderer
     private int _mouseButtonY;
     private int _mouseMotionX;
     private int _mouseMotionY;
+    private bool _inUnitCommandMode;
 
     public void ProcessInput(int eventType, int mouseEventX, int mouseEventY)
     {
@@ -33,6 +34,9 @@ public partial class Renderer
             _mouseButtonY = mouseEventY;
             if (clickOnMainView)
                 ProcessLeftMouseAction();
+            
+            if (clickOnDetails)
+                HandleDetails();
         }
         
         if (eventType == InputConstants.LeftMouseUp)
@@ -203,6 +207,12 @@ public partial class Renderer
         // TODO shiftSelect
         // TODO selection sound
 
+        if (_inUnitCommandMode)
+        {
+            _inUnitCommandMode = false;
+            return false;
+        }
+
         if (mouse1X < MainViewX || mouse1X >= MainViewX + MainViewWidth)
             return false;
         
@@ -341,6 +351,9 @@ public partial class Renderer
         int locX = _topLeftLocX + (_mouseButtonX - MainViewX) / CellTextureWidth;
         int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
         Location location = World.GetLoc(locX, locY);
+
+        _inUnitCommandMode = UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle ||
+                             UnitDetailsMode == UnitDetailsMode.SetStop;
 
         if (UnitDetailsMode == UnitDetailsMode.Build)
         {
