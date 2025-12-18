@@ -1775,7 +1775,7 @@ public class Town : IIdObject
 		if (amount <= 0)
 			return;
 
-		int queueSpace = InternalConstants.TOWN_MAX_TRAIN_QUEUE - TrainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
+		int queueSpace = GameConstants.TOWN_MAX_TRAIN_QUEUE - TrainSkillQueue.Count - (TrainUnitId > 0 ? 1 : 0);
 		int enqueueAmount = Math.Min(queueSpace, amount);
 
 		for (int i = 0; i < enqueueAmount; i++)

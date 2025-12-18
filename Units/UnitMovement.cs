@@ -159,7 +159,7 @@ public partial class Unit
 		{
 			Firm firm = FirmArray[loc.FirmId()];
 			FirmHarbor harbor = (FirmHarbor)firm;
-			if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.sea_region_id)
+			if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.SeaRegionId)
 			{
 				MoveTo(destLocX, destLocY);
 				return;
@@ -2006,7 +2006,7 @@ public partial class Unit
 		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			UnitMarine ship = (UnitMarine)this;
-			switch (ship.extra_move_in_beach)
+			switch (ship.ExtraMoveInBeach)
 			{
 				case UnitMarine.NO_EXTRA_MOVE:
 					result = Searching(destLocX, destLocY, preserveAction, searchMode, miscNo, numOfPaths);

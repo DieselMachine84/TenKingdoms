@@ -8,7 +8,6 @@ public class FirmWar : Firm
     public int BuildUnitId { get; set; }
     private long LastProcessBuildFrameNumber { get; set; }
     public double BuildProgressInDays { get; set; }
-
     public List<int> BuildQueue { get; } = new List<int>();
 
     public FirmWar()
@@ -55,7 +54,7 @@ public class FirmWar : Firm
         if (amount <= 0)
             return;
 
-        int queueSpace = InternalConstants.FIRMWAR_MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
+        int queueSpace = GameConstants.FIRMWAR_MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
         int enqueueAmount = Math.Min(queueSpace, amount);
 
         for (int i = 0; i < enqueueAmount; i++)
@@ -84,6 +83,11 @@ public class FirmWar : Firm
             CancelBuildUnit();
     }
 
+    private void CancelBuildUnit()
+    {
+        BuildUnitId = 0;
+    }
+    
     private void ProcessQueue()
     {
         if (BuildQueue.Count == 0)
@@ -101,11 +105,6 @@ public class FirmWar : Firm
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
         BuildProgressInDays = 0.0;
-    }
-
-    private void CancelBuildUnit()
-    {
-        BuildUnitId = 0;
     }
 
     private void ProcessBuild()

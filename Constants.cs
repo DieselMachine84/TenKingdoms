@@ -30,6 +30,9 @@ public static class GameConstants
     public const int TRAIN_SKILL_COST = 30;
     public const int TRAIN_SKILL_LEVEL = 20;
     public const int TOTAL_TRAIN_DAYS = 5;
+    public const int TOWN_MAX_TRAIN_QUEUE = 10;
+    // Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
+    public const int TOWN_TRAIN_BATCH_COUNT = 8;
     public const int MIN_RECRUIT_LOYALTY = 30;
     public const int MIN_NATION_DEFEND_LOYALTY = 50;
     public const int MIN_INDEPENDENT_DEFEND_LOYALTY = 30;
@@ -65,8 +68,13 @@ public static class GameConstants
     public const int MAX_MARKET_GOODS = 3;
     public const int MAX_RAW = 3;
     public const int MAX_PRODUCT = 3;
-    public const int MAX_SHIP_IN_HARBOR = 4;
+    public const int FIRMWAR_MAX_BUILD_QUEUE = 20;
+    // Number of units enqueued when holding shift - ensure this is less than FIRMWAR_MAX_BUILD_QUEUE
+    public const int FIRMWAR_BUILD_BATCH_COUNT = 10;
     public const int MAX_BUILD_SHIP_QUEUE = 10;
+    // Number of units enqueued when holding shift - ensure this is less than MAX_BUILD_SHIP_QUEUE
+    public const int HARBOR_BUILD_BATCH_COUNT = 5;
+    public const int MAX_SHIP_IN_HARBOR = 4;
     public const int MAX_INN_UNIT = 6;
     public const int MAX_INN_UNIT_PER_REGION = 10; // Region here means region of linked inns
     public const int MAX_MONSTER_GENERAL_IN_FIRM = 8;
@@ -143,13 +151,7 @@ public static class InternalConstants
     public const int TOWN_WIDTH = 4;
     public const int TOWN_HEIGHT = 4;
     public const int MIN_INTER_TOWN_DISTANCE = 16;
-    public const int TOWN_MAX_TRAIN_QUEUE = 10;
-    // Number of units enqueued when holding shift - ensure this is less than MAX_TRAIN_QUEUE
-    public const int TOWN_TRAIN_BATCH_COUNT = 8;
 
-    public const int FIRMWAR_MAX_BUILD_QUEUE = 20;
-    public const int FIRMWAR_BUILD_BATCH_COUNT = 10;
-    
     public const int EFFECTIVE_TOWN_TOWN_DISTANCE = 6;
     public const int EFFECTIVE_FIRM_TOWN_DISTANCE = 6;
     public const int EFFECTIVE_FIRM_FIRM_DISTANCE = 6;

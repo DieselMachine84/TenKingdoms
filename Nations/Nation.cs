@@ -1625,7 +1625,7 @@ public class NationOld : NationBase
 
 			if (firm.FirmType == Firm.FIRM_HARBOR)
 			{
-				buildRegionId = ((FirmHarbor)firm).land_region_id;
+				buildRegionId = ((FirmHarbor)firm).LandRegionId;
 				buildIsPlateau = false;
 			}
 		}
@@ -2430,7 +2430,7 @@ public class NationOld : NationBase
 			UnitMarine ship = (UnitMarine)unit;
 
 
-			if (ship.extra_move_in_beach != UnitMarine.NO_EXTRA_MOVE)
+			if (ship.ExtraMoveInBeach != UnitMarine.NO_EXTRA_MOVE)
 				return;
 		}
 
@@ -3902,10 +3902,10 @@ public class NationOld : NationBase
 			{
 				FirmHarbor firmHarbor = (FirmHarbor)FirmArray[unitMarine.UnitModeParam];
 
-				if (firmHarbor.sea_region_id != targetRegionId)
+				if (firmHarbor.SeaRegionId != targetRegionId)
 					continue;
 
-				firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
+				firmHarbor.SailShip(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 			}
 
 			if (!unitMarine.IsVisible()) // no space in the sea for placing the ship
@@ -6183,7 +6183,7 @@ public class NationOld : NationBase
 		{
 			FirmHarbor firmHarbor = (FirmHarbor)FirmArray[unitMarine.UnitModeParam];
 
-			firmHarbor.sail_ship(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
+			firmHarbor.SailShip(unitMarine.SpriteId, InternalConstants.COMMAND_AI);
 		}
 
 		if (!unitMarine.IsVisible()) // no space in the sea for placing the ship 
@@ -6244,7 +6244,7 @@ public class NationOld : NationBase
 
 		//-------- 4. Units disembark on the coast. -------//
 
-		if (!unitMarine.can_unload_unit())
+		if (!unitMarine.CanUnloadUnit())
 			return 0;
 
 		//--- make a copy of the recnos of the unit on the ship ---//
@@ -6252,7 +6252,7 @@ public class NationOld : NationBase
 		List<int> unitRecnoArray = new List<int>();
 		unitRecnoArray.AddRange(unitMarine.UnitsOnBoard);
 
-		unitMarine.unload_all_units(InternalConstants.COMMAND_AI); // unload all units now
+		unitMarine.UnloadAllUnits(InternalConstants.COMMAND_AI); // unload all units now
 
 		if (!ConfigAdv.fix_sea_travel_final_move)
 			return 1; // finish the action.
@@ -6357,7 +6357,7 @@ public class NationOld : NationBase
 			{
 				FirmHarbor firmHarbor = (FirmHarbor)FirmArray[unitMarine.UnitModeParam];
 
-				if (firmHarbor.sea_region_id != seaRegionId)
+				if (firmHarbor.SeaRegionId != seaRegionId)
 					continue;
 			}
 			else
@@ -6407,7 +6407,7 @@ public class NationOld : NationBase
 			if (!firmHarbor.can_build_ship())
 				continue;
 
-			if (firmHarbor.sea_region_id != seaRegionId)
+			if (firmHarbor.SeaRegionId != seaRegionId)
 				continue;
 
 			int curRating = World.DistanceRating(preferXLoc, preferYLoc, firmHarbor.LocCenterX, firmHarbor.LocCenterY);
@@ -6445,7 +6445,7 @@ public class NationOld : NationBase
 				unitId = UnitConstants.UNIT_TRANSPORT;
 		}
 
-		bestHarbor.build_ship(unitId, InternalConstants.COMMAND_AI);
+		bestHarbor.BuildShip(unitId, InternalConstants.COMMAND_AI);
 
 		return 1;
 	}
@@ -6456,13 +6456,13 @@ public class NationOld : NationBase
 		{
 			UnitMarine unitMarine = (UnitMarine)UnitArray[ai_ship_array[i]];
 
-			if (unitMarine.stop_defined_num < 2)
+			if (unitMarine.StopDefinedNum < 2)
 				continue;
 
-			if ((unitMarine.stop_array[0].FirmId == firmRecno1 &&
-			     unitMarine.stop_array[1].FirmId == firmRecno2) ||
-			    (unitMarine.stop_array[1].FirmId == firmRecno1 &&
-			     unitMarine.stop_array[0].FirmId == firmRecno2))
+			if ((unitMarine.Stops[0].FirmId == firmRecno1 &&
+			     unitMarine.Stops[1].FirmId == firmRecno2) ||
+			    (unitMarine.Stops[1].FirmId == firmRecno1 &&
+			     unitMarine.Stops[0].FirmId == firmRecno2))
 			{
 				return unitMarine.SpriteId != 0;
 			}

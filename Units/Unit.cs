@@ -270,7 +270,7 @@ public abstract partial class Unit : Sprite
 			if (!UnitArray.IsDeleted(UnitModeParam))
 			{
 				UnitMarine ship = (UnitMarine)UnitArray[UnitModeParam];
-				ship.del_unit(SpriteId);
+				ship.DelUnit(SpriteId);
 			}
 		}
 
@@ -283,7 +283,7 @@ public abstract partial class Unit : Sprite
 			if (!FirmArray.IsDeleted(UnitModeParam))
 			{
 				FirmHarbor harbor = (FirmHarbor)FirmArray[UnitModeParam];
-				harbor.del_hosted_ship(SpriteId);
+				harbor.DelHostedShip(SpriteId);
 			}
 		}
 
@@ -849,7 +849,7 @@ public abstract partial class Unit : Sprite
 					}*/
 
 					//----------------- load the unit to the marine -----------------//
-					((UnitMarine)UnitArray[ActionParam]).load_unit(SpriteId);
+					((UnitMarine)UnitArray[ActionParam]).LoadUnit(SpriteId);
 				}
 				else
 				{
@@ -905,7 +905,7 @@ public abstract partial class Unit : Sprite
 
 				Stop2();
 				SetDir(curLocX, curLocY, shipLocX, shipLocY);
-				ship.load_unit(SpriteId);
+				ship.LoadUnit(SpriteId);
 				return;
 			}
 		}
@@ -949,16 +949,16 @@ public abstract partial class Unit : Sprite
 					// determine whether extra_move is required
 					//------------------------------------------------------------------------------//
 					UnitMarine ship = (UnitMarine)this;
-					switch (ship.extra_move_in_beach)
+					switch (ship.ExtraMoveInBeach)
 					{
 						case UnitMarine.NO_EXTRA_MOVE:
 							if (Math.Abs(shipLocX - ActionLocX2) > 1 || Math.Abs(shipLocY - ActionLocY2) > 1)
 							{
-								ship.extra_move();
+								ship.ExtraMove();
 							}
 							else
 							{
-								ship.extra_move_in_beach = UnitMarine.NO_EXTRA_MOVE;
+								ship.ExtraMoveInBeach = UnitMarine.NO_EXTRA_MOVE;
 
 								if (AIActionId != 0)
 									NationArray[NationId].action_finished(AIActionId, SpriteId);
@@ -1250,12 +1250,12 @@ public abstract partial class Unit : Sprite
 				switch (UnitRes[UnitType].unit_class)
 				{
 					case UnitConstants.UNIT_CLASS_HUMAN:
-						if (unitRegionId != harbor.land_region_id)
+						if (unitRegionId != harbor.LandRegionId)
 							differentRegions = true;
 						break;
 
 					case UnitConstants.UNIT_CLASS_SHIP:
-						if (unitRegionId != harbor.sea_region_id)
+						if (unitRegionId != harbor.SeaRegionId)
 							differentRegions = true;
 						break;
 				}
@@ -2222,7 +2222,7 @@ public abstract partial class Unit : Sprite
 
 			case UnitConstants.ACTION_SHIP_TO_BEACH:
 				UnitMarine ship = (UnitMarine)this;
-				if (!ship.in_beach || ship.extra_move_in_beach == UnitMarine.EXTRA_MOVE_FINISH)
+				if (!ship.InBeach || ship.ExtraMoveInBeach == UnitMarine.EXTRA_MOVE_FINISH)
 				{
 					ShipToBeach(ActionLocX2, ActionLocY2, out _, out _);
 					hasSearch = true;
@@ -2548,7 +2548,7 @@ public abstract partial class Unit : Sprite
 
 			case SPRITE_SHIP_EXTRA_MOVE:
 				UnitMarine ship = (UnitMarine)this;
-				switch (ship.extra_move_in_beach)
+				switch (ship.ExtraMoveInBeach)
 				{
 					case UnitMarine.NO_EXTRA_MOVE:
 						if (CurX == NextX && CurY == NextY)
@@ -2567,7 +2567,7 @@ public abstract partial class Unit : Sprite
 						if (CurX == NextX && CurY == NextY && (CurX != GoX || CurY != GoY))
 						{
 							// not yet move although location is chosen
-							ship.extra_move_in_beach = UnitMarine.NO_EXTRA_MOVE;
+							ship.ExtraMoveInBeach = UnitMarine.NO_EXTRA_MOVE;
 						}
 
 						break;
@@ -2576,7 +2576,7 @@ public abstract partial class Unit : Sprite
 						if (CurX == NextX && CurY == NextY && (CurX != GoX || CurY != GoY))
 						{
 							// not yet move although location is chosen
-							ship.extra_move_in_beach = UnitMarine.EXTRA_MOVE_FINISH;
+							ship.ExtraMoveInBeach = UnitMarine.EXTRA_MOVE_FINISH;
 						}
 
 						break;
