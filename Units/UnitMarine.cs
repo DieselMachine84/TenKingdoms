@@ -105,6 +105,550 @@ public class UnitMarine : Unit
 		base.Deinit();
 	}
 
+	public void del_unit(int unitRecno)
+	{
+		for (int i = UnitsOnBoard.Count - 1; i >= 0; i--)
+		{
+			if (UnitsOnBoard[i] == unitRecno)
+			{
+				UnitsOnBoard.RemoveAt(i);
+				return;
+			}
+		}
+	}
+	
+	public override void PreProcess()
+	{
+		base.PreProcess();
+		if (HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
+			return;
+
+		if (ActionMode2 >= UnitConstants.ACTION_ATTACK_UNIT && ActionMode2 <= UnitConstants.ACTION_ATTACK_WALL)
+			return; // don't process trading if unit is attacking
+
+		if (auto_mode != 0) // process trading automatically, same as caravan
+		{
+			if (journey_status == InternalConstants.INSIDE_FIRM)
+			{
+				ship_in_firm();
+				return;
+			}
+
+			if (stop_defined_num == 0)
+				return;
+
+			//----------------- if there is only one defined stop --------------------//
+			if (stop_defined_num == 1)
+			{
+				ShipStop stop = stop_array[0];
+
+				if (FirmArray.IsDeleted(stop.FirmId))
+				{
+					update_stop_list();
+					return;
+				}
+
+				Firm firm = FirmArray[stop.FirmId];
+				if (firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
+				{
+					update_stop_list();
+					return;
+				}
+
+				int curXLoc = NextLocX;
+				int curYLoc = NextLocY;
+				int moveStep = MoveStepCoeff();
+				if (curXLoc < firm.LocX1 - moveStep || curXLoc > firm.LocX2 + moveStep || curYLoc < firm.LocY1 - moveStep ||
+				    curYLoc > firm.LocY2 + moveStep)
+				{
+					if (!IsVisible())
+						return; // may get here if player manually ordered ship to dock
+					//### begin alex 6/10 ###//
+					/*if((move_to_x_loc>=firm.loc_x1-moveStep || move_to_x_loc<=firm.loc_x2+moveStep) &&
+						(move_to_y_loc>=firm.loc_y1-moveStep || move_to_y_loc<=firm.loc_y2+moveStep))
+						return;
+	
+					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
+					journey_status = ON_WAY_TO_FIRM;*/
+					if (CurAction == SPRITE_IDLE)
+						MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+					else
+						journey_status = InternalConstants.ON_WAY_TO_FIRM;
+					//#### end alex 6/10 ####//
+				}
+				else
+				{
+					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
+					{
+						journey_status = InternalConstants.SURROUND_FIRM;
+						if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+						{
+							if (wait_count <= 0)
+							{
+								//---------- unloading goods -------------//
+								cur_firm_recno = stop_array[0].FirmId;
+								get_harbor_linked_firm_info();
+								harbor_unload_goods();
+								wait_count = GameConstants.MAX_SHIP_WAIT_TERM * InternalConstants.SURROUND_FIRM_WAIT_FACTOR;
+								cur_firm_recno = 0;
+							}
+							else
+								wait_count--;
+						}
+					}
+				}
+
+				return;
+			}
+
+			//------------ if there are more than one defined stop ---------------//
+			ship_on_way();
+		}
+		else if (journey_status == InternalConstants.INSIDE_FIRM)
+			ship_in_firm(0); // autoMode is off
+	}
+	
+	public void ship_in_firm(int autoMode = 1)
+	{
+		//-----------------------------------------------------------------------------//
+		// the harbor is deleted while the ship is in harbor
+		//-----------------------------------------------------------------------------//
+		if (cur_firm_recno != 0 && FirmArray.IsDeleted(cur_firm_recno))
+		{
+			HitPoints = 0.0; // ship also die if the harbor is deleted
+			UnitArray.DisappearInFirm(SpriteId); // ship also die if the harnor is deleted
+			return;
+		}
+
+		//-----------------------------------------------------------------------------//
+		// waiting (time to upload/download cargo)
+		//-----------------------------------------------------------------------------//
+		if (wait_count > 0)
+		{
+			wait_count--;
+			return;
+		}
+
+		//-----------------------------------------------------------------------------//
+		// leave the harbor and go to another harbor if possible
+		//-----------------------------------------------------------------------------//
+		ShipStop shipStop = stop_array[dest_stop_id - 1];
+		int xLoc = stop_x_loc;
+		int yLoc = stop_y_loc;
+		Location loc = World.GetLoc(xLoc, yLoc);
+		Firm firm;
+
+		//TODO change %2 == 0
+		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(MobileType))
+			InitSprite(xLoc, yLoc); // appear in the location the unit disappeared before
+		else
+		{
+			//---- the entering location is blocked, select another location to leave ----//
+			firm = FirmArray[cur_firm_recno];
+
+			if (appear_in_firm_surround(ref xLoc, ref yLoc, firm))
+			{
+				InitSprite(xLoc, yLoc);
+				Stop();
+			}
+			else
+			{
+				wait_count = GameConstants.MAX_SHIP_WAIT_TERM * 10; //********* BUGHERE, continue to wait or ....
+				return;
+			}
+		}
+
+		//-------------- get next stop id. ----------------//
+		int nextStopId = get_next_stop_id(dest_stop_id);
+		if (nextStopId == 0 || dest_stop_id == nextStopId)
+		{
+			dest_stop_id = nextStopId;
+			journey_status = (nextStopId == 0) ? InternalConstants.NO_STOP_DEFINED : InternalConstants.SURROUND_FIRM;
+			return; // no stop or only one stop is valid
+		}
+
+		dest_stop_id = nextStopId;
+		firm = FirmArray[stop_array[dest_stop_id - 1].FirmId];
+
+		cur_firm_recno = 0;
+		journey_status = InternalConstants.ON_WAY_TO_FIRM;
+
+		if (autoMode != 0) // move to next firm only if autoMode is on
+			MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+	}
+	
+	public bool appear_in_firm_surround(ref int xLoc, ref int yLoc, Firm firm)
+	{
+		FirmInfo firmInfo = FirmRes[Firm.FIRM_HARBOR];
+		int firmWidth = firmInfo.LocWidth;
+		int firmHeight = firmInfo.LocHeight;
+		int smallestCount = firmWidth * firmHeight + 1;
+		int largestCount = (firmWidth + 2) * (firmHeight + 2);
+		int countLimit = largestCount - smallestCount;
+		int count = Misc.Random(countLimit) + smallestCount;
+		int checkXLoc = 0, checkYLoc = 0;
+		bool found = false;
+
+		//-----------------------------------------------------------------//
+		for (int i = 0; i < countLimit; i++)
+		{
+			Misc.cal_move_around_a_point(count, firmWidth, firmHeight, out int xOffset, out int yOffset);
+			checkXLoc = firm.LocX1 + xOffset;
+			checkYLoc = firm.LocY1 + yOffset;
+
+			//TODO %2 == 0
+			if (checkXLoc % 2 != 0 || checkYLoc % 2 != 0 ||
+			    checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			{
+				count++;
+				continue;
+			}
+
+			Location location = World.GetLoc(checkXLoc, checkYLoc);
+			if (location.CanMove(MobileType))
+			{
+				found = true;
+				break;
+			}
+
+			count++;
+			if (count > largestCount)
+				count = smallestCount;
+		}
+
+		if (found)
+		{
+			xLoc = checkXLoc;
+			yLoc = checkYLoc;
+			return true;
+		}
+
+		return false;
+	}
+	
+	public int get_next_stop_id(int curStopId)
+	{
+		int nextStopId = (curStopId >= stop_defined_num) ? 1 : curStopId + 1;
+
+		ShipStop stop = stop_array[nextStopId - 1];
+
+		bool needUpdate = false;
+
+		if (FirmArray.IsDeleted(stop.FirmId))
+		{
+			needUpdate = true;
+		}
+		else
+		{
+			Firm firm = FirmArray[stop.FirmId];
+
+			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
+			{
+				needUpdate = true;
+			}
+		}
+
+		if (needUpdate)
+		{
+			int preStopRecno = stop_array[curStopId - 1].FirmId;
+			update_stop_list();
+
+			if (stop_defined_num == 0)
+				return 0; // no stop is valid
+
+			for (int i = 0; i < stop_defined_num; i++)
+			{
+				stop = stop_array[i];
+				if (stop.FirmId == preStopRecno)
+					nextStopId = (i >= stop_defined_num) ? 1 : i + 1;
+			}
+		}
+
+		return nextStopId;
+	}
+	
+	public void ship_on_way()
+	{
+		ShipStop shipStop = stop_array[dest_stop_id - 1];
+		Firm firm;
+		int nextXLoc;
+		int nextYLoc;
+		int moveStep;
+
+		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
+		{
+			if (!FirmArray.IsDeleted(shipStop.FirmId))
+			{
+				firm = FirmArray[shipStop.FirmId];
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				nextXLoc = NextLocX;
+				nextYLoc = NextLocY;
+				moveStep = MoveStepCoeff();
+				if (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
+				    nextYLoc <= firm.LocY2 + moveStep)
+					journey_status = InternalConstants.SURROUND_FIRM;
+
+				return;
+			}
+		}
+
+		if (UnitArray.IsDeleted(SpriteId))
+			return; //-***************** BUGHERE ***************//
+
+		if (FirmArray.IsDeleted(shipStop.FirmId))
+		{
+			update_stop_list();
+
+			if (stop_defined_num != 0) // move to next stop
+			{
+				firm = FirmArray[stop_array[stop_defined_num - 1].FirmId];
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+			}
+
+			return;
+		}
+
+		//ShipStop *stop = stop_array + dest_stop_id - 1;
+		firm = FirmArray[shipStop.FirmId];
+
+		nextXLoc = NextLocX;
+		nextYLoc = NextLocY;
+		moveStep = MoveStepCoeff();
+		if (journey_status == InternalConstants.SURROUND_FIRM ||
+		    (nextXLoc == MoveToLocX && nextYLoc == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
+		     (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
+		      nextYLoc <= firm.LocY2 + moveStep)))
+		{
+			extra_move_in_beach = NO_EXTRA_MOVE; // since the ship may enter the firm in odd location		
+
+			shipStop.UpdatePickUp();
+
+			//-------------------------------------------------------//
+			// load/unload goods
+			//-------------------------------------------------------//
+			cur_firm_recno = shipStop.FirmId;
+
+			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+			{
+				get_harbor_linked_firm_info();
+				harbor_unload_goods();
+				if (shipStop.PickUpType == TradeStop.AUTO_PICK_UP)
+					harbor_auto_load_goods();
+				else if (shipStop.PickUpType != TradeStop.NO_PICK_UP)
+					harbor_load_goods();
+			}
+
+			//-------------------------------------------------------//
+			//-------------------------------------------------------//
+			stop_x_loc = MoveToLocX; // store entering location
+			stop_y_loc = MoveToLocY;
+			wait_count = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
+
+			ResetPath();
+			DeinitSprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
+
+			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
+
+			journey_status = InternalConstants.INSIDE_FIRM;
+		}
+		else
+		{
+			if (CurAction != SPRITE_MOVE)
+			{
+				//----------------------------------------------------//
+				// blocked by something, go to the destination again
+				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
+				//----------------------------------------------------//
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				journey_status = InternalConstants.ON_WAY_TO_FIRM;
+			}
+		}
+	}
+	
+	public void get_harbor_linked_firm_info()
+	{
+		FirmHarbor firmHarbor = (FirmHarbor)FirmArray[cur_firm_recno];
+
+		firmHarbor.update_linked_firm_info();
+		linkedMines.Clear();
+		linkedMines.AddRange(firmHarbor.linked_mine_array);
+		linkedFactories.Clear();
+		linkedFactories.AddRange(firmHarbor.linked_factory_array);
+		linkedMarkets.Clear();
+		linkedMarkets.AddRange(firmHarbor.linked_market_array);
+	}
+	
+	public bool can_set_stop(int firmRecno)
+	{
+		Firm firm = FirmArray[firmRecno];
+
+		if (firm.UnderConstruction)
+			return false;
+
+		if (firm.FirmType != Firm.FIRM_HARBOR)
+			return false;
+
+		return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
+	}
+	
+	public void set_stop(int stopId, int stopXLoc, int stopYLoc, int remoteAction)
+	{
+		//-------------------------------------------------------//
+		// check if there is a station in the given location
+		//-------------------------------------------------------//
+		Location loc = World.GetLoc(stopXLoc, stopYLoc);
+		if (!loc.IsFirm())
+			return;
+
+		Firm firm = FirmArray[loc.FirmId()];
+		if (!can_set_stop(firm.FirmId))
+			return;
+
+		//-------------------------------------------------------//
+		// return if the harbor stop is in another territory
+		//-------------------------------------------------------//
+		FirmHarbor harbor = (FirmHarbor)firm;
+
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.sea_region_id)
+			return;
+
+		//-----------------------------------------//
+
+		//if (!remoteAction && remote.is_enable())
+		//{
+			//// packet structure : <unit recno> <stop id> <stop x> <stop y>
+			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_SET_STOP, 4 * sizeof(short));
+			//*shortPtr = sprite_recno;
+			//shortPtr[1] = stopId;
+			//shortPtr[2] = stopXLoc;
+			//shortPtr[3] = stopYLoc;
+			//return;
+		//}
+
+		if (stop_array[stopId - 1].FirmId == 0)
+			stop_defined_num++; // no plus one if the recno is defined originally
+
+		//-------------------------------------------------------//
+		// set the station recno of the stop
+		//-------------------------------------------------------//
+		ShipStop shipStop = stop_array[stopId - 1];
+		if (shipStop.FirmId == firm.FirmId)
+		{
+			return; // same stop as before
+		}
+
+		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].FirmId : 0;
+		shipStop.FirmId = firm.FirmId;
+		shipStop.FirmLocX1 = firm.LocX1;
+		shipStop.FirmLocY1 = firm.LocY1;
+
+		//-------------------------------------------------------//
+		// set pick up selection based on availability
+		//-------------------------------------------------------//
+		shipStop.PickUpSetAuto();
+
+		int goodsId = 0, goodsNum = 0;
+		for (int i = harbor.LinkedFirms.Count - 1; i >= 0 && goodsNum < 2; --i)
+		{
+			int id = 0;
+			firm = FirmArray[harbor.LinkedFirms[i]];
+
+			switch (firm.FirmType)
+			{
+				case Firm.FIRM_MINE:
+					id = ((FirmMine)firm).RawId;
+					if (id != 0)
+					{
+						if (goodsNum == 0)
+							goodsId = id;
+						goodsNum++;
+					}
+
+					break;
+				case Firm.FIRM_FACTORY:
+					id = ((FirmFactory)firm).ProductId + GameConstants.MAX_RAW;
+					if (id != 0)
+					{
+						if (goodsNum == 0)
+							goodsId = id;
+						goodsNum++;
+					}
+
+					break;
+				case Firm.FIRM_MARKET:
+					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS && goodsNum < 2; j++)
+					{
+						MarketGoods goods = ((FirmMarket)firm).MarketGoods[j];
+						if (goods.RawId != 0)
+						{
+							id = goods.RawId;
+
+							if (goodsNum == 0)
+								goodsId = id;
+							goodsNum++;
+						}
+						else if (goods.ProductId != 0)
+						{
+							id = goods.ProductId + GameConstants.MAX_RAW;
+
+							if (goodsNum == 0)
+								goodsId = id;
+							goodsNum++;
+						}
+					}
+
+					break;
+				default:
+					break;
+			}
+		}
+
+		if (goodsNum == 1)
+			shipStop.PickUpToggle(goodsId); // cancel auto_pick_up
+		else if (goodsNum == 0)
+			shipStop.PickUpSetNone();
+
+		//-------------------------------------------------------//
+		// remove duplicate stop or stop change nation
+		//-------------------------------------------------------//
+		update_stop_list();
+
+		//-------------------------------------------------------//
+		// handle if current stop changed when mobile
+		//-------------------------------------------------------//
+		if (dest_stop_id != 0 && journey_status != InternalConstants.INSIDE_FIRM)
+		{
+			int newStopFirmRecno = stop_array[dest_stop_id - 1].FirmId;
+			if (newStopFirmRecno != oldStopFirmRecno)
+			{
+				firm = FirmArray[newStopFirmRecno];
+				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
+				journey_status = InternalConstants.ON_WAY_TO_FIRM;
+			}
+		}
+		else if (journey_status != InternalConstants.INSIDE_FIRM)
+			Stop2();
+	}
+
+	public void del_stop(int stopId, int remoteAction)
+	{
+		//if (!remoteAction && remote.is_enable())
+		//{
+			//// packet structure : <unit recno> <stop id>
+			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_DEL_STOP, 2 * sizeof(short));
+			//*shortPtr = sprite_recno;
+			//shortPtr[1] = stopId;
+			//return;
+		//}
+
+		//if (remote.is_enable() && stop_array[stopId - 1].firm_recno == 0)
+			//return;
+
+		stop_array[stopId - 1].FirmId = 0;
+		stop_defined_num--;
+		update_stop_list();
+	}
+	
 	public void update_stop_list()
 	{
 		//-------------------------------------------------------//
@@ -286,138 +830,6 @@ public class UnitMarine : Unit
 		}
 	}
 
-	public int get_next_stop_id(int curStopId)
-	{
-		int nextStopId = (curStopId >= stop_defined_num) ? 1 : curStopId + 1;
-
-		ShipStop stop = stop_array[nextStopId - 1];
-
-		bool needUpdate = false;
-
-		if (FirmArray.IsDeleted(stop.FirmId))
-		{
-			needUpdate = true;
-		}
-		else
-		{
-			Firm firm = FirmArray[stop.FirmId];
-
-			if (!can_set_stop(firm.FirmId) || firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
-			{
-				needUpdate = true;
-			}
-		}
-
-		if (needUpdate)
-		{
-			int preStopRecno = stop_array[curStopId - 1].FirmId;
-			update_stop_list();
-
-			if (stop_defined_num == 0)
-				return 0; // no stop is valid
-
-			for (int i = 0; i < stop_defined_num; i++)
-			{
-				stop = stop_array[i];
-				if (stop.FirmId == preStopRecno)
-					nextStopId = (i >= stop_defined_num) ? 1 : i + 1;
-			}
-		}
-
-		return nextStopId;
-	}
-
-	public override void PreProcess()
-	{
-		base.PreProcess();
-		if (HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
-			return;
-
-		if (ActionMode2 >= UnitConstants.ACTION_ATTACK_UNIT && ActionMode2 <= UnitConstants.ACTION_ATTACK_WALL)
-			return; // don't process trading if unit is attacking
-
-		if (auto_mode != 0) // process trading automatically, same as caravan
-		{
-			if (journey_status == InternalConstants.INSIDE_FIRM)
-			{
-				ship_in_firm();
-				return;
-			}
-
-			if (stop_defined_num == 0)
-				return;
-
-			//----------------- if there is only one defined stop --------------------//
-			if (stop_defined_num == 1)
-			{
-				ShipStop stop = stop_array[0];
-
-				if (FirmArray.IsDeleted(stop.FirmId))
-				{
-					update_stop_list();
-					return;
-				}
-
-				Firm firm = FirmArray[stop.FirmId];
-				if (firm.LocX1 != stop.FirmLocX1 || firm.LocY1 != stop.FirmLocY1)
-				{
-					update_stop_list();
-					return;
-				}
-
-				int curXLoc = NextLocX;
-				int curYLoc = NextLocY;
-				int moveStep = MoveStepCoeff();
-				if (curXLoc < firm.LocX1 - moveStep || curXLoc > firm.LocX2 + moveStep || curYLoc < firm.LocY1 - moveStep ||
-				    curYLoc > firm.LocY2 + moveStep)
-				{
-					if (!IsVisible())
-						return; // may get here if player manually ordered ship to dock
-					//### begin alex 6/10 ###//
-					/*if((move_to_x_loc>=firm.loc_x1-moveStep || move_to_x_loc<=firm.loc_x2+moveStep) &&
-						(move_to_y_loc>=firm.loc_y1-moveStep || move_to_y_loc<=firm.loc_y2+moveStep))
-						return;
-	
-					move_to_firm_surround(firm.loc_x1, firm.loc_y1, sprite_info.loc_width, sprite_info.loc_height, firm.firm_id);
-					journey_status = ON_WAY_TO_FIRM;*/
-					if (CurAction == SPRITE_IDLE)
-						MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-					else
-						journey_status = InternalConstants.ON_WAY_TO_FIRM;
-					//#### end alex 6/10 ####//
-				}
-				else
-				{
-					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
-					{
-						journey_status = InternalConstants.SURROUND_FIRM;
-						if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
-						{
-							if (wait_count <= 0)
-							{
-								//---------- unloading goods -------------//
-								cur_firm_recno = stop_array[0].FirmId;
-								get_harbor_linked_firm_info();
-								harbor_unload_goods();
-								wait_count = GameConstants.MAX_SHIP_WAIT_TERM * InternalConstants.SURROUND_FIRM_WAIT_FACTOR;
-								cur_firm_recno = 0;
-							}
-							else
-								wait_count--;
-						}
-					}
-				}
-
-				return;
-			}
-
-			//------------ if there are more than one defined stop ---------------//
-			ship_on_way();
-		}
-		else if (journey_status == InternalConstants.INSIDE_FIRM)
-			ship_in_firm(0); // autoMode is off
-	}
-
 	public void set_stop_pick_up(int stopId, int newPickUpType, int remoteAction)
 	{
 		//if (remote.is_enable())
@@ -505,235 +917,66 @@ public class UnitMarine : Unit
 			}
 		}*/
 	}
-
-	public void ship_in_firm(int autoMode = 1)
+	
+	public void copy_route(int copyUnitRecno, int remoteAction)
 	{
-		//-----------------------------------------------------------------------------//
-		// the harbor is deleted while the ship is in harbor
-		//-----------------------------------------------------------------------------//
-		if (cur_firm_recno != 0 && FirmArray.IsDeleted(cur_firm_recno))
-		{
-			HitPoints = 0.0; // ship also die if the harbor is deleted
-			UnitArray.DisappearInFirm(SpriteId); // ship also die if the harnor is deleted
+		if (SpriteId == copyUnitRecno)
 			return;
-		}
 
-		//-----------------------------------------------------------------------------//
-		// waiting (time to upload/download cargo)
-		//-----------------------------------------------------------------------------//
-		if (wait_count > 0)
-		{
-			wait_count--;
+		UnitMarine copyUnit = (UnitMarine)UnitArray[copyUnitRecno];
+
+		if (copyUnit.NationId != NationId)
 			return;
-		}
 
-		//-----------------------------------------------------------------------------//
-		// leave the harbor and go to another harbor if possible
-		//-----------------------------------------------------------------------------//
-		ShipStop shipStop = stop_array[dest_stop_id - 1];
-		int xLoc = stop_x_loc;
-		int yLoc = stop_y_loc;
-		Location loc = World.GetLoc(xLoc, yLoc);
-		Firm firm;
+		//if (remote.is_enable() && !remoteAction)
+		//{
+		//// packet structure : <unit recno> <copy recno>
+		//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_COPY_ROUTE, 2 * sizeof(short));
+		//*shortPtr = sprite_recno;
 
-		//TODO change %2 == 0
-		if (xLoc % 2 == 0 && yLoc % 2 == 0 && loc.CanMove(MobileType))
-			InitSprite(xLoc, yLoc); // appear in the location the unit disappeared before
-		else
+		//shortPtr[1] = copyUnitRecno;
+		//return;
+		//}
+
+		// clear existing stops
+		int num_stops = stop_defined_num;
+		for (int i = 0; i < num_stops; i++)
+			del_stop(1, InternalConstants.COMMAND_AUTO); // stop ids shift up
+
+		for (int i = 0; i < MAX_STOP_FOR_SHIP; i++)
 		{
-			//---- the entering location is blocked, select another location to leave ----//
-			firm = FirmArray[cur_firm_recno];
+			ShipStop shipStopA = copyUnit.stop_array[i];
+			ShipStop shipStopB = stop_array[i];
+			if (shipStopA.FirmId == 0)
+				break;
 
-			if (appear_in_firm_surround(ref xLoc, ref yLoc, firm))
+			if (FirmArray.IsDeleted(shipStopA.FirmId))
+				continue;
+
+			Firm firm = FirmArray[shipStopA.FirmId];
+			set_stop(i + 1, shipStopA.FirmLocX1, shipStopA.FirmLocY1, InternalConstants.COMMAND_AUTO);
+
+			if (shipStopA.PickUpType == TradeStop.AUTO_PICK_UP)
 			{
-				InitSprite(xLoc, yLoc);
-				Stop();
+				set_stop_pick_up(i + 1, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AUTO);
 			}
+
+			else if (shipStopA.PickUpType == TradeStop.NO_PICK_UP)
+			{
+				set_stop_pick_up(i + 1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AUTO);
+			}
+
 			else
 			{
-				wait_count = GameConstants.MAX_SHIP_WAIT_TERM * 10; //********* BUGHERE, continue to wait or ....
-				return;
-			}
-		}
-
-		//-------------- get next stop id. ----------------//
-		int nextStopId = get_next_stop_id(dest_stop_id);
-		if (nextStopId == 0 || dest_stop_id == nextStopId)
-		{
-			dest_stop_id = nextStopId;
-			journey_status = (nextStopId == 0) ? InternalConstants.NO_STOP_DEFINED : InternalConstants.SURROUND_FIRM;
-			return; // no stop or only one stop is valid
-		}
-
-		dest_stop_id = nextStopId;
-		firm = FirmArray[stop_array[dest_stop_id - 1].FirmId];
-
-		cur_firm_recno = 0;
-		journey_status = InternalConstants.ON_WAY_TO_FIRM;
-
-		if (autoMode != 0) // move to next firm only if autoMode is on
-			MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
-	}
-
-	public void ship_on_way()
-	{
-		ShipStop shipStop = stop_array[dest_stop_id - 1];
-		Firm firm;
-		int nextXLoc;
-		int nextYLoc;
-		int moveStep;
-
-		if (CurAction == SPRITE_IDLE && journey_status != InternalConstants.SURROUND_FIRM)
-		{
-			if (!FirmArray.IsDeleted(shipStop.FirmId))
-			{
-				firm = FirmArray[shipStop.FirmId];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
-				nextXLoc = NextLocX;
-				nextYLoc = NextLocY;
-				moveStep = MoveStepCoeff();
-				if (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
-				    nextYLoc <= firm.LocY2 + moveStep)
-					journey_status = InternalConstants.SURROUND_FIRM;
-
-				return;
-			}
-		}
-
-		if (UnitArray.IsDeleted(SpriteId))
-			return; //-***************** BUGHERE ***************//
-
-		if (FirmArray.IsDeleted(shipStop.FirmId))
-		{
-			update_stop_list();
-
-			if (stop_defined_num != 0) // move to next stop
-			{
-				firm = FirmArray[stop_array[stop_defined_num - 1].FirmId];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-			}
-
-			return;
-		}
-
-		//ShipStop *stop = stop_array + dest_stop_id - 1;
-		firm = FirmArray[shipStop.FirmId];
-
-		nextXLoc = NextLocX;
-		nextYLoc = NextLocY;
-		moveStep = MoveStepCoeff();
-		if (journey_status == InternalConstants.SURROUND_FIRM ||
-		    (nextXLoc == MoveToLocX && nextYLoc == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
-		     (nextXLoc >= firm.LocX1 - moveStep && nextXLoc <= firm.LocX2 + moveStep && nextYLoc >= firm.LocY1 - moveStep &&
-		      nextYLoc <= firm.LocY2 + moveStep)))
-		{
-			extra_move_in_beach = NO_EXTRA_MOVE; // since the ship may enter the firm in odd location		
-
-			shipStop.UpdatePickUp();
-
-			//-------------------------------------------------------//
-			// load/unload goods
-			//-------------------------------------------------------//
-			cur_firm_recno = shipStop.FirmId;
-
-			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
-			{
-				get_harbor_linked_firm_info();
-				harbor_unload_goods();
-				if (shipStop.PickUpType == TradeStop.AUTO_PICK_UP)
-					harbor_auto_load_goods();
-				else if (shipStop.PickUpType != TradeStop.NO_PICK_UP)
-					harbor_load_goods();
-			}
-
-			//-------------------------------------------------------//
-			//-------------------------------------------------------//
-			stop_x_loc = MoveToLocX; // store entering location
-			stop_y_loc = MoveToLocY;
-			wait_count = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
-
-			ResetPath();
-			DeinitSprite(true); // the ship enters the harbor now. 1-keep it selected if it is currently selected
-
-			CurX--; // set cur_x to -2, such that invisible but still process pre_process()
-
-			journey_status = InternalConstants.INSIDE_FIRM;
-		}
-		else
-		{
-			if (CurAction != SPRITE_MOVE)
-			{
-				//----------------------------------------------------//
-				// blocked by something, go to the destination again
-				// note: if return value is 0, cannot reach the firm.		//*********BUGHERE
-				//----------------------------------------------------//
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
-				journey_status = InternalConstants.ON_WAY_TO_FIRM;
+				for (int b = 0; b < TradeStop.MAX_PICK_UP_GOODS; ++b)
+				{
+					if (shipStopA.PickUpEnabled[b] != shipStopB.PickUpEnabled[b])
+						set_stop_pick_up(i + 1, b + 1, InternalConstants.COMMAND_PLAYER);
+				}
 			}
 		}
 	}
 
-	public bool appear_in_firm_surround(ref int xLoc, ref int yLoc, Firm firm)
-	{
-		FirmInfo firmInfo = FirmRes[Firm.FIRM_HARBOR];
-		int firmWidth = firmInfo.LocWidth;
-		int firmHeight = firmInfo.LocHeight;
-		int smallestCount = firmWidth * firmHeight + 1;
-		int largestCount = (firmWidth + 2) * (firmHeight + 2);
-		int countLimit = largestCount - smallestCount;
-		int count = Misc.Random(countLimit) + smallestCount;
-		int checkXLoc = 0, checkYLoc = 0;
-		bool found = false;
-
-		//-----------------------------------------------------------------//
-		for (int i = 0; i < countLimit; i++)
-		{
-			Misc.cal_move_around_a_point(count, firmWidth, firmHeight, out int xOffset, out int yOffset);
-			checkXLoc = firm.LocX1 + xOffset;
-			checkYLoc = firm.LocY1 + yOffset;
-
-			//TODO %2 == 0
-			if (checkXLoc % 2 != 0 || checkYLoc % 2 != 0 ||
-			    checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
-			{
-				count++;
-				continue;
-			}
-
-			Location location = World.GetLoc(checkXLoc, checkYLoc);
-			if (location.CanMove(MobileType))
-			{
-				found = true;
-				break;
-			}
-
-			count++;
-			if (count > largestCount)
-				count = smallestCount;
-		}
-
-		if (found)
-		{
-			xLoc = checkXLoc;
-			yLoc = checkYLoc;
-			return true;
-		}
-
-		return false;
-	}
-
-	public void get_harbor_linked_firm_info()
-	{
-		FirmHarbor firmHarbor = (FirmHarbor)FirmArray[cur_firm_recno];
-
-		firmHarbor.update_linked_firm_info();
-		linkedMines.Clear();
-		linkedMines.AddRange(firmHarbor.linked_mine_array);
-		linkedFactories.Clear();
-		linkedFactories.AddRange(firmHarbor.linked_factory_array);
-		linkedMarkets.Clear();
-		linkedMarkets.AddRange(firmHarbor.linked_market_array);
-	}
 
 	public void harbor_unload_goods()
 	{
@@ -745,106 +988,6 @@ public class UnitMarine : Unit
 
 		harbor_unload_product();
 		harbor_unload_raw();
-	}
-
-	public void harbor_unload_product()
-	{
-		if (linkedMarkets.Count == 0)
-			return;
-
-		int i, j, k;
-		int totalDemand;
-		int linkedMarketIndex; // point to linked_market_array
-		int firmSelectedIndex; // mark which firm is used
-		FirmMarket market;
-		MarketGoods marketProduct;
-		MarketGoods marketGoods; // used to find empty slot
-		int curStock, unloadQty;
-		bool useEmptySlot;
-
-		for (i = 0; i < GameConstants.MAX_PRODUCT; i++)
-		{
-			if (product_raw_qty_array[i] == 0)
-				continue; // without this goods
-
-			//----------------------------------------------------------------------//
-			// calculate the demand of this goods in market
-			//----------------------------------------------------------------------//
-			totalDemand = 0;
-			empty_slot_position_array.Clear();
-			firm_selected_array.Clear();
-			linkedMarketIndex = 0;
-			firmSelectedIndex = 0;
-			for (j = 0; j < linkedMarkets.Count; j++, linkedMarketIndex++, firmSelectedIndex++)
-			{
-				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
-
-				if (market.NationId != NationId)
-					continue; // don't unload goods to market of other nation
-
-				if (market.AIStatus == Firm.MARKET_FOR_SELL)
-					continue; // clearing the market stock, so no unloading
-
-				//---------- check the demand of this goods in the market ---------//
-				marketProduct = market.GetProductGoods(i + 1);
-				if (marketProduct != null)
-				{
-					totalDemand += (int)(market.MaxStockQty - marketProduct.StockQty);
-					firmSelectedIndex++;
-				}
-				else // don't have this product, clear for empty slot
-				{
-					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
-					{
-						marketGoods = market.MarketGoods[k];
-						if (marketGoods.StockQty == 0 && marketGoods.Supply30Days() <= 0.0)
-						{
-							empty_slot_position_array[j] = k;
-							totalDemand += (int)market.MaxStockQty;
-							firmSelectedIndex++;
-							break;
-						}
-					}
-				}
-			}
-
-			//----------------------------------------------------------------------//
-			// distribute the stock into each market
-			//----------------------------------------------------------------------//
-			curStock = product_raw_qty_array[i];
-			linkedMarketIndex = 0;
-			firmSelectedIndex = 0;
-			for (j = 0; j < linkedMarkets.Count; j++, linkedMarketIndex++, firmSelectedIndex++)
-			{
-				if (firm_selected_array[firmSelectedIndex] == 0)
-					continue;
-
-				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
-
-				marketProduct = market.GetProductGoods(i + 1);
-				if (marketProduct == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
-				{
-					useEmptySlot = true;
-					marketProduct = market.MarketGoods[empty_slot_position_array[j]];
-				}
-				else
-					useEmptySlot = false;
-
-				unloadQty = totalDemand != 0 ? (int)((market.MaxStockQty - marketProduct.StockQty) * curStock / totalDemand + 0.5) : 0;
-				unloadQty = Math.Min((int)(market.MaxStockQty - marketProduct.StockQty), unloadQty);
-				unloadQty = Math.Min(product_raw_qty_array[i], unloadQty);
-
-				if (unloadQty != 0)
-				{
-					if (useEmptySlot)
-						market.SetProductGoods(i + 1, empty_slot_position_array[j]);
-
-					marketProduct.StockQty += unloadQty;
-					product_raw_qty_array[i] -= unloadQty;
-					mprocessed_product_raw_qty_array[linkedMines.Count + linkedFactories.Count + j][i] += 2;
-				}
-			}
-		}
 	}
 
 	public void harbor_unload_raw()
@@ -989,6 +1132,106 @@ public class UnitMarine : Unit
 			}
 		}
 	}
+	
+	public void harbor_unload_product()
+	{
+		if (linkedMarkets.Count == 0)
+			return;
+
+		int i, j, k;
+		int totalDemand;
+		int linkedMarketIndex; // point to linked_market_array
+		int firmSelectedIndex; // mark which firm is used
+		FirmMarket market;
+		MarketGoods marketProduct;
+		MarketGoods marketGoods; // used to find empty slot
+		int curStock, unloadQty;
+		bool useEmptySlot;
+
+		for (i = 0; i < GameConstants.MAX_PRODUCT; i++)
+		{
+			if (product_raw_qty_array[i] == 0)
+				continue; // without this goods
+
+			//----------------------------------------------------------------------//
+			// calculate the demand of this goods in market
+			//----------------------------------------------------------------------//
+			totalDemand = 0;
+			empty_slot_position_array.Clear();
+			firm_selected_array.Clear();
+			linkedMarketIndex = 0;
+			firmSelectedIndex = 0;
+			for (j = 0; j < linkedMarkets.Count; j++, linkedMarketIndex++, firmSelectedIndex++)
+			{
+				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
+
+				if (market.NationId != NationId)
+					continue; // don't unload goods to market of other nation
+
+				if (market.AIStatus == Firm.MARKET_FOR_SELL)
+					continue; // clearing the market stock, so no unloading
+
+				//---------- check the demand of this goods in the market ---------//
+				marketProduct = market.GetProductGoods(i + 1);
+				if (marketProduct != null)
+				{
+					totalDemand += (int)(market.MaxStockQty - marketProduct.StockQty);
+					firmSelectedIndex++;
+				}
+				else // don't have this product, clear for empty slot
+				{
+					for (k = 0; k < GameConstants.MAX_MARKET_GOODS; k++)
+					{
+						marketGoods = market.MarketGoods[k];
+						if (marketGoods.StockQty == 0 && marketGoods.Supply30Days() <= 0.0)
+						{
+							empty_slot_position_array[j] = k;
+							totalDemand += (int)market.MaxStockQty;
+							firmSelectedIndex++;
+							break;
+						}
+					}
+				}
+			}
+
+			//----------------------------------------------------------------------//
+			// distribute the stock into each market
+			//----------------------------------------------------------------------//
+			curStock = product_raw_qty_array[i];
+			linkedMarketIndex = 0;
+			firmSelectedIndex = 0;
+			for (j = 0; j < linkedMarkets.Count; j++, linkedMarketIndex++, firmSelectedIndex++)
+			{
+				if (firm_selected_array[firmSelectedIndex] == 0)
+					continue;
+
+				market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
+
+				marketProduct = market.GetProductGoods(i + 1);
+				if (marketProduct == null) // using empty slot, don't set the pointer to the market_goods_array until unloadQty>0
+				{
+					useEmptySlot = true;
+					marketProduct = market.MarketGoods[empty_slot_position_array[j]];
+				}
+				else
+					useEmptySlot = false;
+
+				unloadQty = totalDemand != 0 ? (int)((market.MaxStockQty - marketProduct.StockQty) * curStock / totalDemand + 0.5) : 0;
+				unloadQty = Math.Min((int)(market.MaxStockQty - marketProduct.StockQty), unloadQty);
+				unloadQty = Math.Min(product_raw_qty_array[i], unloadQty);
+
+				if (unloadQty != 0)
+				{
+					if (useEmptySlot)
+						market.SetProductGoods(i + 1, empty_slot_position_array[j]);
+
+					marketProduct.StockQty += unloadQty;
+					product_raw_qty_array[i] -= unloadQty;
+					mprocessed_product_raw_qty_array[linkedMines.Count + linkedFactories.Count + j][i] += 2;
+				}
+			}
+		}
+	}
 
 	public void harbor_load_goods()
 	{
@@ -1044,168 +1287,6 @@ public class UnitMarine : Unit
 		{
 			if (raw_qty_array[i] < carry_goods_capacity)
 				harbor_load_raw(i, true, 1); // 1 -- only consider our market
-		}
-	}
-
-	public void harbor_load_product(int goodsId, bool autoPickUp, int considerMode)
-	{
-		if (linkedFactories.Count + linkedMarkets.Count == 0)
-			return;
-
-		if (product_raw_qty_array[goodsId] == carry_goods_capacity)
-			return;
-
-		int i;
-		int totalSupply;
-		int linkedFactoryIndex; // point to linked_factory_array
-		int linkedMarketIndex; // point to linked_market_array
-		int firmSelectedIndex; // mark which firm is used (for factory and market)
-		FirmFactory factory;
-		FirmMarket market;
-		MarketGoods marketProduct;
-		int loadQty, keepStockQty = 0;
-
-		totalSupply = 0;
-		firm_selected_array.Clear();
-		firmSelectedIndex = 0;
-		//----------------------------------------------------------------------//
-		// calculate the supply of this goods in factory
-		//----------------------------------------------------------------------//
-		if (linkedFactories.Count > 0)
-		{
-			factory = (FirmFactory)FirmArray[linkedFactories[0]];
-			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
-		}
-
-		linkedFactoryIndex = 0;
-		for (i = 0; i < linkedFactories.Count; i++, linkedFactoryIndex++, firmSelectedIndex++)
-		{
-			if (mprocessed_product_raw_qty_array[linkedMines.Count + i][goodsId] == 2)
-				continue;
-
-			factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
-
-			if (considerMode != 0)
-			{
-				if (factory.NationId != NationId)
-					continue; // not our market
-			}
-			else
-			{
-				if (factory.NationId == NationId)
-					continue; // not consider our market for this mode
-			}
-
-			//---------- check the supply of this goods in the factory ---------//
-			if (factory.ProductId != goodsId + 1)
-				continue; // incorrect product
-
-			totalSupply += Math.Max((int)(factory.StockQty - keepStockQty), 0);
-			firmSelectedIndex++;
-		}
-
-		//----------------------------------------------------------------------//
-		// calculate the supply of this goods in market
-		//----------------------------------------------------------------------//
-		if (linkedMarkets.Count > 0)
-		{
-			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
-		}
-
-		linkedMarketIndex = 0;
-		for (i = 0; i < linkedMarkets.Count; i++, linkedMarketIndex++, firmSelectedIndex++)
-		{
-			if (mprocessed_product_raw_qty_array[linkedMines.Count + linkedFactories.Count + i][goodsId] == 2)
-				continue;
-
-			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
-
-			if (considerMode != 0)
-			{
-				if (market.NationId != NationId)
-					continue; // not our market
-			}
-			else
-			{
-				if (market.NationId == NationId)
-					continue; // not consider our market for this mode
-			}
-
-			//---------- check the supply of this goods in the market ---------//
-			marketProduct = market.GetProductGoods(goodsId + 1);
-			if (marketProduct != null)
-			{
-				totalSupply += Math.Max((int)(marketProduct.StockQty - keepStockQty), 0);
-				firmSelectedIndex++;
-			}
-		}
-
-		Nation nation = NationArray[NationId];
-		int curDemand = carry_goods_capacity - product_raw_qty_array[goodsId];
-		firmSelectedIndex = 0;
-		//----------------------------------------------------------------------//
-		// get the stock from each factory
-		//----------------------------------------------------------------------//
-		if (linkedFactories.Count > 0)
-		{
-			factory = (FirmFactory)FirmArray[linkedFactories[0]];
-			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
-		}
-
-		linkedFactoryIndex = 0;
-		for (i = 0; i < linkedFactories.Count; i++, linkedFactoryIndex++, firmSelectedIndex++)
-		{
-			if (firm_selected_array[firmSelectedIndex] == 0)
-				continue;
-
-			factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
-
-			loadQty = Math.Max((int)(factory.StockQty - keepStockQty), 0);
-			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
-
-			if (factory.NationId != NationId)
-			{
-				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
-				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
-			}
-
-			factory.StockQty -= loadQty;
-			product_raw_qty_array[goodsId] += loadQty;
-		}
-
-		//----------------------------------------------------------------------//
-		// get the stock from each market
-		//----------------------------------------------------------------------//
-		if (linkedMarkets.Count > 0)
-		{
-			market = (FirmMarket)FirmArray[linkedMarkets[0]];
-			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
-		}
-
-		linkedMarketIndex = 0;
-		for (i = 0; i < linkedMarkets.Count; i++, linkedMarketIndex++, firmSelectedIndex++)
-		{
-			if (firm_selected_array[firmSelectedIndex] == 0)
-				continue;
-
-			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
-
-			marketProduct = market.GetProductGoods(goodsId + 1);
-
-			loadQty = Math.Max((int)marketProduct.StockQty - keepStockQty, 0);
-			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
-
-			if (market.NationId != NationId)
-			{
-				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
-				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
-			}
-
-			marketProduct.StockQty -= loadQty;
-			product_raw_qty_array[goodsId] += loadQty;
 		}
 	}
 
@@ -1370,81 +1451,173 @@ public class UnitMarine : Unit
 			raw_qty_array[goodsId] += loadQty;
 		}
 	}
-
-	public int total_carried_goods()
+	
+	public void harbor_load_product(int goodsId, bool autoPickUp, int considerMode)
 	{
-		int totalQty = 0;
+		if (linkedFactories.Count + linkedMarkets.Count == 0)
+			return;
 
-		for (int i = 0; i < GameConstants.MAX_RAW; i++)
+		if (product_raw_qty_array[goodsId] == carry_goods_capacity)
+			return;
+
+		int i;
+		int totalSupply;
+		int linkedFactoryIndex; // point to linked_factory_array
+		int linkedMarketIndex; // point to linked_market_array
+		int firmSelectedIndex; // mark which firm is used (for factory and market)
+		FirmFactory factory;
+		FirmMarket market;
+		MarketGoods marketProduct;
+		int loadQty, keepStockQty = 0;
+
+		totalSupply = 0;
+		firm_selected_array.Clear();
+		firmSelectedIndex = 0;
+		//----------------------------------------------------------------------//
+		// calculate the supply of this goods in factory
+		//----------------------------------------------------------------------//
+		if (linkedFactories.Count > 0)
 		{
-			totalQty += raw_qty_array[i];
-			totalQty += product_raw_qty_array[i];
+			factory = (FirmFactory)FirmArray[linkedFactories[0]];
+			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
 		}
 
-		return totalQty;
-	}
-
-	public override double ActualDamage()
-	{
-		//-----------------------------------------//
-		// If there is units on the ship, the units leadership will increase the attacking damage.
-		//-----------------------------------------//
-
-		int highestLeadership = 0;
-
-		for (int i = 0; i < UnitsOnBoard.Count; i++)
+		linkedFactoryIndex = 0;
+		for (i = 0; i < linkedFactories.Count; i++, linkedFactoryIndex++, firmSelectedIndex++)
 		{
-			Unit unit = UnitArray[UnitsOnBoard[i]];
+			if (mprocessed_product_raw_qty_array[linkedMines.Count + i][goodsId] == 2)
+				continue;
 
-			if (unit.Skill.SkillId == Skill.SKILL_LEADING)
+			factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
+
+			if (considerMode != 0)
 			{
-				if (unit.Skill.SkillLevel > highestLeadership)
-					highestLeadership = unit.Skill.SkillLevel;
+				if (factory.NationId != NationId)
+					continue; // not our market
+			}
+			else
+			{
+				if (factory.NationId == NationId)
+					continue; // not consider our market for this mode
+			}
+
+			//---------- check the supply of this goods in the factory ---------//
+			if (factory.ProductId != goodsId + 1)
+				continue; // incorrect product
+
+			totalSupply += Math.Max((int)(factory.StockQty - keepStockQty), 0);
+			firmSelectedIndex++;
+		}
+
+		//----------------------------------------------------------------------//
+		// calculate the supply of this goods in market
+		//----------------------------------------------------------------------//
+		if (linkedMarkets.Count > 0)
+		{
+			market = (FirmMarket)FirmArray[linkedMarkets[0]];
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
+		}
+
+		linkedMarketIndex = 0;
+		for (i = 0; i < linkedMarkets.Count; i++, linkedMarketIndex++, firmSelectedIndex++)
+		{
+			if (mprocessed_product_raw_qty_array[linkedMines.Count + linkedFactories.Count + i][goodsId] == 2)
+				continue;
+
+			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
+
+			if (considerMode != 0)
+			{
+				if (market.NationId != NationId)
+					continue; // not our market
+			}
+			else
+			{
+				if (market.NationId == NationId)
+					continue; // not consider our market for this mode
+			}
+
+			//---------- check the supply of this goods in the market ---------//
+			marketProduct = market.GetProductGoods(goodsId + 1);
+			if (marketProduct != null)
+			{
+				totalSupply += Math.Max((int)(marketProduct.StockQty - keepStockQty), 0);
+				firmSelectedIndex++;
 			}
 		}
 
-		return base.ActualDamage() * (100 + highestLeadership) / 100.0;
+		Nation nation = NationArray[NationId];
+		int curDemand = carry_goods_capacity - product_raw_qty_array[goodsId];
+		firmSelectedIndex = 0;
+		//----------------------------------------------------------------------//
+		// get the stock from each factory
+		//----------------------------------------------------------------------//
+		if (linkedFactories.Count > 0)
+		{
+			factory = (FirmFactory)FirmArray[linkedFactories[0]];
+			keepStockQty = autoPickUp ? (int)(factory.MaxStockQty / 5.0) : 0;
+		}
+
+		linkedFactoryIndex = 0;
+		for (i = 0; i < linkedFactories.Count; i++, linkedFactoryIndex++, firmSelectedIndex++)
+		{
+			if (firm_selected_array[firmSelectedIndex] == 0)
+				continue;
+
+			factory = (FirmFactory)FirmArray[linkedFactories[linkedFactoryIndex]];
+
+			loadQty = Math.Max((int)(factory.StockQty - keepStockQty), 0);
+			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
+
+			if (factory.NationId != NationId)
+			{
+				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
+				if (loadQty > 0)
+					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
+			}
+
+			factory.StockQty -= loadQty;
+			product_raw_qty_array[goodsId] += loadQty;
+		}
+
+		//----------------------------------------------------------------------//
+		// get the stock from each market
+		//----------------------------------------------------------------------//
+		if (linkedMarkets.Count > 0)
+		{
+			market = (FirmMarket)FirmArray[linkedMarkets[0]];
+			keepStockQty = autoPickUp ? (int)(market.MaxStockQty / 5.0) : 0;
+		}
+
+		linkedMarketIndex = 0;
+		for (i = 0; i < linkedMarkets.Count; i++, linkedMarketIndex++, firmSelectedIndex++)
+		{
+			if (firm_selected_array[firmSelectedIndex] == 0)
+				continue;
+
+			market = (FirmMarket)FirmArray[linkedMarkets[linkedMarketIndex]];
+
+			marketProduct = market.GetProductGoods(goodsId + 1);
+
+			loadQty = Math.Max((int)marketProduct.StockQty - keepStockQty, 0);
+			loadQty = totalSupply != 0 ? Math.Min(loadQty * curDemand / totalSupply, loadQty) : 0;
+
+			if (market.NationId != NationId)
+			{
+				loadQty = (nation.cash > 0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
+				if (loadQty > 0)
+					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
+			}
+
+			marketProduct.StockQty -= loadQty;
+			product_raw_qty_array[goodsId] += loadQty;
+		}
 	}
 
+	
 	public bool can_unload_unit()
 	{
 		return false;
-	}
-
-	public void load_unit(int unitRecno)
-	{
-		if (UnitArray.IsDeleted(unitRecno))
-			return;
-
-		Unit unit = UnitArray[unitRecno];
-
-		if (unit.HitPoints <= 0.0 || unit.CurAction == SPRITE_DIE || unit.ActionMode2 == UnitConstants.ACTION_DIE)
-			return;
-
-		if (UnitsOnBoard.Count == UnitConstants.MAX_UNIT_IN_SHIP)
-			return;
-
-		UnitsOnBoard.Add(unitRecno);
-
-		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
-
-		//TODO selection
-		/*if (unit.SelectedFlag)
-		{
-			unit.SelectedFlag = false;
-			UnitArray.SelectedCount--;
-		}*/
-
-		unit.DeinitSprite();
-
-		//--- if this marine unit is currently selected ---//
-
-		//TODO UI
-		/*if (UnitArray.SelectedUnitId == SpriteId)
-		{
-			if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
-				disp_info(INFO_UPDATE);
-		}*/
 	}
 
 	public void unload_unit(int unitSeqId, int remoteAction)
@@ -1565,30 +1738,68 @@ public class UnitMarine : Unit
 		return true;
 	}
 
-	public void del_unit(int unitRecno)
+	public bool is_on_coast()
 	{
-		for (int i = UnitsOnBoard.Count - 1; i >= 0; i--)
+		int curXLoc = NextLocX; // ship location
+		int curYLoc = NextLocY;
+
+		for (int i = 2; i <= 9; i++) // checking for the surrounding location
 		{
-			if (UnitsOnBoard[i] == unitRecno)
+			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+
+			int checkXLoc = curXLoc + xShift;
+			int checkYLoc = curYLoc + yShift;
+
+			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+				continue;
+
+			Location location = World.GetLoc(checkXLoc, checkYLoc);
+
+			if (TerrainRes[location.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
 			{
-				UnitsOnBoard.RemoveAt(i);
-				return;
+				return true;
 			}
 		}
-	}
 
-	public bool can_set_stop(int firmRecno)
+		return false;
+	}
+	
+	public void load_unit(int unitRecno)
 	{
-		Firm firm = FirmArray[firmRecno];
+		if (UnitArray.IsDeleted(unitRecno))
+			return;
 
-		if (firm.UnderConstruction)
-			return false;
+		Unit unit = UnitArray[unitRecno];
 
-		if (firm.FirmType != Firm.FIRM_HARBOR)
-			return false;
+		if (unit.HitPoints <= 0.0 || unit.CurAction == SPRITE_DIE || unit.ActionMode2 == UnitConstants.ACTION_DIE)
+			return;
 
-		return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
+		if (UnitsOnBoard.Count == UnitConstants.MAX_UNIT_IN_SHIP)
+			return;
+
+		UnitsOnBoard.Add(unitRecno);
+
+		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
+
+		//TODO selection
+		/*if (unit.SelectedFlag)
+		{
+			unit.SelectedFlag = false;
+			UnitArray.SelectedCount--;
+		}*/
+
+		unit.DeinitSprite();
+
+		//--- if this marine unit is currently selected ---//
+
+		//TODO UI
+		/*if (UnitArray.SelectedUnitId == SpriteId)
+		{
+			if (!remote.is_enable() || nation_recno == NationArray.player_recno || Config.show_ai_info)
+				disp_info(INFO_UPDATE);
+		}*/
 	}
+	
 
 	public void extra_move()
 	{
@@ -1736,164 +1947,6 @@ public class UnitMarine : Unit
 		}
 	}
 
-	public void set_stop(int stopId, int stopXLoc, int stopYLoc, int remoteAction)
-	{
-		//-------------------------------------------------------//
-		// check if there is a station in the given location
-		//-------------------------------------------------------//
-		Location loc = World.GetLoc(stopXLoc, stopYLoc);
-		if (!loc.IsFirm())
-			return;
-
-		Firm firm = FirmArray[loc.FirmId()];
-		if (!can_set_stop(firm.FirmId))
-			return;
-
-		//-------------------------------------------------------//
-		// return if the harbor stop is in another territory
-		//-------------------------------------------------------//
-		FirmHarbor harbor = (FirmHarbor)firm;
-
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.sea_region_id)
-			return;
-
-		//-----------------------------------------//
-
-		//if (!remoteAction && remote.is_enable())
-		//{
-			//// packet structure : <unit recno> <stop id> <stop x> <stop y>
-			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_SET_STOP, 4 * sizeof(short));
-			//*shortPtr = sprite_recno;
-			//shortPtr[1] = stopId;
-			//shortPtr[2] = stopXLoc;
-			//shortPtr[3] = stopYLoc;
-			//return;
-		//}
-
-		if (stop_array[stopId - 1].FirmId == 0)
-			stop_defined_num++; // no plus one if the recno is defined originally
-
-		//-------------------------------------------------------//
-		// set the station recno of the stop
-		//-------------------------------------------------------//
-		ShipStop shipStop = stop_array[stopId - 1];
-		if (shipStop.FirmId == firm.FirmId)
-		{
-			return; // same stop as before
-		}
-
-		int oldStopFirmRecno = dest_stop_id != 0 ? stop_array[dest_stop_id - 1].FirmId : 0;
-		shipStop.FirmId = firm.FirmId;
-		shipStop.FirmLocX1 = firm.LocX1;
-		shipStop.FirmLocY1 = firm.LocY1;
-
-		//-------------------------------------------------------//
-		// set pick up selection based on availability
-		//-------------------------------------------------------//
-		shipStop.PickUpSetAuto();
-
-		int goodsId = 0, goodsNum = 0;
-		for (int i = harbor.LinkedFirms.Count - 1; i >= 0 && goodsNum < 2; --i)
-		{
-			int id = 0;
-			firm = FirmArray[harbor.LinkedFirms[i]];
-
-			switch (firm.FirmType)
-			{
-				case Firm.FIRM_MINE:
-					id = ((FirmMine)firm).RawId;
-					if (id != 0)
-					{
-						if (goodsNum == 0)
-							goodsId = id;
-						goodsNum++;
-					}
-
-					break;
-				case Firm.FIRM_FACTORY:
-					id = ((FirmFactory)firm).ProductId + GameConstants.MAX_RAW;
-					if (id != 0)
-					{
-						if (goodsNum == 0)
-							goodsId = id;
-						goodsNum++;
-					}
-
-					break;
-				case Firm.FIRM_MARKET:
-					for (int j = 0; j < GameConstants.MAX_MARKET_GOODS && goodsNum < 2; j++)
-					{
-						MarketGoods goods = ((FirmMarket)firm).MarketGoods[j];
-						if (goods.RawId != 0)
-						{
-							id = goods.RawId;
-
-							if (goodsNum == 0)
-								goodsId = id;
-							goodsNum++;
-						}
-						else if (goods.ProductId != 0)
-						{
-							id = goods.ProductId + GameConstants.MAX_RAW;
-
-							if (goodsNum == 0)
-								goodsId = id;
-							goodsNum++;
-						}
-					}
-
-					break;
-				default:
-					break;
-			}
-		}
-
-		if (goodsNum == 1)
-			shipStop.PickUpToggle(goodsId); // cancel auto_pick_up
-		else if (goodsNum == 0)
-			shipStop.PickUpSetNone();
-
-		//-------------------------------------------------------//
-		// remove duplicate stop or stop change nation
-		//-------------------------------------------------------//
-		update_stop_list();
-
-		//-------------------------------------------------------//
-		// handle if current stop changed when mobile
-		//-------------------------------------------------------//
-		if (dest_stop_id != 0 && journey_status != InternalConstants.INSIDE_FIRM)
-		{
-			int newStopFirmRecno = stop_array[dest_stop_id - 1].FirmId;
-			if (newStopFirmRecno != oldStopFirmRecno)
-			{
-				firm = FirmArray[newStopFirmRecno];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, Firm.FIRM_HARBOR);
-				journey_status = InternalConstants.ON_WAY_TO_FIRM;
-			}
-		}
-		else if (journey_status != InternalConstants.INSIDE_FIRM)
-			Stop2();
-	}
-
-	public void del_stop(int stopId, int remoteAction)
-	{
-		//if (!remoteAction && remote.is_enable())
-		//{
-			//// packet structure : <unit recno> <stop id>
-			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_DEL_STOP, 2 * sizeof(short));
-			//*shortPtr = sprite_recno;
-			//shortPtr[1] = stopId;
-			//return;
-		//}
-
-		//if (remote.is_enable() && stop_array[stopId - 1].firm_recno == 0)
-			//return;
-
-		stop_array[stopId - 1].FirmId = 0;
-		stop_defined_num--;
-		update_stop_list();
-	}
-
 	public override bool IsAIAllStop()
 	{
 		if (CurAction != SPRITE_IDLE || AIActionId != 0)
@@ -1938,66 +1991,55 @@ public class UnitMarine : Unit
 		}
 	}
 
-	public void copy_route(int copyUnitRecno, int remoteAction)
+	public override double ActualDamage()
 	{
-		if (SpriteId == copyUnitRecno)
-			return;
+		//-----------------------------------------//
+		// If there is units on the ship, the units leadership will increase the attacking damage.
+		//-----------------------------------------//
 
-		UnitMarine copyUnit = (UnitMarine)UnitArray[copyUnitRecno];
+		int highestLeadership = 0;
 
-		if (copyUnit.NationId != NationId)
-			return;
-
-		//if (remote.is_enable() && !remoteAction)
-		//{
-			//// packet structure : <unit recno> <copy recno>
-			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_COPY_ROUTE, 2 * sizeof(short));
-			//*shortPtr = sprite_recno;
-
-			//shortPtr[1] = copyUnitRecno;
-			//return;
-		//}
-
-		// clear existing stops
-		int num_stops = stop_defined_num;
-		for (int i = 0; i < num_stops; i++)
-			del_stop(1, InternalConstants.COMMAND_AUTO); // stop ids shift up
-
-		for (int i = 0; i < MAX_STOP_FOR_SHIP; i++)
+		for (int i = 0; i < UnitsOnBoard.Count; i++)
 		{
-			ShipStop shipStopA = copyUnit.stop_array[i];
-			ShipStop shipStopB = stop_array[i];
-			if (shipStopA.FirmId == 0)
-				break;
+			Unit unit = UnitArray[UnitsOnBoard[i]];
 
-			if (FirmArray.IsDeleted(shipStopA.FirmId))
-				continue;
-
-			Firm firm = FirmArray[shipStopA.FirmId];
-			set_stop(i + 1, shipStopA.FirmLocX1, shipStopA.FirmLocY1, InternalConstants.COMMAND_AUTO);
-
-			if (shipStopA.PickUpType == TradeStop.AUTO_PICK_UP)
+			if (unit.Skill.SkillId == Skill.SKILL_LEADING)
 			{
-				set_stop_pick_up(i + 1, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AUTO);
-			}
-
-			else if (shipStopA.PickUpType == TradeStop.NO_PICK_UP)
-			{
-				set_stop_pick_up(i + 1, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AUTO);
-			}
-
-			else
-			{
-				for (int b = 0; b < TradeStop.MAX_PICK_UP_GOODS; ++b)
-				{
-					if (shipStopA.PickUpEnabled[b] != shipStopB.PickUpEnabled[b])
-						set_stop_pick_up(i + 1, b + 1, InternalConstants.COMMAND_PLAYER);
-				}
+				if (unit.Skill.SkillLevel > highestLeadership)
+					highestLeadership = unit.Skill.SkillLevel;
 			}
 		}
+
+		return base.ActualDamage() * (100 + highestLeadership) / 100.0;
+	}
+	
+	public override bool ShouldShowInfo()
+	{
+		if (base.ShouldShowInfo())
+			return true;
+
+		//--- if any of the units on the ship are spies of the player ---//
+
+		for (int i = 0; i < UnitsOnBoard.Count; i++)
+		{
+			if (UnitArray[UnitsOnBoard[i]].IsOwn())
+				return true;
+		}
+
+		return false;
 	}
 
-	//------- ai functions --------//
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawShipDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleShipDetailsInput(this);
+	}
+	
+	#region Old AI Functions
 
 	public override void ProcessAI()
 	{
@@ -2116,55 +2158,5 @@ public class UnitMarine : Unit
 		}
 	}
 
-	public bool is_on_coast()
-	{
-		int curXLoc = NextLocX; // ship location
-		int curYLoc = NextLocY;
-
-		for (int i = 2; i <= 9; i++) // checking for the surrounding location
-		{
-			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
-
-			int checkXLoc = curXLoc + xShift;
-			int checkYLoc = curYLoc + yShift;
-
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
-				continue;
-
-			Location location = World.GetLoc(checkXLoc, checkYLoc);
-
-			if (TerrainRes[location.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public override bool ShouldShowInfo()
-	{
-		if (base.ShouldShowInfo())
-			return true;
-
-		//--- if any of the units on the ship are spies of the player ---//
-
-		for (int i = 0; i < UnitsOnBoard.Count; i++)
-		{
-			if (UnitArray[UnitsOnBoard[i]].IsOwn())
-				return true;
-		}
-
-		return false;
-	}
-
-	public override void DrawDetails(IRenderer renderer)
-	{
-		renderer.DrawShipDetails(this);
-	}
-
-	public override void HandleDetailsInput(IRenderer renderer)
-	{
-		renderer.HandleShipDetailsInput(this);
-	}
+	#endregion
 }

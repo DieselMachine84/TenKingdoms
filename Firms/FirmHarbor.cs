@@ -89,6 +89,25 @@ public class FirmHarbor : Firm
 		}
 	}
 
+	public override void NextDay()
+	{
+		base.NextDay();
+
+		//------- process building -------//
+
+		if (build_unit_id != 0)
+			process_build();
+		else
+			process_queue();
+	}
+	
+	//TODO ChangeNation?
+
+	public override bool IsOperating()
+	{
+		return true;
+	}
+	
 	public override void AssignUnit(int unitRecno)
 	{
 		//------- if this is a construction worker -------//
@@ -113,33 +132,79 @@ public class FirmHarbor : Firm
 		unit.DeinitSprite();
 	}
 
-	public override void NextDay()
+	public void add_queue(int unitId, int amount = 1)
 	{
-		base.NextDay();
+		if (amount < 0)
+			return;
 
-		//------- process building -------//
+		int queueSpace = GameConstants.MAX_BUILD_SHIP_QUEUE - build_queue.Count - (build_unit_id > 0 ? 1 : 0);
+		int enqueueAmount = Math.Min(queueSpace, amount);
 
-		if (build_unit_id != 0)
-			process_build();
-		else
-			process_queue();
+		for (int i = 0; i < enqueueAmount; ++i)
+			build_queue.Enqueue(unitId);
 	}
 
-	public int total_linked_trade_firm()
+	public void remove_queue(int unitId, int amount = 1)
 	{
-		return linked_mine_array.Count + linked_factory_array.Count + linked_market_array.Count;
+		if (amount < 1)
+			return;
+
+		List<int> newQueue = build_queue.ToList();
+		for (int i = newQueue.Count - 1; i >= 0 && amount > 0; i--)
+		{
+			if (newQueue[i] == unitId)
+			{
+				newQueue.RemoveAt(i);
+				amount--;
+				if (amount == 0)
+					break;
+			}
+		}
+
+		build_queue.Clear();
+		foreach (var item in newQueue)
+			build_queue.Enqueue(item);
+
+		// If there were less units of unitId in the queue than were requested to be removed then
+		// also cancel build unit
+		if (amount > 0 && build_unit_id == unitId)
+			cancel_build_unit();
 	}
 
-	public override bool IsOperating()
+	public void cancel_build_unit()
 	{
-		return true;
+		build_unit_id = 0;
 	}
-
-	public bool can_build_ship()
+	
+	private void process_queue()
 	{
-		return build_unit_id == 0;
-	}
+		if (build_queue.Count > 0)
+		{
+			// remove the queue no matter build_ship success or not
 
+			build_ship(build_queue.Dequeue(), InternalConstants.COMMAND_AUTO);
+		}
+	}
+	
+	private void process_build()
+	{
+		int totalBuildDays = UnitRes[build_unit_id].build_days;
+
+
+		if ((Sys.Instance.FrameNumber - start_build_frame_no) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
+		{
+			Unit unit = UnitArray.AddUnit(build_unit_id, NationId);
+
+			add_hosted_ship(unit.SpriteId);
+
+			if (OwnFirm())
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType,
+					"FINS", 'S', UnitRes[build_unit_id].sprite_id);
+
+			build_unit_id = 0;
+		}
+	}
+	
 	public void build_ship(int unitId, int remoteAction)
 	{
 		if (ship_recno_array.Count >= GameConstants.MAX_SHIP_IN_HARBOR)
@@ -154,6 +219,43 @@ public class FirmHarbor : Firm
 
 		build_unit_id = unitId;
 		start_build_frame_no = Sys.Instance.FrameNumber;
+	}
+	
+	private void add_hosted_ship(int shipRecno)
+	{
+		ship_recno_array.Add(shipRecno);
+
+		//---- set the unit_mode of the ship ----//
+
+		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, FirmId);
+
+		//---------------------------------------//
+
+		//TODO drawing
+		//if( firm_recno == FirmArray.selected_recno )
+		//put_info(INFO_UPDATE);
+	}
+	
+	public void del_hosted_ship(int delUnitRecno)
+	{
+		//---- reset the unit_mode of the ship ----//
+
+		UnitArray[delUnitRecno].SetMode(0);
+
+		//-----------------------------------------//
+
+		for (int i = ship_recno_array.Count - 1; i >= 0; i--)
+		{
+			if (ship_recno_array[i] == delUnitRecno)
+			{
+				ship_recno_array.RemoveAt(i);
+				break;
+			}
+		}
+
+		//TODO drawing
+		//if( firm_recno == FirmArray.selected_recno )
+		//put_info(INFO_UPDATE);
 	}
 
 	public void sail_ship(int unitRecno, int remoteAction)
@@ -211,46 +313,7 @@ public class FirmHarbor : Firm
 			UnitArray.SelectedCount = 1;
 		}*/
 	}
-
-	public void del_hosted_ship(int delUnitRecno)
-	{
-		//---- reset the unit_mode of the ship ----//
-
-		UnitArray[delUnitRecno].SetMode(0);
-
-		//-----------------------------------------//
-
-		for (int i = ship_recno_array.Count - 1; i >= 0; i--)
-		{
-			if (ship_recno_array[i] == delUnitRecno)
-			{
-				ship_recno_array.RemoveAt(i);
-				break;
-			}
-		}
-
-		//TODO drawing
-		//if( firm_recno == FirmArray.selected_recno )
-		//put_info(INFO_UPDATE);
-	}
-
-	//-------- for harbor trading ----------//
-
-	public int get_linked_mine_num()
-	{
-		return linked_mine_array.Count;
-	}
-
-	public int get_linked_factory_num()
-	{
-		return linked_factory_array.Count;
-	}
-
-	public int get_linked_market_num()
-	{
-		return linked_market_array.Count;
-	}
-
+	
 	public void update_linked_firm_info()
 	{
 		linked_mine_array.Clear();
@@ -283,8 +346,34 @@ public class FirmHarbor : Firm
 		}
 	}
 
-	//----------- AI functions -------------//
+	public override bool ShouldShowInfo()
+	{
+		if (base.ShouldShowInfo())
+			return true;
 
+		//--- if any of the ships in the harbor has the spies of the player ---//
+
+		for (int i = 0; i < ship_recno_array.Count; i++)
+		{
+			if (UnitArray[ship_recno_array[i]].ShouldShowInfo())
+				return true;
+		}
+
+		return false;
+	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawHarborDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleHarborDetailsInput(this);
+	}
+	
+	#region Old AI Functions
+	
 	public override void ProcessAI()
 	{
 		if (Info.TotalDays % 30 == FirmId % 30)
@@ -521,120 +610,16 @@ public class FirmHarbor : Firm
 
 		return null;
 	}
-
-	//--------------------------------------//
-
-	public void cancel_build_unit()
+	
+	public bool can_build_ship()
 	{
-		build_unit_id = 0;
+		return build_unit_id == 0;
 	}
-
-	public override bool ShouldShowInfo()
+	
+	public int total_linked_trade_firm()
 	{
-		if (base.ShouldShowInfo())
-			return true;
-
-		//--- if any of the ships in the harbor has the spies of the player ---//
-
-		for (int i = 0; i < ship_recno_array.Count; i++)
-		{
-			if (UnitArray[ship_recno_array[i]].ShouldShowInfo())
-				return true;
-		}
-
-		return false;
+		return linked_mine_array.Count + linked_factory_array.Count + linked_market_array.Count;
 	}
-
-	private void add_hosted_ship(int shipRecno)
-	{
-		ship_recno_array.Add(shipRecno);
-
-		//---- set the unit_mode of the ship ----//
-
-		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, FirmId);
-
-		//---------------------------------------//
-
-		//TODO drawing
-		//if( firm_recno == FirmArray.selected_recno )
-		//put_info(INFO_UPDATE);
-	}
-
-	private void process_build()
-	{
-		int totalBuildDays = UnitRes[build_unit_id].build_days;
-
-
-		if ((Sys.Instance.FrameNumber - start_build_frame_no) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
-		{
-			Unit unit = UnitArray.AddUnit(build_unit_id, NationId);
-
-			add_hosted_ship(unit.SpriteId);
-
-			if (OwnFirm())
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType,
-					"FINS", 'S', UnitRes[build_unit_id].sprite_id);
-
-			build_unit_id = 0;
-		}
-	}
-
-	public void add_queue(int unitId, int amount = 1)
-	{
-		if (amount < 0)
-			return;
-
-		int queueSpace = GameConstants.MAX_BUILD_SHIP_QUEUE - build_queue.Count - (build_unit_id > 0 ? 1 : 0);
-		int enqueueAmount = Math.Min(queueSpace, amount);
-
-		for (int i = 0; i < enqueueAmount; ++i)
-			build_queue.Enqueue(unitId);
-	}
-
-	public void remove_queue(int unitId, int amount = 1)
-	{
-		if (amount < 1)
-			return;
-
-		List<int> newQueue = build_queue.ToList();
-		for (int i = newQueue.Count - 1; i >= 0 && amount > 0; i--)
-		{
-			if (newQueue[i] == unitId)
-			{
-				newQueue.RemoveAt(i);
-				amount--;
-				if (amount == 0)
-					break;
-			}
-		}
-
-		build_queue.Clear();
-		foreach (var item in newQueue)
-			build_queue.Enqueue(item);
-
-		// If there were less units of unitId in the queue than were requested to be removed then
-		// also cancel build unit
-		if (amount > 0 && build_unit_id == unitId)
-			cancel_build_unit();
-	}
-
-	private void process_queue()
-	{
-		if (build_queue.Count > 0)
-		{
-			// remove the queue no matter build_ship success or not
-
-			build_ship(build_queue.Dequeue(), InternalConstants.COMMAND_AUTO);
-		}
-	}
-
-	public override void DrawDetails(IRenderer renderer)
-	{
-		renderer.DrawHarborDetails(this);
-	}
-
-	public override void HandleDetailsInput(IRenderer renderer)
-	{
-		renderer.HandleHarborDetailsInput(this);
-	}
+	
+	#endregion
 }
