@@ -501,7 +501,7 @@ public class Sprite : IIdObject
 
 		if ((CurDir + HALF_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE == FinalDir) // opposite direction
 		{
-			CurDir += (FinalDir % 2 != 0) ? 1 : -1;
+			CurDir += (FinalDir % 2 == 0) ? 1 : -1;
 			CurDir %= InternalConstants.MAX_SPRITE_DIR_TYPE;
 		}
 		else
