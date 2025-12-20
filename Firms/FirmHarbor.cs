@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
@@ -9,15 +8,11 @@ public class FirmHarbor : Firm
 	public int LandRegionId { get; private set; }
 	public int SeaRegionId { get; private set; }
 
-	public List<int> Ships { get; } = new List<int>(GameConstants.MAX_SHIP_IN_HARBOR);
+	public List<int> Ships { get; } = new List<int>();
 
-	public int BuildUnitId { get; set; }
+	public int BuildUnitId { get; private set; }
 	public List<int> BuildQueue { get; } = new List<int>();
-	private long StartBuildFrameNumber { get; set; }
-
-	public List<int> LinkedMines { get; } = new List<int>();
-	public List<int> LinkedFactories { get; } = new List<int>();
-	public List<int> LinkedMarkets { get; } = new List<int>();
+	private long _startBuildFrameNumber;
 
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
 
@@ -56,9 +51,7 @@ public class FirmHarbor : Firm
 			SeaRegionId = World.GetLoc(locX + 2, locY + 1).RegionId;
 		}
 
-		RegionId = LandRegionId; // set region_id to land_region_id
-
-		//------- update the harbor count of the regions ------//
+		RegionId = LandRegionId;
 
 		// TODO remove?
 		RegionArray.UpdateRegionStat();
@@ -68,18 +61,14 @@ public class FirmHarbor : Firm
 	{
 		for (int i = Ships.Count - 1; i >= 0; i--)
 		{
-			int shipUnitRecno = Ships[i];
-
-			//---- mobilize ships in the harbor ----//
-
-			SailShip(shipUnitRecno, InternalConstants.COMMAND_AUTO);
+			int shipUnitId = Ships[i];
 
 			//--- if the ship does not sailed out due to no limit sea space, delete it  ---//
 
-			if (Ships.Count == i)
+			if (!SailShip(shipUnitId, InternalConstants.COMMAND_AUTO))
 			{
-				DelHostedShip(shipUnitRecno);
-				UnitArray.DeleteUnit(UnitArray[shipUnitRecno]);
+				DelHostedShip(shipUnitId);
+				UnitArray.DeleteUnit(UnitArray[shipUnitId]);
 			}
 		}
 	}
@@ -88,43 +77,48 @@ public class FirmHarbor : Firm
 	{
 		base.NextDay();
 
-		//------- process building -------//
-
 		if (BuildUnitId != 0)
 			ProcessBuild();
 		else
 			ProcessQueue();
 	}
 	
-	//TODO ChangeNation?
+	public override void ChangeNation(int newNationId)
+	{
+		//--- empty the build queue ---//
+
+		// Note: this fixes a bug with a nation-changed harbor building a ship that the nation doesn't have,
+		//       which leads to a crash (when selecting attack sprite) because CurAttack is not set properly.
+		if (BuildUnitId != 0)
+			CancelBuildUnit();
+		BuildQueue.Clear();
+
+		base.ChangeNation(newNationId);
+	}
 
 	public override bool IsOperating()
 	{
 		return true;
 	}
 	
-	public override void AssignUnit(int unitRecno)
+	public override void AssignUnit(int unitId)
 	{
-		//------- if this is a construction worker -------//
-
-		if (UnitArray[unitRecno].Skill.SkillId == Skill.SKILL_CONSTRUCTION)
+		Unit unit = UnitArray[unitId];
+		
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
-			SetBuilder(unitRecno);
+			SetBuilder(unitId);
 			return;
 		}
-
-		//---------------------------------------//
 
 		if (Ships.Count + (BuildUnitId > 0 ? 1 : 0) == GameConstants.MAX_SHIP_IN_HARBOR)
 			return; // leave a room for the building unit
 
-		AddHostedShip(unitRecno);
-
-		UnitArray[unitRecno].DeinitSprite();
-
-		UnitMarine unit = (UnitMarine)UnitArray[unitRecno];
-		unit.ExtraMoveInBeach = UnitMarine.NO_EXTRA_MOVE;
+		AddHostedShip(unitId);
 		unit.DeinitSprite();
+
+		UnitMarine ship = (UnitMarine)UnitArray[unitId];
+		ship.ExtraMoveInBeach = UnitMarine.NO_EXTRA_MOVE;
 	}
 
 	public void AddQueue(int unitId, int amount = 1)
@@ -171,130 +165,86 @@ public class FirmHarbor : Firm
 		if (BuildQueue.Count == 0)
 			return;
 		
-		//TODO rewrite
-		// remove the queue no matter build_ship success or not
-		//build_ship(build_queue.Dequeue(), InternalConstants.COMMAND_AUTO);
+		if (Ships.Count >= GameConstants.MAX_SHIP_IN_HARBOR)
+			return;
+
+		Nation nation = NationArray[NationId];
+		if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
+			return;
+
+		BuildUnitId = BuildQueue[0];
+		BuildQueue.RemoveAt(0);
+		nation.add_expense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitId].build_cost);
+
+		_startBuildFrameNumber = Sys.Instance.FrameNumber;
 	}
 	
 	private void ProcessBuild()
 	{
 		int totalBuildDays = UnitRes[BuildUnitId].build_days;
 
-
-		if ((Sys.Instance.FrameNumber - StartBuildFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
+		if ((Sys.Instance.FrameNumber - _startBuildFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
 		{
 			Unit unit = UnitArray.AddUnit(BuildUnitId, NationId);
-
 			AddHostedShip(unit.SpriteId);
 
 			if (OwnFirm())
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType,
-					"FINS", 'S', UnitRes[BuildUnitId].sprite_id);
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitId].sprite_id);
 
 			BuildUnitId = 0;
 		}
 	}
 	
-	public void BuildShip(int unitId, int remoteAction)
+	private void AddHostedShip(int shipId)
 	{
-		if (Ships.Count >= GameConstants.MAX_SHIP_IN_HARBOR)
-			return;
-
-		Nation nation = NationArray[NationId];
-
-		if (nation.cash < UnitRes[unitId].build_cost)
-			return;
-
-		nation.add_expense(NationBase.EXPENSE_SHIP, UnitRes[unitId].build_cost);
-
-		BuildUnitId = unitId;
-		StartBuildFrameNumber = Sys.Instance.FrameNumber;
+		Ships.Add(shipId);
+		UnitArray[shipId].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, FirmId);
 	}
 	
-	private void AddHostedShip(int shipRecno)
+	public void DelHostedShip(int shipId)
 	{
-		Ships.Add(shipRecno);
+		UnitArray[shipId].SetMode(0);
 
-		//---- set the unit_mode of the ship ----//
-
-		UnitArray[shipRecno].SetMode(UnitConstants.UNIT_MODE_IN_HARBOR, FirmId);
-
-		//---------------------------------------//
-
-		//TODO drawing
-		//if( firm_recno == FirmArray.selected_recno )
-		//put_info(INFO_UPDATE);
-	}
-	
-	public void DelHostedShip(int delUnitRecno)
-	{
-		//---- reset the unit_mode of the ship ----//
-
-		UnitArray[delUnitRecno].SetMode(0);
-
-		//-----------------------------------------//
-
-		for (int i = Ships.Count - 1; i >= 0; i--)
+		int indexToRemove = -1;
+		for (int i = 0; i < Ships.Count; i++)
 		{
-			if (Ships[i] == delUnitRecno)
+			if (Ships[i] == shipId)
 			{
-				Ships.RemoveAt(i);
+				indexToRemove = i;
 				break;
 			}
 		}
-
-		//TODO drawing
-		//if( firm_recno == FirmArray.selected_recno )
-		//put_info(INFO_UPDATE);
+		
+		Ships.RemoveAt(indexToRemove);
 	}
 
-	public void SailShip(int unitRecno, int remoteAction)
+	public bool SailShip(int unitId, int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <firm recno> <browseRecno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_HARBOR_SAIL_SHIP, 2*sizeof(short) );
-		//shortPtr[0] = firm_recno;
-		//shortPtr[1] = unitRecno;
-		//return;
+			//// packet structure : <firm recno> <browseRecno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_HARBOR_SAIL_SHIP, 2*sizeof(short) );
+			//shortPtr[0] = firm_recno;
+			//shortPtr[1] = unitRecno;
+			//return;
 		//}
 
-		//----- get the browse recno of the ship in the harbor's ship_recno_array[] ----//
-
-		int browseRecno = 0;
-
-		for (int i = Ships.Count - 1; i >= 0; i--)
-		{
-			if (Ships[i] == unitRecno)
-			{
-				browseRecno = i + 1;
-				break;
-			}
-		}
-
-		if (browseRecno == 0)
-			return;
-
-		//------------------------------------------------------------//
-
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		SpriteInfo spriteInfo = unit.SpriteInfo;
-		int xLoc = LocX1; // xLoc & yLoc are used for returning results
-		int yLoc = LocY1;
+		int locX = LocX1;
+		int locY = LocY1;
 
-		if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_SEA, SeaRegionId))
+		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_SEA, SeaRegionId))
 		{
-			return;
+			return false;
 		}
 
-		unit.InitSprite(xLoc, yLoc);
+		unit.InitSprite(locX, locY);
 
-		DelHostedShip(Ships[browseRecno - 1]);
+		DelHostedShip(unitId);
 
 		// TODO select ship
-
 		/*if (FirmArray.SelectedFirmId == FirmId && NationId == NationArray.player_recno)
 		{
 			Power.reset_selection();
@@ -302,40 +252,10 @@ public class FirmHarbor : Firm
 			UnitArray.SelectedUnitId = unit.SpriteId;
 			UnitArray.SelectedCount = 1;
 		}*/
+
+		return true;
 	}
 	
-	public void UpdateLinkedFirmsInfo()
-	{
-		LinkedMines.Clear();
-		LinkedFactories.Clear();
-		LinkedMarkets.Clear();
-
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
-		{
-			if (LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
-				continue;
-
-			Firm firm = FirmArray[LinkedFirms[i]];
-			if (!NationArray[NationId].get_relation(firm.NationId).trade_treaty)
-				continue;
-
-			switch (firm.FirmType)
-			{
-				case FIRM_MINE:
-					LinkedMines.Add(firm.FirmId);
-					break;
-
-				case FIRM_FACTORY:
-					LinkedFactories.Add(firm.FirmId);
-					break;
-
-				case FIRM_MARKET:
-					LinkedMarkets.Add(firm.FirmId);
-					break;
-			}
-		}
-	}
-
 	public override bool ShouldShowInfo()
 	{
 		if (base.ShouldShowInfo())
@@ -437,7 +357,7 @@ public class FirmHarbor : Firm
 		//---------------------------------------------//
 
 		if (rc)
-			BuildShip(buildId, InternalConstants.COMMAND_AI);
+			AddQueue(buildId);
 	}
 
 	public void think_build_firm()
@@ -608,7 +528,7 @@ public class FirmHarbor : Firm
 	
 	public int total_linked_trade_firm()
 	{
-		return LinkedMines.Count + LinkedFactories.Count + LinkedMarkets.Count;
+		return 0;
 	}
 	
 	#endregion

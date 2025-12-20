@@ -21,6 +21,7 @@ public class UnitCaravan : Unit
 	public int[] RawQty { get; } = new int[GameConstants.MAX_RAW];
 	public int[] ProductQty { get; } = new int[GameConstants.MAX_PRODUCT];
 
+	//TODO check this
 	private int[] ProcessedRawQty { get; } = new int[GameConstants.MAX_RAW];
 	private int[] ProcessedProductQty { get; } = new int[GameConstants.MAX_PRODUCT];
 	
@@ -30,9 +31,6 @@ public class UnitCaravan : Unit
 			Stops[i] = new CaravanStop();
 
 		JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
-		DestStopId = 0;
-		StopDefinedNum = 0;
-		WaitCount = 0;
 		StopLocX = -1;
 		StopLocY = -1;
 		Loyalty = 100;
@@ -217,9 +215,8 @@ public class UnitCaravan : Unit
 		firm = FirmArray[Stops[DestStopId - 1].FirmId];
 
 		ActionParam = 0; // since ActionParam is used to store the current market id, reset before searching
-		MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
-
 		JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
+		MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 	}
 
 	//TODO rewrite with Misc.MoveAroundAPoint
@@ -361,7 +358,7 @@ public class UnitCaravan : Unit
 		return false;
 	}
 
-	private int GetNextStopId(int curStopId = MAX_STOP_FOR_CARAVAN)
+	private int GetNextStopId(int curStopId)
 	{
 		int nextStopId = (curStopId >= StopDefinedNum) ? 1 : curStopId + 1;
 
@@ -383,6 +380,7 @@ public class UnitCaravan : Unit
 		if (StopDefinedNum == 0)
 			return 0; // no stop is valid
 
+		//TODO check this loop and return values
 		for (int i = 1; i <= StopDefinedNum; i++)
 		{
 			stop = Stops[i - 1];
@@ -427,6 +425,7 @@ public class UnitCaravan : Unit
 		{
 			UpdateStopList();
 
+			//TODO choose better to which firm to move to
 			if (StopDefinedNum != 0) // move to next stop
 			{
 				firm = FirmArray[Stops[StopDefinedNum - 1].FirmId];
@@ -444,8 +443,6 @@ public class UnitCaravan : Unit
 		    (nextLocX == MoveToLocX && nextLocY == MoveToLocY && CurX == NextX && CurY == NextY && // move in a tile exactly
 		     nextLocX >= firm.LocX1 - 1 && nextLocX <= firm.LocX2 + 1 && nextLocY >= firm.LocY1 - 1 && nextLocY <= firm.LocY2 + 1)) // in the surrounding of the firm
 		{
-			stop.UpdatePickUp();
-
 			//-------------------------------------------------------//
 			// load/unload goods
 			//-------------------------------------------------------//
@@ -544,8 +541,6 @@ public class UnitCaravan : Unit
 		if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
 			return;
 
-		//-------------------------------------------//
-
 		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <unit recno> <stop id> <stop x> <stop y>
@@ -559,9 +554,7 @@ public class UnitCaravan : Unit
 
 		CaravanStop stop = Stops[stopId - 1];
 		if (stop.FirmId == 0)
-		{
 			StopDefinedNum++; // no plus one if the id is defined originally
-		}
 
 		//-------------------------------------------------------//
 		// set the station id of the stop
@@ -574,15 +567,12 @@ public class UnitCaravan : Unit
 		IgnorePowerNation = 0;
 
 		int oldStopFirmId = DestStopId != 0 ? Stops[DestStopId - 1].FirmId : 0;
-		for (int i = 0; i < stop.PickUpEnabled.Length; i++)
-		{
-			stop.PickUpEnabled[i] = false;
-		}
 
 		stop.FirmId = firm.FirmId;
 		stop.FirmType = firm.FirmType;
 		stop.FirmLocX1 = firm.LocX1;
 		stop.FirmLocY1 = firm.LocY1;
+		stop.PickUpSetNone();
 
 		//------------------------------------------------------------------------------------//
 		// codes for setting pick up type
@@ -594,16 +584,12 @@ public class UnitCaravan : Unit
 				goodsId = ((FirmMine)firm).RawId;
 				if (goodsId != 0)
 					stop.PickUpToggle(goodsId); // enable
-				else
-					stop.PickUpSetNone();
 				break;
 
 			case Firm.FIRM_FACTORY:
 				goodsId = ((FirmFactory)firm).ProductId;
 				if (goodsId != 0)
 					stop.PickUpToggle(goodsId + GameConstants.MAX_RAW); // enable
-				else
-					stop.PickUpSetNone();
 				break;
 
 			case Firm.FIRM_MARKET:
@@ -627,11 +613,11 @@ public class UnitCaravan : Unit
 					}
 				}
 
+				if (goodsNum == 0)
+					stop.PickUpSetNone();
 				if (goodsNum == 1)
 					stop.PickUpToggle(goodsId); // cancel auto pick up
-				else if (goodsNum == 0)
-					stop.PickUpSetNone();
-				else
+				if (goodsNum > 1)
 					stop.PickUpSetAuto();
 				break;
 		}
@@ -649,8 +635,8 @@ public class UnitCaravan : Unit
 			int newStopFirmId = Stops[DestStopId - 1].FirmId;
 			if (newStopFirmId != oldStopFirmId)
 			{
-				firm = FirmArray[newStopFirmId];
-				MoveToFirmSurround(firm.LocX1, firm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
+				Firm newStopFirm = FirmArray[newStopFirmId];
+				MoveToFirmSurround(newStopFirm.LocX1, newStopFirm.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight, newStopFirm.FirmType);
 				JourneyStatus = InternalConstants.ON_WAY_TO_FIRM;
 			}
 		}
@@ -678,7 +664,6 @@ public class UnitCaravan : Unit
 
 		Stops[stopId - 1].FirmId = 0;
 		StopDefinedNum--;
-
 		UpdateStopList();
 	}
 
@@ -728,7 +713,7 @@ public class UnitCaravan : Unit
 		}
 
 		//-------------------------------------------------------//
-		// pack the FirmId to the beginning part of the array
+		// move the only FirmId to the beginning of the array
 		//-------------------------------------------------------//
 		int compareId = 0;
 		int nodeIndex = 0;
@@ -936,10 +921,10 @@ public class UnitCaravan : Unit
 
 			else
 			{
-				for (int b = 0; b < TradeStop.MAX_PICK_UP_GOODS; ++b)
+				for (int j = 0; j < TradeStop.MAX_PICK_UP_GOODS; j++)
 				{
-					if (caravanStopA.PickUpEnabled[b] != caravanStopB.PickUpEnabled[b])
-						SetStopPickUp(i + 1, b + 1, InternalConstants.COMMAND_PLAYER);
+					if (caravanStopA.PickUpEnabled[j] != caravanStopB.PickUpEnabled[j])
+						SetStopPickUp(i + 1, j + 1, InternalConstants.COMMAND_PLAYER);
 				}
 			}
 		}
@@ -1086,7 +1071,7 @@ public class UnitCaravan : Unit
 						unloadQty = Math.Min(RawQty[goodsId], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 						RawQty[goodsId] -= unloadQty;
 						marketGoods.StockQty += unloadQty;
-						ProcessedRawQty[goodsId] += 2;
+						ProcessedRawQty[goodsId] = 2;
 					}
 					else if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0)
 					{
@@ -1096,7 +1081,7 @@ public class UnitCaravan : Unit
 				}
 				else if (RawQty[goodsId] != 0) // have this goods
 				{
-					ProcessedRawQty[goodsId]++;
+					ProcessedRawQty[goodsId] = 1;
 				}
 			}
 			else if (marketGoods.ProductId != 0)
@@ -1111,7 +1096,7 @@ public class UnitCaravan : Unit
 						unloadQty = Math.Min(ProductQty[goodsId], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
 						ProductQty[goodsId] -= unloadQty;
 						marketGoods.StockQty += unloadQty;
-						ProcessedProductQty[goodsId] += 2;
+						ProcessedProductQty[goodsId] = 2;
 					}
 					else if (marketGoods.StockQty <= 0.0 && marketGoods.Supply30Days() <= 0.0)
 					{
@@ -1121,7 +1106,7 @@ public class UnitCaravan : Unit
 				}
 				else if (ProductQty[goodsId] != 0) // have this goods
 				{
-					ProcessedProductQty[goodsId]++;
+					ProcessedProductQty[goodsId] = 1;
 				}
 			}
 			else // is empty
@@ -1148,6 +1133,7 @@ public class UnitCaravan : Unit
 		}
 	}
 
+	//TODO do not unload raw resource into retail market and product into raw market
 	private bool MarketUnloadGoodsInEmptySlot(FirmMarket curMarket, int position)
 	{
 		bool moreToUnload = false;
@@ -1187,7 +1173,7 @@ public class UnitCaravan : Unit
 			//-**************************************************-//
 			marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods.StockQty > 0.0
 			//-**************************************************-//
-			ProcessedProductQty[i] += 2;
+			ProcessedProductQty[i] = 2;
 			curMarket.SetProductGoods(i + 1, position);
 
 			int unloadQty = Math.Min(ProductQty[i], (int)(curMarket.MaxStockQty - marketGoods.StockQty));
@@ -1229,7 +1215,7 @@ public class UnitCaravan : Unit
 				//-**************************************************-//
 				marketGoods.StockQty = 0.0; // BUGHERE, there is a case that marketGoods.StockQty > 0.0
 				//-**************************************************-//
-				ProcessedRawQty[i] += 2;
+				ProcessedRawQty[i] = 2;
 				curMarket.SetRawGoods(i + 1, position);
 
 				int unloadQty = Math.Min(RawQty[i], (int)(curMarket.MaxStockQty - marketGoods.StockQty));

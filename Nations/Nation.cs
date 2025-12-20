@@ -6445,7 +6445,7 @@ public class NationOld : NationBase
 				unitId = UnitConstants.UNIT_TRANSPORT;
 		}
 
-		bestHarbor.BuildShip(unitId, InternalConstants.COMMAND_AI);
+		bestHarbor.AddQueue(unitId);
 
 		return 1;
 	}

@@ -1997,7 +1997,7 @@ public partial class Unit
 			if (unitInfo.carry_goods_capacity != 0)
 			{
 				UnitMarine ship = (UnitMarine)this;
-				if (ship.AutoMode != 0 && ship.StopDefinedNum > 1)
+				if (ship.AutoMode && ship.StopDefinedNum > 1)
 				{
 					int targetXLoc = attackUnit.NextLocX;
 					int targetYLoc = attackUnit.NextLocY;
@@ -2226,7 +2226,7 @@ public partial class Unit
 			if (unitInfo.carry_goods_capacity != 0)
 			{
 				UnitMarine ship = (UnitMarine)this;
-				if (ship.AutoMode != 0 && ship.StopDefinedNum > 1)
+				if (ship.AutoMode && ship.StopDefinedNum > 1)
 					allowMove = 0;
 			}
 		}

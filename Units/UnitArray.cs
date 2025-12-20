@@ -81,7 +81,7 @@ public class UnitArray : SpriteArray
 		    return true;
 
 	    Unit unit = this[recNo];
-	    return unit.HitPoints <= 0 || unit.CurAction == Sprite.SPRITE_DIE || unit.ActionMode == UnitConstants.ACTION_DIE;
+	    return unit.HitPoints <= 0.0 || unit.CurAction == Sprite.SPRITE_DIE || unit.ActionMode == UnitConstants.ACTION_DIE;
     }
 
     public override void Process()

@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class FirmWar : Firm
 {
-    public int BuildUnitId { get; set; }
+    public int BuildUnitId { get; private set; }
     private long LastProcessBuildFrameNumber { get; set; }
     public double BuildProgressInDays { get; set; }
     public List<int> BuildQueue { get; } = new List<int>();
