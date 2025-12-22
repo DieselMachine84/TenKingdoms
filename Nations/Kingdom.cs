@@ -19,12 +19,14 @@ public partial class Nation : NationBase
     private readonly List<StartCaravanTask> _startCaravanTasks = new List<StartCaravanTask>();
     private readonly List<WatchCaravanTask> _watchCaravanTasks = new List<WatchCaravanTask>();
     private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
+    private readonly List<RecruitSoldiersTask> _recruitSoldiersTask = new List<RecruitSoldiersTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public Nation()
     {
         _watchCaravanTasks.Add(new WatchCaravanTask(this));
         _collectTaxTasks.Add(new CollectTaxTask(this));
+        _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
     }
 
     public void ProcessAI()
@@ -194,6 +196,14 @@ public partial class Nation : NationBase
             for (int i = _collectTaxTasks.Count - 1; i >= 0; i--)
             {
                 ProcessTask(_collectTaxTasks[i], _collectTaxTasks, i);
+            }
+        }
+
+        if ((Info.TotalDays + nation_recno) % 10 == 9)
+        {
+            for (int i = _recruitSoldiersTask.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_recruitSoldiersTask[i], _recruitSoldiersTask, i);
             }
         }
     }
