@@ -904,14 +904,13 @@ public partial class Renderer
             if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
                 continue;
             
-            if (unit.PathNodes.Count > 0)
+            if (unit.PathNodes.Count > 1)
             {
                 if (unit.CurX != unit.GoX || unit.CurY != unit.GoY)
                 {
                     //TODO draw part of animated line
                 }
 
-                //TODO optimize drawing lines - join them
                 for (int j = unit.PathNodeIndex + 1; j < unit.PathNodes.Count; j++)
                 {
                     int resultNode1 = unit.PathNodes[j - 1];
@@ -924,10 +923,21 @@ public partial class Renderer
                         resultNode2LocY >= _topLeftLocY - 1 && resultNode2LocY <= _topLeftLocY + MainViewHeightInCells)
                     {
                         int screenX1 = MainViewX + (resultNode1LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
-                        int screenX2 = MainViewX + (resultNode2LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
                         int screenY1 = MainViewY + (resultNode1LocY - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;
+                        int screenX2 = MainViewX + (resultNode2LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
                         int screenY2 = MainViewY + (resultNode2LocY - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;
-                        DrawAnimatedLine(screenX1, screenY1, screenX2, screenY2);
+                        if (unit.MobileType == UnitConstants.UNIT_LAND)
+                        {
+                            DrawAnimatedLine(screenX1, screenY1, screenX2, screenY2);
+                        }
+
+                        if (unit.MobileType == UnitConstants.UNIT_SEA || unit.MobileType == UnitConstants.UNIT_AIR)
+                        {
+                            int screenX12 = MainViewX + ((resultNode1LocX + resultNode2LocX) / 2 - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
+                            int screenY12 = MainViewY + ((resultNode1LocY + resultNode2LocY) / 2 - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;
+                            DrawAnimatedLine(screenX1, screenY1, screenX12, screenY12);
+                            DrawAnimatedLine(screenX12, screenY12, screenX2, screenY2);
+                        }
                     }
                 }
             }

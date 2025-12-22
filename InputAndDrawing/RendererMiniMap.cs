@@ -234,7 +234,7 @@ public partial class Renderer
             if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
                 continue;
 
-            if (unit.PathNodes.Count > 0)
+            if (unit.PathNodes.Count > 1)
             {
                 int prevDirection = -1;
                 int startNodeLocX = -1;
