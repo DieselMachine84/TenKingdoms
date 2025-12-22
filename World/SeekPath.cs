@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+//TODO adjust path for ship to beach if the destination is blocked
+
 public class SeekPath
 {
 	public const int PATH_WAIT = 0;
@@ -431,6 +433,8 @@ public class SeekPath
 		oldChangedNodesX.Add(sx);
 		oldChangedNodesY.Add(sy);
 
+		int multiplier = (_mobileType == UnitConstants.UNIT_LAND) ? 1 : 2;
+
 		int loopCount = 0;
 		while (oldChangedNodesX.Count > 0)
 		{
@@ -447,8 +451,8 @@ public class SeekPath
 				{
 					for (int j = -1; j <= 1; j++)
 					{
-						int nearX = x + i;
-						int nearY = y + j;
+						int nearX = x + i * multiplier;
+						int nearY = y + j * multiplier;
 						if (nearX == x && nearY == y)
 							continue;
 						if (!Misc.IsLocationValid(nearX, nearY))
@@ -485,9 +489,12 @@ public class SeekPath
 					}
 				}
 			}
-			
-			if (loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 && CheckTargetInaccessible(loopCount / 2))
+
+			if (_mobileType == UnitConstants.UNIT_LAND && loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 &&
+			    CheckTargetInaccessible(loopCount / 2))
+			{
 				break;
+			}
 
 			oldChangedNodesX.Clear();
 			oldChangedNodesX.AddRange(newChangedNodesX);
@@ -627,6 +634,7 @@ public class SeekPath
 		int pathY = resultY;
 		int pathValue = _nodeMatrix[resultIndex];
 
+		int multiplier = (_mobileType == UnitConstants.UNIT_LAND) ? 1 : 2;
 		List<int> reversedPath = new List<int>(pathValue);
 		reversedPath.Add(resultIndex);
 		while (true)
@@ -641,8 +649,8 @@ public class SeekPath
 			{
 				for (int j = -1; j <= 1; j++)
 				{
-					int nearX = pathXCopy + i;
-					int nearY = pathYCopy + j;
+					int nearX = pathXCopy + i * multiplier;
+					int nearY = pathYCopy + j * multiplier;
 					if (nearX == pathXCopy && nearY == pathYCopy)
 						continue;
 					if (!Misc.IsLocationValid(nearX, nearY))
