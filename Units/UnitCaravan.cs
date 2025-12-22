@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-public class UnitCaravan : Unit
+public class UnitCaravan : Unit, ITrader
 {
 	public const int MAX_STOP_FOR_CARAVAN = 3;
 

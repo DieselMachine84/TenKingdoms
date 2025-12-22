@@ -18,11 +18,13 @@ public partial class Renderer
 	private const int ButtonsMineY = DetailsY1 + 412;
 	private const int ButtonsFactoryY = DetailsY1 + 412;
 	private const int ButtonsMarketY = DetailsY1 + 390;
+	private const int ButtonsHarborY = DetailsY1 + 390;
 	private const int ButtonsResearchY = DetailsY1 + 367;
 	private const int ButtonsWarFactoryY = DetailsY1 + 367;
 	private const int ButtonsCampY = DetailsY1 + 376;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
+	private const int ButtonsUnitShipY = DetailsY1 + 358;
 
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
 	private int _colorSquareWidth;
@@ -96,6 +98,9 @@ public partial class Renderer
 	private IntPtr _unitPanelTexture;
 	private int _unitPanelWidth;
 	private int _unitPanelHeight;
+	private IntPtr _shipPanelTexture;
+	private int _shipPanelWidth;
+	private int _shipPanelHeight;
 	private IntPtr _panelWithOneFieldTexture;
 	private int _panelWithOneFieldWidth;
 	private int _panelWithOneFieldHeight;
@@ -230,6 +235,13 @@ public partial class Renderer
 	private IntPtr _buttonHireCaravanTexture;
 	private int _buttonHireCaravanWidth;
 	private int _buttonHireCaravanHeight;
+	private IntPtr _buttonBuildShipTexture;
+	private int _buttonBuildShipWidth;
+	private int _buttonBuildShipHeight;
+	private IntPtr _buttonSailShipTexture;
+	private IntPtr _buttonSailShipDisabledTexture;
+	private int _buttonSailShipWidth;
+	private int _buttonSailShipHeight;
 	private IntPtr _buttonSucceedKingTexture;
 	private int _buttonSucceedKingWidth;
 	private int _buttonSucceedKingHeight;
@@ -254,6 +266,9 @@ public partial class Renderer
 	private IntPtr _buttonReturnToCampTexture;
 	private int _buttonReturnToCampWidth;
 	private int _buttonReturnToCampHeight;
+	private IntPtr _buttonOutShipTexture;
+	private int _buttonOutShipWidth;
+	private int _buttonOutShipHeight;
 	private IntPtr _buttonSpyNotifyOnTexture;
 	private int _buttonSpyNotifyOnWidth;
 	private int _buttonSpyNotifyOnHeight;
@@ -461,6 +476,10 @@ public partial class Renderer
 		_unitPanelHeight = 62;
 		byte[] unitPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _unitPanelWidth, _unitPanelHeight);
 		_unitPanelTexture = Graphics.CreateTextureFromBmp(unitPanelBitmap, _unitPanelWidth, _unitPanelHeight, 32);
+		_shipPanelWidth = _smallPanelWidth;
+		_shipPanelHeight = 108;
+		byte[] shipPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _shipPanelWidth, _shipPanelHeight);
+		_shipPanelTexture = Graphics.CreateTextureFromBmp(shipPanelBitmap, _shipPanelWidth, _shipPanelHeight, 32);
 		_panelWithOneFieldWidth = _smallPanelWidth;
 		_panelWithOneFieldHeight = 25;
 		byte[] panelWithOneFieldBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _panelWithOneFieldWidth, _panelWithOneFieldHeight);
@@ -682,6 +701,18 @@ public partial class Renderer
 		_buttonHireCaravanHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonHireCaravanWidth, _buttonHireCaravanHeight);
 		_buttonHireCaravanTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonHireCaravanWidth, _buttonHireCaravanHeight);
+		buttonData = buttonImages.Read("MAKESHIP");
+		_buttonBuildShipWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonBuildShipHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonBuildShipWidth, _buttonBuildShipHeight);
+		_buttonBuildShipTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonBuildShipWidth, _buttonBuildShipHeight);
+		buttonData = buttonImages.Read("SAILOUT");
+		_buttonSailShipWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSailShipHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSailShipWidth, _buttonSailShipHeight);
+		_buttonSailShipTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSailShipWidth, _buttonSailShipHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonSailShipWidth, _buttonSailShipHeight);
+		_buttonSailShipDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSailShipWidth, _buttonSailShipHeight, 32);
 		buttonData = buttonImages.Read("SUCCEED");
 		_buttonSucceedKingWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonSucceedKingHeight = BitConverter.ToInt16(buttonData, 2);
@@ -722,11 +753,11 @@ public partial class Renderer
 		_buttonReturnToCampHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonReturnToCampWidth, _buttonReturnToCampHeight);
 		_buttonReturnToCampTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonReturnToCampWidth, _buttonReturnToCampHeight);
-		buttonData = buttonImages.Read("DEMOTE");
-		_buttonDemoteWidth = BitConverter.ToInt16(buttonData, 0);
-		_buttonDemoteHeight = BitConverter.ToInt16(buttonData, 2);
-		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDemoteWidth, _buttonDemoteHeight);
-		_buttonDemoteTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDemoteWidth, _buttonDemoteHeight);
+		buttonData = buttonImages.Read("OUTSHIP");
+		_buttonOutShipWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonOutShipHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonOutShipWidth, _buttonOutShipHeight);
+		_buttonOutShipTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonOutShipWidth, _buttonOutShipHeight);
 		buttonData = buttonImages.Read("SPYNOTI1");
 		_buttonSpyNotifyOnWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonSpyNotifyOnHeight = BitConverter.ToInt16(buttonData, 2);
@@ -1013,6 +1044,11 @@ public partial class Renderer
 	private void DrawUnitPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_unitPanelTexture, x, y, Scale(_unitPanelWidth), Scale(_unitPanelHeight));
+	}
+	
+	private void DrawShipPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_shipPanelTexture, x, y, Scale(_shipPanelWidth), Scale(_shipPanelHeight));
 	}
 	
 	private void DrawPanelWithOneField(int x, int y)

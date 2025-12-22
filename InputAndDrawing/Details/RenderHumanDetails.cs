@@ -2,8 +2,6 @@ using System;
 
 namespace TenKingdoms;
 
-enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop }
-
 public partial class Renderer
 {
     // TODO main menu
@@ -32,8 +30,6 @@ public partial class Renderer
     };
 
     private int _buildFirmType;
-
-    private UnitDetailsMode UnitDetailsMode { get; set; } = UnitDetailsMode.Normal;
 
     public void DrawHumanDetails(UnitHuman unit)
     {
@@ -400,10 +396,7 @@ public partial class Renderer
                     unit.AggressiveMode = newAggressiveMode;
                 //}
 
-                if (newAggressiveMode)
-                    SECtrl.immediate_sound("TURN_ON");
-                else
-                    SECtrl.immediate_sound("TURN_OFF");
+                SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
             }
 
             if (button2Pressed && IsRewardEnabled(unit))

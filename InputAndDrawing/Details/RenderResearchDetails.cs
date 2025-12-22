@@ -164,7 +164,7 @@ public partial class Renderer
 
             bool mouseOnButton = _mouseButtonX >= MouseOnResearchButtonX1 && _mouseButtonX <= MouseOnResearchButtonX2 &&
                                  _mouseButtonY >= MouseOnResearchButtonY1 + dy && _mouseButtonY <= MouseOnResearchButtonY2 + dy;
-            if (mouseOnButton)
+            if (mouseOnButton && (_leftMouseReleased || _rightMouseReleased))
             {
                 if (!onCancelButton)
                 {
@@ -189,8 +189,11 @@ public partial class Renderer
                 }
                 else
                 {
-                    SECtrl.immediate_sound("TURN_OFF");
-                    FirmDetailsMode = FirmDetailsMode.Normal;
+                    if (_leftMouseReleased)
+                    {
+                        SECtrl.immediate_sound("TURN_OFF");
+                        FirmDetailsMode = FirmDetailsMode.Normal;
+                    }
                 }
             }
 

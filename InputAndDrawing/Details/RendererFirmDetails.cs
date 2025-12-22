@@ -1,16 +1,16 @@
 namespace TenKingdoms;
 
-enum FirmDetailsMode { Normal, Research, WarMachine, Spy }
+enum FirmDetailsMode { Normal, Research, WarMachine, BuildShip, Spy }
 
 public partial class Renderer
 {
     // TODO show spies list, show bribe menu, show assassination result, show view secret menu
-    
+
     private FirmDetailsMode FirmDetailsMode { get; set; } = FirmDetailsMode.Normal;
     
     private void DrawFirmDetails(Firm firm)
     {
-        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine)
+        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine || FirmDetailsMode == FirmDetailsMode.BuildShip)
         {
             firm.DrawDetails(this);
             return;
@@ -132,7 +132,7 @@ public partial class Renderer
     {
         firm.HandleDetailsInput(this);
 
-        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine)
+        if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine || FirmDetailsMode == FirmDetailsMode.BuildShip)
             return;
 
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&

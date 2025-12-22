@@ -61,6 +61,7 @@ public partial class Renderer : IRenderer
     private readonly List<int> _selectedUnits = new List<int>();
     private int _selectedSiteId;
     private int _selectedRaceId;
+    private int _selectedShipId;
 
     private Graphics Graphics { get; }
 

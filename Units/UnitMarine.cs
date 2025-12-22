@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class UnitMarine : Unit
+public class UnitMarine : Unit, ITrader
 {
 	public const int MAX_STOP_FOR_SHIP = 3;
 

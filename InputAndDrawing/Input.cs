@@ -403,12 +403,13 @@ public partial class Renderer
         {
             if (!UnitArray.IsDeleted(_selectedUnitId))
             {
-                UnitCaravan caravan = (UnitCaravan)UnitArray[_selectedUnitId];
-                if (location.IsFirm() && caravan.CanSetStop(location.FirmId()))
+                Unit unit = UnitArray[_selectedUnitId];
+                ITrader trader = (ITrader)unit;
+                if (location.IsFirm() && trader.CanSetStop(location.FirmId()))
                 {
-                    caravan.SetStop(_setStopId, locX, locY, InternalConstants.COMMAND_PLAYER);
+                    trader.SetStop(_setStopId, locX, locY, InternalConstants.COMMAND_PLAYER);
                     if (SERes.mark_command_time() != 0)
-                        SERes.far_sound(caravan.CurLocX, caravan.CurLocY, 1, 'S', caravan.SpriteId, "ACK");
+                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
 
@@ -820,7 +821,6 @@ public partial class Renderer
     private int ChooseCursor(ScreenObjectType selectedObjectType, int selectedId, ScreenObjectType pointingObjectType, int pointingId)
     {
         //TODO CursorType.ASSIGN
-        //TODO CursorType.SHIP_STOP
         //TODO CursorType.CURSOR_ON_LINK
         
         if (UnitDetailsMode == UnitDetailsMode.Build)
@@ -831,17 +831,28 @@ public partial class Renderer
 
         if (UnitDetailsMode == UnitDetailsMode.SetStop)
         {
+            Unit unit = UnitArray[selectedId];
+            bool isCaravan = UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_CARAVAN;
+            bool isShip = UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP;
+            ITrader trader = (ITrader)unit;
             if (pointingObjectType == ScreenObjectType.FriendFirm || pointingObjectType == ScreenObjectType.EnemyFirm)
             {
                 if (!FirmArray.IsDeleted(pointingId) && !UnitArray.IsDeleted(selectedId))
                 {
-                    UnitCaravan caravan = (UnitCaravan)UnitArray[selectedId];
-                    if (caravan.CanSetStop(pointingId))
-                        return CursorType.CARAVAN_STOP;
+                    if (trader.CanSetStop(pointingId))
+                    {
+                        if (isCaravan)
+                            return CursorType.CARAVAN_STOP;
+                        if (isShip)
+                            return CursorType.SHIP_STOP;
+                    }
                 }
             }
 
-            return CursorType.CANT_CARAVAN_STOP;
+            if (isCaravan)
+                return CursorType.CANT_CARAVAN_STOP;
+            if (isShip)
+                return CursorType.CANT_SHIP_STOP;
         }
 
         if (pointingObjectType == ScreenObjectType.None || pointingObjectType == ScreenObjectType.Site)

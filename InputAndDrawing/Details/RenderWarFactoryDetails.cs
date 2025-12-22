@@ -8,16 +8,16 @@ public partial class Renderer
     
     private const int BuildWeaponPanelX = DetailsX1 + 2;
     private const int BuildWeaponPanelY = DetailsY1 + 2;
-    private const int BuildButtonNumberX = DetailsX1 + 351;
-    private const int BuildButtonNumberY = DetailsY1 + 12;
+    private const int BuildWeaponButtonNumberX = DetailsX1 + 351;
+    private const int BuildWeaponButtonNumberY = DetailsY1 + 12;
     private const int MouseOnBuildWeaponButtonX1 = DetailsX1 + 8;
     private const int MouseOnBuildWeaponButtonX2 = DetailsX1 + 320;
     private const int MouseOnBuildWeaponButtonY1 = DetailsY1 + 2;
     private const int MouseOnBuildWeaponButtonY2 = DetailsY1 + 66;
-    private const int MouseOnBuildNumberButtonX1 = BuildButtonNumberX + 4;
-    private const int MouseOnBuildNumberButtonX2 = BuildButtonNumberX + 40;
-    private const int MouseOnBuildNumberButtonY1 = BuildButtonNumberY + 4;
-    private const int MouseOnBuildNumberButtonY2 = BuildButtonNumberY + 42;
+    private const int MouseOnBuildNumberButtonX1 = BuildWeaponButtonNumberX + 4;
+    private const int MouseOnBuildNumberButtonX2 = BuildWeaponButtonNumberX + 40;
+    private const int MouseOnBuildNumberButtonY1 = BuildWeaponButtonNumberY + 4;
+    private const int MouseOnBuildNumberButtonY2 = BuildWeaponButtonNumberY + 42;
     private const int MaxBuildWeaponItems = 6;
 
     public void DrawWarFactoryDetails(FirmWar warFactory)
@@ -144,11 +144,11 @@ public partial class Renderer
                 mouseOnButton = _mouseButtonX >= MouseOnBuildNumberButtonX1 && _mouseButtonX <= MouseOnBuildNumberButtonX2 &&
                                 _mouseButtonY >= MouseOnBuildNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildNumberButtonY2 + dy;
                 if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-                    DrawNumberPanelDown(BuildButtonNumberX, BuildButtonNumberY + dy);
+                    DrawNumberPanelDown(BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy);
                 else
-                    DrawNumberPanelUp(BuildButtonNumberX, BuildButtonNumberY + dy);
+                    DrawNumberPanelUp(BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy);
                 PutTextCenter(FontBible, buildUnitCounts[unitId].ToString(),
-                    BuildButtonNumberX, BuildButtonNumberY + dy, BuildButtonNumberX + 45, BuildButtonNumberY + 40 + dy);
+                    BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy, BuildWeaponButtonNumberX + 45, BuildWeaponButtonNumberY + 40 + dy);
                 
                 shownItems++;
             }
@@ -206,7 +206,7 @@ public partial class Renderer
             bool mouseOnBuildNumberButton = _mouseButtonX >= MouseOnBuildNumberButtonX1 && _mouseButtonX <= MouseOnBuildNumberButtonX2 &&
                                             _mouseButtonY >= MouseOnBuildNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildNumberButtonY2 + dy;
             
-            if (mouseOnBuildButton || mouseOnBuildNumberButton)
+            if ((mouseOnBuildButton || mouseOnBuildNumberButton) && (_leftMouseReleased || _rightMouseReleased))
             {
                 if (!onCancelButton)
                 {
@@ -249,8 +249,11 @@ public partial class Renderer
                 }
                 else
                 {
-                    SECtrl.immediate_sound("TURN_OFF");
-                    FirmDetailsMode = FirmDetailsMode.Normal;
+                    if (_leftMouseReleased)
+                    {
+                        SECtrl.immediate_sound("TURN_OFF");
+                        FirmDetailsMode = FirmDetailsMode.Normal;
+                    }
                 }
             }
 
