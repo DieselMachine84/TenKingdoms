@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
@@ -13,6 +14,7 @@ public abstract class AITask
     protected TownArray TownArray => Sys.Instance.TownArray;
     protected UnitArray UnitArray => Sys.Instance.UnitArray;
     protected SiteArray SiteArray => Sys.Instance.SiteArray;
+    protected RegionArray RegionArray => Sys.Instance.RegionArray;
 
     protected AITask(Nation nation)
     {
@@ -29,8 +31,57 @@ public abstract class AITask
     
     protected int FindBuilder(int buildLocX, int buildLocY)
     {
-        int builderId = 0;
         Location location = World.GetLoc(buildLocX, buildLocY);
+        int builderId = FindBuilderInRegion(location.RegionId, buildLocX, buildLocY);
+        
+        //TODO hire builder from inn
+        //TODO check idle construction workers
+        
+        if (builderId == 0)
+        {
+            List<int> connectedSeas = new List<int>();
+            RegionStat regionStat = RegionArray.GetRegionStat(location.RegionId);
+            foreach (RegionPath regionPath in regionStat.ReachableRegions)
+            {
+                if (!connectedSeas.Contains(regionPath.SeaRegionId))
+                    connectedSeas.Add(regionPath.SeaRegionId);
+            }
+            
+            List<int> connectedLands = new List<int>();
+            foreach (RegionInfo regionInfo in RegionArray.RegionInfos)
+            {
+                if (regionInfo.RegionType != RegionType.LAND || regionInfo.RegionId == location.RegionId)
+                    continue;
+                
+                RegionStat landRegionStat = RegionArray.GetRegionStat(regionInfo.RegionId);
+                foreach (RegionPath landRegionPath in landRegionStat.ReachableRegions)
+                {
+                    if (connectedSeas.Contains(landRegionPath.SeaRegionId) && !connectedLands.Contains(landRegionStat.RegionId))
+                        connectedLands.Add(landRegionStat.RegionId);
+                }
+            }
+            
+            foreach (int landRegionId in connectedLands)
+            {
+                if (landRegionId == location.RegionId)
+                    continue;
+
+                //TODO maybe there is no harbor but we can send ship for the builder
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, location.RegionId);
+                if (harbor != null)
+                {
+                    builderId = FindBuilderInRegion(landRegionId, harbor.LocCenterX, harbor.LocCenterY);
+                    if (builderId != 0)
+                        break;
+                }
+            }
+        }
+        return builderId;
+    }
+
+    private int FindBuilderInRegion(int regionId, int targetLocX, int targetLocY)
+    {
+        int builderId = 0;
         
         int minFirmDistance = Int16.MaxValue;
         Firm bestFirm = null;
@@ -42,14 +93,13 @@ public abstract class AITask
             if (firm.UnderConstruction)
                 continue;
 
-            // TODO other region
-            if (firm.RegionId != location.RegionId)
+            if (firm.RegionId != regionId)
                 continue;
 
             // TODO use pref
             if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0 && !Nation.IsUnitOnTask(firm.BuilderId))
             {
-                int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, buildLocX, buildLocY);
+                int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, targetLocX, targetLocY);
                 if (firmDistance < minFirmDistance)
                 {
                     //TODO prefer firms at the same region
@@ -67,8 +117,7 @@ public abstract class AITask
             if (town.NationId != Nation.nation_recno)
                 continue;
 
-            // TODO other region
-            if (town.RegionId != location.RegionId)
+            if (town.RegionId != regionId)
                 continue;
 
             // TODO do not train if population is low
@@ -80,7 +129,7 @@ public abstract class AITask
             if (race == 0 || !town.CanTrain(race))
                 continue;
 
-            int townDistance = Misc.points_distance(town.LocX1, town.LocY1, buildLocX, buildLocY);
+            int townDistance = Misc.points_distance(town.LocX1, town.LocY1, targetLocX, targetLocY);
             if (townDistance < minTownDistance)
             {
                 //TODO prefer towns at the same region
@@ -111,8 +160,6 @@ public abstract class AITask
             builderId = bestTown.Recruit(Skill.SKILL_CONSTRUCTION, bestRace, InternalConstants.COMMAND_AI);
         }
 
-        //TODO hire builder from inn
-        //TODO check idle construction workers
         return builderId;
     }
 

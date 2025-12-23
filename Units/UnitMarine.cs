@@ -1456,6 +1456,7 @@ public class UnitMarine : Unit, ITrader
 		UnloadingUnit(-1); // unload all units
 	}
 
+	//TODO rewrite with GetCoastRegion()
 	private bool UnloadingUnit(int unitIndex = 0)
 	{
 		if (!IsOnCoast())
@@ -1540,7 +1541,7 @@ public class UnitMarine : Unit, ITrader
 		return true;
 	}
 
-	private bool IsOnCoast()
+	public int GetCoastRegion()
 	{
 		int curLocX = NextLocX; // ship location
 		int curLocY = NextLocY;
@@ -1558,11 +1559,16 @@ public class UnitMarine : Unit, ITrader
 			Location location = World.GetLoc(checkLocX, checkLocY);
 			if (TerrainRes[location.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN && location.Walkable())
 			{
-				return true;
+				return location.RegionId;
 			}
 		}
 
-		return false;
+		return 0;
+	}
+
+	private bool IsOnCoast()
+	{
+		return GetCoastRegion() != 0;
 	}
 	
 	public void LoadUnit(int unitId)

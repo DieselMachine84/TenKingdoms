@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
@@ -66,18 +67,42 @@ public class BuildMineTask : AITask, IUnitTask
             _shouldCancel = true;
             return;
         }
-        
+
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
+        {
+            Nation.AddSailShipTask((UnitMarine)UnitArray[builder.UnitModeParam], site.LocX, site.LocY);
+            return;
+        }
+
         if (!_builderSent)
         {
-            (int buildLocX, int buildLocY) = FindBestBuildLocation(site.LocX, site.LocY);
-            if (buildLocX != -1 && buildLocY != -1)
+            if (builder.RegionId() == site.RegionId)
             {
-                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
-                _builderSent = true;
+                (int buildLocX, int buildLocY) = FindBestBuildLocation(site.LocX, site.LocY);
+                if (buildLocX != -1 && buildLocY != -1)
+                {
+                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MINE, InternalConstants.COMMAND_AI);
+                    _builderSent = true;
+                }
+                else
+                {
+                    _noPlaceToBuild = true;
+                }
             }
             else
             {
-                _noPlaceToBuild = true;
+                UnitMarine transport = Nation.FindTransportShip(Nation.GetSeaRegion(builder.RegionId(), site.RegionId));
+                if (transport != null)
+                {
+                    List<int> units = new List<int> { _builderId };
+                    UnitArray.AssignToShip(transport.NextLocX, transport.NextLocY, false, units, InternalConstants.COMMAND_AI, transport.SpriteId);
+                    _builderSent = true;
+                }
+                else
+                {
+                    FirmHarbor harbor = Nation.FindHarbor(builder.RegionId(), site.RegionId);
+                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                }
             }
         }
         else

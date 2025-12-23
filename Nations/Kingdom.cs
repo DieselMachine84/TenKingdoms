@@ -6,10 +6,13 @@ namespace TenKingdoms;
 
 public partial class Nation : NationBase
 {
+    private DateTime SetupDate { get; }
+
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
     private readonly List<BuildMarketTask> _buildMarketTasks = new List<BuildMarketTask>();
+    private readonly List<BuildHarborTask> _buildHarborTasks = new List<BuildHarborTask>();
     private readonly List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
     private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
@@ -20,10 +23,14 @@ public partial class Nation : NationBase
     private readonly List<WatchCaravanTask> _watchCaravanTasks = new List<WatchCaravanTask>();
     private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
     private readonly List<RecruitSoldiersTask> _recruitSoldiersTask = new List<RecruitSoldiersTask>();
+    private readonly List<BuildShipTask> _buildShipTasks = new List<BuildShipTask>();
+    private readonly List<SailShipTask> _sailShipTasks = new List<SailShipTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
 
     public Nation()
     {
+        SetupDate = Info.game_date;
+        
         _watchCaravanTasks.Add(new WatchCaravanTask(this));
         _collectTaxTasks.Add(new CollectTaxTask(this));
         _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
@@ -57,6 +64,10 @@ public partial class Nation : NationBase
             
             case 3:
                 ThinkDiplomacy();
+                break;
+            
+            case 4:
+                ThinkBuildHarbor();
                 break;
         }
 
@@ -116,6 +127,10 @@ public partial class Nation : NationBase
             for (int i = _buildMineTasks.Count - 1; i >= 0; i--)
             {
                 ProcessTask(_buildMineTasks[i], _buildMineTasks, i);
+            }
+            for (int i = _buildHarborTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_buildHarborTasks[i], _buildHarborTasks, i);
             }
         }
 
@@ -205,6 +220,14 @@ public partial class Nation : NationBase
             {
                 ProcessTask(_recruitSoldiersTask[i], _recruitSoldiersTask, i);
             }
+            for (int i = _buildShipTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_buildShipTasks[i], _buildShipTasks, i);
+            }
+            for (int i = _sailShipTasks.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_sailShipTasks[i], _sailShipTasks, i);
+            }
         }
     }
 
@@ -216,6 +239,8 @@ public partial class Nation : NationBase
             yield return task;
         foreach (var task in _buildMarketTasks)
             yield return task;
+        foreach (var task in _buildHarborTasks)
+            yield return task;
         foreach (var task in _buildCampTasks)
             yield return task;
         foreach (var task in _settleTasks)
@@ -223,6 +248,8 @@ public partial class Nation : NationBase
         foreach (var task in _assignGeneralTasks)
             yield return task;
         foreach (var task in _idleUnitTasks)
+            yield return task;
+        foreach (var task in _sailShipTasks)
             yield return task;
     }
 
@@ -374,9 +401,20 @@ public partial class Nation : NationBase
                 if (town.NationId != nation_recno)
                     continue;
 
-                // TODO other region
                 if (town.RegionId != site.RegionId)
-                    continue;
+                {
+                    if (HasHarbor(town.RegionId, site.RegionId))
+                    {
+                        if (bestSite == null)
+                        {
+                            bestSite = site;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
 
                 int siteRating = GameConstants.MapSize - Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
                     site.LocX, site.LocY, site.LocX, site.LocY);
@@ -567,6 +605,60 @@ public partial class Nation : NationBase
         }
     }
 
+    private void ThinkBuildHarbor()
+    {
+        if (Info.game_date < SetupDate.AddDays(180.0))
+            return;
+        
+        foreach (Site site in SiteArray)
+        {
+            if (site.SiteType != Site.SITE_RAW || site.HasMine)
+                continue;
+
+            bool hasTownInSiteRegion = false;
+            foreach (Town town in TownArray)
+            {
+                if (town.NationId == nation_recno && town.RegionId == site.RegionId)
+                {
+                    hasTownInSiteRegion = true;
+                    break;
+                }
+            }
+
+            if (!hasTownInSiteRegion)
+            {
+                RegionStat siteRegionStat = RegionArray.GetRegionStat(site.RegionId);
+
+                foreach (Town town in TownArray)
+                {
+                    if (town.NationId != nation_recno)
+                        continue;
+
+                    bool townInConnectedRegion = false;
+                    int seaRegionId = -1;
+                    RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
+                    foreach (RegionPath townRegionPath in townRegionStat.ReachableRegions)
+                    {
+                        foreach (RegionPath siteRegionPath in siteRegionStat.ReachableRegions)
+                        {
+                            if (townRegionPath.SeaRegionId == siteRegionPath.SeaRegionId)
+                            {
+                                townInConnectedRegion = true;
+                                seaRegionId = townRegionPath.SeaRegionId;
+                            }
+                        }
+                    }
+
+                    if (townInConnectedRegion)
+                    {
+                        if (!HasHarbor(town.RegionId, site.RegionId) && _buildHarborTasks.Count == 0)
+                            _buildHarborTasks.Add(new BuildHarborTask(this, town.TownId, seaRegionId));
+                    }
+                }
+            }
+        }
+    }
+
     private void ThinkBuildCamp()
     {
         foreach (Town town in TownArray)
@@ -695,6 +787,35 @@ public partial class Nation : NationBase
     public void AddChangeMarketRestockTask(int marketId, int restockType)
     {
         _changeMarketRestockTask.Add(new ChangeMarketRestockTask(this, marketId, restockType));
+    }
+
+    public void AddBuildShipTask(FirmHarbor harbor, int shipType)
+    {
+        if (harbor.BuildQueue.Count > 0 || harbor.BuildUnitId != 0)
+            return;
+        
+        bool hasBuildShipTask = false;
+        foreach (BuildShipTask buildShipTask in _buildShipTasks)
+        {
+            if (buildShipTask.HarborId == harbor.FirmId)
+                hasBuildShipTask = true;
+        }
+        
+        if (!hasBuildShipTask)
+            _buildShipTasks.Add(new BuildShipTask(this, harbor.FirmId, shipType));
+    }
+
+    public void AddSailShipTask(UnitMarine ship, int targetLocX, int targetLocY)
+    {
+        bool hasSailShipTask = false;
+        foreach (SailShipTask sailShipTask in _sailShipTasks)
+        {
+            if (sailShipTask.ShipId == ship.SpriteId)
+                hasSailShipTask = true;
+        }
+        
+        if (!hasSailShipTask)
+            _sailShipTasks.Add(new SailShipTask(this, ship.SpriteId, targetLocX, targetLocY));
     }
 
     private void FindIdleUnits()
@@ -831,6 +952,81 @@ public partial class Nation : NationBase
     {
         //TODO
         return true;
+    }
+
+    public int GetSeaRegion(int fromRegionId, int toRegionId)
+    {
+        RegionStat fromRegionStat = RegionArray.GetRegionStat(fromRegionId);
+        RegionStat toRegionStat = RegionArray.GetRegionStat(toRegionId);
+        foreach (RegionPath fromRegionPath in fromRegionStat.ReachableRegions)
+        {
+            foreach (RegionPath toRegionPath in toRegionStat.ReachableRegions)
+            {
+                if (fromRegionPath.SeaRegionId == toRegionPath.SeaRegionId)
+                {
+                    return fromRegionPath.SeaRegionId;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private bool HasHarbor(int fromRegionId, int toRegionId)
+    {
+        return FindHarbor(fromRegionId, toRegionId) != null;
+    }
+
+    public FirmHarbor FindHarbor(int fromRegionId, int toRegionId)
+    {
+        int seaRegionId = GetSeaRegion(fromRegionId, toRegionId);
+        if (seaRegionId != -1)
+        {
+            foreach (Firm firm in FirmArray)
+            {
+                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_HARBOR)
+                    continue;
+
+                FirmHarbor harbor = (FirmHarbor)firm;
+                if (harbor.LandRegionId == fromRegionId || harbor.SeaRegionId == seaRegionId)
+                    return harbor;
+            }
+        }
+
+        return null;
+    }
+
+    public UnitMarine FindTransportShip(int seaRegionId)
+    {
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_HARBOR || firm.UnderConstruction)
+                continue;
+
+            FirmHarbor harbor = (FirmHarbor)firm;
+            if (harbor.SeaRegionId != seaRegionId)
+                continue;
+
+            foreach (int shipId in harbor.Ships)
+            {
+                UnitMarine ship = (UnitMarine)UnitArray[shipId];
+                if (ship.UnitType == UnitConstants.UNIT_TRANSPORT && harbor.SailShip(shipId, InternalConstants.COMMAND_AI))
+                {
+                    return ship;
+                }
+            }
+        }
+        
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.NationId != nation_recno || unit.UnitType != UnitConstants.UNIT_TRANSPORT)
+                continue;
+
+            if (unit.RegionId() == seaRegionId && !IsUnitOnTask(unit.SpriteId))
+                return (UnitMarine)unit;
+        }
+        
+        return null;
     }
     
     #region Old AI stubs

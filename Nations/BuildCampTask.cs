@@ -75,15 +75,22 @@ public class BuildCampTask : AITask, IUnitTask
         
         if (!_builderSent)
         {
-            (int buildLocX, int buildLocY) = FindBestBuildLocation(town.LocX1, town.LocY1, town.LocX2, town.LocY2);
-            if (buildLocX != -1 && buildLocY != -1)
+            if (builder.RegionId() == town.RegionId)
             {
-                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
-                _builderSent = true;
+                (int buildLocX, int buildLocY) = FindBestBuildLocation(town.LocX1, town.LocY1, town.LocX2, town.LocY2);
+                if (buildLocX != -1 && buildLocY != -1)
+                {
+                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, InternalConstants.COMMAND_AI);
+                    _builderSent = true;
+                }
+                else
+                {
+                    _noPlaceToBuild = true;
+                }
             }
             else
             {
-                _noPlaceToBuild = true;
+                //TODO other region
             }
         }
         else

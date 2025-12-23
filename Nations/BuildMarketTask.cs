@@ -57,13 +57,20 @@ public class BuildMarketTask : AITask, IUnitTask
         if (_builderId != 0 && UnitArray.IsDeleted(_builderId))
             _builderId = 0;
 
+        int builderRegionId = 0;
         if (_builderId == 0)
         {
             if (firm != null)
+            {
                 _builderId = FindBuilder(firm.LocCenterX, firm.LocCenterY);
-            
+                builderRegionId = firm.RegionId;
+            }
+
             if (town != null)
+            {
                 _builderId = FindBuilder(town.LocCenterX, town.LocCenterY);
+                builderRegionId = town.RegionId;
+            }
         }
 
         if (_builderId == 0)
@@ -87,23 +94,30 @@ public class BuildMarketTask : AITask, IUnitTask
         
         if (!_builderSent)
         {
-            int buildLocX = -1;
-            int buildLocY = -1;
-            
-            if (firm != null)
-                (buildLocX, buildLocY) = FindBestMineBuildLocation(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
-            
-            if (town != null)
-                (buildLocX, buildLocY) = FindBestTownBuildLocation(town);
-
-            if (buildLocX != -1 && buildLocY != -1)
+            if (builder.RegionId() == builderRegionId)
             {
-                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MARKET, InternalConstants.COMMAND_AI);
-                _builderSent = true;
+                int buildLocX = -1;
+                int buildLocY = -1;
+
+                if (firm != null)
+                    (buildLocX, buildLocY) = FindBestMineBuildLocation(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+
+                if (town != null)
+                    (buildLocX, buildLocY) = FindBestTownBuildLocation(town);
+
+                if (buildLocX != -1 && buildLocY != -1)
+                {
+                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MARKET, InternalConstants.COMMAND_AI);
+                    _builderSent = true;
+                }
+                else
+                {
+                    _noPlaceToBuild = true;
+                }
             }
             else
             {
-                _noPlaceToBuild = true;
+                //TODO other region
             }
         }
         else
