@@ -3,8 +3,11 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-// Build market near a mine if its stock is high
-// Build market near kingdom village
+// Build market when
+//  1. Near a mine if its stock is high
+//  2. Near a kingdom village if there is a product to import
+//  3. Near an independent village if there is a product to export - TODO
+//  4. Near a harbor if kingdom wants to import or export products - TODO
 
 public class BuildMarketTask : AITask, IUnitTask
 {
@@ -30,12 +33,26 @@ public class BuildMarketTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (FirmId != 0 && FirmArray.IsDeleted(FirmId))
-            return true;
+        if (FirmId != 0)
+        {
+            if (FirmArray.IsDeleted(FirmId))
+                return true;
 
-        if (TownId != 0 && TownArray.IsDeleted(TownId))
-            return true;
-        
+            Firm firm = FirmArray[FirmId];
+            if (firm.NationId != Nation.nation_recno)
+                return true;
+        }
+
+        if (TownId != 0)
+        {
+            if (TownArray.IsDeleted(TownId))
+                return true;
+
+            Town town = TownArray[TownId];
+            if (town.NationId != Nation.nation_recno)
+                return true;
+        }
+
         return false;
     }
 
@@ -57,20 +74,13 @@ public class BuildMarketTask : AITask, IUnitTask
         if (_builderId != 0 && UnitArray.IsDeleted(_builderId))
             _builderId = 0;
 
-        int builderRegionId = 0;
         if (_builderId == 0)
         {
             if (firm != null)
-            {
                 _builderId = FindBuilder(firm.LocCenterX, firm.LocCenterY);
-                builderRegionId = firm.RegionId;
-            }
 
             if (town != null)
-            {
                 _builderId = FindBuilder(town.LocCenterX, town.LocCenterY);
-                builderRegionId = town.RegionId;
-            }
         }
 
         if (_builderId == 0)
@@ -91,33 +101,26 @@ public class BuildMarketTask : AITask, IUnitTask
             _shouldCancel = true;
             return;
         }
-        
+
         if (!_builderSent)
         {
-            if (builder.RegionId() == builderRegionId)
+            int buildLocX = -1;
+            int buildLocY = -1;
+
+            if (firm != null)
+                (buildLocX, buildLocY) = FindBestMineBuildLocation(firm);
+
+            if (town != null)
+                (buildLocX, buildLocY) = FindBestTownBuildLocation(town);
+
+            if (buildLocX != -1 && buildLocY != -1)
             {
-                int buildLocX = -1;
-                int buildLocY = -1;
-
-                if (firm != null)
-                    (buildLocX, buildLocY) = FindBestMineBuildLocation(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
-
-                if (town != null)
-                    (buildLocX, buildLocY) = FindBestTownBuildLocation(town);
-
-                if (buildLocX != -1 && buildLocY != -1)
-                {
-                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MARKET, InternalConstants.COMMAND_AI);
-                    _builderSent = true;
-                }
-                else
-                {
-                    _noPlaceToBuild = true;
-                }
+                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_MARKET, InternalConstants.COMMAND_AI);
+                _builderSent = true;
             }
             else
             {
-                //TODO other region
+                _noPlaceToBuild = true;
             }
         }
         else
@@ -128,19 +131,19 @@ public class BuildMarketTask : AITask, IUnitTask
         }
     }
     
-    private (int, int) FindBestMineBuildLocation(int mineLocX1, int mineLocY1, int mineLocX2, int mineLocY2)
+    private (int, int) FindBestMineBuildLocation(Firm firm)
     {
         FirmInfo marketInfo = FirmRes[Firm.FIRM_MARKET];
         int marketWidth = marketInfo.LocWidth;
         int marketHeight = marketInfo.LocHeight;
         List<(int, int)> bestBuildLocations = new List<(int, int)>();
         int minRating = Int16.MaxValue;
-        for (int locY = mineLocY1 - InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE - marketHeight;
-             locY < mineLocY2 + InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE + marketHeight;
+        for (int locY = firm.LocY1 - InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE - marketHeight;
+             locY < firm.LocY2 + InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE + marketHeight;
              locY++)
         {
-            for (int locX = mineLocX1 - InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE - marketWidth;
-                 locX < mineLocX2 + InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE + marketWidth;
+            for (int locX = firm.LocX1 - InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE - marketWidth;
+                 locX < firm.LocX2 + InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE + marketWidth;
                  locX++)
             {
                 if (World.CanBuildFirm(locX, locY, Firm.FIRM_MARKET, _builderId) == 0)
@@ -148,11 +151,11 @@ public class BuildMarketTask : AITask, IUnitTask
 
                 int locX2 = locX + marketWidth - 1;
                 int locY2 = locY + marketHeight - 1;
-                if (Misc.AreFirmsLinked(locX, locY, locX2, locY2,
-                        mineLocX1, mineLocY1, mineLocX2, mineLocY2))
+                if (Misc.AreFirmsLinked(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
+                        locX, locY, locX2, locY2))
                 {
-                    int rating = Misc.RectsDistance(locX, locY, locX2, locY2,
-                        mineLocX1, mineLocY1, mineLocX2, mineLocY2);
+                    int rating = Misc.RectsDistance(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
+                        locX, locY, locX2, locY2);
 
                     foreach (Town town in TownArray)
                     {
@@ -215,7 +218,7 @@ public class BuildMarketTask : AITask, IUnitTask
                         if (Misc.AreTownAndFirmLinked(otherTown.LocX1, otherTown.LocY1, otherTown.LocX2, otherTown.LocY2,
                                 locX, locY, locX2, locY2))
                         {
-                            rating += Misc.RectsDistance(locX, locY, locX2, locY2,
+                            rating += InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - Misc.RectsDistance(locX, locY, locX2, locY2,
                                 otherTown.LocX1, otherTown.LocY1, otherTown.LocX2, otherTown.LocY2);
                         }
                     }
@@ -228,7 +231,7 @@ public class BuildMarketTask : AITask, IUnitTask
                         if (Misc.AreFirmsLinked(locX, locY, locX2, locY2,
                                 firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2))
                         {
-                            rating += Misc.RectsDistance(locX, locY, locX2, locY2,
+                            rating += InternalConstants.EFFECTIVE_FIRM_FIRM_DISTANCE - Misc.RectsDistance(locX, locY, locX2, locY2,
                                 firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
                         }
                     }

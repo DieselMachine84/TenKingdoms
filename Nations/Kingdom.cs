@@ -6,8 +6,6 @@ namespace TenKingdoms;
 
 public partial class Nation : NationBase
 {
-    private DateTime SetupDate { get; }
-
     private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
@@ -29,8 +27,6 @@ public partial class Nation : NationBase
 
     public Nation()
     {
-        SetupDate = Info.game_date;
-        
         _watchCaravanTasks.Add(new WatchCaravanTask(this));
         _collectTaxTasks.Add(new CollectTaxTask(this));
         _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
@@ -384,54 +380,44 @@ public partial class Nation : NationBase
 
     private void ThinkBuildMine()
     {
-        //TODO check if we have not enough population, enough money and should not build mine at all
-        
         // find non-mined raw resource
         // rate by region, distance, distance from enemy
 
-        int bestRating = 0;
+        int bestRating = Int16.MaxValue;
         Site bestSite = null;
         foreach (Site site in SiteArray)
         {
             if (site.SiteType != Site.SITE_RAW || site.HasMine)
                 continue;
 
+            bool hasBuildMineTask = false;
+            foreach (var buildMineTask in _buildMineTasks)
+            {
+                if (buildMineTask.SiteId == site.SiteId)
+                    hasBuildMineTask = true;
+            }
+
+            if (hasBuildMineTask)
+                continue;
+            
             foreach (Town town in TownArray)
             {
                 if (town.NationId != nation_recno)
                     continue;
 
-                if (town.RegionId != site.RegionId)
-                {
-                    if (HasHarbor(town.RegionId, site.RegionId))
-                    {
-                        if (bestSite == null)
-                        {
-                            bestSite = site;
-                        }
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
+                if (town.RegionId != site.RegionId && !HasHarbor(town.RegionId, site.RegionId))
+                    continue;
 
-                int siteRating = GameConstants.MapSize - Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                //TODO use path distance instead of RectsDistance
+                //TODO if kingdom has already mine of the same resource take it into account
+                //TODO take distance to enemies into account
+                //TODO if raw resource is on another island take it into account
+                int siteRating = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
                     site.LocX, site.LocY, site.LocX, site.LocY);
-                if (siteRating > bestRating)
+                if (siteRating < bestRating)
                 {
-                    bool hasBuildMineTask = false;
-                    foreach (var buildMineTask in _buildMineTasks)
-                    {
-                        if (buildMineTask.SiteId == site.SiteId)
-                            hasBuildMineTask = true;
-                    }
-
-                    if (!hasBuildMineTask)
-                    {
-                        bestRating = siteRating;
-                        bestSite = site;
-                    }
+                    bestRating = siteRating;
+                    bestSite = site;
                 }
             }
         }
@@ -479,8 +465,6 @@ public partial class Nation : NationBase
             return false;
         }
 
-        //TODO check if we have enough money
-
         foreach (Firm firm in FirmArray)
         {
             if (firm.NationId != nation_recno || firm.UnderConstruction)
@@ -520,38 +504,35 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.UnderConstruction)
+            if (firm.NationId != nation_recno || firm.UnderConstruction || firm.FirmType != Firm.FIRM_MINE)
                 continue;
 
-            if (firm.FirmType == Firm.FIRM_MINE)
+            FirmMine mine = (FirmMine)firm;
+            if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
             {
-                FirmMine mine = (FirmMine)firm;
-                if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
+                bool hasLinkedMarket = false;
+                foreach (int linkedFirmId in mine.LinkedFirms)
                 {
-                    bool hasLinkedMarket = false;
-                    foreach (int linkedFirmId in mine.LinkedFirms)
+                    Firm linkedFirm = FirmArray[linkedFirmId];
+                    if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
                     {
-                        Firm linkedFirm = FirmArray[linkedFirmId];
-                        if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
-                        {
-                            FirmMarket market = (FirmMarket)linkedFirm;
-                            if (market.UnderConstruction || market.IsRawMarket())
-                                hasLinkedMarket = true;
-                        }
+                        FirmMarket market = (FirmMarket)linkedFirm;
+                        if (market.UnderConstruction || market.IsRawMarket())
+                            hasLinkedMarket = true;
+                    }
+                }
+
+                if (!hasLinkedMarket)
+                {
+                    bool hasBuildMarketTask = false;
+                    foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+                    {
+                        if (buildMarketTask.FirmId == mine.FirmId)
+                            hasBuildMarketTask = true;
                     }
 
-                    if (!hasLinkedMarket)
-                    {
-                        bool hasBuildMarketTask = false;
-                        foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
-                        {
-                            if (buildMarketTask.FirmId == mine.FirmId)
-                                hasBuildMarketTask = true;
-                        }
-                        
-                        if (!hasBuildMarketTask)
-                            _buildMarketTasks.Add(new BuildMarketTask(this, firm.FirmId, 0));
-                    }
+                    if (!hasBuildMarketTask)
+                        _buildMarketTasks.Add(new BuildMarketTask(this, firm.FirmId, 0));
                 }
             }
         }
@@ -581,8 +562,7 @@ public partial class Nation : NationBase
                     if (firm.RegionId != town.RegionId)
                         continue;
 
-                    if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY ||
-                        firm.FirmType == Firm.FIRM_MARKET || firm.FirmType == Firm.FIRM_HARBOR)
+                    if (firm.FirmType == Firm.FIRM_FACTORY || firm.FirmType == Firm.FIRM_MARKET || firm.FirmType == Firm.FIRM_HARBOR)
                     {
                         hasOtherFirmsToTrade = true;
                         break;
@@ -607,9 +587,22 @@ public partial class Nation : NationBase
 
     private void ThinkBuildHarbor()
     {
-        if (Info.game_date < SetupDate.AddDays(180.0))
+        bool hasRawResourceOnKingdomIsland = false;
+        foreach (Site site in SiteArray)
+        {
+            if (site.SiteType != Site.SITE_RAW || site.HasMine)
+                continue;
+            
+            foreach (Town town in TownArray)
+            {
+                if (town.NationId == nation_recno && town.RegionId == site.RegionId)
+                    hasRawResourceOnKingdomIsland = true;
+            }
+        }
+
+        if (hasRawResourceOnKingdomIsland)
             return;
-        
+
         foreach (Site site in SiteArray)
         {
             if (site.SiteType != Site.SITE_RAW || site.HasMine)
@@ -619,10 +612,7 @@ public partial class Nation : NationBase
             foreach (Town town in TownArray)
             {
                 if (town.NationId == nation_recno && town.RegionId == site.RegionId)
-                {
                     hasTownInSiteRegion = true;
-                    break;
-                }
             }
 
             if (!hasTownInSiteRegion)
@@ -634,6 +624,7 @@ public partial class Nation : NationBase
                     if (town.NationId != nation_recno)
                         continue;
 
+                    //TODO select best town
                     bool townInConnectedRegion = false;
                     int seaRegionId = -1;
                     RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
@@ -712,11 +703,6 @@ public partial class Nation : NationBase
 
     private void ThinkSettle()
     {
-        // Settle when
-        // 1. Village population is close to maximum - TODO
-        // 2. Village has different races - TODO
-        // 3. A new mine is built
-
         foreach (Firm firm in FirmArray)
         {
             if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_MINE)

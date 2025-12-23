@@ -3,8 +3,8 @@ namespace TenKingdoms;
 public class ChangeFactoryProductionTask : AITask
 {
     private bool _shouldCancel;
-    public int FactoryId { get; }
-    public int ProductId { get; }
+    private int FactoryId { get; }
+    private int ProductId { get; }
     
     public ChangeFactoryProductionTask(Nation nation, int factoryId, int productId) : base(nation)
     {

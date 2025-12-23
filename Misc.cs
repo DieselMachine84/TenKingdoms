@@ -138,6 +138,12 @@ public class Misc
         return RectsDistance(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm1.LocY2,
             firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
     }
+
+    public static int FirmTownDistance(Firm firm, Town town)
+    {
+        return RectsDistance(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
+            town.LocX1, town.LocY1, town.LocX2, town.LocY2);
+    }
     
     public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {

@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+// Build camp when
+//  1. There is no camp near kingdom village
+//  2. - TODO
+
 public class BuildCampTask : AITask, IUnitTask
 {
     private int _builderId;
@@ -56,12 +60,13 @@ public class BuildCampTask : AITask, IUnitTask
             _builderId = 0;
 
         if (_builderId == 0)
-            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY);
+            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY, true);
 
         if (_builderId == 0)
             return;
-        
-        // TODO king should build camp if there are no builders available
+
+        //TODO search for soldiers and generals also
+        //TODO king should build camp if there are no builders available
         
         Unit builder = UnitArray[_builderId];
         if (builder.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
@@ -70,6 +75,12 @@ public class BuildCampTask : AITask, IUnitTask
         if (builder.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
         {
             _shouldCancel = true;
+            return;
+        }
+        
+        if (builder.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
+        {
+            Nation.AddSailShipTask((UnitMarine)UnitArray[builder.UnitModeParam], town.LocCenterX, town.LocCenterY);
             return;
         }
         
@@ -90,7 +101,18 @@ public class BuildCampTask : AITask, IUnitTask
             }
             else
             {
-                //TODO other region
+                UnitMarine transport = Nation.FindTransportShip(Nation.GetSeaRegion(builder.RegionId(), town.RegionId));
+                if (transport != null)
+                {
+                    List<int> units = new List<int> { _builderId };
+                    UnitArray.AssignToShip(transport.NextLocX, transport.NextLocY, false, units, InternalConstants.COMMAND_AI, transport.SpriteId);
+                    _builderSent = true;
+                }
+                else
+                {
+                    FirmHarbor harbor = Nation.FindHarbor(builder.RegionId(), town.RegionId);
+                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                }
             }
         }
         else
@@ -108,16 +130,16 @@ public class BuildCampTask : AITask, IUnitTask
         List<(int, int)> maxRatingLocations = new List<(int, int)>();
 
         List<Town> nearTowns = new List<Town>();
-        foreach (Town town in TownArray)
+        foreach (Town otherTown in TownArray)
         {
-            Location otherTownLocation = World.GetLoc(town.LocX1, town.LocY1);
+            Location otherTownLocation = World.GetLoc(otherTown.LocX1, otherTown.LocY1);
             if (otherTownLocation.IsPlateau() != townLocation.IsPlateau() || otherTownLocation.RegionId != townLocation.RegionId)
                 continue;
             
-            if (Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+            if (Misc.RectsDistance(otherTown.LocX1, otherTown.LocY1, otherTown.LocX2, otherTown.LocY2,
                     townLocX1, townLocY1, townLocX2, townLocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE * 3)
             {
-                nearTowns.Add(town);
+                nearTowns.Add(otherTown);
             }
         }
         
@@ -136,19 +158,12 @@ public class BuildCampTask : AITask, IUnitTask
                 int buildLocX2 = buildLocX + campWidth - 1;
                 int buildLocY2 = buildLocY + campHeight - 1;
 
-                if (!Misc.IsLocationValid(buildLocX, buildLocY) || !Misc.IsLocationValid(buildLocX2, buildLocY2))
+                if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _builderId) == 0)
                     continue;
 
                 if (!Misc.AreTownAndFirmLinked(townLocX1, townLocY1, townLocX2, townLocY2, buildLocX, buildLocY, buildLocX2, buildLocY2))
                     continue;
                 
-                Location buildLocation = World.GetLoc(buildLocX, buildLocY);
-                if (buildLocation.RegionId != townLocation.RegionId || buildLocation.IsPlateau() != townLocation.IsPlateau())
-                    continue;
-                
-                if (World.CanBuildFirm(buildLocX, buildLocY, Firm.FIRM_CAMP, _builderId) == 0)
-                    continue;
-
                 int rating = 0;
                 foreach (Town nearTown in nearTowns)
                 {
@@ -159,18 +174,15 @@ public class BuildCampTask : AITask, IUnitTask
                     if (nearTown.NationId == Nation.nation_recno)
                         rating += 100;
                     
-                    // TODO calculate rating for other nation towns
-                }
+                    if (nearTown.NationId == 0)
+                        rating += 100;
 
-                foreach (Location nearLocation in Misc.EnumerateNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2))
-                {
-                    if (!nearLocation.Walkable())
-                        rating -= 10;
+                    // TODO calculate rating for other nation towns
                 }
 
                 rating -= Misc.RectsDistance(buildLocX, buildLocY, buildLocX2, buildLocY2,
                     townLocX1, townLocY1, townLocX2, townLocY2) * 5;
-                rating -= CountBlockedNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2);
+                rating -= 10 * CountBlockedNearLocations(buildLocX, buildLocY, buildLocX2, buildLocY2);
                 
                 if (rating > maxRating)
                 {

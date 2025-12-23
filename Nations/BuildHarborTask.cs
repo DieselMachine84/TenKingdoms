@@ -2,11 +2,10 @@ using System;
 
 namespace TenKingdoms;
 
-//Build harbor when
+// Build harbor when
 //  1. There is a resource on another island and we need it
-//  2. There is an independent village on another island that can be captured
-//  3. There is another harbor we can trade with
-//  4. There is another kingdom on another island we want to attack
+//  2. There is an independent village on another island that can be captured - TODO
+//  3. There is another kingdom on another island - TODO
 
 public class BuildHarborTask : AITask, IUnitTask
 {
@@ -33,6 +32,10 @@ public class BuildHarborTask : AITask, IUnitTask
             return true;
 
         if (TownArray.IsDeleted(TownId))
+            return true;
+
+        Town town = TownArray[TownId];
+        if (town.NationId != Nation.nation_recno)
             return true;
 
         return false;
@@ -70,25 +73,18 @@ public class BuildHarborTask : AITask, IUnitTask
             _shouldCancel = true;
             return;
         }
-        
+
         if (!_builderSent)
         {
-            if (builder.RegionId() == town.RegionId)
+            (int buildLocX, int buildLocY) = FindBestBuildLocation(town);
+            if (buildLocX != -1 && buildLocY != -1)
             {
-                (int buildLocX, int buildLocY) = FindBestBuildLocation(town);
-                if (buildLocX != -1 && buildLocY != -1)
-                {
-                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_HARBOR, InternalConstants.COMMAND_AI);
-                    _builderSent = true;
-                }
-                else
-                {
-                    _noPlaceToBuild = true;
-                }
+                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_HARBOR, InternalConstants.COMMAND_AI);
+                _builderSent = true;
             }
             else
             {
-                //TODO other region
+                _noPlaceToBuild = true;
             }
         }
         else
@@ -133,7 +129,8 @@ public class BuildHarborTask : AITask, IUnitTask
                 if (World.CanBuildFirm(locX, locY, Firm.FIRM_HARBOR, _builderId) == 0)
                     continue;
 
-                int rating = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2, locX, locY, locX, locY);
+                int rating = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                    locX, locY, locX, locY);
                 if (rating < bestRating)
                 {
                     bestLocX = locX;

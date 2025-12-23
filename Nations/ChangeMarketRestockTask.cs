@@ -3,8 +3,8 @@ namespace TenKingdoms;
 public class ChangeMarketRestockTask : AITask
 {
     private bool _shouldCancel;
-    public int MarketId { get; }
-    public int RestockType { get; }
+    private int MarketId { get; }
+    private int RestockType { get; }
     
     public ChangeMarketRestockTask(Nation nation, int marketId, int restockType) : base(nation)
     {

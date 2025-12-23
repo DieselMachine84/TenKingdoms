@@ -3,6 +3,16 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+// Build mine when
+//  1. Kingdom has no mines
+//  2. Kingdom has enough money and population to support more than one mine - TODO
+//  3. Kingdom has harbor if resource is on another island
+
+// Do not build mine when
+//  1. Not enough money - TODO
+//  2. Not enough population - TODO
+//  3. Resource is near the enemy - TODO
+
 public class BuildMineTask : AITask, IUnitTask
 {
     private int _builderId;
@@ -53,7 +63,7 @@ public class BuildMineTask : AITask, IUnitTask
             _builderId = 0;
 
         if (_builderId == 0)
-            _builderId = FindBuilder(site.LocX, site.LocY);
+            _builderId = FindBuilder(site.LocX, site.LocY, true);
 
         if (_builderId == 0)
             return;

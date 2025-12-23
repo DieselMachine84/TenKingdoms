@@ -28,16 +28,15 @@ public abstract class AITask
     }
 
     public abstract void Process();
-    
-    protected int FindBuilder(int buildLocX, int buildLocY)
+
+    protected int FindBuilder(int buildLocX, int buildLocY, bool searchInOtherRegions = false)
     {
         Location location = World.GetLoc(buildLocX, buildLocY);
         int builderId = FindBuilderInRegion(location.RegionId, buildLocX, buildLocY);
         
         //TODO hire builder from inn
-        //TODO check idle construction workers
         
-        if (builderId == 0)
+        if (builderId == 0 && searchInOtherRegions)
         {
             List<int> connectedSeas = new List<int>();
             RegionStat regionStat = RegionArray.GetRegionStat(location.RegionId);
@@ -71,6 +70,8 @@ public abstract class AITask
                 if (harbor != null)
                 {
                     builderId = FindBuilderInRegion(landRegionId, harbor.LocCenterX, harbor.LocCenterY);
+                    
+                    //TODO do not choose the first one, select from all available
                     if (builderId != 0)
                         break;
                 }
@@ -81,6 +82,8 @@ public abstract class AITask
 
     private int FindBuilderInRegion(int regionId, int targetLocX, int targetLocY)
     {
+        //TODO check idle construction workers
+        
         int builderId = 0;
         
         int minFirmDistance = Int16.MaxValue;
@@ -99,10 +102,9 @@ public abstract class AITask
             // TODO use pref
             if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0 && !Nation.IsUnitOnTask(firm.BuilderId))
             {
-                int firmDistance = Misc.points_distance(firm.LocX1, firm.LocY1, targetLocX, targetLocY);
+                int firmDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, targetLocX, targetLocY);
                 if (firmDistance < minFirmDistance)
                 {
-                    //TODO prefer firms at the same region
                     minFirmDistance = firmDistance;
                     bestFirm = firm;
                 }
@@ -129,16 +131,16 @@ public abstract class AITask
             if (race == 0 || !town.CanTrain(race))
                 continue;
 
-            int townDistance = Misc.points_distance(town.LocX1, town.LocY1, targetLocX, targetLocY);
+            int townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, targetLocX, targetLocY);
             if (townDistance < minTownDistance)
             {
-                //TODO prefer towns at the same region
                 minTownDistance = townDistance;
                 bestTown = town;
                 bestRace = race;
             }
         }
 
+        //TODO better choose firm or town or idle builder
         if (minFirmDistance <= minTownDistance + 20)
         {
             bestTown = null;
@@ -182,8 +184,8 @@ public abstract class AITask
 
                 int buildLocX2 = buildLocX + firmWidth - 1;
                 int buildLocY2 = buildLocY + firmHeight - 1;
-                if (Misc.AreTownAndFirmLinked(buildLocX, buildLocY, buildLocX2, buildLocY2,
-                        town.LocX1, town.LocY1, town.LocX2, town.LocY2))
+                if (Misc.AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                        buildLocX, buildLocY, buildLocX2, buildLocY2))
                     return true;
             }
         }

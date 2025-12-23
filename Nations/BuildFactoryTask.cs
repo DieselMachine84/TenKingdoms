@@ -3,10 +3,16 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-// Build a factory when there is a mine or a market that has a resource and there is no such factory
-// Build a factory when existing factories are not able to manufacture available resources
-// Build a factory when another factory is too far from mine/market
-// Build a factory when kingdom can buy resource from another kingdom
+// Build factory when
+//  1. There is a mine or a market that has a resource and there is no such factory nearby
+//  2. There is a mine or a market that has a resource but existing factories are not able to manufacture it - TODO
+//  3. kingdom can buy resource from another kingdom - TODO
+//  4. There is a mine or a market on an island and there is no place on the island to build factory, build it on another island - TODO
+
+// Do not build factory when
+//  1. Not enough money - TODO
+//  2. Not enough population - TODO
+
 // Choose a place to build near a village with enough population and not far from mine/market 
 
 public class BuildFactoryTask : AITask, IUnitTask
@@ -16,7 +22,7 @@ public class BuildFactoryTask : AITask, IUnitTask
     private bool _noPlaceToBuild;
     private bool _shouldCancel;
     public int FirmId { get; }
-    public int ProductId { get; }
+    private int ProductId { get; }
     public int UnitId => _builderId;
 
     public BuildFactoryTask(Nation nation, int firmId, int productId) : base(nation)
@@ -34,6 +40,10 @@ public class BuildFactoryTask : AITask, IUnitTask
             return true;
 
         if (FirmArray.IsDeleted(FirmId))
+            return true;
+        
+        Firm firm = FirmArray[FirmId];
+        if (firm.NationId != Nation.nation_recno)
             return true;
         
         return false;
@@ -72,25 +82,18 @@ public class BuildFactoryTask : AITask, IUnitTask
             _shouldCancel = true;
             return;
         }
-        
+
         if (!_builderSent)
         {
-            if (builder.RegionId() == firm.RegionId)
+            (int buildLocX, int buildLocY) = FindBestBuildLocation(firm);
+            if (buildLocX != -1 && buildLocY != -1)
             {
-                (int buildLocX, int buildLocY) = FindBestBuildLocation(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
-                if (buildLocX != -1 && buildLocY != -1)
-                {
-                    builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_FACTORY, InternalConstants.COMMAND_AI);
-                    _builderSent = true;
-                }
-                else
-                {
-                    _noPlaceToBuild = true;
-                }
+                builder.BuildFirm(buildLocX, buildLocY, Firm.FIRM_FACTORY, InternalConstants.COMMAND_AI);
+                _builderSent = true;
             }
             else
             {
-                //TODO other region
+                _noPlaceToBuild = true;
             }
         }
         else
@@ -101,12 +104,12 @@ public class BuildFactoryTask : AITask, IUnitTask
         }
     }
 
-    private (int, int) FindBestBuildLocation(int rawFirmLocX1, int rawFirmLocY1, int rawFirmLocX2, int rawFirmLocY2)
+    private (int, int) FindBestBuildLocation(Firm rawFirm)
     {
-        Location rawFirmLocation = World.GetLoc(rawFirmLocX1, rawFirmLocY1);
+        Location rawFirmLocation = World.GetLoc(rawFirm.LocCenterX, rawFirm.LocCenterY);
         
         Town bestTown = null;
-        int bestRating = -1;
+        int bestRating = Int16.MinValue;
         
         foreach (Town town in TownArray)
         {
@@ -119,8 +122,7 @@ public class BuildFactoryTask : AITask, IUnitTask
             if (!CanBuildFirmNearTown(Firm.FIRM_FACTORY, town))
                 continue;
             
-            int distance = Misc.RectsDistance(rawFirmLocX1, rawFirmLocY1, rawFirmLocX2, rawFirmLocY2,
-                town.LocX1, town.LocY1, town.LocX2, town.LocY2);
+            int distance = Misc.FirmTownDistance(rawFirm, town);
             int rating = town.JoblessPopulation * 2 + (GameConstants.MapSize - distance);
             if (rating > bestRating)
             {
@@ -155,7 +157,7 @@ public class BuildFactoryTask : AITask, IUnitTask
                         int rating = Misc.RectsDistance(locX, locY, locX2, locY2,
                             bestTown.LocX1, bestTown.LocY1, bestTown.LocX2, bestTown.LocY2);
                         rating += Misc.RectsDistance(locX, locY, locX2, locY2,
-                            rawFirmLocX1, rawFirmLocY1, rawFirmLocX2, rawFirmLocY2);
+                            rawFirm.LocX1, rawFirm.LocY1, rawFirm.LocX2, rawFirm.LocY2);
                         rating += CountBlockedNearLocations(locX, locY, locX2, locY2);
                         
                         if (rating < minRating)

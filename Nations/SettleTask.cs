@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
+// Settle when
+//  1. Village population is close to maximum - TODO
+//  2. Village has different races - TODO
+//  3. A new mine is built
+
 public class SettleTask : AITask, IUnitTask
 {
     private int _settlerId;
@@ -55,7 +60,7 @@ public class SettleTask : AITask, IUnitTask
             _settlerId = 0;
 
         if (_settlerId == 0)
-            FindSettler(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+            FindSettler(firm);
 
         if (_settlerId == 0)
             return;
@@ -64,7 +69,7 @@ public class SettleTask : AITask, IUnitTask
         
         if (!_settlerSent)
         {
-            (int settleLocX, int settleLocY) = FindBestSettleLocation(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+            (int settleLocX, int settleLocY) = FindBestSettleLocation(firm);
             if (settleLocX != -1 && settleLocY != -1)
             {
                 settler.Settle(settleLocX, settleLocY);
@@ -83,10 +88,8 @@ public class SettleTask : AITask, IUnitTask
         }
     }
 
-    private void FindSettler(int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
+    private void FindSettler(Firm firm)
     {
-        Location firmLocation = World.GetLoc(firmLocX1, firmLocY1);
-        
         int minTownDistance = Int16.MaxValue;
         Town bestTown = null;
         int bestRace = 0;
@@ -97,11 +100,14 @@ public class SettleTask : AITask, IUnitTask
                 continue;
 
             // TODO other region
-            if (town.RegionId != firmLocation.RegionId)
+            if (town.RegionId != firm.RegionId)
                 continue;
 
-            // TODO do not recruit if population is low
             if (town.JoblessPopulation == 0)
+                continue;
+            
+            // TODO do not recruit if population is low
+            if (town.Population < 20)
                 continue;
 
             // TODO check all races, select race better
@@ -110,8 +116,7 @@ public class SettleTask : AITask, IUnitTask
                 continue;
 
             // TODO check not only distance but also which race we are going to settle
-            int townDistance = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-                firmLocX1, firmLocY1, firmLocX2, firmLocY2);
+            int townDistance = Misc.FirmTownDistance(firm, town);
             if (townDistance < minTownDistance)
             {
                 minTownDistance = townDistance;
@@ -126,25 +131,22 @@ public class SettleTask : AITask, IUnitTask
         }
     }
 
-    private (int, int) FindBestSettleLocation(int firmLocX1, int firmLocY1, int firmLocX2, int firmLocY2)
+    private (int, int) FindBestSettleLocation(Firm firm)
     {
-        Location firmLocation = World.GetLoc(firmLocX1, firmLocY1);
+        Location firmLocation = World.GetLoc(firm.LocCenterX, firm.LocCenterY);
         int maxRating = Int16.MinValue;
         List<(int, int)> maxRatingLocations = new List<(int, int)>();
 
         List<Firm> nearFirms = new List<Firm>();
-        foreach (Firm firm in FirmArray)
+        foreach (Firm otherFirm in FirmArray)
         {
-            Location otherFirmLocation = World.GetLoc(firm.LocX1, firm.LocY1);
+            Location otherFirmLocation = World.GetLoc(otherFirm.LocX1, otherFirm.LocY1);
 
             if (otherFirmLocation.IsPlateau() != firmLocation.IsPlateau() || otherFirmLocation.RegionId != firmLocation.RegionId)
                 continue;
 
-            if (Misc.RectsDistance(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2,
-                    firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE * 3)
-            {
-                nearFirms.Add(firm);
-            }
+            if (Misc.FirmsDistance(firm, otherFirm) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE * 3)
+                nearFirms.Add(otherFirm);
         }
 
         List<Town> nearTowns = new List<Town>();
@@ -155,19 +157,16 @@ public class SettleTask : AITask, IUnitTask
             if (townLocation.IsPlateau() != firmLocation.IsPlateau() || townLocation.RegionId != firmLocation.RegionId)
                 continue;
 
-            if (Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-                    firmLocX1, firmLocY1, firmLocX2, firmLocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE * 3)
-            {
+            if (Misc.FirmTownDistance(firm, town) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE * 3)
                 nearTowns.Add(town);
-            }
         }
 
-        for (int settleLocY = firmLocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
-             settleLocY < firmLocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
+        for (int settleLocY = firm.LocY1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_HEIGHT;
+             settleLocY < firm.LocY2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_HEIGHT;
              settleLocY++)
         {
-            for (int settleLocX = firmLocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
-                 settleLocX < firmLocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
+            for (int settleLocX = firm.LocX1 - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE - InternalConstants.TOWN_WIDTH;
+                 settleLocX < firm.LocX2 + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE + InternalConstants.TOWN_WIDTH;
                  settleLocX++)
             {
                 int settleLocX2 = settleLocX + InternalConstants.TOWN_WIDTH - 1;
@@ -176,7 +175,8 @@ public class SettleTask : AITask, IUnitTask
                 if (!Misc.IsLocationValid(settleLocX, settleLocY) || !Misc.IsLocationValid(settleLocX2, settleLocY2))
                     continue;
 
-                if (!Misc.AreTownAndFirmLinked(settleLocX, settleLocY, settleLocX2, settleLocY2, firmLocX1, firmLocY1, firmLocX2, firmLocY2))
+                if (!Misc.AreTownAndFirmLinked(settleLocX, settleLocY, settleLocX2, settleLocY2,
+                        firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2))
                     continue;
                 
                 Location settleLocation = World.GetLoc(settleLocX, settleLocY);
@@ -224,7 +224,7 @@ public class SettleTask : AITask, IUnitTask
                 }
 
                 rating -= Misc.RectsDistance(settleLocX, settleLocY, settleLocX2, settleLocY2,
-                    firmLocX1, firmLocY1, firmLocX2, firmLocY2) * 5;
+                    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) * 5;
                 
                 if (rating > maxRating)
                 {
