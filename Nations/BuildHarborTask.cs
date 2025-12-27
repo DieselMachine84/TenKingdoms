@@ -59,7 +59,7 @@ public class BuildHarborTask : AITask, IUnitTask
             _builderId = 0;
         
         if (_builderId == 0)
-            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY);
+            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY, town.RegionId);
 
         if (_builderId == 0)
             return;
@@ -129,6 +129,7 @@ public class BuildHarborTask : AITask, IUnitTask
                 if (World.CanBuildFirm(locX, locY, Firm.FIRM_HARBOR, _builderId) == 0)
                     continue;
 
+                //TODO take distance to mines, factories and markets into account
                 int rating = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
                     locX, locY, locX, locY);
                 if (rating < bestRating)

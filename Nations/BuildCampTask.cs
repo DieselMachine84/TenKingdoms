@@ -60,7 +60,7 @@ public class BuildCampTask : AITask, IUnitTask
             _builderId = 0;
 
         if (_builderId == 0)
-            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY, true);
+            _builderId = FindBuilder(town.LocCenterX, town.LocCenterY, town.RegionId, true);
 
         if (_builderId == 0)
             return;

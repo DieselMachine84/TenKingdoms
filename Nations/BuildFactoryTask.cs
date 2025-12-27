@@ -67,7 +67,7 @@ public class BuildFactoryTask : AITask, IUnitTask
             _builderId = 0;
 
         if (_builderId == 0)
-            _builderId = FindBuilder(firm.LocCenterX, firm.LocCenterY);
+            _builderId = FindBuilder(firm.LocCenterX, firm.LocCenterY, firm.RegionId);
 
         if (_builderId == 0)
             return;

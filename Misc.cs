@@ -170,16 +170,16 @@ public class Misc
 
     public static bool AreFirmsLinked(Firm firm1, Firm firm2)
     {
-        return AreFirmsLinked(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm1.LocY2,
-            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2);
+        return AreFirmsLinked(firm1.LocX1, firm1.LocY1, firm1.LocX2, firm1.LocY2, firm1.RegionId,
+            firm2.LocX1, firm2.LocY1, firm2.LocX2, firm2.LocY2, firm2.RegionId);
     }
 
-    public static bool AreFirmsLinked(int firm1LocX1, int firm1LocY1, int firm1LocX2, int firm1LocY2,
-        int firm2LocX1, int firm2LocY1, int firm2LocX2, int firm2LocY2)
+    public static bool AreFirmsLinked(int firm1LocX1, int firm1LocY1, int firm1LocX2, int firm1LocY2, int firm1RegionId,
+        int firm2LocX1, int firm2LocY1, int firm2LocX2, int firm2LocY2, int firm2RegionId)
     {
         Location location1 = World.GetLoc(firm1LocX1, firm1LocY1);
         Location location2 = World.GetLoc(firm2LocX1, firm2LocY1);
-        if (location1.RegionId != location2.RegionId || location1.IsPlateau() != location2.IsPlateau())
+        if (firm1RegionId != firm2RegionId || location1.IsPlateau() != location2.IsPlateau())
             return false;
 
         return RectsDistance(firm1LocX1, firm1LocY1, firm1LocX2, firm1LocY2,

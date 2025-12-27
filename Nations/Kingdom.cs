@@ -506,36 +506,20 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.UnderConstruction || firm.FirmType != Firm.FIRM_MINE)
+            if (firm.NationId != nation_recno || firm.UnderConstruction)
                 continue;
 
-            FirmMine mine = (FirmMine)firm;
-            if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
+            if (firm is FirmMine mine)
             {
-                bool hasLinkedMarket = false;
-                foreach (int linkedFirmId in mine.LinkedFirms)
+                if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
                 {
-                    Firm linkedFirm = FirmArray[linkedFirmId];
-                    if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
-                    {
-                        FirmMarket market = (FirmMarket)linkedFirm;
-                        if (market.UnderConstruction || market.IsRawMarket())
-                            hasLinkedMarket = true;
-                    }
+                    AddBuildFirmMarketTask(mine);
                 }
+            }
 
-                if (!hasLinkedMarket)
-                {
-                    bool hasBuildMarketTask = false;
-                    foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
-                    {
-                        if (buildMarketTask.FirmId == mine.FirmId)
-                            hasBuildMarketTask = true;
-                    }
-
-                    if (!hasBuildMarketTask)
-                        _buildMarketTasks.Add(new BuildMarketTask(this, firm.FirmId, 0));
-                }
+            if (firm is FirmHarbor harbor)
+            {
+                AddBuildFirmMarketTask(harbor);
             }
         }
 
@@ -587,13 +571,44 @@ public partial class Nation : NationBase
         }
     }
 
+    private void AddBuildFirmMarketTask(Firm firm)
+    {
+        bool hasLinkedMarket = false;
+        foreach (int linkedFirmId in firm.LinkedFirms)
+        {
+            Firm linkedFirm = FirmArray[linkedFirmId];
+            if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
+            {
+                FirmMarket market = (FirmMarket)linkedFirm;
+                if (market.UnderConstruction || (firm.FirmType == Firm.FIRM_MINE ? market.IsRawMarket() : market.IsRetailMarket()))
+                    hasLinkedMarket = true;
+            }
+        }
+
+        if (!hasLinkedMarket)
+        {
+            bool hasBuildMarketTask = false;
+            foreach (BuildMarketTask buildMarketTask in _buildMarketTasks)
+            {
+                if (buildMarketTask.FirmId == firm.FirmId)
+                    hasBuildMarketTask = true;
+            }
+
+            if (!hasBuildMarketTask)
+                _buildMarketTasks.Add(new BuildMarketTask(this, firm.FirmId, 0));
+        }
+    }
+
     private void ThinkBuildHarbor()
     {
+        bool hasRawResource = false;
         bool hasRawResourceOnKingdomIsland = false;
         foreach (Site site in SiteArray)
         {
             if (site.SiteType != Site.SITE_RAW || site.HasMine)
                 continue;
+
+            hasRawResource = true;
             
             foreach (Town town in TownArray)
             {
@@ -602,56 +617,73 @@ public partial class Nation : NationBase
             }
         }
 
-        if (hasRawResourceOnKingdomIsland)
-            return;
-
-        foreach (Site site in SiteArray)
+        if (hasRawResource && !hasRawResourceOnKingdomIsland)
         {
-            if (site.SiteType != Site.SITE_RAW || site.HasMine)
-                continue;
-
-            bool hasTownInSiteRegion = false;
-            foreach (Town town in TownArray)
+            foreach (Site site in SiteArray)
             {
-                if (town.NationId == nation_recno && town.RegionId == site.RegionId)
-                    hasTownInSiteRegion = true;
-            }
+                if (site.SiteType != Site.SITE_RAW || site.HasMine)
+                    continue;
 
-            if (!hasTownInSiteRegion)
-            {
-                RegionStat siteRegionStat = RegionArray.GetRegionStat(site.RegionId);
-
+                //TODO duplicate code - rewrite
+                bool hasTownInSiteRegion = false;
                 foreach (Town town in TownArray)
                 {
-                    if (town.NationId != nation_recno)
-                        continue;
+                    if (town.NationId == nation_recno && town.RegionId == site.RegionId)
+                        hasTownInSiteRegion = true;
+                }
 
-                    //TODO select best town
-                    bool townInConnectedRegion = false;
-                    int seaRegionId = -1;
-                    RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
-                    foreach (RegionPath townRegionPath in townRegionStat.ReachableRegions)
-                    {
-                        foreach (RegionPath siteRegionPath in siteRegionStat.ReachableRegions)
-                        {
-                            if (townRegionPath.SeaRegionId == siteRegionPath.SeaRegionId)
-                            {
-                                townInConnectedRegion = true;
-                                seaRegionId = townRegionPath.SeaRegionId;
-                            }
-                        }
-                    }
-
-                    if (townInConnectedRegion)
-                    {
-                        if (!HasHarbor(town.RegionId, site.RegionId) && _buildHarborTasks.Count == 0)
-                            _buildHarborTasks.Add(new BuildHarborTask(this, town.TownId, seaRegionId));
-                    }
+                if (!hasTownInSiteRegion)
+                {
+                    AddBuildHarborTask(site.RegionId);
                 }
             }
         }
+
+        List<int> kingdomRegions = new List<int>();
+        foreach (Town town in TownArray)
+        {
+            if (town.NationId == nation_recno && !kingdomRegions.Contains(town.RegionId))
+                kingdomRegions.Add(town.RegionId);
+        }
+        
+        foreach (Town otherTown in TownArray)
+        {
+            if (otherTown.NationId != nation_recno && !kingdomRegions.Contains(otherTown.RegionId))
+                AddBuildHarborTask(otherTown.RegionId);
+        }
     }
 
+    private void AddBuildHarborTask(int toRegionId)
+    {
+        RegionStat destinationRegionStat = RegionArray.GetRegionStat(toRegionId);
+        foreach (Town town in TownArray)
+        {
+            if (town.NationId != nation_recno)
+                continue;
+
+            //TODO select best town
+            int seaRegionId = -1;
+            RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
+            foreach (RegionPath townRegionPath in townRegionStat.ReachableRegions)
+            {
+                foreach (RegionPath siteRegionPath in destinationRegionStat.ReachableRegions)
+                {
+                    if (townRegionPath.SeaRegionId == siteRegionPath.SeaRegionId)
+                    {
+                        seaRegionId = townRegionPath.SeaRegionId;
+                        break;
+                    }
+                }
+            }
+
+            if (seaRegionId != -1)
+            {
+                if (!HasHarbor(town.RegionId, toRegionId) && _buildHarborTasks.Count == 0)
+                    _buildHarborTasks.Add(new BuildHarborTask(this, town.TownId, seaRegionId));
+            }
+        }
+    }
+    
     private void ThinkBuildCamp()
     {
         foreach (Town town in TownArray)

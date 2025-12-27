@@ -23,7 +23,7 @@ public class RelocatePeasantsTask : AITask, IUnitTask
             return true;
         
         Town town = TownArray[TownId];
-        if (town.NationId != Nation.nation_recno)
+        if (town.NationId != Nation.nation_recno || town.JoblessPopulation > 0)
             return true;
         
         return false;

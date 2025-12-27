@@ -63,7 +63,7 @@ public class BuildMineTask : AITask, IUnitTask
             _builderId = 0;
 
         if (_builderId == 0)
-            _builderId = FindBuilder(site.LocX, site.LocY, true);
+            _builderId = FindBuilder(site.LocX, site.LocY, site.RegionId, true);
 
         if (_builderId == 0)
             return;

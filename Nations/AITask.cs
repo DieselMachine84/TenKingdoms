@@ -30,23 +30,22 @@ public abstract class AITask
 
     public abstract void Process();
 
-    protected int FindBuilder(int buildLocX, int buildLocY, bool searchInOtherRegions = false)
+    protected int FindBuilder(int buildLocX, int buildLocY, int regionId, bool searchInOtherRegions = false)
     {
-        Location location = World.GetLoc(buildLocX, buildLocY);
-        int builderId = FindBuilderInRegion(location.RegionId, buildLocX, buildLocY);
+        int builderId = FindBuilderInRegion(regionId, buildLocX, buildLocY);
         
         //TODO hire builder from inn
         
         if (builderId == 0 && searchInOtherRegions)
         {
-            List<int> connectedLands = GetConnectedLands(location.RegionId);
+            List<int> connectedLands = GetConnectedLands(regionId);
             foreach (int landRegionId in connectedLands)
             {
-                if (landRegionId == location.RegionId)
+                if (landRegionId == regionId)
                     continue;
 
                 //TODO maybe there is no harbor but we can send ship for the builder
-                FirmHarbor harbor = Nation.FindHarbor(landRegionId, location.RegionId);
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, regionId);
                 if (harbor != null)
                 {
                     builderId = FindBuilderInRegion(landRegionId, harbor.LocCenterX, harbor.LocCenterY);
