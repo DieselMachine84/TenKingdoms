@@ -31,11 +31,7 @@ public class BuildHarborTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (TownArray.IsDeleted(TownId))
-            return true;
-
-        Town town = TownArray[TownId];
-        if (town.NationId != Nation.nation_recno)
+        if (TownIsDeletedOrChangedNation(TownId))
             return true;
 
         return false;

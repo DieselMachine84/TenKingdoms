@@ -39,11 +39,7 @@ public class BuildFactoryTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (FirmArray.IsDeleted(FirmId))
-            return true;
-        
-        Firm firm = FirmArray[FirmId];
-        if (firm.NationId != Nation.nation_recno)
+        if (FirmIsDeletedOrChangedNation(FirmId))
             return true;
         
         return false;

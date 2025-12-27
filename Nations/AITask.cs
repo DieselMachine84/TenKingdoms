@@ -30,6 +30,36 @@ public abstract class AITask
 
     public abstract void Process();
 
+    protected bool FirmIsDeletedOrChangedNation(int firmId)
+    {
+        if (FirmArray.IsDeleted(firmId))
+            return true;
+        Firm firm = FirmArray[firmId];
+        if (firm.NationId != Nation.nation_recno)
+            return true;
+        return false;
+    }
+
+    protected bool TownIsDeletedOrChangedNation(int townId)
+    {
+        if (TownArray.IsDeleted(townId))
+            return true;
+        Town town = TownArray[townId];
+        if (town.NationId != Nation.nation_recno)
+            return true;
+        return false;
+    }
+
+    protected bool UnitIsDeletedOrChangedNation(int unitId)
+    {
+        if (UnitArray.IsDeleted(unitId))
+            return true;
+        Unit unit = UnitArray[unitId];
+        if (unit.NationId != Nation.nation_recno)
+            return true;
+        return false;
+    }
+    
     protected int FindBuilder(int buildLocX, int buildLocY, int regionId, bool searchInOtherRegions = false)
     {
         int builderId = FindBuilderInRegion(regionId, buildLocX, buildLocY);

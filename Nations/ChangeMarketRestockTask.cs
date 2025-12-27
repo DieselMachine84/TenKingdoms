@@ -17,11 +17,7 @@ public class ChangeMarketRestockTask : AITask
         if (_shouldCancel)
             return true;
         
-        if (FirmArray.IsDeleted(MarketId))
-            return true;
-        
-        Firm market = FirmArray[MarketId];
-        if (market.NationId != Nation.nation_recno)
+        if (FirmIsDeletedOrChangedNation(MarketId))
             return true;
 
         return false;

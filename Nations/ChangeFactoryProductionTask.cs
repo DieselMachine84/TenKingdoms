@@ -17,11 +17,7 @@ public class ChangeFactoryProductionTask : AITask
         if (_shouldCancel)
             return true;
         
-        if (FirmArray.IsDeleted(FactoryId))
-            return true;
-        
-        Firm factory = FirmArray[FactoryId];
-        if (factory.NationId != Nation.nation_recno)
+        if (FirmIsDeletedOrChangedNation(FactoryId))
             return true;
 
         return false;

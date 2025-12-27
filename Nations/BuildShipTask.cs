@@ -1,5 +1,7 @@
 namespace TenKingdoms;
 
+// Do not build too many ships
+
 public class BuildShipTask : AITask
 {
     private bool _shouldCancel;
@@ -17,7 +19,7 @@ public class BuildShipTask : AITask
         if (_shouldCancel)
             return true;
 
-        if (FirmArray.IsDeleted(HarborId))
+        if (FirmIsDeletedOrChangedNation(HarborId))
             return true;
         
         return false;

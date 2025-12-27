@@ -25,11 +25,7 @@ public class AssignGeneralTask : AITask, IUnitTask
         if (_shouldCancel)
             return true;
 
-        if (FirmArray.IsDeleted(FirmId))
-            return true;
-
-        Firm firm = FirmArray[FirmId];
-        if (firm.NationId != Nation.nation_recno)
+        if (FirmIsDeletedOrChangedNation(FirmId))
             return true;
 
         return false;

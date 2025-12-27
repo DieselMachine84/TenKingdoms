@@ -26,13 +26,10 @@ public class SettleTask : AITask, IUnitTask
         if (_noPlaceToSettle)
             return true;
 
-        if (FirmArray.IsDeleted(FirmId))
+        if (FirmIsDeletedOrChangedNation(FirmId))
             return true;
 
         Firm firm = FirmArray[FirmId];
-        if (firm.NationId != Nation.nation_recno)
-            return true;
-
         foreach (int townId in firm.LinkedTowns)
         {
             Town town = TownArray[townId];

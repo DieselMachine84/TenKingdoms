@@ -29,13 +29,10 @@ public class BuildCampTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (TownArray.IsDeleted(TownId))
+        if (TownIsDeletedOrChangedNation(TownId))
             return true;
 
         Town town = TownArray[TownId];
-        if (town.NationId != Nation.nation_recno)
-            return true;
-
         if (town.HasLinkedCamp(Nation.nation_recno, false))
             return true;
         

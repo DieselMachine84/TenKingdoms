@@ -19,11 +19,11 @@ public class RelocatePeasantsTask : AITask, IUnitTask
 
     public override bool ShouldCancel()
     {
-        if (TownArray.IsDeleted(TownId))
+        if (TownIsDeletedOrChangedNation(TownId))
             return true;
         
         Town town = TownArray[TownId];
-        if (town.NationId != Nation.nation_recno || town.JoblessPopulation > 0)
+        if (town.JoblessPopulation > 0)
             return true;
         
         return false;

@@ -24,10 +24,13 @@ public class IdleUnitTask : AITask, IUnitTask
 
     public override bool ShouldCancel()
     {
-        if (UnitArray.IsDeleted(UnitId))
-            _shouldCancel = true;
+        if (_shouldCancel)
+            return true;
+        
+        if (UnitIsDeletedOrChangedNation(UnitId))
+            return true;
 
-        return _shouldCancel;
+        return false;
     }
 
     public override void Process()

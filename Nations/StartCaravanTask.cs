@@ -3,10 +3,11 @@ using System;
 namespace TenKingdoms;
 
 // Caravan should be started when
-// 1. Need to deliver resource from our mine or our market or another kingdom market to our factory
+// 1. Need to deliver resource from our mine or our market or another kingdom market to our factory - TODO
 // 2. Need to deliver product from our factory to our market
-// 3. Need to move products between our markets
-// 4. Need to move products out from our market that should be sold
+// 3. Need to import product from another kingdom market
+// 4. Need to move products between our markets
+// 5. Need to move products out from our market that should be sold - TODO
 
 // Before hiring caravan check if there is idle caravan available
 // Check if distance between caravan stops is not too far - should depend on pref
@@ -30,14 +31,14 @@ public class StartCaravanTask : AITask
     {
         if (_shouldCancel)
             return true;
+
+        if (MineId != 0 && FirmIsDeletedOrChangedNation(MineId))
+            return true;
+
+        if (FactoryId != 0 && FirmIsDeletedOrChangedNation(FactoryId))
+            return true;
         
-        if (MineId != 0 && FirmArray.IsDeleted(MineId))
-            return true;
-
-        if (FactoryId != 0 && FirmArray.IsDeleted(FactoryId))
-            return true;
-
-        if (MarketId != 0 && FirmArray.IsDeleted(MarketId))
+        if (MarketId != 0 && FirmIsDeletedOrChangedNation(MarketId))
             return true;
         
         return false;

@@ -33,25 +33,11 @@ public class BuildMarketTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (FirmId != 0)
-        {
-            if (FirmArray.IsDeleted(FirmId))
-                return true;
+        if (FirmId != 0 && FirmIsDeletedOrChangedNation(FirmId))
+            return true;
 
-            Firm firm = FirmArray[FirmId];
-            if (firm.NationId != Nation.nation_recno)
-                return true;
-        }
-
-        if (TownId != 0)
-        {
-            if (TownArray.IsDeleted(TownId))
-                return true;
-
-            Town town = TownArray[TownId];
-            if (town.NationId != Nation.nation_recno)
-                return true;
-        }
+        if (TownId != 0 && TownIsDeletedOrChangedNation(TownId))
+            return true;
 
         return false;
     }

@@ -22,7 +22,7 @@ public class SailShipTask : AITask, IUnitTask
         if (_shouldCancel)
             return true;
 
-        if (UnitArray.IsDeleted(ShipId))
+        if (UnitIsDeletedOrChangedNation(ShipId))
             return true;
 
         return false;
