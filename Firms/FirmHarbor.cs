@@ -20,43 +20,6 @@ public class FirmHarbor : Firm
 	{
 	}
 
-	public override void Init(int nationId, int firmType, int locX, int locY, string buildCode = "", int builderId = 0)
-	{
-		if (World.GetLoc(locX + 1, locY + 2).CanBuildHarbor(1))
-		{
-			// check north harbour
-			base.Init(nationId, firmType, locX, locY, "N", builderId);
-			LandRegionId = World.GetLoc(locX + 1, locY + 2).RegionId;
-			SeaRegionId = World.GetLoc(locX + 1, locY).RegionId;
-		}
-		else if (World.GetLoc(locX + 1, locY).CanBuildHarbor(1))
-		{
-			// check south harbour
-			base.Init(nationId, firmType, locX, locY, "S", builderId);
-			LandRegionId = World.GetLoc(locX + 1, locY).RegionId;
-			SeaRegionId = World.GetLoc(locX + 1, locY + 2).RegionId;
-		}
-		else if (World.GetLoc(locX + 2, locY + 1).CanBuildHarbor(1))
-		{
-			// check west harbour
-			base.Init(nationId, firmType, locX, locY, "W", builderId);
-			LandRegionId = World.GetLoc(locX + 2, locY + 1).RegionId;
-			SeaRegionId = World.GetLoc(locX, locY + 1).RegionId;
-		}
-		else if (World.GetLoc(locX, locY + 1).CanBuildHarbor(1))
-		{
-			// check east harbour
-			base.Init(nationId, firmType, locX, locY, "E", builderId);
-			LandRegionId = World.GetLoc(locX, locY + 1).RegionId;
-			SeaRegionId = World.GetLoc(locX + 2, locY + 1).RegionId;
-		}
-
-		RegionId = LandRegionId;
-
-		// TODO remove?
-		RegionArray.UpdateRegionStat();
-	}
-
 	protected override void DeinitDerived()
 	{
 		for (int i = Ships.Count - 1; i >= 0; i--)
@@ -71,6 +34,64 @@ public class FirmHarbor : Firm
 				UnitArray.DeleteUnit(UnitArray[shipUnitId]);
 			}
 		}
+	}
+
+	protected override void SetFirmBuildId(int locX, int locY, string buildCode)
+	{
+		FirmInfo firmInfo = FirmRes[FirmType];
+		if (World.GetLoc(locX + 1, locY + 2).CanBuildHarbor(1))
+		{
+			// check north harbour
+			FirmBuildId = firmInfo.GetBuildId("N");
+		}
+		else if (World.GetLoc(locX + 1, locY).CanBuildHarbor(1))
+		{
+			// check south harbour
+			FirmBuildId = firmInfo.GetBuildId("S");
+		}
+		else if (World.GetLoc(locX + 2, locY + 1).CanBuildHarbor(1))
+		{
+			// check west harbour
+			FirmBuildId = firmInfo.GetBuildId("W");
+		}
+		else if (World.GetLoc(locX, locY + 1).CanBuildHarbor(1))
+		{
+			// check east harbour
+			FirmBuildId = firmInfo.GetBuildId("E");
+		}
+	}
+
+	protected override void SetRegionId(int locX, int locY)
+	{
+		if (World.GetLoc(locX + 1, locY + 2).CanBuildHarbor(1))
+		{
+			// check north harbour
+			LandRegionId = World.GetLoc(locX + 1, locY + 2).RegionId;
+			SeaRegionId = World.GetLoc(locX + 1, locY).RegionId;
+		}
+		else if (World.GetLoc(locX + 1, locY).CanBuildHarbor(1))
+		{
+			// check south harbour
+			LandRegionId = World.GetLoc(locX + 1, locY).RegionId;
+			SeaRegionId = World.GetLoc(locX + 1, locY + 2).RegionId;
+		}
+		else if (World.GetLoc(locX + 2, locY + 1).CanBuildHarbor(1))
+		{
+			// check west harbour
+			LandRegionId = World.GetLoc(locX + 2, locY + 1).RegionId;
+			SeaRegionId = World.GetLoc(locX, locY + 1).RegionId;
+		}
+		else if (World.GetLoc(locX, locY + 1).CanBuildHarbor(1))
+		{
+			// check east harbour
+			LandRegionId = World.GetLoc(locX, locY + 1).RegionId;
+			SeaRegionId = World.GetLoc(locX + 2, locY + 1).RegionId;
+		}
+
+		RegionId = LandRegionId;
+
+		// TODO remove?
+		RegionArray.UpdateRegionStat();
 	}
 
 	public override void NextDay()

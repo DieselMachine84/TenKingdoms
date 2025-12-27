@@ -27,7 +27,7 @@ public abstract class Firm : IIdObject
 
 
 	public int FirmType { get; private set; }
-	public int FirmBuildId { get; private set; }
+	public int FirmBuildId { get; protected set; }
 	public int FirmId { get; private set; }
 	public int NationId { get; private set; }
 	public int RaceId { get; private set; }
@@ -124,15 +124,11 @@ public abstract class Firm : IIdObject
 		FirmId = id;
 	}
 
-	public virtual void Init(int nationId, int firmType, int locX, int locY, string buildCode = "", int builderId = 0)
+	public void Init(int nationId, int firmType, int locX, int locY, string buildCode = "", int builderId = 0)
 	{
 		FirmType = firmType;
-		FirmInfo firmInfo = FirmRes[firmType];
 
-		if (!String.IsNullOrEmpty(buildCode))
-			FirmBuildId = firmInfo.GetBuildId(buildCode);
-		else
-			FirmBuildId = firmInfo.FirstBuildId;
+		SetFirmBuildId(locX, locY, buildCode);
 
 		NationId = nationId;
 		SetupDate = Info.game_date;
@@ -149,7 +145,7 @@ public abstract class Firm : IIdObject
 		LocCenterX = (LocX1 + LocX2) / 2;
 		LocCenterY = (LocY1 + LocY2) / 2;
 
-		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
+		SetRegionId(locX, locY);
 
 		if (firmBuild.AnimateFullSize)
 			CurFrame = 1;
@@ -158,6 +154,7 @@ public abstract class Firm : IIdObject
 
 		RemainFrameDelay = firmBuild.FrameDelay(CurFrame);
 
+		FirmInfo firmInfo = FirmRes[FirmType];
 		OverseerId = 0;
 		HitPoints = 0.0;
 		MaxHitPoints = firmInfo.MaxHitPoints;
@@ -255,6 +252,17 @@ public abstract class Firm : IIdObject
 
 	protected virtual void DeinitDerived()
 	{
+	}
+
+	protected virtual void SetFirmBuildId(int locX, int locY, string buildCode)
+	{
+		FirmInfo firmInfo = FirmRes[FirmType];
+		FirmBuildId = !String.IsNullOrEmpty(buildCode) ? firmInfo.GetBuildId(buildCode) : firmInfo.FirstBuildId;
+	}
+
+	protected virtual void SetRegionId(int locX, int locY)
+	{
+		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
 	}
 
 	private void SetWorldMatrix()
