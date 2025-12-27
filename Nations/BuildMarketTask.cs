@@ -225,7 +225,10 @@ public class BuildMarketTask : AITask, IUnitTask
 
                     foreach (Firm firm in FirmArray)
                     {
-                        if (firm.NationId != Nation.nation_recno || firm.FirmType != Firm.FIRM_FACTORY)
+                        if (firm.NationId != Nation.nation_recno)
+                            continue;
+
+                        if (firm.FirmType != Firm.FIRM_FACTORY && firm.FirmType != Firm.FIRM_HARBOR)
                             continue;
 
                         if (Misc.AreFirmsLinked(locX, locY, locX2, locY2,

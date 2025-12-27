@@ -1,104 +1,154 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public class RelocatePeasantsTask : AITask
-{
-    public int FirmId { get; }
+// Relocate peasants when firm does not have enough workers
 
-    public RelocatePeasantsTask(Nation nation, int firmId) : base(nation)
+public class RelocatePeasantsTask : AITask, IUnitTask
+{
+    private int _settlerId;
+    private bool _settlerSent;
+    public int TownId { get; }
+    public int UnitId => _settlerId;
+
+    public RelocatePeasantsTask(Nation nation, int townId) : base(nation)
     {
-        FirmId = firmId;
+        TownId = townId;
     }
 
     public override bool ShouldCancel()
     {
-        if (FirmArray.IsDeleted(FirmId))
+        if (TownArray.IsDeleted(TownId))
             return true;
         
-        Firm firm = FirmArray[FirmId];
-        if (firm.NationId != Nation.nation_recno)
+        Town town = TownArray[TownId];
+        if (town.NationId != Nation.nation_recno)
             return true;
         
-        bool hasJoblessPopulation = false;
-        foreach (int townId in firm.LinkedTowns)
-        {
-            Town town = TownArray[townId];
-            if (town.NationId == Nation.nation_recno && town.JoblessPopulation > 0)
-                hasJoblessPopulation = true;
-        }
-
-        if (hasJoblessPopulation)
-            return true;
-
         return false;
     }
 
     public override void Process()
     {
-        Firm firm = FirmArray[FirmId];
+        Town town = TownArray[TownId];
 
-        foreach (int townId in firm.LinkedTowns)
+        if (_settlerId != 0 && UnitArray.IsDeleted(_settlerId))
+            _settlerId = 0;
+        
+        if (_settlerId == 0)
+            _settlerId = FindSettler(town);
+
+        if (_settlerId == 0)
+            return;
+
+        Unit settler = UnitArray[_settlerId];
+        if (settler.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
         {
-            Town town = TownArray[townId];
-            if (town.NationId != Nation.nation_recno || town.JoblessPopulation > 0)
-                continue;
+            Nation.AddSailShipTask((UnitMarine)UnitArray[settler.UnitModeParam], town.LocCenterX, town.LocCenterY);
+            return;
+        }
 
-            Town bestTown = null;
-            int minDistance = Int16.MaxValue;
-            int bestRace = -1;
-
-            foreach (Town otherTown in TownArray)
+        if (!_settlerSent)
+        {
+            if (settler.RegionId() == town.RegionId)
             {
-                if (otherTown.NationId != Nation.nation_recno || otherTown.TownId == town.TownId)
-                    continue;
-
-                if (otherTown.JoblessPopulation == 0)
-                    continue;
-
-                if (otherTown.AverageLoyalty() < 40)
-                    continue;
-
-                //TODO other region
-                if (otherTown.RegionId != town.RegionId)
-                    continue;
-
-                //TODO should depend on kingdom preferences
-                if (otherTown.Population < 20)
-                    continue;
-
-                int distance = Misc.RectsDistance(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
-                    otherTown.LocX1, otherTown.LocY1, otherTown.LocX2, otherTown.LocY2);
-                if (distance < minDistance)
-                {
-                    int maxRacePop = 0;
-                    for (int i = 1; i <= GameConstants.MAX_RACE; i++)
-                    {
-                        if (!otherTown.CanRecruit(i))
-                            continue;
-                        
-                        if (town.RacesPopulation[i - 1] != 0 && town.RacesPopulation[i - 1] > maxRacePop &&
-                            otherTown.RacesJoblessPopulation[i - 1] != 0 && otherTown.RacesLoyalty[i - 1] > 40.0)
-                        {
-                            bestTown = otherTown;
-                            minDistance = distance;
-                            bestRace = i;
-                            maxRacePop = town.RacesPopulation[i - 1];
-                        }
-                    }
-                }
+                settler.Settle(town.LocX1, town.LocY1);
+                _settlerSent = true;
             }
-
-            if (bestTown != null)
+            else
             {
-                int unitId = bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI);
-                if (unitId != 0)
+                UnitMarine transport = Nation.FindTransportShip(Nation.GetSeaRegion(settler.RegionId(), town.RegionId));
+                if (transport != null)
                 {
-                    Unit unit = UnitArray[unitId];
-                    unit.Settle(town.LocX1, town.LocY1);
-                    return;
+                    List<int> units = new List<int> { _settlerId };
+                    UnitArray.AssignToShip(transport.NextLocX, transport.NextLocY, false, units, InternalConstants.COMMAND_AI, transport.SpriteId);
+                    _settlerSent = true;
+                }
+                else
+                {
+                    FirmHarbor harbor = Nation.FindHarbor(settler.RegionId(), town.RegionId);
+                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }
+        else
+        {
+            //TODO check that settler is on the way, not stuck and is able to settle
+            if (settler.IsAIAllStop())
+                _settlerSent = false;
+        }
+    }
+
+    private int FindSettler(Town town)
+    {
+        int settlerId = FindSettlerInRegion(town, town.RegionId);
+
+        if (settlerId == 0)
+        {
+            List<int> connectedLands = GetConnectedLands(town.RegionId);
+            foreach (int landRegionId in connectedLands)
+            {
+                if (landRegionId == town.RegionId)
+                    continue;
+
+                //TODO maybe there is no harbor but we can send ship for the settler
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, town.RegionId);
+                if (harbor != null)
+                {
+                    settlerId = FindSettlerInRegion(town, landRegionId);
+                    
+                    //TODO do not choose the first one, select from all available
+                    if (settlerId != 0)
+                        break;
+                }
+            }
+        }
+
+        return settlerId;
+    }
+
+    private int FindSettlerInRegion(Town town, int regionId)
+    {
+        Town bestTown = null;
+        int minDistance = Int16.MaxValue;
+        int bestRace = -1;
+
+        foreach (Town otherTown in TownArray)
+        {
+            if (otherTown.NationId != Nation.nation_recno || otherTown.TownId == town.TownId)
+                continue;
+
+            if (otherTown.RegionId != regionId || otherTown.JoblessPopulation == 0)
+                continue;
+
+            if (otherTown.AverageLoyalty() < 40)
+                continue;
+
+            if (otherTown.Population < 20)
+                continue;
+
+            int distance = Misc.TownsDistance(town, otherTown);
+            if (distance < minDistance)
+            {
+                int maxRacePop = 0;
+                for (int i = 1; i <= GameConstants.MAX_RACE; i++)
+                {
+                    if (!otherTown.CanRecruit(i))
+                        continue;
+
+                    if (town.RacesPopulation[i - 1] != 0 && town.RacesPopulation[i - 1] > maxRacePop &&
+                        otherTown.RacesJoblessPopulation[i - 1] != 0 && otherTown.RacesLoyalty[i - 1] > 40.0)
+                    {
+                        bestTown = otherTown;
+                        minDistance = distance;
+                        bestRace = i;
+                        maxRacePop = town.RacesPopulation[i - 1];
+                    }
+                }
+            }
+        }
+
+        return bestTown != null ? bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI) : 0;
     }
 }

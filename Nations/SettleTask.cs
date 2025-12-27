@@ -48,7 +48,8 @@ public class SettleTask : AITask, IUnitTask
         if (_settlerId != 0 && !UnitArray.IsDeleted(_settlerId))
         {
             Unit settler = UnitArray[_settlerId];
-            settler.Stop2();
+            if (settler.IsVisible())
+                settler.Stop2();
         }
     }
     
@@ -60,24 +61,47 @@ public class SettleTask : AITask, IUnitTask
             _settlerId = 0;
 
         if (_settlerId == 0)
-            FindSettler(firm);
+            _settlerId = FindSettler(firm);
 
         if (_settlerId == 0)
             return;
 
         Unit settler = UnitArray[_settlerId];
-        
+        if (settler.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
+        {
+            Nation.AddSailShipTask((UnitMarine)UnitArray[settler.UnitModeParam], firm.LocCenterX, firm.LocCenterY);
+            return;
+        }
+
         if (!_settlerSent)
         {
-            (int settleLocX, int settleLocY) = FindBestSettleLocation(firm);
-            if (settleLocX != -1 && settleLocY != -1)
+            if (settler.RegionId() == firm.RegionId)
             {
-                settler.Settle(settleLocX, settleLocY);
-                _settlerSent = true;
+                (int settleLocX, int settleLocY) = FindBestSettleLocation(firm);
+                if (settleLocX != -1 && settleLocY != -1)
+                {
+                    settler.Settle(settleLocX, settleLocY);
+                    _settlerSent = true;
+                }
+                else
+                {
+                    _noPlaceToSettle = true;
+                }
             }
             else
             {
-                _noPlaceToSettle = true;
+                UnitMarine transport = Nation.FindTransportShip(Nation.GetSeaRegion(settler.RegionId(), firm.RegionId));
+                if (transport != null)
+                {
+                    List<int> units = new List<int> { _settlerId };
+                    UnitArray.AssignToShip(transport.NextLocX, transport.NextLocY, false, units, InternalConstants.COMMAND_AI, transport.SpriteId);
+                    _settlerSent = true;
+                }
+                else
+                {
+                    FirmHarbor harbor = Nation.FindHarbor(settler.RegionId(), firm.RegionId);
+                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                }
             }
         }
         else
@@ -88,7 +112,35 @@ public class SettleTask : AITask, IUnitTask
         }
     }
 
-    private void FindSettler(Firm firm)
+    private int FindSettler(Firm firm)
+    {
+        int settlerId = FindSettlerInRegion(firm, firm.RegionId);
+
+        if (settlerId == 0)
+        {
+            List<int> connectedLands = GetConnectedLands(firm.RegionId);
+            foreach (int landRegionId in connectedLands)
+            {
+                if (landRegionId == firm.RegionId)
+                    continue;
+
+                //TODO maybe there is no harbor but we can send ship for the settler
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, firm.RegionId);
+                if (harbor != null)
+                {
+                    settlerId = FindSettlerInRegion(firm, landRegionId);
+                    
+                    //TODO do not choose the first one, select from all available
+                    if (settlerId != 0)
+                        break;
+                }
+            }
+        }
+
+        return settlerId;
+    }
+    
+    private int FindSettlerInRegion(Firm firm, int regionId)
     {
         int minTownDistance = Int16.MaxValue;
         Town bestTown = null;
@@ -99,8 +151,7 @@ public class SettleTask : AITask, IUnitTask
             if (town.NationId != Nation.nation_recno)
                 continue;
 
-            // TODO other region
-            if (town.RegionId != firm.RegionId)
+            if (town.RegionId != regionId)
                 continue;
 
             if (town.JoblessPopulation == 0)
@@ -125,10 +176,13 @@ public class SettleTask : AITask, IUnitTask
             }
         }
 
+        int settlerId = 0;
         if (bestTown != null)
         {
-            _settlerId = bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI);
+            settlerId = bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI);
         }
+
+        return settlerId;
     }
 
     private (int, int) FindBestSettleLocation(Firm firm)

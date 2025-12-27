@@ -241,6 +241,8 @@ public partial class Nation : NationBase
             yield return task;
         foreach (var task in _settleTasks)
             yield return task;
+        foreach (var task in _relocatePeasantsTasks)
+            yield return task;
         foreach (var task in _assignGeneralTasks)
             yield return task;
         foreach (var task in _idleUnitTasks)
@@ -677,15 +679,12 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
+            if (firm.NationId != nation_recno || firm.UnderConstruction)
                 continue;
 
             if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
                 continue;
             
-            if (firm.UnderConstruction)
-                continue;
-
             if (firm.OverseerId == 0)
             {
                 bool hasAssignGeneralTask = false;
@@ -733,8 +732,6 @@ public partial class Nation : NationBase
 
     private void ThinkRelocatePeasants()
     {
-        // Relocate peasants when firm don't have enough workers
-
         foreach (Firm firm in FirmArray)
         {
             if (firm.NationId != nation_recno)
@@ -746,16 +743,22 @@ public partial class Nation : NationBase
             if (firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY ||
                 firm.FirmType == Firm.FIRM_RESEARCH || firm.FirmType == Firm.FIRM_WAR_FACTORY)
             {
-                bool hasJoblessPopulation = false;
                 foreach (int townId in firm.LinkedTowns)
                 {
                     Town town = TownArray[townId];
-                    if (town.NationId == nation_recno && town.JoblessPopulation > 0)
-                        hasJoblessPopulation = true;
-                }
+                    if (town.NationId != nation_recno || town.JoblessPopulation > 0 || town.Population >= GameConstants.MAX_TOWN_POPULATION - 5)
+                        continue;
 
-                if (!hasJoblessPopulation)
-                    _relocatePeasantsTasks.Add(new RelocatePeasantsTask(this, firm.FirmId));
+                    int runningTasksCount = 0;
+                    foreach (RelocatePeasantsTask relocatePeasantsTask in _relocatePeasantsTasks)
+                    {
+                        if (relocatePeasantsTask.TownId == town.TownId)
+                            runningTasksCount++;
+                    }
+                    
+                    if (runningTasksCount < 4)
+                        _relocatePeasantsTasks.Add(new RelocatePeasantsTask(this, town.TownId));
+                }
             }
         }
     }
@@ -778,6 +781,17 @@ public partial class Nation : NationBase
     public void AddBuildShipTask(FirmHarbor harbor, int shipType)
     {
         if (harbor.BuildQueue.Count > 0 || harbor.BuildUnitId != 0)
+            return;
+
+        int shipCount = 0;
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.UnitType == shipType)
+                shipCount++;
+        }
+
+        //TODO do not build too many ships
+        if (shipCount >= 3)
             return;
         
         bool hasBuildShipTask = false;
@@ -811,7 +825,11 @@ public partial class Nation : NationBase
             if (unit.NationId != nation_recno)
                 continue;
 
+            //TODO better check that if ship is waiting for people that it means it is not idle
             if (!unit.IsVisible() || !unit.IsAIAllStop())
+                continue;
+
+            if (unit is UnitMarine ship && ship.UnitsOnBoard.Count > 0)
                 continue;
 
             if (IsUnitOnTask(unit.SpriteId))
@@ -1008,7 +1026,7 @@ public partial class Nation : NationBase
             if (unit.NationId != nation_recno || unit.UnitType != UnitConstants.UNIT_TRANSPORT)
                 continue;
 
-            if (unit.RegionId() == seaRegionId && !IsUnitOnTask(unit.SpriteId))
+            if (unit.RegionId() == seaRegionId && unit.IsAIAllStop() && !IsUnitOnTask(unit.SpriteId))
                 return (UnitMarine)unit;
         }
         

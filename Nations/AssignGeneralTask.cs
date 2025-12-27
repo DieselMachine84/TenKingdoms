@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
 
 namespace TenKingdoms;
+
+// Assign general when
+//  1. Camp or base has no general
+//  2. There is a better general - TODO
 
 public class AssignGeneralTask : AITask, IUnitTask
 {
@@ -48,15 +53,21 @@ public class AssignGeneralTask : AITask, IUnitTask
             _generalId = 0;
         
         if (_generalId == 0)
-            FindGeneral(firm.LocCenterX, firm.LocCenterY);
+            _generalId = FindGeneral(firm);
         
         if (_generalId == 0)
-            FindPeasant(firm.LocCenterX, firm.LocCenterY);
+            _generalId = FindPeasant(firm);
 
         if (_generalId == 0)
             return;
         
         Unit general = UnitArray[_generalId];
+        if (general.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
+        {
+            Nation.AddSailShipTask((UnitMarine)UnitArray[general.UnitModeParam], firm.LocCenterX, firm.LocCenterY);
+            return;
+        }
+        
         if (general.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
             return;
 
@@ -68,12 +79,29 @@ public class AssignGeneralTask : AITask, IUnitTask
         
         if (!_generalSent)
         {
-            if (general.Skill.SkillId == Skill.SKILL_LEADING && general.Rank == Unit.RANK_SOLDIER)
-                general.SetRank(Unit.RANK_GENERAL);
-            
-            //TODO general can be in the other region
-            general.Assign(firm.LocX1, firm.LocY1);
-            _generalSent = true;
+            if (general.RegionId() == firm.RegionId)
+            {
+                if (general.Skill.SkillId == Skill.SKILL_LEADING && general.Rank == Unit.RANK_SOLDIER)
+                    general.SetRank(Unit.RANK_GENERAL);
+
+                general.Assign(firm.LocX1, firm.LocY1);
+                _generalSent = true;
+            }
+            else
+            {
+                UnitMarine transport = Nation.FindTransportShip(Nation.GetSeaRegion(general.RegionId(), firm.RegionId));
+                if (transport != null)
+                {
+                    List<int> units = new List<int> { _generalId };
+                    UnitArray.AssignToShip(transport.NextLocX, transport.NextLocY, false, units, InternalConstants.COMMAND_AI, transport.SpriteId);
+                    _generalSent = true;
+                }
+                else
+                {
+                    FirmHarbor harbor = Nation.FindHarbor(general.RegionId(), firm.RegionId);
+                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                }
+            }
         }
         else
         {
@@ -83,34 +111,59 @@ public class AssignGeneralTask : AITask, IUnitTask
         }
     }
 
-    private void FindGeneral(int firmLocX, int firmLocY)
+    private int FindGeneral(Firm firm)
     {
-        Location targetLocation = World.GetLoc(firmLocX, firmLocY);
+        int generalId = FindGeneralInRegion(firm, firm.RegionId);
+        
+        if (generalId == 0)
+        {
+            List<int> connectedLands = GetConnectedLands(firm.RegionId);
+            foreach (int landRegionId in connectedLands)
+            {
+                if (landRegionId == firm.RegionId)
+                    continue;
 
+                //TODO maybe there is no harbor but we can send ship for the settler
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, firm.RegionId);
+                if (harbor != null)
+                {
+                    generalId = FindGeneralInRegion(firm, landRegionId);
+                    
+                    //TODO do not choose the first one, select from all available
+                    if (generalId != 0)
+                        break;
+                }
+            }
+        }
+
+        return generalId;
+    }
+    
+    private int FindGeneralInRegion(Firm firm, int regionId)
+    {
         Firm bestFirm = null;
         int bestWorkerId = 0;
-        int bestRating = 0;
-        foreach (Firm firm in FirmArray)
+        int bestRating = Int16.MinValue;
+        foreach (Firm otherFirm in FirmArray)
         {
-            if (firm.NationId != Nation.nation_recno)
+            if (otherFirm.NationId != Nation.nation_recno)
                 continue;
             
-            if (firm.FirmType != Firm.FIRM_CAMP)
+            if (otherFirm.FirmType != Firm.FIRM_CAMP)
                 continue;
 
-            //TODO other region
-            if (firm.RegionId != targetLocation.RegionId)
+            if (otherFirm.RegionId != regionId)
                 continue;
 
-            for (int i = 0; i < firm.Workers.Count; i++)
+            for (int i = 0; i < otherFirm.Workers.Count; i++)
             {
-                int rating = firm.Workers[i].SkillLevel * GameConstants.MapSize / 100;
-                rating += GameConstants.MapSize - Misc.points_distance(firm.LocCenterX, firm.LocCenterY, firmLocX, firmLocY);
+                int rating = otherFirm.Workers[i].SkillLevel * GameConstants.MapSize / 100;
+                rating += GameConstants.MapSize - Misc.FirmsDistance(firm, otherFirm);
                 //TODO take general race into account
 
                 if (rating > bestRating)
                 {
-                    bestFirm = firm;
+                    bestFirm = otherFirm;
                     bestWorkerId = i + 1;
                     bestRating = rating;
                 }
@@ -124,8 +177,7 @@ public class AssignGeneralTask : AITask, IUnitTask
             if (town.NationId != Nation.nation_recno)
                 continue;
 
-            //TODO other region
-            if (town.RegionId != targetLocation.RegionId)
+            if (town.RegionId != regionId)
                 continue;
 
             //TODO take race into account
@@ -134,7 +186,7 @@ public class AssignGeneralTask : AITask, IUnitTask
                 continue;
             
             int rating = GameConstants.TRAIN_SKILL_LEVEL * GameConstants.MapSize / 100;
-            rating += GameConstants.MapSize - Misc.points_distance(town.LocCenterX, town.LocCenterY, firmLocX, firmLocY);
+            rating += GameConstants.MapSize - Misc.FirmTownDistance(firm, town);
 
             if (rating > bestRating)
             {
@@ -147,31 +199,59 @@ public class AssignGeneralTask : AITask, IUnitTask
         
         //TODO look at inns
 
+        int generalId = 0;
         if (bestFirm != null)
         {
-            _generalId = bestFirm.MobilizeWorker(bestWorkerId, InternalConstants.COMMAND_AI);
+            generalId = bestFirm.MobilizeWorker(bestWorkerId, InternalConstants.COMMAND_AI);
         }
 
         if (bestTown != null)
         {
-            _generalId = bestTown.Recruit(Skill.SKILL_LEADING, bestRace, InternalConstants.COMMAND_AI);
+            generalId = bestTown.Recruit(Skill.SKILL_LEADING, bestRace, InternalConstants.COMMAND_AI);
         }
+
+        return generalId;
     }
 
-    private void FindPeasant(int firmLocX, int firmLocY)
+    private int FindPeasant(Firm firm)
     {
-        Location targetLocation = World.GetLoc(firmLocX, firmLocY);
+        int generalId = FindPeasantInRegion(firm, firm.RegionId);
+        
+        if (generalId == 0)
+        {
+            List<int> connectedLands = GetConnectedLands(firm.RegionId);
+            foreach (int landRegionId in connectedLands)
+            {
+                if (landRegionId == firm.RegionId)
+                    continue;
 
+                //TODO maybe there is no harbor but we can send ship for the settler
+                FirmHarbor harbor = Nation.FindHarbor(landRegionId, firm.RegionId);
+                if (harbor != null)
+                {
+                    generalId = FindPeasantInRegion(firm, landRegionId);
+                    
+                    //TODO do not choose the first one, select from all available
+                    if (generalId != 0)
+                        break;
+                }
+            }
+        }
+
+        return generalId;
+    }
+    
+    private int FindPeasantInRegion(Firm firm, int regionId)
+    {
         Town bestTown = null;
         int bestRace = 0;
-        int bestRating = 0;
+        int bestRating = Int16.MaxValue;
         foreach (Town town in TownArray)
         {
             if (town.NationId != Nation.nation_recno)
                 continue;
 
-            //TODO other region
-            if (town.RegionId != targetLocation.RegionId)
+            if (town.RegionId != regionId)
                 continue;
 
             //TODO take race into account
@@ -179,19 +259,16 @@ public class AssignGeneralTask : AITask, IUnitTask
             if (!town.CanRecruit(raceId))
                 continue;
             
-            int rating = GameConstants.MapSize - Misc.points_distance(town.LocCenterX, town.LocCenterY, firmLocX, firmLocY);
+            int rating = Misc.FirmTownDistance(firm, town);
 
-            if (rating > bestRating)
+            if (rating < bestRating)
             {
                 bestTown = town;
                 bestRace = raceId;
                 bestRating = rating;
             }
         }
-        
-        if (bestTown != null)
-        {
-            _generalId = bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI);
-        }
+
+        return bestTown != null ? bestTown.Recruit(-1, bestRace, InternalConstants.COMMAND_AI) : 0;
     }
 }

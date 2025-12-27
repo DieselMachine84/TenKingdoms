@@ -8,6 +8,7 @@ public abstract class AITask
     protected Nation Nation { get; }
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
+    protected UnitRes UnitRes => Sys.Instance.UnitRes;
     protected World World => Sys.Instance.World;
     
     protected FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -38,28 +39,7 @@ public abstract class AITask
         
         if (builderId == 0 && searchInOtherRegions)
         {
-            List<int> connectedSeas = new List<int>();
-            RegionStat regionStat = RegionArray.GetRegionStat(location.RegionId);
-            foreach (RegionPath regionPath in regionStat.ReachableRegions)
-            {
-                if (!connectedSeas.Contains(regionPath.SeaRegionId))
-                    connectedSeas.Add(regionPath.SeaRegionId);
-            }
-            
-            List<int> connectedLands = new List<int>();
-            foreach (RegionInfo regionInfo in RegionArray.RegionInfos)
-            {
-                if (regionInfo.RegionType != RegionType.LAND || regionInfo.RegionId == location.RegionId)
-                    continue;
-                
-                RegionStat landRegionStat = RegionArray.GetRegionStat(regionInfo.RegionId);
-                foreach (RegionPath landRegionPath in landRegionStat.ReachableRegions)
-                {
-                    if (connectedSeas.Contains(landRegionPath.SeaRegionId) && !connectedLands.Contains(landRegionStat.RegionId))
-                        connectedLands.Add(landRegionStat.RegionId);
-                }
-            }
-            
+            List<int> connectedLands = GetConnectedLands(location.RegionId);
             foreach (int landRegionId in connectedLands)
             {
                 if (landRegionId == location.RegionId)
@@ -83,6 +63,7 @@ public abstract class AITask
     private int FindBuilderInRegion(int regionId, int targetLocX, int targetLocY)
     {
         //TODO check idle construction workers
+        //TODO check if kingdom has enough construction workers and should not create more
         
         int builderId = 0;
         
@@ -153,8 +134,7 @@ public abstract class AITask
         if (bestFirm != null)
         {
             builderId = bestFirm.BuilderId;
-            if (!bestFirm.MobilizeBuilder(builderId))
-                builderId = 0;
+            bestFirm.SetBuilder(0);
         }
 
         if (bestTown != null)
@@ -232,5 +212,32 @@ public abstract class AITask
         }
 
         return blockedLocations;
+    }
+
+    protected List<int> GetConnectedLands(int regionId)
+    {
+        List<int> connectedSeas = new List<int>();
+        RegionStat regionStat = RegionArray.GetRegionStat(regionId);
+        foreach (RegionPath regionPath in regionStat.ReachableRegions)
+        {
+            if (!connectedSeas.Contains(regionPath.SeaRegionId))
+                connectedSeas.Add(regionPath.SeaRegionId);
+        }
+            
+        List<int> connectedLands = new List<int>();
+        foreach (RegionInfo regionInfo in RegionArray.RegionInfos)
+        {
+            if (regionInfo.RegionType != RegionType.LAND || regionInfo.RegionId == regionId)
+                continue;
+                
+            RegionStat landRegionStat = RegionArray.GetRegionStat(regionInfo.RegionId);
+            foreach (RegionPath landRegionPath in landRegionStat.ReachableRegions)
+            {
+                if (connectedSeas.Contains(landRegionPath.SeaRegionId) && !connectedLands.Contains(landRegionStat.RegionId))
+                    connectedLands.Add(landRegionStat.RegionId);
+            }
+        }
+
+        return connectedLands;
     }
 }

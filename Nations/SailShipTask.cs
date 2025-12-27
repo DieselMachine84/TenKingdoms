@@ -1,5 +1,7 @@
 namespace TenKingdoms;
 
+//TODO join several SailShipTasks into one
+
 public class SailShipTask : AITask, IUnitTask
 {
     private bool _shouldCancel;
@@ -47,7 +49,21 @@ public class SailShipTask : AITask, IUnitTask
         {
             if (ship.IsAIAllStop())
             {
-                ship.ShipToBeach(TargetLocX, TargetLocY, out _, out _);
+                if (ship.InBeach)
+                {
+                    //TODO workaround for a bug when ship cannot move to the coast
+                    int locX = Misc.Random(GameConstants.MapSize);
+                    if (locX % 2 != 0)
+                        locX--;
+                    int locY = Misc.Random(GameConstants.MapSize);
+                    if (locY % 2 != 0)
+                        locY--;
+                    ship.MoveTo(locX, locY);
+                }
+                else
+                {
+                    ship.ShipToBeach(TargetLocX, TargetLocY, out _, out _);
+                }
             }
         }
     }
