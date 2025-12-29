@@ -17,8 +17,7 @@ public partial class Nation : NationBase
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
-    private readonly List<StartCaravanTask> _startCaravanTasks = new List<StartCaravanTask>();
-    private readonly List<WatchCaravanTask> _watchCaravanTasks = new List<WatchCaravanTask>();
+    private readonly List<ManageCaravansTask> _manageCaravanTasks = new List<ManageCaravansTask>();
     private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
     private readonly List<RecruitSoldiersTask> _recruitSoldiersTask = new List<RecruitSoldiersTask>();
     private readonly List<BuildShipTask> _buildShipTasks = new List<BuildShipTask>();
@@ -27,7 +26,7 @@ public partial class Nation : NationBase
 
     public Nation()
     {
-        _watchCaravanTasks.Add(new WatchCaravanTask(this));
+        _manageCaravanTasks.Add(new ManageCaravansTask(this));
         _collectTaxTasks.Add(new CollectTaxTask(this));
         _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
     }
@@ -100,7 +99,7 @@ public partial class Nation : NationBase
         
         if ((Info.TotalDays + nation_recno) % 10 == 6)
         {
-            ThinkStartCaravan();
+            //
         }
     }
 
@@ -196,13 +195,9 @@ public partial class Nation : NationBase
         
         if ((Info.TotalDays + nation_recno) % 10 == 8)
         {
-            for (int i = _startCaravanTasks.Count - 1; i >= 0; i--)
+            for (int i = _manageCaravanTasks.Count - 1; i >= 0; i--)
             {
-                ProcessTask(_startCaravanTasks[i], _startCaravanTasks, i);
-            }
-            for (int i = _watchCaravanTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_watchCaravanTasks[i], _watchCaravanTasks, i);
+                ProcessTask(_manageCaravanTasks[i], _manageCaravanTasks, i);
             }
             for (int i = _collectTaxTasks.Count - 1; i >= 0; i--)
             {
@@ -868,119 +863,6 @@ public partial class Nation : NationBase
                 continue;
             
             _idleUnitTasks.Add(new IdleUnitTask(this, unit.SpriteId));
-        }
-    }
-
-    private void ThinkStartCaravan()
-    {
-        foreach (Firm firm in FirmArray)
-        {
-            if (firm is FirmMine mine)
-            {
-                if (mine.NationId != nation_recno)
-                    continue;
-                
-                if (mine.UnderConstruction || mine.ReserveQty <= 0.0 || mine.StockQty < mine.MaxStockQty * 3.0 / 4.0)
-                    continue;
-                
-                bool hasLinkedFactory = false;
-                for (int i = 0; i < mine.LinkedFirms.Count; i++)
-                {
-                    Firm linkedFirm = FirmArray[mine.LinkedFirms[i]];
-                    if (linkedFirm.NationId != mine.NationId)
-                        continue;
-                    
-                    if (mine.LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
-                        continue;
-
-                    if (linkedFirm is FirmFactory linkedFactory)
-                    {
-                        if (linkedFactory.UnderConstruction || linkedFactory.ProductId == mine.RawId)
-                            hasLinkedFactory = true;
-                    }
-                }
-
-                if (!hasLinkedFactory)
-                {
-                    bool hasStartCaravanTask = false;
-                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
-                    {
-                        if (startCaravanTask.MineId == mine.FirmId)
-                            hasStartCaravanTask = true;
-                    }
-
-                    if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, mine.FirmId, 0, 0));
-                }
-            }
-
-            if (firm is FirmFactory factory)
-            {
-                if (factory.NationId != nation_recno)
-                    continue;
-                
-                if (factory.UnderConstruction || factory.StockQty <= 0.0 || factory.StockQty < factory.MaxStockQty * 3.0 / 4.0)
-                    continue;
-                
-                bool hasLinkedMarket = false;
-                for (int i = 0; i < factory.LinkedFirms.Count; i++)
-                {
-                    Firm linkedFirm = FirmArray[factory.LinkedFirms[i]];
-                    if (linkedFirm.NationId != factory.NationId)
-                        continue;
-                    
-                    if (factory.LinkedFirmsEnable[i] != InternalConstants.LINK_EE)
-                        continue;
-
-                    if (linkedFirm is FirmMarket linkedMarket)
-                    {
-                        if (linkedMarket.UnderConstruction || linkedMarket.IsRetailMarket())
-                            hasLinkedMarket = true;
-                    }
-                }
-                
-                if (!hasLinkedMarket)
-                {
-                    bool hasStartCaravanTask = false;
-                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
-                    {
-                        if (startCaravanTask.FactoryId == factory.FirmId)
-                            hasStartCaravanTask = true;
-                    }
-
-                    if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, factory.FirmId, 0));
-                }
-            }
-
-            if (firm is FirmMarket market)
-            {
-                if (market.NationId == nation_recno)
-                    continue;
-
-                if (!get_relation(market.NationId).trade_treaty)
-                    continue;
-
-                bool hasGoodsToImport = false;
-                foreach (MarketGoods marketGoods in market.MarketGoods)
-                {
-                    if (marketGoods.ProductId != 0 && marketGoods.StockQty > market.MaxStockQty / 2.0)
-                        hasGoodsToImport = true;
-                }
-
-                if (hasGoodsToImport)
-                {
-                    bool hasStartCaravanTask = false;
-                    foreach (StartCaravanTask startCaravanTask in _startCaravanTasks)
-                    {
-                        if (startCaravanTask.MarketId == market.FirmId)
-                            hasStartCaravanTask = true;
-                    }
-
-                    if (!hasStartCaravanTask)
-                        _startCaravanTasks.Add(new StartCaravanTask(this, 0, 0, market.FirmId));
-                }
-            }
         }
     }
     
