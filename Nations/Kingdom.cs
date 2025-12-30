@@ -18,6 +18,7 @@ public partial class Nation : NationBase
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
     private readonly List<ManageCaravansTask> _manageCaravanTasks = new List<ManageCaravansTask>();
+    private readonly List<ManageTradeShipsTask> _manageTradeShipsTask = new List<ManageTradeShipsTask>();
     private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
     private readonly List<RecruitSoldiersTask> _recruitSoldiersTask = new List<RecruitSoldiersTask>();
     private readonly List<BuildShipTask> _buildShipTasks = new List<BuildShipTask>();
@@ -27,6 +28,7 @@ public partial class Nation : NationBase
     public Nation()
     {
         _manageCaravanTasks.Add(new ManageCaravansTask(this));
+        _manageTradeShipsTask.Add(new ManageTradeShipsTask(this));
         _collectTaxTasks.Add(new CollectTaxTask(this));
         _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
     }
@@ -190,6 +192,10 @@ public partial class Nation : NationBase
             for (int i = _changeMarketRestockTask.Count - 1; i >= 0; i--)
             {
                 ProcessTask(_changeMarketRestockTask[i], _changeMarketRestockTask, i);
+            }
+            for (int i = _manageTradeShipsTask.Count - 1; i >= 0; i--)
+            {
+                ProcessTask(_manageTradeShipsTask[i], _manageTradeShipsTask, i);
             }
         }
         
@@ -813,7 +819,7 @@ public partial class Nation : NationBase
         int shipCount = 0;
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitType == shipType)
+            if (unit.NationId == nation_recno && unit.UnitType == shipType)
                 shipCount++;
         }
 

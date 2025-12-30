@@ -32,6 +32,7 @@ public class ManageCaravansTask : AITask
         return false;
     }
 
+    //TODO take trade treaty into account
     public override void Process()
     {
         _kingdomCaravans.Clear();
@@ -371,7 +372,7 @@ public class ManageCaravansTask : AITask
         }
     }
 
-    private void SetCaravanStop(UnitCaravan caravan, Firm firm, int stopId, int pickUpType, bool ourMarketsCaravan)
+    private void SetCaravanStop(UnitCaravan caravan, Firm firm, int stopId, int pickUpType, bool autoPickUp)
     {
         caravan.SetStop(stopId, firm.LocX1, firm.LocY1, InternalConstants.COMMAND_AI);
         caravan.SetStopPickUp(stopId, TradeStop.NO_PICK_UP, InternalConstants.COMMAND_AI);
@@ -387,7 +388,7 @@ public class ManageCaravansTask : AITask
                     caravan.SetStopPickUp(stopId, i, InternalConstants.COMMAND_AI);
             }
 
-            if (ourMarketsCaravan)
+            if (autoPickUp)
                 caravan.SetStopPickUp(stopId, TradeStop.AUTO_PICK_UP, InternalConstants.COMMAND_AI);
         }
     }
