@@ -2424,7 +2424,7 @@ public abstract class Firm : IIdObject
 			if (unit.Skill.SkillId != Skill.SKILL_CONSTRUCTION)
 				continue;
 
-			if (unit.IsVisible() && unit.RegionId() != RegionId)
+			if (unit.RegionId() != RegionId)
 				continue;
 
 			if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
