@@ -187,7 +187,57 @@ public partial class Renderer
             PutText(FontSan, productQty[i - 1].ToString(), DetailsX1 - 20 + i * 120, DetailsY1 + 439);
         }
     }
-    
+
+    private void DrawUnitIcon(int drawX, int drawY, UnitInfo unitInfo, int rank, int skillId, int skillLevel, int hitPoints, int maxHitPoints, int spyId)
+    {
+        Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, rank), drawX, drawY,
+            unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
+        if (skillLevel != 0)
+            PutText(FontSan, skillLevel.ToString(), drawX + 52, drawY + 6);
+
+        int hitBarX1 = drawX;
+        int hitBarY = drawY + 41;
+        int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * hitPoints / maxHitPoints;
+        const int HIT_BAR_LIGHT_BORDER = 0;
+        const int HIT_BAR_DARK_BORDER = 3;
+        const int HIT_BAR_BODY = 1;
+        int hitBarColor = 0xA8;
+        if (maxHitPoints >= 51 && maxHitPoints <= 100)
+            hitBarColor = 0xB4;
+        if (maxHitPoints >= 101)
+            hitBarColor = 0xAC;
+        Graphics.DrawLine(hitBarX1, hitBarY, hitBarX2, hitBarY, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
+        Graphics.DrawLine(hitBarX1, hitBarY + 1, hitBarX2, hitBarY + 1, hitBarColor + HIT_BAR_LIGHT_BORDER); //top
+        Graphics.DrawLine(hitBarX1 + 2, hitBarY + 4, hitBarX2, hitBarY + 4, hitBarColor + HIT_BAR_DARK_BORDER); //bottom
+        Graphics.DrawLine(hitBarX1 + 2, hitBarY + 5, hitBarX2, hitBarY + 5, hitBarColor + HIT_BAR_DARK_BORDER); //bottom
+        Graphics.DrawLine(hitBarX1, hitBarY, hitBarX1, hitBarY + 5, hitBarColor + HIT_BAR_LIGHT_BORDER); //left
+        Graphics.DrawLine(hitBarX1 + 1, hitBarY, hitBarX1 + 1, hitBarY + 5, hitBarColor + HIT_BAR_LIGHT_BORDER); //left
+        Graphics.DrawLine(hitBarX2 - 1, hitBarY + 2, hitBarX2 - 1, hitBarY + 3, hitBarColor + HIT_BAR_DARK_BORDER); //right
+        Graphics.DrawLine(hitBarX2, hitBarY + 2, hitBarX2, hitBarY + 3, hitBarColor + HIT_BAR_DARK_BORDER); //right
+        Graphics.DrawLine(hitBarX1 + 2, hitBarY + 2, hitBarX2 - 2, hitBarY + 2, hitBarColor + HIT_BAR_BODY); //body
+        Graphics.DrawLine(hitBarX1 + 2, hitBarY + 3, hitBarX2 - 2, hitBarY + 3, hitBarColor + HIT_BAR_BODY); //body
+
+        bool drawSkillIcon = false;
+        if (skillLevel == 0)
+        {
+            IntPtr skillTexture = GetSkillTexture(rank, skillId);
+            if (skillTexture != IntPtr.Zero)
+            {
+                drawSkillIcon = true;
+                Graphics.DrawBitmapScaled(skillTexture, drawX + 52, drawY + 6, _skillWidth, _skillHeight);
+            }
+        }
+
+        if (spyId != 0 && (SpyArray[spyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
+        {
+            int spyIconX = skillLevel != 0 ? drawX + 78 : drawX + 52;
+            int spyIconY = skillLevel != 0 ? drawY + 12 : drawY + 6;
+            if (drawSkillIcon)
+                spyIconY += Scale(_skillHeight);
+            DrawSpyIcon(spyIconX, spyIconY, SpyArray[spyId].TrueNationId);
+        }
+    }
+
     private void HandleUnitDetailsInput(Unit unit)
     {
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&

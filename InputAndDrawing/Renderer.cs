@@ -256,7 +256,7 @@ public partial class Renderer : IRenderer
 
     private void ResetSelection()
     {
-        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = 0;
+        _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedShipId = 0;
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
         FirmDetailsMode = FirmDetailsMode.Normal;

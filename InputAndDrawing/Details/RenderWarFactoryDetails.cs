@@ -14,10 +14,10 @@ public partial class Renderer
     private const int MouseOnBuildWeaponButtonX2 = DetailsX1 + 320;
     private const int MouseOnBuildWeaponButtonY1 = DetailsY1 + 2;
     private const int MouseOnBuildWeaponButtonY2 = DetailsY1 + 66;
-    private const int MouseOnBuildNumberButtonX1 = BuildWeaponButtonNumberX + 4;
-    private const int MouseOnBuildNumberButtonX2 = BuildWeaponButtonNumberX + 40;
-    private const int MouseOnBuildNumberButtonY1 = BuildWeaponButtonNumberY + 4;
-    private const int MouseOnBuildNumberButtonY2 = BuildWeaponButtonNumberY + 42;
+    private const int MouseOnBuildWeaponNumberButtonX1 = BuildWeaponButtonNumberX + 4;
+    private const int MouseOnBuildWeaponNumberButtonX2 = BuildWeaponButtonNumberX + 40;
+    private const int MouseOnBuildWeaponNumberButtonY1 = BuildWeaponButtonNumberY + 4;
+    private const int MouseOnBuildWeaponNumberButtonY2 = BuildWeaponButtonNumberY + 42;
     private const int MaxBuildWeaponItems = 6;
 
     public void DrawWarFactoryDetails(FirmWar warFactory)
@@ -30,9 +30,9 @@ public partial class Renderer
         
         DrawResearchWarFactoryPanel(DetailsX1 + 2, DetailsY1 + 96);
         
-        if (warFactory.BuildUnitId != 0)
+        if (warFactory.BuildUnitType != 0)
         {
-            UnitInfo unitInfo = UnitRes[warFactory.BuildUnitId];
+            UnitInfo unitInfo = UnitRes[warFactory.BuildUnitType];
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), DetailsX1 + 6, DetailsY1 + 100,
                 unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
 
@@ -96,33 +96,34 @@ public partial class Renderer
     private void DrawWarFactoryMenu(FirmWar warFactory)
     {
         Dictionary<int, int> buildUnitCounts = new Dictionary<int, int>();
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
-            UnitInfo unitInfo = UnitRes[unitId];
+            UnitInfo unitInfo = UnitRes[unitType];
             if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-                buildUnitCounts.Add(unitId, 0);
+                buildUnitCounts.Add(unitType, 0);
         }
 
-        foreach (int buildUnitId in warFactory.BuildQueue)
+        foreach (int buildUnitType in warFactory.BuildQueue)
         {
-            buildUnitCounts[buildUnitId]++;
+            buildUnitCounts[buildUnitType]++;
         }
 
-        if (warFactory.BuildUnitId != 0)
+        if (warFactory.BuildUnitType != 0)
         {
-            buildUnitCounts[warFactory.BuildUnitId]++;
+            buildUnitCounts[warFactory.BuildUnitType]++;
         }
 
         int shownItems = 0;
         int dy = 0;
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE + 1; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
         {
-            bool showCancelButton = (shownItems == MaxBuildWeaponItems || unitId > UnitConstants.MAX_UNIT_TYPE);
+            bool showCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
-            UnitInfo unitInfo = !showCancelButton ? UnitRes[unitId] : null;
+            UnitInfo unitInfo = !showCancelButton ? UnitRes[unitType] : null;
             if (!showCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
                 continue;
 
+            //TODO Done button is not pressed when you press it close to the right edge
             bool mouseOnButton = _mouseButtonX >= MouseOnBuildWeaponButtonX1 && _mouseButtonX <= MouseOnBuildWeaponButtonX2 &&
                                  _mouseButtonY >= MouseOnBuildWeaponButtonY1 + dy && _mouseButtonY <= MouseOnBuildWeaponButtonY2 + dy;
             if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
@@ -141,13 +142,13 @@ public partial class Renderer
                     description += " " + Misc.roman_number(techLevel);
                 PutText(FontBible, description, BuildWeaponPanelX + 96, BuildWeaponPanelY + dy + 10);
 
-                mouseOnButton = _mouseButtonX >= MouseOnBuildNumberButtonX1 && _mouseButtonX <= MouseOnBuildNumberButtonX2 &&
-                                _mouseButtonY >= MouseOnBuildNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildNumberButtonY2 + dy;
+                mouseOnButton = _mouseButtonX >= MouseOnBuildWeaponNumberButtonX1 && _mouseButtonX <= MouseOnBuildWeaponNumberButtonX2 &&
+                                _mouseButtonY >= MouseOnBuildWeaponNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildWeaponNumberButtonY2 + dy;
                 if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
                     DrawNumberPanelDown(BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy);
                 else
                     DrawNumberPanelUp(BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy);
-                PutTextCenter(FontBible, buildUnitCounts[unitId].ToString(),
+                PutTextCenter(FontBible, buildUnitCounts[unitType].ToString(),
                     BuildWeaponButtonNumberX, BuildWeaponButtonNumberY + dy, BuildWeaponButtonNumberX + 45, BuildWeaponButtonNumberY + 40 + dy);
                 
                 shownItems++;
@@ -193,18 +194,18 @@ public partial class Renderer
     {
         int shownItems = 0;
         int dy = 0;
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE + 1; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
         {
-            bool onCancelButton = (shownItems == MaxBuildWeaponItems || unitId > UnitConstants.MAX_UNIT_TYPE);
+            bool onCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
-            UnitInfo unitInfo = !onCancelButton ? UnitRes[unitId] : null;
+            UnitInfo unitInfo = !onCancelButton ? UnitRes[unitType] : null;
             if (!onCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
                 continue;
 
             bool mouseOnBuildButton = _mouseButtonX >= MouseOnBuildWeaponButtonX1 && _mouseButtonX <= MouseOnBuildWeaponButtonX2 &&
                                       _mouseButtonY >= MouseOnBuildWeaponButtonY1 + dy && _mouseButtonY <= MouseOnBuildWeaponButtonY2 + dy;
-            bool mouseOnBuildNumberButton = _mouseButtonX >= MouseOnBuildNumberButtonX1 && _mouseButtonX <= MouseOnBuildNumberButtonX2 &&
-                                            _mouseButtonY >= MouseOnBuildNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildNumberButtonY2 + dy;
+            bool mouseOnBuildNumberButton = _mouseButtonX >= MouseOnBuildWeaponNumberButtonX1 && _mouseButtonX <= MouseOnBuildWeaponNumberButtonX2 &&
+                                            _mouseButtonY >= MouseOnBuildWeaponNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildWeaponNumberButtonY2 + dy;
             
             if ((mouseOnBuildButton || mouseOnBuildNumberButton) && (_leftMouseReleased || _rightMouseReleased))
             {
@@ -222,7 +223,7 @@ public partial class Renderer
                         }*/
                         //else
                         //{
-                            warFactory.AddQueue(unitId);
+                            warFactory.AddQueue(unitType);
                         //}
                         SECtrl.immediate_sound("TURN_ON");
                     }
@@ -239,7 +240,7 @@ public partial class Renderer
                         }*/
                         //else
                         //{
-                            warFactory.RemoveQueue(unitId);
+                            warFactory.RemoveQueue(unitType);
                         //}
                         SECtrl.immediate_sound("TURN_OFF");
                     }

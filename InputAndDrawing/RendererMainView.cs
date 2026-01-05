@@ -444,7 +444,7 @@ public partial class Renderer
                             if (town.NationId == 0 && town.RebelId == 0)
                                 break;
 
-                            //TODO fix one flag slot with base_x == 57
+                            //TODO fix one flag slot with base_x == 57 (town.LayoutId == 57)
                             int flagIndex = (int)(((Sys.Instance.FrameNumber + town.TownId) % 8) / 2);
                             int townFlagX = townX + Scale(townSlot.BaseX) + Scale(TownFlagShiftX);
                             int townFlagY = townY + Scale(townSlot.BaseY) + Scale(TownFlagShiftY);
@@ -705,26 +705,9 @@ public partial class Renderer
         //Draw skill icons
         if (unit is UnitHuman)
         {
-            IntPtr skillTexture = unit.Rank switch
-            {
-                Unit.RANK_SOLDIER => unit.Skill.SkillId switch
-                {
-                    Skill.SKILL_CONSTRUCTION => _constructionTexture,
-                    Skill.SKILL_LEADING => _leadershipTexture,
-                    Skill.SKILL_MINING => _miningTexture,
-                    Skill.SKILL_MFT => _manufactureTexture,
-                    Skill.SKILL_RESEARCH => _researchTexture,
-                    Skill.SKILL_SPYING => _spyingTexture,
-                    Skill.SKILL_PRAYING => _prayingTexture,
-                    _ => IntPtr.Zero
-                },
-                Unit.RANK_GENERAL => _generalTexture,
-                Unit.RANK_KING => _kingTexture,
-                _ => IntPtr.Zero
-            };
-
             int skillIconX = unitX - Scale(spriteFrame.OffsetX) + 32;
             int skillIconY = unitY - Scale(spriteFrame.OffsetY) - 37;
+            IntPtr skillTexture = GetSkillTexture(unit.Rank, unit.Skill.SkillId);
             if (skillTexture != IntPtr.Zero)
             {
                 Graphics.DrawBitmapScaled(skillTexture, skillIconX, skillIconY, _skillWidth, _skillHeight);

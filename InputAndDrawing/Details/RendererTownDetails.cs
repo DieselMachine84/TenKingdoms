@@ -71,7 +71,7 @@ public partial class Renderer
         }
         else
         {
-            DrawListBoxPanel(DetailsX1 + 2, DetailsY1 + 96);
+            DrawListBox4Panel(DetailsX1 + 2, DetailsY1 + 96);
         }
 
         if (_selectedRaceId != 0 && town.RacesPopulation[_selectedRaceId - 1] == 0)

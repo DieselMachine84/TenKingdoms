@@ -5,7 +5,8 @@ namespace TenKingdoms;
 public partial class Renderer
 {
     //TODO support batch build with shift
-    
+
+    private const int ShipHeight = 56;
     private const int BuildShipPanelX = DetailsX1 + 2;
     private const int BuildShipPanelY = DetailsY1 + 2;
     private const int BuildShipButtonNumberX = DetailsX1 + 351;
@@ -27,34 +28,59 @@ public partial class Renderer
             DrawBuildShipMenu(harbor);
             return;
         }
-        
-        bool needScroll = harbor.Ships.Count > 3;
-        if (needScroll)
-        {
-            DrawListBoxPanelWithScroll(DetailsX1 + 2, DetailsY1 + 96);
-            DrawListBoxScrollPanel(DetailsX1 + 377, DetailsY1 + 96);
-        }
-        else
-        {
-            DrawListBoxPanel(DetailsX1 + 2, DetailsY1 + 96);
-        }
+
+        //TODO scroll
+        DrawListBox3Panel(DetailsX1 + 2, DetailsY1 + 96);
 
         if (_selectedShipId != 0 && !harbor.Ships.Contains(_selectedShipId))
-        {
             _selectedShipId = 0;
-        }
-        
-        int shipY = DetailsY1 + 109;
-        for (int i = 0; i < harbor.Ships.Count; i++)
-        {
-            if (_selectedShipId == 0)
-                _selectedShipId = i + 1;
 
+        if (harbor.Ships.Count > 0 && _selectedShipId == 0)
+            _selectedShipId = harbor.Ships[0];
+        
+        int shipY = DetailsY1 + 110;
+        for (int i = 0; i < harbor.Ships.Count && i < 3; i++)
+        {
             Unit ship = UnitArray[harbor.Ships[i]];
             UnitInfo unitInfo = UnitRes[ship.UnitType];
             Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, ship.Rank), DetailsX1 + 14, shipY, unitInfo.soldierIconWidth, unitInfo.soldierIconHeight);
-            PutText(FontSan, unitInfo.name, DetailsX1 + 70, shipY);
-            PutText(FontSan, (int)ship.HitPoints + "/" + ship.MaxHitPoints, DetailsX1 + 280, shipY);
+            PutText(FontSan, unitInfo.name, DetailsX1 + 70, shipY + 5);
+            PutText(FontSan, (int)ship.HitPoints + "/" + ship.MaxHitPoints, DetailsX1 + 280, shipY + 5);
+            
+            if (harbor.Ships[i] == _selectedShipId)
+                DrawSelectedBorder(DetailsX1 + 8, shipY - 7, DetailsX1 + 405, shipY + 47);
+
+            shipY += ShipHeight;
+        }
+
+        if (_selectedShipId != 0)
+        {
+            DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 274);
+            UnitMarine selectedShip = (UnitMarine)UnitArray[_selectedShipId];
+            bool unitsAndGoodsShip = selectedShip.UnitType == UnitConstants.UNIT_CARAVEL || selectedShip.UnitType == UnitConstants.UNIT_GALLEON;
+            if (selectedShip.UnitType == UnitConstants.UNIT_TRANSPORT || (unitsAndGoodsShip && FirmDetailsMode == FirmDetailsMode.Normal))
+                DrawUnitsOnBoard(selectedShip);
+            if (selectedShip.UnitType == UnitConstants.UNIT_VESSEL || (unitsAndGoodsShip && FirmDetailsMode == FirmDetailsMode.ShipGoods))
+                DrawShipGoods(selectedShip);
+
+            if ((harbor.OwnFirm() || Config.show_ai_info) && unitsAndGoodsShip)
+            {
+                bool mouseOnUnitsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
+                                          _mouseButtonY >= DetailsY1 + 388 && _mouseButtonY <= DetailsY1 + 409;
+                if ((_leftMousePressed && mouseOnUnitsButton) || FirmDetailsMode == FirmDetailsMode.Normal)
+                    DrawClearPanelDown(DetailsX1 + 335, DetailsY1 + 385);
+                else
+                    DrawClearPanelUp(DetailsX1 + 335, DetailsY1 + 385);
+                PutText(FontSan, "Units", DetailsX1 + 344, DetailsY1 + 388, -1, true);
+                
+                bool mouseOnGoodsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
+                                          _mouseButtonY >= DetailsY1 + 418 && _mouseButtonY <= DetailsY1 + 439;
+                if ((_leftMousePressed && mouseOnGoodsButton) || FirmDetailsMode == FirmDetailsMode.ShipGoods)
+                    DrawClearPanelDown(DetailsX1 + 335, DetailsY1 + 415);
+                else
+                    DrawClearPanelUp(DetailsX1 + 335, DetailsY1 + 415);
+                PutText(FontSan, "Goods", DetailsX1 + 344, DetailsY1 + 418, -1, true);
+            }
         }
 
         if (harbor.OwnFirm())
@@ -85,36 +111,96 @@ public partial class Renderer
         }
     }
 
+    private void DrawUnitsOnBoard(UnitMarine selectedShip)
+    {
+        Unit leader = null;
+        for (int i = 0; i < selectedShip.UnitsOnBoard.Count; i++)
+        {
+            Unit unit = UnitArray[selectedShip.UnitsOnBoard[i]];
+            if (leader == null || unit.Rank > leader.Rank)
+                leader = unit;
+        }
+
+        if (leader != null)
+        {
+            int unitX = DetailsX1 + 12;
+            int unitY = DetailsY1 + 281;
+            DrawUnitIcon(unitX, unitY, UnitRes[leader.UnitType], leader.Rank, leader.Skill.SkillId, 0, (int)leader.HitPoints, leader.MaxHitPoints, leader.SpyId);
+        }
+
+        int index = 0;
+        for (int i = 0; i < selectedShip.UnitsOnBoard.Count; i++, index++)
+        {
+            Unit unit = UnitArray[selectedShip.UnitsOnBoard[i]];
+            if (unit == leader)
+            {
+                index--;
+                continue;
+            }
+
+            int unitX = DetailsX1 + 92 + 80 * (index % 4);
+            int unitY = DetailsY1 + 281 + 50 * (index / 4);
+            DrawUnitIcon(unitX, unitY, UnitRes[unit.UnitType], unit.Rank, unit.Skill.SkillId, 0, (int)unit.HitPoints, unit.MaxHitPoints, unit.SpyId);
+        }
+    }
+
+    private void DrawShipGoods(UnitMarine selectedShip)
+    {
+        for (int i = 1; i <= GameConstants.MAX_RAW; i++)
+        {
+            RawInfo rawInfo = RawRes[i];
+            DrawResourcePanelUp(DetailsX1 - 60 + i * 120, DetailsY1 + 291);
+            Graphics.DrawBitmap(rawInfo.GetLargeRawTexture(Graphics), DetailsX1 - 56 + i * 120, DetailsY1 + 295,
+                rawInfo.LargeRawIconWidth * 3 / 4, rawInfo.LargeRawIconHeight * 3 / 4);
+            PutText(FontSan, selectedShip.RawQty[i - 1].ToString(), DetailsX1 - 20 + i * 120, DetailsY1 + 293);
+        }
+        for (int i = 1; i <= GameConstants.MAX_PRODUCT; i++)
+        {
+            RawInfo rawInfo = RawRes[i];
+            DrawResourcePanelUp(DetailsX1 - 60 + i * 120, DetailsY1 + 331);
+            Graphics.DrawBitmap(rawInfo.GetLargeProductTexture(Graphics), DetailsX1 - 56 + i * 120, DetailsY1 + 335,
+                rawInfo.LargeProductIconWidth * 3 / 4, rawInfo.LargeProductIconHeight * 3 / 4);
+            PutText(FontSan, selectedShip.ProductQty[i - 1].ToString(), DetailsX1 - 20 + i * 120, DetailsY1 + 333);
+        }
+    }
+
     private void DrawBuildShipMenu(FirmHarbor harbor)
     {
         Dictionary<int, int> buildUnitCounts = new Dictionary<int, int>();
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
-            UnitInfo unitInfo = UnitRes[unitId];
+            UnitInfo unitInfo = UnitRes[unitType];
             if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_SHIP)
-                buildUnitCounts.Add(unitId, 0);
+                buildUnitCounts.Add(unitType, 0);
         }
 
-        foreach (int buildUnitId in harbor.BuildQueue)
+        foreach (int buildUnitType in harbor.BuildQueue)
         {
-            buildUnitCounts[buildUnitId]++;
+            buildUnitCounts[buildUnitType]++;
         }
 
-        if (harbor.BuildUnitId != 0)
+        if (harbor.BuildUnitType != 0)
         {
-            buildUnitCounts[harbor.BuildUnitId]++;
+            buildUnitCounts[harbor.BuildUnitType]++;
         }
 
         int shownItems = 0;
         int dy = 0;
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE + 1; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
         {
-            bool showCancelButton = (shownItems == MaxBuildShipItems || unitId > UnitConstants.MAX_UNIT_TYPE);
-            
-            UnitInfo unitInfo = !showCancelButton ? UnitRes[unitId] : null;
+            bool showCancelButton = (shownItems == MaxBuildShipItems || unitType > UnitConstants.MAX_UNIT_TYPE);
+
+            int correctedUnitType = unitType;
+            if (unitType == UnitConstants.UNIT_TRANSPORT)
+                correctedUnitType = UnitConstants.UNIT_VESSEL;
+            if (unitType == UnitConstants.UNIT_VESSEL)
+                correctedUnitType = UnitConstants.UNIT_TRANSPORT;
+
+            UnitInfo unitInfo = !showCancelButton ? UnitRes[correctedUnitType] : null;
             if (!showCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
                 continue;
 
+            //TODO Done button is not pressed when you press it close to the right edge
             bool mouseOnButton = _mouseButtonX >= MouseOnBuildShipButtonX1 && _mouseButtonX <= MouseOnBuildShipButtonX2 &&
                                  _mouseButtonY >= MouseOnBuildShipButtonY1 + dy && _mouseButtonY <= MouseOnBuildShipButtonY2 + dy;
             if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
@@ -135,7 +221,7 @@ public partial class Renderer
                     DrawNumberPanelDown(BuildShipButtonNumberX, BuildShipButtonNumberY + dy);
                 else
                     DrawNumberPanelUp(BuildShipButtonNumberX, BuildShipButtonNumberY + dy);
-                PutTextCenter(FontBible, buildUnitCounts[unitId].ToString(),
+                PutTextCenter(FontBible, buildUnitCounts[correctedUnitType].ToString(),
                     BuildShipButtonNumberX, BuildShipButtonNumberY + dy, BuildShipButtonNumberX + 45, BuildShipButtonNumberY + 40 + dy);
                 
                 shownItems++;
@@ -152,6 +238,25 @@ public partial class Renderer
     
     public void HandleHarborDetailsInput(FirmHarbor harbor)
     {
+        if (_selectedShipId != 0)
+        {
+            UnitMarine selectedShip = (UnitMarine)UnitArray[_selectedShipId];
+            bool unitsAndGoodsShip = selectedShip.UnitType == UnitConstants.UNIT_CARAVEL || selectedShip.UnitType == UnitConstants.UNIT_GALLEON;
+
+            if ((harbor.OwnFirm() || Config.show_ai_info) && unitsAndGoodsShip)
+            {
+                bool mouseOnUnitsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
+                                          _mouseButtonY >= DetailsY1 + 388 && _mouseButtonY <= DetailsY1 + 409;
+                if (_leftMouseReleased && mouseOnUnitsButton && FirmDetailsMode == FirmDetailsMode.ShipGoods)
+                    FirmDetailsMode = FirmDetailsMode.Normal;
+                
+                bool mouseOnGoodsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
+                                          _mouseButtonY >= DetailsY1 + 418 && _mouseButtonY <= DetailsY1 + 439;
+                if (_leftMouseReleased && mouseOnGoodsButton && FirmDetailsMode == FirmDetailsMode.Normal)
+                    FirmDetailsMode = FirmDetailsMode.ShipGoods;
+            }
+        }
+        
         if (!harbor.OwnFirm())
             return;
         
@@ -159,6 +264,24 @@ public partial class Renderer
         {
             HandleBuildShipMenu(harbor);
             return;
+        }
+        
+        bool ship1Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
+                             _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;
+        bool ship2Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
+                             _mouseButtonY >= DetailsY1 + 105 + ShipHeight && _mouseButtonY <= DetailsY1 + 153 + ShipHeight;
+        bool ship3Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
+                             _mouseButtonY >= DetailsY1 + 105 + 2 * ShipHeight && _mouseButtonY <= DetailsY1 + 153 + 2 * ShipHeight;
+
+        int shipIndex = 0;
+        for (int i = 0; i < harbor.Ships.Count && i < 3; i++)
+        {
+            shipIndex++;
+            if ((ship1Selected && shipIndex == 1) || (ship2Selected && shipIndex == 2) || (ship3Selected && shipIndex == 3))
+            {
+                _selectedShipId = harbor.Ships[i];
+                break;
+            }
         }
         
         bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
@@ -171,9 +294,9 @@ public partial class Renderer
             FirmDetailsMode = FirmDetailsMode.BuildShip;
         }
 
-        if (_leftMouseReleased && mouseOnButton2 && harbor.Ships.Count > 0)
+        if (_leftMouseReleased && mouseOnButton2 && _selectedShipId != 0)
         {
-            harbor.SailShip(harbor.Ships[_selectedShipId - 1], InternalConstants.COMMAND_PLAYER);
+            harbor.SailShip(_selectedShipId, InternalConstants.COMMAND_PLAYER);
         }
     }
 
@@ -181,11 +304,17 @@ public partial class Renderer
     {
         int shownItems = 0;
         int dy = 0;
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE + 1; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
         {
-            bool onCancelButton = (shownItems == MaxBuildShipItems || unitId > UnitConstants.MAX_UNIT_TYPE);
+            bool onCancelButton = (shownItems == MaxBuildShipItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
-            UnitInfo unitInfo = !onCancelButton ? UnitRes[unitId] : null;
+            int correctedUnitType = unitType;
+            if (unitType == UnitConstants.UNIT_TRANSPORT)
+                correctedUnitType = UnitConstants.UNIT_VESSEL;
+            if (unitType == UnitConstants.UNIT_VESSEL)
+                correctedUnitType = UnitConstants.UNIT_TRANSPORT;
+            
+            UnitInfo unitInfo = !onCancelButton ? UnitRes[correctedUnitType] : null;
             if (!onCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
                 continue;
 
@@ -210,7 +339,7 @@ public partial class Renderer
                         }*/
                         //else
                         //{
-                            harbor.AddQueue(unitId);
+                            harbor.AddQueue(correctedUnitType);
                         //}
                         SECtrl.immediate_sound("TURN_ON");
                     }
@@ -227,7 +356,7 @@ public partial class Renderer
                         }*/
                         //else
                         //{
-                            harbor.RemoveQueue(unitId);
+                            harbor.RemoveQueue(correctedUnitType);
                         //}
                         SECtrl.immediate_sound("TURN_OFF");
                     }

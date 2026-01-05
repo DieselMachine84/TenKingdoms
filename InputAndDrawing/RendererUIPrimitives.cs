@@ -18,7 +18,7 @@ public partial class Renderer
 	private const int ButtonsMineY = DetailsY1 + 412;
 	private const int ButtonsFactoryY = DetailsY1 + 412;
 	private const int ButtonsMarketY = DetailsY1 + 390;
-	private const int ButtonsHarborY = DetailsY1 + 390;
+	private const int ButtonsHarborY = DetailsY1 + 385;
 	private const int ButtonsResearchY = DetailsY1 + 367;
 	private const int ButtonsWarFactoryY = DetailsY1 + 367;
 	private const int ButtonsCampY = DetailsY1 + 376;
@@ -160,9 +160,12 @@ public partial class Renderer
 	private int _resourcePanelWidth;
 	private int _resourcePanelHeight;
 
-	private IntPtr _listBoxPanelTexture;
-	private int _listBoxPanelWidth;
-	private int _listBoxPanelHeight;
+	private IntPtr _listBox3PanelTexture;
+	private int _listBox3PanelWidth;
+	private int _listBox3PanelHeight;
+	private IntPtr _listBox4PanelTexture;
+	private int _listBox4PanelWidth;
+	private int _listBox4PanelHeight;
 	private IntPtr _listBoxPanelWithScrollTexture;
 	private int _listBoxPanelWithScrollWidth;
 	private int _listBoxPanelWithScrollHeight;
@@ -566,10 +569,15 @@ public partial class Renderer
 
 	private void CreateListBoxPanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
 	{
-		_listBoxPanelWidth = (DetailsWidth - 3) / 3 * 2;
-		_listBoxPanelHeight = 156;
-		byte[] listBoxPanelBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _listBoxPanelWidth, _listBoxPanelHeight);
-		_listBoxPanelTexture = Graphics.CreateTextureFromBmp(listBoxPanelBitmap, _listBoxPanelWidth, _listBoxPanelHeight, 32);
+		_listBox3PanelWidth = (DetailsWidth - 3) / 3 * 2;
+		_listBox3PanelHeight = 117;
+		byte[] listBox3PanelBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _listBox3PanelWidth, _listBox3PanelHeight);
+		_listBox3PanelTexture = Graphics.CreateTextureFromBmp(listBox3PanelBitmap, _listBox3PanelWidth, _listBox3PanelHeight, 32);
+		
+		_listBox4PanelWidth = (DetailsWidth - 3) / 3 * 2;
+		_listBox4PanelHeight = 156;
+		byte[] listBox4PanelBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _listBox4PanelWidth, _listBox4PanelHeight);
+		_listBox4PanelTexture = Graphics.CreateTextureFromBmp(listBox4PanelBitmap, _listBox4PanelWidth, _listBox4PanelHeight, 32);
 
 		_listBoxPanelWithScrollWidth = (DetailsWidth - 40) / 3 * 2;
 		_listBoxPanelWithScrollHeight = 156;
@@ -1171,9 +1179,14 @@ public partial class Renderer
 		Graphics.DrawBitmap(_resourcePanelDownTexture, x, y, Scale(_resourcePanelWidth), Scale(_resourcePanelHeight));
 	}
 	
-	private void DrawListBoxPanel(int x, int y)
+	private void DrawListBox3Panel(int x, int y)
 	{
-		Graphics.DrawBitmap(_listBoxPanelTexture, x, y, Scale(_listBoxPanelWidth), Scale(_listBoxPanelHeight));
+		Graphics.DrawBitmapScaled(_listBox3PanelTexture, x, y, _listBox3PanelWidth, _listBox3PanelHeight);
+	}
+	
+	private void DrawListBox4Panel(int x, int y)
+	{
+		Graphics.DrawBitmapScaled(_listBox4PanelTexture, x, y, _listBox4PanelWidth, _listBox4PanelHeight);
 	}
 
 	private void DrawListBoxPanelWithScroll(int x, int y)
@@ -1316,5 +1329,26 @@ public partial class Renderer
 
 			x += smallSize ? font.InterCharSpace * 2 / 3 : font.InterCharSpace;
 		}
+	}
+
+	private IntPtr GetSkillTexture(int rank, int skillId)
+	{
+		return rank switch
+		{
+			Unit.RANK_SOLDIER => skillId switch
+			{
+				Skill.SKILL_CONSTRUCTION => _constructionTexture,
+				Skill.SKILL_LEADING => _leadershipTexture,
+				Skill.SKILL_MINING => _miningTexture,
+				Skill.SKILL_MFT => _manufactureTexture,
+				Skill.SKILL_RESEARCH => _researchTexture,
+				Skill.SKILL_SPYING => _spyingTexture,
+				Skill.SKILL_PRAYING => _prayingTexture,
+				_ => IntPtr.Zero
+			},
+			Unit.RANK_GENERAL => _generalTexture,
+			Unit.RANK_KING => _kingTexture,
+			_ => IntPtr.Zero
+		};
 	}
 }

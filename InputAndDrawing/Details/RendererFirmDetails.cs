@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-enum FirmDetailsMode { Normal, Research, WarMachine, BuildShip, Spy }
+enum FirmDetailsMode { Normal, Research, WarMachine, BuildShip, ShipGoods, Spy }
 
 public partial class Renderer
 {
@@ -87,38 +87,9 @@ public partial class Renderer
             int workerY = workersY + 7 + 50 * (i / 4);
             Worker worker = firm.Workers[i];
             UnitInfo unitInfo = UnitRes[worker.UnitId];
-            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, worker.RankId), workerX, workerY,
-                unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
-            PutText(FontSan, firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel.ToString() : worker.SkillLevel.ToString(), workerX + 52, workerY + 6);
-            
-            int hitBarX1 = workerX;
-            int hitBarY = workerY + 41;
-            int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * worker.HitPoints / worker.MaxHitPoints();
-            const int hitBarLightBorder = 0;
-            const int hitBarDarkBorder = 3;
-            const int hitBarBody = 1;
-            int hitBarColor = 0xA8;
-            if (worker.MaxHitPoints() >= 51 && worker.MaxHitPoints() <= 100)
-                hitBarColor = 0xB4;
-            if (worker.MaxHitPoints() >= 101)
-                hitBarColor = 0xAC;
-            Graphics.DrawLine(hitBarX1, hitBarY, hitBarX2, hitBarY, hitBarColor + hitBarLightBorder); //top
-            Graphics.DrawLine(hitBarX1, hitBarY + 1, hitBarX2, hitBarY + 1, hitBarColor + hitBarLightBorder); //top
-            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 4, hitBarX2, hitBarY + 4, hitBarColor + hitBarDarkBorder); //bottom
-            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 5, hitBarX2, hitBarY + 5, hitBarColor + hitBarDarkBorder); //bottom
-            Graphics.DrawLine(hitBarX1, hitBarY, hitBarX1, hitBarY + 5, hitBarColor + hitBarLightBorder); //left
-            Graphics.DrawLine(hitBarX1 + 1, hitBarY, hitBarX1 + 1, hitBarY + 5, hitBarColor + hitBarLightBorder); //left
-            Graphics.DrawLine(hitBarX2 - 1, hitBarY + 2, hitBarX2 - 1, hitBarY + 3, hitBarColor + hitBarDarkBorder); //right
-            Graphics.DrawLine(hitBarX2, hitBarY + 2, hitBarX2, hitBarY + 3, hitBarColor + hitBarDarkBorder); //right
-            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 2, hitBarX2 - 2, hitBarY + 2, hitBarColor + hitBarBody); //body
-            Graphics.DrawLine(hitBarX1 + 2, hitBarY + 3, hitBarX2 - 2, hitBarY + 3, hitBarColor + hitBarBody); //body
-            
-            if (worker.SpyId != 0 && (SpyArray[worker.SpyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
-            {
-                int spyIconX = workerX + 78;
-                int spyIconY = workerY + 12;
-                DrawSpyIcon(spyIconX, spyIconY, SpyArray[worker.SpyId].TrueNationId);
-            }
+            DrawUnitIcon(workerX, workerY, unitInfo, worker.RankId, worker.SkillId,
+                firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel : worker.SkillLevel,
+                worker.HitPoints, worker.MaxHitPoints(), worker.SpyId);
 
             int frameColor = (i == firm.SelectedWorkerId - 1) ? Colors.V_YELLOW : Colors.V_UP;
             Graphics.DrawRect(workerX - 1, workerY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
@@ -135,9 +106,9 @@ public partial class Renderer
         if (FirmDetailsMode == FirmDetailsMode.Research || FirmDetailsMode == FirmDetailsMode.WarMachine || FirmDetailsMode == FirmDetailsMode.BuildShip)
             return;
 
-        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+        bool mouseOnColorSquareButton = _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
                                         _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
-        if (colorSquareButtonPressed)
+        if (_leftMouseReleased && mouseOnColorSquareButton)
             GoToLocation(firm.LocCenterX, firm.LocCenterY);
         
         if (_leftMouseReleased && IsMouseOnBuilderOrRequestBuilderButton())

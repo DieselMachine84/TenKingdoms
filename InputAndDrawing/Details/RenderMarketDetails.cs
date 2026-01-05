@@ -6,7 +6,8 @@ public partial class Renderer
 {
     public void DrawMarketDetails(FirmMarket market)
     {
-        bool showInfo = Config.show_ai_info || market.OwnFirm();
+        bool showInfo = Config.show_ai_info || market.OwnFirm() ||
+                        (NationArray.player_recno != 0 && NationArray[market.NationId].get_relation(NationArray.player_recno).trade_treaty);
         if (!showInfo)
         {
             DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 96);
@@ -19,10 +20,9 @@ public partial class Renderer
         int dy = 0;
         for (int i = 0; i < GameConstants.MAX_MARKET_GOODS; i++)
         {
-            MarketGoods marketGoods = market.MarketGoods[i];
-            
             DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 96 + dy);
 
+            MarketGoods marketGoods = market.MarketGoods[i];
             if (marketGoods.RawId != 0)
             {
                 RawInfo rawInfo = RawRes[marketGoods.RawId];
@@ -85,22 +85,25 @@ public partial class Renderer
             }
         }
 
-        string restockType = market.RestockType switch
+        if (Config.show_ai_info || market.OwnFirm())
         {
-            0 => "Any",
-            1 => "Factory",
-            2 => "Mine",
-            3 => "None",
-            _ => ""
-        };
-        DrawRestockPanel(DetailsX1 + 83, DetailsY1 + 387);
-        DrawFieldPanel89(DetailsX1 + 88, DetailsY1 + 392);
-        PutText(FontSan, "Yearly Income", DetailsX1 + 94, DetailsY1 + 395, -1, true);
-        PutText(FontSan, "$" + (int)market.Income365Days(), DetailsX1 + 227, DetailsY1 + 397, -1, true);
-        DrawFieldPanel89(DetailsX1 + 88, DetailsY1 + 421);
-        PutText(FontSan, "Restock From", DetailsX1 + 94, DetailsY1 + 424, -1, true);
-        PutText(FontSan, restockType, DetailsX1 + 227, DetailsY1 + 426, -1, true);
-        
+            string restockType = market.RestockType switch
+            {
+                0 => "Any",
+                1 => "Factory",
+                2 => "Mine",
+                3 => "None",
+                _ => ""
+            };
+            DrawRestockPanel(DetailsX1 + 83, DetailsY1 + 387);
+            DrawFieldPanel89(DetailsX1 + 88, DetailsY1 + 392);
+            PutText(FontSan, "Yearly Income", DetailsX1 + 94, DetailsY1 + 395, -1, true);
+            PutText(FontSan, "$" + (int)market.Income365Days(), DetailsX1 + 227, DetailsY1 + 395, -1, true);
+            DrawFieldPanel89(DetailsX1 + 88, DetailsY1 + 421);
+            PutText(FontSan, "Restock From", DetailsX1 + 94, DetailsY1 + 424, -1, true);
+            PutText(FontSan, restockType, DetailsX1 + 227, DetailsY1 + 424, -1, true);
+        }
+
         if (market.OwnFirm())
         {
             bool mouseOnSwitchButton = _mouseButtonX >= DetailsX1 + 330 && _mouseButtonX <= DetailsX1 + 399 &&
@@ -115,7 +118,7 @@ public partial class Renderer
     
     public void HandleMarketDetailsInput(FirmMarket market)
     {
-        bool button1Pressed = _leftMouseReleased && _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsMarketY + 2 && _mouseButtonY <= ButtonsMarketY + ButtonHeight;
 
         bool mouseOnSwitchButton = _mouseButtonX >= DetailsX1 + 330 && _mouseButtonX <= DetailsX1 + 399 &&
@@ -123,7 +126,7 @@ public partial class Renderer
 
         if (market.OwnFirm())
         {
-            if (button1Pressed)
+            if (_leftMouseReleased && mouseOnButton1)
                 market.HireCaravan(InternalConstants.COMMAND_PLAYER);
 
             if (_leftMouseReleased && mouseOnSwitchButton)
