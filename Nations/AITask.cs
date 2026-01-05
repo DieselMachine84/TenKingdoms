@@ -6,6 +6,7 @@ namespace TenKingdoms;
 public abstract class AITask
 {
     protected Nation Nation { get; }
+    protected int NationId => Nation.nation_recno;
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected UnitRes UnitRes => Sys.Instance.UnitRes;
@@ -35,7 +36,7 @@ public abstract class AITask
         if (FirmArray.IsDeleted(firmId))
             return true;
         Firm firm = FirmArray[firmId];
-        if (firm.NationId != Nation.nation_recno)
+        if (firm.NationId != NationId)
             return true;
         return false;
     }
@@ -45,7 +46,7 @@ public abstract class AITask
         if (TownArray.IsDeleted(townId))
             return true;
         Town town = TownArray[townId];
-        if (town.NationId != Nation.nation_recno)
+        if (town.NationId != NationId)
             return true;
         return false;
     }
@@ -55,7 +56,7 @@ public abstract class AITask
         if (UnitArray.IsDeleted(unitId))
             return true;
         Unit unit = UnitArray[unitId];
-        if (unit.NationId != Nation.nation_recno)
+        if (unit.NationId != NationId)
             return true;
         return false;
     }
@@ -100,7 +101,7 @@ public abstract class AITask
         Firm bestFirm = null;
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != Nation.nation_recno)
+            if (firm.NationId != NationId)
                 continue;
             
             if (firm.UnderConstruction)
@@ -126,7 +127,7 @@ public abstract class AITask
         int bestRace = 0;
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != regionId)
