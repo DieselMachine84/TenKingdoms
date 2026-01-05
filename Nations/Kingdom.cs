@@ -813,7 +813,7 @@ public partial class Nation : NationBase
 
     public void AddBuildShipTask(FirmHarbor harbor, int shipType)
     {
-        if (harbor.BuildQueue.Count > 0 || harbor.BuildUnitId != 0)
+        if (harbor.BuildQueue.Count > 0 || harbor.BuildUnitType != 0)
             return;
 
         int shipCount = 0;

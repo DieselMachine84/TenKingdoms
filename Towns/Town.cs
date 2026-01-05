@@ -4479,7 +4479,7 @@ public class Town : IIdObject
 				continue;
 
 			//TODO this code is different from the same in think_build_research()
-			if (firmWar.Workers.Count < Firm.MAX_WORKER || firmWar.BuildUnitId == 0)
+			if (firmWar.Workers.Count < Firm.MAX_WORKER || firmWar.BuildUnitType == 0)
 				return false;
 		}
 
