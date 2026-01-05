@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class FirmWar : Firm
 {
-    public int BuildUnitId { get; private set; }
+    public int BuildUnitType { get; private set; }
     private long LastProcessBuildFrameNumber { get; set; }
     public double BuildProgressInDays { get; set; }
     public List<int> BuildQueue { get; } = new List<int>();
@@ -25,7 +25,7 @@ public class FirmWar : Firm
 
         CalcProductivity();
 
-        if (BuildUnitId != 0)
+        if (BuildUnitType != 0)
             ProcessBuild();
         else
             ProcessQueue();
@@ -37,7 +37,7 @@ public class FirmWar : Firm
 
         // Note: this fixes a bug with a nation-changed war factory building a weapon that the nation doesn't have,
         //       which leads to a crash (when selecting attack sprite) because CurAttack is not set properly.
-        if (BuildUnitId != 0)
+        if (BuildUnitType != 0)
             CancelBuildUnit();
         BuildQueue.Clear();
 
@@ -46,29 +46,29 @@ public class FirmWar : Firm
     
     public override bool IsOperating()
     {
-        return Productivity > 0.0 && BuildUnitId != 0;
+        return Productivity > 0.0 && BuildUnitType != 0;
     }
 
-    public void AddQueue(int unitId, int amount = 1)
+    public void AddQueue(int unitType, int amount = 1)
     {
         if (amount <= 0)
             return;
 
-        int queueSpace = GameConstants.FIRMWAR_MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
+        int queueSpace = GameConstants.FIRMWAR_MAX_BUILD_QUEUE - BuildQueue.Count - (BuildUnitType > 0 ? 1 : 0);
         int enqueueAmount = Math.Min(queueSpace, amount);
 
         for (int i = 0; i < enqueueAmount; i++)
-            BuildQueue.Add(unitId);
+            BuildQueue.Add(unitType);
     }
 
-    public void RemoveQueue(int unitId, int amount = 1)
+    public void RemoveQueue(int unitType, int amount = 1)
     {
         if (amount <= 0)
             return;
 
         for (int i = BuildQueue.Count - 1; i >= 0; i--)
         {
-            if (BuildQueue[i] == unitId)
+            if (BuildQueue[i] == unitType)
             {
                 BuildQueue.RemoveAt(i);
                 amount--;
@@ -79,13 +79,13 @@ public class FirmWar : Firm
 
         // If there were less units of unitId in the queue than were requested to be removed
         // then also cancel currently built unit
-        if (amount > 0 && BuildUnitId == unitId)
+        if (amount > 0 && BuildUnitType == unitType)
             CancelBuildUnit();
     }
 
     private void CancelBuildUnit()
     {
-        BuildUnitId = 0;
+        BuildUnitType = 0;
     }
     
     private void ProcessQueue()
@@ -99,9 +99,9 @@ public class FirmWar : Firm
         if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
             return;
 
-        BuildUnitId = BuildQueue[0];
+        BuildUnitType = BuildQueue[0];
         BuildQueue.RemoveAt(0);
-        nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitId].build_cost);
+        nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitType].build_cost);
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
         BuildProgressInDays = 0.0;
@@ -117,7 +117,7 @@ public class FirmWar : Firm
         if (Config.fast_build && NationId == NationArray.player_recno)
             BuildProgressInDays += 2.0;
 
-        UnitInfo unitInfo = UnitRes[BuildUnitId];
+        UnitInfo unitInfo = UnitRes[BuildUnitType];
         int totalBuildDays = unitInfo.build_days;
         if (BuildProgressInDays > totalBuildDays)
         {
@@ -131,12 +131,12 @@ public class FirmWar : Firm
                 return;
             }
 
-            UnitArray.AddUnit(BuildUnitId, NationId, 0, 0, locX, locY);
+            UnitArray.AddUnit(BuildUnitType, NationId, 0, 0, locX, locY);
 
             if (OwnFirm())
-                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitId].sprite_id);
+                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].sprite_id);
 
-            BuildUnitId = 0;
+            BuildUnitType = 0;
         }
     }
     
@@ -156,7 +156,7 @@ public class FirmWar : Firm
     {
         //---- think about which war machine to build ----//
 
-        if (BuildUnitId == 0)
+        if (BuildUnitType == 0)
             ThinkNewProduction();
 
         //------- recruit workers ---------//

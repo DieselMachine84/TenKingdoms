@@ -10,7 +10,7 @@ public class FirmHarbor : Firm
 
 	public List<int> Ships { get; } = new List<int>();
 
-	public int BuildUnitId { get; private set; }
+	public int BuildUnitType { get; private set; }
 	public List<int> BuildQueue { get; } = new List<int>();
 	private long _startBuildFrameNumber;
 
@@ -98,7 +98,7 @@ public class FirmHarbor : Firm
 	{
 		base.NextDay();
 
-		if (BuildUnitId != 0)
+		if (BuildUnitType != 0)
 			ProcessBuild();
 		else
 			ProcessQueue();
@@ -110,7 +110,7 @@ public class FirmHarbor : Firm
 
 		// Note: this fixes a bug with a nation-changed harbor building a ship that the nation doesn't have,
 		//       which leads to a crash (when selecting attack sprite) because CurAttack is not set properly.
-		if (BuildUnitId != 0)
+		if (BuildUnitType != 0)
 			CancelBuildUnit();
 		BuildQueue.Clear();
 
@@ -132,7 +132,7 @@ public class FirmHarbor : Firm
 			return;
 		}
 
-		if (Ships.Count + (BuildUnitId > 0 ? 1 : 0) == GameConstants.MAX_SHIP_IN_HARBOR)
+		if (Ships.Count + (BuildUnitType > 0 ? 1 : 0) == GameConstants.MAX_SHIP_IN_HARBOR)
 			return; // leave a room for the building unit
 
 		AddHostedShip(unitId);
@@ -142,26 +142,26 @@ public class FirmHarbor : Firm
 		ship.ExtraMoveInBeach = UnitMarine.NO_EXTRA_MOVE;
 	}
 
-	public void AddQueue(int unitId, int amount = 1)
+	public void AddQueue(int unitType, int amount = 1)
 	{
 		if (amount <= 0)
 			return;
 
-		int queueSpace = GameConstants.MAX_BUILD_SHIP_QUEUE - BuildQueue.Count - (BuildUnitId > 0 ? 1 : 0);
+		int queueSpace = GameConstants.MAX_BUILD_SHIP_QUEUE - BuildQueue.Count - (BuildUnitType > 0 ? 1 : 0);
 		int enqueueAmount = Math.Min(queueSpace, amount);
 
 		for (int i = 0; i < enqueueAmount; ++i)
-			BuildQueue.Add(unitId);
+			BuildQueue.Add(unitType);
 	}
 
-	public void RemoveQueue(int unitId, int amount = 1)
+	public void RemoveQueue(int unitType, int amount = 1)
 	{
 		if (amount <= 0)
 			return;
 
 		for (int i = BuildQueue.Count - 1; i >= 0; i--)
 		{
-			if (BuildQueue[i] == unitId)
+			if (BuildQueue[i] == unitType)
 			{
 				BuildQueue.RemoveAt(i);
 				amount--;
@@ -172,13 +172,13 @@ public class FirmHarbor : Firm
 
 		// If there were less units of unitId in the queue than were requested to be removed
 		// then also cancel currently built unit
-		if (amount > 0 && BuildUnitId == unitId)
+		if (amount > 0 && BuildUnitType == unitType)
 			CancelBuildUnit();
 	}
 
 	public void CancelBuildUnit()
 	{
-		BuildUnitId = 0;
+		BuildUnitType = 0;
 	}
 	
 	private void ProcessQueue()
@@ -193,26 +193,26 @@ public class FirmHarbor : Firm
 		if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
 			return;
 
-		BuildUnitId = BuildQueue[0];
+		BuildUnitType = BuildQueue[0];
 		BuildQueue.RemoveAt(0);
-		nation.add_expense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitId].build_cost);
+		nation.add_expense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitType].build_cost);
 
 		_startBuildFrameNumber = Sys.Instance.FrameNumber;
 	}
 	
 	private void ProcessBuild()
 	{
-		int totalBuildDays = UnitRes[BuildUnitId].build_days;
+		int totalBuildDays = UnitRes[BuildUnitType].build_days;
 
 		if ((Sys.Instance.FrameNumber - _startBuildFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
 		{
-			Unit unit = UnitArray.AddUnit(BuildUnitId, NationId);
+			Unit unit = UnitArray.AddUnit(BuildUnitType, NationId);
 			AddHostedShip(unit.SpriteId);
 
 			if (OwnFirm())
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitId].sprite_id);
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].sprite_id);
 
-			BuildUnitId = 0;
+			BuildUnitType = 0;
 		}
 	}
 	
@@ -226,21 +226,15 @@ public class FirmHarbor : Firm
 	{
 		UnitArray[shipId].SetMode(0);
 
-		int indexToRemove = -1;
-		for (int i = 0; i < Ships.Count; i++)
-		{
-			if (Ships[i] == shipId)
-			{
-				indexToRemove = i;
-				break;
-			}
-		}
-		
-		Ships.RemoveAt(indexToRemove);
+		if (Ships.Contains(shipId))
+			Ships.Remove(shipId);
 	}
 
 	public bool SailShip(int unitId, int remoteAction)
 	{
+		if (!Ships.Contains(unitId))
+			return false;
+		
 		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <firm recno> <browseRecno>
@@ -321,7 +315,7 @@ public class FirmHarbor : Firm
 
 	public void think_build_ship()
 	{
-		if (BuildUnitId != 0) // if it's currently building a ship
+		if (BuildUnitType != 0) // if it's currently building a ship
 			return;
 
 		if (!can_build_ship()) // full, cannot build anymore
@@ -544,7 +538,7 @@ public class FirmHarbor : Firm
 	
 	public bool can_build_ship()
 	{
-		return BuildUnitId == 0;
+		return BuildUnitType == 0;
 	}
 	
 	public int total_linked_trade_firm()
