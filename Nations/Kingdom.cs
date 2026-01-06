@@ -17,23 +17,24 @@ public partial class Nation : NationBase
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
     private readonly List<ChangeFactoryProductionTask> _changeFactoryProductionTasks = new List<ChangeFactoryProductionTask>();
     private readonly List<ChangeMarketRestockTask> _changeMarketRestockTask = new List<ChangeMarketRestockTask>();
-    private readonly List<ManageCaravansTask> _manageCaravanTasks = new List<ManageCaravansTask>();
-    private readonly List<ManageTradeShipsTask> _manageTradeShipsTask = new List<ManageTradeShipsTask>();
-    private readonly List<CollectTaxTask> _collectTaxTasks = new List<CollectTaxTask>();
-    private readonly List<RecruitSoldiersTask> _recruitSoldiersTask = new List<RecruitSoldiersTask>();
     private readonly List<BuildShipTask> _buildShipTasks = new List<BuildShipTask>();
     private readonly List<SailShipTask> _sailShipTasks = new List<SailShipTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
+    
+    private ManageCaravansTask _manageCaravanTask;
+    private ManageTradeShipsTask _manageTradeShipsTask;
+    private CollectTaxTask _collectTaxTask;
+    private RecruitSoldiersTask _recruitSoldiersTask;
 
     public Nation()
     {
-        _manageCaravanTasks.Add(new ManageCaravansTask(this));
-        _manageTradeShipsTask.Add(new ManageTradeShipsTask(this));
-        _collectTaxTasks.Add(new CollectTaxTask(this));
-        _recruitSoldiersTask.Add(new RecruitSoldiersTask(this));
+        _manageCaravanTask = new ManageCaravansTask(this);
+        _manageTradeShipsTask = new ManageTradeShipsTask(this);
+        _collectTaxTask = new CollectTaxTask(this);
+        _recruitSoldiersTask = new RecruitSoldiersTask(this);
     }
 
-    public void ProcessAI()
+    public override void ProcessAI()
     {
         ThinkAboutNewTask();
         
@@ -42,66 +43,175 @@ public partial class Nation : NationBase
 
     private void ThinkAboutNewTask()
     {
-        int[] intervalDaysArray = { 80, 40, 20, 10 };
-        int intervalDays = intervalDaysArray[Config.ai_aggressiveness - Config.OPTION_LOW];
-
-        switch ((Info.TotalDays + nation_recno * 8) % intervalDays)
+        int shortInterval = Config.ai_aggressiveness switch
         {
-            case 0:
-                ThinkCaptureIndependent();
-                break;
-            
-            case 1:
-                ThinkBuildMine();
-                break;
-            
-            case 2:
-                FindIdleUnits();
-                break;
-            
-            case 3:
-                ThinkDiplomacy();
-                break;
-            
-            case 4:
-                ThinkBuildHarbor();
-                break;
-        }
+            Config.OPTION_LOW => 32,
+            Config.OPTION_MODERATE => 16,
+            Config.OPTION_HIGH => 8,
+            Config.OPTION_VERY_HIGH => 4,
+            _ => 0
+        };
 
-        if ((Info.TotalDays + nation_recno) % 10 == 0)
+        for (int i = shortInterval; i <= 32; i += shortInterval)
         {
-            ThinkBuildCamp();
+            switch ((Info.TotalDays + nation_recno * 15) % shortInterval + i - shortInterval)
+            {
+                case 0:
+                    ThinkBuildCamp();
+                    break;
+                case 1:
+                    ThinkAssignGeneral();
+                    break;
+                case 2:
+                    ThinkDiplomacy();
+                    break;
+            }
         }
 
-        if ((Info.TotalDays + nation_recno) % 10 == 1)
+        int longInterval = shortInterval * 2;
+        for (int i = longInterval; i <= 32 * 2; i += longInterval)
         {
-            ThinkAssignGeneral();
+            switch ((Info.TotalDays + nation_recno * 15) % longInterval + i - longInterval)
+            {
+                case 0:
+                    ThinkBuildMine();
+                    break;
+                case 1:
+                    ThinkBuildFactory();
+                    break;
+                case 2:
+                    ThinkBuildMarket();
+                    break;
+                case 3:
+                    ThinkBuildHarbor();
+                    break;
+                case 4:
+                    ThinkSettle();
+                    break;
+                case 5:
+                    ThinkRelocatePeasants();
+                    break;
+                case 6:
+                    ThinkCaptureIndependent();
+                    break;
+                case 7:
+                    FindIdleUnits();
+                    break;
+            }
         }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 2)
+    }
+
+    private void ProcessTasks()
+    {
+        int shortInterval = Config.ai_aggressiveness switch
         {
-            ThinkSettle();
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 3)
+            Config.OPTION_LOW => 32,
+            Config.OPTION_MODERATE => 16,
+            Config.OPTION_HIGH => 8,
+            Config.OPTION_VERY_HIGH => 4,
+            _ => 0
+        };
+
+        for (int i = shortInterval; i <= 32; i += shortInterval)
         {
-            ThinkRelocatePeasants();
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 4)
-        {
-            ThinkBuildFactory();
-            ThinkChangeFactoryProduction();
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 5)
-        {
-            ThinkBuildMarket();
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 6)
-        {
-            //
+            int taskIndex = 0;
+            switch ((Info.TotalDays + nation_recno * 15) % shortInterval + i - shortInterval)
+            {
+                case 0:
+                    for (taskIndex = _buildMineTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildMineTasks[taskIndex], _buildMineTasks, taskIndex);
+                    break;
+                case 1:
+                    for (taskIndex = _buildFactoryTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildFactoryTasks[taskIndex], _buildFactoryTasks, taskIndex);
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    for (taskIndex = _buildMarketTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildMarketTasks[taskIndex], _buildMarketTasks, taskIndex);
+                    break;
+                case 5:
+                    for (taskIndex = _buildHarborTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildHarborTasks[taskIndex], _buildHarborTasks, taskIndex);
+                    break;
+                case 6:
+                    for (taskIndex = _buildCampTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildCampTasks[taskIndex], _buildCampTasks, taskIndex);
+                    break;
+                case 7:
+                    break;
+                case 8:
+                    break;
+                case 9:
+                    for (taskIndex = _assignGeneralTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_assignGeneralTasks[taskIndex], _assignGeneralTasks, taskIndex);
+                    break;
+                case 10:
+                    for (taskIndex = _settleTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_settleTasks[taskIndex], _settleTasks, taskIndex);
+                    break;
+                case 11:
+                    for (taskIndex = _relocatePeasantsTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_relocatePeasantsTasks[taskIndex], _relocatePeasantsTasks, taskIndex);
+                    break;
+                case 12:
+                    for (taskIndex = _changeFactoryProductionTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_changeFactoryProductionTasks[taskIndex], _changeFactoryProductionTasks, taskIndex);
+                    break;
+                case 13:
+                    for (taskIndex = _changeMarketRestockTask.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_changeMarketRestockTask[taskIndex], _changeMarketRestockTask, taskIndex);
+                    break;
+                case 14:
+                    _manageCaravanTask.Process();
+                    break;
+                case 15:
+                    _manageTradeShipsTask.Process();
+                    break;
+                case 16:
+                    _collectTaxTask.Process();
+                    break;
+                case 17:
+                    _recruitSoldiersTask.Process();
+                    break;
+                case 18:
+                    for (taskIndex = _buildShipTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildShipTasks[taskIndex], _buildShipTasks, taskIndex);
+                    break;
+                case 19:
+                    for (taskIndex = _sailShipTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_sailShipTasks[taskIndex], _sailShipTasks, taskIndex);
+                    break;
+                case 20:
+                    break;
+                case 21:
+                    break;
+                case 22:
+                    break;
+                case 23:
+                    break;
+                case 24:
+                    break;
+                case 25:
+                    break;
+                case 26:
+                    break;
+                case 27:
+                    break;
+                case 28:
+                    break;
+                case 29:
+                    break;
+                case 30:
+                    break;
+                case 31:
+                    for (taskIndex = _idleUnitTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_idleUnitTasks[taskIndex], _idleUnitTasks, taskIndex);
+                    break;
+            }
         }
     }
 
@@ -116,118 +226,7 @@ public partial class Nation : NationBase
 
         task.Process();
     }
-
-    private void ProcessTasks()
-    {
-        if ((Info.TotalDays + nation_recno) % 10 == 0)
-        {
-            for (int i = _buildMineTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildMineTasks[i], _buildMineTasks, i);
-            }
-            for (int i = _buildHarborTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildHarborTasks[i], _buildHarborTasks, i);
-            }
-        }
-
-        if ((Info.TotalDays + nation_recno) % 10 == 1)
-        {
-            for (int i = _buildCampTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildCampTasks[i], _buildCampTasks, i);
-            }
-        }
-
-        if ((Info.TotalDays + nation_recno) % 10 == 2)
-        {
-            for (int i = _settleTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_settleTasks[i], _settleTasks, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 3)
-        {
-            for (int i = _idleUnitTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_idleUnitTasks[i], _idleUnitTasks, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 4)
-        {
-            for (int i = _assignGeneralTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_assignGeneralTasks[i], _assignGeneralTasks, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 5)
-        {
-            for (int i = _relocatePeasantsTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_relocatePeasantsTasks[i], _relocatePeasantsTasks, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 6)
-        {
-            for (int i = _buildFactoryTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildFactoryTasks[i], _buildFactoryTasks, i);
-            }
-            for (int i = _changeFactoryProductionTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_changeFactoryProductionTasks[i], _changeFactoryProductionTasks, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 7)
-        {
-            for (int i = _buildMarketTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildMarketTasks[i], _buildMarketTasks, i);
-            }
-            for (int i = _changeMarketRestockTask.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_changeMarketRestockTask[i], _changeMarketRestockTask, i);
-            }
-            for (int i = _manageTradeShipsTask.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_manageTradeShipsTask[i], _manageTradeShipsTask, i);
-            }
-        }
-        
-        if ((Info.TotalDays + nation_recno) % 10 == 8)
-        {
-            for (int i = _manageCaravanTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_manageCaravanTasks[i], _manageCaravanTasks, i);
-            }
-            for (int i = _collectTaxTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_collectTaxTasks[i], _collectTaxTasks, i);
-            }
-        }
-
-        if ((Info.TotalDays + nation_recno) % 10 == 9)
-        {
-            for (int i = _recruitSoldiersTask.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_recruitSoldiersTask[i], _recruitSoldiersTask, i);
-            }
-            for (int i = _buildShipTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_buildShipTasks[i], _buildShipTasks, i);
-            }
-            for (int i = _sailShipTasks.Count - 1; i >= 0; i--)
-            {
-                ProcessTask(_sailShipTasks[i], _sailShipTasks, i);
-            }
-        }
-    }
-
+    
     private IEnumerable<AITask> EnumerateAllUnitTasks()
     {
         foreach (var task in _buildMineTasks)
@@ -794,11 +793,6 @@ public partial class Nation : NationBase
                 }
             }
         }
-    }
-
-    private void ThinkChangeFactoryProduction()
-    {
-        //
     }
 
     public void AddChangeFactoryProductionTask(int factoryId, int productId)

@@ -907,6 +907,10 @@ public class NationBase : IIdObject
         set_relation_passable(otherNationRecno, NATION_FRIENDLY);
     }
 
+    public virtual void ProcessAI()
+    {
+    }
+
     public void close_all_firm()
     {
         List<Firm> firmsToDelete = new List<Firm>();
