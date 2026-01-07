@@ -25,6 +25,7 @@ public partial class Nation : NationBase
     private readonly ManageTradeShipsTask _manageTradeShipsTask;
     private readonly CollectTaxTask _collectTaxTask;
     private readonly RecruitSoldiersTask _recruitSoldiersTask;
+    private readonly ReduceConstructionWorkersTask _reduceConstructionWorkersTask;
 
     public int PrefMineFactoryDistance { get; }
     public int PrefMinFactoryRawResource { get; }
@@ -33,6 +34,7 @@ public partial class Nation : NationBase
     public int PrefMaxCaravanStopDistance { get; }
     public int PrefCashReserve { get; }
     public int PrefFoodReserve { get; }
+    public int PrefConstructionWorkersCountPercent { get; }
 
     public Nation()
     {
@@ -42,12 +44,14 @@ public partial class Nation : NationBase
         PrefTownMinJoblessPopulation = 8 + Misc.Random(16);
         PrefMaxCaravanStopDistance = 100 + Misc.Random(300);
         PrefCashReserve = 500 + Misc.Random(1500);
-        PrefFoodReserve = 500 + Misc.Random(1500); 
+        PrefFoodReserve = 500 + Misc.Random(1500);
+        PrefConstructionWorkersCountPercent = 25 + Misc.Random(50);
         
         _manageCaravanTask = new ManageCaravansTask(this);
         _manageTradeShipsTask = new ManageTradeShipsTask(this);
         _collectTaxTask = new CollectTaxTask(this);
         _recruitSoldiersTask = new RecruitSoldiersTask(this);
+        _reduceConstructionWorkersTask = new ReduceConstructionWorkersTask(this);
     }
 
     public override void ProcessAI()
@@ -222,6 +226,7 @@ public partial class Nation : NationBase
                 case 29:
                     break;
                 case 30:
+                    _reduceConstructionWorkersTask.Process();
                     break;
                 case 31:
                     for (taskIndex = _idleUnitTasks.Count - 1; taskIndex >= 0; taskIndex--)
