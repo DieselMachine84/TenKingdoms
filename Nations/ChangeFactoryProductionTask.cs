@@ -1,5 +1,9 @@
 namespace TenKingdoms;
 
+// Change factory production when
+//  1. A new factory is built
+//  2. Factory has no raw resource available but can be switched to produce another type of product - TODO
+
 public class ChangeFactoryProductionTask : AITask
 {
     private bool _shouldCancel;

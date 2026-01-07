@@ -5,13 +5,14 @@ namespace TenKingdoms;
 
 // Build factory when
 //  1. There is a mine or a market that has a resource and there is no such factory nearby
-//  2. There is a mine or a market that has a resource but existing factories are not able to manufacture it - TODO
-//  3. kingdom can buy resource from another kingdom - TODO
+//  2. There is a mine or a market that has a resource but existing factories are not able to manufacture it
+//  3. Kingdom can buy resource from another kingdom - TODO
 //  4. There is a mine or a market on an island and there is no place on the island to build factory, build it on another island - TODO
 
 // Do not build factory when
-//  1. Not enough money - TODO
-//  2. Not enough population - TODO
+//  1. Not enough money
+//  2. Not enough food
+//  3. Not enough population
 
 // Choose a place to build near a village with enough population and not far from mine/market 
 
@@ -105,7 +106,7 @@ public class BuildFactoryTask : AITask, IUnitTask
         Location rawFirmLocation = World.GetLoc(rawFirm.LocCenterX, rawFirm.LocCenterY);
         
         Town bestTown = null;
-        int bestRating = Int16.MinValue;
+        int bestTownDistance = Int16.MaxValue;
         
         foreach (Town town in TownArray)
         {
@@ -115,15 +116,23 @@ public class BuildFactoryTask : AITask, IUnitTask
             if (town.RegionId != rawFirmLocation.RegionId)
                 continue;
 
+            if (town.JoblessPopulation < Nation.PrefTownMinJoblessPopulation)
+                continue;
+
+            if (Misc.FirmTownDistance(rawFirm, town) > Nation.PrefMineFactoryDistance)
+                continue;
+
             if (!CanBuildFirmNearTown(Firm.FIRM_FACTORY, town))
                 continue;
             
             int distance = Misc.FirmTownDistance(rawFirm, town);
-            int rating = town.JoblessPopulation * 2 + (GameConstants.MapSize - distance);
-            if (rating > bestRating)
+            if (distance < bestTownDistance)
             {
-                bestTown = town;
-                bestRating = rating;
+                if (bestTown == null || town.Population >= Nation.PrefBaseTownMinPopulation)
+                {
+                    bestTown = town;
+                    bestTownDistance = distance;
+                }
             }
         }
 

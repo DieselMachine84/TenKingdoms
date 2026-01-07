@@ -21,13 +21,29 @@ public partial class Nation : NationBase
     private readonly List<SailShipTask> _sailShipTasks = new List<SailShipTask>();
     private readonly List<IdleUnitTask> _idleUnitTasks = new List<IdleUnitTask>();
     
-    private ManageCaravansTask _manageCaravanTask;
-    private ManageTradeShipsTask _manageTradeShipsTask;
-    private CollectTaxTask _collectTaxTask;
-    private RecruitSoldiersTask _recruitSoldiersTask;
+    private readonly ManageCaravansTask _manageCaravanTask;
+    private readonly ManageTradeShipsTask _manageTradeShipsTask;
+    private readonly CollectTaxTask _collectTaxTask;
+    private readonly RecruitSoldiersTask _recruitSoldiersTask;
+
+    public int PrefMineFactoryDistance { get; }
+    public int PrefMinFactoryRawResource { get; }
+    public int PrefBaseTownMinPopulation { get; }
+    public int PrefTownMinJoblessPopulation { get; }
+    public int PrefMaxCaravanStopDistance { get; }
+    public int PrefCashReserve { get; }
+    public int PrefFoodReserve { get; }
 
     public Nation()
     {
+        PrefMineFactoryDistance = 20 + Misc.Random(20);
+        PrefMinFactoryRawResource = 250 + Misc.Random(200);
+        PrefBaseTownMinPopulation = 20 + Misc.Random(20);
+        PrefTownMinJoblessPopulation = 8 + Misc.Random(16);
+        PrefMaxCaravanStopDistance = 100 + Misc.Random(300);
+        PrefCashReserve = 500 + Misc.Random(1500);
+        PrefFoodReserve = 500 + Misc.Random(1500); 
+        
         _manageCaravanTask = new ManageCaravansTask(this);
         _manageTradeShipsTask = new ManageTradeShipsTask(this);
         _collectTaxTask = new CollectTaxTask(this);
@@ -434,25 +450,6 @@ public partial class Nation : NationBase
 
     private void ThinkBuildFactory()
     {
-        bool HasFactory(Firm rawFirm, int rawId)
-        {
-            foreach (Firm firm in FirmArray)
-            {
-                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_FACTORY)
-                    continue;
-
-                //TODO other region
-                if (firm.RegionId != rawFirm.RegionId)
-                    continue;
-
-                FirmFactory factory = (FirmFactory)firm;
-                if (factory.UnderConstruction || factory.ProductId == rawId)
-                    return true;
-            }
-            
-            return false;
-        }
-
         bool HasBuildFactoryTask(Firm rawFirm)
         {
             foreach (BuildFactoryTask buildFactoryTask in _buildFactoryTasks)
@@ -466,21 +463,62 @@ public partial class Nation : NationBase
 
             return false;
         }
+        
+        void CheckAddBuildFactoryTask(Firm rawFirm, int rawId, double rawStockQty)
+        {
+            List<FirmFactory> availableFactories = new List<FirmFactory>();
+            int minFactoryRawResource = Int16.MaxValue;
+            foreach (Firm firm in FirmArray)
+            {
+                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_FACTORY)
+                    continue;
+
+                //TODO other region
+                if (firm.RegionId != rawFirm.RegionId)
+                    continue;
+
+                FirmFactory factory = (FirmFactory)firm;
+                //TODO use path distance
+                if ((factory.UnderConstruction || factory.ProductId == rawId) && Misc.FirmsDistance(rawFirm, factory) <= PrefMineFactoryDistance * 3 / 2)
+                    availableFactories.Add(factory);
+
+                if (!factory.UnderConstruction)
+                {
+                    if ((int)factory.RawStockQty < minFactoryRawResource)
+                        minFactoryRawResource = (int)factory.RawStockQty;
+                }
+                else
+                {
+                    minFactoryRawResource = 0;
+                }
+            }
+            
+            if (availableFactories.Count != 0)
+            {
+                if (minFactoryRawResource > PrefMinFactoryRawResource && rawStockQty > 450.0)
+                    _buildFactoryTasks.Add(new BuildFactoryTask(this, rawFirm.FirmId, rawId));
+            }
+            else
+            {
+                _buildFactoryTasks.Add(new BuildFactoryTask(this, rawFirm.FirmId, rawId));
+            }
+        }
+
+        if (cash < PrefCashReserve || food < PrefFoodReserve)
+            return;
 
         foreach (Firm firm in FirmArray)
         {
             if (firm.NationId != nation_recno || firm.UnderConstruction)
                 continue;
-
+            
             if (firm.FirmType == Firm.FIRM_MINE)
             {
                 FirmMine mine = (FirmMine)firm;
                 if (mine.RawId != 0 && mine.StockQty > 0.0)
                 {
-                    if (!HasFactory(firm, mine.RawId) && !HasBuildFactoryTask(firm))
-                    {
-                        _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId, mine.RawId));
-                    }
+                    if (!HasBuildFactoryTask(firm))
+                        CheckAddBuildFactoryTask(firm, mine.RawId, mine.StockQty);
                 }
             }
 
@@ -492,10 +530,8 @@ public partial class Nation : NationBase
                     MarketGoods marketGoods = market.MarketGoods[i];
                     if (marketGoods.RawId != 0 && marketGoods.StockQty > 0.0)
                     {
-                        if (!HasFactory(firm, marketGoods.RawId) && !HasBuildFactoryTask(firm))
-                        {
-                            _buildFactoryTasks.Add(new BuildFactoryTask(this, firm.FirmId, marketGoods.RawId));
-                        }
+                        if (!HasBuildFactoryTask(firm))
+                            CheckAddBuildFactoryTask(firm, marketGoods.RawId, marketGoods.StockQty);
                     }
                 }
             }
