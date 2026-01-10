@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop }
+enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop, ShipGoods }
 
 public partial class Renderer
 {
@@ -26,8 +26,40 @@ public partial class Renderer
             unit.DrawDetails(this);
     }
 
-    private void DrawTradeStops(Unit unit, TradeStop[] stops, int[] rawQty, int[] productQty)
+    private void DrawTradeStops(Unit unit, TradeStop[] stops)
     {
+        int GetFirmStockQty(Firm firm, int rawId, int productId)
+        {
+            if (firm.FirmType == Firm.FIRM_MINE)
+            {
+                FirmMine mine = (FirmMine)firm;
+                if (rawId != 0 && mine.RawId == rawId)
+                    return (int)mine.StockQty;
+            }
+
+            if (firm.FirmType == Firm.FIRM_FACTORY)
+            {
+                FirmFactory factory = (FirmFactory)firm;
+                if (productId != 0 && factory.ProductId == productId)
+                    return (int)factory.StockQty;
+            }
+
+            if (firm.FirmType == Firm.FIRM_MARKET)
+            {
+                FirmMarket market = (FirmMarket)firm;
+                foreach (MarketGoods marketGoods in market.MarketGoods)
+                {
+                    if ((marketGoods.RawId != 0 && marketGoods.RawId == rawId) ||
+                        (marketGoods.ProductId != 0 && marketGoods.ProductId == productId))
+                    {
+                        return (int)marketGoods.StockQty;
+                    }
+                }
+            }
+
+            return -1;
+        }
+        
         int dy = 0;
         for (int i = 0; i < UnitCaravan.MAX_STOP_FOR_CARAVAN; i++)
         {
@@ -50,13 +82,19 @@ public partial class Renderer
             {
                 Firm firm = FirmArray[firmId];
                 int colorScheme = ColorRemap.ColorSchemes[firm.NationId];
-                int color = ColorRemap.GetColorRemap(colorScheme, false).MainColor;
+                ColorRemap colorRemap = ColorRemap.GetColorRemap(colorScheme, false);
+                int color = colorRemap.MainColor;
+                int borderColor = colorRemap.BorderColor;
                 Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 24, 24, color);
+                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 24, 2, borderColor);
+                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy + 24 - 2, 24, 2, borderColor);
+                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 2, 24, borderColor);
+                Graphics.DrawRect(DetailsX1 + 16 + 24 - 2, DetailsY1 + 102 + dy, 2, 24, borderColor);
                 PutText(FontSan, firm.FirmName(), DetailsX1 + 46, DetailsY1 + 99 + dy);
                 PutText(FontSan, "Pick up", DetailsX1 + 16, DetailsY1 + 132 + dy, -1, true);
                 PutText(FontSan, ":", DetailsX1 + 79, DetailsY1 + 134 + dy, -1, true);
 
-                if (unit.IsOwn())
+                if (unit.IsOwn() || Config.show_ai_info)
                 {
                     bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
                                                  _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
@@ -65,7 +103,10 @@ public partial class Renderer
                     else
                         DrawSetStopPanelUp(DetailsX1 + 168, DetailsY1 + 159 + dy);
                     PutText(FontSan, "View Stop", DetailsX1 + 180, DetailsY1 + 162 + dy, -1, true);
+                }
 
+                if (unit.IsOwn())
+                {
                     bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
                                               _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
                     if (_leftMousePressed && mouseOnClearButton)
@@ -75,6 +116,7 @@ public partial class Renderer
                     PutText(FontSan, "Clear", DetailsX1 + 336, DetailsY1 + 162 + dy, -1, true);
                 }
 
+                bool onlyOneItem = firm.FirmType == Firm.FIRM_MINE || firm.FirmType == Firm.FIRM_FACTORY;
                 int pickupGoods = 0;
                 int dx = 0;
                 for (int j = 1; j <= TradeStop.MAX_PICK_UP_GOODS; j++)
@@ -86,37 +128,27 @@ public partial class Renderer
                     if (productId < 1 || productId > GameConstants.MAX_PRODUCT)
                         productId = 0;
 
-                    int stock = -1;
+                    int stockQty = -1;
 
-                    if (firm.FirmType == Firm.FIRM_MINE)
+                    if (firm.FirmType == Firm.FIRM_HARBOR)
                     {
-                        FirmMine mine = (FirmMine)firm;
-                        if (rawId != 0 && mine.RawId == rawId)
-                            stock = (int)mine.StockQty;
+                        FirmHarbor harbor = (FirmHarbor)firm;
+                        foreach (int linkedFirmId in harbor.LinkedFirms)
+                        {
+                            stockQty = GetFirmStockQty(FirmArray[linkedFirmId], rawId, productId);
+                            if (stockQty >= 0)
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        stockQty = GetFirmStockQty(firm, rawId, productId);
                     }
 
-                    if (firm.FirmType == Firm.FIRM_FACTORY)
-                    {
-                        FirmFactory factory = (FirmFactory)firm;
-                        if (productId != 0 && factory.ProductId == productId)
-                            stock = (int)factory.StockQty;
-                    }
+                    if (rawId != 0 && stockQty >= 0)
+                        onlyOneItem = true;
 
-                    if (firm.FirmType == Firm.FIRM_MARKET)
-                    {
-                        FirmMarket market = (FirmMarket)firm;
-                        MarketGoods marketGoods = null;
-                        if (rawId != 0)
-                            marketGoods = market.MarketGoods[rawId - 1];
-
-                        if (productId != 0)
-                            marketGoods = market.MarketGoods[productId - 1];
-
-                        if (marketGoods != null)
-                            stock = (int)marketGoods.StockQty;
-                    }
-
-                    if ((rawId != 0 && stock > 0) || productId != 0)
+                    if ((rawId != 0 && stockQty >= 0) || (productId != 0 && stockQty >= 0) || (!onlyOneItem && productId != 0))
                     {
                         pickupGoods++;
                         bool pressed = stop.PickUpEnabled[j - 1];
@@ -168,7 +200,10 @@ public partial class Renderer
 
             dy += 97;
         }
-        
+    }
+
+    private void DrawUnitGoods(int[] rawQty, int[] productQty)
+    {
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 387);
         for (int i = 1; i <= GameConstants.MAX_RAW; i++)
         {
@@ -248,14 +283,14 @@ public partial class Renderer
         unit.HandleDetailsInput(this);
     }
 
-    private void HandleTradeStops(ITrader trader, TradeStop[] stops)
+    private void HandleTradeStops(ITrader trader, TradeStop[] stops, bool isOwnTrader)
     {
         int dy = 0;
         for (int i = 0; i < UnitCaravan.MAX_STOP_FOR_CARAVAN; i++)
         {
             bool mouseOnSetStopButton = _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 123 &&
                                         _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-            if (_leftMouseReleased && mouseOnSetStopButton)
+            if (_leftMouseReleased && mouseOnSetStopButton && isOwnTrader)
             {
                 _setStopId = i + 1;
                 UnitDetailsMode = UnitDetailsMode.SetStop;
@@ -268,14 +303,14 @@ public partial class Renderer
                 Firm firm = FirmArray[firmId];
                 bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
                                              _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-                if (_leftMouseReleased && mouseOnViewStopButton)
+                if (_leftMouseReleased && mouseOnViewStopButton && (isOwnTrader || Config.show_ai_info))
                 {
                     GoToLocation(firm.LocCenterX, firm.LocCenterY);
                 }
 
                 bool mouseOnClearButton = _mouseButtonX >= DetailsX1 + 322 && _mouseButtonX <= DetailsX1 + 391 &&
                                           _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-                if (_leftMouseReleased && mouseOnClearButton)
+                if (_leftMouseReleased && mouseOnClearButton && isOwnTrader)
                 {
                     trader.DelStop(i + 1, InternalConstants.COMMAND_PLAYER);
                     SECtrl.immediate_sound("TURN_OFF");
@@ -310,22 +345,22 @@ public partial class Renderer
                     if (firm.FirmType == Firm.FIRM_MARKET)
                     {
                         FirmMarket market = (FirmMarket)firm;
-                        MarketGoods marketGoods = null;
-                        if (rawId != 0)
-                            marketGoods = market.MarketGoods[rawId - 1];
-
-                        if (productId != 0)
-                            marketGoods = market.MarketGoods[productId - 1];
-
-                        if (marketGoods != null)
-                            stock = (int)marketGoods.StockQty;
+                        foreach (MarketGoods marketGoods in market.MarketGoods)
+                        {
+                            if ((marketGoods.RawId != 0 && marketGoods.RawId == rawId) ||
+                                (marketGoods.ProductId != 0 && marketGoods.ProductId == productId))
+                            {
+                                stock = (int)marketGoods.StockQty;
+                                break;
+                            }
+                        }
                     }
 
                     if ((rawId != 0 && stock > 0) || productId != 0 || j == TradeStop.AUTO_PICK_UP || j == TradeStop.NO_PICK_UP)
                     {
                         bool mouseOnResourceButton = _mouseButtonX >= DetailsX1 + 112 + dx && _mouseButtonX <= DetailsX1 + 139 + dx &&
                                                      _mouseButtonY >= DetailsY1 + 129 + dy && _mouseButtonY <= DetailsY1 + 156 + dy;
-                        if (_leftMousePressed && mouseOnResourceButton)
+                        if (_leftMousePressed && mouseOnResourceButton && isOwnTrader)
                         {
                             trader.SetStopPickUp(i + 1, j, InternalConstants.COMMAND_PLAYER);
                         }
@@ -339,6 +374,7 @@ public partial class Renderer
         }
     }
     
+    //TODO for ships UnitDetailsMode should be reset to UnitDetailsMode.ShipGoods
     private void CancelSetStop()
     {
         if (UnitDetailsMode == UnitDetailsMode.SetStop)

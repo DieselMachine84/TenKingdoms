@@ -5,6 +5,7 @@ namespace TenKingdoms;
 public partial class Renderer
 {
     //TODO support batch build with shift
+    //TODO draw build indicator and cancel build button
 
     private const int ShipHeight = 56;
     private const int BuildShipPanelX = DetailsX1 + 2;
@@ -53,9 +54,9 @@ public partial class Renderer
             shipY += ShipHeight;
         }
 
+        DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 274);
         if (_selectedShipId != 0)
         {
-            DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 274);
             UnitMarine selectedShip = (UnitMarine)UnitArray[_selectedShipId];
             bool unitsAndGoodsShip = selectedShip.UnitType == UnitConstants.UNIT_CARAVEL || selectedShip.UnitType == UnitConstants.UNIT_GALLEON;
             if (selectedShip.UnitType == UnitConstants.UNIT_TRANSPORT || (unitsAndGoodsShip && FirmDetailsMode == FirmDetailsMode.Normal))

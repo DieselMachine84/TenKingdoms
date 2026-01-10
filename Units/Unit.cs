@@ -265,12 +265,13 @@ public abstract partial class Unit : Sprite
 
 		if (UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 		{
+			//TODO check this code
 			// the ship may have been destroyed at the same time. Actually when the ship is destroyed,
 			// all units onboard are killed and this function is called.
 			if (!UnitArray.IsDeleted(UnitModeParam))
 			{
 				UnitMarine ship = (UnitMarine)UnitArray[UnitModeParam];
-				ship.DelUnit(SpriteId);
+				ship.RemoveUnit(SpriteId);
 			}
 		}
 
@@ -1029,6 +1030,7 @@ public abstract partial class Unit : Sprite
 					//---------------------------------------------------------------------------//
 					// if the unit inside the firm location, deinit the unit to free the space for building firm
 					//---------------------------------------------------------------------------//
+					//TODO DeinitSprite is called before BuildFirm. It is a possible bug because there is a chance that firm cannot be built
 					if (MoveToLocX >= ActionLocX && MoveToLocX < ActionLocX + width &&
 					    MoveToLocY >= ActionLocY && MoveToLocY < ActionLocY + height)
 						DeinitSprite();

@@ -11,24 +11,56 @@ public partial class Renderer
             return;
 
         UnitInfo unitInfo = UnitRes[ship.UnitType];
-        if (unitInfo.carry_goods_capacity > 0)
+        if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity > 0)
         {
-            DrawTradeStops(ship, ship.Stops, ship.RawQty, ship.ProductQty);
-            return;
-        }
+            bool mouseOnUnitsGoodsButton = _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 39 &&
+                                           _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
+            if (_leftMousePressed && mouseOnUnitsGoodsButton)
+                DrawResourcePanelDown(DetailsX1 + 10, DetailsY1 + 53);
+            else
+                DrawResourcePanelUp(DetailsX1 + 10, DetailsY1 + 53);
+            PutText(FontSan, UnitDetailsMode == UnitDetailsMode.Normal ? "U" : "G", DetailsX1 + 19, DetailsY1 + 54);
+            
+            bool mouseOnAutoModeButton = _mouseButtonX >= DetailsX1 + 370 && _mouseButtonX <= DetailsX1 + 397 &&
+                                         _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
+            if ((_leftMousePressed && mouseOnAutoModeButton) || ship.AutoMode)
+                DrawResourcePanelDown(DetailsX1 + 368, DetailsY1 + 53);
+            else
+                DrawResourcePanelUp(DetailsX1 + 368, DetailsY1 + 53);
+            PutText(FontSan, "A", DetailsX1 + 377, DetailsY1 + 54);
 
-        if (unitInfo.carry_unit_capacity > 0)
-            DrawShipUnits(ship);
+            if (UnitDetailsMode == UnitDetailsMode.Normal)
+            {
+                DrawShipUnits(ship);
+            }
+            else
+            {
+                DrawTradeStops(ship, ship.Stops);
+                DrawUnitGoods(ship.RawQty, ship.ProductQty);
+            }
+        }
+        else
+        {
+            if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity == 0)
+            {
+                DrawShipUnits(ship);
+            }
+
+            if (unitInfo.carry_unit_capacity == 0 && unitInfo.carry_goods_capacity > 0)
+            {
+                DrawTradeStops(ship, ship.Stops);
+                DrawUnitGoods(ship.RawQty, ship.ProductQty);
+            }
+        }
     }
 
     private void DrawShipUnits(UnitMarine ship)
     {
-        int shipPanelY = DetailsY1 + 96;
-        DrawShipPanel(DetailsX1 + 2, shipPanelY);
+        DrawShipPanel(DetailsX1 + 2, DetailsY1 + 96);
         for (int i = 0; i < ship.UnitsOnBoard.Count; i++)
         {
             int unitX = DetailsX1 + 12 + 131 * (i % 3);
-            int unitY = shipPanelY + 7 + 50 * (i / 3);
+            int unitY = DetailsY1 + 96 + 7 + 50 * (i / 3);
             Unit unit = UnitArray[ship.UnitsOnBoard[i]];
             UnitInfo unitInfo = UnitRes[unit.UnitType];
             Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, unit.Rank), unitX, unitY,
@@ -64,16 +96,21 @@ public partial class Renderer
                 DrawSpyIcon(spyIconX, spyIconY, SpyArray[unit.SpyId].TrueNationId);
             }
 
-            //TODO draw frame
-            //int frameColor = (i == firm.SelectedWorkerId - 1) ? Colors.V_YELLOW : Colors.V_UP;
-            //Graphics.DrawRect(workerX - 1, workerY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
-            //Graphics.DrawRect(workerX - 1, workerY + unitInfo.soldierSmallIconHeight * 2 - 2, unitInfo.soldierSmallIconWidth * 2, 3, frameColor);
-            //Graphics.DrawRect(workerX - 1, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
-            //Graphics.DrawRect(workerX + unitInfo.soldierSmallIconWidth * 2 - 2, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
+            int frameColor = (ship.SelectedUnitId == unit.SpriteId) ? Colors.V_YELLOW : Colors.V_UP;
+            Graphics.DrawRect(unitX - 1, unitY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
+            Graphics.DrawRect(unitX - 1, unitY + unitInfo.soldierSmallIconHeight * 2 - 2, unitInfo.soldierSmallIconWidth * 2, 3, frameColor);
+            Graphics.DrawRect(unitX - 1, unitY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(unitX + unitInfo.soldierSmallIconWidth * 2 - 2, unitY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
         }
 
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 261);
-        
+
+        if (ship.SelectedUnitId != 0)
+        {
+            Unit selectedUnit = UnitArray[ship.SelectedUnitId];
+            DrawUnitFields(selectedUnit, DetailsY1 + 261);
+        }
+
         if (ship.IsOwn())
         {
             bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
@@ -108,17 +145,80 @@ public partial class Renderer
 
     public void HandleShipDetailsInput(UnitMarine ship)
     {
-        if (!ship.IsOwn())
+        if (!ship.IsOwn() && !Config.show_ai_info)
             return;
         
         UnitInfo unitInfo = UnitRes[ship.UnitType];
-        if (unitInfo.carry_goods_capacity > 0)
+        if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity > 0)
         {
-            HandleTradeStops(ship, ship.Stops);
+            bool mouseOnUnitsGoodsButton = _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 39 &&
+                                           _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
+            if (_leftMouseReleased && mouseOnUnitsGoodsButton && (ship.IsOwn() || Config.show_ai_info))
+            {
+                UnitDetailsMode = UnitDetailsMode switch
+                {
+                    UnitDetailsMode.Normal => UnitDetailsMode.ShipGoods,
+                    UnitDetailsMode.ShipGoods => UnitDetailsMode.Normal,
+                    _ => UnitDetailsMode
+                };
+            }
+            
+            bool mouseOnAutoModeButton = _mouseButtonX >= DetailsX1 + 370 && _mouseButtonX <= DetailsX1 + 397 &&
+                                         _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
+            if (_leftMouseReleased && mouseOnAutoModeButton && ship.IsOwn())
+            {
+                //if (remote.is_enable())
+                //{
+                    //// packet structure <unit recno> <new mode>
+                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_U_SHIP_CHANGE_MODE, 2*sizeof(short) );
+                    //*shortPtr = sprite_recno;
+                    //shortPtr[1] = !auto_mode;
+                //}
+                //else
+                //{
+                    ship.AutoMode = !ship.AutoMode;
+                //}
+            }
+            
+            if (UnitDetailsMode == UnitDetailsMode.Normal)
+            {
+                HandleShipUnits(ship);
+            }
+            else
+            {
+                HandleTradeStops(ship, ship.Stops, ship.IsOwn());
+            }
+        }
+        else
+        {
+            if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity == 0)
+            {
+                HandleShipUnits(ship);
+            }
+
+            if (unitInfo.carry_unit_capacity == 0 && unitInfo.carry_goods_capacity > 0)
+            {
+                HandleTradeStops(ship, ship.Stops, ship.IsOwn());
+            }
+        }
+    }
+
+    private void HandleShipUnits(UnitMarine ship)
+    {
+        if (!ship.IsOwn() && !Config.show_ai_info)
             return;
+        
+        int mouseShipUnitId = GetMouseShipUnitId(ship);
+        if (mouseShipUnitId != 0)
+        {
+            if (_leftMouseReleased)
+                ship.SelectedUnitId = ship.SelectedUnitId != mouseShipUnitId ? mouseShipUnitId : 0;
+            
+            if (_rightMouseReleased && ship.IsOwn() && ship.CanUnloadUnit())
+                ship.UnloadUnit(ship.UnitsOnBoard.IndexOf(mouseShipUnitId), InternalConstants.COMMAND_PLAYER);
         }
 
-        if (unitInfo.carry_unit_capacity > 0)
+        if (ship.IsOwn())
         {
             bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                                   _mouseButtonY >= ButtonsUnitShipY + 2 && _mouseButtonY <= ButtonsUnitShipY + ButtonHeight;
@@ -130,24 +230,37 @@ public partial class Renderer
                 bool newAggressiveMode = !ship.AggressiveMode;
                 //if (remote.is_enable())
                 //{
-                    //// packet structure : <unit no> <new aggressive mode>
-                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
-                    //*shortPtr = i;
-                    //shortPtr[1] = newAggressiveMode;
+                //// packet structure : <unit no> <new aggressive mode>
+                //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
+                //*shortPtr = i;
+                //shortPtr[1] = newAggressiveMode;
                 //}
                 //else
                 //{
-                    ship.AggressiveMode = newAggressiveMode;
+                ship.AggressiveMode = newAggressiveMode;
                 //}
 
                 SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
             }
-            
+
             if (_leftMouseReleased && mouseOnButton2 && ship.CanUnloadUnit())
             {
                 ship.UnloadAllUnits(InternalConstants.COMMAND_PLAYER);
                 SECtrl.immediate_sound("TURN_ON");
             }
         }
+    }
+    
+    private int GetMouseShipUnitId(UnitMarine ship)
+    {
+        for (int i = 0; i < ship.UnitsOnBoard.Count; i++)
+        {
+            int unitX = DetailsX1 + 12 + 131 * (i % 3);
+            int unitY = DetailsY1 + 96 + 7 + 50 * (i / 3);
+            if (_mouseButtonX >= unitX && _mouseButtonX <= unitX + 48 && _mouseButtonY >= unitY && _mouseButtonY <= unitY + 40)
+                return ship.UnitsOnBoard[i];
+        }
+
+        return 0;
     }
 }

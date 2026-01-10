@@ -62,6 +62,8 @@ public partial class Renderer : IRenderer
     private int _selectedSiteId;
     private int _selectedRaceId;
     private int _selectedShipId;
+    
+    private int _setStopId;
 
     private Graphics Graphics { get; }
 
@@ -261,6 +263,7 @@ public partial class Renderer : IRenderer
         TownDetailsMode = TownDetailsMode.Normal;
         FirmDetailsMode = FirmDetailsMode.Normal;
         UnitDetailsMode = UnitDetailsMode.Normal;
+        _setStopId = 0;
     }
     
     public void Reset()

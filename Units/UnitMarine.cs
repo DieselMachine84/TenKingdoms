@@ -18,6 +18,7 @@ public class UnitMarine : Unit, ITrader
 	public int ExtraMoveInBeach { get; set; }
 	public bool InBeach { get; set; }
 	public List<int> UnitsOnBoard { get; } = new List<int>();
+	public int SelectedUnitId { get; set; }
 	public AttackInfo ShipAttackInfo { get; set; }
 	public DateTime LastLoadGoodsDate { get; set; }
 
@@ -83,18 +84,6 @@ public class UnitMarine : Unit, ITrader
 		base.Deinit();
 	}
 
-	public void DelUnit(int unitId)
-	{
-		for (int i = UnitsOnBoard.Count - 1; i >= 0; i--)
-		{
-			if (UnitsOnBoard[i] == unitId)
-			{
-				UnitsOnBoard.RemoveAt(i);
-				return;
-			}
-		}
-	}
-	
 	public override void PreProcess()
 	{
 		base.PreProcess();
@@ -1423,24 +1412,42 @@ public class UnitMarine : Unit, ITrader
 		}
 	}
 
+
+	public void RemoveUnit(int unitId)
+	{
+		UnitsOnBoard.Remove(unitId);
+		
+		if (SelectedUnitId == unitId)
+			SelectedUnitId = 0;
+	}
+
+	private void SortUnits()
+	{
+		UnitsOnBoard.Sort((unitId1, unitId2) =>
+		{
+			Unit unit1 = UnitArray[unitId1];
+			Unit unit2 = UnitArray[unitId2];
+			return unit1.Rank != unit2.Rank ? unit2.Rank - unit1.Rank : unit2.MaxHitPoints - unit1.MaxHitPoints;
+		});
+	}
 	
 	public bool CanUnloadUnit()
 	{
 		return UnitsOnBoard.Count > 0 && (CurAction == SPRITE_IDLE || CurAction == SPRITE_ATTACK) && IsOnCoast();
 	}
 
-	public void UnloadUnit(int unitSeqId, int remoteAction)
+	public void UnloadUnit(int unitIndex, int remoteAction)
 	{
 		//if (!remoteAction && remote.is_enable())
 		//{
 			//// packet structure : <unit recno> <unitSeqId>
 			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_U_SHIP_UNLOAD_UNIT, 2 * sizeof(short));
 			//*shortPtr = sprite_recno;
-			//shortPtr[1] = unitSeqId;
+			//shortPtr[1] = unitIndex;
 			//return;
 		//}
 
-		UnloadingUnit(unitSeqId - 1);
+		UnloadingUnit(unitIndex);
 	}
 
 	public void UnloadAllUnits(int remoteAction)
@@ -1509,7 +1516,7 @@ public class UnitMarine : Unit, ITrader
 					}*/
 
 					unprocessed--;
-					UnitsOnBoard.Remove(unit.SpriteId);
+					RemoveUnit(unit.SpriteId);
 
 					if (unprocessed > 0)
 						unit = UnitArray[UnitsOnBoard[unprocessed - 1]]; // point to next unit
@@ -1580,6 +1587,7 @@ public class UnitMarine : Unit, ITrader
 			return;
 
 		UnitsOnBoard.Add(unitId);
+		SortUnits();
 		
 		Unit unit = UnitArray[unitId];
 		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode

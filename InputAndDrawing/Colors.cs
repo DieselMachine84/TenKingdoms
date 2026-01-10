@@ -68,6 +68,7 @@ public class ColorRemapMethod
 public class ColorRemap
 {
     public byte MainColor { get; private set; }
+    public byte BorderColor { get; private set; }
     public byte[] ColorTable { get; } = new byte[256];
 
     public static int[] ColorSchemes { get; } = new int[InternalConstants.MAX_COLOR_SCHEME + 1];
@@ -98,6 +99,7 @@ public class ColorRemap
         //---- define the main color code for each color scheme ----//
 
         byte[] mainColors = { 0xDC, 0xC0, 0xC4, 0xC8, 0xCC, 0xD0, 0xD4, 0xD8, 0x13, 0xA8, 0xAC };
+        byte[] borderColors = { 0xDE, 0xC2, 0xC6, 0xCA, 0xCE, 0xD2, 0xD6, 0xDA, 0x31, 0xAA, 0xAE };
 
         //-------- initialize color remap table -------//
 
@@ -107,6 +109,7 @@ public class ColorRemap
             ColorRemaps[i] = colorRemap;
             
             colorRemap.MainColor = mainColors[i];
+            colorRemap.BorderColor = borderColors[i];
 
             for (int j = 0; j < 256; j++)
                 colorRemap.ColorTable[j] = (byte)j;
