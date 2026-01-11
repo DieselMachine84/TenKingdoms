@@ -1771,4 +1771,22 @@ public class NationBase : IIdObject
 
         return 0;
     }
+
+    public string FoodString()
+    {
+        int foodChange = (int)food_change_365days();
+        return (int)food + " (" + (foodChange >= 0 ? "+" : "-") + Math.Abs(foodChange) + ")";
+    }
+
+    public string CashString()
+    {
+        int cashChange = (int)profit_365days();
+        return (int)cash + " (" + (cashChange >= 0 ? "+" : "-") + Math.Abs(cashChange) + ")";
+    }
+
+    public string ReputationString()
+    {
+        int reputationChange = (int)reputation_change_365days();
+        return (int)reputation + " (" + (reputationChange >= 0 ? "+" : "-") + Math.Abs(reputationChange) + ")";
+    }
 }

@@ -179,6 +179,12 @@ public partial class Renderer
 	private IntPtr _arrowDownTexture;
 	private int _arrowDownWidth;
 	private int _arrowDownHeight;
+	private IntPtr _reputationUpTexture;
+	private int _reputationUpWidth;
+	private int _reputationUpHeight;
+	private IntPtr _reputationDownTexture;
+	private int _reputationDownWidth;
+	private int _reputationDownHeight;
 	private IntPtr _kingTexture;
 	private IntPtr _generalTexture;
 	private IntPtr _constructionTexture;
@@ -604,6 +610,14 @@ public partial class Renderer
 		_arrowDownWidth = BitConverter.ToInt16(arrowDownData, 0);
 		_arrowDownHeight = BitConverter.ToInt16(arrowDownData, 2);
 		_arrowDownTexture = Graphics.CreateTextureFromBmp(arrowDownData.Skip(4).ToArray(), _arrowDownWidth, _arrowDownHeight);
+		byte[] reputationUpData = iconResource.Read("REPU_UP");
+		_reputationUpWidth = BitConverter.ToInt16(reputationUpData, 0);
+		_reputationUpHeight = BitConverter.ToInt16(reputationUpData, 2);
+		_reputationUpTexture = Graphics.CreateTextureFromBmp(reputationUpData.Skip(4).ToArray(), _reputationUpWidth, _reputationUpHeight);
+		byte[] reputationDownData = iconResource.Read("REPU_DW");
+		_reputationDownWidth = BitConverter.ToInt16(reputationDownData, 0);
+		_reputationDownHeight = BitConverter.ToInt16(reputationDownData, 2);
+		_reputationDownTexture = Graphics.CreateTextureFromBmp(reputationDownData.Skip(4).ToArray(), _reputationDownWidth, _reputationDownHeight);
 		byte[] kingData = iconResource.Read("U_KING");
 		_skillWidth = BitConverter.ToInt16(kingData, 0);
 		_skillHeight = BitConverter.ToInt16(kingData, 2);

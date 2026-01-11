@@ -194,49 +194,67 @@ public partial class Renderer : IRenderer
 
     private void DrawMainScreen()
     {
-        Graphics.DrawBitmap(_gameMenuTexture1, 0, 0, Scale(_gameMenuTexture1Width), Scale(_gameMenuTexture1Height));
-        Graphics.DrawBitmap(_gameMenuTexture2, Scale(_gameMenuTexture1Width), 0, Scale(_gameMenuTexture2Width), Scale(_gameMenuTexture2Height));
+        Graphics.DrawBitmapScaled(_gameMenuTexture1, 0, 0, _gameMenuTexture1Width, _gameMenuTexture1Height);
+        Graphics.DrawBitmapScaled(_gameMenuTexture2, Scale(_gameMenuTexture1Width), 0, _gameMenuTexture2Width, _gameMenuTexture2Height);
         int gameMenuWidth = Scale(_gameMenuTexture1Width) + Scale(_gameMenuTexture2Width);
         while (gameMenuWidth < WindowWidth)
         {
-            Graphics.DrawBitmap(_gameMenuTexture3, gameMenuWidth, 0, Scale(_gameMenuTexture3Width), Scale(_gameMenuTexture3Height));
+            Graphics.DrawBitmapScaled(_gameMenuTexture3, gameMenuWidth, 0, _gameMenuTexture3Width, _gameMenuTexture3Height);
             gameMenuWidth += Scale(_gameMenuTexture3Width);
         }
 
-        Graphics.DrawBitmap(_middleBorder1Texture, MainViewX + MainViewWidth, 0, Scale(_middleBorder1TextureWidth), Scale(_middleBorder1TextureHeight));
+        Graphics.DrawBitmapScaled(_middleBorder1Texture, MainViewX + MainViewWidth, 0, _middleBorder1TextureWidth, _middleBorder1TextureHeight);
         int middleBorderHeight = Scale(_middleBorder1TextureHeight);
         while (middleBorderHeight < WindowHeight)
         {
-            Graphics.DrawBitmap(_middleBorder2Texture, MainViewX + MainViewWidth, middleBorderHeight, Scale(_middleBorder2TextureWidth), Scale(_middleBorder2TextureHeight));
+            Graphics.DrawBitmapScaled(_middleBorder2Texture, MainViewX + MainViewWidth, middleBorderHeight, _middleBorder2TextureWidth, _middleBorder2TextureHeight);
             middleBorderHeight += Scale(_middleBorder2TextureHeight);
         }
 
-        Graphics.DrawBitmap(_detailsTexture1, DetailsX1, DetailsY1, Scale(_detailsTexture1Width), Scale(_detailsTexture1Height));
-        Graphics.DrawBitmap(_detailsTexture2, DetailsX2 - Scale(_detailsTexture2Width), DetailsY1, Scale(_detailsTexture2Width), Scale(_detailsTexture2Height));
+        Graphics.DrawBitmapScaled(_detailsTexture1, DetailsX1, DetailsY1, _detailsTexture1Width, _detailsTexture1Height);
+        Graphics.DrawBitmapScaled(_detailsTexture2, DetailsX2 - Scale(_detailsTexture2Width), DetailsY1, _detailsTexture2Width, _detailsTexture2Height);
         int detailsHeight = DetailsY1 + Scale(_detailsTexture1Width);
         while (detailsHeight < WindowHeight)
         {
-            Graphics.DrawBitmap(_detailsTexture3, DetailsX1, detailsHeight, Scale(_detailsTexture3Width), Scale(_detailsTexture3Height));
-            Graphics.DrawBitmap(_detailsTexture4, DetailsX2 - Scale(_detailsTexture4Width), detailsHeight, Scale(_detailsTexture4Width), Scale(_detailsTexture4Height));
+            Graphics.DrawBitmapScaled(_detailsTexture3, DetailsX1, detailsHeight, _detailsTexture3Width, _detailsTexture3Height);
+            Graphics.DrawBitmapScaled(_detailsTexture4, DetailsX2 - Scale(_detailsTexture4Width), detailsHeight, _detailsTexture4Width, _detailsTexture4Height);
             detailsHeight += Scale(_detailsTexture3Width);
         }
 
-        Graphics.DrawBitmap(_rightBorder1Texture, WindowWidth - Scale(_rightBorder1TextureWidth), 0, Scale(_rightBorder1TextureWidth), Scale(_rightBorder1TextureHeight));
+        Graphics.DrawBitmapScaled(_rightBorder1Texture, WindowWidth - Scale(_rightBorder1TextureWidth), 0, _rightBorder1TextureWidth, _rightBorder1TextureHeight);
         int rightBorderHeight = Scale(_rightBorder1TextureHeight);
         while (rightBorderHeight < WindowHeight)
         {
-            Graphics.DrawBitmap(_rightBorder2Texture, WindowWidth - Scale(_rightBorder2TextureWidth), rightBorderHeight, Scale(_rightBorder2TextureWidth), Scale(_rightBorder2TextureHeight));
+            Graphics.DrawBitmapScaled(_rightBorder2Texture, WindowWidth - Scale(_rightBorder2TextureWidth), rightBorderHeight, _rightBorder2TextureWidth, _rightBorder2TextureHeight);
             rightBorderHeight += Scale(_rightBorder2TextureHeight);
         }
         
-        Graphics.DrawBitmap(_miniMapBorder1Texture, MainViewX + MainViewWidth, MiniMapY + MiniMapSize,
-            Scale(_miniMapBorder1TextureWidth), Scale(_miniMapBorder1TextureHeight));
-        Graphics.DrawBitmap(_miniMapBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), MiniMapY + MiniMapSize,
-            Scale(_miniMapBorder2TextureWidth), Scale(_miniMapBorder2TextureHeight));
-        Graphics.DrawBitmap(_bottomBorder1Texture, MainViewX + MainViewWidth, WindowHeight - Scale(_bottomBorder1TextureHeight),
-            Scale(_bottomBorder1TextureWidth), Scale(_bottomBorder1TextureHeight));
-        Graphics.DrawBitmap(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
-            Scale(_bottomBorder2TextureWidth), Scale(_bottomBorder2TextureHeight));
+        Graphics.DrawBitmapScaled(_miniMapBorder1Texture, MainViewX + MainViewWidth, MiniMapY + MiniMapSize,
+            _miniMapBorder1TextureWidth, _miniMapBorder1TextureHeight);
+        Graphics.DrawBitmapScaled(_miniMapBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), MiniMapY + MiniMapSize,
+            _miniMapBorder2TextureWidth, _miniMapBorder2TextureHeight);
+        Graphics.DrawBitmapScaled(_bottomBorder1Texture, MainViewX + MainViewWidth, WindowHeight - Scale(_bottomBorder1TextureHeight),
+            _bottomBorder1TextureWidth, _bottomBorder1TextureHeight);
+        Graphics.DrawBitmapScaled(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
+            _bottomBorder2TextureWidth, _bottomBorder2TextureHeight);
+
+        if (NationArray.player_recno != 0)
+        {
+            Nation player = NationArray.player;
+            PutText(FontMid, player.FoodString(), 468, 6);
+            PutText(FontMid, player.CashString(), 468, 38);
+            PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
+            if (player.reputation_change_365days() >= 0.0)
+                Graphics.DrawBitmapScaled(_reputationUpTexture, 830, 39, _reputationUpWidth, _reputationUpHeight);
+            else
+                Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);
+            PutText(FontMid, player.ReputationString(), 878, 38);
+        }
+        else
+        {
+            PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
+            Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);
+        }
     }
 
     private void ResetDeletedSelectedObjects()
