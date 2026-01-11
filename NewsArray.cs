@@ -94,7 +94,7 @@ public class NewsArray
 		News news = new News();
 		news.id = newsId;
 		news.type = newsType;
-		news.news_date = Info.game_date;
+		news.news_date = Info.GameDate;
 		news.loc_type = 0;
 
 		if (nationRecno1 != 0)
@@ -704,7 +704,7 @@ public class NewsArray
 		//---- add the chat string into Info::remote_chat_str_array[] ----//
 
 		int useChatId = 0;
-		DateTime minDate = Info.game_date.AddDays(1.0);
+		DateTime minDate = Info.GameDate.AddDays(1.0);
 
 		//TODO rewrite
 		/*for (int i = 0; i < MAX_REMOTE_CHAT_STR; i++)

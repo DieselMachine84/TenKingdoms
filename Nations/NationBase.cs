@@ -205,7 +205,7 @@ public class NationBase : IIdObject
 
     public int peaceful_days()
     {
-        return (Info.game_date - last_war_date).Days;
+        return (Info.GameDate - last_war_date).Days;
     }
 
     public string peace_duration_str()
@@ -261,17 +261,17 @@ public class NationBase : IIdObject
 
     public double profit_365days()
     {
-        return last_year_profit * (365 - Info.year_day) / 365 + cur_year_profit;
+        return last_year_profit * (365 - Info.YearDay) / 365 + cur_year_profit;
     }
 
     public double fixed_income_365days()
     {
-        return last_year_fixed_income * (365 - Info.year_day) / 365 + cur_year_fixed_income;
+        return last_year_fixed_income * (365 - Info.YearDay) / 365 + cur_year_fixed_income;
     }
 
     public double fixed_expense_365days()
     {
-        return last_year_fixed_expense * (365 - Info.year_day) / 365 + cur_year_fixed_expense;
+        return last_year_fixed_expense * (365 - Info.YearDay) / 365 + cur_year_fixed_expense;
     }
 
     public double fixed_profit_365days()
@@ -281,12 +281,12 @@ public class NationBase : IIdObject
 
     public double income_365days()
     {
-        return last_year_income * (365 - Info.year_day) / 365 + cur_year_income;
+        return last_year_income * (365 - Info.YearDay) / 365 + cur_year_income;
     }
 
     public double income_365days(int incomeType)
     {
-        return last_year_income_array[incomeType] * (365 - Info.year_day) / 365 + cur_year_income_array[incomeType];
+        return last_year_income_array[incomeType] * (365 - Info.YearDay) / 365 + cur_year_income_array[incomeType];
     }
 
     public double true_income_365days()
@@ -300,22 +300,22 @@ public class NationBase : IIdObject
             lastYearIncome += last_year_income_array[i];
         }
 
-        return lastYearIncome * (365 - Info.year_day) / 365 + curYearIncome;
+        return lastYearIncome * (365 - Info.YearDay) / 365 + curYearIncome;
     }
 
     public double expense_365days()
     {
-        return last_year_expense * (365 - Info.year_day) / 365 + cur_year_expense;
+        return last_year_expense * (365 - Info.YearDay) / 365 + cur_year_expense;
     }
 
     public double expense_365days(int expenseType)
     {
-        return last_year_expense_array[expenseType] * (365 - Info.year_day) / 365 + cur_year_expense_array[expenseType];
+        return last_year_expense_array[expenseType] * (365 - Info.YearDay) / 365 + cur_year_expense_array[expenseType];
     }
 
     public double cheat_365days()
     {
-        return last_year_cheat * (365 - Info.year_day) / 365 + cur_year_cheat;
+        return last_year_cheat * (365 - Info.YearDay) / 365 + cur_year_cheat;
     }
 
     public double true_profit_365days()
@@ -325,12 +325,12 @@ public class NationBase : IIdObject
 
     public double food_change_365days()
     {
-        return last_year_food_change * (365 - Info.year_day) / 365 + cur_year_food_change;
+        return last_year_food_change * (365 - Info.YearDay) / 365 + cur_year_food_change;
     }
 
     public double reputation_change_365days()
     {
-        return last_year_reputation_change * (365 - Info.year_day) / 365 + cur_year_reputation_change;
+        return last_year_reputation_change * (365 - Info.YearDay) / 365 + cur_year_reputation_change;
     }
 
     protected virtual void set_relation_status_ai(int nationRecno, int newStatus)
@@ -355,7 +355,7 @@ public class NationBase : IIdObject
 
         // 5 days after the cease-fire, the nation will remain cease-fire
         if (!recursiveCall && nationRelation.status == NATION_TENSE && newStatus == NATION_HOSTILE &&
-            Info.game_date < nationRelation.last_change_status_date.AddDays(5.0))
+            Info.GameDate < nationRelation.last_change_status_date.AddDays(5.0))
         {
             return;
         }
@@ -377,7 +377,7 @@ public class NationBase : IIdObject
 
         relation_status_array[nationRecno - 1] = newStatus;
         nationRelation.status = newStatus;
-        nationRelation.last_change_status_date = Info.game_date;
+        nationRelation.last_change_status_date = Info.GameDate;
 
         int newRelationLevel = newStatus * RELATION_LEVEL_PER_STATUS;
 
@@ -696,9 +696,9 @@ public class NationBase : IIdObject
         if (!Config.goal_economic_score_flag)
             return false;
 
-        Info.set_rank_data(false); // 0-set all nations, not just those that have contact with us
+        Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.get_rank_score(3, nation_recno) >= Config.goal_economic_score;
+        return Info.GetRankScore(3, nation_recno) >= Config.goal_economic_score;
     }
 
     public bool goal_total_score_achieved()
@@ -706,9 +706,9 @@ public class NationBase : IIdObject
         if (!Config.goal_total_score_flag)
             return false;
 
-        Info.set_rank_data(false); // 0-set all nations, not just those that have contact with us
+        Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.get_total_score(nation_recno) >= Config.goal_total_score;
+        return Info.GetTotalScore(nation_recno) >= Config.goal_total_score;
     }
 
     public bool is_own() => nation_type == NATION_OWN;
@@ -739,7 +739,7 @@ public class NationBase : IIdObject
         //nation_color = Sys.Instance.color_remap_array[colorSchemeId].main_color;
         nation_color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[nation_recno], false).MainColor;
 
-        last_war_date = Info.game_date;
+        last_war_date = Info.GameDate;
 
         //------- if this is the local player's nation -------//
 
@@ -862,13 +862,13 @@ public class NationBase : IIdObject
 
         //-------- if the viewing nation is this nation -------//
 
-        if (Info.default_viewing_nation_recno == nation_recno)
+        if (Info.DefaultViewingNationId == nation_recno)
         {
-            Info.default_viewing_nation_recno = NationArray.player_recno;
+            Info.DefaultViewingNationId = NationArray.player_recno;
             Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
         }
 
-        else if (Info.viewing_nation_recno == nation_recno)
+        else if (Info.ViewingNationId == nation_recno)
             Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL); // it will set viewing_nation_recno to default_viewing_nation_recno
 
         // if deleting own nation, darken view mode buttons
@@ -897,7 +897,7 @@ public class NationBase : IIdObject
 
         nationRelation.status = NATION_NEUTRAL;
         nationRelation.ai_relation_level = NATION_NEUTRAL * RELATION_LEVEL_PER_STATUS;
-        nationRelation.last_change_status_date = Info.game_date;
+        nationRelation.last_change_status_date = Info.GameDate;
 
         if (otherNationRecno == nation_recno) // own nation
             relation_status_array[otherNationRecno - 1] = NATION_ALLIANCE; // for facilitating searching
@@ -1176,7 +1176,7 @@ public class NationBase : IIdObject
         //------ post is at war flag -------/
 
         if (is_at_war_today)
-            last_war_date = Info.game_date;
+            last_war_date = Info.GameDate;
 
         is_at_war_yesterday = is_at_war_today;
         is_at_war_today = false;
@@ -1212,7 +1212,7 @@ public class NationBase : IIdObject
             NationRelation nationRelation = get_relation(nation.nation_recno);
 
             if (nationRelation.status == NATION_TENSE &&
-                Info.game_date >= nationRelation.last_change_status_date.AddDays(365.0 * 3.0))
+                Info.GameDate >= nationRelation.last_change_status_date.AddDays(365.0 * 3.0))
             {
                 set_relation_status(nation.nation_recno, NATION_NEUTRAL);
             }
@@ -1385,7 +1385,7 @@ public class NationBase : IIdObject
 
         NationRelation nationRelation = get_relation(toNationRecno);
 
-        nationRelation.last_give_gift_date = Info.game_date;
+        nationRelation.last_give_gift_date = Info.GameDate;
         nationRelation.total_given_gift_amount += tributeAmt;
 
         //---- set the last rejected date so it won't request or give again soon ----//
@@ -1414,7 +1414,7 @@ public class NationBase : IIdObject
 
         NationRelation nationRelation = get_relation(toNationRecno);
 
-        nationRelation.last_give_gift_date = Info.game_date;
+        nationRelation.last_give_gift_date = Info.GameDate;
         nationRelation.total_given_gift_amount += (techVersion - curVersion) * 500; // one version level is worth $500
 
         //---- set the last rejected date so it won't request or give again soon ----//

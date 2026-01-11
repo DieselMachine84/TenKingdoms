@@ -131,7 +131,7 @@ public abstract class Firm : IIdObject
 		SetFirmBuildId(locX, locY, buildCode);
 
 		NationId = nationId;
-		SetupDate = Info.game_date;
+		SetupDate = Info.GameDate;
 
 		FirmBuild firmBuild = FirmRes.GetBuild(FirmBuildId);
 
@@ -177,7 +177,7 @@ public abstract class Firm : IIdObject
 			AIFirm = nation.is_ai();
 			AIProcessed = true;
 			nation.nation_firm_count++;
-			nation.last_build_firm_date = Info.game_date;
+			nation.last_build_firm_date = Info.GameDate;
 		}
 		else
 		{
@@ -494,7 +494,7 @@ public abstract class Firm : IIdObject
 
 		//--- can only do construction when the firm is not under attack ---//
 
-		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
+		if (Info.GameDate <= LastAttackedDate.AddDays(1.0))
 			return;
 
 		if (Sys.Instance.FrameNumber % 2 != 0) // one build every 2 frames
@@ -616,7 +616,7 @@ public abstract class Firm : IIdObject
 
 		//--- can only do repair when the firm is not under attack ---//
 
-		if (Info.game_date <= LastAttackedDate.AddDays(1.0))
+		if (Info.GameDate <= LastAttackedDate.AddDays(1.0))
 		{
 			//---- if the construction worker is a spy, it will damage the building when the building is under attack ----//
 
@@ -777,7 +777,7 @@ public abstract class Firm : IIdObject
 
 	public double Income365Days()
 	{
-		return LastYearIncome * (365 - Info.year_day) / 365 + CurYearIncome;
+		return LastYearIncome * (365 - Info.YearDay) / 365 + CurYearIncome;
 	}
 
 	private void PayExpense()
@@ -2432,7 +2432,7 @@ public abstract class Firm : IIdObject
 				Firm firm = FirmArray[unit.UnitModeParam];
 
 				if (firm.UnderConstruction || (firm.HitPoints * 100 / firm.MaxHitPoints) <= 90 ||
-				    Info.game_date <= firm.LastAttackedDate.AddDays(8))
+				    Info.GameDate <= firm.LastAttackedDate.AddDays(8))
 					continue;
 			}
 			else if (unit.UnitMode == UnitConstants.UNIT_MODE_UNDER_TRAINING)
@@ -2697,7 +2697,7 @@ public abstract class Firm : IIdObject
 
 	public virtual void BeingAttacked(int attackerUnitId)
 	{
-		LastAttackedDate = Info.game_date;
+		LastAttackedDate = Info.GameDate;
 
 		if (NationId != 0 && AIFirm)
 		{

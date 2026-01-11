@@ -555,7 +555,7 @@ public class NationOld : NationBase
 			if (train_unit(firm.FirmSkillId, firm.MajorityRace(), actionNode.action_x_loc, actionNode.action_y_loc,
 				    out _, actionNode.action_id) != 0)
 			{
-				actionNode.next_retry_date = Info.game_date.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
+				actionNode.next_retry_date = Info.GameDate.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
 				actionNode.retry_count++;
 				return 0; // training in process
 			}
@@ -1082,7 +1082,7 @@ public class NationOld : NationBase
 
 				int rawDistance = Misc.points_distance(xLoc, yLoc, town.LocCenterX, town.LocCenterY);
 
-				if ((Info.game_date - Info.game_start_date).Days >
+				if ((Info.GameDate - Info.GameStartDate).Days >
 				    rawDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
 				{
 					break;
@@ -1958,7 +1958,7 @@ public class NationOld : NationBase
 	{
 		//----------- reset some vars -----------//
 
-		actionNode.add_date = Info.game_date;
+		actionNode.add_date = Info.GameDate;
 		actionNode.action_id = ++last_action_id;
 		actionNode.retry_count = InternalConstants.STD_ACTION_RETRY_COUNT;
 
@@ -2030,7 +2030,7 @@ public class NationOld : NationBase
 			}
 			else //--- the unit is still being trained ---//
 			{
-				actionNode.next_retry_date = Info.game_date.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
+				actionNode.next_retry_date = Info.GameDate.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
 			}
 		}
 
@@ -2138,7 +2138,7 @@ public class NationOld : NationBase
 				//
 				//---------------------------------------------//
 
-				if (Info.game_date > actionNode.add_date.AddDays(30 * 6))
+				if (Info.GameDate > actionNode.add_date.AddDays(30 * 6))
 				{
 					//TODO check for bugs
 					del_action(actionNode);
@@ -2149,7 +2149,7 @@ public class NationOld : NationBase
 			}
 
 			// priorityAction bypass retry date checking
-			if (Info.game_date < actionNode.next_retry_date && priorityAction == null)
+			if (Info.GameDate < actionNode.next_retry_date && priorityAction == null)
 				continue;
 
 			// the actionNode may still exist even when retry_count==0, waiting for processed_count to reach processing_count
@@ -2234,7 +2234,7 @@ public class NationOld : NationBase
 			}
 			else if (rc == 0) // action failed, retry
 			{
-				actionNode.next_retry_date = Info.game_date.AddDays(7); // try again one week later
+				actionNode.next_retry_date = Info.GameDate.AddDays(7); // try again one week later
 
 				if (--actionNode.retry_count == 0)
 					delFlag = true;
@@ -2542,7 +2542,7 @@ public class NationOld : NationBase
 		if (!skilledUnit.IsVisible())
 		{
 			// continue processing this action after this date, this is used when training a unit for construction
-			actionNode.next_retry_date = Info.game_date.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
+			actionNode.next_retry_date = Info.GameDate.AddDays(GameConstants.TOTAL_TRAIN_DAYS + 1);
 			return null;
 		}
 
@@ -3191,7 +3191,7 @@ public class NationOld : NationBase
 	public void think_military()
 	{
 		//Do not think about military expanding too early because we can move our first town
-		if (Info.game_date < Info.game_start_date.AddDays(180))
+		if (Info.GameDate < Info.GameStartDate.AddDays(180))
 			return;
 
 		//---- don't build new camp if we our food consumption > production ----//
@@ -3524,10 +3524,10 @@ public class NationOld : NationBase
 		{
 			int travelDays = maxTravelDays * attack_camps[i].distance / maxDistance;
 
-			attack_camps[i].patrol_date = Info.game_date.AddDays(maxTravelDays - travelDays);
+			attack_camps[i].patrol_date = Info.GameDate.AddDays(maxTravelDays - travelDays);
 			//use distance to store attack date, but we need to store date diff instead because distance is of short type
 			//TODO rewrite
-			attack_camps[i].distance = (Info.game_date.AddDays(maxTravelDays) - Info.game_start_date).Days / 10;
+			attack_camps[i].distance = (Info.GameDate.AddDays(maxTravelDays) - Info.GameStartDate).Days / 10;
 		}
 
 		//----- set the is_attack_camp flag of the camps ------//
@@ -3551,7 +3551,7 @@ public class NationOld : NationBase
 
 		//Attack date came. Let them fight, now we can prepare for the next attack
 		//restore attack date from distance
-		if (attack_camps.Count > 0 && Info.game_date > Info.game_start_date.AddDays(attack_camps[0].distance * 10))
+		if (attack_camps.Count > 0 && Info.GameDate > Info.GameStartDate.AddDays(attack_camps[0].distance * 10))
 		{
 			reset_ai_attack_target();
 		}
@@ -3595,7 +3595,7 @@ public class NationOld : NationBase
 		for (int i = 0; i < attack_camps.Count; i++)
 		{
 			//----- if camp was sent already or if it's still not the date to move to attack ----//
-			if (attack_camps[i].patrol_date == default(DateTime) || Info.game_date < attack_camps[i].patrol_date)
+			if (attack_camps[i].patrol_date == default(DateTime) || Info.GameDate < attack_camps[i].patrol_date)
 				continue;
 
 			attack_camps[i].patrol_date = default(DateTime);
@@ -3987,10 +3987,10 @@ public class NationOld : NationBase
 		//--- don't call for defense too frequently, only call once 7 days
 		//(since this function will be called every time our king/firm/town is attacked, so this filtering is necessary ---//
 
-		if (Info.game_date < ai_last_defend_action_date.AddDays(7.0))
+		if (Info.GameDate < ai_last_defend_action_date.AddDays(7.0))
 			return 0;
 
-		ai_last_defend_action_date = Info.game_date;
+		ai_last_defend_action_date = Info.GameDate;
 
 		//---------- analyse the situation first -----------//
 
@@ -4310,7 +4310,7 @@ public class NationOld : NationBase
 		//--- don't change terminate treaty too soon ---//
 
 		// only after 60 to 110 days
-		if (Info.game_date < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
+		if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
 			return false;
 
 		//------------------------------------------------//
@@ -4680,7 +4680,7 @@ public class NationOld : NationBase
 
 		//------- try to capture the town in their resistance order ----//
 
-		bool needToCheckDistance = !Config.explore_whole_map && (Info.game_date - Info.game_start_date).Days >
+		bool needToCheckDistance = !Config.explore_whole_map && (Info.GameDate - Info.GameStartDate).Days >
 			Math.Max(GameConstants.MapSize, GameConstants.MapSize) * (5 - Config.ai_aggressiveness) / 5; // 3 to 5 / 5
 
 		foreach (CaptureTown captureTown in captureTownQueue.OrderByDescending(t => t.min_resistance))
@@ -4706,7 +4706,7 @@ public class NationOld : NationBase
 					int townDistance = Misc.points_distance(targetTown.LocCenterX, targetTown.LocCenterY,
 						ownTown.LocCenterX, ownTown.LocCenterY);
 
-					if ((Info.game_date - Info.game_start_date).Days >
+					if ((Info.GameDate - Info.GameStartDate).Days >
 					    townDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
 					{
 						break;
@@ -5121,7 +5121,7 @@ public class NationOld : NationBase
 		if (rc == 1) // 1 means a troop has been sent to attack the town
 		{
 			ai_capture_enemy_town_recno = targetTown.TownId; // this nation is currently trying to capture this town
-			ai_capture_enemy_town_plan_date = Info.game_date;
+			ai_capture_enemy_town_plan_date = Info.GameDate;
 			ai_capture_enemy_town_start_attack_date = default;
 			ai_capture_enemy_town_use_all_camp = useAllCamp;
 
@@ -5158,11 +5158,11 @@ public class NationOld : NationBase
 		if (ai_capture_enemy_town_start_attack_date == default)
 		{
 			if (isBattle == 2) // we are at war with the nation now
-				ai_capture_enemy_town_start_attack_date = Info.game_date;
+				ai_capture_enemy_town_start_attack_date = Info.GameDate;
 
 			// when 3 months have gone and there still hasn't been any attack on the town,
 			// there must be something bad happened to our troop, cancel the entire action
-			if (Info.game_date > ai_capture_enemy_town_plan_date.AddDays(90))
+			if (Info.GameDate > ai_capture_enemy_town_plan_date.AddDays(90))
 				ai_capture_enemy_town_recno = 0;
 
 			return; // do nothing if the attack hasn't started yet
@@ -5177,7 +5177,7 @@ public class NationOld : NationBase
 		// total can be calculated accurately.
 		//-----------------------------------------------------------//
 
-		if ((Info.game_date - ai_capture_enemy_town_start_attack_date).Days >= 15)
+		if ((Info.GameDate - ai_capture_enemy_town_start_attack_date).Days >= 15)
 		{
 			//-------- check if we need any reinforcement --------//
 
@@ -6929,7 +6929,7 @@ public class NationOld : NationBase
 		if (Config.ai_aggressiveness < Config.OPTION_HIGH) // only attack if aggressiveness >= high
 			return false;
 
-		if ((Info.game_date - Info.game_start_date).Days > 365)
+		if ((Info.GameDate - Info.GameStartDate).Days > 365)
 			return false;
 
 		if (profit_365days() > 0) // if we are making a profit, don't attack
@@ -7045,7 +7045,7 @@ public class NationOld : NationBase
 	public int think_ally_against_big_enemy()
 	{
 		// don't ask for tribute too soon, as in the beginning, the ranking are all the same for all nations
-		if (Info.game_date < Info.game_start_date.AddDays(365 + nation_recno * 70))
+		if (Info.GameDate < Info.GameStartDate.AddDays(365 + nation_recno * 70))
 			return 0;
 
 		//---------------------------------------//
@@ -7127,7 +7127,7 @@ public class NationOld : NationBase
 	public bool think_unite_against_big_enemy()
 	{
 		// only do this after 3 to 6 years into the game
-		if ((Info.game_date - Info.game_start_date).Days < 365 * 3 * (100 + pref_military_development) / 100)
+		if ((Info.GameDate - Info.GameStartDate).Days < 365 * 3 * (100 + pref_military_development) / 100)
 			return false;
 
 		//-----------------------------------------------//
@@ -7730,7 +7730,7 @@ public class NationOld : NationBase
 				//--- don't change terminate treaty too soon ---//
 
 				// only after 60 to 110 days
-				if (Info.game_date < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
+				if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
 					continue;
 
 				//----------------------------------------//
@@ -8037,7 +8037,7 @@ public class NationOld : NationBase
 	public bool think_demand_tribute_aid()
 	{
 		// don't ask for tribute too soon, as in the beginning, the ranking are all the same for all nations
-		if (Info.game_date < Info.game_start_date.AddDays(180 + nation_recno * 50))
+		if (Info.GameDate < Info.GameStartDate.AddDays(180 + nation_recno * 50))
 			return false;
 
 		//--------------------------------------//
@@ -8193,7 +8193,7 @@ public class NationOld : NationBase
 
 		//-------- don't give tribute too frequently -------//
 
-		if (Info.game_date < nationRelation.last_talk_reject_date_array[talkId - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.last_talk_reject_date_array[talkId - 1].AddDays(365 - pref_allying_tendency))
 			return false;
 
 		//---- think if the nation should spend money now ----//
@@ -8237,7 +8237,7 @@ public class NationOld : NationBase
 
 			TalkRes.ai_send_talk_msg(talkNationRecno, nation_recno, talkId, tributeAmount);
 
-			nationRelation.last_talk_reject_date_array[talkId - 1] = Info.game_date;
+			nationRelation.last_talk_reject_date_array[talkId - 1] = Info.GameDate;
 
 			//------ request again after giving tribute ----//
 
@@ -8252,7 +8252,7 @@ public class NationOld : NationBase
 
 	public bool think_request_surrender()
 	{
-		if (Info.game_date < Info.game_start_date.AddDays(1000)) // offer 3 years after the game starts
+		if (Info.GameDate < Info.GameStartDate.AddDays(1000)) // offer 3 years after the game starts
 			return false;
 
 		if (Misc.Random(5) != 0) // don't do this too often
@@ -8355,7 +8355,7 @@ public class NationOld : NationBase
 		NationRelation nationRelation = get_relation(talkMsg.to_nation_recno);
 
 		if (talkMsg.reply_type == TalkRes.REPLY_REJECT)
-			nationRelation.last_talk_reject_date_array[talkMsg.talk_id - 1] = Info.game_date;
+			nationRelation.last_talk_reject_date_array[talkMsg.talk_id - 1] = Info.GameDate;
 		else
 			nationRelation.last_talk_reject_date_array[talkMsg.talk_id - 1] = default;
 
@@ -8517,7 +8517,7 @@ public class NationOld : NationBase
 			retryInterval = 90 + 270 * (100 - pref_diplomacy_retry) / 100; // 3 months to 12 months before next try
 		}
 
-		return Info.game_date > get_relation(nationRecno).last_talk_reject_date_array[talkId - 1].AddDays(retryInterval);
+		return Info.GameDate > get_relation(nationRecno).last_talk_reject_date_array[talkId - 1].AddDays(retryInterval);
 	}
 
 	public void ai_end_treaty(int nationRecno)
@@ -8636,14 +8636,14 @@ public class NationOld : NationBase
 		{
 			case TalkMsg.TALK_END_TRADE_TREATY: // it's a notification message only, no accept or reject
 				relationChange = -5;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.game_date;
+				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.GameDate;
 				break;
 
 			case TalkMsg.TALK_END_FRIENDLY_TREATY: // it's a notification message only, no accept or reject
 			case TalkMsg.TALK_END_ALLIANCE_TREATY:
 				relationChange = -5;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.game_date;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.game_date;
+				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.GameDate;
+				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.GameDate;
 				break;
 
 			case TalkMsg.TALK_DECLARE_WAR: // it already drops to zero when the status is set to hostile
@@ -8699,7 +8699,7 @@ public class NationOld : NationBase
 
 		//---- don't accept new trade treaty soon when the trade treaty was terminated not too long ago ----//
 
-		if (Info.game_date < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1].AddDays(365 - pref_forgiveness))
+		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1].AddDays(365 - pref_forgiveness))
 		{
 			return -1;
 		}
@@ -8767,7 +8767,7 @@ public class NationOld : NationBase
 
 		//----- don't aid too frequently ------//
 
-		if (Info.game_date < fromRelation.last_military_aid_date.AddDays(200 - pref_allying_tendency))
+		if (Info.GameDate < fromRelation.last_military_aid_date.AddDays(200 - pref_allying_tendency))
 			return false;
 
 		//------- only when the AI relation >= 60 --------//
@@ -8823,7 +8823,7 @@ public class NationOld : NationBase
 
 		if (ai_attack_target(unit.NextLocX, unit.NextLocY, targetCombatLevel, true))
 		{
-			fromRelation.last_military_aid_date = Info.game_date;
+			fromRelation.last_military_aid_date = Info.GameDate;
 			return true;
 		}
 
@@ -8897,7 +8897,7 @@ public class NationOld : NationBase
 		//--- don't cease fire too soon after a war is declared ---//
 
 		// more peaceful nation may cease fire sooner (but the minimum is 60 days).
-		if (Info.game_date < nationRelation.last_change_status_date.AddDays(60 + (100 - pref_peacefulness)))
+		if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + (100 - pref_peacefulness)))
 			return -1;
 
 		Nation withNation = NationArray[withNationRecno];
@@ -9087,7 +9087,7 @@ public class NationOld : NationBase
 
 		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
 
-		if (Info.game_date < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
@@ -9108,7 +9108,7 @@ public class NationOld : NationBase
 
 		if (militaryDiff > 10 + pref_military_courage / 2)
 		{
-			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1] = Info.game_date;
+			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1] = Info.GameDate;
 			return true;
 		}
 
@@ -9143,7 +9143,7 @@ public class NationOld : NationBase
 
 		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
 
-		if (Info.game_date < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
@@ -9155,9 +9155,9 @@ public class NationOld : NationBase
 		if (nationRelation.status >= NATION_FRIENDLY && ai_should_spend(importanceRating, talkMsg.talk_para1))
 		{
 			// we have allied with this nation for quite some while
-			if (Info.game_date > nationRelation.last_change_status_date.AddDays(720 - pref_allying_tendency))
+			if (Info.GameDate > nationRelation.last_change_status_date.AddDays(720 - pref_allying_tendency))
 			{
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1] = Info.game_date;
+				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1] = Info.GameDate;
 				return true;
 			}
 		}
@@ -9185,7 +9185,7 @@ public class NationOld : NationBase
 
 		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
 
-		if (Info.game_date < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
@@ -9196,7 +9196,7 @@ public class NationOld : NationBase
 
 		if (nationRelation.status == NATION_ALLIANCE && importanceRating + pref_allying_tendency / 10 > 30)
 		{
-			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1] = Info.game_date;
+			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1] = Info.GameDate;
 			return true;
 		}
 

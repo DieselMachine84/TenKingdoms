@@ -111,7 +111,7 @@ public class TalkRes
 
         if (oppTalkId != 0)
         {
-            fromNation.get_relation(toNationRecno).last_talk_reject_date_array[oppTalkId - 1] = Info.game_date;
+            fromNation.get_relation(toNationRecno).last_talk_reject_date_array[oppTalkId - 1] = Info.GameDate;
         }
 
         //------------------------------------------//
@@ -181,7 +181,7 @@ public class TalkRes
 
         Nation toNation = NationArray[talkMsg.to_nation_recno];
 
-        talkMsg.date = Info.game_date;
+        talkMsg.date = Info.GameDate;
         talkMsg.relation_status = toNation.get_relation_status(talkMsg.from_nation_recno);
 
         talk_msg_array.Add(talkMsg);
@@ -238,7 +238,7 @@ public class TalkRes
         Nation fromNation = NationArray[talkMsg.from_nation_recno];
 
         talkMsg.reply_type = replyType;
-        talkMsg.reply_date = Info.game_date;
+        talkMsg.reply_date = Info.GameDate;
 
         switch (fromNation.nation_type)
         {
@@ -492,7 +492,7 @@ public class TalkRes
 
         //--- switch to the nation report mode and go to the diplomacy mode ---//
 
-        Info.init_player_reply(talkMsg.from_nation_recno);
+        Info.InitPlayerReply(talkMsg.from_nation_recno);
 
         //TODO drawing
         //save_view_mode = sys.view_mode;
@@ -510,7 +510,7 @@ public class TalkRes
             if (talkMsg.reply_type == REPLY_WAITING &&
                 talkMsg.to_nation_recno == toNationRecno &&
                 talkMsg.from_nation_recno == fromNationRecno &&
-                Info.game_date < talkMsg.date.AddDays(GameConstants.TALK_MSG_VALID_DAYS)) // only count message in a month
+                Info.GameDate < talkMsg.date.AddDays(GameConstants.TALK_MSG_VALID_DAYS)) // only count message in a month
             {
                 waitMsgCount++;
             }
@@ -902,7 +902,7 @@ public class TalkRes
 
             if (NationArray[talkMsg.from_nation_recno].nation_type == NationBase.NATION_AI &&
                 talkMsg.reply_type == REPLY_WAITING &&
-                Info.game_date > talkMsg.date.AddDays(GameConstants.TALK_MSG_VALID_DAYS + 1))
+                Info.GameDate > talkMsg.date.AddDays(GameConstants.TALK_MSG_VALID_DAYS + 1))
             {
                 talkMsg.reply_type = REPLY_REJECT;
 
@@ -912,7 +912,7 @@ public class TalkRes
 
             //--- delete the talk message after a year ---//
 
-            if (Info.game_date > talkMsg.date.AddDays(GameConstants.TALK_MSG_KEEP_DAYS))
+            if (Info.GameDate > talkMsg.date.AddDays(GameConstants.TALK_MSG_KEEP_DAYS))
                 del_talk_msg(talkMsg.RecNo);
         }
     }
@@ -949,11 +949,11 @@ public class TalkRes
 
                 //---- set reject date on proposing treaty ----//
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.GameDate;
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1] = Info.GameDate;
 
                 //----- decrease reputation -----//
 
@@ -976,11 +976,11 @@ public class TalkRes
                 //
                 //---------------------------------------------//
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.GameDate;
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.GameDate;
                 break;
 
             case TalkMsg.TALK_REQUEST_MILITARY_AID:
@@ -1005,8 +1005,8 @@ public class TalkRes
                 UnitArray.StopWarBetween(talkMsg.to_nation_recno, talkMsg.from_nation_recno);
                 toNation.set_relation_status(talkMsg.from_nation_recno, NationBase.NATION_TENSE);
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_DECLARE_WAR - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_DECLARE_WAR - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_DECLARE_WAR - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_DECLARE_WAR - 1] = Info.GameDate;
                 break;
 
             case TalkMsg.TALK_REQUEST_DECLARE_WAR:
@@ -1066,8 +1066,8 @@ public class TalkRes
                 toRelation.started_war_on_us_count++;
                 toNation.set_relation_status(talkMsg.from_nation_recno, NationBase.NATION_HOSTILE);
 
-                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_REQUEST_CEASE_WAR - 1] = Info.game_date;
-                toRelation.last_talk_reject_date_array[TalkMsg.TALK_REQUEST_CEASE_WAR - 1] = Info.game_date;
+                fromRelation.last_talk_reject_date_array[TalkMsg.TALK_REQUEST_CEASE_WAR - 1] = Info.GameDate;
+                toRelation.last_talk_reject_date_array[TalkMsg.TALK_REQUEST_CEASE_WAR - 1] = Info.GameDate;
 
                 //--- decrease reputation of the nation which declares war ---//
 

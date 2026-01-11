@@ -157,7 +157,7 @@ public class Town : IIdObject
 		// the minimum rating a nation must have in order for an independent unit to join it
 		_independentUnitJoinNationMinRating = 100 + Misc.Random(150);
 
-		_setupDate = Info.game_date;
+		_setupDate = Info.GameDate;
 
 		//-------- init resistance ------------//
 
@@ -1111,6 +1111,7 @@ public class Town : IIdObject
 			RacesTargetLoyalty[i] = targetLoyalty;
 		}
 
+		//TODO bug targetLoyalty depends on the order of linked firms
 		//----- process command bases that have influence on this town -----//
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
@@ -3258,7 +3259,7 @@ public class Town : IIdObject
 
 		int attackerNationId = attackerUnit.NationId;
 
-		LastBeingAttackedDate = Info.game_date;
+		LastBeingAttackedDate = Info.GameDate;
 
 		SetHostileNation(attackerNationId);
 
@@ -3472,11 +3473,11 @@ public class Town : IIdObject
 		if (NationId == 0)
 			return;
 
-		if (Info.game_date < _lastRebelDate.AddDays(GameConstants.REBEL_INTERVAL_MONTH * 30))
+		if (Info.GameDate < _lastRebelDate.AddDays(GameConstants.REBEL_INTERVAL_MONTH * 30))
 			return;
 
 		// don't rebel within ten days after being attacked by a hostile unit
-		if (DefendersCount > 0 || Info.game_date < LastBeingAttackedDate.AddDays(10))
+		if (DefendersCount > 0 || Info.GameDate < LastBeingAttackedDate.AddDays(10))
 			return;
 
 		//--- rebel if 2/3 of the population becomes discontented ---//
@@ -3597,7 +3598,7 @@ public class Town : IIdObject
 			ChangeLoyalty(i + 1, 50.0 * j / RacesPopulation[i]);
 		}
 
-		_lastRebelDate = Info.game_date;
+		_lastRebelDate = Info.GameDate;
 
 		//--- add the news first as after calling ai_spy_town_rebel, the town may disappear as all peasants are gone ---//
 
@@ -3862,7 +3863,7 @@ public class Town : IIdObject
 				continue;
 
 			// don't join too frequently, at most 3 months a unit
-			if (Info.game_date < nation.last_independent_unit_join_date.AddDays(90))
+			if (Info.GameDate < nation.last_independent_unit_join_date.AddDays(90))
 				continue;
 
 			//--- only join the nation if the nation has town in the town's region ---//
@@ -3967,7 +3968,7 @@ public class Town : IIdObject
 
 		unit.AIMoveToNearbyTown();
 
-		NationArray[toNationId].last_independent_unit_join_date = Info.game_date;
+		NationArray[toNationId].last_independent_unit_join_date = Info.GameDate;
 
 		return true;
 	}
@@ -4244,7 +4245,7 @@ public class Town : IIdObject
 	private bool ThinkBuildMarket()
 	{
 		// don't build the market too soon, as it may need to migrate to other town
-		if (Info.game_date < _setupDate.AddDays(180.0))
+		if (Info.GameDate < _setupDate.AddDays(180.0))
 			return false;
 
 		Nation ownNation = NationArray[NationId];
@@ -4304,7 +4305,7 @@ public class Town : IIdObject
 	private bool ThinkBuildCamp()
 	{
 		//Do not build second camp too early because we can move our first town
-		if (Info.game_date < Info.game_start_date.AddDays(180.0))
+		if (Info.GameDate < Info.GameStartDate.AddDays(180.0))
 			return false;
 
 		//check if any of the other camps protecting this town is still recruiting soldiers
@@ -4388,7 +4389,7 @@ public class Town : IIdObject
 	private bool ThinkBuildResearch()
 	{
 		//Do not build the first year
-		if (Info.game_date < Info.game_start_date.AddDays(365.0))
+		if (Info.GameDate < Info.GameStartDate.AddDays(365.0))
 			return false;
 
 		Nation nation = NationArray[NationId];
@@ -4586,7 +4587,7 @@ public class Town : IIdObject
 	private bool ThinkAIMigrate()
 	{
 		// don't move if this town has just been set up for less than 90 days. It may be a town set up by think_split_town()
-		if (Info.game_date < _setupDate.AddDays(90.0))
+		if (Info.GameDate < _setupDate.AddDays(90.0))
 			return false;
 
 		Nation nation = NationArray[NationId];
@@ -5030,7 +5031,7 @@ public class Town : IIdObject
 			return false;
 
 		// only in the first half year of the game
-		if (Info.game_date > Info.game_start_date.AddDays(50.0 + ownNation.pref_scout))
+		if (Info.GameDate > Info.GameStartDate.AddDays(50.0 + ownNation.pref_scout))
 			return false;
 
 		if (ownNation.ai_town_array.Count > 1) // only when there is only one town

@@ -460,7 +460,7 @@ public class FirmMarket : Firm
 		//-------- think about new trading routes --------//
 
 		// don't new imports until it's 60 days after the last one was imported
-		if (Info.game_date < LastImportNewGoodsDate.AddDays(60.0))
+		if (Info.GameDate < LastImportNewGoodsDate.AddDays(60.0))
 			return;
 
 		if (CanHireCaravan())
@@ -483,7 +483,7 @@ public class FirmMarket : Firm
 					//------------------------------------------------------//
 
 					// only think increase existing supply 180 days after importing a new one
-					if (LastImportNewGoodsDate == default || Info.game_date > LastImportNewGoodsDate.AddDays(180.0))
+					if (LastImportNewGoodsDate == default || Info.GameDate > LastImportNewGoodsDate.AddDays(180.0))
 					{
 						ThinkIncreaseExistingProductSupply();
 					}
@@ -514,7 +514,7 @@ public class FirmMarket : Firm
 		}
 		else
 		{
-			NoLinkedTownSinceDate = Info.game_date;
+			NoLinkedTownSinceDate = Info.GameDate;
 		}
 
 		//---- don't delete it if there are still significant stock here ---//
@@ -525,7 +525,7 @@ public class FirmMarket : Firm
 
 			//--- if the market has been sitting idle for too long, delete it ---//
 
-			if (Info.game_date < NoLinkedTownSinceDate.AddDays(180.0 + 180.0 * ownNation.pref_trading_tendency / 100.0))
+			if (Info.GameDate < NoLinkedTownSinceDate.AddDays(180.0 + 180.0 * ownNation.pref_trading_tendency / 100.0))
 			{
 				return false;
 			}
@@ -603,7 +603,7 @@ public class FirmMarket : Firm
 				{
 					if (ThinkImportSpecificProduct(productId))
 					{
-						LastImportNewGoodsDate = Info.game_date;
+						LastImportNewGoodsDate = Info.GameDate;
 						return true;
 					}
 				}
@@ -630,7 +630,7 @@ public class FirmMarket : Firm
 						{
 							if (ThinkMftSpecificProduct(productId))
 							{
-								LastImportNewGoodsDate = Info.game_date;
+								LastImportNewGoodsDate = Info.GameDate;
 								return true;
 							}
 						}

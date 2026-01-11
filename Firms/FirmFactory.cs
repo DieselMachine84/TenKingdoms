@@ -303,7 +303,7 @@ public class FirmFactory : Firm
 
 	public double Production30Days()
 	{
-		return LastMonthProduction * (30 - Info.game_day) / 30.0 + CurMonthProduction;
+		return LastMonthProduction * (30 - Info.GameDay) / 30.0 + CurMonthProduction;
 	}
 
 	public override bool IsOperating()
@@ -432,7 +432,7 @@ public class FirmFactory : Firm
 			return false;
 
 		// only change production after the factory has been running for at least one month
-		if (Info.game_date < SetupDate.AddDays(30.0))
+		if (Info.GameDate < SetupDate.AddDays(30.0))
 			return false;
 
 		//-- only build one market place next to this factory, check if there is any existing one --//
@@ -514,7 +514,7 @@ public class FirmFactory : Firm
 			return true;
 		}
 
-		if (Info.game_date > SetupDate.AddDays(60.0))
+		if (Info.GameDate > SetupDate.AddDays(60.0))
 		{
 			AIDelFirm(); // delete the firm if there is no raw materials available after it has been built for over 2 months
 			return true;

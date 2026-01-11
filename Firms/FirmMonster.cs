@@ -151,7 +151,7 @@ public class FirmMonster : Firm
 			//------ attack human towns and firms randomly -----//
 
 			// only start attacking 3 years after the game starts so the human can build up things
-			if (Info.game_date > Info.game_start_date.AddDays(1000.0) &&
+			if (Info.GameDate > Info.GameStartDate.AddDays(1000.0) &&
 			    Info.TotalDays % 30 == FirmId % 30 && fryhtan_random_attack())
 			{
 				think_attack_human();
@@ -783,12 +783,12 @@ public class FirmMonster : Firm
 		if (generalCount <= 1) // don't attack if there is only one general in the firm
 			return 0;
 
-		Info.set_rank_data(false);
+		Info.SetRankData(false);
 		int totalScore = 0;
 		//------ the more score the player has, the more often mosters will attack him ------//
 		foreach (Nation nation in NationArray)
 		{
-			int nationScore = Info.get_total_score(nation.nation_recno);
+			int nationScore = Info.GetTotalScore(nation.nation_recno);
 			totalScore += nationScore;
 		}
 
@@ -798,7 +798,7 @@ public class FirmMonster : Firm
 		Nation targetNation = null;
 		foreach (Nation nation in NationArray)
 		{
-			int nationScore = Info.get_total_score(nation.nation_recno);
+			int nationScore = Info.GetTotalScore(nation.nation_recno);
 			totalScore += nationScore;
 			if (randomValue <= totalScore)
 			{

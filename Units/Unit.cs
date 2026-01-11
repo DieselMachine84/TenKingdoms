@@ -4757,9 +4757,9 @@ public abstract partial class Unit : Sprite
 
 		if (defend)
 		{
-			if (Info.game_date > TeamInfo.AILastRequestDefenseDate.AddDays(callIntervalDays))
+			if (Info.GameDate > TeamInfo.AILastRequestDefenseDate.AddDays(callIntervalDays))
 			{
-				TeamInfo.AILastRequestDefenseDate = Info.game_date;
+				TeamInfo.AILastRequestDefenseDate = Info.GameDate;
 				NationArray[NationId].ai_defend(attackerUnitId);
 			}
 		}

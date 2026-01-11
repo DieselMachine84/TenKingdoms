@@ -56,7 +56,7 @@ public class FirmInn : Firm
 
 		//------------ update the hire list ------------//
 
-		int updateInterval = 10 + Info.year_passed * 2; // there will be less and less units to hire as the game passes
+		int updateInterval = 10 + Info.YearsPassed * 2; // there will be less and less units to hire as the game passes
 
 		if (Info.TotalDays % updateInterval == FirmId % updateInterval)
 			update_add_hire_list();

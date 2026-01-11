@@ -249,7 +249,7 @@ public class TalkMsg
 		//	reply the message with a month.
 		//-----------------------------------------------------//
 
-		if (Info.game_date > date.AddDays(GameConstants.TALK_MSG_VALID_DAYS))
+		if (Info.GameDate > date.AddDays(GameConstants.TALK_MSG_VALID_DAYS))
 			return false;
 
 		//--- check if the nations are still there -----//

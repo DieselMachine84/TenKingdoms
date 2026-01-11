@@ -22,16 +22,16 @@ public class MarketGoods
 
     public double Supply30Days()
     {
-        return LastMonthSupply * (30 - Info.game_day) / 30 + CurMonthSupply;
+        return LastMonthSupply * (30 - Info.GameDay) / 30 + CurMonthSupply;
     }
 
     public double SaleQty30Days()
     {
-        return LastMonthSaleQty * (30 - Info.game_day) / 30 + CurMonthSaleQty;
+        return LastMonthSaleQty * (30 - Info.GameDay) / 30 + CurMonthSaleQty;
     }
 
     public double Sales365Days()
     {
-        return LastYearSales * (365 - Info.year_day) / 365 + CurYearSales;
+        return LastYearSales * (365 - Info.YearDay) / 365 + CurYearSales;
     }
 }

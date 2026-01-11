@@ -128,7 +128,7 @@ public class FirmMine : Firm
     
     public double Production30Days()
     {
-        return LastMonthProduction * (30 - Info.game_day) / 30.0 + CurMonthProduction;
+        return LastMonthProduction * (30 - Info.GameDay) / 30.0 + CurMonthProduction;
     }
 
     public override bool IsOperating()

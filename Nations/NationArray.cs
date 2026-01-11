@@ -111,7 +111,7 @@ public class NationArray : DynArray<Nation>
 		
 		ColorRemap.ColorSchemes[nation.nation_recno] = 0;
 
-		last_del_nation_date = Info.game_date;
+		last_del_nation_date = Info.GameDate;
 
 		int nationRecno = nation.nation_recno;
 		nation.deinit();
@@ -144,8 +144,8 @@ public class NationArray : DynArray<Nation>
 			player = nation;
 			player_recno = nation.nation_recno;
 
-			Info.default_viewing_nation_recno = nation.nation_recno;
-			Info.viewing_nation_recno = nation.nation_recno;
+			Info.DefaultViewingNationId = nation.nation_recno;
+			Info.ViewingNationId = nation.nation_recno;
 		}
 
 		//--- we must call init() after setting ai_type & nation_res_id ----//
@@ -165,7 +165,7 @@ public class NationArray : DynArray<Nation>
 		if (nationType == NationBase.NATION_AI)
 			ai_nation_count++;
 
-		last_new_nation_date = Info.game_date;
+		last_new_nation_date = Info.GameDate;
 
 		//---------- update statistic ----------//
 
@@ -178,8 +178,8 @@ public class NationArray : DynArray<Nation>
 	{
 		return Config.new_nation_emerge &&
 		       ai_nation_count < Config.ai_nation_count && nation_count < GameConstants.MAX_NATION &&
-		       Info.game_date > last_del_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS) &&
-		       Info.game_date > last_new_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS);
+		       Info.GameDate > last_del_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS) &&
+		       Info.GameDate > last_new_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS);
 	}
 
 	public void update_statistic()

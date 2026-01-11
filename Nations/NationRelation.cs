@@ -33,7 +33,7 @@ public class NationRelation
 
     public double import_365days(int importType)
     {
-        return last_year_import[importType] * (365 - Info.year_day) / 365 + cur_year_import[importType];
+        return last_year_import[importType] * (365 - Info.YearDay) / 365 + cur_year_import[importType];
     }
 
     // the date which the last diplomatic request was rejected.
@@ -70,7 +70,7 @@ public class NationRelation
 
     public string status_duration_str()
     {
-        int statusDays = (Info.game_date - last_change_status_date).Days;
+        int statusDays = (Info.GameDate - last_change_status_date).Days;
         int statusYear = statusDays / 365;
         int statusMonth = (statusDays - statusYear * 365) / 30;
 

@@ -125,10 +125,10 @@ public class Sys
         int quakeFreq = Int32.MaxValue;
         if (Config.random_event_frequency != 0)
         {
-            quakeFreq = 2000 - Config.random_event_frequency * 400 + Info.random_seed % 300;
+            quakeFreq = 2000 - Config.random_event_frequency * 400 + Info.RandomSeed % 300;
         }
         Weather = new Weather();
-        Weather.init_date(Info.game_year, Info.game_month, Info.game_day, Config.latitude, quakeFreq);
+        Weather.init_date(Info.GameYear, Info.GameMonth, Info.GameDay, Config.latitude, quakeFreq);
         for (int i = 0; i < WeatherForecast.Length; i++)
         {
             WeatherForecast[i] = new Weather();
@@ -251,7 +251,7 @@ public class Sys
         FrameOfDay++;
         if (FrameOfDay >= InternalConstants.FRAMES_PER_DAY)
         {
-            Info.next_day();
+            Info.NextDay();
             World.NextDay();
             SiteArray.NextDay();
             RebelArray.NextDay();

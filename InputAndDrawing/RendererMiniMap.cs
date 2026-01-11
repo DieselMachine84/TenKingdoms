@@ -111,7 +111,7 @@ public partial class Renderer
 
         foreach (Town town in TownArray)
         {
-            byte nationColor = (town.LastBeingAttackedDate == default) || (Info.game_date - town.LastBeingAttackedDate).Days > 2
+            byte nationColor = (town.LastBeingAttackedDate == default) || (Info.GameDate - town.LastBeingAttackedDate).Days > 2
                 ? nationColors[town.NationId]
                 : ColorRemap.GetExcitedColors(town.NationId)[Sys.Instance.FrameNumber % 4];
 
@@ -123,7 +123,7 @@ public partial class Renderer
 
         foreach (Firm firm in FirmArray)
         {
-            byte nationColor = (firm.LastAttackedDate == default) || (Info.game_date - firm.LastAttackedDate).Days > 2
+            byte nationColor = (firm.LastAttackedDate == default) || (Info.GameDate - firm.LastAttackedDate).Days > 2
                 ? nationColors[firm.NationId]
                 : ColorRemap.GetExcitedColors(firm.NationId)[Sys.Instance.FrameNumber % 4];
 

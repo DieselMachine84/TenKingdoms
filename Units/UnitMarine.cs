@@ -66,7 +66,7 @@ public class UnitMarine : Unit, ITrader
 		
 		ExtraMoveInBeach = NO_EXTRA_MOVE;
 		CarryGoodsCapacity = UnitRes[unitType].carry_goods_capacity;
-		LastLoadGoodsDate = Info.game_date;
+		LastLoadGoodsDate = Info.GameDate;
 
 		//int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
 		//splash.init(spriteId, cur_x_loc(), cur_y_loc());

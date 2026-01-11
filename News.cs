@@ -234,7 +234,7 @@ public class News
 					//--- if the unit is no longer belong to our nation ----//
 					//--- only keep track of the unit for one month --------//
 
-					if (unit.NationId == NationArray.player_recno || Info.game_date < news_date.AddDays(30.0))
+					if (unit.NationId == NationArray.player_recno || Info.GameDate < news_date.AddDays(30.0))
 					{
 						if (unit.GetNextLoc(out loc_x, out loc_y))
 						{

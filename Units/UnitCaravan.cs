@@ -39,7 +39,7 @@ public class UnitCaravan : Unit, ITrader
 	public override void Init(int unitType, int nationId, int rank, int unitLoyalty, int startLocX, int startLocY)
 	{
 		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
-		LastLoadGoodsDate = Info.game_date;
+		LastLoadGoodsDate = Info.GameDate;
 	}
 
 	public override void PreProcess()
@@ -956,7 +956,7 @@ public class UnitCaravan : Unit, ITrader
 			curMine.StockQty -= qty;
 
 			if (maxLoadQty > 0)
-				LastLoadGoodsDate = Info.game_date;
+				LastLoadGoodsDate = Info.GameDate;
 		}
 	}
 
@@ -1026,7 +1026,7 @@ public class UnitCaravan : Unit, ITrader
 			curFactory.StockQty -= qty;
 
 			if (maxLoadQty > 0)
-				LastLoadGoodsDate = Info.game_date;
+				LastLoadGoodsDate = Info.GameDate;
 		}
 	}
 
@@ -1339,7 +1339,7 @@ public class UnitCaravan : Unit, ITrader
 		}
 
 		if (qty > 0)
-			LastLoadGoodsDate = Info.game_date;
+			LastLoadGoodsDate = Info.GameDate;
 	}
 
 	public override void DrawDetails(IRenderer renderer)
@@ -1390,7 +1390,7 @@ public class UnitCaravan : Unit, ITrader
 		//---- if the caravan hasn't loaded any goods for a year ----//
 
 		// don't call too often as the action may fail and it takes a while to call the function each time
-		if (Info.game_date > LastLoadGoodsDate.AddDays(365) && Info.TotalDays % 30 == SpriteId % 30)
+		if (Info.GameDate > LastLoadGoodsDate.AddDays(365) && Info.TotalDays % 30 == SpriteId % 30)
 		{
 			//--- don't resign if this caravan carries any goods ---//
 
