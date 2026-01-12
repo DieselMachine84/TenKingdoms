@@ -47,21 +47,7 @@ public partial class Renderer
         }
 
         DrawWorkers(warFactory);
-        
-        DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 294);
-        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 299);
-        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 328);
-        DrawFieldPanel75(DetailsX1 + 208, DetailsY1 + 328);
-        PutText(FontSan, "Residence", DetailsX1 + 13, DetailsY1 + 302, -1, true);
-        PutText(FontSan, "Loyalty", DetailsX1 + 13, DetailsY1 + 331, -1, true);
-        PutText(FontSan, "Manufacture", DetailsX1 + 214, DetailsY1 + 331, -1, true);
-        if (warFactory.SelectedWorkerId != 0)
-        {
-            Worker worker = warFactory.Workers[warFactory.SelectedWorkerId - 1];
-            PutText(FontSan, TownArray[worker.TownId].Name, DetailsX1 + 113, DetailsY1 + 304, -1, true);
-            PutText(FontSan, worker.Loyalty().ToString(), DetailsX1 + 113, DetailsY1 + 333, -1, true);
-            PutText(FontSan, worker.SkillLevel.ToString(), DetailsX1 + 327, DetailsY1 + 333, -1, true);
-        }
+        DrawWorkerDetails(warFactory, "Manufacture");
         
         if (warFactory.OwnFirm())
         {

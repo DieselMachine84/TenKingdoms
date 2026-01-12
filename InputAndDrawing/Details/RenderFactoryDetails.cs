@@ -30,21 +30,7 @@ public partial class Renderer
         PutText(FontSan, (int)factory.StockQty + "/" + (int)factory.MaxStockQty, DetailsX1 + 191, DetailsY1 + 199, -1, true);
         
         DrawWorkers(factory);
-        
-        DrawPanelWithTwoFields(DetailsX1 + 2, DetailsY1 + 339);
-        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 344);
-        DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 373);
-        DrawFieldPanel75(DetailsX1 + 208, DetailsY1 + 373);
-        PutText(FontSan, "Residence", DetailsX1 + 13, DetailsY1 + 347, -1, true);
-        PutText(FontSan, "Loyalty", DetailsX1 + 13, DetailsY1 + 376, -1, true);
-        PutText(FontSan, "Manufacture", DetailsX1 + 214, DetailsY1 + 376, -1, true);
-        if (factory.SelectedWorkerId != 0)
-        {
-            Worker worker = factory.Workers[factory.SelectedWorkerId - 1];
-            PutText(FontSan, TownArray[worker.TownId].Name, DetailsX1 + 113, DetailsY1 + 349, -1, true);
-            PutText(FontSan, worker.Loyalty().ToString(), DetailsX1 + 113, DetailsY1 + 378, -1, true);
-            PutText(FontSan, worker.SkillLevel.ToString(), DetailsX1 + 327, DetailsY1 + 378, -1, true);
-        }
+        DrawWorkerDetails(factory, "Manufacture");
         
         if (factory.OwnFirm())
         {

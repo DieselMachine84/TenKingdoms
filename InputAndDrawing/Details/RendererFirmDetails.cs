@@ -99,6 +99,25 @@ public partial class Renderer
         }
     }
 
+    private void DrawWorkerDetails(Firm firm, string skillString)
+    {
+        int workersY = GetWorkersY(firm);
+        DrawPanelWithTwoFields(DetailsX1 + 2, workersY + 111);
+        DrawFieldPanel67(DetailsX1 + 7, workersY + 116);
+        DrawFieldPanel67(DetailsX1 + 7, workersY + 145);
+        DrawFieldPanel75(DetailsX1 + 208, workersY + 145);
+        PutText(FontSan, "Residence", DetailsX1 + 13, workersY + 119, -1, true);
+        PutText(FontSan, "Loyalty", DetailsX1 + 13, workersY + 148, -1, true);
+        PutText(FontSan, skillString, DetailsX1 + 214, workersY + 148, -1, true);
+        if (firm.SelectedWorkerId != 0)
+        {
+            Worker worker = firm.Workers[firm.SelectedWorkerId - 1];
+            PutText(FontSan, TownArray[worker.TownId].Name, DetailsX1 + 113, workersY + 121, -1, true);
+            PutText(FontSan, worker.Loyalty().ToString(), DetailsX1 + 113, workersY + 150, -1, true);
+            PutText(FontSan, worker.SkillLevel.ToString(), DetailsX1 + 327, workersY + 150, -1, true);
+        }
+    }
+
     private void HandleFirmDetailsInput(Firm firm)
     {
         firm.HandleDetailsInput(this);
