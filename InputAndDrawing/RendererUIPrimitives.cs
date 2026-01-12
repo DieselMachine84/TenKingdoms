@@ -6,7 +6,6 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-	private const int RaceHeight = 56;
 	private const int ButtonWidth = 66;
 	private const int ButtonHeight = 56;
 	private const int Button1X = DetailsX1 + 2;
@@ -21,10 +20,12 @@ public partial class Renderer
 	private const int ButtonsHarborY = DetailsY1 + 385;
 	private const int ButtonsResearchY = DetailsY1 + 367;
 	private const int ButtonsWarFactoryY = DetailsY1 + 367;
+	private const int ButtonsInnY = DetailsY1 + 407;
 	private const int ButtonsCampY = DetailsY1 + 376;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
 	private const int ButtonsUnitShipY = DetailsY1 + 358;
+	private const int ListItemHeight = 56;
 
 	private readonly Dictionary<int, IntPtr> _colorSquareTextures = new Dictionary<int, nint>();
 	private int _colorSquareWidth;
@@ -242,8 +243,13 @@ public partial class Renderer
 	private int _buttonBuildWeaponWidth;
 	private int _buttonBuildWeaponHeight;
 	private IntPtr _buttonHireCaravanTexture;
+	private IntPtr _buttonHireCaravanDisabledTexture;
 	private int _buttonHireCaravanWidth;
 	private int _buttonHireCaravanHeight;
+	private IntPtr _buttonHireUnitTexture;
+	private IntPtr _buttonHireUnitDisabledTexture;
+	private int _buttonHireUnitWidth;
+	private int _buttonHireUnitHeight;
 	private IntPtr _buttonBuildShipTexture;
 	private int _buttonBuildShipWidth;
 	private int _buttonBuildShipHeight;
@@ -723,6 +729,15 @@ public partial class Renderer
 		_buttonHireCaravanHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonHireCaravanWidth, _buttonHireCaravanHeight);
 		_buttonHireCaravanTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonHireCaravanWidth, _buttonHireCaravanHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonHireCaravanWidth, _buttonHireCaravanHeight);
+		_buttonHireCaravanDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonHireCaravanWidth, _buttonHireCaravanHeight, 32);
+		buttonData = buttonImages.Read("HIREUNIT");
+		_buttonHireUnitWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonHireUnitHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonHireUnitWidth, _buttonHireUnitHeight);
+		_buttonHireUnitTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonHireUnitWidth, _buttonHireUnitHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonHireUnitWidth, _buttonHireUnitHeight);
+		_buttonHireUnitDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonHireUnitWidth, _buttonHireUnitHeight, 32);
 		buttonData = buttonImages.Read("MAKESHIP");
 		_buttonBuildShipWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonBuildShipHeight = BitConverter.ToInt16(buttonData, 2);

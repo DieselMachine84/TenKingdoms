@@ -7,7 +7,6 @@ public partial class Renderer
     //TODO support batch build with shift
     //TODO draw build indicator and cancel build button
 
-    private const int ShipHeight = 56;
     private const int BuildShipPanelX = DetailsX1 + 2;
     private const int BuildShipPanelY = DetailsY1 + 2;
     private const int BuildShipButtonNumberX = DetailsX1 + 351;
@@ -51,7 +50,7 @@ public partial class Renderer
             if (harbor.Ships[i] == _selectedShipId)
                 DrawSelectedBorder(DetailsX1 + 8, shipY - 7, DetailsX1 + 405, shipY + 47);
 
-            shipY += ShipHeight;
+            shipY += ListItemHeight;
         }
 
         DrawWorkersPanel(DetailsX1 + 2, DetailsY1 + 274);
@@ -239,12 +238,15 @@ public partial class Renderer
     
     public void HandleHarborDetailsInput(FirmHarbor harbor)
     {
+        if (!harbor.ShouldShowInfo())
+            return;
+        
         if (_selectedShipId != 0)
         {
             UnitMarine selectedShip = (UnitMarine)UnitArray[_selectedShipId];
             bool unitsAndGoodsShip = selectedShip.UnitType == UnitConstants.UNIT_CARAVEL || selectedShip.UnitType == UnitConstants.UNIT_GALLEON;
 
-            if ((harbor.OwnFirm() || Config.show_ai_info) && unitsAndGoodsShip)
+            if (unitsAndGoodsShip)
             {
                 bool mouseOnUnitsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
                                           _mouseButtonY >= DetailsY1 + 388 && _mouseButtonY <= DetailsY1 + 409;
@@ -258,10 +260,7 @@ public partial class Renderer
             }
         }
         
-        if (!harbor.OwnFirm())
-            return;
-        
-        if (FirmDetailsMode == FirmDetailsMode.BuildShip)
+        if (FirmDetailsMode == FirmDetailsMode.BuildShip && harbor.OwnFirm())
         {
             HandleBuildShipMenu(harbor);
             return;
@@ -270,9 +269,9 @@ public partial class Renderer
         bool ship1Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
                              _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;
         bool ship2Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
-                             _mouseButtonY >= DetailsY1 + 105 + ShipHeight && _mouseButtonY <= DetailsY1 + 153 + ShipHeight;
+                             _mouseButtonY >= DetailsY1 + 105 + ListItemHeight && _mouseButtonY <= DetailsY1 + 153 + ListItemHeight;
         bool ship3Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
-                             _mouseButtonY >= DetailsY1 + 105 + 2 * ShipHeight && _mouseButtonY <= DetailsY1 + 153 + 2 * ShipHeight;
+                             _mouseButtonY >= DetailsY1 + 105 + 2 * ListItemHeight && _mouseButtonY <= DetailsY1 + 153 + 2 * ListItemHeight;
 
         int shipIndex = 0;
         for (int i = 0; i < harbor.Ships.Count && i < 3; i++)
@@ -284,6 +283,9 @@ public partial class Renderer
                 break;
             }
         }
+        
+        if (!harbor.OwnFirm())
+            return;
         
         bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsHarborY + 2 && _mouseButtonY <= ButtonsHarborY + ButtonHeight;

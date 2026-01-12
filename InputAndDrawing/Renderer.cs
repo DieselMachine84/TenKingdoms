@@ -62,6 +62,7 @@ public partial class Renderer : IRenderer
     private int _selectedSiteId;
     private int _selectedRaceId;
     private int _selectedShipId;
+    private InnUnit _selectedInnUnit;
     
     private int _setStopId;
 
@@ -277,6 +278,7 @@ public partial class Renderer : IRenderer
     private void ResetSelection()
     {
         _selectedTownId = _selectedFirmId = _selectedUnitId = _selectedSiteId = _selectedRaceId = _selectedShipId = 0;
+        _selectedInnUnit = null;
         _selectedUnits.Clear();
         TownDetailsMode = TownDetailsMode.Normal;
         FirmDetailsMode = FirmDetailsMode.Normal;

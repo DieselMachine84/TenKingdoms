@@ -81,7 +81,7 @@ public partial class Renderer
             else
             {
                 Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button1X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
-                Graphics.DrawBitmapScaled(_buttonHireCaravanTexture, Button1X + 8, ButtonsMarketY + 8, _buttonHireCaravanWidth, _buttonHireCaravanHeight);
+                Graphics.DrawBitmapScaled(_buttonHireCaravanDisabledTexture, Button1X + 8, ButtonsMarketY + 8, _buttonHireCaravanWidth, _buttonHireCaravanHeight);
             }
         }
 

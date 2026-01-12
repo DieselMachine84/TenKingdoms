@@ -132,7 +132,7 @@ public partial class Renderer
             if (_selectedRaceId == i + 1)
                 DrawSelectedBorder(DetailsX1 + 8, raceY - 7, DetailsX1 + 405, raceY + 47);
 
-            raceY += RaceHeight;
+            raceY += ListItemHeight;
         }
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 333);
@@ -277,11 +277,11 @@ public partial class Renderer
         bool race1Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
                              _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;
         bool race2Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
-                             _mouseButtonY >= DetailsY1 + 105 + RaceHeight && _mouseButtonY <= DetailsY1 + 153 + RaceHeight;
+                             _mouseButtonY >= DetailsY1 + 105 + ListItemHeight && _mouseButtonY <= DetailsY1 + 153 + ListItemHeight;
         bool race3Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
-                             _mouseButtonY >= DetailsY1 + 105 + 2 * RaceHeight && _mouseButtonY <= DetailsY1 + 153 + 2 * RaceHeight;
+                             _mouseButtonY >= DetailsY1 + 105 + 2 * ListItemHeight && _mouseButtonY <= DetailsY1 + 153 + 2 * ListItemHeight;
         bool race4Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
-                             _mouseButtonY >= DetailsY1 + 105 + 3 * RaceHeight && _mouseButtonY <= DetailsY1 + 153 + 3 * RaceHeight;
+                             _mouseButtonY >= DetailsY1 + 105 + 3 * ListItemHeight && _mouseButtonY <= DetailsY1 + 153 + 3 * ListItemHeight;
 
         int raceIndex = 0;
         for (int i = 0; i < town.RacesPopulation.Length; i++)
