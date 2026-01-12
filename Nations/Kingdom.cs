@@ -353,10 +353,10 @@ public partial class Nation : NationBase
             if (firm.FirmType == Firm.FIRM_INN)
             {
                 FirmInn inn = (FirmInn)firm;
-                foreach (InnUnit innUnit in inn.inn_unit_array)
+                foreach (InnUnit innUnit in inn.InnUnits)
                 {
                     // TODO constant should depend on preferences
-                    if (innUnit.skill.SkillId == Skill.SKILL_LEADING && innUnit.skill.SkillLevel > 50 && ShouldHire(inn, innUnit))
+                    if (innUnit.Skill.SkillId == Skill.SKILL_LEADING && innUnit.Skill.SkillLevel > 50 && ShouldHire(inn, innUnit))
                         possibleCapturerInnUnits.Add((inn, innUnit));
                 }
             }

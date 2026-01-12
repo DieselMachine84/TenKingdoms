@@ -2681,7 +2681,7 @@ public class NationOld : NationBase
 
 			FirmInn firmInn = (FirmInn)firm;
 
-			int innUnitCount = firmInn.inn_unit_array.Count;
+			int innUnitCount = firmInn.InnUnits.Count;
 
 			if (innUnitCount == 0)
 				continue;
@@ -2691,13 +2691,13 @@ public class NationOld : NationBase
 
 			//------- check units in the inn ---------//
 
-			for (int j = firmInn.inn_unit_array.Count - 1; j >= 0; j--)
+			for (int j = firmInn.InnUnits.Count - 1; j >= 0; j--)
 			{
-				InnUnit innUnit = firmInn.inn_unit_array[j];
-				Skill innUnitSkill = innUnit.skill;
+				InnUnit innUnit = firmInn.InnUnits[j];
+				Skill innUnitSkill = innUnit.Skill;
 
-				if (innUnitSkill.SkillId == skillId && (raceId != 0 || UnitRes[innUnit.unit_id].race_id == raceId) &&
-				    cash >= innUnit.hire_cost)
+				if (innUnitSkill.SkillId == skillId && (raceId != 0 || UnitRes[innUnit.UnitType].race_id == raceId) &&
+				    cash >= innUnit.HireCost)
 				{
 					//----------------------------------------------//
 					// evalute a unit on:
@@ -2708,7 +2708,7 @@ public class NationOld : NationBase
 
 					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / GameConstants.MapSize);
 
-					if (UnitRes[innUnit.unit_id].race_id == race_id)
+					if (UnitRes[innUnit.UnitType].race_id == race_id)
 						curRating += 50;
 
 					if (curRating > bestRating)
@@ -2729,7 +2729,7 @@ public class NationOld : NationBase
 			Firm firm = FirmArray[bestInnRecno];
 			FirmInn firmInn = (FirmInn)firm;
 
-			return firmInn.hire(bestInnUnitId);
+			return firmInn.Hire(bestInnUnitId);
 		}
 
 		return 0;
@@ -4982,11 +4982,11 @@ public class NationOld : NationBase
 
 			//------- check units in the inn ---------//
 
-			for (int j = 0; j < firmInn.inn_unit_array.Count; j++)
+			for (int j = 0; j < firmInn.InnUnits.Count; j++)
 			{
-				InnUnit innUnit = firmInn.inn_unit_array[j];
+				InnUnit innUnit = firmInn.InnUnits[j];
 
-				if (innUnit.skill.SkillId == Skill.SKILL_LEADING && UnitRes[innUnit.unit_id].race_id == raceId && cash >= innUnit.hire_cost)
+				if (innUnit.Skill.SkillId == Skill.SKILL_LEADING && UnitRes[innUnit.UnitType].race_id == raceId && cash >= innUnit.HireCost)
 				{
 					//----------------------------------------------//
 					// evaluate a unit on:
@@ -4995,7 +4995,7 @@ public class NationOld : NationBase
 					// -the skill level of the unit.
 					//----------------------------------------------//
 
-					int curRating = innUnit.skill.SkillLevel;
+					int curRating = innUnit.Skill.SkillLevel;
 
 					if (curRating > bestRating)
 					{
@@ -5022,7 +5022,7 @@ public class NationOld : NationBase
 		{
 			FirmInn firmInn = (FirmInn)FirmArray[bestInnRecno];
 
-			unitRecno = firmInn.hire(bestInnUnitId);
+			unitRecno = firmInn.Hire(bestInnUnitId);
 			if (unitRecno == 0)
 				return 0;
 

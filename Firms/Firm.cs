@@ -3090,10 +3090,10 @@ public abstract class Firm : IIdObject
 			if (firmInn.RegionId != RegionId)
 				continue;
 
-			for (int j = 0; j < firmInn.inn_unit_array.Count; j++)
+			for (int j = 0; j < firmInn.InnUnits.Count; j++)
 			{
-				InnUnit innUnit = firmInn.inn_unit_array[j];
-				if (innUnit.skill.SkillId != FirmSkillId)
+				InnUnit innUnit = firmInn.InnUnits[j];
+				if (innUnit.Skill.SkillId != FirmSkillId)
 					continue;
 
 				//-------------------------------------------//
@@ -3106,9 +3106,9 @@ public abstract class Firm : IIdObject
 
 				curRating = World.DistanceRating(LocCenterX, LocCenterY, firmInn.LocCenterX, firmInn.LocCenterY);
 
-				curRating += innUnit.skill.SkillLevel;
+				curRating += innUnit.Skill.SkillLevel;
 
-				if (majorityRace == UnitRes[innUnit.unit_id].race_id)
+				if (majorityRace == UnitRes[innUnit.UnitType].race_id)
 				{
 					curRating += prefTownHarmony;
 				}
@@ -3123,7 +3123,7 @@ public abstract class Firm : IIdObject
 
 					if (majorityRace != 0)
 					{
-						if (foreignRaceCount > 0 || prefTownHarmony > innUnit.skill.SkillLevel - 50)
+						if (foreignRaceCount > 0 || prefTownHarmony > innUnit.Skill.SkillLevel - 50)
 							continue;
 					}
 				}
@@ -3141,7 +3141,7 @@ public abstract class Firm : IIdObject
 
 		if (bestInn != null)
 		{
-			int unitRecno = bestInn.hire(bestInnUnitId);
+			int unitRecno = bestInn.Hire(bestInnUnitId);
 
 			if (unitRecno != 0)
 			{

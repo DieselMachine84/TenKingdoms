@@ -5,41 +5,41 @@ namespace TenKingdoms;
 
 public class InnUnit
 {
-	public int unit_id;
-	public Skill skill = new Skill();
-	public int hire_cost;
-	public int stay_count; // how long this unit is going to stay until it leaves the inn if you do not hire him.
-	public int spy_recno; // >0 if this unit is a spy
+	public int UnitType { get; set; }
+	public Skill Skill { get; } = new Skill();
+	public int HireCost { get; private set; }
+	public int StayCount { get; set; } // how long this unit is going to stay until it leaves the inn if you do not hire him.
+	public int SpyId { get; set; } // >0 if this unit is a spy
 
-	public void set_hire_cost()
+	public void SetHireCost()
 	{
-		hire_cost = skill.CombatLevel + skill.SkillLevel * 2;
+		HireCost = Skill.CombatLevel + Skill.SkillLevel * 2;
 
-		if (skill.SkillId == Skill.SKILL_LEADING) // the cost of a leader unit is higher
+		if (Skill.SkillId == Skill.SKILL_LEADING) // the cost of a leader unit is higher
 		{
-			hire_cost += skill.SkillLevel * 2;
+			HireCost += Skill.SkillLevel * 2;
 
 			// increase the hiring cost with bigger steps when the skill level gets higher
 			for (int i = 10; i <= 100; i += 20)
 			{
-				if (i > skill.SkillLevel)
-					hire_cost += i / 5;
+				if (i > Skill.SkillLevel)
+					HireCost += i / 5;
 			}
 		}
-		else if (skill.SkillId == Skill.SKILL_SPYING) // the cost of a spy unit is higher
+		else if (Skill.SkillId == Skill.SKILL_SPYING) // the cost of a spy unit is higher
 		{
-			hire_cost += skill.SkillLevel;
+			HireCost += Skill.SkillLevel;
 		}
 
-		hire_cost *= 2;
+		HireCost *= 2;
 	}
 }
 
 public class FirmInn : Firm
 {
-	public int next_skill_id; // the skill id. of the next available unit
+	private int NextSkillId { get; set; } // the skill id. of the next available unit
 
-	public List<InnUnit> inn_unit_array = new List<InnUnit>(GameConstants.MAX_INN_UNIT);
+	public List<InnUnit> InnUnits { get; } = new List<InnUnit>(GameConstants.MAX_INN_UNIT);
 
 	public FirmInn()
 	{
@@ -47,7 +47,7 @@ public class FirmInn : Firm
 
 	protected override void InitDerived()
 	{
-		next_skill_id = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
+		NextSkillId = Misc.Random(Skill.MAX_TRAINABLE_SKILL) + 1;
 	}
 
 	public override void NextDay()
@@ -59,52 +59,126 @@ public class FirmInn : Firm
 		int updateInterval = 10 + Info.YearsPassed * 2; // there will be less and less units to hire as the game passes
 
 		if (Info.TotalDays % updateInterval == FirmId % updateInterval)
-			update_add_hire_list();
+			UpdateAddHireList();
 
 		if (Info.TotalDays % 10 == FirmId % 10)
-			update_del_hire_list();
+			UpdateDelHireList();
 	}
 
-	public int hire(int recNo)
+	private void UpdateAddHireList()
+	{
+		//-------- new units come by --------//
+
+		if (InnUnits.Count < GameConstants.MAX_INN_UNIT)
+		{
+			if (ShouldAddInnUnit())
+			{
+				int unitId = RaceRes[ConfigAdv.GetRandomRace()].basic_unit_id;
+				if (unitId != 0)
+					AddInnUnit(unitId);
+			}
+		}
+	}
+
+	private bool ShouldAddInnUnit()
+	{
+		int totalInnUnit = InnUnits.Count;
+
+		for (int i = 0; i < LinkedFirms.Count; i++)
+		{
+			// links between inns are stored in LinkedFirms[] for quick scan only
+			FirmInn firmInn = (FirmInn)FirmArray[LinkedFirms[i]];
+			totalInnUnit += firmInn.InnUnits.Count;
+		}
+
+		return totalInnUnit < GameConstants.MAX_INN_UNIT_PER_REGION;
+	}
+
+	private void AddInnUnit(int unitId)
+	{
+		InnUnit innUnit = new InnUnit();
+		InnUnits.Add(innUnit);
+
+		innUnit.UnitType = unitId;
+
+		int skillId = NextSkillId;
+
+		if (++NextSkillId > Skill.MAX_TRAINABLE_SKILL)
+			NextSkillId = 1;
+
+		innUnit.Skill.SkillId = skillId;
+
+		if (skillId > 0)
+			innUnit.Skill.SkillLevel = 30 + Misc.Random(70);
+		else
+			innUnit.Skill.SkillLevel = 0;
+
+		if (skillId == 0 || skillId == Skill.SKILL_LEADING)
+			innUnit.Skill.CombatLevel = 30 + Misc.Random(70);
+		else
+			innUnit.Skill.CombatLevel = 10;
+
+		innUnit.SetHireCost();
+
+		innUnit.StayCount = 5 + Misc.Random(5);
+
+		innUnit.SpyId = 0;
+	}
+
+	private void UpdateDelHireList()
+	{
+		//------- existing units leave -------//
+
+		for (int i = InnUnits.Count - 1; i >= 0; i--)
+		{
+			if (InnUnits[i].SpyId == 0 && --InnUnits[i].StayCount == 0)
+			{
+				DelInnUnit(i + 1);
+			}
+		}
+	}
+
+	private void DelInnUnit(int recNo)
+	{
+		InnUnits.RemoveAt(recNo - 1);
+	}
+	
+	public int Hire(int innUnitId)
 	{
 		//--------- first check if you have enough money to hire ------//
 
 		Nation nation = NationArray[NationId];
 
-		InnUnit innUnit = inn_unit_array[recNo - 1];
+		InnUnit innUnit = InnUnits[innUnitId - 1];
 
-		if (nation.cash < innUnit.hire_cost)
+		if (nation.cash < innUnit.HireCost)
 			return 0;
 
 		//---------- add the unit now -----------//
 
-		int unitRecno = CreateUnit(innUnit.unit_id);
-		if (unitRecno == 0)
+		int unitId = CreateUnit(innUnit.UnitType);
+		if (unitId == 0)
 			return 0; // no space for creating the unit
 
-		nation.add_expense(NationBase.EXPENSE_HIRE_UNIT, innUnit.hire_cost);
+		nation.add_expense(NationBase.EXPENSE_HIRE_UNIT, innUnit.HireCost);
 
-		//-------- set skills of the unit --------//
-
-		Unit unit = UnitArray[unitRecno];
-		unit.Skill.SkillId = innUnit.skill.SkillId;
-		unit.Skill.SkillLevel = innUnit.skill.SkillLevel;
-		unit.SetCombatLevel(innUnit.skill.CombatLevel);
-
-		//-------- if the unit's skill is spying -----//
+		Unit unit = UnitArray[unitId];
+		unit.Skill.SkillId = innUnit.Skill.SkillId;
+		unit.Skill.SkillLevel = innUnit.Skill.SkillLevel;
+		unit.SetCombatLevel(innUnit.Skill.CombatLevel);
 
 		if (unit.Skill.SkillId == Skill.SKILL_SPYING)
 		{
-			Spy spy = SpyArray.AddSpy(unitRecno, unit.Skill.SkillLevel);
+			Spy spy = SpyArray.AddSpy(unitId, unit.Skill.SkillLevel);
 			unit.SpyId = spy.SpyId;
-			unit.Skill.SkillId = 0; // reset its primary skill, its spying skill has been recorded in spy_array
+			unit.Skill.SkillId = 0; // reset its primary skill, its spying skill has been recorded in SpyArray
 		}
 
 		//----------------------------------------//
 		//
 		// Loyalty of the hired unit
 		//
-		// = 30 + the nation's reputation / 2 + 30 if racially homogenous
+		// = 30 + the nation's reputation / 2 + 20 if racially homogenous
 		//
 		//----------------------------------------//
 
@@ -123,206 +197,80 @@ public class FirmInn : Firm
 
 		//---- remove the record from the hire list ----//
 
-		del_inn_unit(recNo);
+		DelInnUnit(innUnitId);
 
-		return unitRecno;
+		return unitId;
 	}
 
-	public int hire_remote(int unitId, int combat_level, int skill_id, int skill_level, int hire_cost, int spy_recno)
+	public int HireRemote(int unitType, int combatLevel, int skillId, int skillLevel, int hireCost, int spyId)
 	{
 		//TODO multiplayer
 		int recNo;
 
-		for (recNo = 1; recNo <= inn_unit_array.Count; recNo++)
+		for (recNo = 1; recNo <= InnUnits.Count; recNo++)
 		{
-			InnUnit innUnit = inn_unit_array[recNo - 1];
-			if (innUnit.unit_id != unitId)
+			InnUnit innUnit = InnUnits[recNo - 1];
+			if (innUnit.UnitType != unitType)
 				continue;
-			if (innUnit.skill.CombatLevel != combat_level)
+			if (innUnit.Skill.CombatLevel != combatLevel)
 				continue;
-			if (innUnit.skill.SkillId != skill_id)
+			if (innUnit.Skill.SkillId != skillId)
 				continue;
-			if (innUnit.skill.SkillLevel != skill_level)
+			if (innUnit.Skill.SkillLevel != skillLevel)
 				continue;
-			if (innUnit.hire_cost != hire_cost)
+			if (innUnit.HireCost != hireCost)
 				continue;
-			if (innUnit.spy_recno != spy_recno)
+			if (innUnit.SpyId != spyId)
 				continue;
 			break;
 		}
 
-		if (recNo > inn_unit_array.Count) // this may happen in a multiplayer game
+		if (recNo > InnUnits.Count) // this may happen in a multiplayer game
 			return 0;
 
-		return hire(recNo);
+		return Hire(recNo);
 	}
 
-	public override void AutoDefense(int targetRecno)
+	public override void AutoDefense(int targetId)
 	{
-		//---------- the area to check -----------//
-		int xLoc1 = LocCenterX - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int yLoc1 = LocCenterY - InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int xLoc2 = LocCenterX + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-		int yLoc2 = LocCenterY + InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE;
-
-		//----------- boundary checking ----------//
-		if (xLoc1 < 0)
-			xLoc1 = 0;
-		if (yLoc1 < 0)
-			yLoc1 = 0;
-		if (xLoc2 >= GameConstants.MapSize)
-			xLoc2 = GameConstants.MapSize - 1;
-		if (yLoc2 >= GameConstants.MapSize)
-			yLoc2 = GameConstants.MapSize - 1;
-
-		int skipWidthDist = InternalConstants.TOWN_WIDTH;
-		int skipHeightDist = InternalConstants.TOWN_HEIGHT;
-
-		//--------------------------------------------------//
-		// check for our town in the effective area
-		//--------------------------------------------------//
-		int xLimit = xLoc2 + skipWidthDist - 1;
-		int yLimit = yLoc2 + skipHeightDist - 1;
-		for (int xEnd = 0, i = xLoc1; i <= xLimit && xEnd == 0; i += skipWidthDist)
+		foreach (Town town in TownArray)
 		{
-			if (i >= xLoc2)
-			{
-				xEnd++; // final
-				i = xLoc2;
-			}
-
-			for (int yEnd = 0, j = yLoc1; j <= yLimit && yEnd == 0; j += skipHeightDist)
-			{
-				if (j >= yLoc2)
-				{
-					yEnd++; // final
-					j = yLoc2;
-				}
-
-				Location location = World.GetLoc(i, j);
-				if (!location.IsTown())
-					continue;
-
-				Town town = TownArray[location.TownId()];
-
-				if (town.NationId != NationId)
-					continue;
-
-				int dist = Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
-					town.LocX1, town.LocY1, town.LocX2, town.LocY2);
-				if (dist <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
-					town.AutoDefense(targetRecno);
-			}
+			if (town.NationId != NationId)
+				continue;
+			
+			if (Misc.FirmTownDistance(this, town) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
+				town.AutoDefense(targetId);
 		}
 	}
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawInnDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleInnDetailsInput(this);
+	}
+	
+	#region Old AI Functions
 
 	public override void ProcessAI()
 	{
 		if (Info.TotalDays % 30 == FirmId % 30)
 		{
-			if (think_del())
+			if (ThinkDel())
 				return;
 		}
 
 		if (Info.TotalDays % 30 == FirmId % 30)
 		{
-			think_hire_spy();
-			think_hire_general();
+			ThinkHireSpy();
+			ThinkHireGeneral();
 		}
 	}
-
-	private bool should_add_inn_unit()
-	{
-		int totalInnUnit = inn_unit_array.Count;
-
-		for (int i = 0; i < LinkedFirms.Count; i++)
-		{
-			// links between inns are stored in linked_firm_array[] for quick scan only
-			FirmInn firmInn = (FirmInn)FirmArray[LinkedFirms[i]];
-
-			totalInnUnit += firmInn.inn_unit_array.Count;
-		}
-
-		return totalInnUnit < GameConstants.MAX_INN_UNIT_PER_REGION;
-	}
-
-	private void add_inn_unit(int unitId)
-	{
-		InnUnit innUnit = new InnUnit();
-		inn_unit_array.Add(innUnit);
-
-		innUnit.unit_id = unitId;
-
-		//--------- set the skill now -----------------//
-
-		int skillId = next_skill_id;
-
-		if (++next_skill_id > Skill.MAX_TRAINABLE_SKILL)
-			next_skill_id = 1;
-
-		innUnit.skill.SkillId = skillId;
-
-		if (skillId > 0)
-			innUnit.skill.SkillLevel = 30 + Misc.Random(70);
-		else
-			innUnit.skill.SkillLevel = 0;
-
-		if (skillId == 0 || skillId == Skill.SKILL_LEADING)
-			innUnit.skill.CombatLevel = 30 + Misc.Random(70);
-		else
-			innUnit.skill.CombatLevel = 10;
-
-		innUnit.set_hire_cost();
-
-		innUnit.stay_count = 5 + Misc.Random(5);
-
-		innUnit.spy_recno = 0;
-	}
-
-	private void del_inn_unit(int recNo)
-	{
-		inn_unit_array.RemoveAt(recNo - 1);
-	}
-
-	private void update_add_hire_list()
-	{
-		//-------- new units come by --------//
-
-		if (inn_unit_array.Count < GameConstants.MAX_INN_UNIT)
-		{
-			if (should_add_inn_unit())
-			{
-				int unitId = RaceRes[ConfigAdv.GetRandomRace()].basic_unit_id;
-
-				if (unitId != 0)
-					add_inn_unit(unitId);
-			}
-		}
-	}
-
-	private void update_del_hire_list()
-	{
-		//------- existing units leave -------//
-
-		for (int i = inn_unit_array.Count - 1; i >= 0; i--)
-		{
-			if (inn_unit_array[i].spy_recno == 0 && --inn_unit_array[i].stay_count == 0)
-			{
-				del_inn_unit(i + 1);
-
-				//TODO drawing
-				/*if (FirmId == FirmArray.SelectedFirmId && ShouldShowInfo())
-				{
-					//if( browse_hire.recno() > i && browse_hire.recno() > 1 )
-					//browse_hire.refresh( browse_hire.recno()-1, inn_unit_count );
-				}*/
-			}
-		}
-	}
-
-	//-------- AI actions ---------//
-
-	private bool think_del()
+	
+	private bool ThinkDel()
 	{
 		Nation ownNation = NationArray[NationId];
 
@@ -357,7 +305,7 @@ public class FirmInn : Firm
 		return true;
 	}
 
-	private bool think_hire_spy()
+	private bool ThinkHireSpy()
 	{
 		Nation ownNation = NationArray[NationId];
 
@@ -366,22 +314,22 @@ public class FirmInn : Firm
 
 		//--------------------------------------------//
 
-		for (int i = 0; i < inn_unit_array.Count; i++)
+		for (int i = 0; i < InnUnits.Count; i++)
 		{
-			InnUnit innUnit = inn_unit_array[i];
-			if (innUnit.skill.SkillId != Skill.SKILL_SPYING)
+			InnUnit innUnit = InnUnits[i];
+			if (innUnit.Skill.SkillId != Skill.SKILL_SPYING)
 				continue;
 
-			int raceId = UnitRes[innUnit.unit_id].race_id;
-			int loc_x1 = 0;
-			int loc_y1 = 0;
+			int raceId = UnitRes[innUnit.UnitType].race_id;
+			int locX1 = 0;
+			int locY1 = 0;
 			int cloakedNationRecno = 0;
-			if (ownNation.think_spy_new_mission(raceId, RegionId, out loc_x1, out loc_y1, out cloakedNationRecno))
+			if (ownNation.think_spy_new_mission(raceId, RegionId, out locX1, out locY1, out cloakedNationRecno))
 			{
-				int unitRecno = hire(i + 1);
+				int unitRecno = Hire(i + 1);
 				if (unitRecno != 0)
 				{
-					ownNation.ai_start_spy_new_mission(UnitArray[unitRecno], loc_x1, loc_y1, cloakedNationRecno);
+					ownNation.ai_start_spy_new_mission(UnitArray[unitRecno], locX1, locY1, cloakedNationRecno);
 					return true;
 				}
 			}
@@ -390,12 +338,12 @@ public class FirmInn : Firm
 		return false;
 	}
 
-	private bool think_assign_spy_to(int raceId, int innUnitRecno)
+	private bool ThinkAssignSpyTo(int raceId, int innUnitRecno)
 	{
 		return false;
 	}
 
-	private bool think_hire_general()
+	private bool ThinkHireGeneral()
 	{
 		Nation ownNation = NationArray[NationId];
 
@@ -404,22 +352,22 @@ public class FirmInn : Firm
 
 		//--------------------------------------------//
 
-		for (int i = 0; i < inn_unit_array.Count; i++)
+		for (int i = 0; i < InnUnits.Count; i++)
 		{
-			InnUnit innUnit = inn_unit_array[i];
-			if (innUnit.skill.SkillId != Skill.SKILL_LEADING)
+			InnUnit innUnit = InnUnits[i];
+			if (innUnit.Skill.SkillId != Skill.SKILL_LEADING)
 				continue;
 
-			int raceId = UnitRes[innUnit.unit_id].race_id;
+			int raceId = UnitRes[innUnit.UnitType].race_id;
 
-			if (think_assign_general_to(raceId, innUnit))
+			if (ThinkAssignGeneralTo(raceId, innUnit))
 				return true;
 		}
 
 		return false;
 	}
 
-	private bool think_assign_general_to(int raceId, InnUnit innUnit)
+	private bool ThinkAssignGeneralTo(int raceId, InnUnit innUnit)
 	{
 		Nation ownNation = NationArray[NationId];
 		int bestRating = 30; // the new one needs to be at least 30 points better than the existing one
@@ -435,7 +383,7 @@ public class FirmInn : Firm
 				continue;
 
 			int curLeadership = firmCamp.cur_commander_leadership();
-			int newLeadership = firmCamp.new_commander_leadership(raceId, innUnit.skill.SkillLevel);
+			int newLeadership = firmCamp.new_commander_leadership(raceId, innUnit.Skill.SkillLevel);
 
 			int curRating = newLeadership - curLeadership;
 
@@ -461,7 +409,7 @@ public class FirmInn : Firm
 
 		//--------------------------------------------//
 
-		int unitRecno = hire(inn_unit_array.IndexOf(innUnit) + 1);
+		int unitRecno = Hire(InnUnits.IndexOf(innUnit) + 1);
 
 		ownNation.add_action(bestCamp.LocX1, bestCamp.LocY1, -1, -1,
 			Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, unitRecno);
@@ -469,13 +417,5 @@ public class FirmInn : Firm
 		return true;
 	}
 
-	public override void DrawDetails(IRenderer renderer)
-	{
-		renderer.DrawInnDetails(this);
-	}
-
-	public override void HandleDetailsInput(IRenderer renderer)
-	{
-		renderer.HandleInnDetailsInput(this);
-	}
+	#endregion
 }
