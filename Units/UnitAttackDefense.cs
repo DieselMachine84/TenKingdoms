@@ -2125,7 +2125,7 @@ public partial class Unit
 
 			else if (targetFirm.FirmType == Firm.FIRM_MONSTER)
 			{
-				NewsArray.monster_firm_destroyed(((FirmMonster)targetFirm).monster_id, targetFirm.LocCenterX, targetFirm.LocCenterY);
+				NewsArray.monster_firm_destroyed(((FirmMonster)targetFirm).MonsterId, targetFirm.LocCenterX, targetFirm.LocCenterY);
 			}
 
 			FirmArray.DeleteFirm(targetFirm);
@@ -4128,11 +4128,11 @@ public partial class Unit
 			else
 			{
 				FirmMonster firmMonster = (FirmMonster)FirmArray[ActionMiscParam];
-				if (UnitArray.IsDeleted(firmMonster.defend_target_recno))
+				if (UnitArray.IsDeleted(firmMonster.DefendTargetId))
 					back++;
 				else
 				{
-					Unit target = UnitArray[firmMonster.defend_target_recno];
+					Unit target = UnitArray[firmMonster.DefendTargetId];
 					if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != firmMonster.FirmId)
 						back++;
 				}
@@ -4702,7 +4702,7 @@ public partial class Unit
 			{
 				FirmMonster monsterFirm = (FirmMonster)FirmArray[targetRecno];
 
-				if (!monsterFirm.is_hostile_nation(NationId))
+				if (!monsterFirm.IsHostileNation(NationId))
 					return 0;
 			}
 		}

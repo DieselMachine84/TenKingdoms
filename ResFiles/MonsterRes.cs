@@ -114,7 +114,7 @@ public class MonsterInfo
             firmMonster.UnderConstruction = true;
         }
 
-        firmMonster.set_king(monster_id, 100);
+        firmMonster.SetKing(monster_id, 100);
 
         //-------- create monster generals ---------//
 
@@ -124,9 +124,9 @@ public class MonsterInfo
             generalCount = 3;
 
         for (int i = 0; i < generalCount; i++)
-            firmMonster.recruit_general();
+            firmMonster.RecruitGeneral();
 
-        firmMonster.monster_id = monster_id;
+        firmMonster.MonsterId = monster_id;
 
         return firmRecno;
     }
@@ -227,7 +227,7 @@ public class MonsterRes
 
             FirmMonster firmMonster = (FirmMonster)firm;
 
-            firmMonster.reset_hostile_nation(nationRecno);
+            firmMonster.ResetHostileNation(nationRecno);
         }
     }
 

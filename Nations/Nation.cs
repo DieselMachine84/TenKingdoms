@@ -4176,7 +4176,7 @@ public class NationOld : NationBase
 
 		FirmMonster targetFirm = (FirmMonster)FirmArray[targetFirmRecno];
 
-		int monsterLevel = MonsterRes[targetFirm.monster_id].level;
+		int monsterLevel = MonsterRes[targetFirm.MonsterId].level;
 
 		int attackerMinCombatLevel = 0;
 
@@ -4215,7 +4215,7 @@ public class NationOld : NationBase
 			int curRating = 3 * Misc.points_distance(largestTown.LocCenterX, largestTown.LocCenterY,
 				firm.LocCenterX, firm.LocCenterY);
 
-			int combatLevel = mobileCombatLevel + ((FirmMonster)firm).total_combat_level();
+			int combatLevel = mobileCombatLevel + ((FirmMonster)firm).TotalCombatLevel();
 
 			curRating -= combatLevel;
 

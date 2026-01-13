@@ -5,61 +5,58 @@ namespace TenKingdoms;
 
 public class MonsterInFirm
 {
-	public int monster_id;
-	public int _unused;
+	public int MonsterId { get; set; }
 
-	public int mobile_unit_recno; // unit recno of this monster when it is a mobile unit
+	public int MobileUnitId { get; set; } // unit id of this monster when it is a mobile unit
 
 	// this is only used as a reference for soldiers to find their leaders
-	public int combat_level;
-	public int hit_points;
-	public int max_hit_points;
+	public int CombatLevel { get; private set; }
+	public int HitPoints { get; set; }
+	public int MaxHitPoints { get; private set; }
 
-	public int soldier_monster_id; // monster id. of the soldiers led by this monster general
-	public int soldier_count; // no. of soldiers commaned by this monster general/king
+	public int SoldierMonsterId { get; set; } // monster id. of the soldiers led by this monster general
+	public int SoldierCount { get; set; } // no. of soldiers commanded by this monster general/king
 
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
-	public void set_combat_level(int combatLevel)
+	public void SetCombatLevel(int combatLevel)
 	{
-		UnitInfo unitInfo = UnitRes[MonsterRes[monster_id].unit_id];
+		UnitInfo unitInfo = UnitRes[MonsterRes[MonsterId].unit_id];
 
-		combat_level = combatLevel;
+		CombatLevel = combatLevel;
 
-		max_hit_points = unitInfo.hit_points * combatLevel / 100;
+		MaxHitPoints = unitInfo.hit_points * combatLevel / 100;
 	}
 }
 
 public class FirmMonster : Firm
 {
-	public int monster_id; // the monster type id. of the firm.
+	public int MonsterId { get; set; } // the monster type id. of the firm.
 
-	public int monster_aggressiveness; // 0-100
+	private int MonsterAggressiveness { get; set; } // 0-100
+	private int MonsterNationRelation { get; set; } // each bit n is high representing this monster will attack nation n.
 
-	public int defending_king_count;
-	public int defending_general_count;
-	public int defending_soldier_count;
+	private int CurrentMonsterActionMode { get; set; }
+	
+	private int DefendingKingCount { get; set; }
+	private int DefendingGeneralCount { get; set; }
+	private int DefendingSoldierCount { get; set; }
+	public int DefendTargetId { get; private set; } // used in defend mode, store id of the latest unit attacking this firm
 
-	public MonsterInFirm monster_king;
-	//public MonsterInFirm[] monster_general_array = new MonsterInFirm[GameConstants.MAX_MONSTER_GENERAL_IN_FIRM];
-	public List<MonsterInFirm> monsterGenerals = new List<MonsterInFirm>();
+	private MonsterInFirm MonsterKing { get; set; }
+	private List<MonsterInFirm> MonsterGenerals { get; } = new List<MonsterInFirm>();
 
-	public List<int> waitingSoldiers = new List<int>(); // the unit recno of their generals are kept here
+	//TODO what if there are waiting soldiers which general is killed?
+	private List<int> WaitingSoldiers { get; } = new List<int>(); // the unit id of their generals are kept here
 
-	public int monster_nation_relation; // each bit n is high representing this independent town will attack nation n.
-	public int defend_target_recno; // used in defend mode, store recno of the latest unit attacking this firm
+	//TODO PatrolUnits contains only one general troop. Check
+	private List<int> PatrolUnits { get; } = new List<int>();
 
-	public List<int> patrolUnits = new List<int>();
-
-	//TODO why static?
-	public static int current_monster_action_mode;
-
-	private static string[] MonsterFirmName =
+	private static string[] MonsterFirmName { get; } =
 	{
-		"Deezboanz Lair", "Rattus Lair", "Broosken Lair", "Haubudam Lair",
-		"Pfith Lair", "Rokken Lair", "Doink Lair", "Wyrm Lair", "Droog Lair", "Ick Lair", "Sauroid Lair",
-		"Karrotten Lair", "Holgh Lair"
+		"Deezboanz Lair", "Rattus Lair", "Broosken Lair", "Haubudam Lair", "Pfith Lair", "Rokken Lair",
+		"Doink Lair", "Wyrm Lair", "Droog Lair", "Ick Lair", "Sauroid Lair", "Karrotten Lair", "Holgh Lair"
 	};
 
 	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
@@ -71,13 +68,7 @@ public class FirmMonster : Firm
 
 	protected override void InitDerived()
 	{
-		monster_king = new MonsterInFirm();
-
-		defending_king_count = 0;
-		defending_general_count = 0;
-		defending_soldier_count = 0;
-
-		monster_nation_relation = 0;
+		MonsterKing = new MonsterInFirm();
 
 		//----------------------------------------//
 		// Set monster aggressiveness. It affects:
@@ -85,29 +76,27 @@ public class FirmMonster : Firm
 		// -the number of defenders will be called out at one time.
 		//----------------------------------------//
 
-		defend_target_recno = 0;
+		//-- these vars must be initialized here instead of in FirmMonster.FirmMonster() for random seed sync during load game --//
 
-		//-- these vars must be initialized here instead of in FirmMonster::FirmMonster() for random seed sync during load game --//
-
-		monster_aggressiveness = 20 + Misc.Random(50); // 20 to 70
+		MonsterAggressiveness = 20 + Misc.Random(50); // 20 to 70
 	}
 
 	protected override void DeinitDerived()
 	{
 		//-------- mobilize all monsters in the firm --------//
 
-		if (monster_king.monster_id != 0)
-			mobilize_king();
+		if (MonsterKing.MonsterId != 0)
+			MobilizeKing();
 
-		while (monsterGenerals.Count > 0)
+		while (MonsterGenerals.Count > 0)
 		{
-			if (mobilize_general(1) == 0)
+			if (MobilizeGeneral(1) == 0)
 				break;
 		}
 
-		clear_defense_mode();
+		ClearDefenseMode();
 
-		int goldAmount = 800 * (MonsterRes[monster_id].level * 30 + Misc.Random(50)) / 100;
+		int goldAmount = 800 * (MonsterRes[MonsterId].level * 30 + Misc.Random(50)) / 100;
 
 		SiteArray.AddSite(LocCenterX, LocCenterY, Site.SITE_GOLD_COIN, goldAmount);
 		SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
@@ -115,61 +104,53 @@ public class FirmMonster : Firm
 
 	public override string FirmName()
 	{
-		return MonsterFirmName[monster_id - 1];
+		return MonsterFirmName[MonsterId - 1];
 	}
 
-	public int total_defender()
+	private int TotalDefendersCount()
 	{
-		return defending_king_count + defending_general_count + defending_soldier_count;
+		return DefendingKingCount + DefendingGeneralCount + DefendingSoldierCount;
 	}
 
 	public override void NextDay()
 	{
-		validate_patrol_unit();
+		ValidatePatrolUnit();
 
 		//---- the monster boss recruit new monsters ----//
 
 		if (Info.TotalDays % 10 == FirmId % 10)
-			recruit_soldier();
+			RecruitSoldier();
 
 		//----- monsters recover hit points -------//
 
-		if (Info.TotalDays % 15 == FirmId % 15) // once a week
-			recover_hit_points();
+		if (Info.TotalDays % 15 == FirmId % 15)
+			RecoverHitPoints();
 
 		//------ monster thinks about expansion -------//
 
 		if (Config.monster_type == Config.OPTION_MONSTER_OFFENSIVE)
 		{
 			if (Info.TotalDays % 30 == FirmId % 30 && Misc.Random(3) == 0)
-				recruit_general();
-			/*
-			if( info.game_date%90 == firm_recno%90 )
-				think_attack_neighbor();
-			*/
+				RecruitGeneral();
 
 			//------ attack human towns and firms randomly -----//
 
 			// only start attacking 3 years after the game starts so the human can build up things
 			if (Info.GameDate > Info.GameStartDate.AddDays(1000.0) &&
-			    Info.TotalDays % 30 == FirmId % 30 && fryhtan_random_attack())
+			    Info.TotalDays % 30 == FirmId % 30 &&
+			    Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * ConfigAdv.monster_attack_divisor) == 0)
 			{
-				think_attack_human();
+				ThinkAttackHuman();
 			}
 
 			//--------- think expansion ---------//
 
 			// it will expand slower when there are already a lot of the monster structures on the map
-			if (Info.TotalDays % 180 == FirmId % 180 &&
-			    Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * 10) == 0)
+			if (Info.TotalDays % 180 == FirmId % 180 && Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * 10) == 0)
 			{
-				think_expansion();
+				ThinkExpansion();
 			}
 		}
-	}
-
-	public override void ProcessAI()
-	{
 	}
 
 	public override void AssignUnit(int unitId)
@@ -179,64 +160,49 @@ public class FirmMonster : Firm
 		switch (unit.Rank)
 		{
 			case Unit.RANK_KING:
-				set_king(unit.MonsterId, unit.Skill.CombatLevel);
+				SetKing(unit.MonsterId, unit.Skill.CombatLevel);
 				break;
 
 			case Unit.RANK_GENERAL:
-				add_general(unitId);
+				AddGeneral(unitId);
 				break;
 
 			case Unit.RANK_SOLDIER:
-				add_soldier(unit.LeaderId);
+				AddSoldier(unit.LeaderId);
 				break;
 		}
 
 		UnitArray.DisappearInFirm(unitId);
 	}
 
-	public bool can_assign_monster(int unitRecno)
+	public void SetKing(int monsterId, int combatLevel)
 	{
-		UnitMonster unit = (UnitMonster)UnitArray[unitRecno];
-
-		// can assign if the build code are the same
-		return FirmRes.GetBuild(FirmBuildId).BuildCode == MonsterRes[unit.MonsterId].firm_build_code;
+		MonsterKing.MonsterId = monsterId;
+		MonsterKing.SetCombatLevel(combatLevel);
+		MonsterKing.HitPoints = MonsterKing.MaxHitPoints;
 	}
 
-	public void set_king(int monsterId, int combatLevel)
+	private void AddGeneral(int generalUnitId)
 	{
-		monster_king.monster_id = monsterId;
-		monster_king.set_combat_level(combatLevel);
-		monster_king.hit_points = monster_king.max_hit_points;
-
-		//TODO drawing
-		//if( FirmArray.selected_recno == firm_recno )
-		//sys.need_redraw_flag = 1;
-	}
-
-	public void add_general(int generalUnitRecno)
-	{
-		if (monsterGenerals.Count >= GameConstants.MAX_MONSTER_GENERAL_IN_FIRM)
+		if (MonsterGenerals.Count >= GameConstants.MAX_MONSTER_GENERAL_IN_FIRM)
 			return;
 
-		UnitMonster unitPtr = (UnitMonster)UnitArray[generalUnitRecno];
+		UnitMonster unit = (UnitMonster)UnitArray[generalUnitId];
 
 		MonsterInFirm monsterInFirm = new MonsterInFirm();
+		monsterInFirm.MonsterId = unit.MonsterId;
+		monsterInFirm.SetCombatLevel(unit.Skill.CombatLevel);
+		monsterInFirm.HitPoints = (int)unit.HitPoints;
 
-		// contribution is used for storing the monster id. temporary
-		monsterInFirm.monster_id = unitPtr.MonsterId;
-		monsterInFirm.set_combat_level(unitPtr.Skill.CombatLevel);
-		monsterInFirm.hit_points = (int)unitPtr.HitPoints;
+		if (monsterInFirm.HitPoints == 0)
+			monsterInFirm.HitPoints = 1;
 
-		if (monsterInFirm.hit_points == 0)
-			monsterInFirm.hit_points = 1;
+		monsterInFirm.SoldierMonsterId = unit.SoldierMonsterId;
+		monsterInFirm.SoldierCount = 0;
 
-		// total_reward is used for storing the soldier monster id temporarily
-		monsterInFirm.soldier_monster_id = unitPtr.MonsterSoldierId;
-		monsterInFirm.soldier_count = 0;
-
-		monsterInFirm.mobile_unit_recno = generalUnitRecno; // unit recno of this monster when it is a mobile unit
+		monsterInFirm.MobileUnitId = generalUnitId; // unit id of this monster when it is a mobile unit
 		// this is only used as a reference for soldiers to find their leaders
-		monsterGenerals.Add(monsterInFirm);
+		MonsterGenerals.Add(monsterInFirm);
 
 		//----- check if there are any soldiers waiting for this general ----//
 		//
@@ -246,234 +212,232 @@ public class FirmMonster : Firm
 		//
 		//-------------------------------------------------------------------//
 
-		for (int i = waitingSoldiers.Count - 1; i >= 0; i--)
+		for (int i = WaitingSoldiers.Count - 1; i >= 0; i--)
 		{
 			//--- if this waiting soldier was led by this general ---//
 
-			if (waitingSoldiers[i] == generalUnitRecno)
+			if (WaitingSoldiers[i] == generalUnitId)
 			{
-				monsterInFirm.soldier_count++;
+				monsterInFirm.SoldierCount++;
 
-				waitingSoldiers.RemoveAt(i);
+				WaitingSoldiers.RemoveAt(i);
 			}
 		}
-
-		//TODO drawing
-		//if( FirmArray.selected_recno == firm_recno )
-		//sys.need_redraw_flag = 1;
 	}
 
-	public void add_soldier(int generalUnitRecno)
+	private void AddSoldier(int generalUnitId)
 	{
 		//----- check if the soldier's leading general is here ----//
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			if (monsterGenerals[i].mobile_unit_recno == generalUnitRecno)
+			if (MonsterGenerals[i].MobileUnitId == generalUnitId)
 			{
-				if (monsterGenerals[i].soldier_count >= GameConstants.MAX_SOLDIER_PER_GENERAL)
-					return;
-
-				monsterGenerals[i].soldier_count++;
+				if (MonsterGenerals[i].SoldierCount < GameConstants.MAX_SOLDIER_PER_GENERAL)
+					MonsterGenerals[i].SoldierCount++;
+				
 				return;
 			}
 		}
 
 		//---- if not, put the soldier into the waiting list ----//
 
-		waitingSoldiers.Add(generalUnitRecno);
+		WaitingSoldiers.Add(generalUnitId);
 	}
 
-	public int recruit_general(int soldierCount = -1)
+	public void RecruitGeneral()
 	{
-		if (monsterGenerals.Count >= GameConstants.MAX_MONSTER_GENERAL_IN_FIRM * monster_aggressiveness / 100)
-			return 0;
+		if (MonsterGenerals.Count >= GameConstants.MAX_MONSTER_GENERAL_IN_FIRM * MonsterAggressiveness / 100)
+			return;
 
-		if (monster_king.monster_id == 0)
-			return 0;
+		if (MonsterKing.MonsterId == 0)
+			return;
 
 		//---------- recruit the general now ----------//
 
-		MonsterInFirm monsterInFirm = new MonsterInFirm();
-
 		int combatLevel = 40 + Misc.Random(30); // 40 to 70
 
-		monsterInFirm.monster_id = monster_king.monster_id;
-		monsterInFirm.set_combat_level(combatLevel);
-		monsterInFirm.hit_points = monsterInFirm.max_hit_points;
+		MonsterInFirm monsterInFirm = new MonsterInFirm();
+		monsterInFirm.MonsterId = MonsterKing.MonsterId;
+		monsterInFirm.SetCombatLevel(combatLevel);
+		monsterInFirm.HitPoints = monsterInFirm.MaxHitPoints;
+		monsterInFirm.SoldierMonsterId = MonsterKing.MonsterId;
+		monsterInFirm.SoldierCount = Misc.Random(GameConstants.MAX_SOLDIER_PER_GENERAL / 2) + 1;
 
-		monsterInFirm.soldier_monster_id = monster_king.monster_id;
-
-		if (soldierCount >= 0)
-			monsterInFirm.soldier_count = soldierCount;
-		else
-			monsterInFirm.soldier_count = Misc.Random(GameConstants.MAX_SOLDIER_PER_GENERAL / 2) + 1;
-
-		monsterGenerals.Add(monsterInFirm);
-
-		//TODO drawing
-		//if (FirmArray.selected_recno == firm_recno)
-		//sys.need_redraw_flag = 1;
-
-		return 1;
+		MonsterGenerals.Add(monsterInFirm);
 	}
 
-	public void recruit_soldier()
+	private void RecruitSoldier()
 	{
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			MonsterInFirm monsterInFirm = monsterGenerals[i];
+			MonsterInFirm monsterInFirm = MonsterGenerals[i];
 			// 2/3 chance of recruiting a soldier
-			if (monsterInFirm.soldier_count < GameConstants.MAX_SOLDIER_PER_GENERAL && Misc.Random(3) > 0)
+			if (monsterInFirm.SoldierCount < GameConstants.MAX_SOLDIER_PER_GENERAL && Misc.Random(3) > 0)
 			{
-				monsterInFirm.soldier_count++;
+				monsterInFirm.SoldierCount++;
 			}
 		}
 	}
 
-	public bool mobilize_king()
+	private bool MobilizeKing()
 	{
-		if (mobilize_monster(monster_king.monster_id, Unit.RANK_KING,
-			    monster_king.combat_level, monster_king.hit_points) == 0)
+		if (MobilizeMonster(MonsterKing.MonsterId, Unit.RANK_KING, MonsterKing.CombatLevel, MonsterKing.HitPoints) == 0)
 			return false;
 
-		monster_king.monster_id = 0;
-
-		//TODO drawing
-		//if( FirmArray.selected_recno == firm_recno )
-		//sys.need_redraw_flag = 1;
-
+		MonsterKing.MonsterId = 0;
 		return true;
 	}
 
-	public int mobilize_general(int generalId, int mobilizeSoldier = 1)
+	private int MobilizeGeneral(int generalId, int mobilizeSoldier = 1)
 	{
-		MonsterInFirm monsterInFirm = monsterGenerals[generalId - 1];
+		MonsterInFirm monsterInFirm = MonsterGenerals[generalId - 1];
 
 		//------ mobilize the monster general ------//
 
-		int generalUnitRecno = mobilize_monster(monsterInFirm.monster_id, Unit.RANK_GENERAL,
-			monsterInFirm.combat_level, monsterInFirm.hit_points);
+		int generalUnitId = MobilizeMonster(monsterInFirm.MonsterId, Unit.RANK_GENERAL, monsterInFirm.CombatLevel, monsterInFirm.HitPoints);
 
-		if (generalUnitRecno == 0)
+		if (generalUnitId == 0)
 			return 0;
 
-		UnitMonster generalUnit = (UnitMonster)UnitArray[generalUnitRecno];
+		UnitMonster generalUnit = (UnitMonster)UnitArray[generalUnitId];
 		generalUnit.TeamId = UnitArray.CurTeamId;
-		generalUnit.MonsterSoldierId = monsterInFirm.soldier_monster_id;
+		generalUnit.SoldierMonsterId = monsterInFirm.SoldierMonsterId;
 
 		int mobilizedCount = 1;
 
-		patrolUnits.Add(generalUnitRecno);
+		PatrolUnits.Clear();
+		PatrolUnits.Add(generalUnitId);
 
 		//------ mobilize soldiers commanded by the monster general ------//
 
 		if (mobilizeSoldier != 0)
 		{
-			for (int i = 0; i < monsterInFirm.soldier_count; i++)
+			for (int i = 0; i < monsterInFirm.SoldierCount; i++)
 			{
 				//--- the combat level of its soldiers ranges from 25% to 50% of the combat level of the general ---//
 
 				int soldierCombatLevel =
-					monsterInFirm.combat_level / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER +
-					Misc.Random(monsterInFirm.combat_level / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER);
+					monsterInFirm.CombatLevel / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER +
+					Misc.Random(monsterInFirm.CombatLevel / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER);
 
-				int unitRecno = mobilize_monster(monsterInFirm.soldier_monster_id, Unit.RANK_SOLDIER,
-					soldierCombatLevel);
+				int unitId = MobilizeMonster(monsterInFirm.SoldierMonsterId, Unit.RANK_SOLDIER, soldierCombatLevel);
 
-				if (unitRecno != 0)
-				{
-					UnitArray[unitRecno].TeamId = UnitArray.CurTeamId;
-					UnitArray[unitRecno].LeaderId = generalUnitRecno;
-					mobilizedCount++;
+				if (unitId == 0)
+					break;
 
-					patrolUnits.Add(unitRecno);
+				UnitArray[unitId].TeamId = UnitArray.CurTeamId;
+				UnitArray[unitId].LeaderId = generalUnitId;
+				mobilizedCount++;
 
-					if (patrolUnits.Count == TeamInfo.MAX_TEAM_MEMBER)
-						break;
-				}
-				else
-				{
-					break; // no space for init_sprite
-				}
+				PatrolUnits.Add(unitId);
+				if (PatrolUnits.Count == TeamInfo.MAX_TEAM_MEMBER)
+					break;
 			}
 		}
 
-		//------- set the team_info of the general -------//
-
 		generalUnit.TeamInfo.Members.Clear();
 
-		for (int i = 0; i < patrolUnits.Count; i++)
+		for (int i = 0; i < PatrolUnits.Count; i++)
 		{
-			generalUnit.TeamInfo.Members.Add(patrolUnits[i]);
+			generalUnit.TeamInfo.Members.Add(PatrolUnits[i]);
 		}
 
-		//---- delete the monster general record from the array ----//
-
-		monsterGenerals.Remove(monsterInFirm);
+		MonsterGenerals.Remove(monsterInFirm);
 
 		UnitArray.CurTeamId++;
-
-		//TODO drawing
-		//if( FirmArray.selected_recno == firm_recno )
-		//sys.need_redraw_flag = 1;
 
 		return mobilizedCount;
 	}
 
-	public int total_combat_level()
+	private int MobilizeMonster(int monsterId, int rankId, int combatLevel, int hitPoints = 0)
+	{
+		//------- locate a space first --------//
+
+		int locX = LocCenterX, locY = LocCenterY;
+		MonsterInfo monsterInfo = MonsterRes[monsterId];
+		UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
+		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
+
+		if (!World.LocateSpace(ref locX, ref locY, locX, locY, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
+			return 0;
+
+		Unit unit = UnitArray.AddUnit(unitInfo.unit_id, 0, rankId, 0, locX, locY);
+
+		UnitMonster monster = (UnitMonster)unit;
+		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, FirmId);
+		monster.SetCombatLevel(combatLevel);
+		monster.MonsterId = monsterId;
+		monster.MonsterActionMode = CurrentMonsterActionMode;
+		monster.HitPoints = hitPoints != 0 ? hitPoints : monster.MaxHitPoints;
+
+		//-----------------------------------------------------//
+		// enable unit defend mode
+		//-----------------------------------------------------//
+		if (FirmId != 0) // 0 when firm is ready to be deleted
+		{
+			monster.Stop2();
+			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
+			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
+			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
+			monster.ActionMiscParam = FirmId;
+		}
+
+		return monster.SpriteId;
+	}
+	
+	public int TotalCombatLevel()
 	{
 		int totalCombatLevel = 50; // for the structure 
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			MonsterInFirm monsterInFirm = monsterGenerals[i];
-			// *2 because total_combat_level() actually takes hit_points instead of combat_level
+			MonsterInFirm monsterInFirm = MonsterGenerals[i];
+			// *2 because TotalCombatLevel() actually takes HitPoints instead of CombatLevel
 			// *3/2 because the function use 100% + random(100%) for the combat level, so we take 150% as the average
-			totalCombatLevel += monsterInFirm.hit_points +
-			                    (monsterInFirm.combat_level * 2 / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER)
-			                    * 3 / 2 * monsterInFirm.soldier_count;
+			totalCombatLevel += monsterInFirm.HitPoints +
+			                    (monsterInFirm.CombatLevel * 2 / GameConstants.MONSTER_SOLDIER_COMBAT_LEVEL_DIVIDER) * 3 / 2 * monsterInFirm.SoldierCount;
 		}
 
 		return totalCombatLevel;
 	}
 
-	public override void BeingAttacked(int attackerUnitRecno)
+	public override void BeingAttacked(int attackerUnitId)
 	{
-		int attackerNationRecno = UnitArray[attackerUnitRecno].NationId;
+		int attackerNationId = UnitArray[attackerUnitId].NationId;
 
 		//--- increase reputation of the nation that attacks monsters ---//
 
-		if (attackerNationRecno != 0)
+		if (attackerNationId != 0)
 		{
-			NationArray[attackerNationRecno].change_reputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
-			set_hostile_nation(attackerNationRecno); // also set hostile with the nation
+			NationArray[attackerNationId].change_reputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
+			SetHostileNation(attackerNationId); // also set hostile with the nation
 		}
 
 		//------ MAX no. of defender it should call out -----//
 
-		int maxDefender = GameConstants.MAX_MONSTER_IN_FIRM * monster_aggressiveness / 200;
+		int maxDefender = GameConstants.MAX_MONSTER_IN_FIRM * MonsterAggressiveness / 200;
 
-		if (total_defender() >= maxDefender) // only mobilize new ones when the MAX defender no. has been reached yet
+		if (TotalDefendersCount() >= maxDefender) // only mobilize new ones when the MAX defender no. has been reached yet
 			return;
 
-		current_monster_action_mode = UnitConstants.MONSTER_ACTION_DEFENSE;
+		CurrentMonsterActionMode = UnitConstants.MONSTER_ACTION_DEFENSE;
 
 		//---- mobilize monster general to defend against the attack ----//
 
-		if (monsterGenerals.Count > 0)
+		if (MonsterGenerals.Count > 0)
 		{
-			while (total_defender() < maxDefender)
+			while (TotalDefendersCount() < maxDefender)
 			{
-				if (monsterGenerals.Count == 0)
+				if (MonsterGenerals.Count == 0)
 					break;
 
-				int mobilizedCount = mobilize_general(Misc.Random(monsterGenerals.Count) + 1);
+				int mobilizedCount = MobilizeGeneral(Misc.Random(MonsterGenerals.Count) + 1);
 
 				if (mobilizedCount > 0)
 				{
-					defending_general_count++;
-					defending_soldier_count += mobilizedCount - 1;
+					DefendingGeneralCount++;
+					DefendingSoldierCount += mobilizedCount - 1;
 				}
 				else
 				{
@@ -482,16 +446,16 @@ public class FirmMonster : Firm
 			}
 		}
 
-		else if (monster_king.monster_id != 0)
+		else if (MonsterKing.MonsterId != 0)
 		{
-			if (mobilize_king())
-				defending_king_count++;
+			if (MobilizeKing())
+				DefendingKingCount++;
 		}
 
-		defend_target_recno = attackerUnitRecno;
+		DefendTargetId = attackerUnitId;
 	}
 
-	public void clear_defense_mode()
+	private void ClearDefenseMode()
 	{
 		//------------------------------------------------------------------//
 		// change defense unit's to non-defense mode
@@ -499,9 +463,6 @@ public class FirmMonster : Firm
 
 		foreach (Unit unit in UnitArray)
 		{
-			if (UnitArray.IsDeleted(unit.SpriteId))
-				continue;
-
 			//------ reset the monster's defense mode -----//
 
 			if (unit.InMonsterDefendMode() &&
@@ -509,7 +470,7 @@ public class FirmMonster : Firm
 			    unit.ActionMiscParam == FirmId)
 			{
 				unit.ClearMonsterDefendMode();
-				((UnitMonster)unit).set_monster_action_mode(UnitConstants.MONSTER_ACTION_STOP);
+				((UnitMonster)unit).MonsterActionMode = UnitConstants.MONSTER_ACTION_STOP;
 			}
 
 			//--- if this unit belongs to this firm, reset its association with this firm ---//
@@ -521,154 +482,115 @@ public class FirmMonster : Firm
 		}
 	}
 
-	public void reduce_defender_count(int rankId)
+	public void ReduceDefenderCount(int rankId)
 	{
 		switch (rankId)
 		{
 			case Unit.RANK_KING:
-				defending_king_count--;
-				if (defending_king_count < 0) //**BUGHERE
-					defending_king_count = 0;
+				DefendingKingCount--;
+				if (DefendingKingCount < 0) //**BUGHERE
+					DefendingKingCount = 0;
 				break;
 
 			case Unit.RANK_GENERAL:
-				defending_general_count--;
-				if (defending_general_count < 0) //**BUGHERE
-					defending_general_count = 0;
+				DefendingGeneralCount--;
+				if (DefendingGeneralCount < 0) //**BUGHERE
+					DefendingGeneralCount = 0;
 				break;
 
 			case Unit.RANK_SOLDIER:
-				defending_soldier_count--;
-				if (defending_soldier_count < 0) //**BUGHERE
-					defending_soldier_count = 0;
+				DefendingSoldierCount--;
+				if (DefendingSoldierCount < 0) //**BUGHERE
+					DefendingSoldierCount = 0;
 				break;
 		}
 
-		if (total_defender() == 0)
-			monster_nation_relation = 0;
+		//TODO check this reset condition
+		if (TotalDefendersCount() == 0)
+			MonsterNationRelation = 0;
 	}
 
-	public void set_hostile_nation(int nationRecno)
+	private void SetHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return;
 
-		//TODO check
-		//err_when(nationRecno>7); // only 8 bits
-		monster_nation_relation |= (0x1 << nationRecno);
+		MonsterNationRelation |= (0x1 << nationId);
 	}
 
-	public void reset_hostile_nation(int nationRecno)
+	public void ResetHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return;
 
-		//TODO check
-		//err_when(nationRecno>7); // only 8 bits
-		monster_nation_relation &= ~(0x1 << nationRecno);
+		MonsterNationRelation &= ~(0x1 << nationId);
 	}
 
-	public bool is_hostile_nation(int nationRecno)
+	public bool IsHostileNation(int nationId)
 	{
-		if (nationRecno == 0)
+		if (nationId == 0)
 			return false;
 
-		//TODO check
-		//err_when(nationRecno>7); // only 8 bits
-		return (monster_nation_relation & (0x1 << nationRecno)) != 0;
+		return (MonsterNationRelation & (0x1 << nationId)) != 0;
 	}
 
-	private void validate_patrol_unit()
+	private void ValidatePatrolUnit()
 	{
-		if (patrolUnits.Count == 0)
+		if (PatrolUnits.Count == 0)
 			return;
 
-		for (int i = patrolUnits.Count - 1; i >= 0; i--)
+		for (int i = PatrolUnits.Count - 1; i >= 0; i--)
 		{
-			int unitRecno = patrolUnits[i];
+			int unitId = PatrolUnits[i];
 
-			bool isDeleted = UnitArray.IsDeleted(unitRecno);
-			bool isVisible = !isDeleted && UnitArray[unitRecno].IsVisible();
-
-			if (isDeleted || !isVisible)
+			if (UnitArray.IsDeleted(unitId) || !UnitArray[unitId].IsVisible())
 			{
-				patrolUnits.RemoveAt(i);
+				PatrolUnits.RemoveAt(i);
 			}
 		}
 
-		if (patrolUnits.Count == 0 && total_defender() == 0)
-			monster_nation_relation = 0;
+		//TODO check this reset condition
+		if (PatrolUnits.Count == 0 && TotalDefendersCount() == 0)
+			MonsterNationRelation = 0;
 	}
 
-	private void recover_hit_points()
+	private void RecoverHitPoints()
 	{
 		//------ recover the king's hit points -------//
 
-		if (monster_king.hit_points < monster_king.max_hit_points)
-			monster_king.hit_points++;
+		if (MonsterKing.HitPoints < MonsterKing.MaxHitPoints)
+			MonsterKing.HitPoints++;
 
 		//------ recover the generals' hit points -------//
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			if (monsterGenerals[i].hit_points < monsterGenerals[i].max_hit_points)
-				monsterGenerals[i].hit_points++;
+			if (MonsterGenerals[i].HitPoints < MonsterGenerals[i].MaxHitPoints)
+				MonsterGenerals[i].HitPoints++;
 		}
 	}
 
-	private int mobilize_monster(int monsterId, int rankId, int combatLevel, int hitPoints = 0)
+	public override void DrawDetails(IRenderer renderer)
 	{
-		MonsterInfo monsterInfo = MonsterRes[monsterId];
-		UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
-
-		//------- locate a space first --------//
-
-		int xLoc = LocCenterX, yLoc = LocCenterY;
-		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
-
-		if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
-			    spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
-		{
-			return 0;
-		}
-
-		//---------- add the unit now -----------//
-
-		Unit unit = UnitArray.AddUnit(unitInfo.unit_id, 0, rankId, 0, xLoc, yLoc);
-
-		UnitMonster monster = (UnitMonster)unit;
-
-		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, FirmId);
-		monster.SetCombatLevel(combatLevel);
-		monster.MonsterId = monsterId;
-		monster.set_monster_action_mode(current_monster_action_mode);
-
-		if (hitPoints != 0)
-			monster.HitPoints = hitPoints;
-		else
-			monster.HitPoints = monster.MaxHitPoints;
-
-		//-----------------------------------------------------//
-		// enable unit defend mode
-		//-----------------------------------------------------//
-		if (FirmId != 0) // 0 when firm is ready to be deleted
-		{
-			monster.Stop2();
-			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
-			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
-
-			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
-			monster.ActionMiscParam = FirmId;
-		}
-
-		return monster.SpriteId;
+		renderer.DrawMonsterLairDetails(this);
 	}
 
-	private int think_attack_neighbor()
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleMonsterLairDetailsInput(this);
+	}
+	
+	#region MonsterAIFunctions
+	
+	public override void ProcessAI()
+	{
+	}
+	
+	private int ThinkAttackNeighbor()
 	{
 		//-- don't attack new target if some mobile monsters are already attacking somebody --//
 
-		if (patrolUnits.Count > 0)
+		if (PatrolUnits.Count > 0)
 			return 0;
 
 		//-------- only attack if we have enough generals ---------//
@@ -677,10 +599,10 @@ public class FirmMonster : Firm
 
 		//--- count the number of generals commanding at least 5 soldiers ---//
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			MonsterInFirm monsterInFirm = monsterGenerals[i];
-			if (monsterInFirm.soldier_count >= 5)
+			MonsterInFirm monsterInFirm = MonsterGenerals[i];
+			if (monsterInFirm.SoldierCount >= 5)
 				generalCount++;
 		}
 
@@ -689,11 +611,9 @@ public class FirmMonster : Firm
 
 		//------ look for neighbors to attack ------//
 
-		int xOffset = 0, yOffset = 0;
-		int xLoc = LocCenterX, yLoc = LocCenterY;
-		int attackFlag = 0;
+		int locX = LocCenterX, locY = LocCenterY;
+		bool attackFlag = false;
 		FirmInfo firmInfo = FirmRes[FirmType];
-
 		int scanLocWidth = GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE * 2;
 		int scanLocHeight = GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE * 2;
 		int scanLimit = scanLocWidth * scanLocHeight;
@@ -701,18 +621,13 @@ public class FirmMonster : Firm
 
 		for (int i = firmInfo.LocWidth * firmInfo.LocHeight + 1; i <= scanLimit; i++)
 		{
-			Misc.cal_move_around_a_point(i, scanLocWidth, scanLocHeight, out xOffset, out yOffset);
+			Misc.cal_move_around_a_point(i, scanLocWidth, scanLocHeight, out int xOffset, out int yOffset);
 
-			xLoc = LocCenterX + xOffset;
-			yLoc = LocCenterY + yOffset;
+			locX = LocCenterX + xOffset;
+			locY = LocCenterY + yOffset;
+			Misc.BoundLocation(ref locX, ref locY);
 
-			xLoc = Math.Max(0, xLoc);
-			xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
-
-			yLoc = Math.Max(0, yLoc);
-			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
-
-			Location location = World.GetLoc(xLoc, yLoc);
+			Location location = World.GetLoc(locX, locY);
 
 			if (location.IsFirm())
 			{
@@ -720,9 +635,9 @@ public class FirmMonster : Firm
 				if (firm.NationId != 0)
 				{
 					targetNation = firm.NationId;
-					attackFlag = 1;
-					xLoc = firm.LocX1;
-					yLoc = firm.LocY1;
+					attackFlag = true;
+					locX = firm.LocX1;
+					locY = firm.LocY1;
 					break;
 				}
 			}
@@ -732,39 +647,37 @@ public class FirmMonster : Firm
 				if (town.NationId != 0)
 				{
 					targetNation = town.NationId;
-					attackFlag = 1;
-					xLoc = town.LocX1;
-					yLoc = town.LocY1;
+					attackFlag = true;
+					locX = town.LocX1;
+					locY = town.LocY1;
 					break;
 				}
 			}
 		}
 
-		if (attackFlag == 0)
+		if (!attackFlag)
 			return 0;
 
 		//------- attack the civilian now --------//
-		current_monster_action_mode = UnitConstants.MONSTER_ACTION_ATTACK;
+		CurrentMonsterActionMode = UnitConstants.MONSTER_ACTION_ATTACK;
 
-		mobilize_general(Misc.Random(monsterGenerals.Count) + 1);
+		MobilizeGeneral(Misc.Random(MonsterGenerals.Count) + 1);
 
-		if (patrolUnits.Count > 0)
+		if (PatrolUnits.Count > 0)
 		{
-			set_hostile_nation(targetNation);
-			UnitArray.Attack(xLoc, yLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
+			SetHostileNation(targetNation);
+			UnitArray.Attack(locX, locY, false, PatrolUnits, InternalConstants.COMMAND_AI, 0);
 			return 1;
 		}
-		else
-		{
-			return 0;
-		}
+		
+		return 0;
 	}
 
-	private int think_attack_human()
+	private int ThinkAttackHuman()
 	{
 		//-- don't attack new target if some mobile monsters are already attacking somebody --//
 
-		if (patrolUnits.Count > 0)
+		if (PatrolUnits.Count > 0)
 			return 0;
 
 		//-------- only attack if we have enough generals ---------//
@@ -773,10 +686,10 @@ public class FirmMonster : Firm
 
 		//--- count the number of generals commanding at least 5 soldiers ---//
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			MonsterInFirm monsterInFirm = monsterGenerals[i];
-			if (monsterInFirm.soldier_count >= 5)
+			MonsterInFirm monsterInFirm = MonsterGenerals[i];
+			if (monsterInFirm.SoldierCount >= 5)
 				generalCount++;
 		}
 
@@ -785,11 +698,10 @@ public class FirmMonster : Firm
 
 		Info.SetRankData(false);
 		int totalScore = 0;
-		//------ the more score the player has, the more often mosters will attack him ------//
+		//------ the more score the player has, the more often monsters will attack him ------//
 		foreach (Nation nation in NationArray)
 		{
-			int nationScore = Info.GetTotalScore(nation.nation_recno);
-			totalScore += nationScore;
+			totalScore += Info.GetTotalScore(nation.nation_recno);
 		}
 
 		int randomValue = Misc.Random(totalScore) + 1;
@@ -798,8 +710,7 @@ public class FirmMonster : Firm
 		Nation targetNation = null;
 		foreach (Nation nation in NationArray)
 		{
-			int nationScore = Info.GetTotalScore(nation.nation_recno);
-			totalScore += nationScore;
+			totalScore += Info.GetTotalScore(nation.nation_recno);
 			if (randomValue <= totalScore)
 			{
 				targetNation = nation;
@@ -810,11 +721,12 @@ public class FirmMonster : Firm
 		if (targetNation == null)
 			return 0;
 
-		int targetXLoc = -1, targetYLoc = -1, targetNationRecno = targetNation.nation_recno;
+		int targetLocX = -1, targetLocY = -1;
+		int targetNationId = targetNation.nation_recno;
 		List<Firm> targetFirms = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.NationId != targetNationRecno || firm.RegionId != RegionId)
+			if (firm.NationId != targetNationId || firm.RegionId != RegionId)
 				continue;
 
 			targetFirms.Add(firm);
@@ -822,93 +734,46 @@ public class FirmMonster : Firm
 
 		if (targetFirms.Count > 0)
 		{
-			int selectedFirmIndex = Misc.Random(targetFirms.Count);
-			Firm selectedFirm = targetFirms[selectedFirmIndex];
-			targetXLoc = selectedFirm.LocX1;
-			targetYLoc = selectedFirm.LocY1;
+			Firm selectedFirm = targetFirms[Misc.Random(targetFirms.Count)];
+			targetLocX = selectedFirm.LocX1;
+			targetLocY = selectedFirm.LocY1;
 		}
 
-		//------ look for neighbors to attack ------//
-
-		/*int   firmRecno, townRecno;
-		int   targetXLoc= -1, targetYLoc, targetNationRecno=0;
-		Firm* firmPtr;
-		Town* townPtr;
-	
-		for(i=1 ; i<100 ; i++ )
-		{
-			//----- randomly pick a firm ------//
-	
-			firmRecno = misc.random(firm_array.size()) + 1;
-	
-			if( firm_array.is_deleted(firmRecno) )
-				continue;
-	
-			firmPtr = firm_array[firmRecno];
-	
-			if( firmPtr.region_id == region_id )
-			{
-				targetXLoc = firmPtr.loc_x1;
-				targetYLoc = firmPtr.loc_y1;
-				targetNationRecno = firmPtr.nation_recno;
-				break;
-			}
-	
-			//----- randomly pick a town ------//
-	
-			townRecno = misc.random(town_array.size()) + 1;
-	
-			if( town_array.is_deleted(townRecno) )
-				continue;
-	
-			townPtr = town_array[townRecno];
-	
-			if( townPtr.nation_recno && townPtr.region_id == region_id )
-			{
-				targetXLoc = townPtr.loc_x1;
-				targetYLoc = townPtr.loc_y1;
-				targetNationRecno = townPtr.nation_recno;
-				break;
-			}
-		}*/
-
-		if (targetXLoc == -1) // no target selected
+		if (targetLocX == -1 || targetLocY == -1) // no target selected
 			return 0;
 
 		//------- attack the civilian now --------//
 
-		current_monster_action_mode = UnitConstants.MONSTER_ACTION_ATTACK;
+		CurrentMonsterActionMode = UnitConstants.MONSTER_ACTION_ATTACK;
 
-		mobilize_general(Misc.Random(monsterGenerals.Count) + 1);
+		MobilizeGeneral(Misc.Random(MonsterGenerals.Count) + 1);
 
-		if (patrolUnits.Count > 0)
+		if (PatrolUnits.Count > 0)
 		{
-			set_hostile_nation(targetNationRecno);
-			UnitArray.Attack(targetXLoc, targetYLoc, false, patrolUnits, InternalConstants.COMMAND_AI, 0);
+			SetHostileNation(targetNationId);
+			UnitArray.Attack(targetLocX, targetLocY, false, PatrolUnits, InternalConstants.COMMAND_AI, 0);
 			return 1;
 		}
-		else
-		{
-			return 0;
-		}
+		
+		return 0;
 	}
 
-	private int think_expansion()
+	private int ThinkExpansion()
 	{
-		if (patrolUnits.Count > 0)
+		if (PatrolUnits.Count > 0)
 			return 0;
 
-		if (monster_king.monster_id == 0 || monsterGenerals.Count < GameConstants.MIN_GENERAL_EXPAND_NUM)
+		if (MonsterKing.MonsterId == 0 || MonsterGenerals.Count < GameConstants.MIN_GENERAL_EXPAND_NUM)
 			return 0;
 
 		//--- count the number of generals commanding 8 soldiers ----//
 
 		int generalCount = 0;
 
-		for (int i = 0; i < monsterGenerals.Count; i++)
+		for (int i = 0; i < MonsterGenerals.Count; i++)
 		{
-			MonsterInFirm monsterInFirm = monsterGenerals[i];
-			if (monsterInFirm.soldier_count == GameConstants.MAX_SOLDIER_PER_GENERAL)
+			MonsterInFirm monsterInFirm = MonsterGenerals[i];
+			if (monsterInFirm.SoldierCount == GameConstants.MAX_SOLDIER_PER_GENERAL)
 				generalCount++;
 		}
 
@@ -917,87 +782,26 @@ public class FirmMonster : Firm
 
 		//------------- locate space to build monster firm randomly -------------//
 
-		MonsterInfo monsterInfo = MonsterRes[monster_king.monster_id];
+		MonsterInfo monsterInfo = MonsterRes[MonsterKing.MonsterId];
 		FirmInfo firmInfo = FirmRes[FIRM_MONSTER];
 		int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
-		int xLoc1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
-		int yLoc1 = Math.Max(0, LocY1 - GameConstants.EXPAND_FIRM_DISTANCE);
-		int xLoc2 = Math.Min(GameConstants.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);
-		int yLoc2 = Math.Min(GameConstants.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int locX1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
+		int locY1 = Math.Max(0, LocY1 - GameConstants.EXPAND_FIRM_DISTANCE);
+		int locX2 = Math.Min(GameConstants.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int locY2 = Math.Min(GameConstants.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
 
-		if (!World.LocateSpaceRandom(ref xLoc1, ref yLoc1, xLoc2, yLoc2,
+		if (!World.LocateSpaceRandom(ref locX1, ref locY1, locX2, locY2,
 			    firmInfo.LocWidth + GameConstants.FREE_SPACE_DISTANCE * 2,
 			    firmInfo.LocHeight + GameConstants.FREE_SPACE_DISTANCE * 2, // leave at least 3 location space around the building
-			    (xLoc2 - xLoc1 + 1) * (yLoc2 - yLoc1 + 1), 0, true, teraMask))
+			    (locX2 - locX1 + 1) * (locY2 - locY1 + 1), 0, true, teraMask))
 		{
 			return 0;
 		}
 
-		monsterGenerals.RemoveAt(monsterGenerals.Count - 1);
-		//monsterInFirm = monster_general_array + monster_general_count;
-		//unit_array.disappear_in_firm(monsterInFirm.mobile_unit_recno);
+		MonsterGenerals.RemoveAt(MonsterGenerals.Count - 1);
 
-		return monsterInfo.build_firm_monster(xLoc1 + GameConstants.FREE_SPACE_DISTANCE,
-			yLoc1 + GameConstants.FREE_SPACE_DISTANCE, 1);
-	}
-
-	private static int fryhtan_attacks_per_six_months(int numOfLairs)
-	{
-		// This algorithm encodes the continuation of the following table:
-		//
-		// # Lairs     | 0   5   10  15  20  30  40  50  60  70  80  95  110 ...
-		// -----------------------------------------------------------------------
-		// # attacks   | 1   2   3   4   5   6   7   8   9   10  11  12  13  ...
-		//
-		//                      4 x +5            6 x +10                  8 x +15 
-		//
-		// The plateaus in this table are given by
-		//   x0 = 0
-		//   x1 = x0 + 4 * 5    = 20
-		//   x2 = x1 + 6 * 10   = 80
-		//   x3 = x2 + 8 * 15   = 200
-		//   ...
-		// 
-		int attacks = 1;
-		int plateauThreshold = 0;
-		int plateauLength = 4;
-		int plateau = 5;
-
-		while (plateauThreshold < numOfLairs)
-		{
-			int currentPlateau = numOfLairs - plateauThreshold;
-			plateauThreshold += plateauLength * plateau;
-			attacks += Math.Min(currentPlateau, plateauThreshold) / plateau;
-			plateauLength += 2;
-			plateau += 5;
-		}
-
-		return attacks;
-	}
-
-	private bool fryhtan_random_attack()
-	{
-		if (ConfigAdv.monster_alternate_attack_curve)
-		{
-			// roll of 1/(lairs*6)
-			int chance = Misc.Random(Sys.Instance.FirmRes[FIRM_MONSTER].total_firm_count * 6);
-			// From the desired average number of attacks per 6 months, we want the attack chance per lair (which is per month):
-			//   Lairs * P(Attack) * 6 = Desired      <=>    P(Attack) = Desired / 6 / Lairs
-			// Note that Desired < (6 * Lairs). We can use: rand(6 * Lairs) < Desired to simulate this chance.
-			return chance < fryhtan_attacks_per_six_months(Sys.Instance.FirmRes[FIRM_MONSTER].total_firm_count);
-		}
-
-		// original probability 1/6
-		return Misc.Random(Sys.Instance.FirmRes[FIRM_MONSTER].total_firm_count * ConfigAdv.monster_attack_divisor) == 0;
+		return monsterInfo.build_firm_monster(locX1 + GameConstants.FREE_SPACE_DISTANCE, locY1 + GameConstants.FREE_SPACE_DISTANCE, 1);
 	}
 	
-	public override void DrawDetails(IRenderer renderer)
-	{
-		renderer.DrawMonsterLairDetails(this);
-	}
-
-	public override void HandleDetailsInput(IRenderer renderer)
-	{
-		renderer.HandleMonsterLairDetailsInput(this);
-	}
+	#endregion
 }

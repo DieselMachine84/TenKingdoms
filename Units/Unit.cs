@@ -523,12 +523,12 @@ public abstract partial class Unit : Sprite
 		else if (UnitMode == UnitConstants.UNIT_MODE_MONSTER && UnitModeParam != 0)
 		{
 			// TODO is this condition correct? Check
-			if (((UnitMonster)this).monster_action_mode != UnitConstants.MONSTER_ACTION_DEFENSE)
+			if (((UnitMonster)this).MonsterActionMode != UnitConstants.MONSTER_ACTION_DEFENSE)
 			{
 				if (!FirmArray.IsDeleted(UnitModeParam))
 				{
 					FirmMonster firmMonster = (FirmMonster)FirmArray[UnitModeParam];
-					firmMonster.reduce_defender_count(Rank);
+					firmMonster.ReduceDefenderCount(Rank);
 				}
 				SetMode(0); // reset mode
 			}
@@ -3521,7 +3521,7 @@ public abstract partial class Unit : Sprite
 					return targetNationId != 0; // attack anything that is not independent
 
 				FirmMonster firmMonster = (FirmMonster)FirmArray[UnitModeParam];
-				return firmMonster.is_hostile_nation(targetNationId);
+				return firmMonster.IsHostileNation(targetNationId);
 
 			default:
 				return false;

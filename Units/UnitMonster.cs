@@ -5,22 +5,21 @@ namespace TenKingdoms;
 
 public class UnitMonster : Unit
 {
-    public int monster_action_mode;
+    public int MonsterActionMode { get; set; }
     
     public int MonsterId { get; set; }
-    public int MonsterSoldierId { get; set; }
+    public int SoldierMonsterId { get; set; }
 
     private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private SiteArray SiteArray => Sys.Instance.SiteArray;
 
-    private string[] monster_name_king =
+    private string[] MonsterKingNames { get; } =
     {
-        "All High Deezboanz", "All High Rattus", "All High Broosken", "All High Haubudam", "All High Pfith",
-        "All High Rokken", "All High Doink", "All High Wyrm", "All High Droog", "All High Ick", "All High Sauroid",
-        "All High Karrotten", "All High Holgh"
+        "All High Deezboanz", "All High Rattus", "All High Broosken", "All High Haubudam", "All High Pfith", "All High Rokken",
+        "All High Doink", "All High Wyrm", "All High Droog", "All High Ick", "All High Sauroid", "All High Karrotten", "All High Holgh"
     };
 
-    private string[] monster_name_general =
+    private string[] MonsterGeneralNames { get; } =
     {
         "Deezboanz Ordo", "Rattus Ordo", "Broosken Ordo", "Haubudam Ordo", "Pfith Ordo", "Rokken Ordo",
         "Doink Ordo", "Wyrm Ordo", "Droog Ordo", "Ick Ordo", "Sauroid Ordo", "Karrotten Ordo", "Holgh Ordo"
@@ -29,46 +28,17 @@ public class UnitMonster : Unit
 
     public UnitMonster()
     {
-        monster_action_mode = UnitConstants.MONSTER_ACTION_STOP;
+        MonsterActionMode = UnitConstants.MONSTER_ACTION_STOP;
     }
 
     public override string GetUnitName(bool withTitle = true)
     {
         return Rank switch
         {
-            RANK_KING => monster_name_king[MonsterId - 1],
-            RANK_GENERAL => monster_name_general[MonsterId - 1],
+            RANK_KING => MonsterKingNames[MonsterId - 1],
+            RANK_GENERAL => MonsterGeneralNames[MonsterId - 1],
             _ => MonsterRes[MonsterId].name
         };
-    }
-
-    public void set_monster_action_mode(int monsterActionMode)
-    {
-        monster_action_mode = monsterActionMode;
-    }
-
-    public override void ProcessAI()
-    {
-        //----- when it is idle -------//
-
-        if (!IsVisible() || !IsAIAllStop())
-            return;
-
-        if (Info.TotalDays % 15 == SpriteId % 15)
-        {
-            random_attack(); // randomly attacking targets
-
-            /*switch(misc.random(2))
-            {
-                case 0:
-                    random_attack();		// randomly attacking targets
-                    break;
-        
-                case 1:
-                    assign_to_firm();			// assign the monsters to other monster structures
-                    break;
-            }*/
-        }
     }
 
     public override void Die()
@@ -78,24 +48,23 @@ public class UnitMonster : Unit
 
         //--- check if the location where the unit dies already has an item ---//
 
-        int xLoc = CurLocX;
-        int yLoc = CurLocY;
+        int locX = CurLocX;
+        int locY = CurLocY;
+        Location location = World.GetLoc(locX, locY);
 
-        if (!World.GetLoc(xLoc, yLoc).CanBuildSite())
+        if (!location.CanBuildSite())
         {
-            int txLoc, tyLoc;
             bool found = false;
 
-            for (tyLoc = Math.Max(yLoc - 1, 0);
-                 tyLoc <= Math.Min(yLoc + 1, GameConstants.MapSize - 1) && !found;
-                 tyLoc++)
+            for (int nearLocY = Math.Max(locY - 1, 0); nearLocY <= Math.Min(locY + 1, GameConstants.MapSize - 1) && !found; nearLocY++)
             {
-                for (txLoc = Math.Max(xLoc - 1, 0); txLoc <= Math.Min(xLoc + 1, GameConstants.MapSize - 1); txLoc++)
+                for (int nearLocX = Math.Max(locX - 1, 0); nearLocX <= Math.Min(locX + 1, GameConstants.MapSize - 1); nearLocX++)
                 {
-                    if (World.GetLoc(txLoc, tyLoc).CanBuildSite())
+                    Location nearLocation = World.GetLoc(nearLocX, nearLocY);
+                    if (nearLocation.CanBuildSite())
                     {
-                        xLoc = txLoc;
-                        yLoc = tyLoc;
+                        locX = nearLocX;
+                        locY = nearLocY;
                         found = true;
                         break;
                     }
@@ -110,13 +79,12 @@ public class UnitMonster : Unit
 
         if (NationId == 0 && MonsterId != 0) // to skip monster_res[ get_monster_id() ] error in test game 2
         {
-            MonsterInfo monsterInfo = MonsterRes[MonsterId];
-
             if (Rank == RANK_GENERAL)
             {
+                MonsterInfo monsterInfo = MonsterRes[MonsterId];
                 int goldAmount = 2 * MaxHitPoints * monsterInfo.level * (100 + Misc.Random(30)) / 100;
 
-                SiteArray.AddSite(xLoc, yLoc, Site.SITE_GOLD_COIN, goldAmount);
+                SiteArray.AddSite(locX, locY, Site.SITE_GOLD_COIN, goldAmount);
                 SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
             }
 
@@ -124,7 +92,12 @@ public class UnitMonster : Unit
 
             else if (Rank == RANK_KING)
             {
-                king_leave_scroll();
+                int scrollRace = ChooseScrollRace();
+                if (scrollRace != 0)
+                {
+                    SiteArray.AddSite(locX, locY, Site.SITE_SCROLL, scrollRace);
+                    SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the scroll
+                }
             }
         }
 
@@ -134,28 +107,36 @@ public class UnitMonster : Unit
             NewsArray.monster_king_killed(MonsterId, NextLocX, NextLocY);
     }
 
-    private int random_attack()
+    public override void ProcessAI()
+    {
+        //----- when it is idle -------//
+
+        if (!IsVisible() || !IsAIAllStop())
+            return;
+
+        if (Info.TotalDays % 15 == SpriteId % 15)
+        {
+            RandomAttack(); // randomly attacking targets
+        }
+    }
+    
+    private int RandomAttack()
     {
         const int ATTACK_SCAN_RANGE = 100;
 
-        int curXLoc = NextLocX, curYLoc = NextLocY;
-        int regionId = World.GetRegionId(curXLoc, curYLoc);
+        int curLocX = NextLocX, curLocY = NextLocY;
+        int regionId = World.GetRegionId(curLocX, curLocY);
 
         for (int i = 2; i < ATTACK_SCAN_RANGE * ATTACK_SCAN_RANGE; i++)
         {
-            int xOffset, yOffset;
-            Misc.cal_move_around_a_point(i, ATTACK_SCAN_RANGE, ATTACK_SCAN_RANGE, out xOffset, out yOffset);
+            Misc.cal_move_around_a_point(i, ATTACK_SCAN_RANGE, ATTACK_SCAN_RANGE, out int xOffset, out int yOffset);
 
-            int xLoc = curXLoc + xOffset;
-            int yLoc = curYLoc + yOffset;
+            int locX = curLocX + xOffset;
+            int locY = curLocY + yOffset;
 
-            xLoc = Math.Max(0, xLoc);
-            xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+            Misc.BoundLocation(ref locX, ref locY);
 
-            yLoc = Math.Max(0, yLoc);
-            yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
-
-            Location location = World.GetLoc(xLoc, yLoc);
+            Location location = World.GetLoc(locX, locY);
 
             if (location.RegionId != regionId)
                 continue;
@@ -166,9 +147,9 @@ public class UnitMonster : Unit
 
             if (location.HasUnit(UnitConstants.UNIT_LAND))
             {
-                int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
+                int unitId = location.UnitId(UnitConstants.UNIT_LAND);
 
-                if (UnitArray.IsDeleted(unitRecno))
+                if (UnitArray.IsDeleted(unitId))
                     continue;
 
                 rc = true;
@@ -178,9 +159,9 @@ public class UnitMonster : Unit
 
             if (!rc && location.IsFirm())
             {
-                int firmRecno = location.FirmId();
+                int firmId = location.FirmId();
 
-                if (FirmArray.IsDeleted(firmRecno))
+                if (FirmArray.IsDeleted(firmId))
                     continue;
 
                 rc = true;
@@ -190,9 +171,9 @@ public class UnitMonster : Unit
 
             if (!rc && location.IsTown())
             {
-                int townRecno = location.TownId();
+                int townId = location.TownId();
 
-                if (TownArray.IsDeleted(townRecno))
+                if (TownArray.IsDeleted(townId))
                     continue;
 
                 rc = true;
@@ -202,7 +183,7 @@ public class UnitMonster : Unit
 
             if (rc)
             {
-                group_order_monster(xLoc, yLoc, 1); // 1-the action is attack
+                GroupOrderMonster(locX, locY, 1); // 1 - the action is attack
                 return 1;
             }
         }
@@ -210,10 +191,10 @@ public class UnitMonster : Unit
         return 0;
     }
 
-    private int assign_to_firm()
+    private int AssignToFirm()
     {
-        int curXLoc = NextLocX, curYLoc = NextLocY;
-        int regionId = World.GetRegionId(curXLoc, curYLoc);
+        int curLocX = NextLocX, curLocY = NextLocY;
+        int regionId = World.GetRegionId(curLocX, curLocY);
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {
@@ -222,9 +203,10 @@ public class UnitMonster : Unit
 
             if (firm.FirmType == Firm.FIRM_MONSTER)
             {
-                if (((FirmMonster)firm).can_assign_monster(SpriteId))
+                bool canAssignMonster = FirmRes.GetBuild(firm.FirmBuildId).BuildCode == MonsterRes[MonsterId].firm_build_code;
+                if (canAssignMonster)
                 {
-                    group_order_monster(firm.LocX1, firm.LocY1, 2); // 2-the action is assign
+                    GroupOrderMonster(firm.LocX1, firm.LocY1, 2); // 2 - the action is assign
                     return 1;
                 }
             }
@@ -233,90 +215,80 @@ public class UnitMonster : Unit
         return 0;
     }
 
-    private void group_order_monster(int destXLoc, int destYLoc, int actionType)
+    private void GroupOrderMonster(int destXLoc, int destYLoc, int actionType)
     {
         const int GROUP_ACTION_RANGE = 30; // only notify units within this range
 
-        int curXLoc = NextLocX, curYLoc = NextLocY;
-        int regionId = World.GetRegionId(curXLoc, curYLoc);
+        int curLocX = NextLocX, curLocY = NextLocY;
+        int regionId = World.GetRegionId(curLocX, curLocY);
 
-        List<int> unitOrderedArray = new List<int>();
-        int unitOrderedCount = 0;
+        List<int> orderedUnits = new List<int>();
 
         //----------------------------------------------//
 
         for (int i = 1; i < GROUP_ACTION_RANGE * GROUP_ACTION_RANGE; i++)
         {
-            int xOffset, yOffset;
-            Misc.cal_move_around_a_point(i, GROUP_ACTION_RANGE, GROUP_ACTION_RANGE, out xOffset, out yOffset);
+            Misc.cal_move_around_a_point(i, GROUP_ACTION_RANGE, GROUP_ACTION_RANGE, out int xOffset, out int yOffset);
 
-            int xLoc = curXLoc + xOffset;
-            int yLoc = curYLoc + yOffset;
+            int locX = curLocX + xOffset;
+            int locY = curLocY + yOffset;
 
-            xLoc = Math.Max(0, xLoc);
-            xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+            Misc.BoundLocation(ref locX, ref locY);
 
-            yLoc = Math.Max(0, yLoc);
-            yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
+            Location location = World.GetLoc(locX, locY);
 
-            Location location = World.GetLoc(xLoc, yLoc);
+            if (location.RegionId != regionId)
+                continue;
 
             if (!location.HasUnit(UnitConstants.UNIT_LAND))
                 continue;
 
-            //------------------------------//
+            int unitId = location.UnitId(UnitConstants.UNIT_LAND);
 
-            int unitRecno = location.UnitId(UnitConstants.UNIT_LAND);
-
-            if (UnitArray.IsDeleted(unitRecno))
+            if (UnitArray.IsDeleted(unitId))
                 continue;
 
-            Unit unit = UnitArray[unitRecno];
+            Unit unit = UnitArray[unitId];
 
             if (UnitRes[unit.UnitType].unit_class != UnitConstants.UNIT_CLASS_MONSTER)
                 continue;
 
-            unitOrderedArray.Add(unitRecno);
+            orderedUnits.Add(unitId);
         }
 
-        if (unitOrderedArray.Count == 0)
+        if (orderedUnits.Count == 0)
             return;
 
         //---------------------------------------//
 
         if (actionType == 1) // attack
         {
-            UnitArray.Attack(destXLoc, destYLoc, false, unitOrderedArray, InternalConstants.COMMAND_AI, 0);
+            UnitArray.Attack(destXLoc, destYLoc, false, orderedUnits, InternalConstants.COMMAND_AI, 0);
         }
         else
         {
-            UnitArray.Assign(destXLoc, destYLoc, false, unitOrderedArray, InternalConstants.COMMAND_AI);
+            UnitArray.Assign(destXLoc, destYLoc, false, orderedUnits, InternalConstants.COMMAND_AI);
         }
     }
 
-    private void king_leave_scroll()
+    private int ChooseScrollRace()
     {
         const int SCROLL_SCAN_RANGE = 10;
 
-        int curXLoc = NextLocX, curYLoc = NextLocY;
-        int regionId = World.GetRegionId(curXLoc, curYLoc);
-        int[] raceCountArray = new int[GameConstants.MAX_RACE];
+        int curLocX = NextLocX, curLocY = NextLocY;
+        int regionId = World.GetRegionId(curLocX, curLocY);
+        int[] racesCount = new int[GameConstants.MAX_RACE];
 
         for (int i = 2; i < SCROLL_SCAN_RANGE * SCROLL_SCAN_RANGE; i++)
         {
-            int xOffset, yOffset;
-            Misc.cal_move_around_a_point(i, SCROLL_SCAN_RANGE, SCROLL_SCAN_RANGE, out xOffset, out yOffset);
+            Misc.cal_move_around_a_point(i, SCROLL_SCAN_RANGE, SCROLL_SCAN_RANGE, out int xOffset, out int yOffset);
 
-            int xLoc = curXLoc + xOffset;
-            int yLoc = curYLoc + yOffset;
+            int locX = curLocX + xOffset;
+            int locY = curLocY + yOffset;
 
-            xLoc = Math.Max(0, xLoc);
-            xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+            Misc.BoundLocation(ref locX, ref locY);
 
-            yLoc = Math.Max(0, yLoc);
-            yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
-
-            Location location = World.GetLoc(xLoc, yLoc);
+            Location location = World.GetLoc(locX, locY);
 
             //----- if there is a unit on the location ------//
 
@@ -325,7 +297,7 @@ public class UnitMonster : Unit
                 Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
                 if (unit.RaceId > 0)
                 {
-                    raceCountArray[unit.RaceId - 1]++;
+                    racesCount[unit.RaceId - 1]++;
                 }
             }
         }
@@ -336,45 +308,14 @@ public class UnitMonster : Unit
 
         for (int i = 0; i < GameConstants.MAX_RACE; i++)
         {
-            if (raceCountArray[i] > maxRaceCount)
+            if (racesCount[i] > maxRaceCount)
             {
-                maxRaceCount = raceCountArray[i];
+                maxRaceCount = racesCount[i];
                 bestRaceId = i + 1;
             }
         }
 
-        if (bestRaceId == 0)
-            bestRaceId = ConfigAdv.GetRandomRace(); // if there is no human units nearby (perhaps just using weapons)
-
-        //------ locate for space to add the scroll -------//
-
-        const int ADD_SITE_RANGE = 5;
-
-        for (int i = 1; i < ADD_SITE_RANGE * ADD_SITE_RANGE; i++)
-        {
-            int xOffset, yOffset;
-            Misc.cal_move_around_a_point(i, ADD_SITE_RANGE, ADD_SITE_RANGE, out xOffset, out yOffset);
-
-            int xLoc = curXLoc + xOffset;
-            int yLoc = curYLoc + yOffset;
-
-            xLoc = Math.Max(0, xLoc);
-            xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
-
-            yLoc = Math.Max(0, yLoc);
-            yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
-
-            Location location = World.GetLoc(xLoc, yLoc);
-
-            if (location.CanBuildSite() && location.RegionId == regionId)
-            {
-                int scrollGodId = bestRaceId;
-
-                SiteArray.AddSite(xLoc, yLoc, Site.SITE_SCROLL, scrollGodId);
-                SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the scroll
-                break;
-            }
-        }
+        return bestRaceId;
     }
 
     public override void DrawDetails(IRenderer renderer)

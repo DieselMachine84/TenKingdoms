@@ -33,7 +33,6 @@ public class ConfigAdv
     public bool mine_unlimited_reserve;
 
     // monster settings
-    public bool monster_alternate_attack_curve;
     public int monster_attack_divisor;
 
     // nation settings
@@ -95,7 +94,6 @@ public class ConfigAdv
 
         mine_unlimited_reserve = false;
 
-        monster_alternate_attack_curve = false;
         monster_attack_divisor = 4;
 
         nation_ai_unite_min_relation_level = NationBase.NATION_NEUTRAL;
