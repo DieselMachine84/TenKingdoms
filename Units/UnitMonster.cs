@@ -13,13 +13,13 @@ public class UnitMonster : Unit
     private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private SiteArray SiteArray => Sys.Instance.SiteArray;
 
-    private string[] MonsterKingNames { get; } =
+    public static string[] MonsterKingNames { get; } =
     {
         "All High Deezboanz", "All High Rattus", "All High Broosken", "All High Haubudam", "All High Pfith", "All High Rokken",
         "All High Doink", "All High Wyrm", "All High Droog", "All High Ick", "All High Sauroid", "All High Karrotten", "All High Holgh"
     };
 
-    private string[] MonsterGeneralNames { get; } =
+    public static string[] MonsterGeneralNames { get; } =
     {
         "Deezboanz Ordo", "Rattus Ordo", "Broosken Ordo", "Haubudam Ordo", "Pfith Ordo", "Rokken Ordo",
         "Doink Ordo", "Wyrm Ordo", "Droog Ordo", "Ick Ordo", "Sauroid Ordo", "Karrotten Ordo", "Holgh Ordo"

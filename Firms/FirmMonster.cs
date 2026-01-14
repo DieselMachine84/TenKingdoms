@@ -44,8 +44,8 @@ public class FirmMonster : Firm
 	private int DefendingSoldierCount { get; set; }
 	public int DefendTargetId { get; private set; } // used in defend mode, store id of the latest unit attacking this firm
 
-	private MonsterInFirm MonsterKing { get; set; }
-	private List<MonsterInFirm> MonsterGenerals { get; } = new List<MonsterInFirm>();
+	public MonsterInFirm MonsterKing { get; private set; }
+	public List<MonsterInFirm> MonsterGenerals { get; } = new List<MonsterInFirm>();
 
 	//TODO what if there are waiting soldiers which general is killed?
 	private List<int> WaitingSoldiers { get; } = new List<int>(); // the unit id of their generals are kept here
