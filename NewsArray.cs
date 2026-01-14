@@ -67,24 +67,24 @@ public class NewsArray
 
 	public News add_news(int newsId, int newsType, int nationRecno1 = 0, int nationRecno2 = 0, bool forceAdd = false)
 	{
-		if (NationArray.player_recno == 0) // if the player has lost
+		if (NationArray.PlayerId == 0) // if the player has lost
 			return null;
 
 		//----- only news of nations that have contact with the player are added ----//
 
 		if (!forceAdd)
 		{
-			Nation playerNation = NationArray.player;
+			Nation playerNation = NationArray.Player;
 
-			if (nationRecno1 != 0 && nationRecno1 != NationArray.player_recno)
+			if (nationRecno1 != 0 && nationRecno1 != NationArray.PlayerId)
 			{
-				if (!playerNation.get_relation(nationRecno1).has_contact)
+				if (!playerNation.GetRelation(nationRecno1).HasContact)
 					return null;
 			}
 
-			if (nationRecno2 != 0 && nationRecno2 != NationArray.player_recno)
+			if (nationRecno2 != 0 && nationRecno2 != NationArray.PlayerId)
 			{
-				if (!playerNation.get_relation(nationRecno2).has_contact)
+				if (!playerNation.GetRelation(nationRecno2).HasContact)
 					return null;
 			}
 		}
@@ -101,9 +101,9 @@ public class NewsArray
 		{
 			Nation nation1 = NationArray[nationRecno1];
 
-			news.nation_name_id1 = nation1.nation_name_id;
-			news.nation_race_id1 = nation1.race_id;
-			news.nation_color1 = nation1.color_scheme_id;
+			news.nation_name_id1 = nation1.NationNameId;
+			news.nation_race_id1 = nation1.RaceId;
+			news.nation_color1 = nation1.ColorSchemeId;
 		}
 		else
 		{
@@ -115,9 +115,9 @@ public class NewsArray
 		{
 			Nation nation2 = NationArray[nationRecno2];
 
-			news.nation_name_id2 = nation2.nation_name_id;
-			news.nation_race_id2 = nation2.race_id;
-			news.nation_color2 = nation2.color_scheme_id;
+			news.nation_name_id2 = nation2.NationNameId;
+			news.nation_race_id2 = nation2.RaceId;
+			news.nation_color2 = nation2.ColorSchemeId;
 		}
 		else
 		{
@@ -336,7 +336,7 @@ public class NewsArray
 	public void town_destroyed(int townNameId, int xLoc, int yLoc, Unit attackUnit, int destroyerNationRecno)
 	{
 		News news = add_news(News.NEWS_TOWN_DESTROYED, News.NEWS_NORMAL,
-			NationArray.player_recno, destroyerNationRecno);
+			NationArray.PlayerId, destroyerNationRecno);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
@@ -429,7 +429,7 @@ public class NewsArray
 
 	public void monster_gold_acquired(int goldAmt)
 	{
-		News news = add_news(News.NEWS_MONSTER_GOLD_ACQUIRED, News.NEWS_NORMAL, NationArray.player_recno);
+		News news = add_news(News.NEWS_MONSTER_GOLD_ACQUIRED, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null)
 			return;
@@ -444,15 +444,15 @@ public class NewsArray
 
 		//---------- your spy is killed in an enemy nation ---------//
 
-		if (spy.TrueNationId == NationArray.player_recno)
+		if (spy.TrueNationId == NationArray.PlayerId)
 		{
 			news = add_news(News.NEWS_YOUR_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.player_recno, spy.CloakedNationId);
+				NationArray.PlayerId, spy.CloakedNationId);
 		}
 		else //----- an enemy spy in your nation is uncovered and executed ----//
 		{
 			news = add_news(News.NEWS_ENEMY_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.player_recno, spy.TrueNationId);
+				NationArray.PlayerId, spy.TrueNationId);
 		}
 
 		if (news == null) // only news of nations that have contact with the player are added
@@ -505,7 +505,7 @@ public class NewsArray
 
 		//------- set location --------//
 
-		if (betrayToNationRecno == NationArray.player_recno)
+		if (betrayToNationRecno == NationArray.PlayerId)
 			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unitRecno, unit.NameId);
 		else
 			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
@@ -581,7 +581,7 @@ public class NewsArray
 
 	public void tech_researched(int techId, int techVersion)
 	{
-		News news = add_news(News.NEWS_TECH_RESEARCHED, News.NEWS_NORMAL, NationArray.player_recno);
+		News news = add_news(News.NEWS_TECH_RESEARCHED, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
@@ -662,7 +662,7 @@ public class NewsArray
 
 	public void goal_deadline(int yearLeft, int monthLeft)
 	{
-		News news = add_news(News.NEWS_GOAL_DEADLINE, News.NEWS_NORMAL, NationArray.player_recno);
+		News news = add_news(News.NEWS_GOAL_DEADLINE, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
@@ -673,7 +673,7 @@ public class NewsArray
 
 	public void weapon_ship_worn_out(int unitId, int weaponLevel)
 	{
-		News news = add_news(News.NEWS_WEAPON_SHIP_WORN_OUT, News.NEWS_NORMAL, NationArray.player_recno);
+		News news = add_news(News.NEWS_WEAPON_SHIP_WORN_OUT, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
@@ -741,14 +741,14 @@ public class NewsArray
 	{
 		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
 		add_news(News.NEWS_MULTI_RETIRE, News.NEWS_NORMAL,
-			nationRecno, NationArray.player_recno, true);
+			nationRecno, NationArray.PlayerId, true);
 	}
 
 	public void multi_quit_game(int nationRecno)
 	{
 		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
 		add_news(News.NEWS_MULTI_QUIT_GAME, News.NEWS_NORMAL,
-			nationRecno, NationArray.player_recno, true);
+			nationRecno, NationArray.PlayerId, true);
 	}
 
 	public void multi_save_game()
@@ -760,6 +760,6 @@ public class NewsArray
 	{
 		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
 		add_news(News.NEWS_MULTI_CONNECTION_LOST, News.NEWS_NORMAL,
-			nationRecno, NationArray.player_recno, true);
+			nationRecno, NationArray.PlayerId, true);
 	}
 }

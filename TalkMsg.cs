@@ -68,48 +68,48 @@ public class TalkMsg
 	
 	public string from_nation_name()
 	{
-		return NationArray[from_nation_recno].king_name(true);
+		return NationArray[from_nation_recno].KingName(true);
 	}
 
 	public string to_nation_name()
 	{
-		return NationArray[to_nation_recno].king_name(true);
+		return NationArray[to_nation_recno].KingName(true);
 	}
 
 	public string para1_nation_name()
 	{
-		return NationArray[talk_para1].king_name(true);
+		return NationArray[talk_para1].KingName(true);
 	}
 
 	public string from_king_name()
 	{
-		string str = NationArray[from_nation_recno].king_name();
+		string str = NationArray[from_nation_recno].KingName();
 
 		if (TalkRes.msg_add_nation_color)
-			str += " @COL" + Convert.ToChar(30 + NationArray[from_nation_recno].color_scheme_id);
+			str += " @COL" + Convert.ToChar(30 + NationArray[from_nation_recno].ColorSchemeId);
 
 		return str;
 	}
 
 	public string to_king_name()
 	{
-		string str = NationArray[to_nation_recno].king_name();
+		string str = NationArray[to_nation_recno].KingName();
 
 		if (TalkRes.msg_add_nation_color)
-			str += " @COL" + Convert.ToChar(30 + NationArray[to_nation_recno].color_scheme_id);
+			str += " @COL" + Convert.ToChar(30 + NationArray[to_nation_recno].ColorSchemeId);
 
 		return str;
 	}
 
 	public string nation_color_code_str(int nationRecno)
 	{
-		return " @COL" + Convert.ToChar(30 + NationArray[nationRecno].color_scheme_id);
+		return " @COL" + Convert.ToChar(30 + NationArray[nationRecno].ColorSchemeId);
 	}
 
 	public string nation_color_code_str2(int nationRecno)
 	{
 		if (TalkRes.msg_add_nation_color)
-			return " @COL" + Convert.ToChar(30 + NationArray[nationRecno].color_scheme_id);
+			return " @COL" + Convert.ToChar(30 + NationArray[nationRecno].ColorSchemeId);
 		else
 			return String.Empty;
 	}
@@ -278,12 +278,12 @@ public class TalkMsg
 
 				//-- if the requesting nation is itself trading with the target nation --//
 
-				if (fromNation.get_relation(talk_para1).trade_treaty)
+				if (fromNation.GetRelation(talk_para1).TradeTreaty)
 					return false;
 
 				//-- or if the requested nation already doesn't have a trade treaty with the nation --//
 
-				if (!toNation.get_relation(talk_para1).trade_treaty)
+				if (!toNation.GetRelation(talk_para1).TradeTreaty)
 					return false;
 
 				break;
@@ -294,12 +294,12 @@ public class TalkMsg
 
 				//-- if the requesting nation is no longer hostile with the nation --//
 
-				if (fromNation.get_relation_status(talk_para1) != NationBase.NATION_HOSTILE)
+				if (fromNation.GetRelationStatus(talk_para1) != NationBase.NATION_HOSTILE)
 					return false;
 
 				//-- or if the requested nation has become hostile with the nation --//
 
-				if (toNation.get_relation_status(talk_para1) == NationBase.NATION_HOSTILE)
+				if (toNation.GetRelationStatus(talk_para1) == NationBase.NATION_HOSTILE)
 					return false;
 
 				break;

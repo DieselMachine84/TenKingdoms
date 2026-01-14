@@ -50,115 +50,111 @@ public class NationBase : IIdObject
     public const int EXPENSE_TRIBUTE = 14;
     public const int EXPENSE_BRIBE = 15;
 
-    public int NationId { get; set; }
-    public int nation_type { get; set; }
-    public int race_id { get; set; }
-    public int color_scheme_id { get; set; }
-    public byte nation_color { get; set; }
-    public int king_unit_recno { get; set; }
-    public int king_leadership { get; set; }
-    public int nation_name_id { get; set; }
-    public string nation_name_str { get; set; }
-    public int player_id { get; set; }
-    public bool next_frame_ready { get; set; }
-    public int last_caravan_id { get; set; }
-    public int nation_firm_count { get; set; }
-    public DateTime last_build_firm_date { get; set; }
-    public int[] know_base_array { get; } = new int[GameConstants.MAX_RACE];
-    public int[] base_count_array { get; } = new int[GameConstants.MAX_RACE];
-    public bool is_at_war_today { get; set; }
-    public bool is_at_war_yesterday { get; set; }
-    public DateTime last_war_date { get; set; }
-    public int last_attacker_unit_recno { get; set; }
-    public DateTime last_independent_unit_join_date { get; set; }
-
-    public bool cheat_enabled_flag;
+    public int NationId { get; private set; }
+    public int NationType { get; private set; }
+    public int RaceId { get; private set; }
+    public byte NationColor { get; set; }
+    public int ColorSchemeId { get; set; }
+    public int KingUnitId { get; set; }
+    public int KingLeadership { get; set; }
+    public int NationNameId { get; set; }
+    public string NationNameString { get; set; }
+    public int PlayerId { get; set; }
 
     public double Cash { get; set; }
     public double Food { get; set; }
+    public double Reputation { get; set; }
+    public double KillMonsterScore { get; set; }
 
-    public double reputation;
-    public double kill_monster_score;
+    public bool IsAtWarToday { get; set; }
+    public bool IsAtWarYesterday { get; set; }
+    public DateTime LastWarDate { get; set; }
+    public int LastAttackerUnitId { get; set; }
+    public DateTime LastIndependentUnitJoinDate { get; set; }
 
-    public int auto_collect_tax_loyalty;
-    public int auto_grant_loyalty;
+    public int AutoCollectTaxLoyalty { get; set; }
+    public int AutoGrantLoyalty { get; set; }
 
-    public double cur_year_profit;
-    public double last_year_profit;
+    public double CurYearProfit { get; set; }
+    public double LastYearProfit { get; set; }
 
-    public double cur_year_fixed_income;
-    public double last_year_fixed_income;
-    public double cur_year_fixed_expense;
-    public double last_year_fixed_expense;
+    public double[] CurYearIncomes { get; } = new double[INCOME_TYPE_COUNT];
+    public double[] LastYearIncomes { get; } = new double[INCOME_TYPE_COUNT];
+    public double CurYearIncome { get; set; }
+    public double LastYearIncome { get; set; }
+    public double CurYearFixedIncome { get; set; }
+    public double LastYearFixedIncome { get; set; }
 
-    public double[] cur_year_income_array = new double[INCOME_TYPE_COUNT];
-    public double[] last_year_income_array = new double[INCOME_TYPE_COUNT];
-    public double cur_year_income;
-    public double last_year_income;
+    public double[] CurYearExpenses { get; } = new double[EXPENSE_TYPE_COUNT];
+    public double[] LastYearExpenses { get; } = new double[EXPENSE_TYPE_COUNT];
+    public double CurYearExpense { get; set; }
+    public double LastYearExpense { get; set; }
+    public double CurYearFixedExpense { get; set; }
+    public double LastYearFixedExpense { get; set; }
 
-    public double[] cur_year_expense_array = new double[EXPENSE_TYPE_COUNT];
-    public double[] last_year_expense_array = new double[EXPENSE_TYPE_COUNT];
-    public double cur_year_expense;
-    public double last_year_expense;
+    public double CurYearCheat { get; set; }
+    public double LastYearCheat { get; set; }
 
-    public double cur_year_cheat;
-    public double last_year_cheat;
+    public double CurYearFoodIn { get; set; }
+    public double LastYearFoodIn { get; set; }
+    public double CurYearFoodOut { get; set; }
+    public double LastYearFoodOut { get; set; }
+    public double CurYearFoodChange { get; set; }
+    public double LastYearFoodChange { get; set; }
 
-    public double cur_year_food_in;
-    public double last_year_food_in;
-    public double cur_year_food_out;
-    public double last_year_food_out;
-    public double cur_year_food_change;
-    public double last_year_food_change;
+    public double CurYearReputationChange { get; set; }
+    public double LastYearReputationChange { get; set; }
 
-    public double cur_year_reputation_change;
-    public double last_year_reputation_change;
+    public int NationFirmCount { get; set; }
+    public DateTime LastBuildFirmDate { get; set; }
+    public int[] KnowBases { get; } = new int[GameConstants.MAX_RACE];
+    public int[] BaseCounts { get; } = new int[GameConstants.MAX_RACE];
+    
+    public int TotalPopulation { get; set; }
+    public int TotalJoblessPopulation { get; set; }
 
-    public int total_population;
-    public int total_jobless_population;
+    public int TotalUnitCount { get; set; }
+    public int TotalHumanCount { get; set; }
+    public int TotalGeneralCount { get; set; }
+    public int TotalWeaponCount { get; set; }
+    public int TotalShipCount { get; set; }
+    public int TotalFirmCount { get; set; }
+    public int TotalSpyCount { get; set; }
+    public int TotalShipCombatLevel { get; set; }
 
-    public int total_unit_count;
-    public int total_human_count;
-    public int total_general_count;
-    public int total_weapon_count;
-    public int total_ship_count;
-    public int total_firm_count;
-    public int total_spy_count;
-    public int total_ship_combat_level;
-
-    public int largest_town_recno; // the recno of the biggest town of this nation
-    public int largest_town_pop;
+    public int LargestTownId { get; set; } // the id of the biggest town of this nation
+    public int LargestTownPop { get; set; }
 
     // no. of natural resources site this nation possesses
-    public int[] raw_count_array = new int[GameConstants.MAX_RAW];
+    public int[] RawCounts { get; } = new int[GameConstants.MAX_RAW];
 
-    public int[] last_unit_name_id_array = new int[UnitConstants.MAX_UNIT_TYPE];
+    public int[] LastUnitNameIds { get; } = new int[UnitConstants.MAX_UNIT_TYPE];
 
-    public int population_rating;
-    public int military_rating;
-    public int economic_rating;
-    public int overall_rating;
+    public int PopulationRating { get; set; }
+    public int MilitaryRating { get; set; }
+    public int EconomicRating { get; set; }
+    public int OverallRating { get; set; }
 
-    public int enemy_soldier_killed;
-    public int own_soldier_killed;
-    public int enemy_civilian_killed;
-    public int own_civilian_killed;
-    public int enemy_weapon_destroyed;
-    public int own_weapon_destroyed;
-    public int enemy_ship_destroyed;
-    public int own_ship_destroyed;
-    public int enemy_firm_destroyed;
-    public int own_firm_destroyed;
+    public int EnemySoldierKilled { get; set; }
+    public int OwnSoldierKilled { get; set; }
+    public int EnemyCivilianKilled { get; set; }
+    public int OwnCivilianKilled { get; set; }
+    public int EnemyWeaponDestroyed { get; set; }
+    public int OwnWeaponDestroyed { get; set; }
+    public int EnemyShipDestroyed { get; set; }
+    public int OwnShipDestroyed { get; set; }
+    public int EnemyFirmDestroyed { get; set; }
+    public int OwnFirmDestroyed { get; set; }
 
     // inter-relationship with other nations
-    public NationRelation[] relation_array = new NationRelation[GameConstants.MAX_NATION];
-    public int[] relation_status_array = new int[GameConstants.MAX_NATION]; // replace status in struct NationRelation
+    public NationRelation[] NationRelations { get; } = new NationRelation[GameConstants.MAX_NATION];
+    public int[] RelationStatuses { get; } = new int[GameConstants.MAX_NATION]; // replace status in struct NationRelation
     // for seeking to indicate whether passing other nation region
-    public bool[] relation_passable_array = new bool[GameConstants.MAX_NATION];
-    public bool[] relation_should_attack_array = new bool[GameConstants.MAX_NATION];
-    public bool is_allied_with_player; // for fast access in visiting world functions
+    public bool[] RelationPassable { get; } = new bool[GameConstants.MAX_NATION];
+    public bool[] RelationShouldAttack { get; } = new bool[GameConstants.MAX_NATION];
+    public bool IsAlliedWithPlayer { get; set; } // for fast access in visiting world functions
 
-    public static int nation_hand_over_flag;
+    public static int NationHandOverFlag { get; set; }
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected RaceRes RaceRes => Sys.Instance.RaceRes;
@@ -183,34 +179,34 @@ public class NationBase : IIdObject
     protected SiteArray SiteArray => Sys.Instance.SiteArray;
     protected NewsArray NewsArray => Sys.Instance.NewsArray;
 
-    public string nation_name()
+    public string NationName()
     {
-        return king_name(true) + "'s Kingdom";
+        return KingName(true) + "'s Kingdom";
     }
 
-    public string king_name(bool firstWordOnly = false)
+    public string KingName(bool firstWordOnly = false)
     {
-        if (nation_name_id < 0) // human player custom names
+        if (NationNameId < 0) // human player custom names
         {
-            return NationArray.get_human_name(nation_name_id, firstWordOnly);
+            return NationArray.GetHumanName(NationNameId, firstWordOnly);
         }
         else
         {
             if (firstWordOnly)
-                return RaceRes[race_id].get_single_name(nation_name_id);
+                return RaceRes[RaceId].get_single_name(NationNameId);
             else
-                return RaceRes[race_id].get_name(nation_name_id);
+                return RaceRes[RaceId].get_name(NationNameId);
         }
     }
 
-    public int peaceful_days()
+    public int PeacefulDays()
     {
-        return (Info.GameDate - last_war_date).Days;
+        return (Info.GameDate - LastWarDate).Days;
     }
 
-    public string peace_duration_str()
+    public string PeaceDurationString()
     {
-        int peaceDays = peaceful_days();
+        int peaceDays = PeacefulDays();
         int peaceYear = peaceDays / 365;
         int peaceMonth = (peaceDays - peaceYear * 365) / 30;
 
@@ -232,117 +228,117 @@ public class NationBase : IIdObject
         return str;
     }
 
-    public void set_at_war_today(int attackerUnitRecno = 0)
+    public void SetAtWarToday(int attackerUnitRecno = 0)
     {
-        is_at_war_today = true;
+        IsAtWarToday = true;
         if (attackerUnitRecno != 0)
-            last_attacker_unit_recno = attackerUnitRecno;
+            LastAttackerUnitId = attackerUnitRecno;
     }
 
-    public bool is_at_war()
+    public bool IsAtWar()
     {
-        return is_at_war_today || is_at_war_yesterday;
+        return IsAtWarToday || IsAtWarYesterday;
     }
 
-    public int yearly_food_consumption()
+    public int YearlyFoodConsumption()
     {
-        return GameConstants.PERSON_FOOD_YEAR_CONSUMPTION * all_population();
+        return GameConstants.PERSON_FOOD_YEAR_CONSUMPTION * AllPopulation();
     }
 
-    public int yearly_food_production()
+    public int YearlyFoodProduction()
     {
-        return GameConstants.PEASANT_FOOD_YEAR_PRODUCTION * total_jobless_population;
+        return GameConstants.PEASANT_FOOD_YEAR_PRODUCTION * TotalJoblessPopulation;
     }
 
-    public int yearly_food_change()
+    public int YearlyFoodChange()
     {
-        return yearly_food_production() - yearly_food_consumption();
+        return YearlyFoodProduction() - YearlyFoodConsumption();
     }
 
-    public double profit_365days()
+    public double Profit365Days()
     {
-        return last_year_profit * (365 - Info.YearDay) / 365 + cur_year_profit;
+        return LastYearProfit * (365 - Info.YearDay) / 365 + CurYearProfit;
     }
 
-    public double fixed_income_365days()
+    public double FixedIncome365Days()
     {
-        return last_year_fixed_income * (365 - Info.YearDay) / 365 + cur_year_fixed_income;
+        return LastYearFixedIncome * (365 - Info.YearDay) / 365 + CurYearFixedIncome;
     }
 
-    public double fixed_expense_365days()
+    public double FixedExpense365Days()
     {
-        return last_year_fixed_expense * (365 - Info.YearDay) / 365 + cur_year_fixed_expense;
+        return LastYearFixedExpense * (365 - Info.YearDay) / 365 + CurYearFixedExpense;
     }
 
-    public double fixed_profit_365days()
+    public double FixedProfit365Days()
     {
-        return fixed_income_365days() - fixed_expense_365days();
+        return FixedIncome365Days() - FixedExpense365Days();
     }
 
-    public double income_365days()
+    public double Income365Days()
     {
-        return last_year_income * (365 - Info.YearDay) / 365 + cur_year_income;
+        return LastYearIncome * (365 - Info.YearDay) / 365 + CurYearIncome;
     }
 
-    public double income_365days(int incomeType)
+    public double Income365Days(int incomeType)
     {
-        return last_year_income_array[incomeType] * (365 - Info.YearDay) / 365 + cur_year_income_array[incomeType];
+        return LastYearIncomes[incomeType] * (365 - Info.YearDay) / 365 + CurYearIncomes[incomeType];
     }
 
-    public double true_income_365days()
+    public double TrueIncome365Days()
     {
         double curYearIncome = 0.0;
         double lastYearIncome = 0.0;
 
         for (int i = 0; i < INCOME_TYPE_COUNT - 1; i++) // -1 to exclude cheat
         {
-            curYearIncome += cur_year_income_array[i];
-            lastYearIncome += last_year_income_array[i];
+            curYearIncome += CurYearIncomes[i];
+            lastYearIncome += LastYearIncomes[i];
         }
 
         return lastYearIncome * (365 - Info.YearDay) / 365 + curYearIncome;
     }
 
-    public double expense_365days()
+    public double Expense365Days()
     {
-        return last_year_expense * (365 - Info.YearDay) / 365 + cur_year_expense;
+        return LastYearExpense * (365 - Info.YearDay) / 365 + CurYearExpense;
     }
 
-    public double expense_365days(int expenseType)
+    public double Expense365Days(int expenseType)
     {
-        return last_year_expense_array[expenseType] * (365 - Info.YearDay) / 365 + cur_year_expense_array[expenseType];
+        return LastYearExpenses[expenseType] * (365 - Info.YearDay) / 365 + CurYearExpenses[expenseType];
     }
 
-    public double cheat_365days()
+    public double Cheat365Days()
     {
-        return last_year_cheat * (365 - Info.YearDay) / 365 + cur_year_cheat;
+        return LastYearCheat * (365 - Info.YearDay) / 365 + CurYearCheat;
     }
 
-    public double true_profit_365days()
+    public double TrueProfit365Days()
     {
-        return profit_365days() - cheat_365days();
+        return Profit365Days() - Cheat365Days();
     }
 
-    public double food_change_365days()
+    public double FoodChange365Days()
     {
-        return last_year_food_change * (365 - Info.YearDay) / 365 + cur_year_food_change;
+        return LastYearFoodChange * (365 - Info.YearDay) / 365 + CurYearFoodChange;
     }
 
-    public double reputation_change_365days()
+    public double ReputationChange365Days()
     {
-        return last_year_reputation_change * (365 - Info.YearDay) / 365 + cur_year_reputation_change;
+        return LastYearReputationChange * (365 - Info.YearDay) / 365 + CurYearReputationChange;
     }
 
-    protected virtual void set_relation_status_ai(int nationRecno, int newStatus)
+    protected virtual void SetRelationStatusAI(int nationRecno, int newStatus)
     {
     }
 
-    public void set_relation_status(int nationRecno, int newStatus, bool recursiveCall = false)
+    public void SetRelationStatus(int nationRecno, int newStatus, bool recursiveCall = false)
     {
-        if (nationRecno == nation_recno) // cannot set relation to itself
+        if (nationRecno == NationId) // cannot set relation to itself
             return;
 
-        NationRelation nationRelation = get_relation(nationRecno);
+        NationRelation nationRelation = GetRelation(nationRecno);
 
         //-------------------------------------------------//
         //
@@ -354,8 +350,8 @@ public class NationBase : IIdObject
         //-------------------------------------------------//
 
         // 5 days after the cease-fire, the nation will remain cease-fire
-        if (!recursiveCall && nationRelation.status == NATION_TENSE && newStatus == NATION_HOSTILE &&
-            Info.GameDate < nationRelation.last_change_status_date.AddDays(5.0))
+        if (!recursiveCall && nationRelation.Status == NATION_TENSE && newStatus == NATION_HOSTILE &&
+            Info.GameDate < nationRelation.LastChangeStatusDate.AddDays(5.0))
         {
             return;
         }
@@ -368,34 +364,34 @@ public class NationBase : IIdObject
         //
         //-------------------------------------------------//
 
-        if (is_ai())
+        if (IsAI())
         {
-            set_relation_status_ai(nationRecno, newStatus);
+            SetRelationStatusAI(nationRecno, newStatus);
         }
 
         //------------------------------------------------//
 
-        relation_status_array[nationRecno - 1] = newStatus;
-        nationRelation.status = newStatus;
-        nationRelation.last_change_status_date = Info.GameDate;
+        RelationStatuses[nationRecno - 1] = newStatus;
+        nationRelation.Status = newStatus;
+        nationRelation.LastChangeStatusDate = Info.GameDate;
 
         int newRelationLevel = newStatus * RELATION_LEVEL_PER_STATUS;
 
         // only set it when the new value is lower than the current value
-        if (newRelationLevel < nationRelation.ai_relation_level)
-            nationRelation.ai_relation_level = newRelationLevel;
+        if (newRelationLevel < nationRelation.AIRelationLevel)
+            nationRelation.AIRelationLevel = newRelationLevel;
 
-        set_relation_passable(nationRecno, NATION_FRIENDLY);
+        SetRelationPassable(nationRecno, NATION_FRIENDLY);
 
         //---------- set should_attack -------//
 
         if (newStatus == NATION_ALLIANCE || newStatus == NATION_FRIENDLY || newStatus == NATION_TENSE)
         {
-            set_relation_should_attack(nationRecno, false, InternalConstants.COMMAND_AUTO);
+            SetRelationShouldAttack(nationRecno, false, InternalConstants.COMMAND_AUTO);
         }
         else if (newStatus == NATION_HOSTILE)
         {
-            set_relation_should_attack(nationRecno, true, InternalConstants.COMMAND_AUTO);
+            SetRelationShouldAttack(nationRecno, true, InternalConstants.COMMAND_AUTO);
         }
 
         //----- share the nation contact with each other -----//
@@ -428,31 +424,31 @@ public class NationBase : IIdObject
 
         if (!recursiveCall)
         {
-            NationArray[nationRecno].set_relation_status(nation_recno, newStatus, true);
+            NationArray[nationRecno].SetRelationStatus(NationId, newStatus, true);
 
             //-- auto terminate their trade treaty if two nations go into a war --//
 
             if (newStatus == NATION_HOSTILE)
-                set_trade_treaty(nationRecno, false);
+                SetTradeTreaty(nationRecno, false);
         }
     }
 
-    public int get_relation_status(int nationRecno)
+    public int GetRelationStatus(int nationRecno)
     {
-        return relation_status_array[nationRecno - 1];
+        return RelationStatuses[nationRecno - 1];
     }
 
-    public void set_relation_passable(int nationRecno, int status)
+    public void SetRelationPassable(int nationRecno, int status)
     {
-        relation_passable_array[nationRecno - 1] = (relation_status_array[nationRecno - 1] >= status);
+        RelationPassable[nationRecno - 1] = (RelationStatuses[nationRecno - 1] >= status);
     }
 
-    public bool get_relation_passable(int nationRecno)
+    public bool GetRelationPassable(int nationRecno)
     {
-        return relation_passable_array[nationRecno - 1];
+        return RelationPassable[nationRecno - 1];
     }
 
-    public void set_relation_should_attack(int nationRecno, bool newValue, int remoteAction)
+    public void SetRelationShouldAttack(int nationRecno, bool newValue, int remoteAction)
     {
         //TODO remote
         //if( !remoteAction && remote.is_enable() )
@@ -464,78 +460,78 @@ public class NationBase : IIdObject
         //}
         //else
         //{
-        relation_should_attack_array[nationRecno - 1] = newValue;
-        get_relation(nationRecno).should_attack = newValue;
+        RelationShouldAttack[nationRecno - 1] = newValue;
+        GetRelation(nationRecno).ShouldAttack = newValue;
         //}
     }
 
-    public bool get_relation_should_attack(int nationRecno)
+    public bool GetRelationShouldAttack(int nationRecno)
     {
-        return nationRecno == 0 || relation_should_attack_array[nationRecno - 1];
+        return nationRecno == 0 || RelationShouldAttack[nationRecno - 1];
     }
 
-    public void set_trade_treaty(int nationRecno, bool allowFlag)
+    public void SetTradeTreaty(int nationRecno, bool allowFlag)
     {
-        get_relation(nationRecno).trade_treaty = allowFlag;
-        NationArray[nationRecno].get_relation(nation_recno).trade_treaty = allowFlag;
+        GetRelation(nationRecno).TradeTreaty = allowFlag;
+        NationArray[nationRecno].GetRelation(NationId).TradeTreaty = allowFlag;
     }
 
-    public void establish_contact(int nationRecno)
+    public void EstablishContact(int nationRecno)
     {
-        get_relation(nationRecno).has_contact = true;
-        NationArray[nationRecno].get_relation(nation_recno).has_contact = true;
+        GetRelation(nationRecno).HasContact = true;
+        NationArray[nationRecno].GetRelation(NationId).HasContact = true;
     }
 
-    public void change_ai_relation_level(int nationRecno, int levelChange)
+    public void ChangeAIRelationLevel(int nationRecno, int levelChange)
     {
-        NationRelation nationRelation = get_relation(nationRecno);
+        NationRelation nationRelation = GetRelation(nationRecno);
 
-        int newLevel = nationRelation.ai_relation_level + levelChange;
+        int newLevel = nationRelation.AIRelationLevel + levelChange;
 
         newLevel = Math.Min(newLevel, 100);
         newLevel = Math.Max(newLevel, 0);
 
-        nationRelation.ai_relation_level = newLevel;
+        nationRelation.AIRelationLevel = newLevel;
     }
 
-    public NationRelation get_relation(int nationRecno)
+    public NationRelation GetRelation(int nationRecno)
     {
-        return relation_array[nationRecno - 1];
+        return NationRelations[nationRecno - 1];
     }
 
-    public double total_year_trade(int nationRecno)
+    public double TotalYearTrade(int nationRecno)
     {
-        return get_relation(nationRecno).last_year_import[IMPORT_TOTAL] +
-               NationArray[nationRecno].get_relation(nation_recno).last_year_import[IMPORT_TOTAL];
+        return GetRelation(nationRecno).LastYearImport[IMPORT_TOTAL] +
+               NationArray[nationRecno].GetRelation(NationId).LastYearImport[IMPORT_TOTAL];
     }
 
-    public int trade_rating(int nationRecno)
+    public int TradeRating(int nationRecno)
     {
         // use an absolute value 5000 as the divider.
 
-        int tradeRating1 = 100 * (int)total_year_trade(nationRecno) / 5000;
+        int tradeRating1 = 100 * (int)TotalYearTrade(nationRecno) / 5000;
 
         int tradeRating2 =
-            50 * (int)NationArray[nationRecno].get_relation(nation_recno).last_year_import[IMPORT_TOTAL] /
-            (int)(last_year_income + 1) +
-            50 * (int)get_relation(nationRecno).last_year_import[IMPORT_TOTAL] / (int)(last_year_expense + 1);
+            50 * (int)NationArray[nationRecno].GetRelation(NationId).LastYearImport[IMPORT_TOTAL] /
+            (int)(LastYearIncome + 1) +
+            50 * (int)GetRelation(nationRecno).LastYearImport[IMPORT_TOTAL] / (int)(LastYearExpense + 1);
 
         return Math.Max(tradeRating1, tradeRating2);
     }
 
-    public int all_population()
+    public int AllPopulation()
     {
-        return total_population + total_human_count;
+        return TotalPopulation + TotalHumanCount;
     }
 
-    public int total_tech_level(int unitClass = 0)
+    public int TotalTechLevel(int unitClass = 0)
     {
         int totalTechLevel = 0;
 
         for (int i = 1; i <= TechRes.TechInfos.Length; i++)
         {
             TechInfo techInfo = TechRes[i];
-            int techLevel = techInfo.get_nation_tech_level(nation_recno);
+            int techLevel = techInfo.get_nation_tech_level(NationId);
 
             if (techLevel > 0)
             {
@@ -549,13 +545,13 @@ public class NationBase : IIdObject
         return totalTechLevel;
     }
 
-    public int base_town_count_in_region(int regionId)
+    public int BaseTownCountInRegion(int regionId)
     {
         // regionStatId may be zero
         int regionStatId = RegionArray.GetRegionInfo(regionId).RegionStatId;
         if (regionStatId != 0)
         {
-            return RegionArray.GetRegionStat(regionId).BaseTownNationCounts[nation_recno - 1];
+            return RegionArray.GetRegionStat(regionId).BaseTownNationCounts[NationId - 1];
         }
         else if (RegionArray.GetRegionInfo(regionId).RegionSize < InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT)
         {
@@ -566,7 +562,7 @@ public class NationBase : IIdObject
             int townCount = 0;
             foreach (Town town in TownArray)
             {
-                if (town.RegionId == regionId && town.NationId == nation_recno)
+                if (town.RegionId == regionId && town.NationId == NationId)
                     townCount++;
             }
 
@@ -575,87 +571,87 @@ public class NationBase : IIdObject
     }
 
 
-    public void update_nation_rating()
+    public void UpdateNationRating()
     {
-        population_rating = get_population_rating();
+        PopulationRating = GetPopulationRating();
 
-        economic_rating = get_economic_rating();
+        EconomicRating = GetEconomicRating();
 
-        overall_rating = get_overall_rating();
+        OverallRating = GetOverallRating();
     }
 
-    public int get_population_rating()
+    public int GetPopulationRating()
     {
-        return all_population();
+        return AllPopulation();
     }
 
-    public int get_economic_rating()
+    public int GetEconomicRating()
     {
-        return (int)(cash / 300 + true_income_365days() / 2 + true_profit_365days());
+        return (int)(Cash / 300 + TrueIncome365Days() / 2 + TrueProfit365Days());
     }
 
-    public int get_overall_rating()
+    public int GetOverallRating()
     {
-        return 33 * population_rating / 500 + 33 * military_rating / 200 + 33 * economic_rating / 10000;
+        return 33 * PopulationRating / 500 + 33 * MilitaryRating / 200 + 33 * EconomicRating / 10000;
     }
 
-    public int population_rank_rating()
+    public int PopulationRankRating()
     {
-        if (NationArray.max_population_rating == 0)
+        if (NationArray.MaxPopulationRating == 0)
             return 0;
 
-        return 100 * population_rating / NationArray.max_population_rating;
+        return 100 * PopulationRating / NationArray.MaxPopulationRating;
     }
 
-    public int military_rank_rating()
+    public int MilitaryRankRating()
     {
-        if (NationArray.max_military_rating == 0)
+        if (NationArray.MaxMilitaryRating == 0)
             return 0;
 
-        return 100 * military_rating / NationArray.max_military_rating;
+        return 100 * MilitaryRating / NationArray.MaxMilitaryRating;
     }
 
-    public int economic_rank_rating()
+    public int EconomicRankRating()
     {
-        if (NationArray.max_economic_rating == 0)
+        if (NationArray.MaxEconomicRating == 0)
             return 0;
 
-        return 100 * economic_rating / NationArray.max_economic_rating;
+        return 100 * EconomicRating / NationArray.MaxEconomicRating;
     }
 
-    public int reputation_rank_rating()
+    public int ReputationRankRating()
     {
-        if (NationArray.max_reputation == 0)
+        if (NationArray.MaxReputation == 0)
             return 0;
 
-        return 100 * (int)reputation / NationArray.max_reputation;
+        return 100 * (int)Reputation / NationArray.MaxReputation;
     }
 
-    public int kill_monster_rank_rating()
+    public int KillMonsterRankRating()
     {
-        if (NationArray.max_kill_monster_score == 0)
+        if (NationArray.MaxKillMonsterScore == 0)
             return 0;
 
         if (Config.monster_type == Config.OPTION_MONSTER_NONE)
             return 0;
 
-        return 100 * (int)kill_monster_score / NationArray.max_kill_monster_score;
+        return 100 * (int)KillMonsterScore / NationArray.MaxKillMonsterScore;
     }
 
-    public int overall_rank_rating()
+    public int OverallRankRating()
     {
-        if (NationArray.max_overall_rating == 0)
+        if (NationArray.MaxOverallRating == 0)
             return 0;
 
-        return 100 * overall_rating / NationArray.max_overall_rating;
+        return 100 * OverallRating / NationArray.MaxOverallRating;
     }
 
-    public bool goal_destroy_nation_achieved()
+    public bool GoalDestroyNationAchieved()
     {
-        return NationArray.nation_count == 1;
+        return NationArray.NationCount == 1;
     }
 
-    public bool goal_destroy_monster_achieved()
+    public bool GoalDestroyMonsterAchieved()
     {
         if (!Config.goal_destroy_monster) // this is not one of the required goals.
             return false;
@@ -671,110 +667,110 @@ public class NationBase : IIdObject
 
             foreach (Nation nation in NationArray)
             {
-                if (nation.kill_monster_score > maxScore)
-                    maxScore = nation.kill_monster_score;
+                if (nation.KillMonsterScore > maxScore)
+                    maxScore = nation.KillMonsterScore;
             }
 
             //-- if this nation is the one that has destroyed most monsters, it wins, otherwise it loses --//
 
-            return (int)maxScore == (int)kill_monster_score;
+            return (int)maxScore == (int)KillMonsterScore;
         }
 
         return false;
     }
 
-    public bool goal_population_achieved()
+    public bool GoalPopulationAchieved()
     {
         if (!Config.goal_population_flag) // this is not one of the required goals.
             return false;
 
-        return all_population() >= Config.goal_population;
+        return AllPopulation() >= Config.goal_population;
     }
 
-    public bool goal_economic_score_achieved()
+    public bool GoalEconomicScoreAchieved()
     {
         if (!Config.goal_economic_score_flag)
             return false;
 
         Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.GetRankScore(3, nation_recno) >= Config.goal_economic_score;
+        return Info.GetRankScore(3, NationId) >= Config.goal_economic_score;
     }
 
-    public bool goal_total_score_achieved()
+    public bool GoalTotalScoreAchieved()
     {
         if (!Config.goal_total_score_flag)
             return false;
 
         Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.GetTotalScore(nation_recno) >= Config.goal_total_score;
+        return Info.GetTotalScore(NationId) >= Config.goal_total_score;
     }
 
-    public bool is_own() => nation_type == NATION_OWN;
-    public bool is_ai() => nation_type == NATION_AI;
-    public bool is_remote() => nation_type == NATION_REMOTE;
+    public bool IsOwn() => NationType == NATION_OWN;
+    public bool IsAI() => NationType == NATION_AI;
+    public bool IsRemote() => NationType == NATION_REMOTE;
 
     public NationBase()
     {
-        for (int i = 0; i < relation_array.Length; i++)
-            relation_array[i] = new NationRelation();
+        for (int i = 0; i < NationRelations.Length; i++)
+            NationRelations[i] = new NationRelation();
     }
 
     void IIdObject.SetId(int id)
     {
-        nation_recno = id;
+        NationId = id;
     }
 
-    public virtual void init(int nationType, int raceId, int colorSchemeId, int playerId = 0)
+    public virtual void Init(int nationType, int raceId, int colorSchemeId, int playerId = 0)
     {
         //------------- set vars ---------------//
 
-        nation_type = nationType;
-        race_id = raceId;
-        color_scheme_id = colorSchemeId;
-        player_id = playerId;
+        NationType = nationType;
+        RaceId = raceId;
+        ColorSchemeId = colorSchemeId;
+        PlayerId = playerId;
 
         //colorSchemeId = Math.Min(colorSchemeId, InternalConstants.MAX_COLOR_SCHEME);
         //nation_color = Sys.Instance.color_remap_array[colorSchemeId].main_color;
-        nation_color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[nation_recno], false).MainColor;
+        NationColor = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[NationId], false).MainColor;
 
-        last_war_date = Info.GameDate;
+        LastWarDate = Info.GameDate;
 
         //------- if this is the local player's nation -------//
 
-        if (nation_type == NATION_OWN)
-            NationArray.player_recno = nation_recno;
+        if (NationType == NATION_OWN)
+            NationArray.PlayerId = NationId;
 
         //---------- init game vars ------------//
 
         int[] start_up_cash_array = { 4000, 7000, 12000, 20000 };
 
-        if (is_ai())
-            cash = start_up_cash_array[Config.ai_start_up_cash - 1];
+        if (IsAI())
+            Cash = start_up_cash_array[Config.ai_start_up_cash - 1];
         else
-            cash = start_up_cash_array[Config.start_up_cash - 1];
+            Cash = start_up_cash_array[Config.start_up_cash - 1];
 
-        food = 5000.0; // startup food is 5000 for all nations in all settings
+        Food = 5000.0; // startup food is 5000 for all nations in all settings
 
         //---- initialize this nation's relation on other nations ----//
 
         // #### Richard 6-12-2013: Moved this from init_relation to here, so it works with new independent nations spawning #### //
-        is_allied_with_player = false;
+        IsAlliedWithPlayer = false;
 
         foreach (Nation nation in NationArray)
         {
-            init_relation(nation);
-            nation.init_relation(this);
+            InitRelation(nation);
+            nation.InitRelation(this);
         }
 
         //--------- init technology ----------//
 
-        TechRes.init_nation_tech(nation_recno);
+        TechRes.init_nation_tech(NationId);
 
         //------- reset all god knowledge --------//
 
-        GodRes.init_nation_know(nation_recno);
+        GodRes.init_nation_know(NationId);
 
         //if(remote.is_enable() && nation_recno && !is_ai() && misc.is_file_exist("TECHGOD.SYS"))
         //{
@@ -787,36 +783,36 @@ public class NationBase : IIdObject
         //{
         if (ConfigAdv.nation_start_god_level == 1)
         {
-            GodRes[race_id].enable_know(nation_recno);
+            GodRes[RaceId].enable_know(NationId);
         }
         else if (ConfigAdv.nation_start_god_level > 1)
         {
-            GodRes.enable_know_all(nation_recno);
+            GodRes.enable_know_all(NationId);
         }
 
         for (int i = 0; i < ConfigAdv.nation_start_tech_inc_all_level; i++)
-            TechRes.inc_all_tech_level(nation_recno);
+            TechRes.inc_all_tech_level(NationId);
         //}
     }
 
-    public virtual void deinit()
+    public virtual void Deinit()
     {
-        if (nation_recno == 0) // has been deinitialized
+        if (NationId == 0) // has been deinitialized
             return;
 
         //---- delete all talk messages to/from this nation ----//
 
-        TalkRes.del_all_nation_msg(nation_recno);
+        TalkRes.del_all_nation_msg(NationId);
 
         //------- close down all firms --------//
 
-        close_all_firm();
+        CloseAllFirms();
 
         //---- neutralize all towns belong to this nation ----//
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId == nation_recno)
+            if (town.NationId == NationId)
                 town.ChangeNation(0);
         }
 
@@ -829,7 +825,7 @@ public class NationBase : IIdObject
             // so there  will be no more spies of this nation. 
             //-----------------------------------------------------//
 
-            if (spy.TrueNationId == nation_recno) // retire counter-spies immediately
+            if (spy.TrueNationId == NationId) // retire counter-spies immediately
                 spy.DropSpyIdentity();
 
             //-----------------------------------------------------//
@@ -838,7 +834,7 @@ public class NationBase : IIdObject
             // to their original nation. 
             //-----------------------------------------------------//
 
-            else if (spy.CloakedNationId == nation_recno)
+            else if (spy.CloakedNationId == NationId)
             {
                 // changing cloak is normally only allowed when mobile
 
@@ -858,65 +854,65 @@ public class NationBase : IIdObject
 
         //----- deinit all units belonging to this nation -----//
 
-        deinit_all_unit();
+        DeinitAllUnits();
 
         //-------- if the viewing nation is this nation -------//
 
-        if (Info.DefaultViewingNationId == nation_recno)
+        if (Info.DefaultViewingNationId == NationId)
         {
-            Info.DefaultViewingNationId = NationArray.player_recno;
+            Info.DefaultViewingNationId = NationArray.PlayerId;
             Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
         }
 
-        else if (Info.ViewingNationId == nation_recno)
+        else if (Info.ViewingNationId == NationId)
             Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL); // it will set viewing_nation_recno to default_viewing_nation_recno
 
         // if deleting own nation, darken view mode buttons
-        if (nation_recno == NationArray.player_recno)
+        if (NationId == NationArray.PlayerId)
         {
             Sys.Instance.disp_view_mode(1);
         }
 
-        nation_recno = 0;
+        NationId = 0;
     }
 
-    public void init_relation(NationBase otherNation)
+    public void InitRelation(NationBase otherNation)
     {
-        int otherNationRecno = otherNation.nation_recno;
-        NationRelation nationRelation = relation_array[otherNationRecno - 1];
+        int otherNationRecno = otherNation.NationId;
+        NationRelation nationRelation = NationRelations[otherNationRecno - 1];
 
-        set_relation_should_attack(otherNationRecno, otherNationRecno != nation_recno, InternalConstants.COMMAND_AUTO);
+        SetRelationShouldAttack(otherNationRecno, otherNationRecno != NationId, InternalConstants.COMMAND_AUTO);
 
         // AI has contact with each other in the beginning of the game.
-        if (is_ai() && NationArray[otherNationRecno].is_ai())
-            nationRelation.has_contact = true;
+        if (IsAI() && NationArray[otherNationRecno].IsAI())
+            nationRelation.HasContact = true;
         else
-            nationRelation.has_contact = otherNationRecno == nation_recno || Config.explore_whole_map;
+            nationRelation.HasContact = otherNationRecno == NationId || Config.explore_whole_map;
 
-        nationRelation.trade_treaty = otherNationRecno == nation_recno;
+        nationRelation.TradeTreaty = otherNationRecno == NationId;
 
-        nationRelation.status = NATION_NEUTRAL;
-        nationRelation.ai_relation_level = NATION_NEUTRAL * RELATION_LEVEL_PER_STATUS;
-        nationRelation.last_change_status_date = Info.GameDate;
+        nationRelation.Status = NATION_NEUTRAL;
+        nationRelation.AIRelationLevel = NATION_NEUTRAL * RELATION_LEVEL_PER_STATUS;
+        nationRelation.LastChangeStatusDate = Info.GameDate;
 
-        if (otherNationRecno == nation_recno) // own nation
-            relation_status_array[otherNationRecno - 1] = NATION_ALLIANCE; // for facilitating searching
+        if (otherNationRecno == NationId) // own nation
+            RelationStatuses[otherNationRecno - 1] = NATION_ALLIANCE; // for facilitating searching
         else
-            relation_status_array[otherNationRecno - 1] = NATION_NEUTRAL;
+            RelationStatuses[otherNationRecno - 1] = NATION_NEUTRAL;
 
-        set_relation_passable(otherNationRecno, NATION_FRIENDLY);
+        SetRelationPassable(otherNationRecno, NATION_FRIENDLY);
     }
 
     public virtual void ProcessAI()
     {
     }
 
-    public void close_all_firm()
+    public void CloseAllFirms()
     {
         List<Firm> firmsToDelete = new List<Firm>();
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId == nation_recno)
+            if (firm.NationId == NationId)
             {
                 firmsToDelete.Add(firm);
             }
@@ -928,19 +924,19 @@ public class NationBase : IIdObject
         }
     }
 
-    public void deinit_all_unit()
+    public void DeinitAllUnits()
     {
         //--- update total_human_unit so the numbers will be correct ---//
 
         // only do this in release version to on-fly fix bug
-        NationArray.update_statistic();
+        NationArray.UpdateStatistic();
 
         //--------------------------------------//
 
         List<Unit> unitsToDelete = new List<Unit>();
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId != nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             //----- only human units will betray -----//
@@ -965,7 +961,7 @@ public class NationBase : IIdObject
         }
     }
 
-    public void succeed_king(Unit newKing)
+    public void SucceedKing(Unit newKing)
     {
         int newKingLeadership = 0;
 
@@ -978,8 +974,8 @@ public class NationBase : IIdObject
 
         int loyaltyChange = 0;
 
-        if (newKingLeadership < king_leadership)
-            loyaltyChange = (newKingLeadership - king_leadership) / 2;
+        if (newKingLeadership < KingLeadership)
+            loyaltyChange = (newKingLeadership - KingLeadership) / 2;
 
         if (newKing.Rank != Unit.RANK_GENERAL)
             loyaltyChange -= 20;
@@ -988,23 +984,23 @@ public class NationBase : IIdObject
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.SpriteId == king_unit_recno || unit.SpriteId == newKing.SpriteId)
+            if (unit.SpriteId == KingUnitId || unit.SpriteId == newKing.SpriteId)
                 continue;
 
-            if (unit.NationId != nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             //--------- update loyalty change ----------//
 
             unit.ChangeLoyalty(loyaltyChange +
-                                succeed_king_loyalty_change(unit.RaceId, newKing.RaceId, race_id));
+                                SucceedKingLoyaltyChange(unit.RaceId, newKing.RaceId, RaceId));
         }
 
         //---- update loyalty of units in camps ----//
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
+            if (firm.NationId != NationId)
                 continue;
 
             //------ process military camps and seat of power -------//
@@ -1016,7 +1012,7 @@ public class NationBase : IIdObject
                     //--------- update loyalty change ----------//
 
                     worker.ChangeLoyalty(loyaltyChange +
-                                          succeed_king_loyalty_change(worker.RaceId, newKing.RaceId, race_id));
+                                          SucceedKingLoyaltyChange(worker.RaceId, newKing.RaceId, RaceId));
                 }
             }
         }
@@ -1025,7 +1021,7 @@ public class NationBase : IIdObject
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId != nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             for (int raceId = 1; raceId <= GameConstants.MAX_RACE; raceId++)
@@ -1036,17 +1032,17 @@ public class NationBase : IIdObject
                 //------ update loyalty now ------//
 
                 town.ChangeLoyalty(raceId, loyaltyChange +
-                                            succeed_king_loyalty_change(raceId, newKing.RaceId, race_id));
+                                            SucceedKingLoyaltyChange(raceId, newKing.RaceId, RaceId));
             }
         }
 
         //------- add news --------//
 
-        NewsArray.new_king(nation_recno, newKing.SpriteId);
+        NewsArray.new_king(NationId, newKing.SpriteId);
 
         //-------- set the new king now ------//
 
-        set_king(newKing.SpriteId, 0); // 0-not the first king, it is a succession
+        SetKing(newKing.SpriteId, 0); // 0-not the first king, it is a succession
 
         //------ if the new king is a spy -------//
 
@@ -1054,18 +1050,18 @@ public class NationBase : IIdObject
         {
             Spy spy = SpyArray[newKing.SpyId];
 
-            if (newKing.TrueNationId() == nation_recno) // if this is your spy
+            if (newKing.TrueNationId() == NationId) // if this is your spy
                 spy.DropSpyIdentity();
             else
                 spy.ThinkBecomeKing();
         }
     }
 
-    public void set_king(int kingUnitRecno, int firstKing)
+    public void SetKing(int kingUnitRecno, int firstKing)
     {
-        king_unit_recno = kingUnitRecno;
+        KingUnitId = kingUnitRecno;
 
-        Unit kingUnit = UnitArray[king_unit_recno];
+        Unit kingUnit = UnitArray[KingUnitId];
 
         //--- if this unit currently has not have leadership ---//
 
@@ -1082,23 +1078,23 @@ public class NationBase : IIdObject
         //---------- king related vars ----------//
 
         // for human players, the name is retrieved from NationArray::human_name_array
-        if (nation_type == NATION_AI || firstKing == 0) // for succession, no longer use the original player name
-            nation_name_id = kingUnit.NameId;
+        if (NationType == NATION_AI || firstKing == 0) // for succession, no longer use the original player name
+            NationNameId = kingUnit.NameId;
         else
-            nation_name_id = -nation_recno;
+            NationNameId = -NationId;
 
-        race_id = kingUnit.RaceId;
-        king_leadership = kingUnit.Skill.SkillLevel;
+        RaceId = kingUnit.RaceId;
+        KingLeadership = kingUnit.Skill.SkillLevel;
     }
 
-    public void hand_over_to(int handoverNationRecno)
+    public void HandOverTo(int handoverNationRecno)
     {
-        RebelArray.StopAttackNation(nation_recno);
-        TownArray.StopAttackNation(nation_recno);
-        UnitArray.StopAllWar(nation_recno);
-        MonsterRes.stop_attack_nation(nation_recno);
+        RebelArray.StopAttackNation(NationId);
+        TownArray.StopAttackNation(NationId);
+        UnitArray.StopAllWar(NationId);
+        MonsterRes.stop_attack_nation(NationId);
 
-        nation_hand_over_flag = nation_recno;
+        NationHandOverFlag = NationId;
 
         //--- hand over units (should hand over units first as you cannot change a firm's nation without changing the nation of the overseer there ---//
 
@@ -1109,7 +1105,7 @@ public class NationBase : IIdObject
 
             //---------------------------------------//
 
-            if (unit.NationId != nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             if (unit is UnitGod)
@@ -1135,7 +1131,7 @@ public class NationBase : IIdObject
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId == nation_recno)
+            if (firm.NationId == NationId)
             {
                 firm.ChangeNation(handoverNationRecno);
             }
@@ -1145,7 +1141,7 @@ public class NationBase : IIdObject
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId == nation_recno)
+            if (town.NationId == NationId)
             {
                 town.ChangeNation(handoverNationRecno);
             }
@@ -1160,7 +1156,7 @@ public class NationBase : IIdObject
 
         foreach (Spy spy in SpyArray)
         {
-            if (spy.TrueNationId == nation_recno)
+            if (spy.TrueNationId == NationId)
                 spy.ChangeTrueNation(handoverNationRecno);
         }
 
@@ -1168,38 +1164,38 @@ public class NationBase : IIdObject
 
         //TODO check
         NationArray.DeleteNation((Nation)this);
-        nation_hand_over_flag = 0;
+        NationHandOverFlag = 0;
     }
 
-    public void next_day()
+    public void NextDay()
     {
         //------ post is at war flag -------/
 
-        if (is_at_war_today)
-            last_war_date = Info.GameDate;
+        if (IsAtWarToday)
+            LastWarDate = Info.GameDate;
 
-        is_at_war_yesterday = is_at_war_today;
-        is_at_war_today = false;
+        IsAtWarYesterday = IsAtWarToday;
+        IsAtWarToday = false;
 
         //--- if the king is dead, and now looking for a successor ---//
 
-        if (king_unit_recno == 0)
+        if (KingUnitId == 0)
         {
-            if (Info.TotalDays % 3 == nation_recno % 3) // decrease 1 loyalty point every 3 days
-                change_all_people_loyalty(-1);
+            if (Info.TotalDays % 3 == NationId % 3) // decrease 1 loyalty point every 3 days
+                ChangeAllPeopleLoyalty(-1);
         }
 
         //------ check if this nation has won the game -----//
 
-        check_win();
+        CheckWin();
 
         //-- if the player still hasn't selected a unit to succeed the died king, declare defeated if the all units are killed --//
 
-        if (king_unit_recno == 0)
-            check_lose();
+        if (KingUnitId == 0)
+            CheckLose();
     }
 
-    public void next_month()
+    public void NextMonth()
     {
         //--------------------------------------------------//
         // When the two nations, whose relationship is Tense,
@@ -1209,201 +1205,201 @@ public class NationBase : IIdObject
 
         foreach (Nation nation in NationArray)
         {
-            NationRelation nationRelation = get_relation(nation.nation_recno);
+            NationRelation nationRelation = GetRelation(nation.NationId);
 
-            if (nationRelation.status == NATION_TENSE &&
-                Info.GameDate >= nationRelation.last_change_status_date.AddDays(365.0 * 3.0))
+            if (nationRelation.Status == NATION_TENSE &&
+                Info.GameDate >= nationRelation.LastChangeStatusDate.AddDays(365.0 * 3.0))
             {
-                set_relation_status(nation.nation_recno, NATION_NEUTRAL);
+                SetRelationStatus(nation.NationId, NATION_NEUTRAL);
             }
 
             //--- update good_relation_duration_rating ---//
 
-            else if (nationRelation.status == NATION_FRIENDLY)
-                nationRelation.good_relation_duration_rating += 0.2; // this is the monthly increase
+            else if (nationRelation.Status == NATION_FRIENDLY)
+                nationRelation.GoodRelationDurationRating += 0.2; // this is the monthly increase
 
-            else if (nationRelation.status == NATION_ALLIANCE)
-                nationRelation.good_relation_duration_rating += 0.4;
+            else if (nationRelation.Status == NATION_ALLIANCE)
+                nationRelation.GoodRelationDurationRating += 0.4;
         }
 
         //----- increase reputation gradually -----//
 
-        if (reputation < 100)
-            change_reputation(0.5);
+        if (Reputation < 100)
+            ChangeReputation(0.5);
     }
 
-    public void next_year()
+    public void NextYear()
     {
         //------ post financial data --------//
 
-        last_year_income = cur_year_income;
-        cur_year_income = 0.0;
+        LastYearIncome = CurYearIncome;
+        CurYearIncome = 0.0;
 
-        last_year_expense = cur_year_expense;
-        cur_year_expense = 0.0;
+        LastYearExpense = CurYearExpense;
+        CurYearExpense = 0.0;
 
-        last_year_fixed_income = cur_year_fixed_income;
-        cur_year_fixed_income = 0.0;
+        LastYearFixedIncome = CurYearFixedIncome;
+        CurYearFixedIncome = 0.0;
 
-        last_year_fixed_expense = cur_year_fixed_expense;
-        cur_year_fixed_expense = 0.0;
+        LastYearFixedExpense = CurYearFixedExpense;
+        CurYearFixedExpense = 0.0;
 
-        last_year_profit = cur_year_profit;
-        cur_year_profit = 0.0;
+        LastYearProfit = CurYearProfit;
+        CurYearProfit = 0.0;
 
-        last_year_cheat = cur_year_cheat;
-        cur_year_cheat = 0.0;
+        LastYearCheat = CurYearCheat;
+        CurYearCheat = 0.0;
 
         //------ post income & expense breakdown ------//
 
         for (int i = 0; i < INCOME_TYPE_COUNT; i++)
         {
-            last_year_income_array[i] = cur_year_income_array[i];
-            cur_year_income_array[i] = 0.0;
+            LastYearIncomes[i] = CurYearIncomes[i];
+            CurYearIncomes[i] = 0.0;
         }
 
         for (int i = 0; i < EXPENSE_TYPE_COUNT; i++)
         {
-            last_year_expense_array[i] = cur_year_expense_array[i];
-            cur_year_expense_array[i] = 0.0;
+            LastYearExpenses[i] = CurYearExpenses[i];
+            CurYearExpenses[i] = 0.0;
         }
 
         //------ post good change data ------//
 
-        last_year_food_in = cur_year_food_in;
-        cur_year_food_in = 0.0;
+        LastYearFoodIn = CurYearFoodIn;
+        CurYearFoodIn = 0.0;
 
-        last_year_food_out = cur_year_food_out;
-        cur_year_food_out = 0.0;
+        LastYearFoodOut = CurYearFoodOut;
+        CurYearFoodOut = 0.0;
 
-        last_year_food_change = cur_year_food_change;
-        cur_year_food_change = 0.0;
+        LastYearFoodChange = CurYearFoodChange;
+        CurYearFoodChange = 0.0;
 
         //---------- post imports ----------//
 
         for (int i = 0; i < GameConstants.MAX_NATION; i++)
         {
-            NationRelation nationRelation = relation_array[i];
+            NationRelation nationRelation = NationRelations[i];
             for (int j = 0; j < IMPORT_TYPE_COUNT; j++)
             {
-                nationRelation.last_year_import[j] = nationRelation.cur_year_import[j];
-                nationRelation.cur_year_import[j] = 0.0;
+                nationRelation.LastYearImport[j] = nationRelation.CurYearImport[j];
+                nationRelation.CurYearImport[j] = 0.0;
             }
         }
 
         //--------- post reputation ----------//
 
-        last_year_reputation_change = cur_year_reputation_change;
-        cur_year_reputation_change = 0.0;
+        LastYearReputationChange = CurYearReputationChange;
+        CurYearReputationChange = 0.0;
     }
 
-    public void add_income(int incomeType, double incomeAmt, bool fixedIncome = false)
+    public void AddIncome(int incomeType, double incomeAmt, bool fixedIncome = false)
     {
-        cash += incomeAmt;
+        Cash += incomeAmt;
 
-        cur_year_income_array[incomeType] += incomeAmt;
+        CurYearIncomes[incomeType] += incomeAmt;
 
-        cur_year_income += incomeAmt;
-        cur_year_profit += incomeAmt;
+        CurYearIncome += incomeAmt;
+        CurYearProfit += incomeAmt;
 
         if (fixedIncome)
-            cur_year_fixed_income += incomeAmt;
+            CurYearFixedIncome += incomeAmt;
     }
 
-    public void add_expense(int expenseType, double expenseAmt, bool fixedExpense = false)
+    public void AddExpense(int expenseType, double expenseAmt, bool fixedExpense = false)
     {
-        cash -= expenseAmt;
+        Cash -= expenseAmt;
 
-        cur_year_expense_array[expenseType] += expenseAmt;
+        CurYearExpenses[expenseType] += expenseAmt;
 
-        cur_year_expense += expenseAmt;
-        cur_year_profit -= expenseAmt;
+        CurYearExpense += expenseAmt;
+        CurYearProfit -= expenseAmt;
 
         if (fixedExpense)
-            cur_year_fixed_expense += expenseAmt;
+            CurYearFixedExpense += expenseAmt;
     }
 
-    public void change_reputation(double changeLevel)
+    public void ChangeReputation(double changeLevel)
     {
         //--- reputation increase more slowly when it is close to 100 ----//
 
-        if (changeLevel > 0.0 && reputation > 0.0)
-            changeLevel = changeLevel * (150.0 - reputation) / 150.0;
+        if (changeLevel > 0.0 && Reputation > 0.0)
+            changeLevel = changeLevel * (150.0 - Reputation) / 150.0;
 
         //-----------------------------------------------//
 
-        reputation += changeLevel;
+        Reputation += changeLevel;
 
-        if (reputation > 100.0)
-            reputation = 100.0;
+        if (Reputation > 100.0)
+            Reputation = 100.0;
 
-        if (reputation < -100.0)
-            reputation = -100.0;
+        if (Reputation < -100.0)
+            Reputation = -100.0;
 
         //------ update cur_year_reputation_change ------//
 
-        cur_year_reputation_change += changeLevel;
+        CurYearReputationChange += changeLevel;
     }
 
-    public void add_food(double foodToAdd)
+    public void AddFood(double foodToAdd)
     {
-        food += foodToAdd;
+        Food += foodToAdd;
 
-        cur_year_food_in += foodToAdd;
-        cur_year_food_change += foodToAdd;
+        CurYearFoodIn += foodToAdd;
+        CurYearFoodChange += foodToAdd;
     }
 
-    public void consume_food(double foodConsumed)
+    public void ConsumeFood(double foodConsumed)
     {
-        food -= foodConsumed;
+        Food -= foodConsumed;
 
-        cur_year_food_out += foodConsumed;
-        cur_year_food_change -= foodConsumed;
+        CurYearFoodOut += foodConsumed;
+        CurYearFoodChange -= foodConsumed;
     }
 
-    public void import_goods(int importType, int importNationRecno, double importAmt)
+    public void ImportGoods(int importType, int importNationRecno, double importAmt)
     {
-        if (importNationRecno == nation_recno)
+        if (importNationRecno == NationId)
             return;
 
-        NationRelation nationRelation = get_relation(importNationRecno);
+        NationRelation nationRelation = GetRelation(importNationRecno);
 
-        nationRelation.cur_year_import[importType] += importAmt;
-        nationRelation.cur_year_import[IMPORT_TOTAL] += importAmt;
+        nationRelation.CurYearImport[importType] += importAmt;
+        nationRelation.CurYearImport[IMPORT_TOTAL] += importAmt;
 
-        add_expense(EXPENSE_IMPORTS, importAmt, true);
-        NationArray[importNationRecno].add_income(INCOME_EXPORTS, importAmt, true);
+        AddExpense(EXPENSE_IMPORTS, importAmt, true);
+        NationArray[importNationRecno].AddIncome(INCOME_EXPORTS, importAmt, true);
     }
 
-    public void give_tribute(int toNationRecno, int tributeAmt)
+    public void GiveTribute(int toNationRecno, int tributeAmt)
     {
         Nation toNation = NationArray[toNationRecno];
 
-        add_expense(EXPENSE_TRIBUTE, tributeAmt);
+        AddExpense(EXPENSE_TRIBUTE, tributeAmt);
 
-        toNation.add_income(INCOME_TRIBUTE, tributeAmt);
+        toNation.AddIncome(INCOME_TRIBUTE, tributeAmt);
 
-        NationRelation nationRelation = get_relation(toNationRecno);
+        NationRelation nationRelation = GetRelation(toNationRecno);
 
-        nationRelation.last_give_gift_date = Info.GameDate;
-        nationRelation.total_given_gift_amount += tributeAmt;
+        nationRelation.LastGiveGiftDate = Info.GameDate;
+        nationRelation.TotalGivenGiftAmount += tributeAmt;
 
         //---- set the last rejected date so it won't request or give again soon ----//
 
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1] = default(DateTime);
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_AID - 1] = default(DateTime);
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1] = default(DateTime);
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_TRIBUTE - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_AID - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_DEMAND_AID - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TRIBUTE - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_DEMAND_TRIBUTE - 1] = default(DateTime);
 
-        NationRelation nationRelation2 = toNation.get_relation(nation_recno);
+        NationRelation nationRelation2 = toNation.GetRelation(NationId);
 
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1] = default(DateTime);
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_AID - 1] = default(DateTime);
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1] = default(DateTime);
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_TRIBUTE - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_GIVE_AID - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_DEMAND_AID - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_GIVE_TRIBUTE - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_DEMAND_TRIBUTE - 1] = default(DateTime);
     }
 
-    public void give_tech(int toNationRecno, int techId, int techVersion)
+    public void GiveTech(int toNationRecno, int techId, int techVersion)
     {
         Nation toNation = NationArray[toNationRecno];
 
@@ -1412,151 +1408,151 @@ public class NationBase : IIdObject
         if (curVersion < techVersion)
             TechRes[techId].set_nation_tech_level(toNationRecno, techVersion);
 
-        NationRelation nationRelation = get_relation(toNationRecno);
+        NationRelation nationRelation = GetRelation(toNationRecno);
 
-        nationRelation.last_give_gift_date = Info.GameDate;
-        nationRelation.total_given_gift_amount += (techVersion - curVersion) * 500; // one version level is worth $500
+        nationRelation.LastGiveGiftDate = Info.GameDate;
+        nationRelation.TotalGivenGiftAmount += (techVersion - curVersion) * 500; // one version level is worth $500
 
         //---- set the last rejected date so it won't request or give again soon ----//
 
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1] = default(DateTime);
-        nationRelation.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_TECH - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TECH - 1] = default(DateTime);
+        nationRelation.LastTalkRejectDates[TalkMsg.TALK_DEMAND_TECH - 1] = default(DateTime);
 
-        NationRelation nationRelation2 = toNation.get_relation(nation_recno);
+        NationRelation nationRelation2 = toNation.GetRelation(NationId);
 
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1] = default(DateTime);
-        nationRelation2.last_talk_reject_date_array[TalkMsg.TALK_DEMAND_TECH - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_GIVE_TECH - 1] = default(DateTime);
+        nationRelation2.LastTalkRejectDates[TalkMsg.TALK_DEMAND_TECH - 1] = default(DateTime);
     }
 
-    public void set_auto_collect_tax_loyalty(int loyaltyLevel)
+    public void SetAutoCollectTaxLoyalty(int loyaltyLevel)
     {
-        auto_collect_tax_loyalty = loyaltyLevel;
+        AutoCollectTaxLoyalty = loyaltyLevel;
 
-        if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
+        if (loyaltyLevel != 0 && AutoGrantLoyalty >= AutoCollectTaxLoyalty)
         {
-            auto_grant_loyalty = auto_collect_tax_loyalty - 10;
+            AutoGrantLoyalty = AutoCollectTaxLoyalty - 10;
         }
     }
 
-    public void set_auto_grant_loyalty(int loyaltyLevel)
+    public void SetAutoGrantLoyalty(int loyaltyLevel)
     {
-        auto_grant_loyalty = loyaltyLevel;
+        AutoGrantLoyalty = loyaltyLevel;
 
-        if (loyaltyLevel != 0 && auto_grant_loyalty >= auto_collect_tax_loyalty)
+        if (loyaltyLevel != 0 && AutoGrantLoyalty >= AutoCollectTaxLoyalty)
         {
-            auto_collect_tax_loyalty = auto_grant_loyalty + 10;
+            AutoCollectTaxLoyalty = AutoGrantLoyalty + 10;
 
-            if (auto_collect_tax_loyalty > 100)
-                auto_collect_tax_loyalty = 0; // disable auto collect tax if it's over 100
+            if (AutoCollectTaxLoyalty > 100)
+                AutoCollectTaxLoyalty = 0; // disable auto collect tax if it's over 100
         }
     }
 
     // whether the nation has any people (but not counting the king). If no, then the nation is going to end.
-    public bool has_people()
+    public bool HasPeople()
     {
-        return all_population() > 0;
+        return AllPopulation() > 0;
     }
 
-    public void being_attacked(int attackNationRecno)
+    public void BeingAttacked(int attackNationRecno)
     {
-        if (NationArray.IsDeleted(attackNationRecno) || attackNationRecno == nation_recno)
+        if (NationArray.IsDeleted(attackNationRecno) || attackNationRecno == NationId)
             return;
 
         //--- if it is an accidential attack (e.g. bullets attack with spreading damages) ---//
 
         Nation attackNation = NationArray[attackNationRecno];
 
-        if (!attackNation.get_relation(nation_recno).should_attack)
+        if (!attackNation.GetRelation(NationId).ShouldAttack)
             return;
 
         //--- check if there a treaty between these two nations ---//
 
-        NationRelation nationRelation = get_relation(attackNationRecno);
+        NationRelation nationRelation = GetRelation(attackNationRecno);
 
-        if (nationRelation.status != NATION_HOSTILE)
+        if (nationRelation.Status != NATION_HOSTILE)
         {
             //--- if this nation (the one being attacked) has a higher than 0 reputation, the attacker's reputation will decrease ---//
 
-            if (reputation > 0)
-                attackNation.change_reputation(-reputation * 40.0 / 100.0);
+            if (Reputation > 0)
+                attackNation.ChangeReputation(-Reputation * 40.0 / 100.0);
 
             // how many times this nation has started a war with us, the more the times the worse this nation is.
-            nationRelation.started_war_on_us_count++;
+            nationRelation.StartedWarOnUsCount++;
 
-            if (nationRelation.status == NATION_ALLIANCE || nationRelation.status == NATION_FRIENDLY)
+            if (nationRelation.Status == NATION_ALLIANCE || nationRelation.Status == NATION_FRIENDLY)
             {
                 // the attacking nation abruptly terminates the treaty with us, not we terminate the treaty with them,
                 // so attackNation.end_treaty() should be called instead of end_treaty()
-                attackNation.end_treaty(nation_recno, NATION_HOSTILE);
+                attackNation.EndTreaty(NationId, NATION_HOSTILE);
             }
             else
             {
-                set_relation_status(attackNationRecno, NATION_HOSTILE);
+                SetRelationStatus(attackNationRecno, NATION_HOSTILE);
             }
         }
 
         //---- reset the inter-national peace days counter ----//
 
-        NationArray.nation_peace_days = 0;
+        NationArray.NationPeaceDays = 0;
     }
 
-    public void civilian_killed(int civilianRaceId, bool isAttacker, int penaltyType)
+    public void CivilianKilled(int civilianRaceId, bool isAttacker, int penaltyType)
     {
         if (isAttacker)
         {
             if (penaltyType == 0) // mobile civilian
             {
-                change_reputation(-0.3);
+                ChangeReputation(-0.3);
             }
             else if (penaltyType == 1) // town defender
             {
-                change_all_people_loyalty(-1.0, civilianRaceId);
-                change_reputation(-1.0);
+                ChangeAllPeopleLoyalty(-1.0, civilianRaceId);
+                ChangeReputation(-1.0);
             }
             else if (penaltyType == 2) // town resident
             {
-                change_all_people_loyalty(-2.0, civilianRaceId);
-                change_reputation(-1.0);
+                ChangeAllPeopleLoyalty(-2.0, civilianRaceId);
+                ChangeReputation(-1.0);
             }
             else if (penaltyType == 3) // trader
             {
-                change_all_people_loyalty(-2.0, civilianRaceId);
-                change_reputation(-10.0);
+                ChangeAllPeopleLoyalty(-2.0, civilianRaceId);
+                ChangeReputation(-10.0);
             }
         }
         else // is casualty
         {
             if (penaltyType == 0) // mobile civilian
             {
-                change_reputation(-0.3);
+                ChangeReputation(-0.3);
             }
             else if (penaltyType == 1) // town defender
             {
-                change_reputation(-0.3);
+                ChangeReputation(-0.3);
             }
             else if (penaltyType == 2) // town resident
             {
-                change_all_people_loyalty(-1.0, civilianRaceId);
-                change_reputation(-0.3);
+                ChangeAllPeopleLoyalty(-1.0, civilianRaceId);
+                ChangeReputation(-0.3);
             }
             else if (penaltyType == 3) // trader
             {
-                change_all_people_loyalty(-0.6, civilianRaceId);
-                change_reputation(-2.0);
+                ChangeAllPeopleLoyalty(-0.6, civilianRaceId);
+                ChangeReputation(-2.0);
             }
         }
     }
 
-    public void change_all_people_loyalty(double loyaltyChange, int raceId = 0)
+    public void ChangeAllPeopleLoyalty(double loyaltyChange, int raceId = 0)
     {
         //---- update loyalty of units in this nation ----//
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.SpriteId == king_unit_recno)
+            if (unit.SpriteId == KingUnitId)
                 continue;
 
-            if (unit.NationId != nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             //--------- update loyalty change ----------//
@@ -1569,7 +1565,7 @@ public class NationBase : IIdObject
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
+            if (firm.NationId != NationId)
                 continue;
 
             //------ process military camps and seat of power -------//
@@ -1588,7 +1584,7 @@ public class NationBase : IIdObject
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId != nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             //--------------------------------------//
@@ -1611,98 +1607,98 @@ public class NationBase : IIdObject
         }
     }
 
-    public void form_friendly_treaty(int nationRecno)
+    public void FormFriendlyTreaty(int nationRecno)
     {
-        set_relation_status(nationRecno, NATION_FRIENDLY);
+        SetRelationStatus(nationRecno, NATION_FRIENDLY);
     }
 
-    public void form_alliance_treaty(int nationRecno)
+    public void FormAllianceTreaty(int nationRecno)
     {
-        set_relation_status(nationRecno, NATION_ALLIANCE);
+        SetRelationStatus(nationRecno, NATION_ALLIANCE);
 
         //--- allied nations are oblied to trade with each other ---//
 
-        set_trade_treaty(nationRecno, true);
+        SetTradeTreaty(nationRecno, true);
 
         //------ set is_allied_with_player -------//
 
-        if (nationRecno == NationArray.player_recno)
-            is_allied_with_player = true;
+        if (nationRecno == NationArray.PlayerId)
+            IsAlliedWithPlayer = true;
 
-        if (nation_recno == NationArray.player_recno)
-            NationArray[nationRecno].is_allied_with_player = true;
+        if (NationId == NationArray.PlayerId)
+            NationArray[nationRecno].IsAlliedWithPlayer = true;
     }
 
-    public void end_treaty(int withNationRecno, int newStatus)
+    public void EndTreaty(int withNationRecno, int newStatus)
     {
         //----- decrease reputation when terminating a treaty -----//
 
         Nation withNation = NationArray[withNationRecno];
 
-        if (withNation.reputation > 0)
+        if (withNation.Reputation > 0)
         {
-            int curStatus = get_relation_status(withNationRecno);
+            int curStatus = GetRelationStatus(withNationRecno);
 
             if (curStatus == TalkMsg.TALK_END_FRIENDLY_TREATY)
-                change_reputation(-withNation.reputation * 10.0 / 100.0);
+                ChangeReputation(-withNation.Reputation * 10.0 / 100.0);
             else
-                change_reputation(-withNation.reputation * 20.0 / 100.0);
+                ChangeReputation(-withNation.Reputation * 20.0 / 100.0);
         }
 
         //------- reset good_relation_duration_rating -----//
 
         if (newStatus <= NATION_NEUTRAL)
         {
-            get_relation(withNationRecno).good_relation_duration_rating = 0.0;
-            withNation.get_relation(nation_recno).good_relation_duration_rating = 0.0;
+            GetRelation(withNationRecno).GoodRelationDurationRating = 0.0;
+            withNation.GetRelation(NationId).GoodRelationDurationRating = 0.0;
         }
 
         //------- set new relation status --------//
 
-        set_relation_status(withNationRecno, newStatus);
+        SetRelationStatus(withNationRecno, newStatus);
 
         //------ set is_allied_with_player -------//
 
-        if (withNationRecno == NationArray.player_recno)
-            is_allied_with_player = false;
+        if (withNationRecno == NationArray.PlayerId)
+            IsAlliedWithPlayer = false;
 
-        if (nation_recno == NationArray.player_recno)
-            NationArray[withNationRecno].is_allied_with_player = false;
+        if (NationId == NationArray.PlayerId)
+            NationArray[withNationRecno].IsAlliedWithPlayer = false;
     }
 
-    public void surrender(int toNationRecno)
+    public void Surrender(int toNationRecno)
     {
-        NewsArray.nation_surrender(nation_recno, toNationRecno);
+        NewsArray.nation_surrender(NationId, toNationRecno);
 
         //---- the king demote himself to General first ----//
 
-        if (king_unit_recno != 0)
+        if (KingUnitId != 0)
         {
-            UnitArray[king_unit_recno].SetRank(Unit.RANK_GENERAL);
-            king_unit_recno = 0;
+            UnitArray[KingUnitId].SetRank(Unit.RANK_GENERAL);
+            KingUnitId = 0;
         }
 
         //------- if the player surrenders --------//
 
-        if (nation_recno == NationArray.player_recno)
+        if (NationId == NationArray.PlayerId)
             Sys.Instance.EndGame(0, 1, toNationRecno);
 
         //--- hand over the entire nation to another nation ---//
 
-        hand_over_to(toNationRecno);
+        HandOverTo(toNationRecno);
     }
 
-    public void defeated()
+    public void Defeated()
     {
         //---- if the defeated nation is the player's nation ----//
 
-        if (nation_recno == NationArray.player_recno)
+        if (NationId == NationArray.PlayerId)
         {
             Sys.Instance.EndGame(0, 1); // the player lost the game 
         }
         else // AI and remote players 
         {
-            NewsArray.nation_destroyed(nation_recno);
+            NewsArray.nation_destroyed(NationId);
         }
 
         //---- delete this nation from NationArray ----//
@@ -1711,36 +1707,36 @@ public class NationBase : IIdObject
         NationArray.DeleteNation((Nation)this);
     }
 
-    public void check_win()
+    public void CheckWin()
     {
-        bool hasWon = goal_destroy_nation_achieved() ||
-                      goal_destroy_monster_achieved() ||
-                      goal_population_achieved() ||
-                      goal_economic_score_achieved() ||
-                      goal_total_score_achieved();
+        bool hasWon = GoalDestroyNationAchieved() ||
+                      GoalDestroyMonsterAchieved() ||
+                      GoalPopulationAchieved() ||
+                      GoalEconomicScoreAchieved() ||
+                      GoalTotalScoreAchieved();
 
         if (!hasWon)
             return;
 
         // if the player achieves the goal, the player wins, if one of the other kingdoms achieves the goal, it wins.
-        Sys.Instance.EndGame(nation_recno, 0);
+        Sys.Instance.EndGame(NationId, 0);
     }
 
-    public void check_lose()
+    public void CheckLose()
     {
         //---- if the king of this nation is dead and it has no people left ----//
 
-        if (king_unit_recno == 0 && !has_people())
-            defeated();
+        if (KingUnitId == 0 && !HasPeople())
+            Defeated();
     }
 
-    public bool revealed_by_phoenix(int xLoc, int yLoc)
+    public bool RevealedByPhoenix(int xLoc, int yLoc)
     {
         int effectiveRange = UnitRes[UnitConstants.UNIT_PHOENIX].visual_range;
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.UnitType == UnitConstants.UNIT_PHOENIX && unit.NationId == nation_recno)
+            if (unit.UnitType == UnitConstants.UNIT_PHOENIX && unit.NationId == NationId)
             {
                 if (Misc.points_distance(xLoc, yLoc, unit.NextLocX, unit.NextLocY) <= effectiveRange)
                 {
@@ -1752,7 +1748,7 @@ public class NationBase : IIdObject
         return false;
     }
 
-    private int succeed_king_loyalty_change(int thisRaceId, int newKingRaceId, int oldKingRaceId)
+    private int SucceedKingLoyaltyChange(int thisRaceId, int newKingRaceId, int oldKingRaceId)
     {
         //----- the races of the new and old kings are different ----//
 
@@ -1774,19 +1770,19 @@ public class NationBase : IIdObject
 
     public string FoodString()
     {
-        int foodChange = (int)food_change_365days();
-        return (int)food + " (" + (foodChange >= 0 ? "+" : "-") + Math.Abs(foodChange) + ")";
+        int foodChange = (int)FoodChange365Days();
+        return (int)Food + " (" + (foodChange >= 0 ? "+" : "-") + Math.Abs(foodChange) + ")";
     }
 
     public string CashString()
     {
-        int cashChange = (int)profit_365days();
-        return (int)cash + " (" + (cashChange >= 0 ? "+" : "-") + Math.Abs(cashChange) + ")";
+        int cashChange = (int)Profit365Days();
+        return (int)Cash + " (" + (cashChange >= 0 ? "+" : "-") + Math.Abs(cashChange) + ")";
     }
 
     public string ReputationString()
     {
-        int reputationChange = (int)reputation_change_365days();
-        return (int)reputation + " (" + (reputationChange >= 0 ? "+" : "-") + Math.Abs(reputationChange) + ")";
+        int reputationChange = (int)ReputationChange365Days();
+        return (int)Reputation + " (" + (reputationChange >= 0 ? "+" : "-") + Math.Abs(reputationChange) + ")";
     }
 }

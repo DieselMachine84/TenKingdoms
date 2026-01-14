@@ -146,7 +146,7 @@ public class Spy : IIdObject
 
 		//----------- visit map (for fog of war) ----------//
 
-		if (TrueNationId == NationArray.player_recno)
+		if (TrueNationId == NationArray.PlayerId)
 		{
 			if (SpyPlace == SPY_TOWN)
 			{
@@ -321,7 +321,7 @@ public class Spy : IIdObject
 
 		if (nation.Cash > 0)
 		{
-			nation.add_expense(NationBase.EXPENSE_SPY, GameConstants.SPY_YEAR_SALARY / 365.0, true);
+			nation.AddExpense(NationBase.EXPENSE_SPY, GameConstants.SPY_YEAR_SALARY / 365.0, true);
 		}
 		else // decrease loyalty if the nation cannot pay the unit
 		{
@@ -349,7 +349,7 @@ public class Spy : IIdObject
 			if (nation.Food > 0)
 			{
 				// TODO check that spies consume food correctly
-				nation.consume_food(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
+				nation.ConsumeFood(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
 			}
 			else
 			{
@@ -372,9 +372,9 @@ public class Spy : IIdObject
 
 		Nation nation = NationArray[CloakedNationId];
 
-		int nationScore = (int)nation.reputation; // reputation can be negative
+		int nationScore = (int)nation.Reputation; // reputation can be negative
 
-		if (RaceRes.is_same_race(nation.race_id, RaceId))
+		if (RaceRes.is_same_race(nation.RaceId, RaceId))
 			nationScore += 30;
 
 		if (SpyLoyalty < nationScore || SpyLoyalty == 0)
@@ -506,7 +506,7 @@ public class Spy : IIdObject
 			if (!FirmRes[firm.FirmType].LiveInTown) // if the workers of the firm do not live in towns
 			{
 				int unitLeadership = unit.Skill.SkillLevel;
-				int nationReputation = (int)NationArray[TrueNationId].reputation;
+				int nationReputation = (int)NationArray[TrueNationId].Reputation;
 
 				for (int i = 0; i < firm.Workers.Count; i++)
 				{
@@ -540,7 +540,7 @@ public class Spy : IIdObject
 
 			//--------- add news message --------//
 
-			if (firm.NationId == NationArray.player_recno)
+			if (firm.NationId == NationArray.PlayerId)
 				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
@@ -558,7 +558,7 @@ public class Spy : IIdObject
 
 			//--------- add news message --------//
 
-			if (firm.NationId == NationArray.player_recno)
+			if (firm.NationId == NationArray.PlayerId)
 				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
@@ -625,7 +625,7 @@ public class Spy : IIdObject
 
 		ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 
-		NationArray[TrueNationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
+		NationArray[TrueNationId].AddExpense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 	}
 
 	public void SetExposed(int remoteAction)
@@ -643,8 +643,8 @@ public class Spy : IIdObject
 
 	public void ThinkBecomeKing()
 	{
-		int hisNationPower = NationArray[CloakedNationId].overall_rating;
-		int parentNationPower = NationArray[TrueNationId].overall_rating;
+		int hisNationPower = NationArray[CloakedNationId].OverallRating;
+		int parentNationPower = NationArray[TrueNationId].OverallRating;
 
 		//--- if his nation is more power than the player's nation, the chance of handing his nation
 		//--- over to his parent nation will be low unless the loyalty is very high ---//
@@ -653,11 +653,11 @@ public class Spy : IIdObject
 
 		// never will a spy take over the player's nation
 		// TODO remove IsAI() check?
-		if (SpyLoyalty >= acceptLoyalty && NationArray[CloakedNationId].is_ai())
+		if (SpyLoyalty >= acceptLoyalty && NationArray[CloakedNationId].IsAI())
 		{
 			//------ hand his nation over to his parent nation ------//
 
-			NationArray[CloakedNationId].surrender(TrueNationId);
+			NationArray[CloakedNationId].Surrender(TrueNationId);
 		}
 		else //--- betray his parent nation and rule the nation himself ---//
 		{
@@ -767,9 +767,9 @@ public class Spy : IIdObject
 		Nation ownNation = NationArray[TrueNationId];
 
 		//TODO DieselMachine (int)ownNation.reputation/2
-		int targetLoyalty = 50 + (int)ownNation.reputation / 4 + ownNation.overall_rank_rating() / 4;
+		int targetLoyalty = 50 + (int)ownNation.Reputation / 4 + ownNation.OverallRankRating() / 4;
 
-		if (RaceId == ownNation.race_id)
+		if (RaceId == ownNation.RaceId)
 			targetLoyalty += 20;
 
 		targetLoyalty = Math.Min(targetLoyalty, 100);
@@ -840,7 +840,7 @@ public class Spy : IIdObject
 
 		if (SpyPlace == SPY_FIRM)
 		{
-			if (TrueNationId == NationArray.player_recno)
+			if (TrueNationId == NationArray.PlayerId)
 			{
 				if (!FirmArray.IsDeleted(SpyPlaceId))
 				{
@@ -868,7 +868,7 @@ public class Spy : IIdObject
 
 		if (SpyPlace == SPY_FIRM)
 		{
-			if (TrueNationId == NationArray.player_recno)
+			if (TrueNationId == NationArray.PlayerId)
 				FirmArray[SpyPlaceId].PlayerSpyCount++;
 
 			CloakedNationId = FirmArray[SpyPlaceId].NationId;
@@ -997,7 +997,7 @@ public class Spy : IIdObject
 
 			//--- if the unit assassinated is the player's unit ---//
 
-			if (targetUnit.NationId == NationArray.player_recno)
+			if (targetUnit.NationId == NationArray.PlayerId)
 				NewsArray.unit_assassinated(targetUnit.SpriteId, spyKillFlag);
 
 			firm.KillOverseer();
@@ -1128,7 +1128,7 @@ public class Spy : IIdObject
 	{
 		//-------- add news --------//
 
-		if (TrueNationId == NationArray.player_recno || CloakedNationId == NationArray.player_recno)
+		if (TrueNationId == NationArray.PlayerId || CloakedNationId == NationArray.PlayerId)
 		{
 			NewsArray.spy_killed(SpyId);
 			SECtrl.immediate_sound("SPY_DIE");
@@ -1136,7 +1136,7 @@ public class Spy : IIdObject
 
 		//--- If a spy is caught, the spy's nation's reputation wil decrease ---//
 
-		NationArray[TrueNationId].change_reputation(-GameConstants.SPY_KILLED_REPUTATION_DECREASE);
+		NationArray[TrueNationId].ChangeReputation(-GameConstants.SPY_KILLED_REPUTATION_DECREASE);
 
 		int hostNationId = 0;
 		bool mobileUnit = false;
@@ -1191,9 +1191,9 @@ public class Spy : IIdObject
 
 		//--- If the spy is in an AI town or firm, the AI's relationship towards the spy's owner nation will decrease ---//
 
-		if (hostNationId != 0 && NationArray[hostNationId].is_ai())
+		if (hostNationId != 0 && NationArray[hostNationId].IsAI())
 		{
-			NationArray[hostNationId].change_ai_relation_level(TrueNationId, -5);
+			NationArray[hostNationId].ChangeAIRelationLevel(TrueNationId, -5);
 		}
 
 		//---- delete the spy from spy_array ----//
@@ -1241,7 +1241,7 @@ public class Spy : IIdObject
 
 		if (town.NationId == 0)
 		{
-			if (trueNation.reputation > 0)
+			if (trueNation.Reputation > 0)
 				ActionMode = SPY_SOW_DISSENT;
 
 			//--- if the resistance has already drop low enough, the spy no longer needs to be in the town ---//
@@ -1272,7 +1272,7 @@ public class Spy : IIdObject
 			}
 			else
 			{
-				if (trueNation.reputation > 0 && Misc.Random(1) == 0) // 50% chance of sowing dissents.
+				if (trueNation.Reputation > 0 && Misc.Random(1) == 0) // 50% chance of sowing dissents.
 					ActionMode = SPY_SOW_DISSENT;
 				else
 					ActionMode = SPY_IDLE;
@@ -1296,11 +1296,11 @@ public class Spy : IIdObject
 		if (CloakedNationId != 0)
 		{
 			Nation cloakedNation = NationArray[CloakedNationId];
-			isHumanPlayer = !cloakedNation.is_ai();
+			isHumanPlayer = !cloakedNation.IsAI();
 		}
 
 		Nation trueNation = NationArray[TrueNationId];
-		if (isHumanPlayer || trueNation.get_relation_status(CloakedNationId) != NationBase.NATION_ALLIANCE)
+		if (isHumanPlayer || trueNation.GetRelationStatus(CloakedNationId) != NationBase.NATION_ALLIANCE)
 		{
 			//-------- try to capturing the firm --------//
 
@@ -1321,7 +1321,7 @@ public class Spy : IIdObject
 		//------ think about changing spy mode ----//
 
 		// 1/10 chance to set it to idle to prevent from being caught
-		else if (trueNation.reputation < 0 || Misc.Random(3) == 0)
+		else if (trueNation.Reputation < 0 || Misc.Random(3) == 0)
 		{
 			ActionMode = SPY_IDLE;
 		}
@@ -1552,8 +1552,8 @@ public class Spy : IIdObject
 			//
 			//-----------------------------------------------------------//
 
-			if (trueNation.get_relation_status(attackerUnit.NationId) != NationBase.NATION_HOSTILE &&
-			    trueNation.get_relation_status(CloakedNationId) == NationBase.NATION_HOSTILE)
+			if (trueNation.GetRelationStatus(attackerUnit.NationId) != NationBase.NATION_HOSTILE &&
+			    trueNation.GetRelationStatus(CloakedNationId) == NationBase.NATION_HOSTILE)
 			{
 				if (SpySkill > 50 - trueNation.pref_spy / 10 ||
 				    spyUnit.HitPoints < spyUnit.MaxHitPoints * (100.0 - trueNation.pref_military_courage / 2.0) / 100.0)

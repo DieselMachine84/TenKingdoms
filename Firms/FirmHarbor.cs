@@ -195,7 +195,7 @@ public class FirmHarbor : Firm
 
 		BuildUnitType = BuildQueue[0];
 		BuildQueue.RemoveAt(0);
-		nation.add_expense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitType].build_cost);
+		nation.AddExpense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitType].build_cost);
 
 		_startBuildFrameNumber = Sys.Instance.FrameNumber;
 	}
@@ -382,7 +382,7 @@ public class FirmHarbor : Firm
 		if (ownNation.Cash < 2000) // don't build if the cash is too low
 			return;
 
-		if (ownNation.true_profit_365days() < (50 - ownNation.pref_use_marine) * 20) //	-1000 to +1000
+		if (ownNation.TrueProfit365Days() < (50 - ownNation.pref_use_marine) * 20) //	-1000 to +1000
 			return;
 
 		//----- think about building markets ------//
@@ -397,7 +397,7 @@ public class FirmHarbor : Firm
 
 		if (ownNation.pref_military_development / 2 +
 		    (LinkedFirms.Count + ownNation.ai_ship_array.Count + Ships.Count) * 10 +
-		    ownNation.total_jobless_population * 2 > 150)
+		    ownNation.TotalJoblessPopulation * 2 > 150)
 		{
 			ai_build_firm(FIRM_CAMP);
 		}

@@ -157,12 +157,12 @@ public abstract partial class Unit : Sprite
 		else //---- init non-human unit ----//
 		{
 			if (NationId != 0)
-				NameId = ++NationArray[NationId].last_unit_name_id_array[UnitType - 1];
+				NameId = ++NationArray[NationId].LastUnitNameIds[UnitType - 1];
 			else
 				NameId = 0;
 		}
 
-		AIUnit = (NationId != 0 && NationArray[NationId].nation_type == NationBase.NATION_AI);
+		AIUnit = (NationId != 0 && NationArray[NationId].NationType == NationBase.NATION_AI);
 		AIActionId = 0;
 
 		ActionMisc = UnitConstants.ACTION_MISC_STOP;
@@ -371,7 +371,7 @@ public abstract partial class Unit : Sprite
 			}
 		}
 
-		if (IsOwn() || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 		{
 			World.Unveil(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1);
 			World.Visit(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1,
@@ -572,7 +572,7 @@ public abstract partial class Unit : Sprite
 		{
 			SpyId = worker.SpyId;
 			Spy spy = SpyArray[SpyId];
-			AIUnit = spy.CloakedNationId != 0 && NationArray[spy.CloakedNationId].is_ai();
+			AIUnit = spy.CloakedNationId != 0 && NationArray[spy.CloakedNationId].IsAI();
 			SetName(spy.NameId);
 			spy.SetPlace(Spy.SPY_MOBILE, SpriteId);
 		}
@@ -594,7 +594,7 @@ public abstract partial class Unit : Sprite
 
 		if (Config.fog_of_war)
 		{
-			if (IsOwn() || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+			if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 			{
 				World.Visit(NextLocX, NextLocY, NextLocX + SpriteInfo.LocWidth - 1, NextLocY + SpriteInfo.LocHeight - 1,
 					UnitRes[UnitType].visual_range, UnitRes[UnitType].visual_extend);
@@ -2487,7 +2487,7 @@ public abstract partial class Unit : Sprite
 		if (CurPower > MaxPower)
 			CurPower = MaxPower;
 
-		if (Config.king_undie_flag && Rank == RANK_KING && NationId != 0 && !NationArray[NationId].is_ai())
+		if (Config.king_undie_flag && Rank == RANK_KING && NationId != 0 && !NationArray[NationId].IsAI())
 			HitPoints = MaxHitPoints;
 
 		if (NationId != 0 && IsVisible())
@@ -2912,12 +2912,12 @@ public abstract partial class Unit : Sprite
 
 	public bool IsOwn()
 	{
-		return BelongsToNation(NationArray.player_recno);
+		return BelongsToNation(NationArray.PlayerId);
 	}
 
 	public bool IsOwnSpy()
 	{
-		return SpyId != 0 && SpyArray[SpyId].TrueNationId == NationArray.player_recno;
+		return SpyId != 0 && SpyArray[SpyId].TrueNationId == NationArray.PlayerId;
 	}
 
 	public bool BelongsToNation(int nationId)
@@ -2956,7 +2956,7 @@ public abstract partial class Unit : Sprite
 		if (Config.show_ai_info || IsOwn())
 			return true;
         
-		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(NextLocX, NextLocY))
+		if (NationArray.PlayerId != 0 && NationArray.Player.RevealedByPhoenix(NextLocX, NextLocY))
 			return true;
 
 		return false;
@@ -2994,7 +2994,7 @@ public abstract partial class Unit : Sprite
 			}
 
 			if (Rank == RANK_KING) // use the player name
-				result += NationArray[NationId].king_name();
+				result += NationArray[NationId].KingName();
 			else
 				result += RaceRes[RaceId].get_name(NameId);
 		}
@@ -3330,10 +3330,10 @@ public abstract partial class Unit : Sprite
 			if (nation.Cash > 0)
 			{
 				if (Rank == RANK_SOLDIER)
-					nation.add_expense(NationBase.EXPENSE_MOBILE_UNIT, GameConstants.SOLDIER_YEAR_SALARY / 365.0, true);
+					nation.AddExpense(NationBase.EXPENSE_MOBILE_UNIT, GameConstants.SOLDIER_YEAR_SALARY / 365.0, true);
 
 				if (Rank == RANK_GENERAL)
-					nation.add_expense(NationBase.EXPENSE_GENERAL, GameConstants.GENERAL_YEAR_SALARY / 365.0, true);
+					nation.AddExpense(NationBase.EXPENSE_GENERAL, GameConstants.GENERAL_YEAR_SALARY / 365.0, true);
 			}
 			else // decrease loyalty if the nation cannot pay the unit
 			{
@@ -3342,7 +3342,7 @@ public abstract partial class Unit : Sprite
 
 			if (nation.Food > 0)
 			{
-				nation.consume_food(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
+				nation.ConsumeFood(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
 			}
 			else
 			{
@@ -3363,7 +3363,7 @@ public abstract partial class Unit : Sprite
 					_ => NationBase.EXPENSE_MOBILE_UNIT
 				};
 
-				nation.add_expense(expenseType, UnitRes[UnitType].year_cost / 365.0, true);
+				nation.AddExpense(expenseType, UnitRes[UnitType].year_cost / 365.0, true);
 			}
 			else // decrease hit points if the nation cannot pay the unit
 			{
@@ -3378,7 +3378,7 @@ public abstract partial class Unit : Sprite
 
 						if (HitPoints <= 0.0)
 						{
-							if (NationId == NationArray.player_recno)
+							if (NationId == NationArray.PlayerId)
 							{
 								int unitClass = UnitRes[UnitType].unit_class;
 
@@ -3446,10 +3446,10 @@ public abstract partial class Unit : Sprite
 
 		int thisInfluence = Skill.GetSkillLevel(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
 
-		if (RaceRes.is_same_race(nation.race_id, RaceId))
+		if (RaceRes.is_same_race(nation.RaceId, RaceId))
 			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
 
-		thisInfluence += (int)(nation.reputation / 2.0);
+		thisInfluence += (int)(nation.Reputation / 2.0);
 
 		thisInfluence = Math.Min(100, thisInfluence);
 
@@ -3494,7 +3494,7 @@ public abstract partial class Unit : Sprite
 			return true; // true if either nation is independent
 
 		Nation nation = NationArray[NationId];
-		int relationStatus = nation.get_relation_status(targetNationId);
+		int relationStatus = nation.GetRelationStatus(targetNationId);
 		return relationStatus != NationBase.NATION_FRIENDLY && relationStatus != NationBase.NATION_ALLIANCE;
 	}
 
@@ -3538,7 +3538,7 @@ public abstract partial class Unit : Sprite
 
 		//---------- add news -----------//
 
-		if (NationId == NationArray.player_recno || newNationId == NationArray.player_recno)
+		if (NationId == NationArray.PlayerId || newNationId == NationArray.PlayerId)
 		{
 			//--- if this is a spy, don't display news message for betrayal as it is already displayed in Unit.SpyChangeNation() ---//
 
@@ -3558,10 +3558,10 @@ public abstract partial class Unit : Sprite
 
 			Loyalty = GameConstants.UNIT_BETRAY_LOYALTY + Misc.Random(5);
 
-			if (nation.reputation > 0)
-				ChangeLoyalty((int)nation.reputation);
+			if (nation.Reputation > 0)
+				ChangeLoyalty((int)nation.Reputation);
 
-			if (RaceRes.is_same_race(nation.race_id, RaceId))
+			if (RaceRes.is_same_race(nation.RaceId, RaceId))
 				ChangeLoyalty(30);
 
 			UpdateLoyalty(); // update target loyalty
@@ -3637,17 +3637,17 @@ public abstract partial class Unit : Sprite
 			//----- the king's race affects the general's loyalty ----//
 
 			Nation ownNation = NationArray[NationId];
-			if (ownNation.race_id == RaceId)
+			if (ownNation.RaceId == RaceId)
 				targetLoyalty += 20;
 
 			//----- the kingdom's reputation affects the general's loyalty ----//
 
-			targetLoyalty += (int)(ownNation.reputation / 4.0);
+			targetLoyalty += (int)(ownNation.Reputation / 4.0);
 
 			//--- the king's leadership also affect the general's loyalty -----//
 
-			if (ownNation.king_unit_recno != 0)
-				targetLoyalty += UnitArray[ownNation.king_unit_recno].Skill.SkillLevel / 4;
+			if (ownNation.KingUnitId != 0)
+				targetLoyalty += UnitArray[ownNation.KingUnitId].Skill.SkillLevel / 4;
 
 			//-- if the unit is rewarded less than the amount of contribution he made, he will become unhappy --//
 
@@ -3856,11 +3856,11 @@ public abstract partial class Unit : Sprite
 			{
 				//----- each nation can only build one seat of power -----//
 
-				if (RaceId > 0 && NationArray[NationId].base_count_array[RaceId - 1] == 0)
+				if (RaceId > 0 && NationArray[NationId].BaseCounts[RaceId - 1] == 0)
 				{
 					//--- if this nation has acquired the needed scroll of power ---//
 
-					return NationArray[NationId].know_base_array[RaceId - 1] != 0;
+					return NationArray[NationId].KnowBases[RaceId - 1] != 0;
 				}
 			}
 
@@ -3915,12 +3915,12 @@ public abstract partial class Unit : Sprite
 		{
 			//------ decrease reputation ------//
 
-			NationArray[TrueNationId()].change_reputation(-GameConstants.SPY_KILLED_REPUTATION_DECREASE);
+			NationArray[TrueNationId()].ChangeReputation(-GameConstants.SPY_KILLED_REPUTATION_DECREASE);
 
 			//------- add news message -------//
 
 			// display when the player's spy is revealed or the player has revealed an enemy spy
-			if (TrueNationId() == NationArray.player_recno || NationId == NationArray.player_recno)
+			if (TrueNationId() == NationArray.PlayerId || NationId == NationArray.PlayerId)
 			{
 				NewsArray.spy_killed(SpyId);
 			}
@@ -3928,7 +3928,7 @@ public abstract partial class Unit : Sprite
 		else
 		{
 			if (NationId != 0)
-				NationArray[NationId].change_reputation(-1.0);
+				NationArray[NationId].ChangeReputation(-1.0);
 		}
 
 		//----------------------------------------------//
@@ -3964,7 +3964,7 @@ public abstract partial class Unit : Sprite
 			ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 		}
 
-		NationArray[rewardNationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
+		NationArray[rewardNationId].AddExpense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 	}
 
 	public void ChangeNation(int newNationId)
@@ -4011,7 +4011,7 @@ public abstract partial class Unit : Sprite
 
 		//-------- if change to one of the existing nations ------//
 
-		AIUnit = NationId != 0 && NationArray[NationId].is_ai();
+		AIUnit = NationId != 0 && NationArray[NationId].IsAI();
 
 		//------------ update AI info --------------//
 
@@ -4113,14 +4113,14 @@ public abstract partial class Unit : Sprite
 		//---------------------------------------------------//
 
 		// only send news message if he is not the player's own spy
-		if (spy.TrueNationId != NationArray.player_recno)
+		if (spy.TrueNationId != NationArray.PlayerId)
 		{
 			if (Rank == RANK_GENERAL || UnitMode == UnitConstants.UNIT_MODE_OVERSEE ||
 			    (spy.NotifyCloakedNation && groupDefect == 0))
 			{
 				//-- if this spy's cloaked nation is the player's nation, the player will be notified --//
 
-				if (NationId == NationArray.player_recno)
+				if (NationId == NationArray.PlayerId)
 					NewsArray.unit_betray(SpriteId, newNationId);
 			}
 
@@ -4128,7 +4128,7 @@ public abstract partial class Unit : Sprite
 
 			if (spy.NotifyCloakedNation && groupDefect == 0)
 			{
-				if (newNationId == NationArray.player_recno) // cloaked as the player's nation
+				if (newNationId == NationArray.PlayerId) // cloaked as the player's nation
 					NewsArray.unit_betray(SpriteId, newNationId);
 			}
 		}
@@ -4233,12 +4233,12 @@ public abstract partial class Unit : Sprite
 		NewsArray.king_die(NationId);
 
 		Nation nation = NationArray[NationId];
-		nation.king_unit_recno = 0;
+		nation.KingUnitId = 0;
 	}
 
 	private void GeneralDie()
 	{
-		if (NationId == NationArray.player_recno)
+		if (NationId == NationArray.PlayerId)
 			NewsArray.general_die(SpriteId);
 	}
 
@@ -4276,7 +4276,7 @@ public abstract partial class Unit : Sprite
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation == curNation || !curNation.get_relation(nation.NationId).has_contact)
+			if (nation == curNation || !curNation.GetRelation(nation.NationId).HasContact)
 				continue;
 
 			//--- only if the nation has a base town in the region where the unit stands ---//
@@ -4285,9 +4285,9 @@ public abstract partial class Unit : Sprite
 			if (!RegionArray.NationHasBaseTown(unitRegionId, nation.NationId))
 				continue;
 
-			int nationScore = (int)nation.reputation + (nation.overall_rating - curNation.overall_rating);
+			int nationScore = (int)nation.Reputation + (nation.OverallRating - curNation.OverallRating);
 
-			if (RaceRes.is_same_race(nation.race_id, RaceId))
+			if (RaceRes.is_same_race(nation.RaceId, RaceId))
 				nationScore += 30;
 
 			if (nationScore > bestScore)
@@ -4530,7 +4530,7 @@ public abstract partial class Unit : Sprite
 		//---- only resume attacking the target if the target nation is at war with us currently ---//
 
 		if (targetNationId == 0 ||
-		    (targetNationId != NationId && NationArray[NationId].get_relation_status(targetNationId) == NationBase.NATION_HOSTILE))
+		    (targetNationId != NationId && NationArray[NationId].GetRelationStatus(targetNationId) == NationBase.NATION_HOSTILE))
 		{
 			// use UnitArray.Attack() instead of unit.Attack_???() as we are unsure about what type of object the target is.
 			List<int> selectedArray = new List<int>();
@@ -4993,7 +4993,7 @@ public abstract partial class Unit : Sprite
 
 			//--- if the commander of this camp is the king, never replace him ---//
 
-			if (firmCamp.OverseerId == nation.king_unit_recno)
+			if (firmCamp.OverseerId == nation.KingUnitId)
 				continue;
 
 			//--- we have separate logic for choosing generals of capturing camps ---//

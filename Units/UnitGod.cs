@@ -390,7 +390,7 @@ public class UnitGod : Unit
 	{
 		Unit unit = UnitArray[unitRecno];
 
-		if (unit.IsVisible() && NationArray.should_attack(NationId, unit.NationId))
+		if (unit.IsVisible() && NationArray.ShouldAttack(NationId, unit.NationId))
 		{
 			unit.ChangeLoyalty(-30 + Misc.Random(11));
 		}
@@ -687,7 +687,7 @@ public class UnitGod : Unit
 
 				//------ only cast on hostile and tense nations ------//
 
-				if (ownNation.get_relation(firm.NationId).status > NationBase.NATION_TENSE)
+				if (ownNation.GetRelation(firm.NationId).Status > NationBase.NATION_TENSE)
 					continue;
 
 				//------ calculate the rating of the firm -------//
@@ -709,7 +709,7 @@ public class UnitGod : Unit
 				//------ only cast on hostile and tense nations ------//
 
 				if (town.NationId != 0 &&
-				    ownNation.get_relation(town.NationId).status > NationBase.NATION_TENSE)
+				    ownNation.GetRelation(town.NationId).Status > NationBase.NATION_TENSE)
 					continue;
 
 				//------ calculate the rating of the firm -------//
@@ -819,7 +819,7 @@ public class UnitGod : Unit
 				    && (unit.Loyalty >= 20 && unit.Loyalty <= 60 ||
 				        unit.Loyalty <= 80 && unit.TargetLoyalty < 30))
 				{
-					switch (ownNation.get_relation(unit.NationId).status)
+					switch (ownNation.GetRelation(unit.NationId).Status)
 					{
 						case NationBase.NATION_HOSTILE:
 							curRating += 3;
@@ -857,7 +857,7 @@ public class UnitGod : Unit
 				if (unit.IsVisible() && unit.MobileType == UnitConstants.UNIT_LAND &&
 				    unit.NationId != 0 && unit.NationId != NationId &&
 				    (unit.Loyalty >= 20 && unit.Loyalty <= 60 || unit.Loyalty <= 80 && unit.TargetLoyalty < 30) &&
-				    ownNation.get_relation(unit.NationId).status == NationBase.NATION_HOSTILE)
+				    ownNation.GetRelation(unit.NationId).Status == NationBase.NATION_HOSTILE)
 				{
 					int cost = Misc.points_distance(NextLocX, NextLocY, unit.NextLocX, unit.NextLocY);
 					if (cost < bestUnitCost)
@@ -962,7 +962,7 @@ public class UnitGod : Unit
 
 			//-------- only attack enemies ----------//
 
-			if (ownNation.get_relation(firm.NationId).status != NationBase.NATION_HOSTILE)
+			if (ownNation.GetRelation(firm.NationId).Status != NationBase.NATION_HOSTILE)
 				continue;
 
 			//---- only attack enemy base and camp ----//

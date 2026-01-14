@@ -102,8 +102,8 @@ public partial class Renderer
             }
             else
             {
-                loyalty = NationArray.player_recno != 0 ? (int)town.RacesResistance[i, NationArray.player_recno - 1] : 0;
-                targetLoyalty = NationArray.player_recno != 0 ? town.RacesTargetResistance[i, NationArray.player_recno - 1] : 0;
+                loyalty = NationArray.PlayerId != 0 ? (int)town.RacesResistance[i, NationArray.PlayerId - 1] : 0;
+                targetLoyalty = NationArray.PlayerId != 0 ? town.RacesTargetResistance[i, NationArray.PlayerId - 1] : 0;
                 if (targetLoyalty > loyalty)
                     targetLoyalty = loyalty;
             }
@@ -145,9 +145,9 @@ public partial class Renderer
         if (town.NationId != 0)
             PutText(FontMid, town.AverageLoyalty().ToString(), avgLoyaltyX, totalTextY - 1);
         else
-            PutText(FontMid, NationArray.player_recno != 0 ? town.AverageResistance(NationArray.player_recno).ToString() : "0", avgLoyaltyX, totalTextY - 1);
+            PutText(FontMid, NationArray.PlayerId != 0 ? town.AverageResistance(NationArray.PlayerId).ToString() : "0", avgLoyaltyX, totalTextY - 1);
 
-        if (NationArray.player_recno != 0 && town.NationId == NationArray.player_recno && _selectedRaceId != 0)
+        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId && _selectedRaceId != 0)
         {
             if (town.CanRecruit(_selectedRaceId))
             {
@@ -226,7 +226,7 @@ public partial class Renderer
         }
         else
         {
-            bool displayGrantButton = NationArray.player_recno != 0 && town.HasLinkedCamp(NationArray.player_recno, false);
+            bool displayGrantButton = NationArray.PlayerId != 0 && town.HasLinkedCamp(NationArray.PlayerId, false);
             if (displayGrantButton)
             {
                 if (IsGrantToNonOwnTownEnabled(town))
@@ -309,7 +309,7 @@ public partial class Renderer
         bool button5Pressed = _leftMouseReleased && _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
 
-        if (NationArray.player_recno != 0 && town.NationId == NationArray.player_recno && _selectedRaceId != 0)
+        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId && _selectedRaceId != 0)
         {
             if (button1Pressed && town.CanRecruit(_selectedRaceId))
             {
@@ -345,7 +345,7 @@ public partial class Renderer
                 // TODO grant
             }
             
-            bool displayGrantButton = NationArray.player_recno != 0 && town.HasLinkedCamp(NationArray.player_recno, false);
+            bool displayGrantButton = NationArray.PlayerId != 0 && town.HasLinkedCamp(NationArray.PlayerId, false);
             bool spiesButtonPressed = (displayGrantButton ? button2Pressed : button1Pressed);
             if (spiesButtonPressed && town.HasPlayerSpy())
             {
@@ -366,12 +366,12 @@ public partial class Renderer
 
     private bool IsGrantEnabled(Town town)
     {
-        return town.HasLinkedOwnCamp && NationArray.player.Cash > 0.0;
+        return town.HasLinkedOwnCamp && NationArray.Player.Cash > 0.0;
     }
 
     private bool IsGrantToNonOwnTownEnabled(Town town)
     {
-        return NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno) && NationArray.player.Cash > 0.0;
+        return NationArray.PlayerId != 0 && town.CanGrantToNonOwnTown(NationArray.PlayerId) && NationArray.Player.Cash > 0.0;
     }
 
     private void DrawTrainMenu(Town town)

@@ -409,13 +409,13 @@ public class FirmInfo
     public void inc_nation_firm_count(int nationRecno)
     {
         nation_firm_count_array[nationRecno - 1]++;
-        NationArray[nationRecno].total_firm_count++;
+        NationArray[nationRecno].TotalFirmCount++;
     }
 
     public void dec_nation_firm_count(int nationRecno)
     {
         nation_firm_count_array[nationRecno - 1]--;
-        NationArray[nationRecno].total_firm_count--;
+        NationArray[nationRecno].TotalFirmCount--;
 
         if (nation_firm_count_array[nationRecno - 1] < 0) // run-time bug fixing
             nation_firm_count_array[nationRecno - 1] = 0;

@@ -128,7 +128,7 @@ public class Info
         Nation viewingNation = null;
         NationArray nationArray = Sys.Instance.NationArray;
 
-        if (nationArray.player_recno != 0 && !nationArray.IsDeleted(ViewingNationId))
+        if (nationArray.PlayerId != 0 && !nationArray.IsDeleted(ViewingNationId))
             viewingNation = nationArray[ViewingNationId];
 
         for (int i = 0; i < MAX_RANK_TYPE; i++)
@@ -143,19 +143,19 @@ public class Info
         {
             if (onlyHasContact)
             {
-                if (viewingNation != null && !viewingNation.get_relation(nation.NationId).has_contact)
+                if (viewingNation != null && !viewingNation.GetRelation(nation.NationId).HasContact)
                     continue;
             }
 
-            NationRanks[0, nation.NationId - 1] = nation.population_rating;
+            NationRanks[0, nation.NationId - 1] = nation.PopulationRating;
 
-            NationRanks[1, nation.NationId - 1] = nation.military_rating;
+            NationRanks[1, nation.NationId - 1] = nation.MilitaryRating;
 
-            NationRanks[2, nation.NationId - 1] = nation.economic_rating;
+            NationRanks[2, nation.NationId - 1] = nation.EconomicRating;
 
-            NationRanks[3, nation.NationId - 1] = (int)nation.reputation;
+            NationRanks[3, nation.NationId - 1] = (int)nation.Reputation;
 
-            NationRanks[4, nation.NationId - 1] = (int)nation.kill_monster_score;
+            NationRanks[4, nation.NationId - 1] = (int)nation.KillMonsterScore;
         }
     }
 

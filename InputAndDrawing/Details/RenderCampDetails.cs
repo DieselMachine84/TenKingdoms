@@ -51,7 +51,7 @@ public partial class Renderer
                         Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 4, _arrowUpWidth * 2, _arrowUpHeight * 2);
                     PutText(FontSan, overseer.TargetLoyalty.ToString(), targetLoyaltyX + 16, targetLoyaltyY);
                 }
-                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
                     DrawSpyIcon(DetailsX1 + 111 + FontSan.TextWidth(leadershipText) + 2, DetailsY1 + 132, overseer.TrueNationId());
             }
         }
@@ -254,7 +254,7 @@ public partial class Renderer
 
     private bool IsCampRewardEnabled(Firm firm, Unit overseer)
     {
-        return NationArray.player.Cash >= GameConstants.REWARD_COST &&
+        return NationArray.Player.Cash >= GameConstants.REWARD_COST &&
                (overseer != null && overseer.Rank != Unit.RANK_KING || firm.SelectedWorkerId != 0);
     }
 }

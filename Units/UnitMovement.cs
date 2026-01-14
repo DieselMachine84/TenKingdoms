@@ -1979,12 +1979,12 @@ public partial class Unit
 		Location destLoc = World.GetLoc(dx, dy);
 		Nation nation = NationArray[nationId];
 
-		bool subModeOn = (startLoc.PowerNationId == 0 || nation.get_relation_passable(startLoc.PowerNationId)) &&
-		                 (destLoc.PowerNationId == 0 || nation.get_relation_passable(destLoc.PowerNationId));
+		bool subModeOn = (startLoc.PowerNationId == 0 || nation.GetRelationPassable(startLoc.PowerNationId)) &&
+		                 (destLoc.PowerNationId == 0 || nation.GetRelationPassable(destLoc.PowerNationId));
 
 		if (subModeOn) // true only when both start and end locations are passable for this nation
 		{
-			SeekPath.SetNationPassable(nation.relation_passable_array);
+			SeekPath.SetNationPassable(nation.RelationPassable);
 			SeekPath.SetSubMode(SeekPath.SEARCH_SUB_MODE_PASSABLE);
 		}
 		else

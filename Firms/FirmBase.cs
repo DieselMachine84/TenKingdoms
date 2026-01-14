@@ -20,7 +20,7 @@ public class FirmBase : Firm
     {
         pray_points = 0.0;
 
-        NationArray[NationId].base_count_array[RaceId - 1]++;
+        NationArray[NationId].BaseCounts[RaceId - 1]++;
 
         god_id = 0;
         god_unit_recno = 0;
@@ -37,7 +37,7 @@ public class FirmBase : Firm
 
     protected override void DeinitDerived()
     {
-        NationArray[NationId].base_count_array[RaceId-1]--;
+        NationArray[NationId].BaseCounts[RaceId-1]--;
     }
 
     public override void AssignUnit(int unitId)
@@ -92,9 +92,9 @@ public class FirmBase : Firm
 
         //------ update base_count_array[] --------//
 
-        NationArray[NationId].base_count_array[RaceId - 1]--;
+        NationArray[NationId].BaseCounts[RaceId - 1]--;
 
-        NationArray[newNationRecno].base_count_array[RaceId - 1]++;
+        NationArray[newNationRecno].BaseCounts[RaceId - 1]++;
 
         //----- change the nation recno of the god invoked by the base if there is any ----//
 

@@ -115,7 +115,7 @@ public class UnitCaravan : Unit, ITrader
 			else
 			{
 				JourneyStatus = InternalConstants.SURROUND_FIRM;
-				if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+				if (NationArray[NationId].GetRelation(firm.NationId).TradeTreaty)
 				{
 					if (WaitCount <= 0)
 					{
@@ -446,7 +446,7 @@ public class UnitCaravan : Unit, ITrader
 			//-------------------------------------------------------//
 			// load/unload goods
 			//-------------------------------------------------------//
-			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+			if (NationArray[NationId].GetRelation(firm.NationId).TradeTreaty)
 			{
 				switch (firm.FirmType)
 				{
@@ -510,7 +510,7 @@ public class UnitCaravan : Unit, ITrader
 		switch (firm.FirmType)
 		{
 			case Firm.FIRM_MARKET:
-				return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
+				return NationArray[NationId].GetRelation(firm.NationId).TradeTreaty;
 
 			case Firm.FIRM_MINE:
 			case Firm.FIRM_FACTORY:
@@ -1313,7 +1313,7 @@ public class UnitCaravan : Unit, ITrader
 				qty = (nation.Cash > 0.0) ? Math.Min((int)(nation.Cash / GameConstants.PRODUCT_PRICE), qty) : 0;
 
 				if (qty != 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, qty * GameConstants.PRODUCT_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_PRODUCT, market.NationId, qty * GameConstants.PRODUCT_PRICE);
 			}
 
 			ProductQty[goodsId] += qty;
@@ -1331,7 +1331,7 @@ public class UnitCaravan : Unit, ITrader
 				qty = (nation.Cash > 0.0) ? Math.Min((int)(nation.Cash / GameConstants.RAW_PRICE), qty) : 0;
 
 				if (qty != 0)
-					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, qty * GameConstants.RAW_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_RAW, market.NationId, qty * GameConstants.RAW_PRICE);
 			}
 
 			RawQty[goodsId] += qty;
@@ -1465,7 +1465,7 @@ public class UnitCaravan : Unit, ITrader
 			Firm firm = FirmArray[firmId];
 
 			// if the treaty trade has been terminated, delete the stop
-			if (firm.FirmType != Firm.FIRM_MARKET || !nation.get_relation(firm.NationId).trade_treaty)
+			if (firm.FirmType != Firm.FIRM_MARKET || !nation.GetRelation(firm.NationId).TradeTreaty)
 			{
 				DelStop(i, InternalConstants.COMMAND_AI);
 				return true;
@@ -1505,7 +1505,7 @@ public class UnitCaravan : Unit, ITrader
 
 			//----------------------------------------------//
 
-			if (nation.get_relation_status(firmMarket.NationId) == NationBase.NATION_HOSTILE)
+			if (nation.GetRelationStatus(firmMarket.NationId) == NationBase.NATION_HOSTILE)
 			{
 				DelStop(i, InternalConstants.COMMAND_AI);
 				return true;

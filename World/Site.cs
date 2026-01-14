@@ -72,10 +72,10 @@ public class Site : IIdObject
 
         if (SiteType == SITE_GOLD_COIN)
         {
-            NationArray[unit.NationId].add_income(NationBase.INCOME_TREASURE, ObjectId);
+            NationArray[unit.NationId].AddIncome(NationBase.INCOME_TREASURE, ObjectId);
             objectTaken = true;
 
-            if (unit.NationId == NationArray.player_recno)
+            if (unit.NationId == NationArray.PlayerId)
                 NewsArray.monster_gold_acquired(ObjectId);
         }
 

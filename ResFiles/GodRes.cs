@@ -119,13 +119,13 @@ public class GodInfo
     public void enable_know(int nationRecno)
     {
         nation_know_array[nationRecno - 1] = true;
-        NationArray[nationRecno].know_base_array[race_id - 1] = 1; // enable the nation to build the fortress of power
+        NationArray[nationRecno].KnowBases[race_id - 1] = 1; // enable the nation to build the fortress of power
     }
 
     public void disable_know(int nationRecno)
     {
         nation_know_array[nationRecno - 1] = false;
-        NationArray[nationRecno].know_base_array[race_id - 1] = 0; // enable the nation to build the fortress of power
+        NationArray[nationRecno].KnowBases[race_id - 1] = 0; // enable the nation to build the fortress of power
     }
 }
 

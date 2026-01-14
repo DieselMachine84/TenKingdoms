@@ -49,7 +49,7 @@ public class FirmMine : Firm
         }
 
         if (RawId != 0)
-            NationArray[NationId].raw_count_array[RawId - 1]++;
+            NationArray[NationId].RawCounts[RawId - 1]++;
     }
 
     protected override void DeinitDerived()
@@ -70,7 +70,7 @@ public class FirmMine : Firm
         }
 
         if (RawId != 0)
-            NationArray[NationId].raw_count_array[RawId - 1]--;
+            NationArray[NationId].RawCounts[RawId - 1]--;
     }
 
     public override void NextDay()
@@ -99,8 +99,8 @@ public class FirmMine : Firm
     {
         if (RawId != 0)
         {
-            NationArray[NationId].raw_count_array[RawId - 1]--;
-            NationArray[newNationId].raw_count_array[RawId - 1]++;
+            NationArray[NationId].RawCounts[RawId - 1]--;
+            NationArray[newNationId].RawCounts[RawId - 1]++;
         }
 
         base.ChangeNation(newNationId);
@@ -172,7 +172,7 @@ public class FirmMine : Firm
             SiteArray.DeleteSite(site);
             SiteId = 0;
 
-            if (NationId == NationArray.player_recno)
+            if (NationId == NationArray.PlayerId)
                 NewsArray.raw_exhaust(RawId, LocCenterX, LocCenterY);
         }
     }

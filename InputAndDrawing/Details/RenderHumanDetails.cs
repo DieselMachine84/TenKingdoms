@@ -133,7 +133,7 @@ public partial class Renderer
 
         if (unit.Rank != Unit.RANK_KING)
         {
-            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
             {
                 DrawFieldPanel62(DetailsX1 + 208, screenY + 5);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, screenY + 8, -1, true);
@@ -150,7 +150,7 @@ public partial class Renderer
             }
         }
 
-        if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+        if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
         {
             DrawFieldPanel62(DetailsX1 + 208, screenY + 34);
             PutText(FontSan, "Spying", DetailsX1 + 214, screenY + 37, -1, true);
@@ -295,7 +295,7 @@ public partial class Renderer
         {
             if (canChangeToOtherNation)
             {
-                if (!trueNation.get_relation(nation.NationId).has_contact)
+                if (!trueNation.GetRelation(nation.NationId).HasContact)
                     continue;
             }
             else
@@ -382,7 +382,7 @@ public partial class Renderer
                     //}
                     //else
                     //{
-                        NationArray.player.succeed_king(unit);
+                        NationArray.Player.SucceedKing(unit);
                     //}
                     return;
                 }
@@ -414,7 +414,7 @@ public partial class Renderer
                 //}
                 //else
                 //{
-                    unit.Reward(NationArray.player_recno);
+                    unit.Reward(NationArray.PlayerId);
                 //}
 
                 SECtrl.immediate_sound("TURN_ON");
@@ -512,7 +512,7 @@ public partial class Renderer
             {
                 if (canChangeToOtherNation)
                 {
-                    if (!trueNation.get_relation(nation.NationId).has_contact)
+                    if (!trueNation.GetRelation(nation.NationId).HasContact)
                         continue;
                 }
                 else
@@ -547,7 +547,7 @@ public partial class Renderer
 
     private bool IsSucceedKingEnabled(Unit unit)
     {
-        return NationArray.player_recno != 0 && unit.NationId == NationArray.player_recno && NationArray.player.king_unit_recno == 0;
+        return NationArray.PlayerId != 0 && unit.NationId == NationArray.PlayerId && NationArray.Player.KingUnitId == 0;
     }
 
     private bool IsRewardEnabled(Unit unit)
@@ -557,7 +557,7 @@ public partial class Renderer
 
     private bool IsSettleEnabled(Unit unit)
     {
-        return unit.NationId == NationArray.player_recno && unit.Rank != Unit.RANK_KING;
+        return unit.NationId == NationArray.PlayerId && unit.Rank != Unit.RANK_KING;
     }
 
     private bool IsBuildEnabled(Unit unit)
@@ -572,17 +572,17 @@ public partial class Renderer
             }
         }
         
-        return unit.NationId == NationArray.player_recno && canBuildSomething;
+        return unit.NationId == NationArray.PlayerId && canBuildSomething;
     }
 
     private bool IsPromoteEnabled(Unit unit)
     {
-        return unit.NationId == NationArray.player_recno && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == Skill.SKILL_LEADING;
+        return unit.NationId == NationArray.PlayerId && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == Skill.SKILL_LEADING;
     }
 
     private bool IsDemoteEnabled(Unit unit)
     {
-        return unit.NationId == NationArray.player_recno && unit.Rank == Unit.RANK_GENERAL;
+        return unit.NationId == NationArray.PlayerId && unit.Rank == Unit.RANK_GENERAL;
     }
 
     private bool IsReturnToCampEnabled(Unit unit)
@@ -592,7 +592,7 @@ public partial class Renderer
 
     private bool IsSpyButtonsEnabled(Unit unit)
     {
-        return unit.SpyId != 0 && unit.TrueNationId() == NationArray.player_recno;
+        return unit.SpyId != 0 && unit.TrueNationId() == NationArray.PlayerId;
     }
 
     private bool IsSpyCloakPanelVisible(Unit unit, bool canChangeToOtherNation)

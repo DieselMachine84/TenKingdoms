@@ -97,9 +97,9 @@ public class NationOld : NationBase
 	//--------------------------------------------------------------//
 	// functions to init. parameters and process ai actions
 	//--------------------------------------------------------------//
-	public override void init(int nationType, int raceId, int colorSchemeId, int playerId)
+	public override void Init(int nationType, int raceId, int colorSchemeId, int playerId)
 	{
-		base.init(nationType, raceId, colorSchemeId, playerId);
+		base.Init(nationType, raceId, colorSchemeId, playerId);
 
 		//----- init other AI vars -----//
 
@@ -155,7 +155,7 @@ public class NationOld : NationBase
 
 		int nationRecno = NationId;
 
-		if (king_unit_recno == 0)
+		if (KingUnitId == 0)
 		{
 			if (think_succeed_king())
 				return;
@@ -163,7 +163,7 @@ public class NationOld : NationBase
 			if (think_surrender())
 				return;
 
-			defeated();
+			Defeated();
 			return;
 		}
 
@@ -311,7 +311,7 @@ public class NationOld : NationBase
 
 		//--- don't capture if the AI is using growth and capture strategy (as opposite to build mine strategy) ---//
 
-		if (ai_mine_array.Count == 0 && total_population < 25)
+		if (ai_mine_array.Count == 0 && TotalPopulation < 25)
 			return false;
 
 		//-----------------------------------------//
@@ -322,7 +322,7 @@ public class NationOld : NationBase
 		return false;
 	}
 
-	protected override void set_relation_status_ai(int nationRecno, int newStatus)
+	protected override void SetRelationStatusAI(int nationRecno, int newStatus)
 	{
 		// cease fire or new friendly/alliance treaty
 		if (newStatus == NATION_TENSE || newStatus >= NATION_FRIENDLY)
@@ -336,20 +336,20 @@ public class NationOld : NationBase
 	{
 		foreach (Nation nation in NationArray)
 		{
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (nationRelation.status == NATION_HOSTILE)
+			if (nationRelation.Status == NATION_HOSTILE)
 				continue;
 
 			//--- It improves the AI relation with nations that have trade with us. ---//
 
-			change_ai_relation_level(nation.NationId, trade_rating(nation.NationId) / 10);
+			ChangeAIRelationLevel(nation.NationId, TradeRating(nation.NationId) / 10);
 
 			//--- decrease the started_war_on_us_count once per year, gradually forgiving other nations' wrong doing ---//
 
-			if (nationRelation.started_war_on_us_count > 0 && Misc.Random(5 - pref_forgiveness / 20) > 0)
+			if (nationRelation.StartedWarOnUsCount > 0 && Misc.Random(5 - pref_forgiveness / 20) > 0)
 			{
-				nationRelation.started_war_on_us_count--;
+				nationRelation.StartedWarOnUsCount--;
 			}
 		}
 	}
@@ -1061,7 +1061,7 @@ public class NationOld : NationBase
 
 		//--- if we have a mine producing that raw type already ---//
 
-		if (raw_count_array[rawId - 1] > 0)
+		if (RawCounts[rawId - 1] > 0)
 		{
 			if (!ai_should_spend(20)) // then it's not important to build it
 				return false;
@@ -1125,7 +1125,7 @@ public class NationOld : NationBase
 			// ####### patch begin Gilbert 16/3 ########//
 			//if( region_array.get_region_stat(site.region_id).base_town_nation_count_array[nation_recno-1] == 0 )
 			//	continue;
-			if (base_town_count_in_region(site.RegionId) == 0)
+			if (BaseTownCountInRegion(site.RegionId) == 0)
 				continue;
 			// ####### patch end Gilbert 16/3 ########//
 
@@ -1135,7 +1135,7 @@ public class NationOld : NationBase
 			//
 			//---------------------------------------------------//
 
-			if (get_relation_status(unit.NationId) >= NATION_FRIENDLY)
+			if (GetRelationStatus(unit.NationId) >= NATION_FRIENDLY)
 				continue;
 
 			//--------- attack the enemy unit ---------//
@@ -1154,7 +1154,7 @@ public class NationOld : NationBase
 
 	public int ai_supported_inn_count()
 	{
-		double fixedExpense = fixed_expense_365days();
+		double fixedExpense = FixedExpense365Days();
 
 		int innCount = Convert.ToInt32(Cash / 5000.0 * (100 + pref_hire_unit) / 100.0);
 
@@ -1189,11 +1189,11 @@ public class NationOld : NationBase
 	{
 		//---- only build mines when it has enough population ----//
 
-		if (total_jobless_population < (100 - pref_economic_development) / 2)
+		if (TotalJoblessPopulation < (100 - pref_economic_development) / 2)
 			return false;
 
 		// only build mine when you have enough population to support the economic chain: mine + factory + camp
-		if (total_jobless_population < 16)
+		if (TotalJoblessPopulation < 16)
 			return false;
 
 		if (SiteArray.UntappedRawCount == 0)
@@ -1206,7 +1206,7 @@ public class NationOld : NationBase
 
 		if (ai_mine_array.Count == 1)
 		{
-			if (true_profit_365days() < 0 && total_population < 40 + pref_economic_development / 5)
+			if (TrueProfit365Days() < 0 && TotalPopulation < 40 + pref_economic_development / 5)
 				return false;
 		}
 
@@ -1217,7 +1217,7 @@ public class NationOld : NationBase
 
 		//--- if the population is low, make sure existing mines are in full production before building a new one ---//
 
-		if (total_jobless_population < 30)
+		if (TotalJoblessPopulation < 30)
 		{
 			for (int i = 0; i < ai_mine_array.Count; i++)
 			{
@@ -1788,7 +1788,7 @@ public class NationOld : NationBase
 							weightAdd = weightAdd * (100 - town.AverageResistance(NationId)) / 100;
 						else // more friendly nations get higher weights
 						{
-							int relationStatus = get_relation_status(town.NationId);
+							int relationStatus = GetRelationStatus(town.NationId);
 
 							if (relationStatus >= NATION_NEUTRAL)
 								weightAdd = weightAdd * (relationStatus - NATION_NEUTRAL + 1) / 4;
@@ -2013,7 +2013,7 @@ public class NationOld : NationBase
 			//-- this may happen when the unit is a spy and has just changed cloak --//
 			Unit unit = UnitArray[unitRecno];
 
-			if (!NationArray[unit.TrueNationId()].is_ai() && !NationArray[unit.NationId].is_ai())
+			if (!NationArray[unit.TrueNationId()].IsAI() && !NationArray[unit.NationId].IsAI())
 			{
 				return null;
 			}
@@ -2094,7 +2094,7 @@ public class NationOld : NationBase
 
 		int divider = 4 - Config.ai_aggressiveness; // the more nations there, the less process count
 		int nationRecno = NationId;
-		int maxSessionProcessCount = 70 / Math.Max(NationArray.nation_count, 1) / Math.Max(divider, 1);
+		int maxSessionProcessCount = 70 / Math.Max(NationArray.NationCount, 1) / Math.Max(divider, 1);
 
 		// if processActionMode has been specific, then all messages in the queue of this type will be processed
 		for (actionRecno = 1;
@@ -2708,7 +2708,7 @@ public class NationOld : NationBase
 
 					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / GameConstants.MapSize);
 
-					if (UnitRes[innUnit.UnitType].race_id == race_id)
+					if (UnitRes[innUnit.UnitType].race_id == RaceId)
 						curRating += 50;
 
 					if (curRating > bestRating)
@@ -3050,7 +3050,7 @@ public class NationOld : NationBase
 
 			int curRating = 0;
 
-			if (unit.RaceId == race_id)
+			if (unit.RaceId == RaceId)
 				curRating += 50;
 
 			if (unit.Rank == Unit.RANK_GENERAL)
@@ -3085,7 +3085,7 @@ public class NationOld : NationBase
 
 					int curRating = 0;
 
-					if (worker.RaceId == race_id)
+					if (worker.RaceId == RaceId)
 						curRating += 50;
 
 					if (worker.RankId == Unit.RANK_GENERAL)
@@ -3124,7 +3124,7 @@ public class NationOld : NationBase
 				if (bestUnit.SpyId != 0 && bestUnit.TrueNationId() == NationId)
 					SpyArray[bestUnit.SpyId].DropSpyIdentity(); // revert the spy to a normal unit
 
-				succeed_king(bestUnit);
+				SucceedKing(bestUnit);
 				return true;
 			}
 		}
@@ -3137,7 +3137,7 @@ public class NationOld : NationBase
 
 			if (unitRecno != 0)
 			{
-				succeed_king(UnitArray[unitRecno]);
+				SucceedKing(UnitArray[unitRecno]);
 				return true;
 			}
 		}
@@ -3150,13 +3150,13 @@ public class NationOld : NationBase
 				continue;
 
 			// if this town has people with the same race as the original king
-			if (town.RecruitableRacePopulation(race_id, false) > 0)
+			if (town.RecruitableRacePopulation(RaceId, false) > 0)
 			{
-				Unit unit = town.MobilizeTownPeople(race_id, true, false);
+				Unit unit = town.MobilizeTownPeople(RaceId, true, false);
 
 				if (unit != null)
 				{
-					succeed_king(unit);
+					SucceedKing(unit);
 					return true;
 				}
 			}
@@ -3196,7 +3196,7 @@ public class NationOld : NationBase
 
 		//---- don't build new camp if we our food consumption > production ----//
 
-		if (yearly_food_change() < 0)
+		if (YearlyFoodChange() < 0)
 		{
 			think_close_camp(); // think about closing down an existing one
 			return;
@@ -3267,23 +3267,23 @@ public class NationOld : NationBase
 
 		int bestRating = 0;
 		int bestNationRecno = 0;
-		int ourMilitary = military_rank_rating();
+		int ourMilitary = MilitaryRankRating();
 
 		foreach (Nation nation in NationArray)
 		{
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
 			// existing trade and possible trade
-			int tradeRating = trade_rating(nation.NationId) / 2 + ai_trade_with_rating(nation.NationId) / 2;
+			int tradeRating = TradeRating(nation.NationId) / 2 + ai_trade_with_rating(nation.NationId) / 2;
 
 			//---- if the secret attack flag is not enabled yet ----//
 
-			if (!nationRelation.ai_secret_attack)
+			if (!nationRelation.AISecretAttack)
 			{
-				int relationStatus = nationRelation.status;
+				int relationStatus = nationRelation.Status;
 
 				//---- if we have a friendly treaty with this nation ----//
 
@@ -3310,15 +3310,15 @@ public class NationOld : NationBase
 
 			//--------- calculate the rating ----------//
 
-			int curRating = (ourMilitary - nation.military_rank_rating() / 2) * 2
-			                + (overall_rank_rating() - 50) // if <50 negative, if >50 positive
+			int curRating = (ourMilitary - nation.MilitaryRankRating() / 2) * 2
+			                + (OverallRankRating() - 50) // if <50 negative, if >50 positive
 			                - tradeRating * 2
-			                - nationRelation.ai_relation_level / 2
+			                - nationRelation.AIRelationLevel / 2
 			                - pref_peacefulness / 2;
 
 			//------- if aggressiveness config is medium or high ----//
 
-			if (!nation.is_ai()) // more aggressive towards human players
+			if (!nation.IsAI()) // more aggressive towards human players
 			{
 				switch (Config.ai_aggressiveness)
 				{
@@ -3338,13 +3338,13 @@ public class NationOld : NationBase
 
 			//----- if the secret attack is already on -----//
 
-			if (nationRelation.ai_secret_attack)
+			if (nationRelation.AISecretAttack)
 			{
 				//--- cancel secret attack if the situation has changed ---//
 
 				if (curRating < 0)
 				{
-					nationRelation.ai_secret_attack = false;
+					nationRelation.AISecretAttack = false;
 					continue;
 				}
 			}
@@ -3362,7 +3362,7 @@ public class NationOld : NationBase
 
 		if (bestNationRecno != 0)
 		{
-			get_relation(bestNationRecno).ai_secret_attack = true;
+			GetRelation(bestNationRecno).AISecretAttack = true;
 			return true;
 		}
 
@@ -3961,7 +3961,7 @@ public class NationOld : NationBase
 				}
 				else //--- if it is an enemy unit, attack it ------//
 				{
-					int nationStatus = get_relation_status(unit.NationId);
+					int nationStatus = GetRelationStatus(unit.NationId);
 
 					if (nationStatus < enemyStatus) // if the status is worse than the current target
 					{
@@ -4108,7 +4108,7 @@ public class NationOld : NationBase
 	{
 		foreach (Nation nation in NationArray.EnumerateRandom())
 		{
-			if (get_relation(nation.NationId).status != NATION_ALLIANCE)
+			if (GetRelation(nation.NationId).Status != NATION_ALLIANCE)
 				continue;
 
 			if (should_diplomacy_retry(TalkMsg.TALK_REQUEST_MILITARY_AID, nation.NationId))
@@ -4143,13 +4143,13 @@ public class NationOld : NationBase
 
 		//--- if the AI has run out of money and is currently cheating, it will have a urgent need to attack monsters to get money ---//
 
-		bool useAllCamp = income_365days(INCOME_CHEAT) > 0;
+		bool useAllCamp = Income365Days(INCOME_CHEAT) > 0;
 
 		if (!useAllCamp) // use all camps to attack the monster
 		{
-			if (!is_at_war())
+			if (!IsAtWar())
 			{
-				if (Cash < 500 && military_rank_rating() >= 75 - pref_attack_monster / 4) //  50 to 75
+				if (Cash < 500 && MilitaryRankRating() >= 75 - pref_attack_monster / 4) //  50 to 75
 					useAllCamp = true;
 			}
 		}
@@ -4157,7 +4157,7 @@ public class NationOld : NationBase
 		if (!useAllCamp)
 		{
 			// don't attack if the military strength is too low, 25 to 50
-			if (military_rank_rating() < 50 - pref_attack_monster / 4)
+			if (MilitaryRankRating() < 50 - pref_attack_monster / 4)
 				return false;
 		}
 
@@ -4193,11 +4193,11 @@ public class NationOld : NationBase
 	{
 		targetCombatLevel = 0;
 
-		if (largest_town_recno == 0)
+		if (LargestTownId == 0)
 			return 0;
 
 		//TODO not only largest town
-		Town largestTown = TownArray[largest_town_recno];
+		Town largestTown = TownArray[LargestTownId];
 		int bestRating = Int32.MinValue, bestFirmRecno = 0;
 
 		foreach (Firm firm in FirmArray)
@@ -4236,7 +4236,7 @@ public class NationOld : NationBase
 	{
 		//----- don't expand if it is losing money -----//
 
-		if (true_profit_365days() < 0)
+		if (TrueProfit365Days() < 0)
 			return false;
 
 		//----- expand if it has enough cash -----//
@@ -4247,7 +4247,7 @@ public class NationOld : NationBase
 		//--- check whether the current military force is already big enough ---//
 
 		// (50 to 150) / 150
-		if (ai_camp_array.Count * 9 > total_jobless_population * (50 + pref_military_development) / 150)
+		if (ai_camp_array.Count * 9 > TotalJoblessPopulation * (50 + pref_military_development) / 150)
 			return false;
 
 		//---- see if any of the camps are still needed soldiers -----//
@@ -4289,8 +4289,8 @@ public class NationOld : NationBase
 
 		//----- if existing camps can already host all units ----//
 
-		int neededSoldierSpace = total_human_count + total_weapon_count - ai_camp_array.Count * Firm.MAX_WORKER;
-		int neededGeneralSpace = total_general_count - ai_camp_array.Count;
+		int neededSoldierSpace = TotalHumanCount + TotalWeaponCount - ai_camp_array.Count * Firm.MAX_WORKER;
+		int neededGeneralSpace = TotalGeneralCount - ai_camp_array.Count;
 
 		return neededSoldierSpace >= 9 + 20 * (100 - pref_military_development) / 200 &&
 		       neededGeneralSpace >= 2 + 4 * (100 - pref_military_development) / 200;
@@ -4299,27 +4299,27 @@ public class NationOld : NationBase
 	public bool ai_has_too_many_camp()
 	{
 		// (150 to 250) / 150
-		return ai_camp_array.Count * 9 > total_jobless_population * (150 + pref_military_development) / 150;
+		return ai_camp_array.Count * 9 > TotalJoblessPopulation * (150 + pref_military_development) / 150;
 	}
 
 	public bool ai_should_attack_friendly(int friendlyNationRecno, int attackTemptation)
 	{
 		Nation friendlyNation = NationArray[friendlyNationRecno];
-		NationRelation nationRelation = get_relation(friendlyNationRecno);
+		NationRelation nationRelation = GetRelation(friendlyNationRecno);
 
 		//--- don't change terminate treaty too soon ---//
 
 		// only after 60 to 110 days
-		if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
+		if (Info.GameDate < nationRelation.LastChangeStatusDate.AddDays(60 + pref_honesty / 2))
 			return false;
 
 		//------------------------------------------------//
 
-		int resistanceRating = friendlyNation.military_rank_rating() - military_rank_rating();
+		int resistanceRating = friendlyNation.MilitaryRankRating() - MilitaryRankRating();
 
-		resistanceRating += nationRelation.ai_relation_level - 50;
+		resistanceRating += nationRelation.AIRelationLevel - 50;
 
-		resistanceRating += trade_rating(friendlyNationRecno);
+		resistanceRating += TradeRating(friendlyNationRecno);
 
 		return attackTemptation > resistanceRating;
 	}
@@ -4331,7 +4331,7 @@ public class NationOld : NationBase
 		int targetNationRecno = get_target_nation_recno(targetXLoc, targetYLoc);
 		if (targetNationRecno != 0)
 		{
-			set_relation_should_attack(targetNationRecno, true, InternalConstants.COMMAND_AI);
+			SetRelationShouldAttack(targetNationRecno, true, InternalConstants.COMMAND_AI);
 		}
 	}
 
@@ -4341,7 +4341,7 @@ public class NationOld : NationBase
 
 	public void think_reduce_expense()
 	{
-		if (true_profit_365days() > 0 || Cash > 1000 + 2000 * pref_cash_reserve / 100)
+		if (TrueProfit365Days() > 0 || Cash > 1000 + 2000 * pref_cash_reserve / 100)
 			return;
 
 		//-------- close down firms ---------//
@@ -4418,8 +4418,8 @@ public class NationOld : NationBase
 			//
 			//--------------------------------------------------------------//
 
-			if (raw_count_array[i] != 0 && nation.raw_count_array[i] == 0)
-				tradeRating += Math.Min(30, nation.total_population / 3);
+			if (RawCounts[i] != 0 && nation.RawCounts[i] == 0)
+				tradeRating += Math.Min(30, nation.TotalPopulation / 3);
 
 			//--------------------------------------------------------------//
 			//
@@ -4428,7 +4428,7 @@ public class NationOld : NationBase
 			//
 			//--------------------------------------------------------------//
 
-			else if (nation.raw_count_array[i] != 0 && raw_count_array[i] == 0)
+			else if (nation.RawCounts[i] != 0 && RawCounts[i] == 0)
 				tradeRating += 30;
 		}
 
@@ -4440,9 +4440,9 @@ public class NationOld : NationBase
 		if (Cash < spendAmt)
 			return false;
 
-		double fixedExpense = fixed_expense_365days();
+		double fixedExpense = FixedExpense365Days();
 		double stdCashLevel = Math.Max(fixedExpense, 2000) * (150 + pref_cash_reserve) / 100; //from 3000 to 5000
-		double trueProfit = true_profit_365days();
+		double trueProfit = TrueProfit365Days();
 
 		//----- if we are losing money, don't spend on non-important things -----//
 
@@ -4464,7 +4464,7 @@ public class NationOld : NationBase
 	{
 		int importanceRating = 30 + pref_military_development / 5; // 30 to 50
 
-		importanceRating += military_rank_rating() - enemyMilitaryRating / 2;
+		importanceRating += MilitaryRankRating() - enemyMilitaryRating / 2;
 
 		// only when we are very powerful, we will start a battle. So won't cease fire too soon after declaring war
 		// less early to return 0, for cease fire
@@ -4482,7 +4482,7 @@ public class NationOld : NationBase
 		if (Food < 1000 + 1000 * pref_food_reserve / 100)
 			return false;
 
-		return yearly_food_change() > 0;
+		return YearlyFoodChange() > 0;
 	}
 
 	//------------------------------------------------------------//
@@ -4944,7 +4944,7 @@ public class NationOld : NationBase
 				//if (race_res.is_same_race(race_id, worker.race_id))
 				//workerInfluence += workerInfluence / 3;		// 33% bonus if the king's race is also the same as the general
 
-				workerInfluence += (int)reputation / 2;
+				workerInfluence += (int)Reputation / 2;
 				workerInfluence = Math.Min(100, workerInfluence);
 				int targetResistance = 100 - workerInfluence;
 
@@ -5011,7 +5011,7 @@ public class NationOld : NationBase
 			return 0;
 
 		int unitInfluence = bestRating * 2 / 3; // 66% of the leadership
-		unitInfluence += (int)(reputation / 2.0);
+		unitInfluence += (int)(Reputation / 2.0);
 		unitInfluence = Math.Min(100, unitInfluence);
 		// influence of this unit if he is assigned as a commander of a military camp
 		targetResistance = 100 - unitInfluence;
@@ -5261,7 +5261,7 @@ public class NationOld : NationBase
 		{
 			Nation targetNation = NationArray[bestTargetFirm.NationId];
 
-			if (targetNation.is_at_war()) // use all camps force if the nation is at war
+			if (targetNation.IsAtWar()) // use all camps force if the nation is at war
 				useAllCamp = true;
 
 			return ai_attack_target(bestTargetFirm.LocX1, bestTargetFirm.LocY1, targetCombatLevel, false,
@@ -5300,20 +5300,20 @@ public class NationOld : NationBase
 
 			//--------- only attack enemies -----------//
 
-			NationRelation nationRelation = get_relation(town.NationId);
+			NationRelation nationRelation = GetRelation(town.NationId);
 
 			bool rc = false;
 
-			if (nationRelation.status == NATION_HOSTILE)
+			if (nationRelation.Status == NATION_HOSTILE)
 				rc = true;
 
 			// even if the relation is not hostile, if the ai_relation_level is < 10, attack anyway
-			else if (nationRelation.ai_relation_level < 10)
+			else if (nationRelation.AIRelationLevel < 10)
 				rc = true;
 
-			else if (nationRelation.status <= NATION_NEUTRAL &&
-			         town.NationId == NationArray.max_overall_nation_recno && // if this is our biggest enemy
-			         nationRelation.ai_relation_level < 30)
+			else if (nationRelation.Status <= NATION_NEUTRAL &&
+			         town.NationId == NationArray.MaxOverallNationId && // if this is our biggest enemy
+			         nationRelation.AIRelationLevel < 30)
 			{
 				rc = true;
 			}
@@ -5336,7 +5336,7 @@ public class NationOld : NationBase
 
 			//------ only attack if we have enough money to support the war ----//
 
-			if (!ai_should_spend_war(NationArray[town.NationId].military_rank_rating()))
+			if (!ai_should_spend_war(NationArray[town.NationId].MilitaryRankRating()))
 				continue;
 
 			//---- do not attack this town because a battle is already going on ----//
@@ -5396,7 +5396,7 @@ public class NationOld : NationBase
 					//--- if this mine's raw materials is one that we don't have --//
 
 					FirmMine firmMine = (FirmMine)firm;
-					if (raw_count_array[firmMine.RawId - 1] == 0)
+					if (RawCounts[firmMine.RawId - 1] == 0)
 						curRating += 150 * (int)firmMine.ReserveQty / GameConstants.MAX_RAW_RESERVE_QTY;
 				}
 			}
@@ -5749,7 +5749,7 @@ public class NationOld : NationBase
 
 	public bool think_sea_attack_enemy()
 	{
-		if (total_ship_combat_level < 700 - (pref_military_courage + pref_use_marine) * 2) // 300 to 700
+		if (TotalShipCombatLevel < 700 - (pref_military_courage + pref_use_marine) * 2) // 300 to 700
 			return false;
 
 		//-----------------------------------------//
@@ -5759,12 +5759,12 @@ public class NationOld : NationBase
 			if (firm.FirmType != Firm.FIRM_HARBOR)
 				continue;
 
-			if (get_relation_status(firm.NationId) != NATION_HOSTILE)
+			if (GetRelationStatus(firm.NationId) != NATION_HOSTILE)
 				continue;
 
 			//--- if the AI has more powerful fleets than the enemy ---//
 
-			if (total_ship_combat_level > NationArray[firm.NationId].total_ship_combat_level)
+			if (TotalShipCombatLevel > NationArray[firm.NationId].TotalShipCombatLevel)
 			{
 				ai_sea_attack_target(firm.LocCenterX, firm.LocCenterY);
 				return true;
@@ -5776,7 +5776,7 @@ public class NationOld : NationBase
 
 	public bool think_move_to_region_with_mine()
 	{
-		if (total_jobless_population < 30)
+		if (TotalJoblessPopulation < 30)
 			return false;
 
 		//---------------------------------------------------//
@@ -5988,7 +5988,7 @@ public class NationOld : NationBase
 
 		int destRegionId = World.GetRegionId(destXLoc, destYLoc);
 		int bestRating = 0;
-		int kingRecno = NationArray[NationId].king_unit_recno;
+		int kingRecno = NationArray[NationId].KingUnitId;
 		FirmCamp bestCamp = null;
 
 		for (int i = 0; i < ai_camp_array.Count; i++)
@@ -6491,10 +6491,10 @@ public class NationOld : NationBase
 
 		foreach (Nation nation in NationArray.EnumerateRandom())
 		{
-			if (get_relation(nation.NationId).status != NATION_HOSTILE) // only check enemies
+			if (GetRelation(nation.NationId).Status != NATION_HOSTILE) // only check enemies
 				continue;
 
-			if (NationArray[nation.NationId].is_ai()) // only check human players
+			if (NationArray[nation.NationId].IsAI()) // only check human players
 				continue;
 
 			//-- if enemy has battle ships, it is not safe for sea travel, destroy them first ---//
@@ -6534,7 +6534,7 @@ public class NationOld : NationBase
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation.is_ai()) // only check human players
+			if (nation.IsAI()) // only check human players
 				continue;
 
 			//-- if enemy has battle ships, it is not safe for sea travel, destroy them first ---//
@@ -6554,7 +6554,7 @@ public class NationOld : NationBase
 
 	public int think_assign_spy_target_camp(int raceId, int regionId, int loc_x1, int loc_y1, int cloakedNationRecno)
 	{
-		if (reputation < 0)
+		if (Reputation < 0)
 			return 0;
 
 		Town nearbyTown = null;
@@ -6673,7 +6673,7 @@ public class NationOld : NationBase
 			if (town.MajorityRace() != raceId)
 				continue;
 
-			if (reputation < 0 && town.NationId != 0)
+			if (Reputation < 0 && town.NationId != 0)
 				continue;
 
 			return town.TownId;
@@ -6801,7 +6801,7 @@ public class NationOld : NationBase
 	{
 		int aiPref = (onlyCounterSpy != 0 ? pref_counter_spy : pref_spy);
 
-		if (total_spy_count > total_population * (10 + aiPref / 10) / 100) // 10% to 20%
+		if (TotalSpyCount > TotalPopulation * (10 + aiPref / 10) / 100) // 10% to 20%
 			return false;
 
 		if (!ai_should_spend(aiPref / 2))
@@ -6809,7 +6809,7 @@ public class NationOld : NationBase
 
 		//--- the expense of spies should not be too large ---//
 
-		if (expense_365days(EXPENSE_SPY) > expense_365days() * (50 + aiPref) / 400)
+		if (Expense365Days(EXPENSE_SPY) > Expense365Days() * (50 + aiPref) / 400)
 			return false;
 
 		return true;
@@ -6832,17 +6832,17 @@ public class NationOld : NationBase
 
 	public int total_alliance_military()
 	{
-		int totalPower = military_rank_rating();
+		int totalPower = MilitaryRankRating();
 
 		foreach (Nation nation in NationArray)
 		{
 			if (nation.NationId == NationId)
 				continue;
 
-			switch (get_relation_status(nation.NationId))
+			switch (GetRelationStatus(nation.NationId))
 			{
 				case NATION_ALLIANCE:
-					totalPower += nation.military_rank_rating() * 3 / 4; // 75%
+					totalPower += nation.MilitaryRankRating() * 3 / 4; // 75%
 					break;
 				/*
 				case NATION_FRIENDLY:
@@ -6865,11 +6865,11 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			int relationStatus = get_relation_status(nation.NationId);
+			int relationStatus = GetRelationStatus(nation.NationId);
 
 			if (relationStatus == NATION_HOSTILE)
 			{
-				totalPower += nation.military_rank_rating();
+				totalPower += nation.MilitaryRankRating();
 			}
 			/*
 			else
@@ -6915,7 +6915,7 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			if (get_relation_status(nation.NationId) == NATION_HOSTILE)
+			if (GetRelationStatus(nation.NationId) == NATION_HOSTILE)
 				totalEnemy++;
 		}
 
@@ -6932,7 +6932,7 @@ public class NationOld : NationBase
 		if ((Info.GameDate - Info.GameStartDate).Days > 365)
 			return false;
 
-		if (profit_365days() > 0) // if we are making a profit, don't attack
+		if (Profit365Days() > 0) // if we are making a profit, don't attack
 			return false;
 
 		//-- for high aggressiveness, it will check cash before attack, for very high aggressiveness, it won't check cash before attack ---//
@@ -6945,12 +6945,12 @@ public class NationOld : NationBase
 
 		//--------------------------------------------------------//
 
-		if (largest_town_recno == 0)
+		if (LargestTownId == 0)
 			return false;
 
 		//--------------------------------------------------//
 
-		int baseRegionId = TownArray[largest_town_recno].RegionId;
+		int baseRegionId = TownArray[LargestTownId].RegionId;
 
 		// no region stat (region is too small), don't care
 		if (RegionArray.GetRegionInfo(baseRegionId).RegionStatId == 0)
@@ -6976,7 +6976,7 @@ public class NationOld : NationBase
 		{
 			//------ only deal with human players ------//
 
-			if (NationArray[nation.NationId].is_ai() || nation.NationId == NationId)
+			if (NationArray[nation.NationId].IsAI() || nation.NationId == NationId)
 				continue;
 
 			//------------------------------------------//
@@ -6984,8 +6984,8 @@ public class NationOld : NationBase
 			//todo nation_recno as index
 			int mineCount = regionStat.MineNationCounts[nation.NationId - 1];
 
-			int curRating = mineCount * 100 - get_relation(nation.NationId).ai_relation_level -
-			                trade_rating(nation.NationId);
+			int curRating = mineCount * 100 - GetRelation(nation.NationId).AIRelationLevel -
+			                TradeRating(nation.NationId);
 
 			if (curRating > bestRating)
 			{
@@ -6999,13 +6999,13 @@ public class NationOld : NationBase
 
 		//--- if the relationship with this nation is still good, don't attack yet, ask for aid first ---//
 
-		NationRelation nationRelation = get_relation(targetNationRecno);
+		NationRelation nationRelation = GetRelation(targetNationRecno);
 
-		if (nationRelation.ai_relation_level > 30)
+		if (nationRelation.AIRelationLevel > 30)
 		{
 			int talkId;
 
-			if (nationRelation.status >= NATION_FRIENDLY)
+			if (nationRelation.Status >= NATION_FRIENDLY)
 				talkId = TalkMsg.TALK_DEMAND_AID;
 			else
 				talkId = TalkMsg.TALK_DEMAND_TRIBUTE;
@@ -7050,7 +7050,7 @@ public class NationOld : NationBase
 
 		//---------------------------------------//
 
-		int enemyNationRecno = NationArray.max_overall_nation_recno;
+		int enemyNationRecno = NationArray.MaxOverallNationId;
 
 		if (enemyNationRecno == NationId)
 			return 0;
@@ -7059,7 +7059,7 @@ public class NationOld : NationBase
 
 		if (Config.ai_aggressiveness >= Config.OPTION_HIGH)
 		{
-			if (NationArray[enemyNationRecno].is_ai())
+			if (NationArray[enemyNationRecno].IsAI())
 				return 0;
 		}
 
@@ -7067,44 +7067,44 @@ public class NationOld : NationBase
 
 		else if (Config.ai_aggressiveness == Config.OPTION_LOW)
 		{
-			if (!NationArray[enemyNationRecno].is_ai())
+			if (!NationArray[enemyNationRecno].IsAI())
 				return 0;
 		}
 
 		//--- increase the ai_relation_level towards other nations except the enemy so we can ally against the enemy ---//
 
 		Nation enemyNation = NationArray[enemyNationRecno];
-		int incRelationLevel = (100 - overall_rank_rating()) / 10;
+		int incRelationLevel = (100 - OverallRankRating()) / 10;
 
 		foreach (Nation nation in NationArray)
 		{
 			if (nation.NationId == NationId || nation.NationId == enemyNationRecno)
 				continue;
 
-			int thisIncLevel = incRelationLevel * (100 - get_relation(nation.NationId).ai_relation_level) / 100;
+			int thisIncLevel = incRelationLevel * (100 - GetRelation(nation.NationId).AIRelationLevel) / 100;
 
-			change_ai_relation_level(nation.NationId, thisIncLevel);
+			ChangeAIRelationLevel(nation.NationId, thisIncLevel);
 		}
 
 		//---- don't have all nations doing it the same time ----//
 
-		if (Misc.Random(NationArray.ai_nation_count) == 0)
+		if (Misc.Random(NationArray.AINationCount) == 0)
 			return 0;
 
 		//---- if the trade rating is high, stay war-less with it ----//
 
-		if (trade_rating(enemyNationRecno) + ai_trade_with_rating(enemyNationRecno) > 100 - pref_trading_tendency / 3)
+		if (TradeRating(enemyNationRecno) + ai_trade_with_rating(enemyNationRecno) > 100 - pref_trading_tendency / 3)
 			return 0;
 
 		//---- if the nation relation level is still high, then request aid/tribute ----//
 
-		NationRelation nationRelation = get_relation(enemyNationRecno);
+		NationRelation nationRelation = GetRelation(enemyNationRecno);
 
-		if (nationRelation.ai_relation_level > 20)
+		if (nationRelation.AIRelationLevel > 20)
 		{
 			int talkId;
 
-			if (nationRelation.status >= NATION_FRIENDLY)
+			if (nationRelation.Status >= NATION_FRIENDLY)
 				talkId = TalkMsg.TALK_DEMAND_AID;
 			else
 				talkId = TalkMsg.TALK_DEMAND_TRIBUTE;
@@ -7148,7 +7148,7 @@ public class NationOld : NationBase
 
 		//---------------------------------------//
 
-		int enemyNationRecno = NationArray.max_overall_nation_recno;
+		int enemyNationRecno = NationArray.MaxOverallNationId;
 
 		if (enemyNationRecno == 0)
 			return false;
@@ -7157,7 +7157,7 @@ public class NationOld : NationBase
 
 		//----- only against human players -----//
 
-		if (enemyNation.is_ai())
+		if (enemyNation.IsAI())
 			return false;
 
 		//---- find the overall rank rating of the second most powerful computer kingdom ---//
@@ -7169,12 +7169,12 @@ public class NationOld : NationBase
 			if (nation.NationId == enemyNationRecno)
 				continue;
 
-			if (!nation.is_ai()) // don't count human players
+			if (!nation.IsAI()) // don't count human players
 				continue;
 
-			if (nation.overall_rank_rating() > secondBestOverall)
+			if (nation.OverallRankRating() > secondBestOverall)
 			{
-				secondBestOverall = nation.overall_rank_rating();
+				secondBestOverall = nation.OverallRankRating();
 				secondBestNationRecno = nation.NationId;
 			}
 		}
@@ -7185,7 +7185,7 @@ public class NationOld : NationBase
 		//------- don't surrender to hostile nation -------//
 
 		// defaults to NATION_NEUTRAL
-		if (get_relation_status(secondBestNationRecno) < ConfigAdv.nation_ai_unite_min_relation_level)
+		if (GetRelationStatus(secondBestNationRecno) < ConfigAdv.nation_ai_unite_min_relation_level)
 			return false;
 
 		//--- if all AI kingdoms are way behind the human players, unite to against the human player ---//
@@ -7199,7 +7199,7 @@ public class NationOld : NationBase
 
 		if (secondBestOverall < compareRating && secondBestNationRecno != NationId)
 		{
-			surrender(secondBestNationRecno);
+			Surrender(secondBestNationRecno);
 			return true;
 		}
 
@@ -7208,7 +7208,7 @@ public class NationOld : NationBase
 
 	public void think_deal_with_all_enemy()
 	{
-		int ourMilitary = military_rank_rating();
+		int ourMilitary = MilitaryRankRating();
 		int enemyCount = total_enemy_count();
 
 		foreach (Nation nation in NationArray)
@@ -7216,16 +7216,16 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			if (get_relation_status(nation.NationId) != NATION_HOSTILE)
+			if (GetRelationStatus(nation.NationId) != NATION_HOSTILE)
 				continue;
 
 			//------- think about eliminating the enemy ------//
 
-			bool rc = (nation.total_population == 0); // the enemy has no towns left
+			bool rc = (nation.TotalPopulation == 0); // the enemy has no towns left
 
 			if (enemyCount == 1 && ourMilitary > 100 - pref_military_courage / 5) // 80 to 100
 			{
-				int enemyMilitary = nation.military_rank_rating();
+				int enemyMilitary = nation.MilitaryRankRating();
 
 				if (enemyMilitary < 20 && ai_should_spend_war(enemyMilitary))
 					rc = true;
@@ -7257,12 +7257,12 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = nation.get_relation(NationId);
+			NationRelation nationRelation = nation.GetRelation(NationId);
 
 			//--- if this nation is already allied to us, request it to declare war with the enemy ---//
 
-			if (nationRelation.status == NATION_ALLIANCE &&
-			    nation.get_relation_status(enemyNationRecno) != NATION_HOSTILE)
+			if (nationRelation.Status == NATION_ALLIANCE &&
+			    nation.GetRelationStatus(enemyNationRecno) != NATION_HOSTILE)
 			{
 				if (should_diplomacy_retry(TalkMsg.TALK_REQUEST_DECLARE_WAR, nation.NationId))
 				{
@@ -7274,12 +7274,12 @@ public class NationOld : NationBase
 
 			//---- if this nation is not friendly or alliance to our enemy ----//
 
-			if (nation.get_relation_status(enemyNationRecno) < NATION_FRIENDLY)
+			if (nation.GetRelationStatus(enemyNationRecno) < NATION_FRIENDLY)
 			{
 				//--- and this nation is neutral or friendly with us ---//
 
-				if (nationRelation.status >= NATION_NEUTRAL &&
-				    nation.get_relation(enemyNationRecno).trade_treaty)
+				if (nationRelation.Status >= NATION_NEUTRAL &&
+				    nation.GetRelation(enemyNationRecno).TradeTreaty)
 				{
 					//--- ask it to join a trade embargo on the enemy ---//
 
@@ -7292,11 +7292,11 @@ public class NationOld : NationBase
 			{
 				//----- and this nation is not at war with us -----//
 
-				if (nationRelation.status != NATION_HOSTILE)
+				if (nationRelation.Status != NATION_HOSTILE)
 				{
 					//--- if we do not have trade treaty with this nation, propose one ---//
 
-					if (!nationRelation.trade_treaty)
+					if (!nationRelation.TradeTreaty)
 					{
 						if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_TRADE_TREATY, nation.NationId) &&
 						    consider_trade_treaty(nation.NationId) > 0)
@@ -7307,7 +7307,7 @@ public class NationOld : NationBase
 					{
 						// if this nation is already friendly to us, propose an alliance treaty now --//
 
-						if (nationRelation.status == NATION_FRIENDLY)
+						if (nationRelation.Status == NATION_FRIENDLY)
 						{
 							if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY, nation.NationId) &&
 							    consider_alliance_treaty(nation.NationId) > 0)
@@ -7318,7 +7318,7 @@ public class NationOld : NationBase
 						//-- if the nation has significant trade with us, propose a friendly treaty now --//
 
 						// or if the product complement each other very well
-						else if (nation.trade_rating(NationId) > 10 ||
+						else if (nation.TradeRating(NationId) > 10 ||
 						         nation.ai_trade_with_rating(NationId) >= 50)
 						{
 							if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY, nation.NationId) &&
@@ -7343,7 +7343,7 @@ public class NationOld : NationBase
 
 			//--- only attack if we have any base town in the enemy town's region ---//
 
-			if (base_town_count_in_region(town.RegionId) == 0)
+			if (BaseTownCountInRegion(town.RegionId) == 0)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
@@ -7370,7 +7370,7 @@ public class NationOld : NationBase
 
 			//--- only attack if we have any base town in the enemy firm's region ---//
 
-			if (base_town_count_in_region(firm.RegionId) == 0)
+			if (BaseTownCountInRegion(firm.RegionId) == 0)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
@@ -7398,7 +7398,7 @@ public class NationOld : NationBase
 
 			//--- only attack if we have any base town in the enemy unit's region ---//
 
-			if (base_town_count_in_region(unit.RegionId()) == 0)
+			if (BaseTownCountInRegion(unit.RegionId()) == 0)
 				continue;
 
 			//----- take into account of the mobile units around this town -----//
@@ -7426,10 +7426,10 @@ public class NationOld : NationBase
 			if (firm.NationId == NationId || firm.NationId == 0)
 				continue;
 
-			if (NationArray[firm.NationId].is_ai())
+			if (NationArray[firm.NationId].IsAI())
 				continue;
 
-			if (get_relation_status(firm.NationId) != NATION_HOSTILE)
+			if (GetRelationStatus(firm.NationId) != NATION_HOSTILE)
 				continue;
 
 			bool linkedToTown = false;
@@ -7464,9 +7464,9 @@ public class NationOld : NationBase
 	{
 		//--- don't surrender if the nation still has a town ---//
 
-		bool rc = (total_population == 0);
+		bool rc = (TotalPopulation == 0);
 
-		if (Cash <= 0 && income_365days() == 0)
+		if (Cash <= 0 && Income365Days() == 0)
 			rc = true;
 
 		if (!rc)
@@ -7476,7 +7476,7 @@ public class NationOld : NationBase
 
 		int bestRating = 0, bestNationRecno = 0;
 
-		if (king_unit_recno == 0) // if there is no successor to the king, the nation will tend more to surrender
+		if (KingUnitId == 0) // if there is no successor to the king, the nation will tend more to surrender
 			bestRating = -100;
 
 		foreach (Nation nation in NationArray)
@@ -7484,7 +7484,7 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			if (!get_relation(nation.NationId).has_contact) // don't surrender to a nation without contact
+			if (!GetRelation(nation.NationId).HasContact) // don't surrender to a nation without contact
 				continue;
 
 			if (nation.Cash <= 300.0) // don't surrender to an economically handicapped nation
@@ -7494,7 +7494,7 @@ public class NationOld : NationBase
 
 			//--- the nation will tend to surrender if there is only a small number of units left ---//
 
-			curRating += 50 - total_unit_count * 5;
+			curRating += 50 - TotalUnitCount * 5;
 
 			if (curRating > bestRating)
 			{
@@ -7507,7 +7507,7 @@ public class NationOld : NationBase
 
 		if (bestNationRecno != 0)
 		{
-			surrender(bestNationRecno);
+			Surrender(bestNationRecno);
 			return true;
 		}
 
@@ -7517,26 +7517,26 @@ public class NationOld : NationBase
 	public int ai_surrender_to_rating(int nationRecno)
 	{
 		Nation nation = NationArray[nationRecno];
-		NationRelation nationRelation = get_relation(nationRecno);
+		NationRelation nationRelation = GetRelation(nationRecno);
 
 		//--- higher tendency to surrender to a powerful nation ---//
 
-		int curRating = nation.overall_rank_rating() - overall_rank_rating();
+		int curRating = nation.OverallRankRating() - OverallRankRating();
 
-		curRating += nationRelation.ai_relation_level - 40;
+		curRating += nationRelation.AIRelationLevel - 40;
 
-		curRating += (int)nationRelation.good_relation_duration_rating * 3;
+		curRating += (int)nationRelation.GoodRelationDurationRating * 3;
 
-		curRating += (int)nation.reputation / 2;
+		curRating += (int)nation.Reputation / 2;
 
 		//------ shouldn't surrender to an enemy --------//
 
-		if (nationRelation.status == NATION_HOSTILE)
+		if (nationRelation.Status == NATION_HOSTILE)
 			curRating -= 100;
 
 		//--- if the race of the kings are the same, the chance is higher ---//
 
-		if (RaceRes.is_same_race(nation.race_id, race_id))
+		if (RaceRes.is_same_race(nation.RaceId, RaceId))
 			curRating += 20;
 
 		return curRating;
@@ -7610,14 +7610,14 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation ourRelation = get_relation(nation.NationId);
+			NationRelation ourRelation = GetRelation(nation.NationId);
 
-			if (!ourRelation.has_contact)
+			if (!ourRelation.HasContact)
 				continue;
 
 			//------- propose a trade treaty --------//
 
-			if (!ourRelation.trade_treaty)
+			if (!ourRelation.TradeTreaty)
 			{
 				if (consider_trade_treaty(nation.NationId) > 0)
 				{
@@ -7625,7 +7625,7 @@ public class NationOld : NationBase
 					{
 						TalkRes.ai_send_talk_msg(nation.NationId, NationId,
 							TalkMsg.TALK_PROPOSE_TRADE_TREATY);
-						ourRelation.ai_demand_trade_treaty = 0;
+						ourRelation.AIDemandTradeTreaty = 0;
 						return true;
 					}
 				}
@@ -7646,9 +7646,9 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (!nationRelation.has_contact || nationRelation.status >= NATION_FRIENDLY)
+			if (!nationRelation.HasContact || nationRelation.Status >= NATION_FRIENDLY)
 				continue;
 
 			if (!should_diplomacy_retry(TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY, nation.NationId))
@@ -7683,9 +7683,9 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (!nationRelation.has_contact || nationRelation.status == NATION_ALLIANCE)
+			if (!nationRelation.HasContact || nationRelation.Status == NATION_ALLIANCE)
 				continue;
 
 			if (!should_diplomacy_retry(TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY, nation.NationId))
@@ -7719,24 +7719,24 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (nationRelation.status < NATION_FRIENDLY)
+			if (nationRelation.Status < NATION_FRIENDLY)
 				continue;
 
-			if (nationRelation.ai_secret_attack ||
-			    (nationRelation.ai_relation_level < 30 && trade_rating(nation.NationId) < 50))
+			if (nationRelation.AISecretAttack ||
+			    (nationRelation.AIRelationLevel < 30 && TradeRating(nation.NationId) < 50))
 			{
 				//--- don't change terminate treaty too soon ---//
 
 				// only after 60 to 110 days
-				if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + pref_honesty / 2))
+				if (Info.GameDate < nationRelation.LastChangeStatusDate.AddDays(60 + pref_honesty / 2))
 					continue;
 
 				//----------------------------------------//
 
 				if (!TalkRes.can_send_msg(nation.NationId, NationId,
-					    nationRelation.status == NATION_FRIENDLY
+					    nationRelation.Status == NATION_FRIENDLY
 						    ? TalkMsg.TALK_END_FRIENDLY_TREATY
 						    : TalkMsg.TALK_END_ALLIANCE_TREATY))
 					continue;
@@ -7756,9 +7756,9 @@ public class NationOld : NationBase
 				// even if its power is lower than the enemy.
 				//-----------------------------------------//
 
-				if (pref_honesty - 50 > nation.overall_rating - overall_rating)
+				if (pref_honesty - 50 > nation.OverallRating - OverallRating)
 				{
-					if (nationRelation.status == NATION_FRIENDLY)
+					if (nationRelation.Status == NATION_FRIENDLY)
 						TalkRes.ai_send_talk_msg(nation.NationId, NationId,
 							TalkMsg.TALK_END_FRIENDLY_TREATY);
 					else
@@ -7780,9 +7780,9 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (nationRelation.status != NATION_HOSTILE)
+			if (nationRelation.Status != NATION_HOSTILE)
 				continue;
 
 			if (!should_diplomacy_retry(TalkMsg.TALK_REQUEST_CEASE_WAR, nation.NationId))
@@ -7804,7 +7804,7 @@ public class NationOld : NationBase
 
 			else
 			{
-				change_ai_relation_level(nation.NationId, 1);
+				ChangeAIRelationLevel(nation.NationId, 1);
 			}
 		}
 
@@ -7815,7 +7815,7 @@ public class NationOld : NationBase
 	{
 		//------ first see if we need to buy food ------//
 
-		int yearFoodChange = yearly_food_change();
+		int yearFoodChange = YearlyFoodChange();
 		int neededFoodLevel;
 
 		if (yearFoodChange > 0)
@@ -7846,12 +7846,12 @@ public class NationOld : NationBase
 			if (nation.Food < 500) // if the nation is short of food itself. The minimum request purchase qty is 500
 				continue;
 
-			int relationStatus = get_relation_status(nation.NationId);
+			int relationStatus = GetRelationStatus(nation.NationId);
 
-			if (relationStatus == NATION_HOSTILE || !get_relation(nation.NationId).has_contact)
+			if (relationStatus == NATION_HOSTILE || !GetRelation(nation.NationId).HasContact)
 				continue;
 
-			if (nation.yearly_food_change() < 0 && nation.Food < 1500)
+			if (nation.YearlyFoodChange() < 0 && nation.Food < 1500)
 				continue;
 
 			if (!should_diplomacy_retry(TalkMsg.TALK_REQUEST_BUY_FOOD, nation.NationId))
@@ -7859,7 +7859,7 @@ public class NationOld : NationBase
 
 			//-----------------------------------//
 
-			int curRating = relationStatus * 20 + (int)nation.Food / 100 + nation.yearly_food_change() / 10;
+			int curRating = relationStatus * 20 + (int)nation.Food / 100 + nation.YearlyFoodChange() / 10;
 
 			if (curRating > bestRating)
 			{
@@ -7902,8 +7902,8 @@ public class NationOld : NationBase
 		else
 		{
 			// if the nation has plenty and food or if the nation runs short of cash
-			if (bestNation.Food > bestNation.all_population() * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION * 5 &&
-			    bestNation.Cash < bestNation.fixed_expense_365days() / 2)
+			if (bestNation.Food > bestNation.AllPopulation() * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION * 5 &&
+			    bestNation.Cash < bestNation.FixedExpense365Days() / 2)
 			{
 				buyPrice = 5;
 			}
@@ -7927,7 +7927,7 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			if (get_relation(nation.NationId).status == NATION_HOSTILE)
+			if (GetRelation(nation.NationId).Status == NATION_HOSTILE)
 				return false;
 		}
 
@@ -7940,26 +7940,26 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			NationRelation nationRelation = get_relation(nation.NationId);
+			NationRelation nationRelation = GetRelation(nation.NationId);
 
-			if (!nationRelation.has_contact)
+			if (!nationRelation.HasContact)
 				continue;
 
-			if (nationRelation.status == NATION_HOSTILE) // already at war
+			if (nationRelation.Status == NATION_HOSTILE) // already at war
 				continue;
 
-			if (nationRelation.ai_relation_level >= 10)
+			if (nationRelation.AIRelationLevel >= 10)
 				continue;
 
 			// if trade_rating is 0, importanceRating will be 100, if trade_rating is 100, importanceRating will be 0
-			if (!ai_should_spend(100 - trade_rating(nation.NationId)))
+			if (!ai_should_spend(100 - TradeRating(nation.NationId)))
 				continue;
 
 			//----------------------------------------//
 
-			int targetStrength = nation.military_rank_rating() +
-			                     nation.population_rank_rating() / 2 +
-			                     nation.economic_rank_rating() / 3;
+			int targetStrength = nation.MilitaryRankRating() +
+			                     nation.PopulationRankRating() / 2 +
+			                     nation.EconomicRankRating() / 3;
 
 			if (targetStrength < minStrength)
 			{
@@ -7997,7 +7997,7 @@ public class NationOld : NationBase
 			if (nation.NationId == NationId)
 				continue;
 
-			if (nation.total_tech_level() == 0)
+			if (nation.TotalTechLevel() == 0)
 				continue;
 
 			if (!should_diplomacy_retry(TalkMsg.TALK_DEMAND_TECH, nation.NationId))
@@ -8005,7 +8005,7 @@ public class NationOld : NationBase
 
 			//--- don't request from hostile or tense nations -----//
 
-			if (get_relation(nation.NationId).status < NATION_NEUTRAL)
+			if (GetRelation(nation.NationId).Status < NATION_NEUTRAL)
 				continue;
 
 			//---- scan which tech that the nation has but we don't have ----//
@@ -8042,8 +8042,8 @@ public class NationOld : NationBase
 
 		//--------------------------------------//
 
-		int ourMilitary = military_rank_rating();
-		int ourEconomy = economic_rank_rating();
+		int ourMilitary = MilitaryRankRating();
+		int ourEconomy = EconomicRankRating();
 
 		foreach (Nation nation in NationArray.EnumerateRandom())
 		{
@@ -8053,14 +8053,14 @@ public class NationOld : NationBase
 			//-- only demand tribute from non-friendly nations --//
 
 			int talkId;
-			if (get_relation(nation.NationId).status <= NATION_NEUTRAL)
+			if (GetRelation(nation.NationId).Status <= NATION_NEUTRAL)
 				talkId = TalkMsg.TALK_DEMAND_TRIBUTE;
 			else
 				talkId = TalkMsg.TALK_DEMAND_AID;
 
 			//-----------------------------------------------//
 
-			double fixedExpense = fixed_expense_365days();
+			double fixedExpense = FixedExpense365Days();
 			int curRating;
 			int requestRating;
 
@@ -8069,7 +8069,7 @@ public class NationOld : NationBase
 				if (!should_diplomacy_retry(talkId, nation.NationId))
 					continue;
 
-				curRating = ourMilitary - nation.military_rank_rating();
+				curRating = ourMilitary - nation.MilitaryRankRating();
 
 				if (curRating < -50)
 					continue;
@@ -8084,13 +8084,13 @@ public class NationOld : NationBase
 
 				if (pref_economic_development > 50)
 				{
-					int addRating = nation.economic_rank_rating() - ourEconomy;
+					int addRating = nation.EconomicRankRating() - ourEconomy;
 
 					if (addRating > 0)
 						curRating += addRating;
 				}
 
-				requestRating = 20 + trade_rating(nation.NationId) / 2 + (100 - pref_peacefulness) / 3;
+				requestRating = 20 + TradeRating(nation.NationId) / 2 + (100 - pref_peacefulness) / 3;
 
 				if (Cash < fixedExpense && fixedExpense != 0)
 					requestRating -= (int)(requestRating * Cash / fixedExpense);
@@ -8112,15 +8112,15 @@ public class NationOld : NationBase
 
 				//----- only ask for aid when the nation is short of cash ----//
 
-				curRating = (ourMilitary - nation.military_rank_rating()) / 2 +
-				            (nation.economic_rank_rating() - ourEconomy);
+				curRating = (ourMilitary - nation.MilitaryRankRating()) / 2 +
+				            (nation.EconomicRankRating() - ourEconomy);
 
 				requestRating = 20 + 50 * (int)(Cash / fixedExpense);
 			}
 
 			//----- if this is a human player's nation -----//
 
-			if (!nation.is_ai())
+			if (!nation.IsAI())
 			{
 				switch (Config.ai_aggressiveness)
 				{
@@ -8184,16 +8184,16 @@ public class NationOld : NationBase
 		int rejectedTalkId = rejectedMsg.talk_id;
 		int rejectedMsgPara1 = rejectedMsg.talk_para1;
 		int rejectedMsgPara2 = rejectedMsg.talk_para2;
-		NationRelation nationRelation = get_relation(talkNationRecno);
+		NationRelation nationRelation = GetRelation(talkNationRecno);
 
-		if (nationRelation.status >= NATION_FRIENDLY)
+		if (nationRelation.Status >= NATION_FRIENDLY)
 			talkId = TalkMsg.TALK_GIVE_AID;
 		else
 			talkId = TalkMsg.TALK_GIVE_TRIBUTE;
 
 		//-------- don't give tribute too frequently -------//
 
-		if (Info.GameDate < nationRelation.last_talk_reject_date_array[talkId - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.LastTalkRejectDates[talkId - 1].AddDays(365 - pref_allying_tendency))
 			return false;
 
 		//---- think if the nation should spend money now ----//
@@ -8216,8 +8216,8 @@ public class NationOld : NationBase
 		else if (rejectedTalkId == TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY ||
 		         rejectedTalkId == TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY)
 		{
-			int curRating = talkNation.trade_rating(talkNationRecno) + ai_trade_with_rating(talkNationRecno) +
-				talkNation.overall_rating - overall_rating;
+			int curRating = talkNation.TradeRating(talkNationRecno) + ai_trade_with_rating(talkNationRecno) +
+				talkNation.OverallRating - OverallRating;
 
 			int acceptRating = 200 - pref_trading_tendency / 4 - pref_allying_tendency / 4;
 
@@ -8225,8 +8225,8 @@ public class NationOld : NationBase
 		}
 		else if (rejectedTalkId == TalkMsg.TALK_REQUEST_CEASE_WAR)
 		{
-			rc = talkNation.military_rank_rating() >
-			     military_rank_rating() + (100 - pref_peacefulness) / 2;
+			rc = talkNation.MilitaryRankRating() >
+			     MilitaryRankRating() + (100 - pref_peacefulness) / 2;
 		}
 
 		//--------------------------------------//
@@ -8237,11 +8237,11 @@ public class NationOld : NationBase
 
 			TalkRes.ai_send_talk_msg(talkNationRecno, NationId, talkId, tributeAmount);
 
-			nationRelation.last_talk_reject_date_array[talkId - 1] = Info.GameDate;
+			nationRelation.LastTalkRejectDates[talkId - 1] = Info.GameDate;
 
 			//------ request again after giving tribute ----//
 
-			nationRelation.last_talk_reject_date_array[rejectedTalkId - 1] = default; // reset the rejected talk id.
+			nationRelation.LastTalkRejectDates[rejectedTalkId - 1] = default; // reset the rejected talk id.
 
 			TalkRes.ai_send_talk_msg(talkNationRecno, NationId,
 				rejectedTalkId, rejectedMsgPara1, rejectedMsgPara2);
@@ -8260,15 +8260,15 @@ public class NationOld : NationBase
 
 		//---- only do so when we have enough cash ----//
 
-		if (Cash < fixed_expense_365days() + 5000.0 + 100.0 * pref_cash_reserve)
+		if (Cash < FixedExpense365Days() + 5000.0 + 100.0 * pref_cash_reserve)
 			return false;
 
-		if (profit_365days() < 0 && Cash < 20000.0) // don't ask if we are losing money and the cash isn't plenty
+		if (Profit365Days() < 0 && Cash < 20000.0) // don't ask if we are losing money and the cash isn't plenty
 			return false;
 
 		//----- calculate the amount this nation can offer ----//
 
-		int offerAmount = (int)(Cash * 3.0 / 4.0) - Math.Min(5000, (int)fixed_expense_365days());
+		int offerAmount = (int)(Cash * 3.0 / 4.0) - Math.Min(5000, (int)FixedExpense365Days());
 
 		int[] amtArray = { 5000, 7500, 10000, 15000, 20000, 30000, 40000, 50000 };
 
@@ -8287,7 +8287,7 @@ public class NationOld : NationBase
 
 		//---------------------------------------------//
 
-		int ourOverallRankRating = overall_rank_rating();
+		int ourOverallRankRating = OverallRankRating();
 
 		foreach (Nation nation in NationArray.EnumerateRandom())
 		{
@@ -8298,7 +8298,7 @@ public class NationOld : NationBase
 
 			if (nation.Cash > 100) // unless it is running short of cash
 			{
-				if (nation.overall_rank_rating() > ourOverallRankRating)
+				if (nation.OverallRankRating() > ourOverallRankRating)
 					continue;
 			}
 
@@ -8352,12 +8352,12 @@ public class NationOld : NationBase
 	{
 		TalkMsg talkMsg = TalkRes.get_talk_msg(talkMsgRecno);
 		int relationChange = 0;
-		NationRelation nationRelation = get_relation(talkMsg.to_nation_recno);
+		NationRelation nationRelation = GetRelation(talkMsg.to_nation_recno);
 
 		if (talkMsg.reply_type == TalkRes.REPLY_REJECT)
-			nationRelation.last_talk_reject_date_array[talkMsg.talk_id - 1] = Info.GameDate;
+			nationRelation.LastTalkRejectDates[talkMsg.talk_id - 1] = Info.GameDate;
 		else
-			nationRelation.last_talk_reject_date_array[talkMsg.talk_id - 1] = default;
+			nationRelation.LastTalkRejectDates[talkMsg.talk_id - 1] = default;
 
 		switch (talkMsg.talk_id)
 		{
@@ -8446,7 +8446,7 @@ public class NationOld : NationBase
 			relationChange -= relationChange * (200 - pref_forgiveness) / 200;
 
 		if (relationChange != 0)
-			change_ai_relation_level(talkMsg.to_nation_recno, relationChange);
+			ChangeAIRelationLevel(talkMsg.to_nation_recno, relationChange);
 
 		//---- think about giving tribute to become more friendly with the nation so it will accept our request next time ---//
 
@@ -8459,12 +8459,12 @@ public class NationOld : NationBase
 
 			if (talkMsg.talk_id !=
 			    TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY && // the rejected request is not alliance treaty
-			    nationRelation.status >= NATION_FRIENDLY &&
-			    nationRelation.ai_relation_level < 40 - pref_allying_tendency / 5) // 20 to 40
+			    nationRelation.Status >= NATION_FRIENDLY &&
+			    nationRelation.AIRelationLevel < 40 - pref_allying_tendency / 5) // 20 to 40
 			{
 				int talkId;
 
-				if (nationRelation.status == NATION_FRIENDLY)
+				if (nationRelation.Status == NATION_FRIENDLY)
 					talkId = TalkMsg.TALK_END_FRIENDLY_TREATY;
 				else
 					talkId = TalkMsg.TALK_END_ALLIANCE_TREATY;
@@ -8474,7 +8474,7 @@ public class NationOld : NationBase
 
 			//----- declare war if ai_relation_level==0 -----//
 
-			else if (nationRelation.ai_relation_level == 0)
+			else if (nationRelation.AIRelationLevel == 0)
 			{
 				//--------- declare war ---------//
 
@@ -8487,10 +8487,10 @@ public class NationOld : NationBase
 					if (Config.ai_aggressiveness >= Config.OPTION_VERY_HIGH ||
 					    (Config.ai_aggressiveness >= Config.OPTION_HIGH && pref_peacefulness < 50))
 					{
-						if (largest_town_recno != 0)
+						if (LargestTownId != 0)
 						{
 							// 1-use forces from all camps to attack the target
-							think_capture_new_enemy_town(TownArray[largest_town_recno], true);
+							think_capture_new_enemy_town(TownArray[LargestTownId], true);
 						}
 					}
 				}
@@ -8517,19 +8517,19 @@ public class NationOld : NationBase
 			retryInterval = 90 + 270 * (100 - pref_diplomacy_retry) / 100; // 3 months to 12 months before next try
 		}
 
-		return Info.GameDate > get_relation(nationRecno).last_talk_reject_date_array[talkId - 1].AddDays(retryInterval);
+		return Info.GameDate > GetRelation(nationRecno).LastTalkRejectDates[talkId - 1].AddDays(retryInterval);
 	}
 
 	public void ai_end_treaty(int nationRecno)
 	{
-		NationRelation nationRelation = get_relation(nationRecno);
+		NationRelation nationRelation = GetRelation(nationRecno);
 
-		if (nationRelation.status == NATION_FRIENDLY)
+		if (nationRelation.Status == NATION_FRIENDLY)
 		{
 			TalkRes.ai_send_talk_msg(nationRecno, NationId,
 				TalkMsg.TALK_END_FRIENDLY_TREATY, 0, 0, true);
 		}
-		else if (nationRelation.status == NATION_ALLIANCE)
+		else if (nationRelation.Status == NATION_ALLIANCE)
 		{
 			TalkRes.ai_send_talk_msg(nationRecno, NationId,
 				TalkMsg.TALK_END_ALLIANCE_TREATY, 0, 0, true);
@@ -8630,20 +8630,20 @@ public class NationOld : NationBase
 	public void notify_talk_msg(TalkMsg talkMsg)
 	{
 		int relationChange = 0;
-		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
+		NationRelation nationRelation = GetRelation(talkMsg.from_nation_recno);
 
 		switch (talkMsg.talk_id)
 		{
 			case TalkMsg.TALK_END_TRADE_TREATY: // it's a notification message only, no accept or reject
 				relationChange = -5;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.GameDate;
+				nationRelation.LastTalkRejectDates[TalkMsg.TALK_PROPOSE_TRADE_TREATY - 1] = Info.GameDate;
 				break;
 
 			case TalkMsg.TALK_END_FRIENDLY_TREATY: // it's a notification message only, no accept or reject
 			case TalkMsg.TALK_END_ALLIANCE_TREATY:
 				relationChange = -5;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.GameDate;
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.GameDate;
+				nationRelation.LastTalkRejectDates[TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY - 1] = Info.GameDate;
+				nationRelation.LastTalkRejectDates[TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY - 1] = Info.GameDate;
 				break;
 
 			case TalkMsg.TALK_DECLARE_WAR: // it already drops to zero when the status is set to hostile
@@ -8690,23 +8690,23 @@ public class NationOld : NationBase
 			relationChange -= relationChange * pref_forgiveness / 100;
 
 		if (relationChange != 0)
-			change_ai_relation_level(talkMsg.from_nation_recno, relationChange);
+			ChangeAIRelationLevel(talkMsg.from_nation_recno, relationChange);
 	}
 
 	public int consider_trade_treaty(int withNationRecno)
 	{
-		NationRelation nationRelation = get_relation(withNationRecno);
+		NationRelation nationRelation = GetRelation(withNationRecno);
 
 		//---- don't accept new trade treaty soon when the trade treaty was terminated not too long ago ----//
 
-		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_END_TRADE_TREATY - 1].AddDays(365 - pref_forgiveness))
+		if (Info.GameDate < nationRelation.LastTalkRejectDates[TalkMsg.TALK_END_TRADE_TREATY - 1].AddDays(365 - pref_forgiveness))
 		{
 			return -1;
 		}
 
 		//-- if we look forward to have a trade treaty with this nation ourselves --//
 
-		if (nationRelation.ai_demand_trade_treaty != 0)
+		if (nationRelation.AIDemandTradeTreaty != 0)
 			return 1;
 
 		return ai_trade_with_rating(withNationRecno) > 0 ? 1 : -1;
@@ -8714,12 +8714,12 @@ public class NationOld : NationBase
 
 	public int consider_friendly_treaty(int withNationRecno)
 	{
-		NationRelation nationRelation = get_relation(withNationRecno);
+		NationRelation nationRelation = GetRelation(withNationRecno);
 
-		if (nationRelation.status >= NATION_FRIENDLY) // already has a friendly relationship
+		if (nationRelation.Status >= NATION_FRIENDLY) // already has a friendly relationship
 			return -1; // -1 means don't reply
 
-		if (nationRelation.ai_relation_level < 20)
+		if (nationRelation.AIRelationLevel < 20)
 			return -1;
 
 		//------- some consideration first -------//
@@ -8738,12 +8738,12 @@ public class NationOld : NationBase
 
 	public int consider_alliance_treaty(int withNationRecno)
 	{
-		NationRelation nationRelation = get_relation(withNationRecno);
+		NationRelation nationRelation = GetRelation(withNationRecno);
 
-		if (nationRelation.status >= NATION_ALLIANCE) // already has a friendly relationship
+		if (nationRelation.Status >= NATION_ALLIANCE) // already has a friendly relationship
 			return -1; // -1 means don't reply
 
-		if (nationRelation.ai_relation_level < 40)
+		if (nationRelation.AIRelationLevel < 40)
 			return -1;
 
 		//------- some consideration first -------//
@@ -8763,7 +8763,7 @@ public class NationOld : NationBase
 	public bool consider_military_aid(TalkMsg talkMsg)
 	{
 		Nation fromNation = NationArray[talkMsg.from_nation_recno];
-		NationRelation fromRelation = get_relation(talkMsg.from_nation_recno);
+		NationRelation fromRelation = GetRelation(talkMsg.from_nation_recno);
 
 		//----- don't aid too frequently ------//
 
@@ -8772,17 +8772,17 @@ public class NationOld : NationBase
 
 		//------- only when the AI relation >= 60 --------//
 
-		if (fromRelation.ai_relation_level < 60)
+		if (fromRelation.AIRelationLevel < 60)
 			return false;
 
 		//--- if the requesting nation is not at war now ----//
 
-		if (!fromNation.is_at_war())
+		if (!fromNation.IsAtWar())
 			return false;
 
 		//---- can't aid if we are at war ourselves -----//
 
-		if (is_at_war())
+		if (IsAtWar())
 			return false;
 
 		//--- if the nation is having a financial difficulty, it won't agree ---//
@@ -8792,15 +8792,15 @@ public class NationOld : NationBase
 
 		//----- can't aid if we are too weak ourselves ---//
 
-		if (ai_general_array.Count * 10 + total_human_count < 100 - pref_military_courage / 2)
+		if (ai_general_array.Count * 10 + TotalHumanCount < 100 - pref_military_courage / 2)
 			return false;
 
 		//----- see what units are attacking the nation -----//
 
-		if (UnitArray.IsDeleted(fromNation.last_attacker_unit_recno))
+		if (UnitArray.IsDeleted(fromNation.LastAttackerUnitId))
 			return false;
 
-		Unit unit = UnitArray[fromNation.last_attacker_unit_recno];
+		Unit unit = UnitArray[fromNation.LastAttackerUnitId];
 
 		if (unit.NationId == NationId) // if it's our own units
 			return false;
@@ -8813,7 +8813,7 @@ public class NationOld : NationBase
 
 		//------ only attack if it's a common enemy to us and our ally -----//
 
-		if (get_relation(unit.NationId).status != NATION_HOSTILE)
+		if (GetRelation(unit.NationId).Status != NATION_HOSTILE)
 			return false;
 
 		//------- calculate the combat level of the target units there ------//
@@ -8835,23 +8835,23 @@ public class NationOld : NationBase
 		int fromRelationRating = ai_overall_relation_rating(talkMsg.from_nation_recno);
 		int againstRelationRating = ai_overall_relation_rating(talkMsg.talk_para1);
 
-		NationRelation fromRelation = get_relation(talkMsg.from_nation_recno);
-		NationRelation againstRelation = get_relation(talkMsg.talk_para1);
+		NationRelation fromRelation = GetRelation(talkMsg.from_nation_recno);
+		NationRelation againstRelation = GetRelation(talkMsg.talk_para1);
 
 		//--- if we don't have a good enough relation with the requesting nation, turn down the request ---//
 
-		if (fromRelation.good_relation_duration_rating < 5)
+		if (fromRelation.GoodRelationDurationRating < 5)
 			return false;
 
 		//--- if we are more friendly with the against nation than the requesting nation, turn down the request ---//
 
-		if (againstRelation.good_relation_duration_rating > fromRelation.good_relation_duration_rating)
+		if (againstRelation.GoodRelationDurationRating > fromRelation.GoodRelationDurationRating)
 			return false;
 
 		//--- if we have a large trade with the against nation or have a larger trade with the against nation than the requesting nation ---//
 
-		int fromTrade = trade_rating(talkMsg.from_nation_recno);
-		int againstTrade = trade_rating(talkMsg.talk_para1);
+		int fromTrade = TradeRating(talkMsg.from_nation_recno);
+		int againstTrade = TradeRating(talkMsg.talk_para1);
 
 		if (againstTrade > 40 || (againstTrade > 10 && againstTrade - fromTrade > 15))
 			return false;
@@ -8868,7 +8868,7 @@ public class NationOld : NationBase
 		//--- it won't declare war with a friendly or allied nation easily ---//
 
 		// no need to handle NATION_ALLIANCE separately as ai_overall_relation_relation() has already taken it into account
-		if (againstRelation.status >= NATION_FRIENDLY)
+		if (againstRelation.Status >= NATION_FRIENDLY)
 			acceptRating += 100;
 
 		return fromRelationRating - againstRelationRating > acceptRating;
@@ -8876,9 +8876,9 @@ public class NationOld : NationBase
 
 	public int consider_cease_war(int withNationRecno)
 	{
-		NationRelation nationRelation = get_relation(withNationRecno);
+		NationRelation nationRelation = GetRelation(withNationRecno);
 
-		if (nationRelation.status != NATION_HOSTILE)
+		if (nationRelation.Status != NATION_HOSTILE)
 			return -1; // -1 means don't reply
 
 		//---- if we are attacking the nation, don't cease fire ----//
@@ -8897,7 +8897,7 @@ public class NationOld : NationBase
 		//--- don't cease fire too soon after a war is declared ---//
 
 		// more peaceful nation may cease fire sooner (but the minimum is 60 days).
-		if (Info.GameDate < nationRelation.last_change_status_date.AddDays(60 + (100 - pref_peacefulness)))
+		if (Info.GameDate < nationRelation.LastChangeStatusDate.AddDays(60 + (100 - pref_peacefulness)))
 			return -1;
 
 		Nation withNation = NationArray[withNationRecno];
@@ -8905,13 +8905,13 @@ public class NationOld : NationBase
 		//------ if this is our biggest enemy do not cease fire -----//
 
 		if (Config.ai_aggressiveness == Config.OPTION_VERY_HIGH &&
-		    NationArray.max_overall_nation_recno == withNationRecno)
+		    NationArray.MaxOverallNationId == withNationRecno)
 			return -1;
 
 		//------ if we're run short of money for war -----//
 
 		// if we shouldn't spend any more on war, then return 1
-		if (!ai_should_spend_war(withNation.military_rank_rating(), true))
+		if (!ai_should_spend_war(withNation.MilitaryRankRating(), true))
 			return 1;
 
 		//------------------------------------------------//
@@ -8930,16 +8930,16 @@ public class NationOld : NationBase
 
 		//--- if the enemy is more power than us, tend more to request cease-fire ---//
 
-		curRating += total_enemy_military() - military_rank_rating();
+		curRating += total_enemy_military() - MilitaryRankRating();
 
 		// when we have excessive supply, we may want to cease-fire with our enemy
 		curRating += ai_trade_with_rating(withNationRecno) * (100 + pref_trading_tendency) / 300;
 
 		// if our military ranking is high, we may like to continue the war, otherwise the nation should try to cease-fire
-		curRating -= (military_rank_rating() - 50) / 2;
+		curRating -= (MilitaryRankRating() - 50) / 2;
 
 		// the number of times this nation has started a war with us, the higher the number, the more unlikely we will accept cease-fire
-		curRating -= nationRelation.started_war_on_us_count * 10;
+		curRating -= nationRelation.StartedWarOnUsCount * 10;
 
 		int acceptRating = pref_peacefulness / 4;
 
@@ -8960,18 +8960,18 @@ public class NationOld : NationBase
 
 		Nation againstNation = NationArray[talkMsg.talk_para1];
 
-		NationRelation fromRelation = get_relation(talkMsg.from_nation_recno);
-		NationRelation againstRelation = get_relation(talkMsg.talk_para1);
+		NationRelation fromRelation = GetRelation(talkMsg.from_nation_recno);
+		NationRelation againstRelation = GetRelation(talkMsg.talk_para1);
 
 		//--- if we don't have a good enough relation with the requesting nation, turn down the request ---//
 
-		if (fromRelation.good_relation_duration_rating < 10)
+		if (fromRelation.GoodRelationDurationRating < 10)
 			return false;
 
 		//--- if we are more friendly with the against nation than the requesting nation, turn down the request ---//
 
-		if (againstRelation.good_relation_duration_rating >
-		    fromRelation.good_relation_duration_rating)
+		if (againstRelation.GoodRelationDurationRating >
+		    fromRelation.GoodRelationDurationRating)
 		{
 			return false;
 		}
@@ -8983,12 +8983,12 @@ public class NationOld : NationBase
 
 		//--------------------------------------------//
 
-		int acceptRating = 100 + againstNation.total_enemy_military() - military_rank_rating();
+		int acceptRating = 100 + againstNation.total_enemy_military() - MilitaryRankRating();
 
 		//--- it won't declare war with a friendly or allied nation easily ---//
 
 		// no need to handle NATION_ALLIANCE separately as ai_overall_relation_relation() has already taken it into account
-		if (againstRelation.status >= NATION_FRIENDLY)
+		if (againstRelation.Status >= NATION_FRIENDLY)
 			acceptRating += 100;
 
 		return fromRelationRating - againstRelationRating > acceptRating;
@@ -8996,7 +8996,7 @@ public class NationOld : NationBase
 
 	public bool consider_sell_food(TalkMsg talkMsg)
 	{
-		int relationStatus = get_relation_status(talkMsg.from_nation_recno);
+		int relationStatus = GetRelationStatus(talkMsg.from_nation_recno);
 
 		if (relationStatus == NATION_HOSTILE)
 			return false;
@@ -9004,9 +9004,9 @@ public class NationOld : NationBase
 		//--- if after selling the food, the remaining is not enough for its own consumption for ? years ---//
 
 		double newFood = Food - talkMsg.talk_para1;
-		double yearConsumption = yearly_food_consumption();
+		double yearConsumption = YearlyFoodConsumption();
 		int offeredAmount = talkMsg.talk_para2;
-		int relationLevel = get_relation(talkMsg.from_nation_recno).ai_relation_level;
+		int relationLevel = GetRelation(talkMsg.from_nation_recno).AIRelationLevel;
 
 		if (newFood < 1000 + 1000 * pref_food_reserve / 100)
 			return false;
@@ -9019,7 +9019,7 @@ public class NationOld : NationBase
 
 		//---- if we run short of cash, we tend to accept the offer ---//
 
-		double fixedExpense = fixed_expense_365days();
+		double fixedExpense = FixedExpense365Days();
 
 		if (Cash < fixedExpense)
 			offeredAmount += (int)(20 * (fixedExpense - Cash) / fixedExpense);
@@ -9028,7 +9028,7 @@ public class NationOld : NationBase
 
 		double reserveYears = (100 + pref_food_reserve) / 100.0; // 1 to 2 years
 
-		if (yearly_food_change() > 0 && newFood > yearConsumption * reserveYears)
+		if (YearlyFoodChange() > 0 && newFood > yearConsumption * reserveYears)
 		{
 			if (offeredAmount >= 10) // offered >= $10
 			{
@@ -9044,7 +9044,7 @@ public class NationOld : NationBase
 		{
 			if (offeredAmount >= 20)
 			{
-				if (yearly_food_change() > 0 && newFood > yearConsumption * reserveYears / 2)
+				if (YearlyFoodChange() > 0 && newFood > yearConsumption * reserveYears / 2)
 				{
 					return true;
 				}
@@ -9052,7 +9052,7 @@ public class NationOld : NationBase
 
 			if (offeredAmount >= 30)
 			{
-				return yearly_food_change() > 0 || newFood > yearConsumption * reserveYears;
+				return YearlyFoodChange() > 0 || newFood > yearConsumption * reserveYears;
 			}
 		}
 
@@ -9065,9 +9065,9 @@ public class NationOld : NationBase
 
 		//--- It does not necessarily want the tribute ---//
 
-		int aiRelationLevel = get_relation(talkMsg.from_nation_recno).ai_relation_level;
+		int aiRelationLevel = GetRelation(talkMsg.from_nation_recno).AIRelationLevel;
 
-		if (true_profit_365days() > 0 && cashSignificance < (100 - aiRelationLevel) / 5)
+		if (TrueProfit365Days() > 0 && cashSignificance < (100 - aiRelationLevel) / 5)
 		{
 			return false;
 		}
@@ -9076,7 +9076,7 @@ public class NationOld : NationBase
 
 		int relationChange = cashSignificance * (100 + pref_cash_reserve) / 200;
 
-		change_ai_relation_level(talkMsg.from_nation_recno, relationChange);
+		ChangeAIRelationLevel(talkMsg.from_nation_recno, relationChange);
 
 		return true;
 	}
@@ -9085,9 +9085,9 @@ public class NationOld : NationBase
 	{
 		//-------- don't give tribute too frequently -------//
 
-		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
+		NationRelation nationRelation = GetRelation(talkMsg.from_nation_recno);
 
-		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TRIBUTE - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
@@ -9096,19 +9096,19 @@ public class NationOld : NationBase
 
 		Nation fromNation = NationArray[talkMsg.from_nation_recno];
 
-		if (true_profit_365days() < 0) // don't give tribute if we are losing money
+		if (TrueProfit365Days() < 0) // don't give tribute if we are losing money
 			return false;
 
 		int reserveYears = 1 + 3 * pref_cash_reserve / 100; // 1 to 4 years
 
-		if (Cash - talkMsg.talk_para1 < fixed_expense_365days() * reserveYears)
+		if (Cash - talkMsg.talk_para1 < FixedExpense365Days() * reserveYears)
 			return false;
 
-		int militaryDiff = fromNation.military_rank_rating() - military_rank_rating();
+		int militaryDiff = fromNation.MilitaryRankRating() - MilitaryRankRating();
 
 		if (militaryDiff > 10 + pref_military_courage / 2)
 		{
-			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TRIBUTE - 1] = Info.GameDate;
+			nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TRIBUTE - 1] = Info.GameDate;
 			return true;
 		}
 
@@ -9121,9 +9121,9 @@ public class NationOld : NationBase
 
 		//--- It does not necessarily want the tribute ---//
 
-		int aiRelationLevel = get_relation(talkMsg.from_nation_recno).ai_relation_level;
+		int aiRelationLevel = GetRelation(talkMsg.from_nation_recno).AIRelationLevel;
 
-		if (true_profit_365days() > 0 && cashSignificance < (100 - aiRelationLevel) / 5)
+		if (TrueProfit365Days() > 0 && cashSignificance < (100 - aiRelationLevel) / 5)
 		{
 			return false;
 		}
@@ -9132,7 +9132,7 @@ public class NationOld : NationBase
 
 		int relationChange = cashSignificance * (100 + pref_cash_reserve) / 200;
 
-		change_ai_relation_level(talkMsg.from_nation_recno, relationChange);
+		ChangeAIRelationLevel(talkMsg.from_nation_recno, relationChange);
 
 		return true;
 	}
@@ -9141,23 +9141,23 @@ public class NationOld : NationBase
 	{
 		//-------- don't give tribute too frequently -------//
 
-		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
+		NationRelation nationRelation = GetRelation(talkMsg.from_nation_recno);
 
-		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_AID - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
 
 		//--------------------------------------------------//
 
-		int importanceRating = (int)nationRelation.good_relation_duration_rating;
+		int importanceRating = (int)nationRelation.GoodRelationDurationRating;
 
-		if (nationRelation.status >= NATION_FRIENDLY && ai_should_spend(importanceRating, talkMsg.talk_para1))
+		if (nationRelation.Status >= NATION_FRIENDLY && ai_should_spend(importanceRating, talkMsg.talk_para1))
 		{
 			// we have allied with this nation for quite some while
-			if (Info.GameDate > nationRelation.last_change_status_date.AddDays(720 - pref_allying_tendency))
+			if (Info.GameDate > nationRelation.LastChangeStatusDate.AddDays(720 - pref_allying_tendency))
 			{
-				nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_AID - 1] = Info.GameDate;
+				nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_AID - 1] = Info.GameDate;
 				return true;
 			}
 		}
@@ -9174,7 +9174,7 @@ public class NationOld : NationBase
 
 		int relationChange = (talkMsg.talk_para2 - ourTechLevel) * (15 + pref_use_weapon / 10);
 
-		change_ai_relation_level(talkMsg.from_nation_recno, relationChange);
+		ChangeAIRelationLevel(talkMsg.from_nation_recno, relationChange);
 
 		return true;
 	}
@@ -9183,20 +9183,20 @@ public class NationOld : NationBase
 	{
 		//-------- don't give tribute too frequently -------//
 
-		NationRelation nationRelation = get_relation(talkMsg.from_nation_recno);
+		NationRelation nationRelation = GetRelation(talkMsg.from_nation_recno);
 
-		if (Info.GameDate < nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1].AddDays(365 - pref_allying_tendency))
+		if (Info.GameDate < nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TECH - 1].AddDays(365 - pref_allying_tendency))
 		{
 			return false;
 		}
 
 		//----------------------------------------------------//
 
-		int importanceRating = (int)nationRelation.good_relation_duration_rating;
+		int importanceRating = (int)nationRelation.GoodRelationDurationRating;
 
-		if (nationRelation.status == NATION_ALLIANCE && importanceRating + pref_allying_tendency / 10 > 30)
+		if (nationRelation.Status == NATION_ALLIANCE && importanceRating + pref_allying_tendency / 10 > 30)
 		{
-			nationRelation.last_talk_reject_date_array[TalkMsg.TALK_GIVE_TECH - 1] = Info.GameDate;
+			nationRelation.LastTalkRejectDates[TalkMsg.TALK_GIVE_TECH - 1] = Info.GameDate;
 			return true;
 		}
 
@@ -9211,24 +9211,24 @@ public class NationOld : NationBase
 
 		//---- don't surrender to the player if the player is already the most powerful nation ---//
 
-		if (!nation.is_ai() && Config.ai_aggressiveness >= Config.OPTION_HIGH)
+		if (!nation.IsAI() && Config.ai_aggressiveness >= Config.OPTION_HIGH)
 		{
-			if (NationArray.max_overall_nation_recno == nation.NationId)
+			if (NationArray.MaxOverallNationId == nation.NationId)
 				return false;
 		}
 
 		//--- if we are running out of cash, ignore all normal thinking ---//
 
-		if (Cash >= 100.0 || profit_365days() > 0.0)
+		if (Cash >= 100.0 || Profit365Days() > 0.0)
 		{
 			//----- never surrender to a weaker nation ------//
 
-			if (nation.overall_rank_rating() < overall_rank_rating())
+			if (nation.OverallRankRating() < OverallRankRating())
 				return false;
 
 			//------ don't surrender if we are still strong -----//
 
-			if (overall_rank_rating() > 30 + pref_peacefulness / 4) // 30 to 55
+			if (OverallRankRating() > 30 + pref_peacefulness / 4) // 30 to 55
 				return false;
 
 			//---- don't surrender if our cash is more than the amount they offered ----//
@@ -9238,9 +9238,9 @@ public class NationOld : NationBase
 
 			//-- if there are only two nations left, don't surrender if we still have some power --//
 
-			if (NationArray.nation_count == 2)
+			if (NationArray.NationCount == 2)
 			{
-				if (overall_rank_rating() > 20 - 10 * pref_military_courage / 100)
+				if (OverallRankRating() > 20 - 10 * pref_military_courage / 100)
 					return false;
 			}
 		}
@@ -9251,21 +9251,21 @@ public class NationOld : NationBase
 
 		surrenderToRating += 100 * offeredAmt / 13000;
 
-		int acceptRating = overall_rank_rating() * 13 + 100;
+		int acceptRating = OverallRankRating() * 13 + 100;
 
 		//------ AI aggressiveness effects -------//
 
 		switch (Config.ai_aggressiveness)
 		{
 			case Config.OPTION_HIGH:
-				if (nation.is_ai()) // tend to accept AI kingdom offer easier
+				if (nation.IsAI()) // tend to accept AI kingdom offer easier
 					acceptRating -= 75;
 				else
 					acceptRating += 75;
 				break;
 
 			case Config.OPTION_VERY_HIGH:
-				if (nation.is_ai()) // tend to accept AI kingdom offer easier
+				if (nation.IsAI()) // tend to accept AI kingdom offer easier
 					acceptRating -= 150;
 				else
 					acceptRating += 150;
@@ -9281,25 +9281,25 @@ public class NationOld : NationBase
 
 		//---- the current relation affect the alliance tendency ---//
 
-		NationRelation nationRelation = get_relation(nationRecno);
+		NationRelation nationRelation = GetRelation(nationRecno);
 
-		int allianceRating = nationRelation.ai_relation_level - 20;
+		int allianceRating = nationRelation.AIRelationLevel - 20;
 
 		//--- if the nation has a bad record of starting wars with us before, decrease the rating ---//
 
-		allianceRating -= nationRelation.started_war_on_us_count * 20;
+		allianceRating -= nationRelation.StartedWarOnUsCount * 20;
 
 		//------ add the trade rating -------//
 
 		// existing trade amount and possible trade
-		int tradeRating = trade_rating(nationRecno) + ai_trade_with_rating(nationRecno) / 2;
+		int tradeRating = TradeRating(nationRecno) + ai_trade_with_rating(nationRecno) / 2;
 
 		allianceRating += tradeRating;
 
 		//---- if the nation's power is larger than us, it's a plus ----//
 
 		// if the nation's power is larger than ours, it's good to form treaty with them
-		int powerRating = nation.military_rank_rating() - military_rank_rating();
+		int powerRating = nation.MilitaryRankRating() - MilitaryRankRating();
 
 		if (powerRating > 0)
 			allianceRating += powerRating;
@@ -9311,7 +9311,7 @@ public class NationOld : NationBase
 	{
 		//------- if this is a larger nation -------//
 
-		if (overall_rank_rating() > 10)
+		if (OverallRankRating() > 10)
 		{
 			//--- big nations don't ally with their biggest opponents ---//
 
@@ -9323,7 +9323,7 @@ public class NationOld : NationBase
 				if (nation.NationId == NationId)
 					continue;
 
-				int overallRating = nation.overall_rating;
+				int overallRating = nation.OverallRating;
 
 				if (overallRating > maxOverallRating)
 				{
@@ -9339,19 +9339,19 @@ public class NationOld : NationBase
 		//--- don't ally with nations with too low reputation ---//
 
 		Nation withNation = NationArray[withNationRecno];
-		return withNation.reputation >= Math.Min(20, reputation) - 20;
+		return withNation.Reputation >= Math.Min(20, Reputation) - 20;
 	}
 
 	public int ai_overall_relation_rating(int withNationRecno)
 	{
 		Nation nation = NationArray[withNationRecno];
-		NationRelation nationRelation = get_relation(withNationRecno);
+		NationRelation nationRelation = GetRelation(withNationRecno);
 
-		int overallRating = nationRelation.ai_relation_level +
-		                    (int)nationRelation.good_relation_duration_rating +
-		                    (int)nation.reputation +
-		                    nation.military_rank_rating() +
-		                    trade_rating(withNationRecno) +
+		int overallRating = nationRelation.AIRelationLevel +
+		                    (int)nationRelation.GoodRelationDurationRating +
+		                    (int)nation.Reputation +
+		                    nation.MilitaryRankRating() +
+		                    TradeRating(withNationRecno) +
 		                    ai_trade_with_rating(withNationRecno) / 2 +
 		                    nation.total_alliance_military();
 

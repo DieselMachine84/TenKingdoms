@@ -65,7 +65,7 @@ public class FirmArray : DynArray<Firm>
 		firm.Init(nationId, firmType, locX, locY, buildCode, builderId);
 
 		if (nationId != 0)
-			NationArray[nationId].add_expense(NationBase.EXPENSE_FIRM, FirmRes[firmType].SetupCost);
+			NationArray[nationId].AddExpense(NationBase.EXPENSE_FIRM, FirmRes[firmType].SetupCost);
 
 		return firm.FirmId;
 	}
@@ -92,7 +92,7 @@ public class FirmArray : DynArray<Firm>
 		{
 			//-------- process visibility -----------//
 
-			if (firm.NationId == NationArray.player_recno || (firm.NationId != 0 && NationArray[firm.NationId].is_allied_with_player))
+			if (firm.NationId == NationArray.PlayerId || (firm.NationId != 0 && NationArray[firm.NationId].IsAlliedWithPlayer))
 			{
 				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
 			}

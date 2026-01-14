@@ -174,10 +174,10 @@ public abstract class Firm : IIdObject
 		{
 			firmInfo.inc_nation_firm_count(NationId);
 			Nation nation = NationArray[NationId];
-			AIFirm = nation.is_ai();
+			AIFirm = nation.IsAI();
 			AIProcessed = true;
-			nation.nation_firm_count++;
-			nation.last_build_firm_date = Info.GameDate;
+			nation.NationFirmCount++;
+			nation.LastBuildFirmDate = Info.GameDate;
 		}
 		else
 		{
@@ -241,7 +241,7 @@ public abstract class Firm : IIdObject
 		if (NationId != 0)
 		{
 			firmInfo.dec_nation_firm_count(NationId);
-			NationArray[NationId].nation_firm_count--;
+			NationArray[NationId].NationFirmCount--;
 		}
 
 		LocX1 = -1; // mark deleted
@@ -288,7 +288,7 @@ public abstract class Firm : IIdObject
 
 		//------------ reveal new land ----------//
 
-		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (NationId == NationArray.PlayerId || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 		{
 			World.Unveil(LocX1, LocY1, LocX2, LocY2);
 			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
@@ -321,9 +321,9 @@ public abstract class Firm : IIdObject
 			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (location.IsExplored() && NationArray.player_recno != 0)
+				if (location.IsExplored() && NationArray.PlayerId != 0)
 				{
-					NationRelation relation = NationArray.player.get_relation(NationId);
+					NationRelation relation = NationArray.Player.GetRelation(NationId);
 
 					//if (remote.is_enable())
 					//{
@@ -338,7 +338,7 @@ public abstract class Firm : IIdObject
 					//}
 					//else
 					//{
-						relation.has_contact = true;
+						relation.HasContact = true;
 					//}
 				}
 			}
@@ -509,7 +509,7 @@ public abstract class Firm : IIdObject
 		else
 			HitPoints++;
 
-		if (Config.fast_build && NationId == NationArray.player_recno)
+		if (Config.fast_build && NationId == NationArray.PlayerId)
 			HitPoints += 10;
 
 		//----- increase skill level of the builder unit -----//
@@ -535,7 +535,7 @@ public abstract class Firm : IIdObject
 
 			bool needAssignUnit = false;
 
-			if (NationId == NationArray.player_recno)
+			if (NationId == NationArray.PlayerId)
 				SERes.far_sound(LocCenterX, LocCenterY, 1, 'S', unit.SpriteResId, "FINS", 'F', FirmType);
 
 			FirmInfo firmInfo = FirmRes[FirmType];
@@ -599,7 +599,7 @@ public abstract class Firm : IIdObject
 		//------ get half of the construction cost back -------//
 
 		Nation nation = NationArray[NationId];
-		nation.add_expense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].SetupCost / 2.0);
+		nation.AddExpense(NationBase.EXPENSE_FIRM, -FirmRes[FirmType].SetupCost / 2.0);
 
 		FirmArray.DeleteFirm(this);
 	}
@@ -701,19 +701,19 @@ public abstract class Firm : IIdObject
 
 	public bool OwnFirm() // whether the firm is controlled by the current player
 	{
-		return NationArray.player_recno != 0 && NationId == NationArray.player_recno;
+		return NationArray.PlayerId != 0 && NationId == NationArray.PlayerId;
 	}
 
 	public virtual bool ShouldShowInfo()
 	{
-		if (Config.show_ai_info || NationId == NationArray.player_recno || PlayerSpyCount > 0)
+		if (Config.show_ai_info || NationId == NationArray.PlayerId || PlayerSpyCount > 0)
 		{
 			return true;
 		}
 
 		//------ if the builder is a spy of the player ------//
 
-		if (BuilderId != 0 && UnitArray[BuilderId].TrueNationId() == NationArray.player_recno)
+		if (BuilderId != 0 && UnitArray[BuilderId].TrueNationId() == NationArray.PlayerId)
 		{
 			return true;
 		}
@@ -725,7 +725,7 @@ public abstract class Firm : IIdObject
 
 		//---- if there is a phoenix of the player over this firm ----//
 
-		if (NationArray.player_recno != 0 && NationArray.player.revealed_by_phoenix(LocCenterX, LocCenterY))
+		if (NationArray.PlayerId != 0 && NationArray.Player.RevealedByPhoenix(LocCenterX, LocCenterY))
 			return true;
 
 		return false;
@@ -735,7 +735,7 @@ public abstract class Firm : IIdObject
 	{
 		foreach (Worker worker in Workers)
 		{
-			if (worker.IsNation(FirmId, NationArray.player_recno, checkSpy))
+			if (worker.IsNation(FirmId, NationArray.PlayerId, checkSpy))
 				return true;
 		}
 
@@ -772,7 +772,7 @@ public abstract class Firm : IIdObject
 	{
 		CurYearIncome += incomeAmount;
 
-		NationArray[NationId].add_income(incomeType, incomeAmount, true);
+		NationArray[NationId].AddIncome(incomeType, incomeAmount, true);
 	}
 
 	public double Income365Days()
@@ -793,7 +793,7 @@ public abstract class Firm : IIdObject
 
 		if (nation.Cash >= dayExpense)
 		{
-			nation.add_expense(NationBase.EXPENSE_FIRM, dayExpense, true);
+			nation.AddExpense(NationBase.EXPENSE_FIRM, dayExpense, true);
 		}
 		else
 		{
@@ -805,7 +805,7 @@ public abstract class Firm : IIdObject
 
 			//--- when the hit points drop to zero and the firm is destroyed ---//
 
-			if (HitPoints <= 0.0 && NationId == NationArray.player_recno)
+			if (HitPoints <= 0.0 && NationId == NationArray.PlayerId)
 				NewsArray.firm_worn_out(FirmId);
 		}
 
@@ -832,13 +832,13 @@ public abstract class Firm : IIdObject
 						payWorkerCount++;
 
 						if (townNationId != 0) // the nation of the worker will get income
-							NationArray[townNationId].add_income(NationBase.INCOME_FOREIGN_WORKER,
+							NationArray[townNationId].AddIncome(NationBase.INCOME_FOREIGN_WORKER,
 								(double)GameConstants.WORKER_YEAR_SALARY / 365.0, true);
 					}
 				}
 			}
 
-			nation.add_expense(NationBase.EXPENSE_FOREIGN_WORKER,
+			nation.AddExpense(NationBase.EXPENSE_FOREIGN_WORKER,
 				(double)GameConstants.WORKER_YEAR_SALARY * payWorkerCount / 365.0, true);
 		}
 	}
@@ -856,7 +856,7 @@ public abstract class Firm : IIdObject
 					humanUnitCount++;
 			}
 
-			NationArray[NationId].consume_food((double)(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+			NationArray[NationId].ConsumeFood((double)(humanUnitCount * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
 		}
 		else //--- decrease loyalty if the food has been run out ---//
 		{
@@ -1945,7 +1945,7 @@ public abstract class Firm : IIdObject
 			int targetBaseAttractLevel = 0;
 
 			if (town.NationId != 0)
-				targetBaseAttractLevel += (int)NationArray[town.NationId].reputation;
+				targetBaseAttractLevel += (int)NationArray[town.NationId].Reputation;
 
 			//---- scan all workers, see if any of them want to migrate ----//
 
@@ -1978,7 +1978,7 @@ public abstract class Firm : IIdObject
 
 				int curBaseAttractLevel = 0;
 				if (workerTown.NationId != 0)
-					curBaseAttractLevel = (int)NationArray[workerTown.NationId].reputation;
+					curBaseAttractLevel = (int)NationArray[workerTown.NationId].Reputation;
 
 				int targetAttractLevel = targetBaseAttractLevel + town.RaceHarmony(raceId);
 				if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
@@ -2010,7 +2010,7 @@ public abstract class Firm : IIdObject
 
 		//------------- add news --------------//
 
-		if (srcTown.NationId == NationArray.player_recno || destTown.NationId == NationArray.player_recno)
+		if (srcTown.NationId == NationArray.PlayerId || destTown.NationId == NationArray.PlayerId)
 		{
 			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
 				NewsArray.migrate(srcTown.TownId, destTownId, raceId, 1, FirmId);
@@ -2226,7 +2226,7 @@ public abstract class Firm : IIdObject
 		else
 		{
 			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
-			NationArray[NationId].add_expense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
+			NationArray[NationId].AddExpense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 		}
 	}
 	
@@ -2279,7 +2279,7 @@ public abstract class Firm : IIdObject
 
 	public void CaptureFirm(int newNationId)
 	{
-		if (NationId == NationArray.player_recno)
+		if (NationId == NationArray.PlayerId)
 			NewsArray.firm_captured(FirmId, newNationId, 0); // 0 - the capturer is not a spy
 
 		if (AIFirm)
@@ -2365,7 +2365,7 @@ public abstract class Firm : IIdObject
 
 		//---------------------------------------//
 
-		AIFirm = NationArray[NationId].is_ai();
+		AIFirm = NationArray[NationId].IsAI();
 
 		if (AIFirm)
 			newNation.add_firm_info(FirmType, FirmId);
@@ -2508,7 +2508,7 @@ public abstract class Firm : IIdObject
 
 		double sellIncome = FirmRes[FirmType].SetupCost / 2.0 * HitPoints / MaxHitPoints;
 
-		nation.add_income(NationBase.INCOME_SELL_FIRM, sellIncome);
+		nation.AddIncome(NationBase.INCOME_SELL_FIRM, sellIncome);
 
 		SERes.sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "SELL");
 
@@ -2568,7 +2568,7 @@ public abstract class Firm : IIdObject
 
 		int succeedChance = SpyBribeSucceedChance(bribeAmount, briberSpyId, workerId);
 
-		NationArray[briber.TrueNationId].add_expense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
+		NationArray[briber.TrueNationId].AddExpense(NationBase.EXPENSE_BRIBE, bribeAmount, false);
 
 		//------ if the bribe succeeds ------//
 
@@ -2654,12 +2654,12 @@ public abstract class Firm : IIdObject
 		if (targetSpyId == 0)
 		{
 			succeedChance = spy.SpySkill - unitLoyalty - unitCommandPower
-			                + (int)NationArray[spy.TrueNationId].reputation
+			                + (int)NationArray[spy.TrueNationId].Reputation
 			                + 200 * bribeAmount / GameConstants.MAX_BRIBE_AMOUNT;
 
 			//-- the chance is higher if the spy or the spy's king is racially homogenous to the bribe target
 
-			int spyKingRaceId = NationArray[spy.TrueNationId].race_id;
+			int spyKingRaceId = NationArray[spy.TrueNationId].RaceId;
 
 			succeedChance += (RaceRes.is_same_race(spy.RaceId, unitRaceId) ? 1 : 0) * 10 +
 			                 (RaceRes.is_same_race(spyKingRaceId, unitRaceId) ? 1 : 0) * 10;
@@ -2686,7 +2686,7 @@ public abstract class Firm : IIdObject
 	//TODO move to UI
 	public bool ValidateCurBribe()
 	{
-		if (SpyArray.IsDeleted(ActionSpyId) || SpyArray[ActionSpyId].TrueNationId != NationArray.player_recno)
+		if (SpyArray.IsDeleted(ActionSpyId) || SpyArray[ActionSpyId].TrueNationId != NationArray.PlayerId)
 		{
 			return false;
 		}
@@ -2841,7 +2841,7 @@ public abstract class Firm : IIdObject
 
 		if (HitPoints >= MaxHitPoints * 80.0 / 100.0)
 		{
-			if (ownNation.total_jobless_population < 15)
+			if (ownNation.TotalJoblessPopulation < 15)
 				return;
 		}
 
@@ -2881,7 +2881,7 @@ public abstract class Firm : IIdObject
 
 			//-- only recruit workers from towns of other nations if we don't have labor ourselves
 
-			if (town.NationId != NationId && nation.total_jobless_population > MAX_WORKER)
+			if (town.NationId != NationId && nation.TotalJoblessPopulation > MAX_WORKER)
 				continue;
 
 			// don't order units to move into it as they will be recruited from the town automatically
@@ -2988,7 +2988,7 @@ public abstract class Firm : IIdObject
 
 		//--- only build additional factories if we have a surplus of labor ---//
 
-		if (nation.total_jobless_population < factoryCount * MAX_WORKER)
+		if (nation.TotalJoblessPopulation < factoryCount * MAX_WORKER)
 			return false;
 
 		//--- only when we have checked it three times and all say it needs a factory, we then build a factory ---//
@@ -3051,7 +3051,7 @@ public abstract class Firm : IIdObject
 			//--- enable link to hire people from the town ---//
 
 			// either it's an independent town or it's friendly or allied to our nation
-			rc = town.NationId == 0 || ownNation.get_relation_status(town.NationId) >= NationBase.NATION_FRIENDLY;
+			rc = town.NationId == 0 || ownNation.GetRelationStatus(town.NationId) >= NationBase.NATION_FRIENDLY;
 
 			ToggleTownLink(i + 1, rc, InternalConstants.COMMAND_AI);
 		}
@@ -3159,7 +3159,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation.is_ai() && CanWorkerCapture(nation.NationId))
+			if (nation.IsAI() && CanWorkerCapture(nation.NationId))
 			{
 				captureNation = nation;
 				break;
@@ -3170,7 +3170,7 @@ public abstract class Firm : IIdObject
 			return false;
 
 		//------- do not capture firms of our ally --------//
-		if (NationArray[NationId].is_ai() && captureNation.get_relation_status(NationId) == NationBase.NATION_ALLIANCE)
+		if (NationArray[NationId].IsAI() && captureNation.GetRelationStatus(NationId) == NationBase.NATION_ALLIANCE)
 			return false;
 
 		//------- capture the firm --------//
@@ -3215,10 +3215,10 @@ public abstract class Firm : IIdObject
 	{
 		Nation ownNation = NationArray[NationId];
 
-		if (!ownNation.is_ai()) //**BUGHERE
+		if (!ownNation.IsAI()) //**BUGHERE
 			return;
 
-		if (ownNation.get_relation(capturerNationRecno).status >= NationBase.NATION_FRIENDLY)
+		if (ownNation.GetRelation(capturerNationRecno).Status >= NationBase.NATION_FRIENDLY)
 			ownNation.ai_end_treaty(capturerNationRecno);
 
 		TalkRes.ai_send_talk_msg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);

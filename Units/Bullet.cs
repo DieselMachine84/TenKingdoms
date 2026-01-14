@@ -207,7 +207,7 @@ public class Bullet : Sprite
 			return;
 		}
 
-		if (!NationArray.should_attack(NationId, targetUnit.NationId))
+		if (!NationArray.ShouldAttack(NationId, targetUnit.NationId))
 			return;
 
 		if (targetUnit.IsGuarding())
@@ -245,13 +245,13 @@ public class Bullet : Sprite
 		if (location.IsFirm())
 		{
 			Firm firm = FirmArray[location.FirmId()];
-			if (!NationArray.should_attack(NationId, firm.NationId))
+			if (!NationArray.ShouldAttack(NationId, firm.NationId))
 				return;
 		}
 		else if (location.IsTown())
 		{
 			Town town = TownArray[location.TownId()];
-			if (!NationArray.should_attack(NationId, town.NationId))
+			if (!NationArray.ShouldAttack(NationId, town.NationId))
 				return;
 		}
 		else

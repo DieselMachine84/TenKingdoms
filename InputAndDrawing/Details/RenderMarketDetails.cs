@@ -7,7 +7,7 @@ public partial class Renderer
     public void DrawMarketDetails(FirmMarket market)
     {
         bool showInfo = Config.show_ai_info || market.OwnFirm() ||
-                        (NationArray.player_recno != 0 && NationArray[market.NationId].get_relation(NationArray.player_recno).trade_treaty);
+                        (NationArray.PlayerId != 0 && NationArray[market.NationId].GetRelation(NationArray.PlayerId).TradeTreaty);
         if (!showInfo)
         {
             DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 96);

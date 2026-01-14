@@ -4,73 +4,73 @@ namespace TenKingdoms;
 
 public class NationRelation
 {
-    public bool has_contact; // whether this nation has been contacted or not
+    public bool HasContact { get; set; } // whether this nation has been contacted or not
 
     // whether units should automatically attack units/firms of this nation when the relationship is hostile
-    public bool should_attack;
+    public bool ShouldAttack { get; set; }
 
-    public bool trade_treaty; // whether allow trading with this nation
+    public bool TradeTreaty { get; set; } // whether allow trading with this nation
 
-    public int status;
+    public int Status { get; set; }
 
-    public DateTime last_change_status_date;
+    public DateTime LastChangeStatusDate { get; set; }
 
     // AI's subjectively relation levels towards the others, the opposite nation's relation level is not the same as this
-    public int ai_relation_level;
+    public int AIRelationLevel { get; set; }
 
-    public bool ai_secret_attack;
-    public int ai_demand_trade_treaty;
+    public bool AISecretAttack { get; set; }
+    public int AIDemandTradeTreaty { get; set; }
 
     // a rating indicate how long does a good relation (friendly/alliance) lasts
-    public double good_relation_duration_rating;
+    public double GoodRelationDurationRating { get; set; }
 
     // how many times this nation has started a war with us, the more the times the worse this nation is.
-    public int started_war_on_us_count;
+    public int StartedWarOnUsCount { get; set; }
 
-    public double[] cur_year_import = new double[NationBase.IMPORT_TYPE_COUNT];
-    public double[] last_year_import = new double[NationBase.IMPORT_TYPE_COUNT];
-    public double[] lifetime_import = new double[NationBase.IMPORT_TYPE_COUNT];
-
-    public double import_365days(int importType)
-    {
-        return last_year_import[importType] * (365 - Info.YearDay) / 365 + cur_year_import[importType];
-    }
+    public double[] CurYearImport { get; } = new double[NationBase.IMPORT_TYPE_COUNT];
+    public double[] LastYearImport { get; } = new double[NationBase.IMPORT_TYPE_COUNT];
+    public double[] LifetimeImport { get; } = new double[NationBase.IMPORT_TYPE_COUNT];
 
     // the date which the last diplomatic request was rejected.
-    public DateTime[] last_talk_reject_date_array = new DateTime[TalkMsg.MAX_TALK_TYPE];
+    public DateTime[] LastTalkRejectDates { get; } = new DateTime[TalkMsg.MAX_TALK_TYPE];
 
-    public DateTime last_military_aid_date;
+    public DateTime last_military_aid_date { get; set; }
 
     // the last date which the current nation give tribute, aid or technology to this nation
-    public DateTime last_give_gift_date;
+    public DateTime LastGiveGiftDate { get; set; }
 
-    public int total_given_gift_amount; // the total amount of gift the current nation has given to this nation
+    public int TotalGivenGiftAmount { get; set; } // the total amount of gift the current nation has given to this nation
 
-    public bool contact_msg_flag; // used only in multiplayer
+    public bool ContactMsgFlag { get; set; } // used only in multiplayer
 
     private Info Info => Sys.Instance.Info;
 
-    public static string[] relation_status_str_array = new string[] { "War", "Tense", "Neutral", "Friendly", "Alliance" };
+    public static string[] RelationStatusStrings { get; } = new string[] { "War", "Tense", "Neutral", "Friendly", "Alliance" };
 
-    public static string[] duration_of_status_str_array = new string[]
+    public static string[] DurationOfStatusStrings { get; } = new string[]
     {
         "Duration of War Status", "Duration of Tense Status", "Duration of Neutral Status",
         "Duration of Friendly Status", "Duration of Alliance Status"
     };
 
-    public string status_str()
+    public double Import365Days(int importType)
     {
-        return relation_status_str_array[status];
+        return LastYearImport[importType] * (365 - Info.YearDay) / 365 + CurYearImport[importType];
+    }
+    
+    public string StatusString()
+    {
+        return RelationStatusStrings[Status];
     }
 
-    public string duration_of_status_str()
+    public string DurationOfStatusString()
     {
-        return duration_of_status_str_array[status];
+        return DurationOfStatusStrings[Status];
     }
 
-    public string status_duration_str()
+    public string StatusDurationString()
     {
-        int statusDays = (Info.GameDate - last_change_status_date).Days;
+        int statusDays = (Info.GameDate - LastChangeStatusDate).Days;
         int statusYear = statusDays / 365;
         int statusMonth = (statusDays - statusYear * 365) / 30;
 

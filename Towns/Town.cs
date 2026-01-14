@@ -151,7 +151,7 @@ public class Town : IIdObject
 
 		RegionId = World.GetRegionId(LocCenterX, LocCenterY);
 
-		AITown = (NationId == 0 || NationArray[NationId].nation_type == NationBase.NATION_AI);
+		AITown = (NationId == 0 || NationArray[NationId].NationType == NationBase.NATION_AI);
 		AILinkChecked = true; // check the linked towns and firms connected only if AILinkChecked is false
 
 		// the minimum rating a nation must have in order for an independent unit to join it
@@ -215,8 +215,8 @@ public class Town : IIdObject
 		{
 			Nation nation = NationArray[NationId];
 
-			SetAutoCollectTaxLoyalty(nation.auto_collect_tax_loyalty);
-			SetAutoGrantLoyalty(nation.auto_grant_loyalty);
+			SetAutoCollectTaxLoyalty(nation.AutoCollectTaxLoyalty);
+			SetAutoGrantLoyalty(nation.AutoGrantLoyalty);
 		}
 	}
 
@@ -231,8 +231,8 @@ public class Town : IIdObject
 
 		//------ if this town is the nation's largest town, reset it ----//
 
-		if (NationId != 0 && NationArray[NationId].largest_town_recno == TownId)
-			NationArray[NationId].largest_town_recno = 0;
+		if (NationId != 0 && NationArray[NationId].LargestTownId == TownId)
+			NationArray[NationId].LargestTownId = 0;
 
 		//-----------------------------------//
 
@@ -346,7 +346,7 @@ public class Town : IIdObject
 
 		//-------- update visibility ---------//
 
-		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (NationId == NationArray.PlayerId || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 		{
 			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
 		}
@@ -413,7 +413,7 @@ public class Town : IIdObject
 
 		//------------ reveal new land ----------//
 
-		if (NationId == NationArray.player_recno || (NationId != 0 && NationArray[NationId].is_allied_with_player))
+		if (NationId == NationArray.PlayerId || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 		{
 			World.Unveil(LocX1, LocY1, LocX2, LocY2);
 			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
@@ -446,9 +446,9 @@ public class Town : IIdObject
 			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (location.IsExplored() && NationArray.player_recno != 0)
+				if (location.IsExplored() && NationArray.PlayerId != 0)
 				{
-					NationRelation relation = NationArray.player.get_relation(NationId);
+					NationRelation relation = NationArray.Player.GetRelation(NationId);
 
 					//if (remote.is_enable())
 					//{
@@ -463,7 +463,7 @@ public class Town : IIdObject
 					//}
 					//else
 					//{
-						relation.has_contact = true;
+						relation.HasContact = true;
 					//}
 				}
 			}
@@ -737,7 +737,7 @@ public class Town : IIdObject
 
 		if (Population == 0)
 		{
-			if (NationId == NationArray.player_recno)
+			if (NationId == NationArray.PlayerId)
 				NewsArray.town_abandoned(TownId);
 
 			TownArray.DeleteTown(this);
@@ -1081,7 +1081,7 @@ public class Town : IIdObject
 		//------- set target loyalty of each race --------//
 
 		Nation nation = NationArray[NationId];
-		int nationRaceId = nation.race_id;
+		int nationRaceId = nation.RaceId;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
@@ -1091,7 +1091,7 @@ public class Town : IIdObject
 			//------- calculate the target loyalty -------//
 
 			// 0 to 33 + -25 to +25
-			int targetLoyalty = RaceHarmony(i + 1) / 3 + (int)(nation.reputation / 4.0);
+			int targetLoyalty = RaceHarmony(i + 1) / 3 + (int)(nation.Reputation / 4.0);
 
 			//---- employment help increase loyalty ----//
 
@@ -1154,7 +1154,7 @@ public class Town : IIdObject
 
 				//--- if the overseer's nation's race is the same as this race ---//
 
-				if (baseNation.race_id == j + 1)
+				if (baseNation.RaceId == j + 1)
 					thisInfluence += 8;
 
 				//------------------------------------------//
@@ -1368,7 +1368,7 @@ public class Town : IIdObject
 
 	private void CollectYearlyTax()
 	{
-		NationArray[NationId].add_income(NationBase.INCOME_TAX, Population * GameConstants.TAX_PER_PERSON);
+		NationArray[NationId].AddIncome(NationBase.INCOME_TAX, Population * GameConstants.TAX_PER_PERSON);
 	}
 
 	public void CollectTax(int remoteAction)
@@ -1410,7 +1410,7 @@ public class Town : IIdObject
 			taxCollected += (beforeLoyalty - RacesLoyalty[i]) * RacesPopulation[i] * GameConstants.TAX_PER_PERSON / loyaltyDecrease;
 		}
 
-		NationArray[NationId].add_income(NationBase.INCOME_TAX, taxCollected);
+		NationArray[NationId].AddIncome(NationBase.INCOME_TAX, taxCollected);
 
 		ThinkRebel();
 	}
@@ -1448,7 +1448,7 @@ public class Town : IIdObject
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 			ChangeLoyalty(i + 1, loyaltyIncrease);
 
-		NationArray[NationId].add_expense(NationBase.EXPENSE_GRANT_OWN_TOWN, Population * GameConstants.TOWN_REWARD_PER_PERSON);
+		NationArray[NationId].AddExpense(NationBase.EXPENSE_GRANT_OWN_TOWN, Population * GameConstants.TOWN_REWARD_PER_PERSON);
 	}
 
 	public bool CanGrantToNonOwnTown(int grantNationId)
@@ -1517,7 +1517,7 @@ public class Town : IIdObject
 
 		//----------- decrease cash ------------//
 
-		grantNation.add_expense(NationBase.EXPENSE_GRANT_OTHER_TOWN, Population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
+		grantNation.AddExpense(NationBase.EXPENSE_GRANT_OTHER_TOWN, Population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
 
 		return 1;
 	}
@@ -1669,11 +1669,11 @@ public class Town : IIdObject
 	{
 		//--------- Peasants produce food ---------//
 
-		NationArray[NationId].add_food(Convert.ToDouble(JoblessPopulation * GameConstants.PEASANT_FOOD_YEAR_PRODUCTION) / 365.0);
+		NationArray[NationId].AddFood(Convert.ToDouble(JoblessPopulation * GameConstants.PEASANT_FOOD_YEAR_PRODUCTION) / 365.0);
 
 		//---------- People consume food ----------//
 
-		NationArray[NationId].consume_food(Convert.ToDouble(Population * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
+		NationArray[NationId].ConsumeFood(Convert.ToDouble(Population * GameConstants.PERSON_FOOD_YEAR_CONSUMPTION) / 365.0);
 	}
 
 
@@ -1714,7 +1714,7 @@ public class Town : IIdObject
 
 		long totalTrainDays;
 
-		if (Config.fast_build && NationId == NationArray.player_recno)
+		if (Config.fast_build && NationId == NationArray.PlayerId)
 			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS / 2;
 		else
 			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS;
@@ -1959,7 +1959,7 @@ public class Town : IIdObject
 
 				if (migratedCount > 0)
 				{
-					if (NationId == NationArray.player_recno || town.NationId == NationArray.player_recno)
+					if (NationId == NationArray.PlayerId || town.NationId == NationArray.PlayerId)
 					{
 						NewsArray.migrate(TownId, town.TownId, raceId, migratedCount);
 					}
@@ -2002,7 +2002,7 @@ public class Town : IIdObject
 		if (NationId != 0)
 		{
 			// loyalty > 40 is considered as positive force, < 40 is considered as negative force
-			curAttractLevel += (int)(NationArray[NationId].reputation + RacesLoyalty[raceId - 1] - 40.0);
+			curAttractLevel += (int)(NationArray[NationId].Reputation + RacesLoyalty[raceId - 1] - 40.0);
 		}
 		else
 		{
@@ -2016,7 +2016,7 @@ public class Town : IIdObject
 		int targetAttractLevel = targetTown.RaceHarmony(raceId);
 
 		if (targetTown.NationId != 0)
-			targetAttractLevel += (int)NationArray[targetTown.NationId].reputation;
+			targetAttractLevel += (int)NationArray[targetTown.NationId].Reputation;
 
 		if (targetAttractLevel < GameConstants.MIN_MIGRATE_ATTRACT_LEVEL)
 			return false;
@@ -2335,7 +2335,7 @@ public class Town : IIdObject
 			unit.UnitMode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
 			unit.UnitModeParam = TownId;
 			
-			NationArray[NationId].add_expense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
+			NationArray[NationId].AddExpense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
 		}
 		else
 		{
@@ -2519,10 +2519,10 @@ public class Town : IIdObject
 		// your people's loyalty decreases because you cannot protect them.
 		// but only when your units are killed by enemies, neutral disasters are not counted
 		if (NationId != 0 && attackerNationId != 0)
-			NationArray[NationId].civilian_killed(raceId, false, 2);
+			NationArray[NationId].CivilianKilled(raceId, false, 2);
 
 		if (attackerNationId != 0) // the attacker's people's loyalty decreases because of the killing actions.
-			NationArray[attackerNationId].civilian_killed(raceId, true, 2); // the nation is the attacking one
+			NationArray[attackerNationId].CivilianKilled(raceId, true, 2); // the nation is the attacking one
 
 		SERes.sound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
 
@@ -2837,7 +2837,7 @@ public class Town : IIdObject
 
 			//--- don't set it if the town and camp both belong to a human player, the player will set it himself ---//
 
-			if (firm.NationId == NationId && NationId != 0 && !NationArray[NationId].is_ai())
+			if (firm.NationId == NationId && NationId != 0 && !NationArray[NationId].IsAI())
 			{
 				continue;
 			}
@@ -2928,7 +2928,7 @@ public class Town : IIdObject
 
 		foreach (Spy spy in SpyArray)
 		{
-			if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == TownId && spy.TrueNationId == NationArray.player_recno)
+			if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == TownId && spy.TrueNationId == NationArray.PlayerId)
 			{
 				return true;
 			}
@@ -2986,7 +2986,7 @@ public class Town : IIdObject
 		{
 			AITown = true;
 		}
-		else if (NationArray[NationId].nation_type == NationBase.NATION_AI)
+		else if (NationArray[NationId].NationType == NationBase.NATION_AI)
 		{
 			AITown = true;
 			NationArray[NationId].add_town_info(TownId);
@@ -2997,7 +2997,7 @@ public class Town : IIdObject
 		int nationRaceId = 0;
 
 		if (NationId != 0)
-			nationRaceId = NationArray[NationId].race_id;
+			nationRaceId = NationArray[NationId].RaceId;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
@@ -3032,7 +3032,7 @@ public class Town : IIdObject
 
 		//----- if an AI nation took over this town, see if the AI can capture all firms linked to this town ----//
 
-		if (NationId != 0 && NationArray[NationId].is_ai())
+		if (NationId != 0 && NationArray[NationId].IsAI())
 			ThinkCaptureLinkedFirm();
 
 		//------ set national auto policy -----//
@@ -3041,8 +3041,8 @@ public class Town : IIdObject
 		{
 			Nation nation = NationArray[NationId];
 
-			SetAutoCollectTaxLoyalty(nation.auto_collect_tax_loyalty);
-			SetAutoGrantLoyalty(nation.auto_grant_loyalty);
+			SetAutoCollectTaxLoyalty(nation.AutoCollectTaxLoyalty);
+			SetAutoGrantLoyalty(nation.AutoGrantLoyalty);
 		}
 
 		//---- reset the action mode of all spies in this town ----//
@@ -3456,10 +3456,10 @@ public class Town : IIdObject
 				return;
 		}
 
-		if (NationId == NationArray.player_recno || toNationId == NationArray.player_recno)
+		if (NationId == NationArray.PlayerId || toNationId == NationArray.PlayerId)
 		{
 			NewsArray.town_surrendered(TownId, toNationId);
-			if (toNationId == NationArray.player_recno)
+			if (toNationId == NationArray.PlayerId)
 			{
 				SECtrl.immediate_sound("GET_TOWN");
 			}
@@ -3667,7 +3667,7 @@ public class Town : IIdObject
 	
 	public void FormNewNation()
 	{
-		if (NationArray.nation_count >= GameConstants.MAX_NATION)
+		if (NationArray.NationCount >= GameConstants.MAX_NATION)
 			return;
 
 		//----- determine the race with most population -----//
@@ -3692,7 +3692,7 @@ public class Town : IIdObject
 
 		//--------- create a new nation ---------//
 
-		Nation newNation = NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
+		Nation newNation = NationArray.NewNation(NationBase.NATION_AI, raceId, NationArray.RandomUnusedColor());
 
 		//-------- create the king --------//
 
@@ -3701,7 +3701,7 @@ public class Town : IIdObject
 		kingUnit.Skill.SkillLevel = 50 + Misc.Random(51);
 		kingUnit.SetCombatLevel(70 + Misc.Random(31));
 
-		newNation.set_king(kingUnit.SpriteId, 1);
+		newNation.SetKing(kingUnit.SpriteId, 1);
 
 		DecPopulation(raceId, false);
 
@@ -3755,7 +3755,7 @@ public class Town : IIdObject
 				break;
 		}
 
-		NationArray.update_statistic();
+		NationArray.UpdateStatistic();
 	}
 
 	#region IndependentTownAIFunctions
@@ -3825,12 +3825,12 @@ public class Town : IIdObject
 
 		//---- don't form if the world is already densely populated ----//
 
-		if (NationArray.all_nation_population > ConfigAdv.town_ai_emerge_nation_pop_limit)
+		if (NationArray.AllNationPopulation > ConfigAdv.town_ai_emerge_nation_pop_limit)
 			return;
 
 		//----------------------------------------------//
 
-		if (!NationArray.can_form_new_ai_nation())
+		if (!NationArray.CanFormNewAINation())
 			return;
 
 		FormNewNation();
@@ -3856,14 +3856,14 @@ public class Town : IIdObject
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation.race_id == 0)
+			if (nation.RaceId == 0)
 				continue;
 
 			if (nation.Cash <= 0.0)
 				continue;
 
 			// don't join too frequently, at most 3 months a unit
-			if (Info.GameDate < nation.last_independent_unit_join_date.AddDays(90))
+			if (Info.GameDate < nation.LastIndependentUnitJoinDate.AddDays(90))
 				continue;
 
 			//--- only join the nation if the nation has town in the town's region ---//
@@ -3873,13 +3873,13 @@ public class Town : IIdObject
 
 			//----- calculate the rating of the nation -----//
 
-			int curRating = (int)nation.reputation + nation.overall_rating;
+			int curRating = (int)nation.Reputation + nation.OverallRating;
 			int raceId = 0;
 
-			if (RecruitableRacePopulation(nation.race_id, false) > 0)
+			if (RecruitableRacePopulation(nation.RaceId, false) > 0)
 			{
 				curRating += 30;
-				raceId = nation.race_id;
+				raceId = nation.RaceId;
 			}
 
 			if (curRating > bestRating)
@@ -3968,7 +3968,7 @@ public class Town : IIdObject
 
 		unit.AIMoveToNearbyTown();
 
-		NationArray[toNationId].last_independent_unit_join_date = Info.GameDate;
+		NationArray[toNationId].LastIndependentUnitJoinDate = Info.GameDate;
 
 		return true;
 	}
@@ -4107,7 +4107,7 @@ public class Town : IIdObject
 			//--- the following functions will only be called when the nation has at least a mine ---//
 
 			// don't build other structures if there are untapped raw sites and our nation still doesn't have any
-			if (SiteArray.UntappedRawCount > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.true_profit_365days() < 0)
+			if (SiteArray.UntappedRawCount > 0 && ownNation.ai_mine_array.Count == 0 && ownNation.TrueProfit365Days() < 0)
 			{
 				return;
 			}
@@ -4153,7 +4153,7 @@ public class Town : IIdObject
 
 		Nation ownNation = NationArray[NationId];
 
-		int yearProfit = Convert.ToInt32(ownNation.profit_365days());
+		int yearProfit = Convert.ToInt32(ownNation.Profit365Days());
 		double cash = ownNation.Cash;
 		int minLoyalty = 55 + 30 * ownNation.pref_loyalty_concern / 100;
 
@@ -4361,7 +4361,7 @@ public class Town : IIdObject
 		{
 			int needUrgency = 100 * (protectionNeeded - protectionAvailable) / protectionNeeded;
 
-			if (nation.total_jobless_population - Firm.MAX_WORKER < (100 - needUrgency) * (200 - nation.pref_military_development) / 200)
+			if (nation.TotalJoblessPopulation - Firm.MAX_WORKER < (100 - needUrgency) * (200 - nation.pref_military_development) / 200)
 			{
 				return false;
 			}
@@ -4369,9 +4369,9 @@ public class Town : IIdObject
 
 		//--- check if we have enough people to recruit ---//
 
-		bool buildFlag = nation.total_jobless_population >= 16;
+		bool buildFlag = nation.TotalJoblessPopulation >= 16;
 
-		if (nation.total_jobless_population >= 8 && IsBaseTown)
+		if (nation.TotalJoblessPopulation >= 8 && IsBaseTown)
 		{
 			buildFlag = true;
 		}
@@ -4397,16 +4397,16 @@ public class Town : IIdObject
 		if (!IsBaseTown)
 			return false;
 
-		if (JoblessPopulation < Firm.MAX_WORKER || nation.total_jobless_population < Firm.MAX_WORKER * 2)
+		if (JoblessPopulation < Firm.MAX_WORKER || nation.TotalJoblessPopulation < Firm.MAX_WORKER * 2)
 			return false;
 
-		if (nation.true_profit_365days() < 0)
+		if (nation.TrueProfit365Days() < 0)
 			return false;
 
 		if (!nation.ai_should_spend(25 + nation.pref_use_weapon / 2 - nation.ai_research_array.Count * 10))
 			return false;
 
-		int totalTechLevel = nation.total_tech_level();
+		int totalTechLevel = nation.TotalTechLevel();
 
 		if (totalTechLevel == TechRes.total_tech_level) // all technology have been researched
 			return false;
@@ -4444,10 +4444,10 @@ public class Town : IIdObject
 		if (!IsBaseTown)
 			return false;
 
-		if (JoblessPopulation < Firm.MAX_WORKER || nation.total_jobless_population < Firm.MAX_WORKER * 2)
+		if (JoblessPopulation < Firm.MAX_WORKER || nation.TotalJoblessPopulation < Firm.MAX_WORKER * 2)
 			return false;
 
-		int totalWeaponTechLevel = nation.total_tech_level(UnitConstants.UNIT_CLASS_WEAPON);
+		int totalWeaponTechLevel = nation.TotalTechLevel(UnitConstants.UNIT_CLASS_WEAPON);
 
 		if (totalWeaponTechLevel == 0)
 			return false;
@@ -4455,7 +4455,7 @@ public class Town : IIdObject
 		//----- see if we have enough money to build & support the weapon ----//
 
 		// if we don't have any war factory, we may want to build one despite that we are losing money
-		if (nation.true_profit_365days() < 0 && nation.ai_war_array.Count > 0)
+		if (nation.TrueProfit365Days() < 0 && nation.ai_war_array.Count > 0)
 			return false;
 
 		if (!nation.ai_should_spend(nation.pref_use_weapon / 2))
@@ -4501,7 +4501,7 @@ public class Town : IIdObject
 		if (!nation.ai_should_spend(50))
 			return false;
 
-		if (JoblessPopulation < 15 || nation.total_jobless_population < 30)
+		if (JoblessPopulation < 15 || nation.TotalJoblessPopulation < 30)
 			return false;
 
 		//------ do a scan on the existing bases first ------//
@@ -4845,7 +4845,7 @@ public class Town : IIdObject
 					//--- if the unit is idle and he is our enemy ---//
 
 					if (unit.CurAction == Sprite.SPRITE_IDLE &&
-					    nation.get_relation_status(unit.NationId) == NationBase.NATION_HOSTILE)
+					    nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.HitPoints;
 
@@ -4870,7 +4870,7 @@ public class Town : IIdObject
 
 					//------- if this is a firm of our enemy -------//
 
-					if (nation.get_relation_status(firm.NationId) == NationBase.NATION_HOSTILE)
+					if (nation.GetRelationStatus(firm.NationId) == NationBase.NATION_HOSTILE)
 					{
 						if (firm.Workers.Count == 0)
 							enemyCombatLevel += 50; // empty firm
@@ -4923,7 +4923,7 @@ public class Town : IIdObject
 
 			//--- only attack AI firms when they belong to a hostile nation ---//
 
-			if (firm.AIFirm && ownNation.get_relation_status(firm.NationId) != NationBase.NATION_HOSTILE)
+			if (firm.AIFirm && ownNation.GetRelationStatus(firm.NationId) != NationBase.NATION_HOSTILE)
 			{
 				continue;
 			}
@@ -4935,7 +4935,7 @@ public class Town : IIdObject
 			{
 				//----- if we are friendly with the target nation ------//
 
-				int nationStatus = ownNation.get_relation_status(firm.NationId);
+				int nationStatus = ownNation.GetRelationStatus(firm.NationId);
 
 				if (nationStatus >= NationBase.NATION_FRIENDLY)
 				{
@@ -4948,7 +4948,7 @@ public class Town : IIdObject
 				{
 					//-- if the link is off and the nation's military strength is bigger than us, don't attack --//
 
-					if (NationArray[firm.NationId].military_rank_rating() > ownNation.military_rank_rating())
+					if (NationArray[firm.NationId].MilitaryRankRating() > ownNation.MilitaryRankRating())
 					{
 						continue;
 					}
@@ -4956,7 +4956,7 @@ public class Town : IIdObject
 
 				//--- don't attack when the trade rating is high ----//
 
-				int tradeRating = ownNation.trade_rating(firm.NationId);
+				int tradeRating = ownNation.TradeRating(firm.NationId);
 
 				if (tradeRating > 50 || tradeRating + ownNation.ai_trade_with_rating(firm.NationId) > 100)
 				{
@@ -4969,7 +4969,7 @@ public class Town : IIdObject
 			{
 				//--- only attack other types of firm when the status is hostile ---//
 
-				if (ownNation.get_relation_status(firm.NationId) != NationBase.NATION_HOSTILE)
+				if (ownNation.GetRelationStatus(firm.NationId) != NationBase.NATION_HOSTILE)
 					continue;
 
 				targetCombatLevel = 50;
@@ -5193,7 +5193,7 @@ public class Town : IIdObject
 		Nation ownNation = NationArray[NationId];
 
 		// don't use spies if the population is too low, we need to use have people to grow population
-		if (ownNation.total_population < 30 - ownNation.pref_spy / 10)
+		if (ownNation.TotalPopulation < 30 - ownNation.pref_spy / 10)
 			return false;
 
 		if (!ownNation.ai_should_create_new_spy(0)) //0 means take into account all spies
@@ -5384,7 +5384,7 @@ public class Town : IIdObject
 			if (firmCamp.OverseerId == 0 || firmCamp.Workers.Count == 0 || firmCamp.patrol_unit_array.Count > 0)
 				continue;
 
-			if (firmCamp.OverseerId == ownNation.king_unit_recno)
+			if (firmCamp.OverseerId == ownNation.KingUnitId)
 			{
 				thisTownProtectionCamps.Add(firmRecno);
 			}
@@ -5491,7 +5491,7 @@ public class Town : IIdObject
 
 		Nation ownNation = NationArray[NationId];
 		double prefRecruiting = 0.0;
-		if (ownNation.yearly_food_change() > 0)
+		if (ownNation.YearlyFoodChange() > 0)
 			prefRecruiting = ownNation.pref_military_development + (100.0 - ownNation.pref_inc_pop_by_growth);
 
 		return LinkedCampSoldiersCount() <= Population * (4.0 + 4.0 * prefRecruiting / 200.0) / 20.0;

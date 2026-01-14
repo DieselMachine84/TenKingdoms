@@ -107,7 +107,7 @@ public partial class Renderer
             }
         }
 
-        byte[] nationColors = NationArray.nation_color_array;
+        byte[] nationColors = NationArray.NationColors;
 
         foreach (Town town in TownArray)
         {
@@ -231,7 +231,7 @@ public partial class Renderer
             int lineColor = (unit.MobileType == UnitConstants.UNIT_SEA) ? Colors.V_WHITE : Colors.V_BLACK;
 
             //TODO check this
-            if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
+            if (!Config.show_ai_info && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
                 continue;
 
             if (unit.PathNodes.Count > 1)

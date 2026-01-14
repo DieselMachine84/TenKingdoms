@@ -236,7 +236,7 @@ public class Rebel : IIdObject
 
         else if (Misc.Random(10) == 0)
         {
-            if (TownArray[TownId].Population >= 20 && NationArray.can_form_new_ai_nation())
+            if (TownArray[TownId].Population >= 20 && NationArray.CanFormNewAINation())
             {
                 TownArray[TownId].FormNewNation();
             }
@@ -516,9 +516,9 @@ public class Rebel : IIdObject
 
             foreach (Nation nation in NationArray)
             {
-                if (nation.reputation > maxReputation)
+                if (nation.Reputation > maxReputation)
                 {
-                    maxReputation = (int)nation.reputation;
+                    maxReputation = (int)nation.Reputation;
                     bestNationId = nation.NationId;
                 }
             }

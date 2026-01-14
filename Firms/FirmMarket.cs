@@ -147,7 +147,7 @@ public class FirmMarket : Firm
 			if (firm.FirmType != FIRM_HARBOR)
 				continue;
 
-			bool tradeTreaty = firm.NationId == NationId || ownNation.get_relation(firm.NationId).trade_treaty;
+			bool tradeTreaty = firm.NationId == NationId || ownNation.GetRelation(firm.NationId).TradeTreaty;
 
 			if (LinkedFirmsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
 				ToggleFirmLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
@@ -162,7 +162,7 @@ public class FirmMarket : Firm
 			if (town.NationId == 0)
 				continue;
 
-			bool tradeTreaty = town.NationId == NationId || ownNation.get_relation(town.NationId).trade_treaty;
+			bool tradeTreaty = town.NationId == NationId || ownNation.GetRelation(town.NationId).TradeTreaty;
 
 			if (LinkedTownsEnable[i] != (tradeTreaty ? InternalConstants.LINK_EE : InternalConstants.LINK_DD))
 				ToggleTownLink(i + 1, tradeTreaty, InternalConstants.COMMAND_AUTO, true);
@@ -232,7 +232,7 @@ public class FirmMarket : Firm
 								marketGoods.CurMonthSupply += inputQty;
 
 								if (firm.NationId != NationId)
-									nation.import_goods(NationBase.IMPORT_RAW, firm.NationId, inputQty * GameConstants.RAW_PRICE);
+									nation.ImportGoods(NationBase.IMPORT_RAW, firm.NationId, inputQty * GameConstants.RAW_PRICE);
 							}
 
 							break;
@@ -270,7 +270,7 @@ public class FirmMarket : Firm
 								marketGoods.CurMonthSupply += inputQty;
 
 								if (firm.NationId != NationId)
-									nation.import_goods(NationBase.IMPORT_PRODUCT, firm.NationId, inputQty * GameConstants.PRODUCT_PRICE);
+									nation.ImportGoods(NationBase.IMPORT_PRODUCT, firm.NationId, inputQty * GameConstants.PRODUCT_PRICE);
 							}
 
 							break;
@@ -389,7 +389,7 @@ public class FirmMarket : Firm
 		if (nation.Cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
 			return false;
 
-		int supportedCaravan = nation.total_population / GameConstants.POPULATION_PER_CARAVAN;
+		int supportedCaravan = nation.TotalPopulation / GameConstants.POPULATION_PER_CARAVAN;
 		int caravanCount = UnitRes[UnitConstants.UNIT_CARAVAN].nation_unit_count_array[NationId - 1];
 
 		return supportedCaravan > caravanCount;
@@ -417,7 +417,7 @@ public class FirmMarket : Firm
 		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitId];
 		unitCaravan.SetStop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
 		Nation nation = NationArray[NationId];
-		nation.add_expense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
+		nation.AddExpense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
 
 		return unitCaravan.SpriteId;
 	}
@@ -620,7 +620,7 @@ public class FirmMarket : Firm
 		if (IsRawMarket() && IsMarketLinkedToTown(true)) // 1-only count towns that are our own and are base towns
 		{
 			// if there is a shortage of caravan supplies, use it for transporting finished products instead of raw materials
-			if (!NoNeighborSpace && nation.total_jobless_population >= MAX_WORKER * 2 && CanHireCaravan())
+			if (!NoNeighborSpace && nation.TotalJoblessPopulation >= MAX_WORKER * 2 && CanHireCaravan())
 			{
 				if (nation.can_ai_build(FIRM_FACTORY))
 				{
@@ -763,7 +763,7 @@ public class FirmMarket : Firm
 
 				//-- only either from own market place or from nations that trade with you --//
 
-				if (!NationArray[firm.NationId].get_relation(NationId).trade_treaty)
+				if (!NationArray[firm.NationId].GetRelation(NationId).TradeTreaty)
 					continue;
 
 				//--- if this market has the supply of this goods ----//
@@ -790,7 +790,7 @@ public class FirmMarket : Firm
 				if (stockLevel < 20.0) // for other player's market, only import when the stock level is high enough
 					continue;
 
-				curRating = nation.get_relation_status(firm.NationId) * 5;
+				curRating = nation.GetRelationStatus(firm.NationId) * 5;
 			}
 
 			//---- calculate the current overall rating ----//
@@ -889,7 +889,7 @@ public class FirmMarket : Firm
 			{
 				//-- only either from own market place or from nations that trade with you --//
 
-				if (!NationArray[firm.NationId].get_relation(NationId).trade_treaty)
+				if (!NationArray[firm.NationId].GetRelation(NationId).TradeTreaty)
 					continue;
 
 				//----- check if this market is linked to any mines directly ----//
@@ -928,7 +928,7 @@ public class FirmMarket : Firm
 
 			//---- calculate the current overall rating ----//
 
-			NationRelation nationRelation = nation.get_relation(firm.NationId);
+			NationRelation nationRelation = nation.GetRelation(firm.NationId);
 
 			int curRating = Convert.ToInt32(stockLevel) - 100 * Misc.points_distance(LocCenterX, LocCenterY,
 				firm.LocCenterX, firm.LocCenterY) /GameConstants.MapSize;
@@ -936,7 +936,7 @@ public class FirmMarket : Firm
 			if (firm.NationId == NationId)
 				curRating += 100;
 			else
-				curRating += nationRelation.status * 20;
+				curRating += nationRelation.Status * 20;
 
 			//----------- compare ratings -------------//
 
@@ -1011,12 +1011,12 @@ public class FirmMarket : Firm
 			{
 				// only build markets to friendly nation's town
 
-				if (nation.get_relation_status(town.NationId) < NationBase.NATION_FRIENDLY)
+				if (nation.GetRelationStatus(town.NationId) < NationBase.NATION_FRIENDLY)
 					continue;
 
 				//--- if it's a nation town, only export if we have trade treaty with it ---//
 
-				if (!nation.get_relation(town.NationId).trade_treaty)
+				if (!nation.GetRelation(town.NationId).TradeTreaty)
 					continue;
 			}
 			else
@@ -1083,7 +1083,7 @@ public class FirmMarket : Firm
 				int townNationId = TownArray[LinkedTowns[i]].NationId;
 
 				if (townNationId != 0)
-					nation.get_relation(townNationId).ai_demand_trade_treaty++;
+					nation.GetRelation(townNationId).AIDemandTradeTreaty++;
 			}
 		}
 	}

@@ -184,7 +184,7 @@ public class FirmFactory : Firm
 						//---- import from other nation -----//
 
 						if (firmMine.NationId != NationId)
-							nation.import_goods(NationBase.IMPORT_RAW, firmMine.NationId, inputQty * GameConstants.RAW_PRICE);
+							nation.ImportGoods(NationBase.IMPORT_RAW, firmMine.NationId, inputQty * GameConstants.RAW_PRICE);
 					}
 				}
 			}
@@ -214,7 +214,7 @@ public class FirmFactory : Firm
 								//---- import from other nation -----//
 
 								if (firmMarket.NationId != NationId)
-									nation.import_goods(NationBase.IMPORT_RAW, firmMarket.NationId, inputQty * GameConstants.RAW_PRICE);
+									nation.ImportGoods(NationBase.IMPORT_RAW, firmMarket.NationId, inputQty * GameConstants.RAW_PRICE);
 							}
 						}
 					}

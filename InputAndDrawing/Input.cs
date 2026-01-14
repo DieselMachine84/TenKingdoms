@@ -289,7 +289,7 @@ public partial class Renderer
             bool hasPlayerNationUnits = false;
             for (int i = 0; i < unitsToSelect.Count; i++)
             {
-                if (unitsToSelect[i].NationId == NationArray.player_recno)
+                if (unitsToSelect[i].NationId == NationArray.PlayerId)
                 {
                     hasPlayerNationUnits = true;
                     break;
@@ -300,7 +300,7 @@ public partial class Renderer
             {
                 for (int i = unitsToSelect.Count - 1; i >= 0; i--)
                 {
-                    if (unitsToSelect[i].NationId != NationArray.player_recno)
+                    if (unitsToSelect[i].NationId != NationArray.PlayerId)
                         unitsToSelect.RemoveAt(i);
                 }
             }
@@ -426,7 +426,7 @@ public partial class Renderer
             if (!selectedUnit.IsOwn())
                 continue;
             
-            if (selectedUnit.NationId == NationArray.player_recno)
+            if (selectedUnit.NationId == NationArray.PlayerId)
                 playerNationUnits.Add(selectedUnitId);
             else
                 otherNationUnits.Add(selectedUnitId);
@@ -454,7 +454,7 @@ public partial class Renderer
         {
             if (!targetUnit.IsOwn())
             {
-                if (NationArray.player.get_relation_should_attack(targetUnit.NationId))
+                if (NationArray.Player.GetRelationShouldAttack(targetUnit.NationId))
                 {
                     UnitArray.Attack(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
                         InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
@@ -497,7 +497,7 @@ public partial class Renderer
             if (location.IsTown())
             {
                 Town targetTown = TownArray[location.TownId()];
-                if (targetTown.NationId == NationArray.player_recno)
+                if (targetTown.NationId == NationArray.PlayerId)
                 {
                     List<int> unitsToAssign = new List<int>(playerNationUnits.Count);
                     List<int> unitsToMove = new List<int>(playerNationUnits.Count);
@@ -518,7 +518,7 @@ public partial class Renderer
                 }
                 else
                 {
-                    if (NationArray.player.get_relation_should_attack(targetTown.NationId))
+                    if (NationArray.Player.GetRelationShouldAttack(targetTown.NationId))
                         UnitArray.Attack(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
                     else
                         UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
@@ -565,7 +565,7 @@ public partial class Renderer
                 }
                 else
                 {
-                    if (NationArray.player.get_relation_should_attack(targetFirm.NationId))
+                    if (NationArray.Player.GetRelationShouldAttack(targetFirm.NationId))
                         UnitArray.Attack(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
                     else
                         UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
@@ -675,7 +675,7 @@ public partial class Renderer
         if (_selectedTownId != 0 && !TownArray.IsDeleted(_selectedTownId))
         {
             Town town = TownArray[_selectedTownId];
-            return town.NationId == NationArray.player_recno
+            return town.NationId == NationArray.PlayerId
                 ? (ScreenObjectType.FriendTown, _selectedTownId)
                 : (ScreenObjectType.EnemyTown, _selectedTownId);
         }
@@ -683,7 +683,7 @@ public partial class Renderer
         if (_selectedFirmId != 0 && !FirmArray.IsDeleted(_selectedFirmId))
         {
             Firm firm = FirmArray[_selectedFirmId];
-            return firm.NationId == NationArray.player_recno
+            return firm.NationId == NationArray.PlayerId
                 ? (ScreenObjectType.FriendFirm, _selectedFirmId)
                 : (ScreenObjectType.EnemyFirm, _selectedFirmId);
         }
@@ -693,9 +693,9 @@ public partial class Renderer
             if (_selectedUnits.Count == 1)
             {
                 Unit unit = UnitArray[_selectedUnitId];
-                return unit.NationId == NationArray.player_recno
+                return unit.NationId == NationArray.PlayerId
                     ? (ScreenObjectType.FriendUnit, _selectedUnitId)
-                    : unit.TrueNationId() == NationArray.player_recno
+                    : unit.TrueNationId() == NationArray.PlayerId
                         ? (ScreenObjectType.SpyUnit, _selectedUnitId)
                         : (ScreenObjectType.EnemyUnit, _selectedUnitId);
             }
@@ -719,21 +719,21 @@ public partial class Renderer
         {
             int unitId = pointingLocation.UnitId(mobileType);
             Unit unit = UnitArray[unitId];
-            return unit.NationId == NationArray.player_recno ? (ScreenObjectType.FriendUnit, unitId) : (ScreenObjectType.EnemyUnit, unitId);
+            return unit.NationId == NationArray.PlayerId ? (ScreenObjectType.FriendUnit, unitId) : (ScreenObjectType.EnemyUnit, unitId);
         }
         
         if (pointingLocation.IsTown())
         {
             int townId = pointingLocation.TownId();
             Town town = TownArray[townId];
-            return town.NationId == NationArray.player_recno ? (ScreenObjectType.FriendTown, townId) : (ScreenObjectType.EnemyTown, townId);
+            return town.NationId == NationArray.PlayerId ? (ScreenObjectType.FriendTown, townId) : (ScreenObjectType.EnemyTown, townId);
         }
 
         if (pointingLocation.IsFirm())
         {
             int firmId = pointingLocation.FirmId();
             Firm firm = FirmArray[firmId];
-            return firm.NationId == NationArray.player_recno ? (ScreenObjectType.FriendFirm, firmId) : (ScreenObjectType.EnemyFirm, firmId);
+            return firm.NationId == NationArray.PlayerId ? (ScreenObjectType.FriendFirm, firmId) : (ScreenObjectType.EnemyFirm, firmId);
         }
 
         if (pointingLocation.HasSite())
@@ -822,8 +822,8 @@ public partial class Renderer
         if (UnitDetailsMode == UnitDetailsMode.Build)
             return CursorType.BUILD;
 
-        if (UnitDetailsMode == UnitDetailsMode.Settle && NationArray.player != null)
-            return CursorType.SETTLE_0 + NationArray.player.color_scheme_id;
+        if (UnitDetailsMode == UnitDetailsMode.Settle && NationArray.Player != null)
+            return CursorType.SETTLE_0 + NationArray.Player.ColorSchemeId;
 
         if (UnitDetailsMode == UnitDetailsMode.SetStop)
         {

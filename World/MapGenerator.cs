@@ -1535,18 +1535,18 @@ public class MapGenerator
 	private void CreatePlayerNation()
 	{
 		// if Config.race_id == 0, select a random race, but don't call misc.random
-		Nation nation = NationArray.new_nation(NationBase.NATION_OWN,
+		Nation nation = NationArray.NewNation(NationBase.NATION_OWN,
 			Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1, Config.player_nation_color);
 
-		NationArray.set_human_name(nation.NationId, Config.player_name);
+		NationArray.SetHumanName(nation.NationId, Config.player_name);
 	}
 	
 	private void CreateAINation(int aiNationCount)
 	{
 		for (int i = 0; i < aiNationCount; i++)
 		{
-			int raceId = Config.random_start_up ? ConfigAdv.GetRandomRace() : NationArray.random_unused_race();
-			NationArray.new_nation(NationBase.NATION_AI, raceId, NationArray.random_unused_color());
+			int raceId = Config.random_start_up ? ConfigAdv.GetRandomRace() : NationArray.RandomUnusedRace();
+			NationArray.NewNation(NationBase.NATION_AI, raceId, NationArray.RandomUnusedColor());
 		}
 	}
 
@@ -1706,7 +1706,7 @@ public class MapGenerator
 		{
 			//--------- create town -----------//
 
-			Town town = CreateTown(nation.NationId, nation.race_id, out _, out _);
+			Town town = CreateTown(nation.NationId, nation.RaceId, out _, out _);
 
 			if (town == null)
 			{
@@ -1717,7 +1717,7 @@ public class MapGenerator
 			//------- create military camp -------//
 
 			//TODO randomize camp location
-			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
+			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.RaceId].code);
 
 			if (firmRecno == 0)
 			{
@@ -1729,13 +1729,13 @@ public class MapGenerator
 
 			//--------- create units ----------//
 
-			int unitId = RaceRes[nation.race_id].basic_unit_id;
+			int unitId = RaceRes[nation.RaceId].basic_unit_id;
 
 			Unit king = CreateUnit(town, unitId, Unit.RANK_KING);
 
 			if (king != null)
 			{
-				nation.set_king(king.SpriteId, 1);
+				nation.SetKing(king.SpriteId, 1);
 				FirmArray[firmRecno].AssignOverseer(king.SpriteId);
 			}
 			else
@@ -1754,7 +1754,7 @@ public class MapGenerator
 				for (int i = 0; i < createCount; i++)
 				{
 					if (Misc.Random(2) == 0)
-						unitId = RaceRes[nation.race_id].basic_unit_id;
+						unitId = RaceRes[nation.RaceId].basic_unit_id;
 					else
 						unitId = RaceRes[ConfigAdv.GetRandomRace()].basic_unit_id;
 
@@ -1771,11 +1771,11 @@ public class MapGenerator
 
 			//------ create mines near towns in the beginning -----//
 
-			if (Config.start_up_has_mine_nearby && !nation.is_ai())
+			if (Config.start_up_has_mine_nearby && !nation.IsAI())
 				SiteArray.CreateRawSite(town.TownId);
 
 			//------ set ai base town -----//
-			if (nation.is_ai())
+			if (nation.IsAI())
 				nation.update_ai_region();
 
 			uninitializedNations.Remove(nation);
@@ -1837,6 +1837,6 @@ public class MapGenerator
 				break;
 		}
 
-		Sys.Instance.NationArray.update_statistic();
+		Sys.Instance.NationArray.UpdateStatistic();
 	}
 }

@@ -147,7 +147,7 @@ public class UnitMarine : Unit, ITrader
 					if (CurX == NextX && CurY == NextY && CurAction == SPRITE_IDLE)
 					{
 						JourneyStatus = InternalConstants.SURROUND_FIRM;
-						if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+						if (NationArray[NationId].GetRelation(firm.NationId).TradeTreaty)
 						{
 							if (WaitCount <= 0)
 							{
@@ -384,7 +384,7 @@ public class UnitMarine : Unit, ITrader
 			//-------------------------------------------------------//
 			CurFirmId = stop.FirmId;
 
-			if (NationArray[NationId].get_relation(firm.NationId).trade_treaty)
+			if (NationArray[NationId].GetRelation(firm.NationId).TradeTreaty)
 			{
 				GetHarborLinkedFirmInfo();
 				HarborUnloadGoods();
@@ -433,7 +433,7 @@ public class UnitMarine : Unit, ITrader
 				continue;
 
 			Firm linkedFirm = FirmArray[firmHarbor.LinkedFirms[i]];
-			if (!NationArray[firmHarbor.NationId].get_relation(linkedFirm.NationId).trade_treaty)
+			if (!NationArray[firmHarbor.NationId].GetRelation(linkedFirm.NationId).TradeTreaty)
 				continue;
 
 			switch (linkedFirm.FirmType)
@@ -463,7 +463,7 @@ public class UnitMarine : Unit, ITrader
 		if (firm.FirmType != Firm.FIRM_HARBOR)
 			return false;
 
-		return NationArray[NationId].get_relation(firm.NationId).trade_treaty;
+		return NationArray[NationId].GetRelation(firm.NationId).TradeTreaty;
 	}
 	
 	public void SetStop(int stopId, int stopLocX, int stopLocY, int remoteAction)
@@ -1255,7 +1255,7 @@ public class UnitMarine : Unit, ITrader
 			{
 				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_RAW, mine.NationId, loadQty * GameConstants.RAW_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_RAW, mine.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
 			mine.StockQty -= loadQty;
@@ -1282,7 +1282,7 @@ public class UnitMarine : Unit, ITrader
 			{
 				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, loadQty * GameConstants.RAW_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_RAW, market.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
 
 			marketRaw.StockQty -= loadQty;
@@ -1377,7 +1377,7 @@ public class UnitMarine : Unit, ITrader
 			{
 				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
 			factory.StockQty -= loadQty;
@@ -1404,7 +1404,7 @@ public class UnitMarine : Unit, ITrader
 			{
 				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
-					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
+					nation.ImportGoods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
 
 			marketProduct.StockQty -= loadQty;
@@ -1898,7 +1898,7 @@ public class UnitMarine : Unit, ITrader
 
 			int nationRecno = FirmArray[Stops[i - 1].FirmId].NationId;
 
-			if (nation.get_relation_status(nationRecno) == NationBase.NATION_HOSTILE)
+			if (nation.GetRelationStatus(nationRecno) == NationBase.NATION_HOSTILE)
 			{
 				DelStop(i, InternalConstants.COMMAND_AI);
 			}

@@ -101,7 +101,7 @@ public class FirmWar : Firm
 
         BuildUnitType = BuildQueue[0];
         BuildQueue.RemoveAt(0);
-        nation.add_expense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitType].build_cost);
+        nation.AddExpense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitType].build_cost);
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
         BuildProgressInDays = 0.0;
@@ -114,7 +114,7 @@ public class FirmWar : Firm
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
 
-        if (Config.fast_build && NationId == NationArray.player_recno)
+        if (Config.fast_build && NationId == NationArray.PlayerId)
             BuildProgressInDays += 2.0;
 
         UnitInfo unitInfo = UnitRes[BuildUnitType];
@@ -248,11 +248,11 @@ public class FirmWar : Firm
 
         Nation nation = NationArray[NationId];
 
-        if (nation.true_profit_365days() < 0) // don't build new weapons if we are currently losing money
+        if (nation.TrueProfit365Days() < 0) // don't build new weapons if we are currently losing money
             return false;
 
         // if weapon expenses are larger than 30% to 80% of the total income, don't build new weapons
-        if (nation.expense_365days(NationBase.EXPENSE_WEAPON) > nation.income_365days() * (30 + nation.pref_use_weapon / 2) / 100)
+        if (nation.Expense365Days(NationBase.EXPENSE_WEAPON) > nation.Income365Days() * (30 + nation.pref_use_weapon / 2) / 100)
             return false;
 
         //----- see if there is any space on existing camps -----//

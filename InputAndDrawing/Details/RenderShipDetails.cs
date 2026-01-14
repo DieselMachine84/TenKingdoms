@@ -89,7 +89,7 @@ public partial class Renderer
             Graphics.DrawLine(hitBarX1 + 2, hitBarY + 2, hitBarX2 - 2, hitBarY + 2, hitBarColor + HIT_BAR_BODY); //body
             Graphics.DrawLine(hitBarX1 + 2, hitBarY + 3, hitBarX2 - 2, hitBarY + 3, hitBarColor + HIT_BAR_BODY); //body
             
-            if (unit.SpyId != 0 && (SpyArray[unit.SpyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
+            if (unit.SpyId != 0 && (SpyArray[unit.SpyId].TrueNationId == NationArray.PlayerId || Config.show_ai_info))
             {
                 int spyIconX = unitX + 78;
                 int spyIconY = unitY + 12;

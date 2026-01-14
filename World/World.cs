@@ -183,9 +183,9 @@ public class World
 				if (location.IsFirm())
 				{
 					Firm firm = FirmArray[location.FirmId()];
-					if (firm.NationId != 0 && NationArray.player_recno != 0)
+					if (firm.NationId != 0 && NationArray.PlayerId != 0)
 					{
-						relation = NationArray.player.get_relation(firm.NationId);
+						relation = NationArray.Player.GetRelation(firm.NationId);
 						nationId = firm.NationId;
 					}
 				}
@@ -193,18 +193,18 @@ public class World
 				if (location.IsTown())
 				{
 					Town town = TownArray[location.TownId()];
-					if (town.NationId != 0 && NationArray.player_recno != 0)
+					if (town.NationId != 0 && NationArray.PlayerId != 0)
 					{
-						relation = NationArray.player.get_relation(town.NationId);
+						relation = NationArray.Player.GetRelation(town.NationId);
 						nationId = town.NationId;
 					}
 				}
 
-				if (relation != null && !relation.has_contact)
+				if (relation != null && !relation.HasContact)
 				{
 					//if( !remote.is_enable() )
 					//{
-						NationArray.player.establish_contact(nationId);
+						NationArray.Player.EstablishContact(nationId);
 					//}
 					//else
 					//{
@@ -1464,7 +1464,7 @@ public class World
 		int townDamage = 0;
 		foreach (Town town in TownArray)
 		{
-			bool ownTown = (town.NationId == NationArray.player_recno);
+			bool ownTown = (town.NationId == NationArray.PlayerId);
 			int beforePopulation = town.Population;
 			for (int damage = Weather.quake_rate(town.LocCenterX, town.LocCenterY) / 10; damage > 0 && !TownArray.IsDeleted(town.TownId); damage--)
 			{
@@ -1587,7 +1587,7 @@ public class World
 			{
 				// TODO check is objectDie: 0 correct?
 				// ---- add news -------//
-				if (town.NationId == NationArray.player_recno)
+				if (town.NationId == NationArray.PlayerId)
 					NewsArray.lightning_damage(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//

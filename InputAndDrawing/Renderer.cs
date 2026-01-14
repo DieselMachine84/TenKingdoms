@@ -239,13 +239,13 @@ public partial class Renderer : IRenderer
         Graphics.DrawBitmapScaled(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
             _bottomBorder2TextureWidth, _bottomBorder2TextureHeight);
 
-        if (NationArray.player_recno != 0)
+        if (NationArray.PlayerId != 0)
         {
-            Nation player = NationArray.player;
+            Nation player = NationArray.Player;
             PutText(FontMid, player.FoodString(), 468, 6);
             PutText(FontMid, player.CashString(), 468, 38);
             PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
-            if (player.reputation_change_365days() >= 0.0)
+            if (player.ReputationChange365Days() >= 0.0)
                 Graphics.DrawBitmapScaled(_reputationUpTexture, 830, 39, _reputationUpWidth, _reputationUpHeight);
             else
                 Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);

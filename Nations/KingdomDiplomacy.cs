@@ -16,8 +16,8 @@ public partial class Nation
             if (otherNation.NationId == NationId)
                 continue;
 
-            NationRelation ourRelation = get_relation(otherNation.NationId);
-            if (!ourRelation.has_contact)
+            NationRelation ourRelation = GetRelation(otherNation.NationId);
+            if (!ourRelation.HasContact)
                 continue;
 
             bool exists = false;
@@ -31,7 +31,7 @@ public partial class Nation
                 }
             }
 
-            if (!ourRelation.trade_treaty && !exists)
+            if (!ourRelation.TradeTreaty && !exists)
             {
                 TalkRes.ai_send_talk_msg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
             }

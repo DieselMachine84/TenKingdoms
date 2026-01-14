@@ -410,7 +410,7 @@ public class FirmMonster : Firm
 
 		if (attackerNationId != 0)
 		{
-			NationArray[attackerNationId].change_reputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
+			NationArray[attackerNationId].ChangeReputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
 			SetHostileNation(attackerNationId); // also set hostile with the nation
 		}
 

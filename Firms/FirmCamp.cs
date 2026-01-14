@@ -817,7 +817,7 @@ public class FirmCamp : Firm
 
 			//---- don't try to capture other nation's towns unless the AI is at war or tense with the nation ----//
 
-			if (town.NationId != 0 && ownNation.get_relation_status(town.NationId) <= NationBase.NATION_TENSE)
+			if (town.NationId != 0 && ownNation.GetRelationStatus(town.NationId) <= NationBase.NATION_TENSE)
 			{
 				continue;
 			}
@@ -1022,7 +1022,7 @@ public class FirmCamp : Firm
 			{
 				if (nation.Cash > 0)
 				{
-					nation.add_expense(NationBase.EXPENSE_WEAPON,
+					nation.AddExpense(NationBase.EXPENSE_WEAPON,
 						Convert.ToDouble(UnitRes[worker.UnitId].year_cost) / 365.0, true);
 				}
 				else // decrease hit points if the nation cannot pay the unit
@@ -1102,8 +1102,8 @@ public class FirmCamp : Firm
 				break;
 			}
 
-			NationRelation nationRelation = ownNation.get_relation(town.NationId);
-			if (nationRelation.status < NationBase.NATION_NEUTRAL)
+			NationRelation nationRelation = ownNation.GetRelation(town.NationId);
+			if (nationRelation.Status < NationBase.NATION_NEUTRAL)
 			{
 				shouldClose = false;
 				break;
@@ -1356,7 +1356,7 @@ public class FirmCamp : Firm
 			if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN && unit.UnitModeParam == ai_capture_town_recno)
 			{
 				if (unit.NationId != 0)
-					NationArray[NationId].set_relation_should_attack(unit.NationId, true,
+					NationArray[NationId].SetRelationShouldAttack(unit.NationId, true,
 						InternalConstants.COMMAND_AI);
 
 				List<int> selectedUnits = new List<int>(1);
@@ -1410,7 +1410,7 @@ public class FirmCamp : Firm
 					//--- if the unit is idle and he is our enemy ---//
 
 					if (unit.CurAction == Sprite.SPRITE_ATTACK &&
-					    nation.get_relation_status(unit.NationId) == NationBase.NATION_HOSTILE)
+					    nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.HitPoints;
 
@@ -1460,7 +1460,7 @@ public class FirmCamp : Firm
 			//---- only enable links to non-friendly towns ----//
 
 			bool enableFlag = town.NationId == 0 ||
-			                  ownNation.get_relation(town.NationId).status == NationBase.NATION_HOSTILE;
+			                  ownNation.GetRelation(town.NationId).Status == NationBase.NATION_HOSTILE;
 
 			ToggleTownLink(i + 1, enableFlag, InternalConstants.COMMAND_AI);
 		}
@@ -1751,7 +1751,7 @@ public class FirmCamp : Firm
 			//----- have one of the units attack the town ----//
 
 			if (town.NationId != 0)
-				NationArray[NationId].set_relation_should_attack(town.NationId, true,
+				NationArray[NationId].SetRelationShouldAttack(town.NationId, true,
 					InternalConstants.COMMAND_AI);
 
 			List<int> selectedUnits = new List<int>(1);
@@ -1802,9 +1802,9 @@ public class FirmCamp : Firm
 			}
 			else //-------- if it's a nation town ---------//
 			{
-				NationRelation nationRelation = ownNation.get_relation(town.NationId);
+				NationRelation nationRelation = ownNation.GetRelation(town.NationId);
 
-				if (nationRelation.status != NationBase.NATION_HOSTILE)
+				if (nationRelation.Status != NationBase.NATION_HOSTILE)
 					continue;
 
 				curResistance = town.AverageLoyalty();
@@ -1840,8 +1840,8 @@ public class FirmCamp : Firm
 		Nation ownNation = NationArray[NationId];
 		Nation targetNation = NationArray[targetTown.NationId];
 
-		int ourMilitary = ownNation.military_rank_rating();
-		int enemyMilitary = targetNation.military_rank_rating();
+		int ourMilitary = ownNation.MilitaryRankRating();
+		int enemyMilitary = targetNation.MilitaryRankRating();
 
 		//--- use all camps to attack if we have money and we are stronger than the enemy ---//
 
@@ -1851,7 +1851,7 @@ public class FirmCamp : Firm
 		//---- use all camps to attack the enemy if the enemy is a human player
 
 		else if (Config.ai_aggressiveness >= Config.OPTION_MODERATE &&
-		         !targetNation.is_ai() && ourMilitary > enemyMilitary)
+		         !targetNation.IsAI() && ourMilitary > enemyMilitary)
 		{
 			if (Config.ai_aggressiveness >= Config.OPTION_HIGH || ownNation.pref_peacefulness < 50)
 			{

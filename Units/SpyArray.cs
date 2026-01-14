@@ -101,7 +101,7 @@ public class SpyArray : DynArray<Spy>
 
         foreach (Spy spy in this)
         {
-            if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmRecno && spy.TrueNationId == NationArray.player_recno)
+            if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmRecno && spy.TrueNationId == NationArray.PlayerId)
             {
                 firm.PlayerSpyCount++;
             }
@@ -265,7 +265,7 @@ public class SpyArray : DynArray<Spy>
     {
         foreach (Spy spy in this)
         {
-            if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == townId && NationArray[spy.TrueNationId].is_ai())
+            if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == townId && NationArray[spy.TrueNationId].IsAI())
             {
                 //-------- mobilize the spy ----------//
 

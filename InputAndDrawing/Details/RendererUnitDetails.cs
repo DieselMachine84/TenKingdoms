@@ -263,7 +263,7 @@ public partial class Renderer
             }
         }
 
-        if (spyId != 0 && (SpyArray[spyId].TrueNationId == NationArray.player_recno || Config.show_ai_info))
+        if (spyId != 0 && (SpyArray[spyId].TrueNationId == NationArray.PlayerId || Config.show_ai_info))
         {
             int spyIconX = skillLevel != 0 ? drawX + 78 : drawX + 52;
             int spyIconY = skillLevel != 0 ? drawY + 12 : drawY + 6;

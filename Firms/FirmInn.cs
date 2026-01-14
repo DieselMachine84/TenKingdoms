@@ -160,7 +160,7 @@ public class FirmInn : Firm
 		if (unitId == 0)
 			return 0; // no space for creating the unit
 
-		nation.add_expense(NationBase.EXPENSE_HIRE_UNIT, innUnit.HireCost);
+		nation.AddExpense(NationBase.EXPENSE_HIRE_UNIT, innUnit.HireCost);
 
 		Unit unit = UnitArray[unitId];
 		unit.Skill.SkillId = innUnit.Skill.SkillId;
@@ -182,9 +182,9 @@ public class FirmInn : Firm
 		//
 		//----------------------------------------//
 
-		int unitLoyalty = 30 + (int)nation.reputation / 2;
+		int unitLoyalty = 30 + (int)nation.Reputation / 2;
 
-		if (RaceRes.is_same_race(unit.RaceId, nation.race_id))
+		if (RaceRes.is_same_race(unit.RaceId, nation.RaceId))
 			unitLoyalty += 20;
 
 		unitLoyalty = Math.Max(40, unitLoyalty);
@@ -274,7 +274,7 @@ public class FirmInn : Firm
 	{
 		Nation ownNation = NationArray[NationId];
 
-		if (ownNation.Cash < 500.0 + 500.0 * ownNation.pref_cash_reserve / 100.0 && ownNation.profit_365days() < 0)
+		if (ownNation.Cash < 500.0 + 500.0 * ownNation.pref_cash_reserve / 100.0 && ownNation.Profit365Days() < 0)
 		{
 			AIDelFirm();
 			return true;

@@ -163,7 +163,7 @@ public partial class Renderer
                     {
                         foreach (Firm firm in FirmArray)
                         {
-                            if (NationArray.player_recno != 0 && firm.NationId == NationArray.player_recno && firm is FirmResearch)
+                            if (NationArray.PlayerId != 0 && firm.NationId == NationArray.PlayerId && firm is FirmResearch)
                             {
                                 ((FirmResearch)firm).StartResearch(techId, InternalConstants.COMMAND_PLAYER);
                             }

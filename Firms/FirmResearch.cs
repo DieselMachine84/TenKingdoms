@@ -73,7 +73,7 @@ public class FirmResearch : Firm
         TechInfo techInfo = TechRes[TechId];
 
         double progressPoint;
-        if (Config.fast_build && NationId == NationArray.player_recno)
+        if (Config.fast_build && NationId == NationArray.PlayerId)
             progressPoint = Productivity / 100.0 + 0.5;
         else
             progressPoint = Productivity / 300.0;
@@ -188,7 +188,7 @@ public class FirmResearch : Firm
     {
         //----- if all technologies have been researched -----//
 
-        if (NationArray[NationId].total_tech_level() == TechRes.total_tech_level)
+        if (NationArray[NationId].TotalTechLevel() == TechRes.total_tech_level)
         {
             AIDelFirm();
             return true;

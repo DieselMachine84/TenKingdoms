@@ -756,7 +756,7 @@ public partial class Unit
 
 		if (NationId != 0 && targetNationRecno != 0)
 		{
-			if (!NationArray[NationId].get_relation(targetNationRecno).should_attack)
+			if (!NationArray[NationId].GetRelation(targetNationRecno).ShouldAttack)
 				return;
 		}
 
@@ -1656,7 +1656,7 @@ public partial class Unit
 		}
 
 		// ---------- add indicator on the map ----------//
-		if (NationArray.player_recno != 0 && targetUnit.IsOwn())
+		if (NationArray.PlayerId != 0 && targetUnit.IsOwn())
 			WarPointArray.AddPoint(targetUnit.NextLocX, targetUnit.NextLocY);
 
 		//-----------------------------------------------------------------------//
@@ -1690,37 +1690,37 @@ public partial class Unit
 				{
 					if (targetNation != null)
 					{
-						targetNation.civilian_killed(targetUnit.RaceId, false, 1);
-						targetNation.own_civilian_killed++;
+						targetNation.CivilianKilled(targetUnit.RaceId, false, 1);
+						targetNation.OwnCivilianKilled++;
 					}
 
 					if (parentNation != null)
 					{
-						parentNation.civilian_killed(targetUnit.RaceId, true, 1);
-						parentNation.enemy_civilian_killed++;
+						parentNation.CivilianKilled(targetUnit.RaceId, true, 1);
+						parentNation.EnemyCivilianKilled++;
 					}
 				}
 				else if (targetUnit.IsCivilian() && targetUnit.Skill.CombatLevel < 20) //--- mobile civilian ---//
 				{
 					if (targetNation != null)
 					{
-						targetNation.civilian_killed(targetUnit.RaceId, false, 0);
-						targetNation.own_civilian_killed++;
+						targetNation.CivilianKilled(targetUnit.RaceId, false, 0);
+						targetNation.OwnCivilianKilled++;
 					}
 
 					if (parentNation != null)
 					{
-						parentNation.civilian_killed(targetUnit.RaceId, true, 0);
-						parentNation.enemy_civilian_killed++;
+						parentNation.CivilianKilled(targetUnit.RaceId, true, 0);
+						parentNation.EnemyCivilianKilled++;
 					}
 				}
 				else //---- if the unit killed is a soldier -----//
 				{
 					if (targetNation != null)
-						targetNation.own_soldier_killed++;
+						targetNation.OwnSoldierKilled++;
 
 					if (parentNation != null)
-						parentNation.enemy_soldier_killed++;
+						parentNation.EnemySoldierKilled++;
 				}
 			}
 
@@ -1732,18 +1732,18 @@ public partial class Unit
 				{
 					case UnitConstants.UNIT_CLASS_WEAPON:
 						if (parentNation != null)
-							parentNation.enemy_weapon_destroyed++;
+							parentNation.EnemyWeaponDestroyed++;
 
 						if (targetNation != null)
-							targetNation.own_weapon_destroyed++;
+							targetNation.OwnWeaponDestroyed++;
 						break;
 
 					case UnitConstants.UNIT_CLASS_SHIP:
 						if (parentNation != null)
-							parentNation.enemy_ship_destroyed++;
+							parentNation.EnemyShipDestroyed++;
 
 						if (targetNation != null)
-							targetNation.own_ship_destroyed++;
+							targetNation.OwnShipDestroyed++;
 						break;
 				}
 
@@ -1754,10 +1754,10 @@ public partial class Unit
 				{
 					// Race-Id of 0 means a loyalty penalty applied for all races
 					if (targetNation != null)
-						targetNation.civilian_killed(0, false, 3);
+						targetNation.CivilianKilled(0, false, 3);
 
 					if (parentNation != null)
-						parentNation.civilian_killed(0, true, 3);
+						parentNation.CivilianKilled(0, true, 3);
 				}
 			}
 
@@ -1785,22 +1785,22 @@ public partial class Unit
 
 		if (parentNation != null && targetNation != null)
 		{
-			parentNation.set_at_war_today();
-			targetNation.set_at_war_today(parentUnit.SpriteId);
+			parentNation.SetAtWarToday();
+			targetNation.SetAtWarToday(parentUnit.SpriteId);
 		}
 
 		//-------- increase battling fryhtan score --------//
 
 		if (parentNation != null && targetUnitClass == UnitConstants.UNIT_CLASS_MONSTER)
 		{
-			parentNation.kill_monster_score += 0.1;
+			parentNation.KillMonsterScore += 0.1;
 		}
 
 		//------ call target unit being attack functions -------//
 
 		if (targetNation != null)
 		{
-			targetNation.being_attacked(parentNationRecno);
+			targetNation.BeingAttacked(parentNationRecno);
 
 			if (targetUnit.AIUnit)
 			{
@@ -1829,7 +1829,7 @@ public partial class Unit
 		else if (targetUnitClass == UnitConstants.UNIT_CLASS_MONSTER)
 		{
 			if (parentNation != null)
-				parentNation.change_reputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
+				parentNation.ChangeReputation(GameConstants.REPUTATION_INCREASE_PER_ATTACK_MONSTER);
 
 			//--- if a member in a troop is under attack, ask for other troop members to help ---//
 
@@ -2075,12 +2075,12 @@ public partial class Unit
 		{
 			if (attackNation != null && targetFirm.NationId != 0)
 			{
-				attackNation.set_at_war_today();
-				NationArray[targetFirm.NationId].set_at_war_today(attackUnit.SpriteId);
+				attackNation.SetAtWarToday();
+				NationArray[targetFirm.NationId].SetAtWarToday(attackUnit.SpriteId);
 			}
 
 			if (targetFirm.NationId != 0)
-				NationArray[targetFirm.NationId].being_attacked(attackNationRecno);
+				NationArray[targetFirm.NationId].BeingAttacked(attackNationRecno);
 
 			//------------ auto defense -----------------//
 			if (attackUnit.IsVisible())
@@ -2094,12 +2094,12 @@ public partial class Unit
 			//------ increase battling fryhtan score -------//
 
 			if (attackNation != null && targetFirm.FirmType == Firm.FIRM_MONSTER)
-				attackNation.kill_monster_score += 0.01;
+				attackNation.KillMonsterScore += 0.01;
 		}
 
 		//---------- add indicator on the map ----------//
 
-		if (NationArray.player_recno != 0 && targetFirm.OwnFirm())
+		if (NationArray.PlayerId != 0 && targetFirm.OwnFirm())
 			WarPointArray.AddPoint(targetFirm.LocCenterX, targetFirm.LocCenterY);
 
 		//---------- damage to the firm ------------//
@@ -2112,15 +2112,15 @@ public partial class Unit
 
 			SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 
-			if (targetFirm.NationId == NationArray.player_recno)
+			if (targetFirm.NationId == NationArray.PlayerId)
 				NewsArray.firm_destroyed(targetFirm.FirmId, attackUnit, attackNationRecno);
 
 			if (targetFirm.NationId != 0)
 			{
 				if (attackNation != null)
-					attackNation.enemy_firm_destroyed++;
+					attackNation.EnemyFirmDestroyed++;
 
-				NationArray[targetFirm.NationId].own_firm_destroyed++;
+				NationArray[targetFirm.NationId].OwnFirmDestroyed++;
 			}
 
 			else if (targetFirm.FirmType == Firm.FIRM_MONSTER)
@@ -2148,7 +2148,7 @@ public partial class Unit
 		int targetTownYLoc = targetTown.LocCenterY;
 
 		// ---------- add indicator on the map ----------//
-		if (NationArray.player_recno != 0 && targetTown.NationId == NationArray.player_recno)
+		if (NationArray.PlayerId != 0 && targetTown.NationId == NationArray.PlayerId)
 			WarPointArray.AddPoint(targetTown.LocCenterX, targetTown.LocCenterY);
 
 		//------------------------------------------------------------------------------//
@@ -2166,13 +2166,13 @@ public partial class Unit
 
 			if (attackNationRecno != 0 && targetTown.NationId != 0)
 			{
-				NationArray[attackNationRecno].set_at_war_today();
-				NationArray[targetTown.NationId].set_at_war_today(attackUnit.SpriteId);
+				NationArray[attackNationRecno].SetAtWarToday();
+				NationArray[targetTown.NationId].SetAtWarToday(attackUnit.SpriteId);
 			}
 
 			if (targetTown.NationId != 0)
 			{
-				NationArray[targetTown.NationId].being_attacked(attackNationRecno);
+				NationArray[targetTown.NationId].BeingAttacked(attackNationRecno);
 			}
 
 			// don't add the town abandon news that might be called by Town::dec_pop() as the town is actually destroyed not abandoned
@@ -2184,7 +2184,7 @@ public partial class Unit
 
 			//------ if the town is destroyed, add a news --------//
 
-			if (TownArray.IsDeleted(targetTownRecno) && townNationRecno == NationArray.player_recno)
+			if (TownArray.IsDeleted(targetTownRecno) && townNationRecno == NationArray.PlayerId)
 			{
 				NewsArray.town_destroyed(targetTownNameId, targetTownXLoc, targetTownYLoc, attackUnit, attackNationRecno);
 			}
@@ -3875,7 +3875,7 @@ public partial class Unit
 		else
 		{
 			Nation locNation = NationArray[loc.PowerNationId];
-			if (locNation.get_relation_status(NationId) == NationBase.NATION_HOSTILE)
+			if (locNation.GetRelationStatus(NationId) == NationBase.NATION_HOSTILE)
 				returnFactor = PROB_HOSTILE_RETURN;
 			else
 				returnFactor = PROB_FRIENDLY_RETURN;
@@ -4638,9 +4638,9 @@ public partial class Unit
 				// if the unit is hostile, only attack if should_attack flag to
 				// that nation is true or the unit is attacking somebody or something.
 				//--------------------------------------------------------------//
-				NationRelation nationRelation = nation.get_relation(targetNationRecno);
+				NationRelation nationRelation = nation.GetRelation(targetNationRecno);
 
-				if (nationRelation.status != NationBase.NATION_HOSTILE || !nationRelation.should_attack)
+				if (nationRelation.Status != NationBase.NATION_HOSTILE || !nationRelation.ShouldAttack)
 					return false;
 			}
 			else if (!targetUnit.CanIndependentUnitAttackNation(NationId))
@@ -4693,9 +4693,9 @@ public partial class Unit
 				// that nation is true or the unit is attacking somebody or something.
 				//--------------------------------------------------------------//
 
-				NationRelation nationRelation = nation.get_relation(targetNationRecno);
+				NationRelation nationRelation = nation.GetRelation(targetNationRecno);
 
-				if (nationRelation.status != NationBase.NATION_HOSTILE || !nationRelation.should_attack)
+				if (nationRelation.Status != NationBase.NATION_HOSTILE || !nationRelation.ShouldAttack)
 					return 0;
 			}
 			else // independent firm

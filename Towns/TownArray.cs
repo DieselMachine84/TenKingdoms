@@ -29,7 +29,7 @@ public class TownArray : DynArray<Town>
 		Town town = CreateNew();
 		town.Init(nationId, raceId, locX, locY);
 
-		NationArray.update_statistic();
+		NationArray.UpdateStatistic();
 
 		return town;
 	}
@@ -39,7 +39,7 @@ public class TownArray : DynArray<Town>
 		town.Deinit();
 		Delete(town.TownId);
 
-		NationArray.update_statistic();
+		NationArray.UpdateStatistic();
 	}
 
 	public override bool IsDeleted(int recNo)

@@ -4,53 +4,53 @@ namespace TenKingdoms;
 
 public class NationArray : DynArray<Nation>
 {
-	public int nation_count; // no. of nations, it's different from nation_array.size() which is a DynArrayB
-	public int ai_nation_count;
-	public DateTime last_del_nation_date;
-	public DateTime last_new_nation_date;
+	public int NationCount { get; set; } // no. of nations, it's different from nation_array.size() which is a DynArrayB
+	public int AINationCount { get; set; }
+	public DateTime LastNewNationDate { get; set; }
+	public DateTime LastDelNationDate { get; set; }
 
-	public int max_nation_population; // the maximum population in a nation
-	public int all_nation_population; // total population of all nations.
+	public int MaxNationPopulation { get; set; } // the maximum population in a nation
+	public int AllNationPopulation { get; set; } // total population of all nations.
 
-	public int independent_town_count;
+	public int IndependentTownCount { get; set; }
 
 	// the no. of independent towns each race has
-	public int[] independent_town_count_race_array = new int[GameConstants.MAX_RACE];
+	public int[] IndependentTownCountRaces { get; } = new int[GameConstants.MAX_RACE];
 
-	public int max_nation_units;
-	public int max_nation_humans;
-	public int max_nation_generals;
-	public int max_nation_weapons;
-	public int max_nation_ships;
-	public int max_nation_spies;
+	public int MaxNationUnits { get; set; }
+	public int MaxNationHumans { get; set; }
+	public int MaxNationGenerals { get; set; }
+	public int MaxNationWeapons { get; set; }
+	public int MaxNationShips { get; set; }
+	public int MaxNationSpies { get; set; }
 
-	public int max_nation_firms;
-	public int max_nation_tech_level;
+	public int MaxNationFirms { get; set; }
+	public int MaxNationTechLevel { get; set; }
 
-	public int max_population_rating;
-	public int max_military_rating;
-	public int max_economic_rating;
-	public int max_reputation;
-	public int max_kill_monster_score;
-	public int max_overall_rating;
+	public int MaxPopulationRating { get; set; }
+	public int MaxMilitaryRating { get; set; }
+	public int MaxEconomicRating { get; set; }
+	public int MaxReputation { get; set; }
+	public int MaxKillMonsterScore { get; set; }
+	public int MaxOverallRating { get; set; }
 
-	public int max_population_nation_recno;
-	public int max_military_nation_recno;
-	public int max_economic_nation_recno;
-	public int max_reputation_nation_recno;
-	public int max_kill_monster_nation_recno;
-	public int max_overall_nation_recno;
+	public int MaxPopulationNationId { get; set; }
+	public int MaxMilitaryNationId { get; set; }
+	public int MaxEconomicNationId { get; set; }
+	public int MaxReputationNationId { get; set; }
+	public int MaxKillMonsterNationId { get; set; }
+	public int MaxOverallNationId { get; set; }
 
-	public int last_alliance_id;
-	public int nation_peace_days; // continuous peace among nations
+	public int LastAllianceId { get; set; }
+	public int NationPeaceDays { get; set; } // continuous peace among nations
 
-	public int player_recno;
-	public Nation player;
+	public int PlayerId { get; set; }
+	public Nation Player { get; set; }
 
-	public byte[] nation_color_array = new byte[GameConstants.MAX_NATION + 1];
-	public byte[] nation_power_color_array = new byte[GameConstants.MAX_NATION + 2];
+	public byte[] NationColors { get; } = new byte[GameConstants.MAX_NATION + 1];
+	public byte[] NationPowerColors { get; } = new byte[GameConstants.MAX_NATION + 2];
 
-	public string[] human_name_array = new string[GameConstants.MAX_NATION];
+	public string[] HumanNames { get; } = new string[GameConstants.MAX_NATION];
 
 	private Config Config => Sys.Instance.Config;
 	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
@@ -63,17 +63,17 @@ public class NationArray : DynArray<Nation>
 
 	public NationArray()
 	{
-		nation_count = 0;
-		ai_nation_count = 0;
+		NationCount = 0;
+		AINationCount = 0;
 
-		last_del_nation_date = default;
-		nation_peace_days = 0;
-		last_alliance_id = 0;
+		LastDelNationDate = default;
+		NationPeaceDays = 0;
+		LastAllianceId = 0;
 
-		nation_color_array[0] = Colors.V_WHITE; // if nation_recno==0, the color is white
-		nation_power_color_array[0] = Colors.VGA_GRAY + 10; // if nation_recno==0, the color is white
+		NationColors[0] = Colors.V_WHITE; // if nation_recno==0, the color is white
+		NationPowerColors[0] = Colors.VGA_GRAY + 10; // if nation_recno==0, the color is white
 		// if Location::power_nation_recno==MAX_NATION+1, this means there are more than one nation have influence over this location.
-		nation_power_color_array[GameConstants.MAX_NATION + 1] = Colors.VGA_GRAY + 10;
+		NationPowerColors[GameConstants.MAX_NATION + 1] = Colors.VGA_GRAY + 10;
 	}
 
 	protected override Nation CreateNewObject(int objectType)
@@ -104,25 +104,25 @@ public class NationArray : DynArray<Nation>
 
 	public void DeleteNation(Nation nation)
 	{
-		nation_count--;
+		NationCount--;
 
-		if (nation.nation_type == NationBase.NATION_AI)
-			ai_nation_count--;
+		if (nation.NationType == NationBase.NATION_AI)
+			AINationCount--;
 		
 		ColorRemap.ColorSchemes[nation.NationId] = 0;
 
-		last_del_nation_date = Info.GameDate;
+		LastDelNationDate = Info.GameDate;
 
 		int nationRecno = nation.NationId;
-		nation.deinit();
+		nation.Deinit();
 		Delete(nationRecno);
 
 		//---- if the nation to be deleted is the player's nation ---//
 
-		if (nationRecno == player_recno)
+		if (nationRecno == PlayerId)
 		{
-			player = null;
-			player_recno = 0;
+			Player = null;
+			PlayerId = 0;
 
 			// set the view mode to normal mode to prevent possible problems
 			Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
@@ -130,10 +130,10 @@ public class NationArray : DynArray<Nation>
 
 		//---------- update statistic ----------//
 
-		update_statistic(); // as max_overall_nation_recno and others may be pointing to the deleted nation
+		UpdateStatistic(); // as max_overall_nation_recno and others may be pointing to the deleted nation
 	}
 
-	public Nation new_nation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
+	public Nation NewNation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
 	{
 		Nation nation = CreateNew();
 
@@ -141,8 +141,8 @@ public class NationArray : DynArray<Nation>
 
 		if (nationType == NationBase.NATION_OWN)
 		{
-			player = nation;
-			player_recno = nation.NationId;
+			Player = nation;
+			PlayerId = nation.NationId;
 
 			Info.DefaultViewingNationId = nation.NationId;
 			Info.ViewingNationId = nation.NationId;
@@ -150,60 +150,60 @@ public class NationArray : DynArray<Nation>
 
 		//--- we must call init() after setting ai_type & nation_res_id ----//
 
-		nation.init(nationType, raceId, colorSchemeId, dpPlayerId);
+		nation.Init(nationType, raceId, colorSchemeId, dpPlayerId);
 
 		//--- store the colors of all nations into a single array for later fast access ---//
 
 		// use a lighter color for the nation power area
-		nation_color_array[nation.NationId] = nation.nation_color;
-		nation_power_color_array[nation.NationId] = nation.nation_color;
+		NationColors[nation.NationId] = nation.NationColor;
+		NationPowerColors[nation.NationId] = nation.NationColor;
 
 		//-------------------------------------------//
 
-		nation_count++;
+		NationCount++;
 
 		if (nationType == NationBase.NATION_AI)
-			ai_nation_count++;
+			AINationCount++;
 
-		last_new_nation_date = Info.GameDate;
+		LastNewNationDate = Info.GameDate;
 
 		//---------- update statistic ----------//
 
-		update_statistic();
+		UpdateStatistic();
 
 		return nation;
 	}
 
-	public bool can_form_new_ai_nation()
+	public bool CanFormNewAINation()
 	{
 		return Config.new_nation_emerge &&
-		       ai_nation_count < Config.ai_nation_count && nation_count < GameConstants.MAX_NATION &&
-		       Info.GameDate > last_del_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS) &&
-		       Info.GameDate > last_new_nation_date.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS);
+		       AINationCount < Config.ai_nation_count && NationCount < GameConstants.MAX_NATION &&
+		       Info.GameDate > LastDelNationDate.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS) &&
+		       Info.GameDate > LastNewNationDate.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS);
 	}
 
-	public void update_statistic()
+	public void UpdateStatistic()
 	{
 		//----- reset statistic vars first ------//
 
 		foreach (Nation nation in this)
 		{
-			nation.total_population = 0;
-			nation.total_jobless_population = 0;
+			nation.TotalPopulation = 0;
+			nation.TotalJoblessPopulation = 0;
 
-			nation.largest_town_recno = 0;
-			nation.largest_town_pop = 0;
+			nation.LargestTownId = 0;
+			nation.LargestTownPop = 0;
 
-			nation.total_spy_count = 0;
-			nation.total_ship_combat_level = 0;
+			nation.TotalSpyCount = 0;
+			nation.TotalShipCombatLevel = 0;
 		}
 
 		//------ calculate town statistic -------//
 
-		independent_town_count = 0;
-		for (int i = 0; i < independent_town_count_race_array.Length; i++)
+		IndependentTownCount = 0;
+		for (int i = 0; i < IndependentTownCountRaces.Length; i++)
 		{
-			independent_town_count_race_array[i] = 0;
+			IndependentTownCountRaces[i] = 0;
 		}
 
 		foreach (Town town in TownArray)
@@ -212,25 +212,25 @@ public class NationArray : DynArray<Nation>
 			{
 				Nation nation = this[town.NationId];
 
-				nation.total_population += town.Population;
-				nation.total_jobless_population += town.JoblessPopulation;
+				nation.TotalPopulation += town.Population;
+				nation.TotalJoblessPopulation += town.JoblessPopulation;
 
-				if (town.Population > nation.largest_town_pop)
+				if (town.Population > nation.LargestTownPop)
 				{
-					nation.largest_town_pop = town.Population;
-					nation.largest_town_recno = town.TownId;
+					nation.LargestTownPop = town.Population;
+					nation.LargestTownId = town.TownId;
 				}
 			}
 			else
 			{
-				independent_town_count++;
+				IndependentTownCount++;
 
 				//--- the no. of independent towns each race has ---//
 
 				for (int j = 0; j < GameConstants.MAX_RACE; j++)
 				{
 					if (town.RacesPopulation[j] >= 6) // only count it if the pop of the race >= 6
-						independent_town_count_race_array[j]++;
+						IndependentTownCountRaces[j]++;
 				}
 			}
 		}
@@ -239,121 +239,121 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Spy spy in SpyArray)
 		{
-			this[spy.TrueNationId].total_spy_count++;
+			this[spy.TrueNationId].TotalSpyCount++;
 		}
 
 		//--- update nation rating (this must be called after the above code, which update vars like total_population ---//
 
 		foreach (Nation nation in this)
 		{
-			nation.update_nation_rating();
+			nation.UpdateNationRating();
 		}
 
 		//------ update the military rating of all nations -----//
 
-		update_military_rating();
+		UpdateMilitaryRating();
 
 		//--------- update nation maximum ----------//
 
-		max_nation_population = 0;
-		all_nation_population = 0;
+		MaxNationPopulation = 0;
+		AllNationPopulation = 0;
 
-		max_nation_units = 0;
-		max_nation_humans = 0;
-		max_nation_generals = 0;
-		max_nation_weapons = 0;
-		max_nation_ships = 0;
-		max_nation_spies = 0;
+		MaxNationUnits = 0;
+		MaxNationHumans = 0;
+		MaxNationGenerals = 0;
+		MaxNationWeapons = 0;
+		MaxNationShips = 0;
+		MaxNationSpies = 0;
 
-		max_nation_firms = 0;
-		max_nation_tech_level = 0;
+		MaxNationFirms = 0;
+		MaxNationTechLevel = 0;
 
-		max_population_rating = Int32.MinValue;
-		max_military_rating = Int32.MinValue;
-		max_economic_rating = Int32.MinValue;
-		max_reputation = Int32.MinValue;
-		max_kill_monster_score = Int32.MinValue;
-		max_overall_rating = Int32.MinValue;
+		MaxPopulationRating = Int32.MinValue;
+		MaxMilitaryRating = Int32.MinValue;
+		MaxEconomicRating = Int32.MinValue;
+		MaxReputation = Int32.MinValue;
+		MaxKillMonsterScore = Int32.MinValue;
+		MaxOverallRating = Int32.MinValue;
 
-		max_population_nation_recno = 0;
-		max_military_nation_recno = 0;
-		max_economic_nation_recno = 0;
-		max_reputation_nation_recno = 0;
-		max_kill_monster_nation_recno = 0;
-		max_overall_nation_recno = 0;
+		MaxPopulationNationId = 0;
+		MaxMilitaryNationId = 0;
+		MaxEconomicNationId = 0;
+		MaxReputationNationId = 0;
+		MaxKillMonsterNationId = 0;
+		MaxOverallNationId = 0;
 
 		foreach (Nation nation in this)
 		{
-			all_nation_population += nation.total_population;
+			AllNationPopulation += nation.TotalPopulation;
 
-			if (nation.total_population > max_nation_population)
-				max_nation_population = nation.total_population;
+			if (nation.TotalPopulation > MaxNationPopulation)
+				MaxNationPopulation = nation.TotalPopulation;
 
-			if (nation.total_unit_count > max_nation_units)
-				max_nation_units = nation.total_unit_count;
+			if (nation.TotalUnitCount > MaxNationUnits)
+				MaxNationUnits = nation.TotalUnitCount;
 
-			if (nation.total_human_count > max_nation_humans)
-				max_nation_humans = nation.total_human_count;
+			if (nation.TotalHumanCount > MaxNationHumans)
+				MaxNationHumans = nation.TotalHumanCount;
 
-			if (nation.total_general_count > max_nation_generals)
-				max_nation_generals = nation.total_general_count;
+			if (nation.TotalGeneralCount > MaxNationGenerals)
+				MaxNationGenerals = nation.TotalGeneralCount;
 
-			if (nation.total_weapon_count > max_nation_weapons)
-				max_nation_weapons = nation.total_weapon_count;
+			if (nation.TotalWeaponCount > MaxNationWeapons)
+				MaxNationWeapons = nation.TotalWeaponCount;
 
-			if (nation.total_ship_count > max_nation_ships)
-				max_nation_ships = nation.total_ship_count;
+			if (nation.TotalShipCount > MaxNationShips)
+				MaxNationShips = nation.TotalShipCount;
 
-			if (nation.total_spy_count > max_nation_spies)
-				max_nation_spies = nation.total_spy_count;
+			if (nation.TotalSpyCount > MaxNationSpies)
+				MaxNationSpies = nation.TotalSpyCount;
 
-			if (nation.total_firm_count > max_nation_firms)
-				max_nation_firms = nation.total_firm_count;
+			if (nation.TotalFirmCount > MaxNationFirms)
+				MaxNationFirms = nation.TotalFirmCount;
 
-			if (nation.total_tech_level() > max_nation_tech_level)
-				max_nation_tech_level = nation.total_tech_level();
+			if (nation.TotalTechLevel() > MaxNationTechLevel)
+				MaxNationTechLevel = nation.TotalTechLevel();
 
 			//----- update maximum nation rating ------//
 
-			if (nation.population_rating > max_population_rating)
+			if (nation.PopulationRating > MaxPopulationRating)
 			{
-				max_population_rating = nation.population_rating;
-				max_population_nation_recno = nation.NationId;
+				MaxPopulationRating = nation.PopulationRating;
+				MaxPopulationNationId = nation.NationId;
 			}
 
-			if (nation.military_rating > max_military_rating)
+			if (nation.MilitaryRating > MaxMilitaryRating)
 			{
-				max_military_rating = nation.military_rating;
-				max_military_nation_recno = nation.NationId;
+				MaxMilitaryRating = nation.MilitaryRating;
+				MaxMilitaryNationId = nation.NationId;
 			}
 
-			if (nation.economic_rating > max_economic_rating)
+			if (nation.EconomicRating > MaxEconomicRating)
 			{
-				max_economic_rating = nation.economic_rating;
-				max_economic_nation_recno = nation.NationId;
+				MaxEconomicRating = nation.EconomicRating;
+				MaxEconomicNationId = nation.NationId;
 			}
 
-			if (nation.reputation > max_reputation)
+			if (nation.Reputation > MaxReputation)
 			{
-				max_reputation = (int)nation.reputation;
-				max_reputation_nation_recno = nation.NationId;
+				MaxReputation = (int)nation.Reputation;
+				MaxReputationNationId = nation.NationId;
 			}
 
-			if (nation.kill_monster_score > max_kill_monster_score)
+			if (nation.KillMonsterScore > MaxKillMonsterScore)
 			{
-				max_kill_monster_score = (int)nation.kill_monster_score;
-				max_kill_monster_nation_recno = nation.NationId;
+				MaxKillMonsterScore = (int)nation.KillMonsterScore;
+				MaxKillMonsterNationId = nation.NationId;
 			}
 
-			if (nation.overall_rating > max_overall_rating)
+			if (nation.OverallRating > MaxOverallRating)
 			{
-				max_overall_rating = nation.overall_rating;
-				max_overall_nation_recno = nation.NationId;
+				MaxOverallRating = nation.OverallRating;
+				MaxOverallNationId = nation.NationId;
 			}
 		}
 	}
 
-	public void update_military_rating()
+	public void UpdateMilitaryRating()
 	{
 		int[] nationCombatLevelArray = new int[GameConstants.MAX_NATION];
 
@@ -381,7 +381,7 @@ public class NationArray : DynArray<Nation>
 
 			if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
 			{
-				this[unit.NationId].total_ship_combat_level += (int)unit.HitPoints;
+				this[unit.NationId].TotalShipCombatLevel += (int)unit.HitPoints;
 			}
 
 			//----------------------------------//
@@ -407,11 +407,11 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			nation.military_rating = nationCombatLevelArray[nation.NationId - 1] / 50;
+			nation.MilitaryRating = nationCombatLevelArray[nation.NationId - 1] / 50;
 		}
 	}
 
-	public void update_total_human_count()
+	public void UpdateTotalHumanCount()
 	{
 		int[] totalHumanCountArray = new int[GameConstants.MAX_NATION];
 
@@ -449,8 +449,8 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			if (nation.total_human_count != totalHumanCountArray[nation.NationId - 1])
-				nation.total_human_count = totalHumanCountArray[nation.NationId - 1];
+			if (nation.TotalHumanCount != totalHumanCountArray[nation.NationId - 1])
+				nation.TotalHumanCount = totalHumanCountArray[nation.NationId - 1];
 		}
 	}
 
@@ -464,12 +464,12 @@ public class NationArray : DynArray<Nation>
 			if (nation.NationId % InternalConstants.FRAMES_PER_DAY ==
 			    Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
 			{
-				nation.next_day();
+				nation.NextDay();
 
 				if (IsDeleted(nation.NationId))
 					continue;
 
-				if (nation.nation_type == NationBase.NATION_AI)
+				if (nation.NationType == NationBase.NATION_AI)
 				{
 					nation.ProcessAI();
 				}
@@ -477,30 +477,30 @@ public class NationArray : DynArray<Nation>
 		}
 
 		if (Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY == 0)
-			nation_peace_days++;
+			NationPeaceDays++;
 	}
 
 	public void NextMonth()
 	{
 		foreach (Nation nation in this)
 		{
-			nation.next_month();
+			nation.NextMonth();
 		}
 
 		//------- update statistic -----------//
 
-		update_statistic();
+		UpdateStatistic();
 	}
 
 	public void NextYear()
 	{
 		foreach (Nation nation in this)
 		{
-			nation.next_year();
+			nation.NextYear();
 		}
 	}
 
-	public int random_unused_race()
+	public int RandomUnusedRace()
 	{
 		//----- figure out which race has been used, which has not -----//
 
@@ -519,7 +519,7 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			usedRaceArray[nation.race_id - 1] = true;
+			usedRaceArray[nation.RaceId - 1] = true;
 			usedCount++;
 		}
 
@@ -542,7 +542,7 @@ public class NationArray : DynArray<Nation>
 		return 0;
 	}
 
-	public int random_unused_color()
+	public int RandomUnusedColor()
 	{
 		//----- figure out which race has been used, which has not -----//
 
@@ -551,7 +551,7 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			usedColorArray[nation.color_scheme_id - 1] = true;
+			usedColorArray[nation.ColorSchemeId - 1] = true;
 			usedCount++;
 		}
 
@@ -574,7 +574,7 @@ public class NationArray : DynArray<Nation>
 		return 0;
 	}
 
-	public bool should_attack(int attackingNation, int attackedNation)
+	public bool ShouldAttack(int attackingNation, int attackedNation)
 	{
 		if (attackingNation == attackedNation)
 			return false;
@@ -585,14 +585,14 @@ public class NationArray : DynArray<Nation>
 		if (IsDeleted(attackingNation) || IsDeleted(attackedNation))
 			return false;
 
-		return this[attackingNation].get_relation_should_attack(attackedNation);
+		return this[attackingNation].GetRelationShouldAttack(attackedNation);
 	}
 
-	public string get_human_name(int nationNameId, bool firstWordOnly = false)
+	public string GetHumanName(int nationNameId, bool firstWordOnly = false)
 	{
 		int nationRecno = -nationNameId;
 
-		string humanName = human_name_array[nationRecno - 1];
+		string humanName = HumanNames[nationRecno - 1];
 
 		if (firstWordOnly)
 		{
@@ -604,8 +604,8 @@ public class NationArray : DynArray<Nation>
 		}
 	}
 
-	public void set_human_name(int nationRecno, string nameStr)
+	public void SetHumanName(int nationRecno, string nameStr)
 	{
-		human_name_array[nationRecno - 1] = nameStr;
+		HumanNames[nationRecno - 1] = nameStr;
 	}
 }

@@ -713,7 +713,7 @@ public partial class Renderer
                 Graphics.DrawBitmapScaled(skillTexture, skillIconX, skillIconY, _skillWidth, _skillHeight);
             }
 
-            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.player_recno || Config.show_ai_info))
+            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
             {
                 int spyIconX = skillIconX;
                 int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + Scale(_skillHeight) + 1 : skillIconY;
@@ -884,7 +884,7 @@ public partial class Renderer
                 continue;
 
             //TODO check this
-            if (!Config.show_ai_info && NationArray.player_recno != 0 && !unit.BelongsToNation(NationArray.player_recno))
+            if (!Config.show_ai_info && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
                 continue;
             
             if (unit.PathNodes.Count > 1)

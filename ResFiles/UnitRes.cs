@@ -496,19 +496,19 @@ public class UnitInfo
 
 		Nation nation = NationArray[nationRecno];
 
-		nation.total_unit_count++;
+		nation.TotalUnitCount++;
 
 		if (unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			nation.total_weapon_count++;
+			nation.TotalWeaponCount++;
 		}
 		else if (unit_class == UnitConstants.UNIT_CLASS_SHIP)
 		{
-			nation.total_ship_count++;
+			nation.TotalShipCount++;
 		}
 		else if (race_id != 0)
 		{
-			nation.total_human_count++;
+			nation.TotalHumanCount++;
 		}
 	}
 
@@ -522,22 +522,22 @@ public class UnitInfo
 
 			Nation nation = NationArray[nationRecno];
 
-			nation.total_unit_count--;
+			nation.TotalUnitCount--;
 
 			if (unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 			{
-				nation.total_weapon_count--;
+				nation.TotalWeaponCount--;
 			}
 			else if (unit_class == UnitConstants.UNIT_CLASS_SHIP)
 			{
-				nation.total_ship_count--;
+				nation.TotalShipCount--;
 			}
 			else if (race_id != 0)
 			{
-				nation.total_human_count--;
+				nation.TotalHumanCount--;
 
-				if (nation.total_human_count < 0)
-					nation.total_human_count = 0;
+				if (nation.TotalHumanCount < 0)
+					nation.TotalHumanCount = 0;
 			}
 		}
 	}
@@ -545,7 +545,7 @@ public class UnitInfo
 	public void inc_nation_general_count(int nationRecno)
 	{
 		nation_general_count_array[nationRecno-1]++;
-		NationArray[nationRecno].total_general_count++;
+		NationArray[nationRecno].TotalGeneralCount++;
 	}
 
 	public void dec_nation_general_count(int nationRecno)
@@ -553,7 +553,7 @@ public class UnitInfo
 		if (nationRecno != 0)
 		{
 			nation_general_count_array[nationRecno - 1]--;
-			NationArray[nationRecno].total_general_count--;
+			NationArray[nationRecno].TotalGeneralCount--;
 		}
 	}
 

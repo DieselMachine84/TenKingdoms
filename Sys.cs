@@ -198,11 +198,11 @@ public class Sys
 
     private void GoToPlayerTown()
     {
-        if (NationArray.player_recno != 0)
+        if (NationArray.PlayerId != 0)
         {
             foreach (Town town in TownArray)
             {
-                if (town.TownId == NationArray.player_recno)
+                if (town.TownId == NationArray.PlayerId)
                 {
                     Renderer.GoToLocation(town.LocCenterX, town.LocCenterY);
                 }

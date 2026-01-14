@@ -105,7 +105,7 @@ public class News
 		string str = String.Empty;
 
 		if (nation_name_id1 < 0) // human player - custom name
-			str += NationArray.get_human_name(nation_name_id1, true) + "'s Kingdom";
+			str += NationArray.GetHumanName(nation_name_id1, true) + "'s Kingdom";
 		else
 			str += RaceRes[nation_race_id1].get_single_name(nation_name_id1) + "'s Kingdom";
 
@@ -121,7 +121,7 @@ public class News
 		string str = String.Empty;
 
 		if (nation_name_id2 < 0) // human player - custom name
-			str += NationArray.get_human_name(nation_name_id2, true) + "'s Kingdom";
+			str += NationArray.GetHumanName(nation_name_id2, true) + "'s Kingdom";
 		else
 			str += RaceRes[nation_race_id2].get_single_name(nation_name_id2) + "'s Kingdom";
 
@@ -137,7 +137,7 @@ public class News
 		string str;
 
 		if (nation_name_id1 < 0) // human player - custom name
-			str = NationArray.get_human_name(nation_name_id1);
+			str = NationArray.GetHumanName(nation_name_id1);
 		else
 			str = RaceRes[nation_race_id1].get_name(nation_name_id1);
 
@@ -154,7 +154,7 @@ public class News
 		string str;
 
 		if (nation_name_id2 < 0) // human player - custom name
-			str = NationArray.get_human_name(nation_name_id2);
+			str = NationArray.GetHumanName(nation_name_id2);
 		else
 			str = RaceRes[nation_race_id2].get_name(nation_name_id2);
 
@@ -234,7 +234,7 @@ public class News
 					//--- if the unit is no longer belong to our nation ----//
 					//--- only keep track of the unit for one month --------//
 
-					if (unit.NationId == NationArray.player_recno || Info.GameDate < news_date.AddDays(30.0))
+					if (unit.NationId == NationArray.PlayerId || Info.GameDate < news_date.AddDays(30.0))
 					{
 						if (unit.GetNextLoc(out loc_x, out loc_y))
 						{

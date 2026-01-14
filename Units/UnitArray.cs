@@ -274,7 +274,7 @@ public class UnitArray : SpriteArray
 
     public void StopAttackUnit(int unitId)
     {
-	    if (NationBase.nation_hand_over_flag != 0)
+	    if (NationBase.NationHandOverFlag != 0)
 		    return;
 
 	    foreach (Unit unit in this)
@@ -290,7 +290,7 @@ public class UnitArray : SpriteArray
 
     public void StopAttackFirm(int firmId)
     {
-	    if (NationBase.nation_hand_over_flag != 0)
+	    if (NationBase.NationHandOverFlag != 0)
 		    return;
 
 	    foreach (Unit unit in this)
@@ -306,7 +306,7 @@ public class UnitArray : SpriteArray
 
     public void StopAttackTown(int townId)
     {
-	    if (NationBase.nation_hand_over_flag != 0)
+	    if (NationBase.NationHandOverFlag != 0)
 		    return;
 
 	    foreach (Unit unit in this)
@@ -1737,7 +1737,7 @@ public class UnitArray : SpriteArray
 
 	    if (attackUnit.NationId != 0 && targetNationId != 0)
 	    {
-		    if (!NationArray[attackUnit.NationId].get_relation(targetNationId).should_attack)
+		    if (!NationArray[attackUnit.NationId].GetRelation(targetNationId).ShouldAttack)
 			    return;
 	    }
 
