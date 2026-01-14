@@ -110,7 +110,7 @@ public class BuildFactoryTask : AITask, IUnitTask
         
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != rawFirmLocation.RegionId)

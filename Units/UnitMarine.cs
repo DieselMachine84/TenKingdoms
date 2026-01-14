@@ -1253,7 +1253,7 @@ public class UnitMarine : Unit, ITrader
 
 			if (mine.NationId != NationId)
 			{
-				loadQty = (nation.cash > 0.0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
+				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
 					nation.import_goods(NationBase.IMPORT_RAW, mine.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
@@ -1280,7 +1280,7 @@ public class UnitMarine : Unit, ITrader
 
 			if (market.NationId != NationId)
 			{
-				loadQty = (nation.cash > 0.0) ? (int)Math.Min(nation.cash / GameConstants.RAW_PRICE, loadQty) : 0;
+				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.RAW_PRICE, loadQty) : 0;
 				if (loadQty > 0)
 					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, loadQty * GameConstants.RAW_PRICE);
 			}
@@ -1375,7 +1375,7 @@ public class UnitMarine : Unit, ITrader
 
 			if (factory.NationId != NationId)
 			{
-				loadQty = (nation.cash > 0.0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
+				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
 					nation.import_goods(NationBase.IMPORT_PRODUCT, factory.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}
@@ -1402,7 +1402,7 @@ public class UnitMarine : Unit, ITrader
 
 			if (market.NationId != NationId)
 			{
-				loadQty = (nation.cash > 0.0) ? (int)Math.Min(nation.cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
+				loadQty = (nation.Cash > 0.0) ? (int)Math.Min(nation.Cash / GameConstants.PRODUCT_PRICE, loadQty) : 0;
 				if (loadQty > 0)
 					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, loadQty * GameConstants.PRODUCT_PRICE);
 			}

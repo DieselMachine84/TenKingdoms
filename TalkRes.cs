@@ -327,7 +327,7 @@ public class TalkRes
 
                 foreach (Nation nation in NationArray)
                 {
-                    if (fromNation.get_relation(nation.nation_recno).status == NationBase.NATION_HOSTILE)
+                    if (fromNation.get_relation(nation.NationId).status == NationBase.NATION_HOSTILE)
                         return true;
                 }
 
@@ -688,7 +688,7 @@ public class TalkRes
 
         foreach (Nation nation in NationArray)
         {
-            int nationRecno = nation.nation_recno;
+            int nationRecno = nation.NationId;
 
             if (nationRecno == cur_talk_msg.from_nation_recno || nationRecno == cur_talk_msg.to_nation_recno)
             {
@@ -727,7 +727,7 @@ public class TalkRes
 
         foreach (Nation nation in NationArray)
         {
-            int nationRecno = nation.nation_recno;
+            int nationRecno = nation.NationId;
 
             //--- can only ask another nation to declare war with a nation that is currently at war with our nation ---//
 
@@ -762,7 +762,7 @@ public class TalkRes
 
             for (int i = 0; i < qtyStrArray.Length; i++)
             {
-                if (NationArray.player.cash >= qtyArray[i] * GameConstants.MIN_FOOD_PURCHASE_PRICE / 10.0)
+                if (NationArray.player.Cash >= qtyArray[i] * GameConstants.MIN_FOOD_PURCHASE_PRICE / 10.0)
                     add_talk_choice(qtyStrArray[i], qtyArray[i]);
             }
 
@@ -777,7 +777,7 @@ public class TalkRes
 
             for (int i = 0; i < priceStrArray.Length; i++)
             {
-                if (i == 0 || NationArray.player.cash >= cur_talk_msg.talk_para1 * priceArray[i] / 10.0)
+                if (i == 0 || NationArray.player.Cash >= cur_talk_msg.talk_para1 * priceArray[i] / 10.0)
                     add_talk_choice(priceStrArray[i], priceArray[i]);
             }
 
@@ -800,7 +800,7 @@ public class TalkRes
             // when demand tribute, the amount can be sent to any
             if (cur_talk_msg.talk_id == TalkMsg.TALK_DEMAND_TRIBUTE ||
                 cur_talk_msg.talk_id == TalkMsg.TALK_DEMAND_AID ||
-                NationArray.player.cash >= tributeAmtArray[i])
+                NationArray.player.Cash >= tributeAmtArray[i])
             {
                 add_talk_choice(tributeStrArray[i], tributeAmtArray[i]);
             }
@@ -880,7 +880,7 @@ public class TalkRes
 
         for (int i = 0; i < strArray.Length; i++)
         {
-            if (NationArray.player.cash >= amtArray[i])
+            if (NationArray.player.Cash >= amtArray[i])
             {
                 add_talk_choice(strArray[i], amtArray[i] / 10); // divided by 10 to cope with the limit of <short>
             }

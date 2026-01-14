@@ -1,6 +1,7 @@
 namespace TenKingdoms;
 
 //TODO join several SailShipTasks into one
+//TODO it is possible that harbor is blocked by other harbors, so ship cannot sail from harbor
 
 public class SailShipTask : AITask, IUnitTask
 {

@@ -151,7 +151,7 @@ public class FirmInn : Firm
 
 		InnUnit innUnit = InnUnits[innUnitId - 1];
 
-		if (nation.cash < innUnit.HireCost)
+		if (nation.Cash < innUnit.HireCost)
 			return 0;
 
 		//---------- add the unit now -----------//
@@ -274,7 +274,7 @@ public class FirmInn : Firm
 	{
 		Nation ownNation = NationArray[NationId];
 
-		if (ownNation.cash < 500.0 + 500.0 * ownNation.pref_cash_reserve / 100.0 && ownNation.profit_365days() < 0)
+		if (ownNation.Cash < 500.0 + 500.0 * ownNation.pref_cash_reserve / 100.0 && ownNation.profit_365days() < 0)
 		{
 			AIDelFirm();
 			return true;

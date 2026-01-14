@@ -701,7 +701,7 @@ public class FirmMonster : Firm
 		//------ the more score the player has, the more often monsters will attack him ------//
 		foreach (Nation nation in NationArray)
 		{
-			totalScore += Info.GetTotalScore(nation.nation_recno);
+			totalScore += Info.GetTotalScore(nation.NationId);
 		}
 
 		int randomValue = Misc.Random(totalScore) + 1;
@@ -710,7 +710,7 @@ public class FirmMonster : Firm
 		Nation targetNation = null;
 		foreach (Nation nation in NationArray)
 		{
-			totalScore += Info.GetTotalScore(nation.nation_recno);
+			totalScore += Info.GetTotalScore(nation.NationId);
 			if (randomValue <= totalScore)
 			{
 				targetNation = nation;
@@ -722,7 +722,7 @@ public class FirmMonster : Firm
 			return 0;
 
 		int targetLocX = -1, targetLocY = -1;
-		int targetNationId = targetNation.nation_recno;
+		int targetNationId = targetNation.NationId;
 		List<Firm> targetFirms = new List<Firm>();
 		foreach (Firm firm in FirmArray)
 		{

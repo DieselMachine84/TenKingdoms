@@ -1359,7 +1359,7 @@ public class Town : IIdObject
 
 		if (_autoGrantLoyalty > 0)
 		{
-			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < _autoGrantLoyalty && nation.cash > 0.0)
+			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < _autoGrantLoyalty && nation.Cash > 0.0)
 			{
 				Reward(InternalConstants.COMMAND_AI);
 			}
@@ -1473,7 +1473,7 @@ public class Town : IIdObject
 
 		Nation grantNation = NationArray[grantNationId];
 
-		if (grantNation.cash < 0.0)
+		if (grantNation.Cash < 0.0)
 			return 0;
 
 		//if( !remoteAction && remote.is_enable() )
@@ -1679,7 +1679,7 @@ public class Town : IIdObject
 
 	public bool CanTrain(int raceId)
 	{
-		return HasLinkedOwnCamp && RecruitableRacePopulation(raceId, true) > 0 && NationArray[NationId].cash > GameConstants.TRAIN_SKILL_COST;
+		return HasLinkedOwnCamp && RecruitableRacePopulation(raceId, true) > 0 && NationArray[NationId].Cash > GameConstants.TRAIN_SKILL_COST;
 	}
 
 	private void ProcessTrain()
@@ -3696,7 +3696,7 @@ public class Town : IIdObject
 
 		//-------- create the king --------//
 
-		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.nation_recno, Unit.RANK_KING, 100, locX, locY);
+		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.NationId, Unit.RANK_KING, 100, locX, locY);
 		kingUnit.Skill.SkillId = Skill.SKILL_LEADING;
 		kingUnit.Skill.SkillLevel = 50 + Misc.Random(51);
 		kingUnit.SetCombatLevel(70 + Misc.Random(31));
@@ -3705,29 +3705,29 @@ public class Town : IIdObject
 
 		DecPopulation(raceId, false);
 
-		ChangeNation(newNation.nation_recno);
+		ChangeNation(newNation.NationId);
 
 		//------ increase the loyalty of the town -----//
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 			RacesLoyalty[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
 
-		NewsArray.new_nation(newNation.nation_recno);
+		NewsArray.new_nation(newNation.NationId);
 
 		//--- random extra beginning advantages -----//
 
 		switch (Misc.Random(10))
 		{
 			case 1: // knowledge of weapon in the beginning.
-				TechRes[Misc.Random(TechRes.TechInfos.Length) + 1].set_nation_tech_level(newNation.nation_recno, 1);
+				TechRes[Misc.Random(TechRes.TechInfos.Length) + 1].set_nation_tech_level(newNation.NationId, 1);
 				break;
 
 			case 2: // random additional cash
-				newNation.cash += Misc.Random(5000);
+				newNation.Cash += Misc.Random(5000);
 				break;
 
 			case 3: // random additional food
-				newNation.food += Misc.Random(5000);
+				newNation.Food += Misc.Random(5000);
 				break;
 
 			case 4: // random additional skilled units
@@ -3859,7 +3859,7 @@ public class Town : IIdObject
 			if (nation.race_id == 0)
 				continue;
 
-			if (nation.cash <= 0.0)
+			if (nation.Cash <= 0.0)
 				continue;
 
 			// don't join too frequently, at most 3 months a unit
@@ -3868,7 +3868,7 @@ public class Town : IIdObject
 
 			//--- only join the nation if the nation has town in the town's region ---//
 
-			if (regionStat.TownNationCounts[nation.nation_recno - 1] == 0)
+			if (regionStat.TownNationCounts[nation.NationId - 1] == 0)
 				continue;
 
 			//----- calculate the rating of the nation -----//
@@ -3885,7 +3885,7 @@ public class Town : IIdObject
 			if (curRating > bestRating)
 			{
 				bestRating = curRating;
-				bestNationId = nation.nation_recno;
+				bestNationId = nation.NationId;
 				bestRaceId = raceId;
 			}
 		}
@@ -4154,7 +4154,7 @@ public class Town : IIdObject
 		Nation ownNation = NationArray[NationId];
 
 		int yearProfit = Convert.ToInt32(ownNation.profit_365days());
-		double cash = ownNation.cash;
+		double cash = ownNation.Cash;
 		int minLoyalty = 55 + 30 * ownNation.pref_loyalty_concern / 100;
 
 		if (yearProfit < 0) // we are losing money now

@@ -174,7 +174,7 @@ public class FirmFactory : Firm
 
 					// make sure it has the cash to pay for the raw materials
 					if (firmMine.NationId != NationId)
-						inputQty = Math.Min(inputQty, nation.cash / GameConstants.RAW_PRICE);
+						inputQty = Math.Min(inputQty, nation.Cash / GameConstants.RAW_PRICE);
 
 					if (inputQty > 0.0)
 					{
@@ -204,7 +204,7 @@ public class FirmFactory : Firm
 
 							// make sure it has the cash to pay for the raw materials
 							if (firmMarket.NationId != NationId)
-								inputQty = Math.Min(inputQty, nation.cash / GameConstants.RAW_PRICE);
+								inputQty = Math.Min(inputQty, nation.Cash / GameConstants.RAW_PRICE);
 
 							if (inputQty > 0.0)
 							{

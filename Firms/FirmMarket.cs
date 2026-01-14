@@ -386,7 +386,7 @@ public class FirmMarket : Firm
 	{
 		Nation nation = NationArray[NationId];
 
-		if (nation.cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
+		if (nation.Cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
 			return false;
 
 		int supportedCaravan = nation.total_population / GameConstants.POPULATION_PER_CARAVAN;

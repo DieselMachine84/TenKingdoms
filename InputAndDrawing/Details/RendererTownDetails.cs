@@ -366,12 +366,12 @@ public partial class Renderer
 
     private bool IsGrantEnabled(Town town)
     {
-        return town.HasLinkedOwnCamp && NationArray.player.cash > 0.0;
+        return town.HasLinkedOwnCamp && NationArray.player.Cash > 0.0;
     }
 
     private bool IsGrantToNonOwnTownEnabled(Town town)
     {
-        return NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno) && NationArray.player.cash > 0.0;
+        return NationArray.player_recno != 0 && town.CanGrantToNonOwnTown(NationArray.player_recno) && NationArray.player.Cash > 0.0;
     }
 
     private void DrawTrainMenu(Town town)

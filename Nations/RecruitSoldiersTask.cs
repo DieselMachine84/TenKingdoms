@@ -15,7 +15,7 @@ public class RecruitSoldiersTask : AITask
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != Nation.nation_recno)
+            if (firm.NationId != NationId)
                 continue;
 
             if (firm.UnderConstruction)
@@ -32,7 +32,7 @@ public class RecruitSoldiersTask : AITask
                 foreach (int linkedTownId in camp.LinkedTowns)
                 {
                     Town linkedTown = TownArray[linkedTownId];
-                    if (linkedTown.NationId != Nation.nation_recno)
+                    if (linkedTown.NationId != NationId)
                         continue;
 
                     if (linkedTown.Population < 20 || linkedTown.JoblessPopulation < 5)

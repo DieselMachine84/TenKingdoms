@@ -143,19 +143,19 @@ public class Info
         {
             if (onlyHasContact)
             {
-                if (viewingNation != null && !viewingNation.get_relation(nation.nation_recno).has_contact)
+                if (viewingNation != null && !viewingNation.get_relation(nation.NationId).has_contact)
                     continue;
             }
 
-            NationRanks[0, nation.nation_recno - 1] = nation.population_rating;
+            NationRanks[0, nation.NationId - 1] = nation.population_rating;
 
-            NationRanks[1, nation.nation_recno - 1] = nation.military_rating;
+            NationRanks[1, nation.NationId - 1] = nation.military_rating;
 
-            NationRanks[2, nation.nation_recno - 1] = nation.economic_rating;
+            NationRanks[2, nation.NationId - 1] = nation.economic_rating;
 
-            NationRanks[3, nation.nation_recno - 1] = (int)nation.reputation;
+            NationRanks[3, nation.NationId - 1] = (int)nation.reputation;
 
-            NationRanks[4, nation.nation_recno - 1] = (int)nation.kill_monster_score;
+            NationRanks[4, nation.NationId - 1] = (int)nation.kill_monster_score;
         }
     }
 

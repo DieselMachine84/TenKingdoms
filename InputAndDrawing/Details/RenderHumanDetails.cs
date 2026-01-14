@@ -295,18 +295,18 @@ public partial class Renderer
         {
             if (canChangeToOtherNation)
             {
-                if (!trueNation.get_relation(nation.nation_recno).has_contact)
+                if (!trueNation.get_relation(nation.NationId).has_contact)
                     continue;
             }
             else
             {
-                if (nation != trueNation && nation.nation_recno != unit.NationId)
+                if (nation != trueNation && nation.NationId != unit.NationId)
                     continue;
             }
 
-            byte color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[nation.nation_recno], false).MainColor;
+            byte color = ColorRemap.GetColorRemap(ColorRemap.ColorSchemes[nation.NationId], false).MainColor;
             Graphics.DrawRect(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, 28, 28, color);
-            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.NationId == nation.nation_recno);
+            DrawSpyColorFrame(DetailsX1 + 160 + colorDX, DetailsY1 + 404 + colorDY, unit.NationId == nation.NationId);
             
             if (colorDY != 0)
                 colorDX += 40;
@@ -512,19 +512,19 @@ public partial class Renderer
             {
                 if (canChangeToOtherNation)
                 {
-                    if (!trueNation.get_relation(nation.nation_recno).has_contact)
+                    if (!trueNation.get_relation(nation.NationId).has_contact)
                         continue;
                 }
                 else
                 {
-                    if (nation != trueNation && nation.nation_recno != unit.NationId)
+                    if (nation != trueNation && nation.NationId != unit.NationId)
                         continue;
                 }
 
                 if (_leftMouseReleased && _mouseButtonX >= DetailsX1 + 160 + colorDX && _mouseButtonX <= DetailsX1 + 160 + colorDX + 28 &&
                     _mouseButtonY >= DetailsY1 + 404 + colorDY && _mouseButtonY <= DetailsY1 + 404 + colorDY + 28)
                 {
-                    unit.SpyChangeNation(nation.nation_recno, InternalConstants.COMMAND_PLAYER);
+                    unit.SpyChangeNation(nation.NationId, InternalConstants.COMMAND_PLAYER);
                     return;
                 }
 

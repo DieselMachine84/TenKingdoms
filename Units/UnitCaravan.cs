@@ -1310,7 +1310,7 @@ public class UnitCaravan : Unit, ITrader
 			if (market.NationId != NationId) // calculate the qty again if this is not our own market
 			{
 				Nation nation = NationArray[NationId];
-				qty = (nation.cash > 0.0) ? Math.Min((int)(nation.cash / GameConstants.PRODUCT_PRICE), qty) : 0;
+				qty = (nation.Cash > 0.0) ? Math.Min((int)(nation.Cash / GameConstants.PRODUCT_PRICE), qty) : 0;
 
 				if (qty != 0)
 					nation.import_goods(NationBase.IMPORT_PRODUCT, market.NationId, qty * GameConstants.PRODUCT_PRICE);
@@ -1328,7 +1328,7 @@ public class UnitCaravan : Unit, ITrader
 			if (market.NationId != NationId) // calculate the qty again if this is not our own market
 			{
 				Nation nation = NationArray[NationId];
-				qty = (nation.cash > 0.0) ? Math.Min((int)(nation.cash / GameConstants.RAW_PRICE), qty) : 0;
+				qty = (nation.Cash > 0.0) ? Math.Min((int)(nation.Cash / GameConstants.RAW_PRICE), qty) : 0;
 
 				if (qty != 0)
 					nation.import_goods(NationBase.IMPORT_RAW, market.NationId, qty * GameConstants.RAW_PRICE);

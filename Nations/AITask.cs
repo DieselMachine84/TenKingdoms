@@ -6,7 +6,7 @@ namespace TenKingdoms;
 public abstract class AITask
 {
     protected Nation Nation { get; }
-    protected int NationId => Nation.nation_recno;
+    protected int NationId => Nation.NationId;
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected UnitRes UnitRes => Sys.Instance.UnitRes;

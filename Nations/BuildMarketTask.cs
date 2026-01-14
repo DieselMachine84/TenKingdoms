@@ -213,7 +213,7 @@ public class BuildMarketTask : AITask, IUnitTask
 
                     foreach (Firm firm in FirmArray)
                     {
-                        if (firm.NationId != Nation.nation_recno)
+                        if (firm.NationId != NationId)
                             continue;
 
                         if (firm.FirmType != Firm.FIRM_FACTORY && firm.FirmType != Firm.FIRM_HARBOR)

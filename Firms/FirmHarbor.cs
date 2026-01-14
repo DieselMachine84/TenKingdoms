@@ -190,7 +190,7 @@ public class FirmHarbor : Firm
 			return;
 
 		Nation nation = NationArray[NationId];
-		if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
+		if (nation.Cash < UnitRes[BuildQueue[0]].build_cost)
 			return;
 
 		BuildUnitType = BuildQueue[0];
@@ -379,7 +379,7 @@ public class FirmHarbor : Firm
 	{
 		Nation ownNation = NationArray[NationId];
 
-		if (ownNation.cash < 2000) // don't build if the cash is too low
+		if (ownNation.Cash < 2000) // don't build if the cash is too low
 			return;
 
 		if (ownNation.true_profit_365days() < (50 - ownNation.pref_use_marine) * 20) //	-1000 to +1000

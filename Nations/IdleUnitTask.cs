@@ -42,7 +42,7 @@ public class IdleUnitTask : AITask, IUnitTask
             Firm bestFirm = null;
             foreach (Firm firm in FirmArray)
             {
-                if (firm.NationId != Nation.nation_recno || firm.UnderConstruction)
+                if (firm.NationId != NationId || firm.UnderConstruction)
                     continue;
 
                 if (firm.RegionId != unit.RegionId())
@@ -69,7 +69,7 @@ public class IdleUnitTask : AITask, IUnitTask
         {
             foreach (Firm firm in FirmArray)
             {
-                if (firm.NationId != Nation.nation_recno || firm.UnderConstruction || firm.FirmType != Firm.FIRM_HARBOR)
+                if (firm.NationId != NationId || firm.UnderConstruction || firm.FirmType != Firm.FIRM_HARBOR)
                     continue;
 
                 FirmHarbor harbor = (FirmHarbor)firm;

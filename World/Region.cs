@@ -189,7 +189,7 @@ public class RegionStat
 
 		foreach (Nation nation in NationArray)
 		{
-			int index = nation.nation_recno - 1;
+			int index = nation.NationId - 1;
 			if (_firmNationCounts[index] > 0 || TownNationCounts[index] > 0 || _unitNationCounts[index] > 0)
 			{
 				NationPresenceCount++;

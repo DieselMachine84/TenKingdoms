@@ -609,7 +609,7 @@ public abstract class Firm : IIdObject
 		if (BuilderId == 0)
 			return;
 
-		if (NationArray[NationId].cash <= 0.0) // if you don't have cash, the repair workers will not work
+		if (NationArray[NationId].Cash <= 0.0) // if you don't have cash, the repair workers will not work
 			return;
 
 		Unit unit = UnitArray[BuilderId];
@@ -791,7 +791,7 @@ public abstract class Firm : IIdObject
 
 		double dayExpense = FirmRes[FirmType].YearCost / 365.0;
 
-		if (nation.cash >= dayExpense)
+		if (nation.Cash >= dayExpense)
 		{
 			nation.add_expense(NationBase.EXPENSE_FIRM, dayExpense, true);
 		}
@@ -823,7 +823,7 @@ public abstract class Firm : IIdObject
 				{
 					//--- if we don't have cash to pay the foreign workers, resign them ---//
 
-					if (nation.cash < 0.0)
+					if (nation.Cash < 0.0)
 					{
 						ResignWorker(worker);
 					}
@@ -846,7 +846,7 @@ public abstract class Firm : IIdObject
 	private void ConsumeFood()
 	{
 		// TODO bug. Only those workers who doesn't live in town should consume food
-		if (NationArray[NationId].food > 0.0)
+		if (NationArray[NationId].Food > 0.0)
 		{
 			int humanUnitCount = 0;
 
@@ -1843,7 +1843,7 @@ public abstract class Firm : IIdObject
 
 			//--- don't hire foreign workers if we don't have cash to pay them ---//
 
-			if (nation.cash < 0.0 && NationId != town.NationId)
+			if (nation.Cash < 0.0 && NationId != town.NationId)
 				continue;
 
 			//-------- if the town has any unit ready for jobs -------//
@@ -3159,7 +3159,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation.is_ai() && CanWorkerCapture(nation.nation_recno))
+			if (nation.is_ai() && CanWorkerCapture(nation.NationId))
 			{
 				captureNation = nation;
 				break;
@@ -3175,7 +3175,7 @@ public abstract class Firm : IIdObject
 
 		//------- capture the firm --------//
 
-		CaptureFirm(captureNation.nation_recno);
+		CaptureFirm(captureNation.NationId);
 
 		//------ order troops to attack nearby enemy camps -----//
 

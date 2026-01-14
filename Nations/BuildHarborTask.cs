@@ -6,6 +6,7 @@ namespace TenKingdoms;
 //  1. There is a resource on another island and we need it
 //  2. There is an independent village on another island that can be captured - TODO
 //  3. There is another kingdom on another island - TODO
+//  4. Kingdom has one but another one can have more optimal location
 
 public class BuildHarborTask : AITask, IUnitTask
 {

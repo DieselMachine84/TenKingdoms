@@ -74,7 +74,7 @@ public partial class Nation : NationBase
 
         for (int i = shortInterval; i <= 32; i += shortInterval)
         {
-            switch ((Info.TotalDays + nation_recno * 15) % shortInterval + i - shortInterval)
+            switch ((Info.TotalDays + NationId * 15) % shortInterval + i - shortInterval)
             {
                 case 0:
                     ThinkBuildCamp();
@@ -91,7 +91,7 @@ public partial class Nation : NationBase
         int longInterval = shortInterval * 2;
         for (int i = longInterval; i <= 32 * 2; i += longInterval)
         {
-            switch ((Info.TotalDays + nation_recno * 15) % longInterval + i - longInterval)
+            switch ((Info.TotalDays + NationId * 15) % longInterval + i - longInterval)
             {
                 case 0:
                     ThinkBuildMine();
@@ -135,7 +135,7 @@ public partial class Nation : NationBase
         for (int i = shortInterval; i <= 32; i += shortInterval)
         {
             int taskIndex = 0;
-            switch ((Info.TotalDays + nation_recno * 15) % shortInterval + i - shortInterval)
+            switch ((Info.TotalDays + NationId * 15) % shortInterval + i - shortInterval)
             {
                 case 0:
                     for (taskIndex = _buildMineTasks.Count - 1; taskIndex >= 0; taskIndex--)
@@ -317,7 +317,7 @@ public partial class Nation : NationBase
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
+            if (firm.NationId != NationId)
                 continue;
 
             if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
@@ -425,7 +425,7 @@ public partial class Nation : NationBase
             
             foreach (Town town in TownArray)
             {
-                if (town.NationId != nation_recno)
+                if (town.NationId != NationId)
                     continue;
 
                 if (town.RegionId != site.RegionId && !HasHarbor(town.RegionId, site.RegionId))
@@ -475,7 +475,7 @@ public partial class Nation : NationBase
             int minFactoryRawResource = Int16.MaxValue;
             foreach (Firm firm in FirmArray)
             {
-                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_FACTORY)
+                if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_FACTORY)
                     continue;
 
                 //TODO other region
@@ -509,12 +509,12 @@ public partial class Nation : NationBase
             }
         }
 
-        if (cash < PrefCashReserve || food < PrefFoodReserve)
+        if (Cash < PrefCashReserve || Food < PrefFoodReserve)
             return;
 
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.UnderConstruction)
                 continue;
             
             if (firm.FirmType == Firm.FIRM_MINE)
@@ -547,7 +547,7 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.UnderConstruction)
                 continue;
 
             if (firm is FirmMine mine)
@@ -566,14 +566,14 @@ public partial class Nation : NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId != nation_recno)
+            if (town.NationId != NationId)
                 continue;
             
             bool hasLinkedMarket = false;
             foreach (int linkedFirmId in town.LinkedFirms)
             {
                 Firm linkedFirm = FirmArray[linkedFirmId];
-                if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
+                if (linkedFirm.NationId == NationId && linkedFirm.FirmType == Firm.FIRM_MARKET)
                 {
                     FirmMarket market = (FirmMarket)linkedFirm;
                     if (market.UnderConstruction || market.IsRetailMarket())
@@ -618,7 +618,7 @@ public partial class Nation : NationBase
         foreach (int linkedFirmId in firm.LinkedFirms)
         {
             Firm linkedFirm = FirmArray[linkedFirmId];
-            if (linkedFirm.NationId == nation_recno && linkedFirm.FirmType == Firm.FIRM_MARKET)
+            if (linkedFirm.NationId == NationId && linkedFirm.FirmType == Firm.FIRM_MARKET)
             {
                 FirmMarket market = (FirmMarket)linkedFirm;
                 if (market.UnderConstruction || (firm.FirmType == Firm.FIRM_MINE ? market.IsRawMarket() : market.IsRetailMarket()))
@@ -653,7 +653,7 @@ public partial class Nation : NationBase
             
             foreach (Town town in TownArray)
             {
-                if (town.NationId == nation_recno && town.RegionId == site.RegionId)
+                if (town.NationId == NationId && town.RegionId == site.RegionId)
                     hasRawResourceOnKingdomIsland = true;
             }
         }
@@ -669,7 +669,7 @@ public partial class Nation : NationBase
                 bool hasTownInSiteRegion = false;
                 foreach (Town town in TownArray)
                 {
-                    if (town.NationId == nation_recno && town.RegionId == site.RegionId)
+                    if (town.NationId == NationId && town.RegionId == site.RegionId)
                         hasTownInSiteRegion = true;
                 }
 
@@ -683,13 +683,13 @@ public partial class Nation : NationBase
         List<int> kingdomRegions = new List<int>();
         foreach (Town town in TownArray)
         {
-            if (town.NationId == nation_recno && !kingdomRegions.Contains(town.RegionId))
+            if (town.NationId == NationId && !kingdomRegions.Contains(town.RegionId))
                 kingdomRegions.Add(town.RegionId);
         }
         
         foreach (Town otherTown in TownArray)
         {
-            if (otherTown.NationId != nation_recno && !kingdomRegions.Contains(otherTown.RegionId))
+            if (otherTown.NationId != NationId && !kingdomRegions.Contains(otherTown.RegionId))
                 AddBuildHarborTask(otherTown.RegionId);
         }
     }
@@ -699,7 +699,7 @@ public partial class Nation : NationBase
         RegionStat destinationRegionStat = RegionArray.GetRegionStat(toRegionId);
         foreach (Town town in TownArray)
         {
-            if (town.NationId != nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             //TODO select best town
@@ -729,10 +729,10 @@ public partial class Nation : NationBase
     {
         foreach (Town town in TownArray)
         {
-            if (town.NationId != nation_recno)
+            if (town.NationId != NationId)
                 continue;
             
-            bool hasLinkedCamp = town.HasLinkedCamp(nation_recno, false);
+            bool hasLinkedCamp = town.HasLinkedCamp(NationId, false);
             if (!hasLinkedCamp)
             {
                 bool hasBuildCampTask = false;
@@ -752,7 +752,7 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.UnderConstruction)
                 continue;
 
             if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
@@ -777,14 +777,14 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_MINE)
+            if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_MINE)
                 continue;
 
             bool linkedToOurTown = false;
             foreach (int townId in firm.LinkedTowns)
             {
                 Town town = TownArray[townId];
-                if (town.NationId == nation_recno)
+                if (town.NationId == NationId)
                     linkedToOurTown = true;
             }
 
@@ -807,7 +807,7 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno)
+            if (firm.NationId != NationId)
                 continue;
 
             if (firm.UnderConstruction || firm.Workers.Count == Firm.MAX_WORKER)
@@ -819,7 +819,7 @@ public partial class Nation : NationBase
                 foreach (int townId in firm.LinkedTowns)
                 {
                     Town town = TownArray[townId];
-                    if (town.NationId != nation_recno || town.JoblessPopulation > 0 || town.Population >= GameConstants.MAX_TOWN_POPULATION - 5)
+                    if (town.NationId != NationId || town.JoblessPopulation > 0 || town.Population >= GameConstants.MAX_TOWN_POPULATION - 5)
                         continue;
 
                     int runningTasksCount = 0;
@@ -854,7 +854,7 @@ public partial class Nation : NationBase
         int shipCount = 0;
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId == nation_recno && unit.UnitType == shipType)
+            if (unit.NationId == NationId && unit.UnitType == shipType)
                 shipCount++;
         }
 
@@ -890,7 +890,7 @@ public partial class Nation : NationBase
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId != nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             //TODO better check that if ship is waiting for people that it means it is not idle
@@ -943,7 +943,7 @@ public partial class Nation : NationBase
         {
             foreach (Firm firm in FirmArray)
             {
-                if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_HARBOR)
+                if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_HARBOR)
                     continue;
 
                 FirmHarbor harbor = (FirmHarbor)firm;
@@ -959,7 +959,7 @@ public partial class Nation : NationBase
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != nation_recno || firm.FirmType != Firm.FIRM_HARBOR || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_HARBOR || firm.UnderConstruction)
                 continue;
 
             FirmHarbor harbor = (FirmHarbor)firm;
@@ -978,7 +978,7 @@ public partial class Nation : NationBase
         
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId != nation_recno || unit.UnitType != UnitConstants.UNIT_TRANSPORT)
+            if (unit.NationId != NationId || unit.UnitType != UnitConstants.UNIT_TRANSPORT)
                 continue;
 
             if (unit.RegionId() == seaRegionId && unit.IsAIAllStop() && !IsUnitOnTask(unit.SpriteId))

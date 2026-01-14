@@ -519,7 +519,7 @@ public class Rebel : IIdObject
                 if (nation.reputation > maxReputation)
                 {
                     maxReputation = (int)nation.reputation;
-                    bestNationId = nation.nation_recno;
+                    bestNationId = nation.NationId;
                 }
             }
 

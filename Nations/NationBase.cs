@@ -50,32 +50,32 @@ public class NationBase : IIdObject
     public const int EXPENSE_TRIBUTE = 14;
     public const int EXPENSE_BRIBE = 15;
 
-    public int nation_recno;
-    public int nation_type;
-    public int race_id;
-    public int color_scheme_id;
-    public byte nation_color;
-    public int king_unit_recno;
-    public int king_leadership;
-    public int nation_name_id;
-    public string nation_name_str;
-    public int player_id;
-    public bool next_frame_ready;
-    public int last_caravan_id;
-    public int nation_firm_count;
-    public DateTime last_build_firm_date;
-    public int[] know_base_array = new int[GameConstants.MAX_RACE];
-    public int[] base_count_array = new int[GameConstants.MAX_RACE];
-    public bool is_at_war_today;
-    public bool is_at_war_yesterday;
-    public DateTime last_war_date;
-    public int last_attacker_unit_recno;
-    public DateTime last_independent_unit_join_date;
+    public int NationId { get; set; }
+    public int nation_type { get; set; }
+    public int race_id { get; set; }
+    public int color_scheme_id { get; set; }
+    public byte nation_color { get; set; }
+    public int king_unit_recno { get; set; }
+    public int king_leadership { get; set; }
+    public int nation_name_id { get; set; }
+    public string nation_name_str { get; set; }
+    public int player_id { get; set; }
+    public bool next_frame_ready { get; set; }
+    public int last_caravan_id { get; set; }
+    public int nation_firm_count { get; set; }
+    public DateTime last_build_firm_date { get; set; }
+    public int[] know_base_array { get; } = new int[GameConstants.MAX_RACE];
+    public int[] base_count_array { get; } = new int[GameConstants.MAX_RACE];
+    public bool is_at_war_today { get; set; }
+    public bool is_at_war_yesterday { get; set; }
+    public DateTime last_war_date { get; set; }
+    public int last_attacker_unit_recno { get; set; }
+    public DateTime last_independent_unit_join_date { get; set; }
 
     public bool cheat_enabled_flag;
 
-    public double cash;
-    public double food;
+    public double Cash { get; set; }
+    public double Food { get; set; }
 
     public double reputation;
     public double kill_monster_score;

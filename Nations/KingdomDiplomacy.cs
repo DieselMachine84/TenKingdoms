@@ -13,10 +13,10 @@ public partial class Nation
     {
         foreach (Nation otherNation in NationArray)
         {
-            if (otherNation.nation_recno == nation_recno)
+            if (otherNation.NationId == NationId)
                 continue;
 
-            NationRelation ourRelation = get_relation(otherNation.nation_recno);
+            NationRelation ourRelation = get_relation(otherNation.NationId);
             if (!ourRelation.has_contact)
                 continue;
 
@@ -24,7 +24,7 @@ public partial class Nation
             for (int i = 0; i < TalkRes.talk_msg_array.Count; i++)
             {
                 TalkMsg message = TalkRes.talk_msg_array[i];
-                if (message.from_nation_recno == nation_recno && message.to_nation_recno == otherNation.nation_recno &&
+                if (message.from_nation_recno == NationId && message.to_nation_recno == otherNation.NationId &&
                     message.talk_id == TalkMsg.TALK_PROPOSE_TRADE_TREATY)
                 {
                     exists = true;
@@ -33,7 +33,7 @@ public partial class Nation
 
             if (!ourRelation.trade_treaty && !exists)
             {
-                TalkRes.ai_send_talk_msg(otherNation.nation_recno, nation_recno, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
+                TalkRes.ai_send_talk_msg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
             }
         }
     }
@@ -43,7 +43,7 @@ public partial class Nation
         for (int i = TalkRes.talk_msg_array.Count - 1; i >= 0; i--)
         {
             TalkMsg message = TalkRes.talk_msg_array[i];
-            if (message.to_nation_recno != nation_recno)
+            if (message.to_nation_recno != NationId)
                 continue;
 
             if (message.reply_type == TalkRes.REPLY_WAITING)

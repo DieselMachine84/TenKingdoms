@@ -3,7 +3,11 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-// Relocate peasants when firm does not have enough workers
+// Relocate peasants when
+//  1. Firm does not have enough workers
+//  2. Town population is too close to maximum - TODO
+//  3. Optimizing town race - TODO
+//  4. Town should be moved to another location - TODO
 
 public class RelocatePeasantsTask : AITask, IUnitTask
 {
@@ -116,7 +120,7 @@ public class RelocatePeasantsTask : AITask, IUnitTask
 
         foreach (Town otherTown in TownArray)
         {
-            if (otherTown.NationId != Nation.nation_recno || otherTown.TownId == town.TownId)
+            if (otherTown.NationId != NationId || otherTown.TownId == town.TownId)
                 continue;
 
             if (otherTown.RegionId != regionId || otherTown.JoblessPopulation == 0)

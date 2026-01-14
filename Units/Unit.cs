@@ -1018,7 +1018,7 @@ public abstract partial class Unit : Sprite
 				if (NationId != 0)
 				{
 					Nation nation = NationArray[NationId];
-					if (nation.cash < firmInfo.SetupCost)
+					if (nation.Cash < firmInfo.SetupCost)
 						shouldProceed = false; // out of cash
 				}
 
@@ -3327,7 +3327,7 @@ public abstract partial class Unit : Sprite
 
 		if (UnitRes[UnitType].race_id != 0)
 		{
-			if (nation.cash > 0)
+			if (nation.Cash > 0)
 			{
 				if (Rank == RANK_SOLDIER)
 					nation.add_expense(NationBase.EXPENSE_MOBILE_UNIT, GameConstants.SOLDIER_YEAR_SALARY / 365.0, true);
@@ -3340,7 +3340,7 @@ public abstract partial class Unit : Sprite
 				ChangeLoyalty(-1);
 			}
 
-			if (nation.food > 0)
+			if (nation.Food > 0)
 			{
 				nation.consume_food(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);
 			}
@@ -3353,7 +3353,7 @@ public abstract partial class Unit : Sprite
 		}
 		else //----- it's a non-human unit ------//
 		{
-			if (nation.cash > 0)
+			if (nation.Cash > 0)
 			{
 				int expenseType = UnitRes[UnitType].unit_class switch
 				{
@@ -3944,7 +3944,7 @@ public abstract partial class Unit : Sprite
 
 	public void Reward(int rewardNationId)
 	{
-		if (NationArray[rewardNationId].cash < GameConstants.REWARD_COST)
+		if (NationArray[rewardNationId].Cash < GameConstants.REWARD_COST)
 			return;
 
 		//--------- if this is a spy ---------//
@@ -4276,13 +4276,13 @@ public abstract partial class Unit : Sprite
 
 		foreach (Nation nation in NationArray)
 		{
-			if (nation == curNation || !curNation.get_relation(nation.nation_recno).has_contact)
+			if (nation == curNation || !curNation.get_relation(nation.NationId).has_contact)
 				continue;
 
 			//--- only if the nation has a base town in the region where the unit stands ---//
 
 			// TODO should not take base town into account
-			if (!RegionArray.NationHasBaseTown(unitRegionId, nation.nation_recno))
+			if (!RegionArray.NationHasBaseTown(unitRegionId, nation.NationId))
 				continue;
 
 			int nationScore = (int)nation.reputation + (nation.overall_rating - curNation.overall_rating);
@@ -4293,7 +4293,7 @@ public abstract partial class Unit : Sprite
 			if (nationScore > bestScore)
 			{
 				bestScore = nationScore;
-				bestNationId = nation.nation_recno;
+				bestNationId = nation.NationId;
 			}
 		}
 
@@ -5321,7 +5321,7 @@ public abstract partial class Unit : Sprite
 				//---- try to build one if this unit can ----//
 
 				// if this unit is commanded by a leader, let the leader build the camp
-				if (ownNation.cash > FirmRes[Firm.FIRM_CAMP].SetupCost && CanBuild(Firm.FIRM_CAMP) && LeaderId == 0)
+				if (ownNation.Cash > FirmRes[Firm.FIRM_CAMP].SetupCost && CanBuild(Firm.FIRM_CAMP) && LeaderId == 0)
 				{
 					AIBuildCamp();
 				}

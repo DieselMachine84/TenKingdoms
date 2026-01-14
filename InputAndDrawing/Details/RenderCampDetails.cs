@@ -39,7 +39,7 @@ public partial class Renderer
                 PutText(FontSan, leadershipText, DetailsX1 + 111, DetailsY1 + 126);
                 PutText(FontSan, loyaltyText, DetailsX1 + 111, DetailsY1 + 156);
                 int targetLoyalty = overseer.TargetLoyalty;
-                if (NationArray[camp.NationId].cash <= 0.0)
+                if (NationArray[camp.NationId].Cash <= 0.0)
                     targetLoyalty = 0;
                 if (targetLoyalty != overseer.Loyalty)
                 {
@@ -254,7 +254,7 @@ public partial class Renderer
 
     private bool IsCampRewardEnabled(Firm firm, Unit overseer)
     {
-        return NationArray.player.cash >= GameConstants.REWARD_COST &&
+        return NationArray.player.Cash >= GameConstants.REWARD_COST &&
                (overseer != null && overseer.Rank != Unit.RANK_KING || firm.SelectedWorkerId != 0);
     }
 }

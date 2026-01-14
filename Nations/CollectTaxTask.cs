@@ -15,7 +15,7 @@ public class CollectTaxTask : AITask
     {
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
             
             if (town.AverageLoyalty() > 60.0)

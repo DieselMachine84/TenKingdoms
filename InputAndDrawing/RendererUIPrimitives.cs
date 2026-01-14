@@ -96,6 +96,9 @@ public partial class Renderer
 	private IntPtr _researchWarFactoryPanelTexture;
 	private int _researchWarFactoryPanelWidth;
 	private int _researchWarFactoryPanelHeight;
+	private IntPtr _monsterLairPanelTexture;
+	private int _monsterLairPanelWidth;
+	private int _monsterLairPanelHeight;
 	private IntPtr _unitPanelTexture;
 	private int _unitPanelWidth;
 	private int _unitPanelHeight;
@@ -487,6 +490,10 @@ public partial class Renderer
 		_researchWarFactoryPanelHeight = 56;
 		byte[] researchWarFactoryPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _researchWarFactoryPanelWidth, _researchWarFactoryPanelHeight);
 		_researchWarFactoryPanelTexture = Graphics.CreateTextureFromBmp(researchWarFactoryPanelBitmap, _researchWarFactoryPanelWidth, _researchWarFactoryPanelHeight, 32);
+		_monsterLairPanelWidth = _smallPanelWidth;
+		_monsterLairPanelHeight = 188;
+		byte[] monsterLairPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _monsterLairPanelWidth, _monsterLairPanelHeight);
+		_monsterLairPanelTexture = Graphics.CreateTextureFromBmp(monsterLairPanelBitmap, _monsterLairPanelWidth, _monsterLairPanelHeight, 32);
 		_unitPanelWidth = _smallPanelWidth;
 		_unitPanelHeight = 62;
 		byte[] unitPanelBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _unitPanelWidth, _unitPanelHeight);
@@ -1076,6 +1083,11 @@ public partial class Renderer
 	private void DrawResearchWarFactoryPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_researchWarFactoryPanelTexture, x, y, Scale(_researchWarFactoryPanelWidth), Scale(_researchWarFactoryPanelHeight));
+	}
+	
+	private void DrawMonsterLairPanel(int x, int y)
+	{
+		Graphics.DrawBitmap(_monsterLairPanelTexture, x, y, Scale(_monsterLairPanelWidth), Scale(_monsterLairPanelHeight));
 	}
 	
 	private void DrawUnitPanel(int x, int y)

@@ -319,7 +319,7 @@ public class Spy : IIdObject
 
 		//---------- reduce cash -----------//
 
-		if (nation.cash > 0)
+		if (nation.Cash > 0)
 		{
 			nation.add_expense(NationBase.EXPENSE_SPY, GameConstants.SPY_YEAR_SALARY / 365.0, true);
 		}
@@ -346,7 +346,7 @@ public class Spy : IIdObject
 
 		if (SpyPlace == SPY_MOBILE || inOwnFirm)
 		{
-			if (nation.food > 0)
+			if (nation.Food > 0)
 			{
 				// TODO check that spies consume food correctly
 				nation.consume_food(GameConstants.PERSON_FOOD_YEAR_CONSUMPTION / 365.0);

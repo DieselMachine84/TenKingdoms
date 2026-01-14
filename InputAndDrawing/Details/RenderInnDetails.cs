@@ -45,7 +45,7 @@ public partial class Renderer
 
         if (inn.OwnFirm())
         {
-            if (inn.InnUnits.Count > 0 && _selectedInnUnit != null && NationArray.player != null && NationArray.player.cash >= _selectedInnUnit.HireCost)
+            if (inn.InnUnits.Count > 0 && _selectedInnUnit != null && NationArray.player != null && NationArray.player.Cash >= _selectedInnUnit.HireCost)
             {
                 bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsInnY + 2 && _mouseButtonY <= ButtonsInnY + ButtonHeight;

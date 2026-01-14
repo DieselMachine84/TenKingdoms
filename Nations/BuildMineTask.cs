@@ -131,7 +131,7 @@ public class BuildMineTask : AITask, IUnitTask
         int minDistance = Int16.MaxValue;
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != siteLocation.RegionId)

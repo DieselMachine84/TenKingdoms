@@ -305,11 +305,11 @@ public class TalkMsg
 				break;
 
 			case TALK_REQUEST_BUY_FOOD:
-				return fromNation.cash >= talk_para1 * talk_para2 / 10.0;
+				return fromNation.Cash >= talk_para1 * talk_para2 / 10.0;
 
 			case TALK_GIVE_TRIBUTE:
 			case TALK_GIVE_AID:
-				return fromNation.cash >= talk_para1;
+				return fromNation.Cash >= talk_para1;
 
 			case TALK_GIVE_TECH:
 				/* 		// still display the message even if the nation already has the technology
@@ -340,11 +340,11 @@ public class TalkMsg
 		switch (talk_id)
 		{
 			case TALK_REQUEST_BUY_FOOD:
-				return toNation.food >= talk_para1;
+				return toNation.Food >= talk_para1;
 
 			case TALK_DEMAND_TRIBUTE:
 			case TALK_DEMAND_AID:
-				return toNation.cash >= talk_para1;
+				return toNation.Cash >= talk_para1;
 
 			case TALK_DEMAND_TECH: // the requested nation has the technology
 				return TechRes[talk_para1].get_nation_tech_level(to_nation_recno) > 0;

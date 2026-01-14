@@ -1538,7 +1538,7 @@ public class MapGenerator
 		Nation nation = NationArray.new_nation(NationBase.NATION_OWN,
 			Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1, Config.player_nation_color);
 
-		NationArray.set_human_name(nation.nation_recno, Config.player_name);
+		NationArray.set_human_name(nation.NationId, Config.player_name);
 	}
 	
 	private void CreateAINation(int aiNationCount)
@@ -1706,7 +1706,7 @@ public class MapGenerator
 		{
 			//--------- create town -----------//
 
-			Town town = CreateTown(nation.nation_recno, nation.race_id, out _, out _);
+			Town town = CreateTown(nation.NationId, nation.race_id, out _, out _);
 
 			if (town == null)
 			{
@@ -1717,7 +1717,7 @@ public class MapGenerator
 			//------- create military camp -------//
 
 			//TODO randomize camp location
-			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.nation_recno, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
+			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.race_id].code);
 
 			if (firmRecno == 0)
 			{

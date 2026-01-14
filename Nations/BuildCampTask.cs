@@ -33,7 +33,7 @@ public class BuildCampTask : AITask, IUnitTask
             return true;
 
         Town town = TownArray[TownId];
-        if (town.HasLinkedCamp(Nation.nation_recno, false))
+        if (town.HasLinkedCamp(NationId, false))
             return true;
         
         return false;
@@ -168,7 +168,7 @@ public class BuildCampTask : AITask, IUnitTask
                             buildLocX, buildLocY, buildLocX2, buildLocY2))
                         continue;
                     
-                    if (nearTown.NationId == Nation.nation_recno)
+                    if (nearTown.NationId == NationId)
                         rating += 100;
                     
                     if (nearTown.NationId == 0)

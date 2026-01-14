@@ -142,7 +142,7 @@ public class AssignGeneralTask : AITask, IUnitTask
         int bestRating = Int16.MinValue;
         foreach (Firm otherFirm in FirmArray)
         {
-            if (otherFirm.NationId != Nation.nation_recno)
+            if (otherFirm.NationId != NationId)
                 continue;
             
             if (otherFirm.FirmType != Firm.FIRM_CAMP)
@@ -170,7 +170,7 @@ public class AssignGeneralTask : AITask, IUnitTask
         int bestRace = 0;
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != regionId)
@@ -244,7 +244,7 @@ public class AssignGeneralTask : AITask, IUnitTask
         int bestRating = Int16.MaxValue;
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != regionId)

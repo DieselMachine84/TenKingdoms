@@ -38,7 +38,7 @@ public class ManageCaravansTask : AITask
         _kingdomCaravans.Clear();
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId == Nation.nation_recno && unit is UnitCaravan caravan)
+            if (unit.NationId == NationId && unit is UnitCaravan caravan)
                 _kingdomCaravans.Add(caravan);
         }
         
@@ -50,7 +50,7 @@ public class ManageCaravansTask : AITask
             if (firm.FirmType == Firm.FIRM_MINE)
             {
                 FirmMine mine = (FirmMine)firm;
-                if (mine.NationId != Nation.nation_recno)
+                if (mine.NationId != NationId)
                     continue;
 
                 if (mine.StockQty > 0.0)
@@ -60,7 +60,7 @@ public class ManageCaravansTask : AITask
             if (firm.FirmType == Firm.FIRM_FACTORY)
             {
                 FirmFactory factory = (FirmFactory)firm;
-                if (factory.NationId != Nation.nation_recno)
+                if (factory.NationId != NationId)
                     continue;
                 
                 if (factory.StockQty > 0.0)
@@ -70,7 +70,7 @@ public class ManageCaravansTask : AITask
             if (firm.FirmType == Firm.FIRM_MARKET)
             {
                 FirmMarket market = (FirmMarket)firm;
-                if (market.NationId == Nation.nation_recno)
+                if (market.NationId == NationId)
                 {
                     CheckDistributeProductCaravan(market);
                 }
@@ -105,7 +105,7 @@ public class ManageCaravansTask : AITask
             int bestRating = Int16.MaxValue;
             foreach (Firm otherFirm in FirmArray)
             {
-                if (otherFirm.NationId != Nation.nation_recno || otherFirm.UnderConstruction)
+                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != mine.RegionId)
@@ -152,7 +152,7 @@ public class ManageCaravansTask : AITask
             int bestRating = Int16.MaxValue;
             foreach (Firm otherFirm in FirmArray)
             {
-                if (otherFirm.NationId != Nation.nation_recno || otherFirm.UnderConstruction)
+                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != factory.RegionId)
@@ -197,7 +197,7 @@ public class ManageCaravansTask : AITask
             int bestDistance = Int16.MaxValue;
             foreach (Firm otherFirm in FirmArray)
             {
-                if (otherFirm.NationId != Nation.nation_recno || otherFirm.UnderConstruction)
+                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != market.RegionId)
@@ -247,7 +247,7 @@ public class ManageCaravansTask : AITask
             List<FirmMarket> nearbyMarkets = new List<FirmMarket>();
             foreach (Firm otherFirm in FirmArray)
             {
-                if (otherFirm.NationId != Nation.nation_recno || otherFirm.UnderConstruction)
+                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != market.RegionId)
@@ -320,7 +320,7 @@ public class ManageCaravansTask : AITask
         int bestRating = Int16.MaxValue;
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != Nation.nation_recno || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.UnderConstruction)
                 continue;
 
             if (firm.FirmType != Firm.FIRM_MARKET)
@@ -361,13 +361,13 @@ public class ManageCaravansTask : AITask
             return;
 
         bool ourMarketsCaravan = firm1.FirmType == Firm.FIRM_MARKET && firm2.FirmType == Firm.FIRM_MARKET &&
-                                 firm1.NationId == Nation.nation_recno && firm2.NationId == Nation.nation_recno;
+                                 firm1.NationId == NationId && firm2.NationId == NationId;
         SetCaravanStop(caravan, firm1, 1, pickUp1, ourMarketsCaravan);
         SetCaravanStop(caravan, firm2, 2, pickUp2, ourMarketsCaravan);
 
         if (firm3 != null)
         {
-            ourMarketsCaravan = ourMarketsCaravan && firm3.FirmType == Firm.FIRM_MARKET && firm3.NationId == Nation.nation_recno;
+            ourMarketsCaravan = ourMarketsCaravan && firm3.FirmType == Firm.FIRM_MARKET && firm3.NationId == NationId;
             SetCaravanStop(caravan, firm3, 3, pickUp3, ourMarketsCaravan);
         }
     }
@@ -382,7 +382,7 @@ public class ManageCaravansTask : AITask
         }
         else
         {
-            if (firm.NationId != Nation.nation_recno)
+            if (firm.NationId != NationId)
             {
                 for (int i = TradeStop.PICK_UP_PRODUCT_FIRST; i <= TradeStop.PICK_UP_PRODUCT_LAST; i++)
                     caravan.SetStopPickUp(stopId, i, InternalConstants.COMMAND_AI);

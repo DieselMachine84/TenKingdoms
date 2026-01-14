@@ -1020,7 +1020,7 @@ public class FirmCamp : Firm
 			Worker worker = Workers[i];
 			if (worker.UnitId != 0 && UnitRes[worker.UnitId].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 			{
-				if (nation.cash > 0)
+				if (nation.Cash > 0)
 				{
 					nation.add_expense(NationBase.EXPENSE_WEAPON,
 						Convert.ToDouble(UnitRes[worker.UnitId].year_cost) / 365.0, true);
@@ -1273,7 +1273,7 @@ public class FirmCamp : Firm
 					if (town.AccumulatedRewardPenalty > 30) // if the reward penalty is too high, don't reward
 						break;
 
-					if (NationArray[NationId].cash < 1000) // must have cash to reward
+					if (NationArray[NationId].Cash < 1000) // must have cash to reward
 						break;
 
 					town.Reward(InternalConstants.COMMAND_AI);

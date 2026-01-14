@@ -96,7 +96,7 @@ public class FirmWar : Firm
         //--- first check if the nation has enough money to build the weapon ---//
 
         Nation nation = NationArray[NationId];
-        if (nation.cash < UnitRes[BuildQueue[0]].build_cost)
+        if (nation.Cash < UnitRes[BuildQueue[0]].build_cost)
             return;
 
         BuildUnitType = BuildQueue[0];

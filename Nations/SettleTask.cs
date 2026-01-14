@@ -33,7 +33,7 @@ public class SettleTask : AITask, IUnitTask
         foreach (int townId in firm.LinkedTowns)
         {
             Town town = TownArray[townId];
-            if (town.NationId == Nation.nation_recno)
+            if (town.NationId == NationId)
                 return true;
         }
 
@@ -145,7 +145,7 @@ public class SettleTask : AITask, IUnitTask
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId != Nation.nation_recno)
+            if (town.NationId != NationId)
                 continue;
 
             if (town.RegionId != regionId)
@@ -244,7 +244,7 @@ public class SettleTask : AITask, IUnitTask
                             nearFirm.LocX1, nearFirm.LocY1, nearFirm.LocX2, nearFirm.LocY2))
                         continue;
 
-                    if (nearFirm.NationId == Nation.nation_recno)
+                    if (nearFirm.NationId == NationId)
                     {
                         if (nearFirm.FirmType == Firm.FIRM_CAMP)
                             rating += 100;
@@ -262,7 +262,7 @@ public class SettleTask : AITask, IUnitTask
                             nearTown.LocX1, nearTown.LocY1, nearTown.LocX2, nearTown.LocY2))
                         continue;
                     
-                    if (nearTown.NationId == Nation.nation_recno)
+                    if (nearTown.NationId == NationId)
                         rating += 50;
                     
                     // TODO calculate rating for other nation towns

@@ -58,7 +58,7 @@ public class FirmArray : DynArray<Firm>
 		if (World.CanBuildFirm(locX, locY, firmType) == 0)
 			return 0;
 
-		if (nationId != 0 && NationArray[nationId].cash < FirmRes[firmType].SetupCost)
+		if (nationId != 0 && NationArray[nationId].Cash < FirmRes[firmType].SetupCost)
 			return 0;
 
 		Firm firm = CreateNew(firmType);

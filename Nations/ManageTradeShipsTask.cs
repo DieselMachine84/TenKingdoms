@@ -23,7 +23,7 @@ public class ManageTradeShipsTask : AITask
     {
         foreach (Firm firm in FirmArray)
         {
-            if (firm.NationId != Nation.nation_recno || firm.UnderConstruction)
+            if (firm.NationId != NationId || firm.UnderConstruction)
                 continue;
 
             if (firm.FirmType != Firm.FIRM_HARBOR)
@@ -56,6 +56,9 @@ public class ManageTradeShipsTask : AITask
         foreach (int linkedFirmId in harbor.LinkedFirms)
         {
             Firm linkedFirm = FirmArray[linkedFirmId];
+            if (linkedFirm.UnderConstruction)
+                continue;
+            
             if (linkedFirm.NationId == harbor.NationId && linkedFirm.FirmType == Firm.FIRM_MARKET)
                 return true;
         }
@@ -67,7 +70,7 @@ public class ManageTradeShipsTask : AITask
     {
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId != Nation.nation_recno)
+            if (unit.NationId != NationId)
                 continue;
 
             if (unit.UnitType != UnitConstants.UNIT_VESSEL)
@@ -118,7 +121,7 @@ public class ManageTradeShipsTask : AITask
         if (ship == null)
             return;
 
-        bool ourHarborsTrader = harbor1.NationId == Nation.nation_recno && harbor2.NationId == Nation.nation_recno;
+        bool ourHarborsTrader = harbor1.NationId == NationId && harbor2.NationId == NationId;
         SetShipStop(ship, harbor1, 1, pickUp1, ourHarborsTrader);
         SetShipStop(ship, harbor2, 2, pickUp2, ourHarborsTrader);
     }
@@ -133,7 +136,7 @@ public class ManageTradeShipsTask : AITask
         }
         else
         {
-            if (harbor.NationId != Nation.nation_recno)
+            if (harbor.NationId != NationId)
             {
                 for (int i = TradeStop.PICK_UP_PRODUCT_FIRST; i <= TradeStop.PICK_UP_PRODUCT_LAST; i++)
                     ship.SetStopPickUp(stopId, i, InternalConstants.COMMAND_AI);

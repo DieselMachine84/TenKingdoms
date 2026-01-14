@@ -92,7 +92,7 @@ public class NationArray : DynArray<Nation>
 
 			foreach (Nation nation in this)
 			{
-				if (nation.nation_recno == freeId)
+				if (nation.NationId == freeId)
 				{
 					idUsed = true;
 				}
@@ -109,11 +109,11 @@ public class NationArray : DynArray<Nation>
 		if (nation.nation_type == NationBase.NATION_AI)
 			ai_nation_count--;
 		
-		ColorRemap.ColorSchemes[nation.nation_recno] = 0;
+		ColorRemap.ColorSchemes[nation.NationId] = 0;
 
 		last_del_nation_date = Info.GameDate;
 
-		int nationRecno = nation.nation_recno;
+		int nationRecno = nation.NationId;
 		nation.deinit();
 		Delete(nationRecno);
 
@@ -137,15 +137,15 @@ public class NationArray : DynArray<Nation>
 	{
 		Nation nation = CreateNew();
 
-		ColorRemap.ColorSchemes[nation.nation_recno] = colorSchemeId;
+		ColorRemap.ColorSchemes[nation.NationId] = colorSchemeId;
 
 		if (nationType == NationBase.NATION_OWN)
 		{
 			player = nation;
-			player_recno = nation.nation_recno;
+			player_recno = nation.NationId;
 
-			Info.DefaultViewingNationId = nation.nation_recno;
-			Info.ViewingNationId = nation.nation_recno;
+			Info.DefaultViewingNationId = nation.NationId;
+			Info.ViewingNationId = nation.NationId;
 		}
 
 		//--- we must call init() after setting ai_type & nation_res_id ----//
@@ -155,8 +155,8 @@ public class NationArray : DynArray<Nation>
 		//--- store the colors of all nations into a single array for later fast access ---//
 
 		// use a lighter color for the nation power area
-		nation_color_array[nation.nation_recno] = nation.nation_color;
-		nation_power_color_array[nation.nation_recno] = nation.nation_color;
+		nation_color_array[nation.NationId] = nation.nation_color;
+		nation_power_color_array[nation.NationId] = nation.nation_color;
 
 		//-------------------------------------------//
 
@@ -318,37 +318,37 @@ public class NationArray : DynArray<Nation>
 			if (nation.population_rating > max_population_rating)
 			{
 				max_population_rating = nation.population_rating;
-				max_population_nation_recno = nation.nation_recno;
+				max_population_nation_recno = nation.NationId;
 			}
 
 			if (nation.military_rating > max_military_rating)
 			{
 				max_military_rating = nation.military_rating;
-				max_military_nation_recno = nation.nation_recno;
+				max_military_nation_recno = nation.NationId;
 			}
 
 			if (nation.economic_rating > max_economic_rating)
 			{
 				max_economic_rating = nation.economic_rating;
-				max_economic_nation_recno = nation.nation_recno;
+				max_economic_nation_recno = nation.NationId;
 			}
 
 			if (nation.reputation > max_reputation)
 			{
 				max_reputation = (int)nation.reputation;
-				max_reputation_nation_recno = nation.nation_recno;
+				max_reputation_nation_recno = nation.NationId;
 			}
 
 			if (nation.kill_monster_score > max_kill_monster_score)
 			{
 				max_kill_monster_score = (int)nation.kill_monster_score;
-				max_kill_monster_nation_recno = nation.nation_recno;
+				max_kill_monster_nation_recno = nation.NationId;
 			}
 
 			if (nation.overall_rating > max_overall_rating)
 			{
 				max_overall_rating = nation.overall_rating;
-				max_overall_nation_recno = nation.nation_recno;
+				max_overall_nation_recno = nation.NationId;
 			}
 		}
 	}
@@ -407,7 +407,7 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			nation.military_rating = nationCombatLevelArray[nation.nation_recno - 1] / 50;
+			nation.military_rating = nationCombatLevelArray[nation.NationId - 1] / 50;
 		}
 	}
 
@@ -449,8 +449,8 @@ public class NationArray : DynArray<Nation>
 
 		foreach (Nation nation in this)
 		{
-			if (nation.total_human_count != totalHumanCountArray[nation.nation_recno - 1])
-				nation.total_human_count = totalHumanCountArray[nation.nation_recno - 1];
+			if (nation.total_human_count != totalHumanCountArray[nation.NationId - 1])
+				nation.total_human_count = totalHumanCountArray[nation.NationId - 1];
 		}
 	}
 
@@ -461,12 +461,12 @@ public class NationArray : DynArray<Nation>
 			//--------- process nation --------//
 
 			// only process each nation once per day
-			if (nation.nation_recno % InternalConstants.FRAMES_PER_DAY ==
+			if (nation.NationId % InternalConstants.FRAMES_PER_DAY ==
 			    Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
 			{
 				nation.next_day();
 
-				if (IsDeleted(nation.nation_recno))
+				if (IsDeleted(nation.NationId))
 					continue;
 
 				if (nation.nation_type == NationBase.NATION_AI)
