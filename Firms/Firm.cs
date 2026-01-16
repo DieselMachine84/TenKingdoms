@@ -176,8 +176,6 @@ public abstract class Firm : IIdObject
 			Nation nation = NationArray[NationId];
 			AIFirm = nation.IsAI();
 			AIProcessed = true;
-			nation.NationFirmCount++;
-			nation.LastBuildFirmDate = Info.GameDate;
 		}
 		else
 		{
@@ -241,7 +239,6 @@ public abstract class Firm : IIdObject
 		if (NationId != 0)
 		{
 			firmInfo.dec_nation_firm_count(NationId);
-			NationArray[NationId].NationFirmCount--;
 		}
 
 		LocX1 = -1; // mark deleted
@@ -706,17 +703,13 @@ public abstract class Firm : IIdObject
 
 	public virtual bool ShouldShowInfo()
 	{
-		if (Config.show_ai_info || NationId == NationArray.PlayerId || PlayerSpyCount > 0)
-		{
+		if (Config.show_ai_info || OwnFirm() || PlayerSpyCount > 0)
 			return true;
-		}
 
 		//------ if the builder is a spy of the player ------//
 
 		if (BuilderId != 0 && UnitArray[BuilderId].TrueNationId() == NationArray.PlayerId)
-		{
 			return true;
-		}
 
 		//----- if any of the workers belong to the player, show the info of this firm -----//
 

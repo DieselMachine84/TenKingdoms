@@ -322,12 +322,12 @@ public class NationOld : NationBase
 		return false;
 	}
 
-	protected override void SetRelationStatusAI(int nationRecno, int newStatus)
+	protected override void SetRelationStatusAI(int nationId, int newStatus)
 	{
 		// cease fire or new friendly/alliance treaty
 		if (newStatus == NATION_TENSE || newStatus >= NATION_FRIENDLY)
 		{
-			if (ai_attack_target_nation_recno == nationRecno)
+			if (ai_attack_target_nation_recno == nationId)
 				reset_ai_attack_target();
 		}
 	}
@@ -4489,7 +4489,32 @@ public class NationOld : NationBase
 	// town related functions
 	//------------------------------------------------------------//
 
-	public void think_town()
+    private int BaseTownCountInRegion(int regionId)
+    {
+        // regionStatId may be zero
+        int regionStatId = RegionArray.GetRegionInfo(regionId).RegionStatId;
+        if (regionStatId != 0)
+        {
+            return RegionArray.GetRegionStat(regionId).BaseTownNationCounts[NationId - 1];
+        }
+        else if (RegionArray.GetRegionInfo(regionId).RegionSize < InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT)
+        {
+            return 0; // not enough to build any town
+        }
+        else
+        {
+            int townCount = 0;
+            foreach (Town town in TownArray)
+            {
+                if (town.RegionId == regionId && town.NationId == NationId)
+                    townCount++;
+            }
+
+            return townCount;
+        }
+    }
+	
+    public void think_town()
 	{
 		//DieselMachine TODO buggy code, rewrite
 		//optimize_town_race();
@@ -8767,7 +8792,7 @@ public class NationOld : NationBase
 
 		//----- don't aid too frequently ------//
 
-		if (Info.GameDate < fromRelation.last_military_aid_date.AddDays(200 - pref_allying_tendency))
+		if (Info.GameDate < fromRelation.LastMilitaryAidDate.AddDays(200 - pref_allying_tendency))
 			return false;
 
 		//------- only when the AI relation >= 60 --------//
@@ -8823,7 +8848,7 @@ public class NationOld : NationBase
 
 		if (ai_attack_target(unit.NextLocX, unit.NextLocY, targetCombatLevel, true))
 		{
-			fromRelation.last_military_aid_date = Info.GameDate;
+			fromRelation.LastMilitaryAidDate = Info.GameDate;
 			return true;
 		}
 

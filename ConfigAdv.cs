@@ -37,8 +37,6 @@ public class ConfigAdv
 
     // nation settings
     public int nation_ai_unite_min_relation_level;
-    public int nation_start_god_level;
-    public int nation_start_tech_inc_all_level;
 
     // race settings
     public int[] race_random_list = new int[GameConstants.MAX_RACE];
@@ -97,8 +95,6 @@ public class ConfigAdv
         monster_attack_divisor = 4;
 
         nation_ai_unite_min_relation_level = NationBase.NATION_NEUTRAL;
-        nation_start_god_level = 0;
-        nation_start_tech_inc_all_level = 0;
 
         race_random_list_max = GameConstants.MAX_RACE;
         for (int i = 0; i < race_random_list_max; i++)

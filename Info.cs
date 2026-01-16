@@ -123,6 +123,7 @@ public class Info
         }
     }
 
+    //TODO bad code
     public void SetRankData(bool onlyHasContact)
     {
         Nation viewingNation = null;

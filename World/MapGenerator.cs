@@ -1735,7 +1735,7 @@ public class MapGenerator
 
 			if (king != null)
 			{
-				nation.SetKing(king.SpriteId, 1);
+				nation.SetKing(king.SpriteId, true);
 				FirmArray[firmRecno].AssignOverseer(king.SpriteId);
 			}
 			else

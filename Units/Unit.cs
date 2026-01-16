@@ -3819,18 +3819,6 @@ public abstract partial class Unit : Sprite
 		{
 			Rank = rankId;
 		}
-
-		if (Rank == RANK_GENERAL || Rank == RANK_KING)
-		{
-			//--- set leadership if this unit does not have any now ----//
-
-			if (Skill.SkillId != Skill.SKILL_LEADING)
-			{
-				Skill.SkillId = Skill.SKILL_LEADING;
-				// TODO add random value?
-				Skill.SkillLevel = 10 + Misc.Random(40);
-			}
-		}
 	}
 
 	public virtual bool CanResign()
@@ -3927,6 +3915,7 @@ public abstract partial class Unit : Sprite
 		}
 		else
 		{
+			//TODO when resigning god reputation should not be changed
 			if (NationId != 0)
 				NationArray[NationId].ChangeReputation(-1.0);
 		}

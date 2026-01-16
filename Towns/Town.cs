@@ -2984,6 +2984,7 @@ public class Town : IIdObject
 
 		if (NationId == 0) // independent town
 		{
+			//TODO AITown = true for independent town?
 			AITown = true;
 		}
 		else if (NationArray[NationId].NationType == NationBase.NATION_AI)
@@ -3701,7 +3702,7 @@ public class Town : IIdObject
 		kingUnit.Skill.SkillLevel = 50 + Misc.Random(51);
 		kingUnit.SetCombatLevel(70 + Misc.Random(31));
 
-		newNation.SetKing(kingUnit.SpriteId, 1);
+		newNation.SetKing(kingUnit.SpriteId, true);
 
 		DecPopulation(raceId, false);
 
