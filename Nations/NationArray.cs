@@ -251,7 +251,7 @@ public class NationArray : DynArray<Nation>
 		//----- figure out which color has been used, which has not -----//
 
 		bool[] usedColors = new bool[InternalConstants.MAX_COLOR_SCHEME];
-		int usedCount = 0;
+		int usedCount = InternalConstants.MAX_COLOR_SCHEME;
 
 		// need to make sure disable colors aren't included, work backwards
 		for (int i = 0; i < usedColors.Length; i++)

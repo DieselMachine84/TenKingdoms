@@ -6,12 +6,26 @@ namespace TenKingdoms;
 
 public partial class Nation : NationBase
 {
-    private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
+    public List<Firm> KingdomFirms { get; } = new List<Firm>();
+    public List<Firm> KingdomMines { get; } = new List<Firm>();
+    public List<Firm> KingdomFactories { get; } = new List<Firm>();
+    public List<Firm> KingdomResearches { get; } = new List<Firm>();
+    public List<Firm> KingdomWarFactories { get; } = new List<Firm>();
+    public List<Firm> KingdomMarkets { get; } = new List<Firm>();
+    public List<Firm> KingdomHarbors { get; } = new List<Firm>();
+    public List<Firm> KingdomCamps { get; } = new List<Firm>();
+    public List<Firm> KingdomBases { get; } = new List<Firm>();
+    public List<Firm> KingdomInns { get; } = new List<Firm>();
+    public List<Town> KingdomTowns { get; } = new List<Town>();
+    public List<Unit> KingdomUnits { get; } = new List<Unit>();
+    
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
     private readonly List<BuildMarketTask> _buildMarketTasks = new List<BuildMarketTask>();
     private readonly List<BuildHarborTask> _buildHarborTasks = new List<BuildHarborTask>();
     private readonly List<BuildCampTask> _buildCampTasks = new List<BuildCampTask>();
+    private readonly List<BuildInnTask> _buildInnTasks = new List<BuildInnTask>();
+    private readonly List<CaptureIndependentTask> _captureIndependentTasks = new List<CaptureIndependentTask>();
     private readonly List<SettleTask> _settleTasks = new List<SettleTask>();
     private readonly List<RelocatePeasantsTask> _relocatePeasantsTasks = new List<RelocatePeasantsTask>();
     private readonly List<AssignGeneralTask> _assignGeneralTasks = new List<AssignGeneralTask>();
@@ -56,9 +70,75 @@ public partial class Nation : NationBase
 
     public override void ProcessAI()
     {
+        UpdateKingdomData();
         ThinkAboutNewTask();
-        
         ProcessTasks();
+    }
+
+    private void UpdateKingdomData()
+    {
+        KingdomFirms.Clear();
+        KingdomMines.Clear();
+        KingdomFactories.Clear();
+        KingdomResearches.Clear();
+        KingdomWarFactories.Clear();
+        KingdomMarkets.Clear();
+        KingdomHarbors.Clear();
+        KingdomCamps.Clear();
+        KingdomBases.Clear();
+        KingdomInns.Clear();
+        KingdomTowns.Clear();
+        KingdomUnits.Clear();
+
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId != NationId)
+                continue;
+                
+            KingdomFirms.Add(firm);
+            switch (firm.FirmType)
+            {
+                case Firm.FIRM_MINE:
+                    KingdomMines.Add(firm);
+                    break;
+                case Firm.FIRM_FACTORY:
+                    KingdomFactories.Add(firm);
+                    break;
+                case Firm.FIRM_RESEARCH:
+                    KingdomResearches.Add(firm);
+                    break;
+                case Firm.FIRM_WAR_FACTORY:
+                    KingdomWarFactories.Add(firm);
+                    break;
+                case Firm.FIRM_MARKET:
+                    KingdomMarkets.Add(firm);
+                    break;
+                case Firm.FIRM_HARBOR:
+                    KingdomHarbors.Add(firm);
+                    break;
+                case Firm.FIRM_CAMP:
+                    KingdomCamps.Add(firm);
+                    break;
+                case Firm.FIRM_BASE:
+                    KingdomBases.Add(firm);
+                    break;
+                case Firm.FIRM_INN:
+                    KingdomInns.Add(firm);
+                    break;
+            }
+        }
+
+        foreach (Town town in TownArray)
+        {
+            if (town.NationId == NationId)
+                KingdomTowns.Add(town);
+        }
+
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.NationId == NationId)
+                KingdomUnits.Add(unit);
+        }
     }
 
     private void ThinkAboutNewTask()
@@ -106,15 +186,18 @@ public partial class Nation : NationBase
                     ThinkBuildHarbor();
                     break;
                 case 4:
-                    ThinkSettle();
+                    ThinkBuildInn();
                     break;
                 case 5:
-                    ThinkRelocatePeasants();
+                    ThinkSettle();
                     break;
                 case 6:
-                    ThinkCaptureIndependent();
+                    ThinkRelocatePeasants();
                     break;
                 case 7:
+                    ThinkCaptureIndependent();
+                    break;
+                case 8:
                     FindIdleUnits();
                     break;
             }
@@ -164,6 +247,8 @@ public partial class Nation : NationBase
                 case 7:
                     break;
                 case 8:
+                    for (taskIndex = _buildInnTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_buildInnTasks[taskIndex], _buildInnTasks, taskIndex);
                     break;
                 case 9:
                     for (taskIndex = _assignGeneralTasks.Count - 1; taskIndex >= 0; taskIndex--)
@@ -206,6 +291,8 @@ public partial class Nation : NationBase
                         ProcessTask(_sailShipTasks[taskIndex], _sailShipTasks, taskIndex);
                     break;
                 case 20:
+                    for (taskIndex = _captureIndependentTasks.Count - 1; taskIndex >= 0; taskIndex--)
+                        ProcessTask(_captureIndependentTasks[taskIndex], _captureIndependentTasks, taskIndex);
                     break;
                 case 21:
                     break;
@@ -260,6 +347,8 @@ public partial class Nation : NationBase
             yield return task;
         foreach (var task in _buildCampTasks)
             yield return task;
+        foreach (var task in _buildInnTasks)
+            yield return task;
         foreach (var task in _settleTasks)
             yield return task;
         foreach (var task in _relocatePeasantsTasks)
@@ -285,26 +374,24 @@ public partial class Nation : NationBase
     
     private void ThinkCaptureIndependent()
     {
+        bool HasCaptureIndependentTask(int townId)
+        {
+            foreach (CaptureIndependentTask task in _captureIndependentTasks)
+            {
+                if (task.TownId == townId)
+                    return true;
+            }
+
+            return false;
+        }
+        
         List<Town> possibleTowns = new List<Town>();
         foreach (Town town in TownArray)
         {
-            if (town.NationId != 0)
+            if (town.NationId != 0 || town.RebelId != 0)
                 continue;
 
-            if (town.RebelId != 0)
-                continue;
-
-            bool alreadyCapturing = false;
-            foreach (CaptureIndependentTask task in _captureIndependentTasks)
-            {
-                if (task.TownId == town.TownId)
-                {
-                    alreadyCapturing = true;
-                    break;
-                }
-            }
-
-            if (!alreadyCapturing)
+            if (!HasCaptureIndependentTask(town.TownId))
                 possibleTowns.Add(town);
         }
 
@@ -326,26 +413,18 @@ public partial class Nation : NationBase
                 {
                     Unit overseer = UnitArray[firm.OverseerId];
                     //TODO also take reputation into account
-                    if (overseer.Skill.SkillLevel > 50) // TODO constant should depend on preferences
+                    //TODO constant should depend on preferences
+                    if (overseer.Skill.SkillLevel > 50)
                     {
-                        bool isCapturer = false;
-                        foreach (CaptureIndependentTask task in _captureIndependentTasks)
-                        {
-                            if (task.Capturers.Contains(overseer.SpriteId))
-                            {
-                                isCapturer = true;
-                                break;
-                            }
-                        }
-
-                        if (!isCapturer)
-                            possibleCapturerUnits.Add(overseer);
+                        //TODO check that this general is not capturing another town or can be replaced
+                        possibleCapturerUnits.Add(overseer);
                     }
                 }
 
                 foreach (Worker worker in firm.Workers)
                 {
-                    if (worker.SkillId == Skill.SKILL_LEADING && worker.SkillLevel > 50) // TODO constant should depend on preferences
+                    // TODO constant should depend on preferences
+                    if (worker.SkillId == Skill.SKILL_LEADING && worker.SkillLevel > 50)
                         possibleCapturerSoldiers.Add((firm, worker));
                 }
             }
@@ -360,11 +439,6 @@ public partial class Nation : NationBase
                         possibleCapturerInnUnits.Add((inn, innUnit));
                 }
             }
-        }
-
-        foreach (Unit unit in UnitArray)
-        {
-            //TODO add possible capturers from idle units
         }
 
         Town bestTown = null;
@@ -746,6 +820,36 @@ public partial class Nation : NationBase
                     _buildCampTasks.Add(new BuildCampTask(this, town.TownId));
             }
         }
+    }
+
+    private void ThinkBuildInn()
+    {
+        if (Cash < PrefCashReserve)
+            return;
+
+        if (_buildInnTasks.Count > 0)
+            return;
+        
+        if (KingdomInns.Count == 0)
+        {
+            Town bestTown = null;
+            int bestRating = Int16.MinValue;
+            foreach (Town town in KingdomTowns)
+            {
+                //TODO check if there is a place available to build inn and if there is already an inn near this town
+                //TODO try to build inns in different regions and different places of the map
+                if (town.Population > bestRating)
+                {
+                    bestRating = town.Population;
+                    bestTown = town;
+                }
+            }
+            
+            if (bestTown != null)
+                _buildInnTasks.Add(new BuildInnTask(this, bestTown.TownId));
+        }
+        
+        //TODO build more inns depending on kingdom power and preferences
     }
 
     private void ThinkAssignGeneral()
