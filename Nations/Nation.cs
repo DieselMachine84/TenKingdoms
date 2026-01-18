@@ -146,7 +146,7 @@ public class NationOld : NationBase
 		pref_scout = Misc.Random(101);
 	}
 
-	public void ProcessAI()
+	public override void ProcessAI()
 	{
 		if (Config.disable_ai_flag)
 			return;

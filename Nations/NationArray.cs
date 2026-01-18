@@ -74,35 +74,6 @@ public class NationArray : DynArray<Nation>
 		return freeId;
 	}
 
-	public void DeleteNation(Nation nation)
-	{
-		ColorRemap.ColorSchemes[nation.NationId] = 0;
-		
-		NationCount--;
-
-		if (nation.NationType == NationBase.NATION_AI)
-			AINationCount--;
-		
-		LastDelNationDate = Info.GameDate;
-
-		int nationId = nation.NationId;
-		nation.Deinit();
-		Delete(nationId);
-
-		//---- if the nation to be deleted is the player's nation ---//
-
-		if (nationId == PlayerId)
-		{
-			Player = null;
-			PlayerId = 0;
-
-			// set the view mode to normal mode to prevent possible problems
-			Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
-		}
-
-		UpdateStatistic();
-	}
-
 	public Nation NewNation(int nationType, int raceId, int colorSchemeId, int dpPlayerId = 0)
 	{
 		Nation nation = CreateNew();
@@ -138,6 +109,183 @@ public class NationArray : DynArray<Nation>
 		UpdateStatistic();
 
 		return nation;
+	}
+
+	public void DeleteNation(Nation nation)
+	{
+		ColorRemap.ColorSchemes[nation.NationId] = 0;
+		
+		NationCount--;
+
+		if (nation.NationType == NationBase.NATION_AI)
+			AINationCount--;
+		
+		LastDelNationDate = Info.GameDate;
+
+		int nationId = nation.NationId;
+		nation.Deinit();
+		Delete(nationId);
+
+		//---- if the nation to be deleted is the player's nation ---//
+
+		if (nationId == PlayerId)
+		{
+			Player = null;
+			PlayerId = 0;
+
+			// set the view mode to normal mode to prevent possible problems
+			Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
+		}
+
+		UpdateStatistic();
+	}
+	
+	public void Process()
+	{
+		foreach (Nation nation in this)
+		{
+			// only process each nation once per day
+			if (nation.NationId % InternalConstants.FRAMES_PER_DAY == Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
+			{
+				nation.NextDay();
+
+				if (IsDeleted(nation.NationId))
+					continue;
+
+				if (nation.NationType == NationBase.NATION_AI)
+					nation.ProcessAI();
+			}
+		}
+	}
+
+	public void NextMonth()
+	{
+		foreach (Nation nation in this)
+		{
+			nation.NextMonth();
+		}
+
+		UpdateStatistic();
+	}
+
+	public void NextYear()
+	{
+		foreach (Nation nation in this)
+		{
+			nation.NextYear();
+		}
+	}
+
+	public string GetHumanName(int nationNameId, bool firstWordOnly = false)
+	{
+		int nationId = -nationNameId;
+
+		string humanName = HumanNames[nationId - 1];
+
+		return firstWordOnly ? humanName.Split(' ')[0] : humanName;
+	}
+
+	public void SetHumanName(int nationId, string name)
+	{
+		HumanNames[nationId - 1] = name;
+	}
+	
+	public bool ShouldAttack(int attackingNation, int attackedNation)
+	{
+		if (attackingNation == attackedNation)
+			return false;
+
+		if (attackingNation == 0 || attackedNation == 0)
+			return true;
+
+		if (IsDeleted(attackingNation) || IsDeleted(attackedNation))
+			return false;
+
+		return this[attackingNation].GetRelationShouldAttack(attackedNation);
+	}
+	
+	public int RandomUnusedRace()
+	{
+		//----- figure out which race has been used, which has not -----//
+
+		bool[] usedRaces = new bool[GameConstants.MAX_RACE];
+		int usedCount = GameConstants.MAX_RACE;
+
+		// need to make sure disable races aren't included, work backwards
+		for (int i = 0; i < usedRaces.Length; i++)
+			usedRaces[i] = true;
+
+		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
+		{
+			usedRaces[ConfigAdv.race_random_list[i] - 1] = false; // reset on
+			usedCount--;
+		}
+
+		foreach (Nation nation in this)
+		{
+			usedRaces[nation.RaceId - 1] = true;
+			usedCount++;
+		}
+
+		//----- pick a race randomly from the unused list -----//
+
+		int pickedInstance = Misc.Random(GameConstants.MAX_RACE - usedCount) + 1;
+		int usedId = 0;
+
+		for (int i = 0; i < GameConstants.MAX_RACE; i++)
+		{
+			if (!usedRaces[i])
+			{
+				usedId++;
+
+				if (usedId == pickedInstance)
+					return i + 1;
+			}
+		}
+
+		return 0;
+	}
+
+	public int RandomUnusedColor()
+	{
+		//----- figure out which color has been used, which has not -----//
+
+		bool[] usedColors = new bool[InternalConstants.MAX_COLOR_SCHEME];
+		int usedCount = 0;
+
+		// need to make sure disable colors aren't included, work backwards
+		for (int i = 0; i < usedColors.Length; i++)
+			usedColors[i] = true;
+		
+		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
+		{
+			usedColors[ConfigAdv.race_random_list[i] - 1] = false; // reset on
+			usedCount--;
+		}
+		
+		foreach (Nation nation in this)
+		{
+			usedColors[nation.ColorSchemeId - 1] = true;
+			usedCount++;
+		}
+
+		//----- pick color randomly from the unused list -----//
+
+		int pickedInstance = Misc.Random(InternalConstants.MAX_COLOR_SCHEME - usedCount) + 1;
+		int usedId = 0;
+
+		for (int i = 0; i < InternalConstants.MAX_COLOR_SCHEME; i++)
+		{
+			if (!usedColors[i])
+			{
+				usedId++;
+
+				if (usedId == pickedInstance)
+					return i + 1;
+			}
+		}
+
+		return 0;
 	}
 
 	public bool CanFormNewAINation()
@@ -291,153 +439,5 @@ public class NationArray : DynArray<Nation>
 		{
 			nation.MilitaryRating = nationCombatLevels[nation.NationId - 1] / 50;
 		}
-	}
-
-	public void Process()
-	{
-		foreach (Nation nation in this)
-		{
-			// only process each nation once per day
-			if (nation.NationId % InternalConstants.FRAMES_PER_DAY == Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
-			{
-				nation.NextDay();
-
-				if (IsDeleted(nation.NationId))
-					continue;
-
-				if (nation.NationType == NationBase.NATION_AI)
-					nation.ProcessAI();
-			}
-		}
-	}
-
-	public void NextMonth()
-	{
-		foreach (Nation nation in this)
-		{
-			nation.NextMonth();
-		}
-
-		UpdateStatistic();
-	}
-
-	public void NextYear()
-	{
-		foreach (Nation nation in this)
-		{
-			nation.NextYear();
-		}
-	}
-
-	public int RandomUnusedRace()
-	{
-		//----- figure out which race has been used, which has not -----//
-
-		bool[] usedRaces = new bool[GameConstants.MAX_RACE];
-		int usedCount = GameConstants.MAX_RACE;
-
-		// need to make sure disable races aren't included, work backwards
-		for (int i = 0; i < usedRaces.Length; i++)
-			usedRaces[i] = true;
-
-		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
-		{
-			usedRaces[ConfigAdv.race_random_list[i] - 1] = false; // reset on
-			usedCount--;
-		}
-
-		foreach (Nation nation in this)
-		{
-			usedRaces[nation.RaceId - 1] = true;
-			usedCount++;
-		}
-
-		//----- pick a race randomly from the unused list -----//
-
-		int pickedInstance = Misc.Random(GameConstants.MAX_RACE - usedCount) + 1;
-		int usedId = 0;
-
-		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			if (!usedRaces[i])
-			{
-				usedId++;
-
-				if (usedId == pickedInstance)
-					return i + 1;
-			}
-		}
-
-		return 0;
-	}
-
-	public int RandomUnusedColor()
-	{
-		//----- figure out which color has been used, which has not -----//
-
-		bool[] usedColors = new bool[InternalConstants.MAX_COLOR_SCHEME];
-		int usedCount = 0;
-
-		// need to make sure disable colors aren't included, work backwards
-		for (int i = 0; i < usedColors.Length; i++)
-			usedColors[i] = true;
-		
-		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
-		{
-			usedColors[ConfigAdv.race_random_list[i] - 1] = false; // reset on
-			usedCount--;
-		}
-		
-		foreach (Nation nation in this)
-		{
-			usedColors[nation.ColorSchemeId - 1] = true;
-			usedCount++;
-		}
-
-		//----- pick color randomly from the unused list -----//
-
-		int pickedInstance = Misc.Random(InternalConstants.MAX_COLOR_SCHEME - usedCount) + 1;
-		int usedId = 0;
-
-		for (int i = 0; i < InternalConstants.MAX_COLOR_SCHEME; i++)
-		{
-			if (!usedColors[i])
-			{
-				usedId++;
-
-				if (usedId == pickedInstance)
-					return i + 1;
-			}
-		}
-
-		return 0;
-	}
-
-	public bool ShouldAttack(int attackingNation, int attackedNation)
-	{
-		if (attackingNation == attackedNation)
-			return false;
-
-		if (attackingNation == 0 || attackedNation == 0)
-			return true;
-
-		if (IsDeleted(attackingNation) || IsDeleted(attackedNation))
-			return false;
-
-		return this[attackingNation].GetRelationShouldAttack(attackedNation);
-	}
-
-	public string GetHumanName(int nationNameId, bool firstWordOnly = false)
-	{
-		int nationId = -nationNameId;
-
-		string humanName = HumanNames[nationId - 1];
-
-		return firstWordOnly ? humanName.Split(' ')[0] : humanName;
-	}
-
-	public void SetHumanName(int nationId, string name)
-	{
-		HumanNames[nationId - 1] = name;
 	}
 }
