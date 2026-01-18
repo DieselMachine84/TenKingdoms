@@ -21,12 +21,9 @@ public class ManageTradeShipsTask : AITask
     //TODO take trade treaty into account
     public override void Process()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in Nation.KingdomHarbors)
         {
-            if (firm.NationId != NationId || firm.UnderConstruction)
-                continue;
-
-            if (firm.FirmType != Firm.FIRM_HARBOR)
+            if (firm.UnderConstruction)
                 continue;
 
             FirmHarbor harbor = (FirmHarbor)firm;
@@ -68,11 +65,8 @@ public class ManageTradeShipsTask : AITask
     
     private bool HasTradeShip(Firm firm1, Firm firm2)
     {
-        foreach (Unit unit in UnitArray)
+        foreach (Unit unit in Nation.KingdomShips)
         {
-            if (unit.NationId != NationId)
-                continue;
-
             if (unit.UnitType != UnitConstants.UNIT_VESSEL)
                 continue;
 

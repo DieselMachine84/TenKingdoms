@@ -13,36 +13,31 @@ public class RecruitSoldiersTask : AITask
 
     public override void Process()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in Nation.KingdomCamps)
         {
-            if (firm.NationId != NationId)
-                continue;
-
             if (firm.UnderConstruction)
                 continue;
 
             if (firm.Workers.Count == Firm.MAX_WORKER)
                 continue;
 
-            if (firm is FirmCamp camp)
+            FirmCamp camp = (FirmCamp)firm;
+            if (camp.patrol_unit_array.Count == Firm.MAX_WORKER + 1)
+                continue;
+
+            foreach (int linkedTownId in camp.LinkedTowns)
             {
-                if (camp.patrol_unit_array.Count == Firm.MAX_WORKER + 1)
+                Town linkedTown = TownArray[linkedTownId];
+                if (linkedTown.NationId != NationId)
                     continue;
-                
-                foreach (int linkedTownId in camp.LinkedTowns)
-                {
-                    Town linkedTown = TownArray[linkedTownId];
-                    if (linkedTown.NationId != NationId)
-                        continue;
 
-                    if (linkedTown.Population < 20 || linkedTown.JoblessPopulation < 5)
-                        continue;
+                if (linkedTown.Population < 20 || linkedTown.JoblessPopulation < 5)
+                    continue;
 
-                    if (linkedTown.AverageLoyalty() < 50)
-                        continue;
+                if (linkedTown.AverageLoyalty() < 50)
+                    continue;
 
-                    camp.PullTownPeople(linkedTownId, InternalConstants.COMMAND_AI, 0, true);
-                }
+                camp.PullTownPeople(linkedTownId, InternalConstants.COMMAND_AI, 0, true);
             }
         }
     }

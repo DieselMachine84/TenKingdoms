@@ -111,7 +111,8 @@ public class BuildMineTask : AITask, IUnitTask
                 else
                 {
                     FirmHarbor harbor = Nation.FindHarbor(builder.RegionId(), site.RegionId);
-                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                    if (harbor != null)
+                        Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }
@@ -129,11 +130,8 @@ public class BuildMineTask : AITask, IUnitTask
         
         Town nearestTown = null;
         int minDistance = Int16.MaxValue;
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             if (town.RegionId != siteLocation.RegionId)
                 continue;
             

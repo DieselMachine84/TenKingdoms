@@ -108,7 +108,8 @@ public class BuildCampTask : AITask, IUnitTask
                 else
                 {
                     FirmHarbor harbor = Nation.FindHarbor(builder.RegionId(), town.RegionId);
-                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                    if (harbor != null)
+                        Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }

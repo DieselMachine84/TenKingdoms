@@ -97,7 +97,8 @@ public class SettleTask : AITask, IUnitTask
                 else
                 {
                     FirmHarbor harbor = Nation.FindHarbor(settler.RegionId(), firm.RegionId);
-                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                    if (harbor != null)
+                        Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }
@@ -143,11 +144,8 @@ public class SettleTask : AITask, IUnitTask
         Town bestTown = null;
         int bestRace = 0;
 
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             if (town.RegionId != regionId)
                 continue;
 

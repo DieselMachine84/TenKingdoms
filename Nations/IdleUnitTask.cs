@@ -40,9 +40,9 @@ public class IdleUnitTask : AITask, IUnitTask
         {
             int minFirmDistance = Int32.MaxValue;
             Firm bestFirm = null;
-            foreach (Firm firm in FirmArray)
+            foreach (Firm firm in Nation.KingdomFirms)
             {
-                if (firm.NationId != NationId || firm.UnderConstruction)
+                if (firm.UnderConstruction)
                     continue;
 
                 if (firm.RegionId != unit.RegionId())
@@ -67,9 +67,9 @@ public class IdleUnitTask : AITask, IUnitTask
         UnitInfo unitInfo = UnitRes[unit.UnitType];
         if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_SHIP)
         {
-            foreach (Firm firm in FirmArray)
+            foreach (Firm firm in Nation.KingdomHarbors)
             {
-                if (firm.NationId != NationId || firm.UnderConstruction || firm.FirmType != Firm.FIRM_HARBOR)
+                if (firm.UnderConstruction)
                     continue;
 
                 FirmHarbor harbor = (FirmHarbor)firm;

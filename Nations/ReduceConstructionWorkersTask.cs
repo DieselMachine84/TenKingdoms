@@ -17,11 +17,8 @@ public class ReduceConstructionWorkersTask : AITask
 
     public override void Process()
     {
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             int constructionWorkersCount = 0;
             int nationLinkedFirmsCount = 0;
             Unit worstConstructionWorker = null;
@@ -54,11 +51,8 @@ public class ReduceConstructionWorkersTask : AITask
                 {
                     Town bestTown = null;
                     int bestTownDistance = Int16.MaxValue;
-                    foreach (Town otherTown in TownArray)
+                    foreach (Town otherTown in Nation.KingdomTowns)
                     {
-                        if (otherTown.NationId != NationId)
-                            continue;
-
                         if (otherTown.RegionId != town.RegionId)
                             continue;
                         

@@ -108,11 +108,8 @@ public class BuildFactoryTask : AITask, IUnitTask
         Town bestTown = null;
         int bestTownDistance = Int16.MaxValue;
         
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             if (town.RegionId != rawFirmLocation.RegionId)
                 continue;
 

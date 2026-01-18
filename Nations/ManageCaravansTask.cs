@@ -21,8 +21,6 @@ namespace TenKingdoms;
 
 public class ManageCaravansTask : AITask
 {
-    private readonly List<UnitCaravan> _kingdomCaravans = new List<UnitCaravan>();
-    
     public ManageCaravansTask(Nation nation) : base(nation)
     {
     }
@@ -35,14 +33,7 @@ public class ManageCaravansTask : AITask
     //TODO take trade treaty into account
     public override void Process()
     {
-        _kingdomCaravans.Clear();
-        foreach (Unit unit in UnitArray)
-        {
-            if (unit.NationId == NationId && unit is UnitCaravan caravan)
-                _kingdomCaravans.Add(caravan);
-        }
-        
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in Nation.KingdomFirms)
         {
             if (firm.UnderConstruction)
                 continue;
@@ -103,15 +94,16 @@ public class ManageCaravansTask : AITask
         {
             FirmFactory bestFactory = null;
             int bestRating = Int16.MaxValue;
-            foreach (Firm otherFirm in FirmArray)
+            foreach (Firm otherFirm in Nation.KingdomFactories)
             {
-                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
+                if (otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != mine.RegionId)
                     continue;
 
-                if (otherFirm is FirmFactory factory && factory.ProductId == mine.RawId)
+                FirmFactory factory = (FirmFactory)otherFirm;
+                if (factory.ProductId == mine.RawId)
                 {
                     int rating = Misc.FirmsDistance(mine, factory);
                     if (rating < bestRating)
@@ -150,15 +142,16 @@ public class ManageCaravansTask : AITask
         {
             FirmMarket bestMarket = null;
             int bestRating = Int16.MaxValue;
-            foreach (Firm otherFirm in FirmArray)
+            foreach (Firm otherFirm in Nation.KingdomMarkets)
             {
-                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
+                if (otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != factory.RegionId)
                     continue;
 
-                if (otherFirm is FirmMarket market && market.IsRetailMarket())
+                FirmMarket market = (FirmMarket)otherFirm;
+                if (market.IsRetailMarket())
                 {
                     int rating = Misc.FirmsDistance(factory, market);
                     if (rating < bestRating)
@@ -195,15 +188,16 @@ public class ManageCaravansTask : AITask
         {
             FirmMarket bestMarket = null;
             int bestDistance = Int16.MaxValue;
-            foreach (Firm otherFirm in FirmArray)
+            foreach (Firm otherFirm in Nation.KingdomMarkets)
             {
-                if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
+                if (otherFirm.UnderConstruction)
                     continue;
 
                 if (otherFirm.RegionId != market.RegionId)
                     continue;
 
-                if (otherFirm is FirmMarket otherMarket && otherMarket.IsRetailMarket())
+                FirmMarket otherMarket = (FirmMarket)otherFirm;
+                if (otherMarket.IsRetailMarket())
                 {
                     //TODO do not import product if we already have enough
                     int distance = Misc.FirmsDistance(market, otherFirm);
@@ -245,7 +239,7 @@ public class ManageCaravansTask : AITask
         if (hasAnyProduct)
         {
             List<FirmMarket> nearbyMarkets = new List<FirmMarket>();
-            foreach (Firm otherFirm in FirmArray)
+            foreach (Firm otherFirm in Nation.KingdomMarkets)
             {
                 if (otherFirm.NationId != NationId || otherFirm.UnderConstruction)
                     continue;
@@ -258,8 +252,9 @@ public class ManageCaravansTask : AITask
 
                 if (Misc.FirmsDistance(market, otherFirm) > 100)
                     continue;
-                
-                if (otherFirm is FirmMarket otherMarket && otherMarket.IsRetailMarket())
+
+                FirmMarket otherMarket = (FirmMarket)otherFirm;
+                if (otherMarket.IsRetailMarket())
                     nearbyMarkets.Add(otherMarket);
             }
 
@@ -293,8 +288,9 @@ public class ManageCaravansTask : AITask
 
     private bool HasCaravan(Firm firm1, Firm firm2)
     {
-        foreach (UnitCaravan caravan in _kingdomCaravans)
+        foreach (Unit unit in Nation.KingdomCaravans)
         {
+            UnitCaravan caravan = (UnitCaravan)unit;
             bool hasFirm1Stop = false;
             bool hasFirm2Stop = false;
             foreach (CaravanStop stop in caravan.Stops)
@@ -318,12 +314,9 @@ public class ManageCaravansTask : AITask
         
         FirmMarket bestMarket = null;
         int bestRating = Int16.MaxValue;
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in Nation.KingdomMarkets)
         {
-            if (firm.NationId != NationId || firm.UnderConstruction)
-                continue;
-
-            if (firm.FirmType != Firm.FIRM_MARKET)
+            if (firm.UnderConstruction)
                 continue;
 
             if (firm.RegionId != firm1.RegionId || firm.RegionId != firm2.RegionId)

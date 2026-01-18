@@ -72,7 +72,8 @@ public class RelocatePeasantsTask : AITask, IUnitTask
                 else
                 {
                     FirmHarbor harbor = Nation.FindHarbor(settler.RegionId(), town.RegionId);
-                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                    if (harbor != null)
+                        Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }
@@ -118,9 +119,9 @@ public class RelocatePeasantsTask : AITask, IUnitTask
         int minDistance = Int16.MaxValue;
         int bestRace = -1;
 
-        foreach (Town otherTown in TownArray)
+        foreach (Town otherTown in Nation.KingdomTowns)
         {
-            if (otherTown.NationId != NationId || otherTown.TownId == town.TownId)
+            if (otherTown.TownId == town.TownId)
                 continue;
 
             if (otherTown.RegionId != regionId || otherTown.JoblessPopulation == 0)

@@ -211,11 +211,8 @@ public class BuildMarketTask : AITask, IUnitTask
                         }
                     }
 
-                    foreach (Firm firm in FirmArray)
+                    foreach (Firm firm in Nation.KingdomFirms)
                     {
-                        if (firm.NationId != NationId)
-                            continue;
-
                         if (firm.FirmType != Firm.FIRM_FACTORY && firm.FirmType != Firm.FIRM_HARBOR)
                             continue;
 

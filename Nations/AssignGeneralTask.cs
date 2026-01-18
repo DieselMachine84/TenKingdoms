@@ -95,7 +95,8 @@ public class AssignGeneralTask : AITask, IUnitTask
                 else
                 {
                     FirmHarbor harbor = Nation.FindHarbor(general.RegionId(), firm.RegionId);
-                    Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
+                    if (harbor != null)
+                        Nation.AddBuildShipTask(harbor, UnitConstants.UNIT_TRANSPORT);
                 }
             }
         }
@@ -140,14 +141,8 @@ public class AssignGeneralTask : AITask, IUnitTask
         Firm bestFirm = null;
         int bestWorkerId = 0;
         int bestRating = Int16.MinValue;
-        foreach (Firm otherFirm in FirmArray)
+        foreach (Firm otherFirm in Nation.KingdomCamps)
         {
-            if (otherFirm.NationId != NationId)
-                continue;
-            
-            if (otherFirm.FirmType != Firm.FIRM_CAMP)
-                continue;
-
             if (otherFirm.RegionId != regionId)
                 continue;
 
@@ -168,11 +163,8 @@ public class AssignGeneralTask : AITask, IUnitTask
 
         Town bestTown = null;
         int bestRace = 0;
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             if (town.RegionId != regionId)
                 continue;
 
@@ -242,11 +234,8 @@ public class AssignGeneralTask : AITask, IUnitTask
         Town bestTown = null;
         int bestRace = 0;
         int bestRating = Int16.MaxValue;
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             if (town.RegionId != regionId)
                 continue;
 

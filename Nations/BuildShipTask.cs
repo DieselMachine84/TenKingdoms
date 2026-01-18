@@ -28,6 +28,9 @@ public class BuildShipTask : AITask
     public override void Process()
     {
         FirmHarbor harbor = (FirmHarbor)FirmArray[HarborId];
+        if (harbor.UnderConstruction)
+            return;
+        
         harbor.AddQueue(ShipType);
         _shouldCancel = true;
     }

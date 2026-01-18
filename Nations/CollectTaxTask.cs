@@ -13,11 +13,8 @@ public class CollectTaxTask : AITask
 
     public override void Process()
     {
-        foreach (Town town in TownArray)
+        foreach (Town town in Nation.KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-            
             if (town.AverageLoyalty() > 60.0)
                 town.CollectTax(InternalConstants.COMMAND_AI);
         }

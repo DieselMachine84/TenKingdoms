@@ -18,6 +18,8 @@ public partial class Nation : NationBase
     public List<Firm> KingdomInns { get; } = new List<Firm>();
     public List<Town> KingdomTowns { get; } = new List<Town>();
     public List<Unit> KingdomUnits { get; } = new List<Unit>();
+    public List<Unit> KingdomCaravans { get; } = new List<Unit>();
+    public List<Unit> KingdomShips { get; } = new List<Unit>();
     
     private readonly List<BuildMineTask> _buildMineTasks = new List<BuildMineTask>();
     private readonly List<BuildFactoryTask> _buildFactoryTasks = new List<BuildFactoryTask>();
@@ -89,6 +91,8 @@ public partial class Nation : NationBase
         KingdomInns.Clear();
         KingdomTowns.Clear();
         KingdomUnits.Clear();
+        KingdomCaravans.Clear();
+        KingdomShips.Clear();
 
         foreach (Firm firm in FirmArray)
         {
@@ -96,36 +100,24 @@ public partial class Nation : NationBase
                 continue;
                 
             KingdomFirms.Add(firm);
-            switch (firm.FirmType)
-            {
-                case Firm.FIRM_MINE:
-                    KingdomMines.Add(firm);
-                    break;
-                case Firm.FIRM_FACTORY:
-                    KingdomFactories.Add(firm);
-                    break;
-                case Firm.FIRM_RESEARCH:
-                    KingdomResearches.Add(firm);
-                    break;
-                case Firm.FIRM_WAR_FACTORY:
-                    KingdomWarFactories.Add(firm);
-                    break;
-                case Firm.FIRM_MARKET:
-                    KingdomMarkets.Add(firm);
-                    break;
-                case Firm.FIRM_HARBOR:
-                    KingdomHarbors.Add(firm);
-                    break;
-                case Firm.FIRM_CAMP:
-                    KingdomCamps.Add(firm);
-                    break;
-                case Firm.FIRM_BASE:
-                    KingdomBases.Add(firm);
-                    break;
-                case Firm.FIRM_INN:
-                    KingdomInns.Add(firm);
-                    break;
-            }
+            if (firm.FirmType == Firm.FIRM_MINE)
+                KingdomMines.Add(firm);
+            if (firm.FirmType == Firm.FIRM_FACTORY)
+                KingdomFactories.Add(firm);
+            if (firm.FirmType == Firm.FIRM_RESEARCH)
+                KingdomResearches.Add(firm);
+            if (firm.FirmType == Firm.FIRM_WAR_FACTORY)
+                KingdomWarFactories.Add(firm);
+            if (firm.FirmType == Firm.FIRM_MARKET)
+                KingdomMarkets.Add(firm);
+            if (firm.FirmType == Firm.FIRM_HARBOR)
+                KingdomHarbors.Add(firm);
+            if (firm.FirmType == Firm.FIRM_CAMP)
+                KingdomCamps.Add(firm);
+            if (firm.FirmType == Firm.FIRM_BASE)
+                KingdomBases.Add(firm);
+            if (firm.FirmType == Firm.FIRM_INN)
+                KingdomInns.Add(firm);
         }
 
         foreach (Town town in TownArray)
@@ -138,6 +130,13 @@ public partial class Nation : NationBase
         {
             if (unit.NationId == NationId)
                 KingdomUnits.Add(unit);
+            
+            if (unit.UnitType == UnitConstants.UNIT_CARAVAN)
+                KingdomCaravans.Add(unit);
+            
+            if (unit.UnitType == UnitConstants.UNIT_TRANSPORT || unit.UnitType == UnitConstants.UNIT_VESSEL ||
+                unit.UnitType == UnitConstants.UNIT_CARAVEL || unit.UnitType == UnitConstants.UNIT_GALLEON)
+                KingdomShips.Add(unit);
         }
     }
 
@@ -402,11 +401,8 @@ public partial class Nation : NationBase
         List<(Firm, Worker)> possibleCapturerSoldiers = new List<(Firm, Worker)>();
         List<(FirmInn, InnUnit)> possibleCapturerInnUnits = new List<(FirmInn, InnUnit)>();
 
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomFirms)
         {
-            if (firm.NationId != NationId)
-                continue;
-
             if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
             {
                 if (firm.OverseerId != 0)
@@ -497,11 +493,8 @@ public partial class Nation : NationBase
             if (hasBuildMineTask)
                 continue;
             
-            foreach (Town town in TownArray)
+            foreach (Town town in KingdomTowns)
             {
-                if (town.NationId != NationId)
-                    continue;
-
                 if (town.RegionId != site.RegionId && !HasHarbor(town.RegionId, site.RegionId))
                     continue;
 
@@ -547,11 +540,8 @@ public partial class Nation : NationBase
         {
             List<FirmFactory> availableFactories = new List<FirmFactory>();
             int minFactoryRawResource = Int16.MaxValue;
-            foreach (Firm firm in FirmArray)
+            foreach (Firm firm in KingdomFactories)
             {
-                if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_FACTORY)
-                    continue;
-
                 //TODO other region
                 if (firm.RegionId != rawFirm.RegionId)
                     continue;
@@ -586,32 +576,32 @@ public partial class Nation : NationBase
         if (Cash < PrefCashReserve || Food < PrefFoodReserve)
             return;
 
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomMines)
         {
-            if (firm.NationId != NationId || firm.UnderConstruction)
+            if (firm.UnderConstruction)
                 continue;
             
-            if (firm.FirmType == Firm.FIRM_MINE)
+            FirmMine mine = (FirmMine)firm;
+            if (mine.RawId != 0 && mine.StockQty > 0.0)
             {
-                FirmMine mine = (FirmMine)firm;
-                if (mine.RawId != 0 && mine.StockQty > 0.0)
+                if (!HasBuildFactoryTask(firm))
+                    CheckAddBuildFactoryTask(firm, mine.RawId, mine.StockQty);
+            }
+        }
+
+        foreach (Firm firm in KingdomMarkets)
+        {
+            if (firm.UnderConstruction)
+                continue;
+            
+            FirmMarket market = (FirmMarket)firm;
+            for (int i = 0; i < market.MarketGoods.Length; i++)
+            {
+                MarketGoods marketGoods = market.MarketGoods[i];
+                if (marketGoods.RawId != 0 && marketGoods.StockQty > 0.0)
                 {
                     if (!HasBuildFactoryTask(firm))
-                        CheckAddBuildFactoryTask(firm, mine.RawId, mine.StockQty);
-                }
-            }
-
-            if (firm.FirmType == Firm.FIRM_MARKET)
-            {
-                FirmMarket market = (FirmMarket)firm;
-                for (int i = 0; i < market.MarketGoods.Length; i++)
-                {
-                    MarketGoods marketGoods = market.MarketGoods[i];
-                    if (marketGoods.RawId != 0 && marketGoods.StockQty > 0.0)
-                    {
-                        if (!HasBuildFactoryTask(firm))
-                            CheckAddBuildFactoryTask(firm, marketGoods.RawId, marketGoods.StockQty);
-                    }
+                        CheckAddBuildFactoryTask(firm, marketGoods.RawId, marketGoods.StockQty);
                 }
             }
         }
@@ -619,30 +609,26 @@ public partial class Nation : NationBase
 
     private void ThinkBuildMarket()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomMines)
         {
-            if (firm.NationId != NationId || firm.UnderConstruction)
-                continue;
-
-            if (firm is FirmMine mine)
-            {
-                if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
-                {
-                    AddBuildFirmMarketTask(mine);
-                }
-            }
-
-            if (firm is FirmHarbor harbor)
-            {
-                AddBuildFirmMarketTask(harbor);
-            }
-        }
-
-        foreach (Town town in TownArray)
-        {
-            if (town.NationId != NationId)
+            if (firm.UnderConstruction)
                 continue;
             
+            FirmMine mine = (FirmMine)firm;
+            if (mine.RawId != 0 && mine.StockQty > mine.MaxStockQty * 3.0 / 4.0)
+                AddBuildFirmMarketTask(mine);
+        }
+        
+        foreach (Firm firm in KingdomHarbors)
+        {
+            if (firm.UnderConstruction)
+                continue;
+            
+            AddBuildFirmMarketTask(firm);
+        }
+
+        foreach (Town town in KingdomTowns)
+        {
             bool hasLinkedMarket = false;
             foreach (int linkedFirmId in town.LinkedFirms)
             {
@@ -725,9 +711,9 @@ public partial class Nation : NationBase
 
             hasRawResource = true;
             
-            foreach (Town town in TownArray)
+            foreach (Town town in KingdomTowns)
             {
-                if (town.NationId == NationId && town.RegionId == site.RegionId)
+                if (town.RegionId == site.RegionId)
                     hasRawResourceOnKingdomIsland = true;
             }
         }
@@ -741,9 +727,9 @@ public partial class Nation : NationBase
 
                 //TODO duplicate code - rewrite
                 bool hasTownInSiteRegion = false;
-                foreach (Town town in TownArray)
+                foreach (Town town in KingdomTowns)
                 {
-                    if (town.NationId == NationId && town.RegionId == site.RegionId)
+                    if (town.RegionId == site.RegionId)
                         hasTownInSiteRegion = true;
                 }
 
@@ -755,9 +741,9 @@ public partial class Nation : NationBase
         }
 
         List<int> kingdomRegions = new List<int>();
-        foreach (Town town in TownArray)
+        foreach (Town town in KingdomTowns)
         {
-            if (town.NationId == NationId && !kingdomRegions.Contains(town.RegionId))
+            if (!kingdomRegions.Contains(town.RegionId))
                 kingdomRegions.Add(town.RegionId);
         }
         
@@ -771,11 +757,8 @@ public partial class Nation : NationBase
     private void AddBuildHarborTask(int toRegionId)
     {
         RegionStat destinationRegionStat = RegionArray.GetRegionStat(toRegionId);
-        foreach (Town town in TownArray)
+        foreach (Town town in KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-
             //TODO select best town
             int seaRegionId = -1;
             RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
@@ -801,11 +784,8 @@ public partial class Nation : NationBase
     
     private void ThinkBuildCamp()
     {
-        foreach (Town town in TownArray)
+        foreach (Town town in KingdomTowns)
         {
-            if (town.NationId != NationId)
-                continue;
-            
             bool hasLinkedCamp = town.HasLinkedCamp(NationId, false);
             if (!hasLinkedCamp)
             {
@@ -854,9 +834,9 @@ public partial class Nation : NationBase
 
     private void ThinkAssignGeneral()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomFirms)
         {
-            if (firm.NationId != NationId || firm.UnderConstruction)
+            if (firm.UnderConstruction)
                 continue;
 
             if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
@@ -879,11 +859,8 @@ public partial class Nation : NationBase
 
     private void ThinkSettle()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomMines)
         {
-            if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_MINE)
-                continue;
-
             bool linkedToOurTown = false;
             foreach (int townId in firm.LinkedTowns)
             {
@@ -909,11 +886,8 @@ public partial class Nation : NationBase
 
     private void ThinkRelocatePeasants()
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomFirms)
         {
-            if (firm.NationId != NationId)
-                continue;
-
             if (firm.UnderConstruction || firm.Workers.Count == Firm.MAX_WORKER)
                 continue;
 
@@ -956,9 +930,9 @@ public partial class Nation : NationBase
             return;
 
         int shipCount = 0;
-        foreach (Unit unit in UnitArray)
+        foreach (Unit unit in KingdomShips)
         {
-            if (unit.NationId == NationId && unit.UnitType == shipType)
+            if (unit.UnitType == shipType)
                 shipCount++;
         }
 
@@ -992,11 +966,8 @@ public partial class Nation : NationBase
 
     private void FindIdleUnits()
     {
-        foreach (Unit unit in UnitArray)
+        foreach (Unit unit in KingdomUnits)
         {
-            if (unit.NationId != NationId)
-                continue;
-
             //TODO better check that if ship is waiting for people that it means it is not idle
             if (!unit.IsVisible() || !unit.IsAIAllStop())
                 continue;
@@ -1045,11 +1016,11 @@ public partial class Nation : NationBase
         int seaRegionId = GetSeaRegion(fromRegionId, toRegionId);
         if (seaRegionId != -1)
         {
-            foreach (Firm firm in FirmArray)
+            foreach (Firm firm in KingdomHarbors)
             {
-                if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_HARBOR)
+                if (firm.UnderConstruction)
                     continue;
-
+                
                 FirmHarbor harbor = (FirmHarbor)firm;
                 if (harbor.LandRegionId == fromRegionId || harbor.SeaRegionId == seaRegionId)
                     return harbor;
@@ -1061,9 +1032,9 @@ public partial class Nation : NationBase
 
     public UnitMarine FindTransportShip(int seaRegionId)
     {
-        foreach (Firm firm in FirmArray)
+        foreach (Firm firm in KingdomHarbors)
         {
-            if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_HARBOR || firm.UnderConstruction)
+            if (firm.UnderConstruction)
                 continue;
 
             FirmHarbor harbor = (FirmHarbor)firm;
@@ -1080,9 +1051,9 @@ public partial class Nation : NationBase
             }
         }
         
-        foreach (Unit unit in UnitArray)
+        foreach (Unit unit in KingdomShips)
         {
-            if (unit.NationId != NationId || unit.UnitType != UnitConstants.UNIT_TRANSPORT)
+            if (unit.UnitType != UnitConstants.UNIT_TRANSPORT)
                 continue;
 
             if (unit.RegionId() == seaRegionId && unit.IsAIAllStop() && !IsUnitOnTask(unit.SpriteId))
