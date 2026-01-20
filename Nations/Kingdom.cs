@@ -6,6 +6,9 @@ namespace TenKingdoms;
 
 public partial class Nation : NationBase
 {
+    private const int MoneyHire = 0;
+    private readonly int[] SpendMoneyLevels = new int[1];
+    
     public List<Firm> KingdomFirms { get; } = new List<Firm>();
     public List<Firm> KingdomMines { get; } = new List<Firm>();
     public List<Firm> KingdomFactories { get; } = new List<Firm>();
@@ -51,6 +54,9 @@ public partial class Nation : NationBase
     public int PrefCashReserve { get; }
     public int PrefFoodReserve { get; }
     public int PrefConstructionWorkersCountPercent { get; }
+    public int PrefMinGeneralLevelForCapturing { get; }
+    public int PrefAcceptableIndependentVillageResistance { get; }
+    public int PrefHireUnits { get; }
 
     public Nation()
     {
@@ -62,6 +68,9 @@ public partial class Nation : NationBase
         PrefCashReserve = 500 + Misc.Random(1500);
         PrefFoodReserve = 500 + Misc.Random(1500);
         PrefConstructionWorkersCountPercent = 25 + Misc.Random(50);
+        PrefMinGeneralLevelForCapturing = 50 + Misc.Random(20);
+        PrefAcceptableIndependentVillageResistance = 10 + Misc.Random(30);
+        PrefHireUnits = 0 + Misc.Random(1);
         
         _manageCaravanTask = new ManageCaravansTask(this);
         _manageTradeShipsTask = new ManageTradeShipsTask(this);
@@ -334,41 +343,126 @@ public partial class Nation : NationBase
         task.Process();
     }
     
-    private IEnumerable<AITask> EnumerateAllUnitTasks()
-    {
-        foreach (var task in _buildMineTasks)
-            yield return task;
-        foreach (var task in _buildFactoryTasks)
-            yield return task;
-        foreach (var task in _buildMarketTasks)
-            yield return task;
-        foreach (var task in _buildHarborTasks)
-            yield return task;
-        foreach (var task in _buildCampTasks)
-            yield return task;
-        foreach (var task in _buildInnTasks)
-            yield return task;
-        foreach (var task in _settleTasks)
-            yield return task;
-        foreach (var task in _relocatePeasantsTasks)
-            yield return task;
-        foreach (var task in _assignGeneralTasks)
-            yield return task;
-        foreach (var task in _idleUnitTasks)
-            yield return task;
-        foreach (var task in _sailShipTasks)
-            yield return task;
-    }
-
     public bool IsUnitOnTask(int unitId)
     {
-        foreach (AITask task in EnumerateAllUnitTasks())
-        {
-            if (task is IUnitTask unitTask && unitTask.UnitId == unitId)
+        foreach (var task in _buildMineTasks)
+            if (task.UnitId == unitId)
                 return true;
-        }
+        foreach (var task in _buildFactoryTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _buildMarketTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _buildHarborTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _buildCampTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _buildInnTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _settleTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _relocatePeasantsTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _assignGeneralTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _idleUnitTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _sailShipTasks)
+            if (task.UnitId == unitId)
+                return true;
+        foreach (var task in _captureIndependentTasks)
+            if (task.IsUnitOnTask(unitId))
+                return true;
 
         return false;
+    }
+
+    public (Firm, int, int, int, int) FindBestGeneral(Town town, int raceId, int minSkillLevel)
+    {
+        Firm selectedFirm = null;
+        int selectedOverseerId = 0;
+        int selectedWorkerId = 0;
+        int selectedInnUnitId = 0;
+        int bestRating = Int16.MinValue;
+        
+        foreach (Firm firm in KingdomFirms)
+        {
+            if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
+            {
+                if (firm.OverseerId != 0)
+                {
+                    Unit overseer = UnitArray[firm.OverseerId];
+                    if (overseer.RaceId == raceId && overseer.Skill.SkillLevel > minSkillLevel)
+                    {
+                        //TODO check that this general is not capturing another town or can be replaced
+                        int rating = overseer.Skill.SkillLevel;
+                        rating -= Misc.FirmTownDistance(firm, town) / 10;
+                        if (rating > bestRating)
+                        {
+                            bestRating = rating;
+                            selectedFirm = firm;
+                            selectedOverseerId = firm.OverseerId;
+                            selectedWorkerId = 0;
+                            selectedInnUnitId = 0;
+                        }
+                    }
+                }
+            }
+
+            if (firm.FirmType == Firm.FIRM_CAMP)
+            {
+                for (int i = 0; i < firm.Workers.Count; i++)
+                {
+                    Worker worker = firm.Workers[i];
+                    if (worker.RaceId == raceId && worker.SkillId == Skill.SKILL_LEADING && worker.SkillLevel > minSkillLevel)
+                    {
+                        int rating = worker.SkillLevel;
+                        rating -= Misc.FirmTownDistance(firm, town) / 10;
+                        if (rating > bestRating)
+                        {
+                            bestRating = rating;
+                            selectedFirm = firm;
+                            selectedOverseerId = 0;
+                            selectedWorkerId = i + 1;
+                            selectedInnUnitId = 0;
+                        }
+                    }
+                }
+            }
+
+            if (firm.FirmType == Firm.FIRM_INN)
+            {
+                FirmInn inn = (FirmInn)firm;
+                for (int i = 0; i < inn.InnUnits.Count; i++)
+                {
+                    InnUnit innUnit = inn.InnUnits[i];
+                    if (UnitRes[innUnit.UnitType].race_id == raceId && innUnit.Skill.SkillId == Skill.SKILL_LEADING &&
+                        innUnit.Skill.SkillLevel > minSkillLevel && ShouldHire(inn, innUnit))
+                    {
+                        int rating = innUnit.Skill.SkillLevel;
+                        rating -= Misc.FirmTownDistance(firm, town) / 10;
+                        if (rating > bestRating)
+                        {
+                            bestRating = rating;
+                            selectedFirm = firm;
+                            selectedOverseerId = 0;
+                            selectedWorkerId = 0;
+                            selectedInnUnitId = i + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        return (selectedFirm, selectedOverseerId, selectedWorkerId, selectedInnUnitId, bestRating);
     }
     
     private void ThinkCaptureIndependent()
@@ -383,6 +477,10 @@ public partial class Nation : NationBase
 
             return false;
         }
+
+        //TODO use pref
+        if (_captureIndependentTasks.Count >= 3)
+            return;
         
         List<Town> possibleTowns = new List<Town>();
         foreach (Town town in TownArray)
@@ -390,6 +488,9 @@ public partial class Nation : NationBase
             if (town.NationId != 0 || town.RebelId != 0)
                 continue;
 
+            if (town.Population < 10)
+                continue;
+            
             if (!HasCaptureIndependentTask(town.TownId))
                 possibleTowns.Add(town);
         }
@@ -397,77 +498,41 @@ public partial class Nation : NationBase
         if (possibleTowns.Count == 0)
             return;
 
-        List<Unit> possibleCapturerUnits = new List<Unit>();
-        List<(Firm, Worker)> possibleCapturerSoldiers = new List<(Firm, Worker)>();
-        List<(FirmInn, InnUnit)> possibleCapturerInnUnits = new List<(FirmInn, InnUnit)>();
-
-        foreach (Firm firm in KingdomFirms)
-        {
-            if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
-            {
-                if (firm.OverseerId != 0)
-                {
-                    Unit overseer = UnitArray[firm.OverseerId];
-                    //TODO also take reputation into account
-                    //TODO constant should depend on preferences
-                    if (overseer.Skill.SkillLevel > 50)
-                    {
-                        //TODO check that this general is not capturing another town or can be replaced
-                        possibleCapturerUnits.Add(overseer);
-                    }
-                }
-
-                foreach (Worker worker in firm.Workers)
-                {
-                    // TODO constant should depend on preferences
-                    if (worker.SkillId == Skill.SKILL_LEADING && worker.SkillLevel > 50)
-                        possibleCapturerSoldiers.Add((firm, worker));
-                }
-            }
-
-            if (firm.FirmType == Firm.FIRM_INN)
-            {
-                FirmInn inn = (FirmInn)firm;
-                foreach (InnUnit innUnit in inn.InnUnits)
-                {
-                    // TODO constant should depend on preferences
-                    if (innUnit.Skill.SkillId == Skill.SKILL_LEADING && innUnit.Skill.SkillLevel > 50 && ShouldHire(inn, innUnit))
-                        possibleCapturerInnUnits.Add((inn, innUnit));
-                }
-            }
-        }
-
         Town bestTown = null;
-        int bestTownRating = 0;
-        int majorityRace = 0;
-        int majorityRacePopulation = 0;
+        int bestTownRating = Int16.MinValue;
 
         //TODO rate by races count, population, region, available generals, distance from our base, distance from enemies
         foreach (Town town in possibleTowns)
         {
+            int townRating = town.Population * 3;
+            
             int racesCount = 0;
             for (int i = 0; i < town.RacesPopulation.Length; i++)
             {
                 int racePopulation = town.RacesPopulation[i];
-                if (racePopulation <= 3) // TODO constant should depend on preferences
-                    continue;
-
-                if (racePopulation > majorityRacePopulation)
-                {
-                    majorityRace = i + 1;
-                    majorityRacePopulation = racePopulation;
-                }
-
-                racesCount++;
+                if (racePopulation > 3) // TODO constant should depend on preferences
+                    racesCount++;
             }
 
-            if (majorityRace == 0)
+            townRating += 100 / racesCount;
+
+            var (selectedFirm, _, _, _, bestRating) = FindBestGeneral(town, town.MajorityRace(), PrefMinGeneralLevelForCapturing);
+
+            if (selectedFirm == null)
                 continue;
 
-            if (racesCount > 3) // TODO constant should depend on preferences
-                continue;
+            townRating += bestRating;
 
-            int rating = 0;
+            if (townRating > bestTownRating)
+            {
+                bestTownRating = townRating;
+                bestTown = town;
+            }
+        }
+
+        if (bestTown != null)
+        {
+            _captureIndependentTasks.Add(new CaptureIndependentTask(this, bestTown.TownId));
         }
     }
 
@@ -670,6 +735,8 @@ public partial class Nation : NationBase
                 }
             }
         }
+        
+        //TODO build market near independent village
     }
 
     private void AddBuildFirmMarketTask(Firm firm)
@@ -786,20 +853,20 @@ public partial class Nation : NationBase
     {
         foreach (Town town in KingdomTowns)
         {
-            bool hasLinkedCamp = town.HasLinkedCamp(NationId, false);
-            if (!hasLinkedCamp)
-            {
-                bool hasBuildCampTask = false;
-                foreach (BuildCampTask buildCampTask in _buildCampTasks)
-                {
-                    if (buildCampTask.TownId == town.TownId)
-                        hasBuildCampTask = true;
-                }
-
-                if (!hasBuildCampTask)
-                    _buildCampTasks.Add(new BuildCampTask(this, town.TownId));
-            }
+            if (!town.HasLinkedCamp(NationId, false))
+                AddBuildCampTask(town.TownId);
         }
+    }
+
+    public void AddBuildCampTask(int townId)
+    {
+        foreach (BuildCampTask buildCampTask in _buildCampTasks)
+        {
+            if (buildCampTask.TownId == townId)
+                return;
+        }
+
+        _buildCampTasks.Add(new BuildCampTask(this, townId));
     }
 
     private void ThinkBuildInn()
@@ -832,6 +899,17 @@ public partial class Nation : NationBase
         //TODO build more inns depending on kingdom power and preferences
     }
 
+    public void AddAssignGeneralTask(int firmId, int generalId)
+    {
+        foreach (AssignGeneralTask assignGeneralTask in _assignGeneralTasks)
+        {
+            if (assignGeneralTask.FirmId == firmId)
+                return;
+        }
+                
+        _assignGeneralTasks.Add(new AssignGeneralTask(this, firmId, generalId));
+    }
+
     private void ThinkAssignGeneral()
     {
         foreach (Firm firm in KingdomFirms)
@@ -841,19 +919,10 @@ public partial class Nation : NationBase
 
             if (firm.FirmType != Firm.FIRM_CAMP && firm.FirmType != Firm.FIRM_BASE)
                 continue;
-            
+
+            //TODO overseer may be on attack/defence task
             if (firm.OverseerId == 0)
-            {
-                bool hasAssignGeneralTask = false;
-                foreach (AssignGeneralTask assignGeneralTask in _assignGeneralTasks)
-                {
-                    if (assignGeneralTask.FirmId == firm.FirmId)
-                        hasAssignGeneralTask = true;
-                }
-                
-                if (!hasAssignGeneralTask)
-                    _assignGeneralTasks.Add(new AssignGeneralTask(this, firm.FirmId));
-            }
+                AddAssignGeneralTask(firm.FirmId, 0);
         }
     }
 
@@ -926,6 +995,9 @@ public partial class Nation : NationBase
 
     public void AddBuildShipTask(FirmHarbor harbor, int shipType)
     {
+        if (harbor.UnderConstruction)
+            return;
+        
         if (harbor.BuildQueue.Count > 0 || harbor.BuildUnitType != 0)
             return;
 
@@ -984,10 +1056,14 @@ public partial class Nation : NationBase
     
     private bool ShouldHire(FirmInn inn, InnUnit innUnit)
     {
-        //TODO
-        return true;
+        return ShouldSpendMoney(MoneyHire, innUnit.HireCost);
     }
 
+    private bool ShouldSpendMoney(int target, int amount)
+    {
+        return false;
+    }
+    
     public int GetSeaRegion(int fromRegionId, int toRegionId)
     {
         RegionStat fromRegionStat = RegionArray.GetRegionStat(fromRegionId);
@@ -1018,9 +1094,6 @@ public partial class Nation : NationBase
         {
             foreach (Firm firm in KingdomHarbors)
             {
-                if (firm.UnderConstruction)
-                    continue;
-                
                 FirmHarbor harbor = (FirmHarbor)firm;
                 if (harbor.LandRegionId == fromRegionId || harbor.SeaRegionId == seaRegionId)
                     return harbor;

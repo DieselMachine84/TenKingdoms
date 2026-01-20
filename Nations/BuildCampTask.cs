@@ -5,7 +5,9 @@ namespace TenKingdoms;
 
 // Build camp when
 //  1. There is no camp near kingdom village
-//  2. - TODO
+//  2. Need more camps near kingdom village or harbor - TODO
+//  3. Need camp near an independent village
+//  4. Need camp near an enemy village
 
 public class BuildCampTask : AITask, IUnitTask
 {
@@ -29,13 +31,11 @@ public class BuildCampTask : AITask, IUnitTask
         if (_noPlaceToBuild)
             return true;
 
-        if (TownIsDeletedOrChangedNation(TownId))
-            return true;
-
-        Town town = TownArray[TownId];
-        if (town.HasLinkedCamp(NationId, false))
+        if (TownArray.IsDeleted(TownId))
             return true;
         
+        //TODO check if we should build near the enemy village because its nation may have changed and we should not capture it
+
         return false;
     }
 

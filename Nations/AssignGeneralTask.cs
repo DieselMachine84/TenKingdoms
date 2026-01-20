@@ -6,6 +6,8 @@ namespace TenKingdoms;
 // Assign general when
 //  1. Camp or base has no general
 //  2. There is a better general - TODO
+//  3. When capturing independent village
+//  4. When capturing enemy village - TODO
 
 public class AssignGeneralTask : AITask, IUnitTask
 {
@@ -15,9 +17,10 @@ public class AssignGeneralTask : AITask, IUnitTask
     public int FirmId { get; }
     public int UnitId => _generalId;
     
-    public AssignGeneralTask(Nation nation, int firmId) : base(nation)
+    public AssignGeneralTask(Nation nation, int firmId, int generalId) : base(nation)
     {
         FirmId = firmId;
+        _generalId = generalId;
     }
 
     public override bool ShouldCancel()
