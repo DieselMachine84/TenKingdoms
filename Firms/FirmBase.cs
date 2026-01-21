@@ -34,57 +34,6 @@ public class FirmBase : Firm
         NationArray[NationId].BaseCounts[RaceId-1]--;
     }
 
-    public override void AssignUnit(int unitId)
-    {
-        Unit unit = UnitArray[unitId];
-
-        if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
-        {
-            SetBuilder(unitId);
-            return;
-        }
-
-        if (unit.RaceId != RaceId)
-            return;
-
-        if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
-        {
-            AssignOverseer(unitId);
-        }
-        else
-        {
-            AssignWorker(unitId);
-        }
-    }
-
-    public override void AssignOverseer(int newOverseerId)
-    {
-        if (newOverseerId != 0)
-        {
-            Unit unit = UnitArray[newOverseerId];
-            unit.TeamInfo.Members.Clear();
-        }
-
-        base.AssignOverseer(newOverseerId);
-    }
-
-    public override void ChangeNation(int newNationId)
-    {
-        foreach (Worker worker in Workers)
-        {
-            UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
-        }
-
-        NationArray[NationId].BaseCounts[RaceId - 1]--;
-
-        NationArray[newNationId].BaseCounts[RaceId - 1]++;
-
-        if (GodUnitId != 0 && !UnitArray.IsDeleted(GodUnitId))
-            UnitArray[GodUnitId].ChangeNation(newNationId);
-
-        base.ChangeNation(newNationId);
-    }
-
     public override void NextDay()
     {
         base.NextDay();
@@ -110,28 +59,6 @@ public class FirmBase : Firm
 
         if (GodUnitId != 0 && UnitArray.IsDeleted(GodUnitId))
             GodUnitId = 0;
-    }
-
-    public override void ProcessAI()
-    {
-        think_assign_unit();
-
-        think_invoke_god();
-    }
-
-    public bool CanInvoke()
-    {
-        if (GodUnitId != 0 && UnitArray.IsDeleted(GodUnitId))
-            GodUnitId = 0;
-
-        // one base can only support one god
-        // there must be at least 10% of the maximum pray points to cast a creature
-        return GodUnitId == 0 && OverseerId != 0 && PrayPoints >= GameConstants.MAX_PRAY_POINTS / 10.0;
-    }
-
-    public void InvokeGod()
-    {
-        GodUnitId = GodRes[GodId].invoke(FirmId, LocCenterX, LocCenterY);
     }
 
     private void TrainUnit()
@@ -192,9 +119,92 @@ public class FirmBase : Firm
                 worker.HitPoints++;
         }
     }
+    
+    public override void ChangeNation(int newNationId)
+    {
+        foreach (Worker worker in Workers)
+        {
+            UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
+        }
 
-    //------------- AI actions --------------//
+        NationArray[NationId].BaseCounts[RaceId - 1]--;
 
+        NationArray[newNationId].BaseCounts[RaceId - 1]++;
+
+        if (GodUnitId != 0 && !UnitArray.IsDeleted(GodUnitId))
+            UnitArray[GodUnitId].ChangeNation(newNationId);
+
+        base.ChangeNation(newNationId);
+    }
+    
+    public override void AssignUnit(int unitId)
+    {
+        Unit unit = UnitArray[unitId];
+
+        if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
+        {
+            SetBuilder(unitId);
+            return;
+        }
+
+        if (unit.RaceId != RaceId)
+            return;
+
+        if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
+        {
+            AssignOverseer(unitId);
+        }
+        else
+        {
+            AssignWorker(unitId);
+        }
+    }
+
+    public override void AssignOverseer(int newOverseerId)
+    {
+        if (newOverseerId != 0)
+        {
+            Unit unit = UnitArray[newOverseerId];
+            unit.TeamInfo.Members.Clear();
+        }
+
+        base.AssignOverseer(newOverseerId);
+    }
+
+    public bool CanInvoke()
+    {
+        if (GodUnitId != 0 && UnitArray.IsDeleted(GodUnitId))
+            GodUnitId = 0;
+
+        // one base can only support one god
+        // there must be at least 10% of the maximum pray points to cast a creature
+        return GodUnitId == 0 && OverseerId != 0 && PrayPoints >= GameConstants.MAX_PRAY_POINTS / 10.0;
+    }
+
+    public void InvokeGod()
+    {
+        GodUnitId = GodRes[GodId].invoke(FirmId, LocCenterX, LocCenterY);
+    }
+
+    public override void DrawDetails(IRenderer renderer)
+    {
+        renderer.DrawBaseDetails(this);
+    }
+
+    public override void HandleDetailsInput(IRenderer renderer)
+    {
+        renderer.HandleBaseDetailsInput(this);
+    }
+    
+    #region Old AI Functions
+
+    public override void ProcessAI()
+    {
+        think_assign_unit();
+
+        think_invoke_god();
+    }
+    
     private void think_assign_unit()
     {
         Nation nation = NationArray[NationId];
@@ -226,14 +236,6 @@ public class FirmBase : Firm
 
         InvokeGod();
     }
-
-    public override void DrawDetails(IRenderer renderer)
-    {
-        renderer.DrawBaseDetails(this);
-    }
-
-    public override void HandleDetailsInput(IRenderer renderer)
-    {
-        renderer.HandleBaseDetailsInput(this);
-    }
+    
+    #endregion
 }

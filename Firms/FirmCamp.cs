@@ -14,10 +14,11 @@ public class DefenseUnit
 
 public class FirmCamp : Firm
 {
-	public List<DefenseUnit> DefenseUnits { get; } = new List<DefenseUnit>();
-	public bool			EmployNewWorker { get; set; }
-	public int			DefendTargetId { get; set; } // used in defend mode, store id of the latest target attacking this firm
+	private List<DefenseUnit> DefenseUnits { get; } = new List<DefenseUnit>();
+	private bool			EmployNewWorker { get; set; }
+	public int			DefendTargetId { get; private set; } // used in defend mode, store id of the latest target attacking this firm
 	public bool			DefenseFlag { get; set; }
+
 
 	//---------- AI related vars ----------//
 
@@ -35,13 +36,9 @@ public class FirmCamp : Firm
 		EmployNewWorker = true;
 		DefenseFlag = true;
 
-		IsAttackCamp = false;
-	}
-
-	protected override void InitDerived()
-	{
 		AICaptureTownId = 0;
 		AIRecruitingSoldier = true;
+		IsAttackCamp = false;
 	}
 
 	public override void Deinit()
@@ -81,83 +78,271 @@ public class FirmCamp : Firm
 		PayWeaponExpense();
 	}
 
-	public int TotalCombatLevel()
+	public void ValidatePatrolUnit()
 	{
-		int totalCombatLevel = 0;
+		for (int i = PatrolUnits.Count - 1; i >= 0; i--)
+		{
+			int unitId = PatrolUnits[i];
+			bool isPatrolUnit;
+			if (UnitArray.IsDeleted(unitId))
+			{
+				isPatrolUnit = false;
+			}
+			else
+			{
+				Unit unit = UnitArray[unitId];
+				isPatrolUnit = (unit.IsVisible() && unit.NationId == NationId);
+			}
+
+			if (!isPatrolUnit)
+			{
+				PatrolUnits.RemoveAt(i);
+			}
+		}
+	}
+	
+	private void TrainUnit()
+	{
+		if (OverseerId == 0)
+			return;
+
+		Unit overseerUnit = UnitArray[OverseerId];
+
+		if (overseerUnit.Skill.SkillId != Skill.SKILL_LEADING)
+			return;
+
+		int overseerSkill = overseerUnit.Skill.SkillLevel;
+		int incValue;
+
+		//------- increase the commander's leadership ---------//
+
+		if (Workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
+		{
+			//-- the more soldiers this commander has, the higher the leadership will increase ---//
+
+			incValue = (int)(5.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
+
+			overseerUnit.Skill.SkillLevelMinor += incValue;
+
+			if (overseerUnit.Skill.SkillLevelMinor >= 100)
+			{
+				overseerUnit.Skill.SkillLevelMinor -= 100;
+				overseerUnit.Skill.SkillLevel++;
+			}
+		}
+
+		//------- increase the commander's combat level ---------//
+
+		if (overseerUnit.Skill.CombatLevel < 100)
+		{
+			incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
+
+			overseerUnit.Skill.CombatLevelMinor += incValue;
+
+			if (overseerUnit.Skill.CombatLevelMinor >= 100)
+			{
+				overseerUnit.Skill.CombatLevelMinor -= 100;
+
+				overseerUnit.SetCombatLevel(overseerUnit.Skill.CombatLevel + 1);
+			}
+		}
+
+		//------- increase the soldier's combat level -------//
 
 		foreach (Worker worker in Workers)
 		{
-			// use it points instead of combat level because HitPoints represent both combat level and hit points left
-			totalCombatLevel += worker.HitPoints;
+			if (worker.RaceId == 0)
+				continue;
 
-			//---- the combat level of weapons are higher ------//
+			//------- increase worker combat level -----------//
 
-			UnitInfo unitInfo = UnitRes[worker.UnitId];
+			if (worker.CombatLevel < overseerSkill)
+			{
+				incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
+					* worker.HitPoints / worker.MaxHitPoints()
+					* (100 + worker.SkillPotential * 2) / 100;
+				
+				// with random factors, resulting in 75% to 125% of the original
+				int levelMinor = worker.CombatLevelMinor + incValue;
 
-			// ExtraPara keeps the weapon version
-			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				totalCombatLevel += (unitInfo.weapon_power + worker.ExtraPara - 1) * 30;
+				while (levelMinor >= 100)
+				{
+					levelMinor -= 100;
+					worker.CombatLevel++;
+				}
+
+				worker.CombatLevelMinor = levelMinor;
+			}
+
+			//-- if the soldier has leadership potential, he learns leadership --//
+
+			if (worker.SkillPotential > 0 && worker.SkillLevel < 100)
+			{
+				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.SkillLevel)
+					* worker.HitPoints / worker.MaxHitPoints()
+					* worker.SkillPotential * 2 / 100;
+
+				worker.SkillLevelMinor += incValue;
+
+				if (worker.SkillLevelMinor > 100)
+				{
+					worker.SkillLevel++;
+					worker.SkillLevelMinor -= 100;
+				}
+			}
 		}
 
-		if (OverseerId != 0)
+		SortWorkers();
+	}
+	
+	private void RecoverHitPoints()
+	{
+		foreach (Worker worker in Workers)
 		{
-			Unit unit = UnitArray[OverseerId];
-
-			//--- the commander's leadership effects over the soldiers ---//
-
-			// divided by 150 instead of 100 because while the attacking ability of the unit is affected by the general,
-			// the hit points isn't, so we shouldn't do a direct multiplication.
-			totalCombatLevel += totalCombatLevel * unit.Skill.SkillLevel / 150;
-
-			//------ the leader's own hit points ------//
-
-			totalCombatLevel += (int)unit.HitPoints;
+			if (worker.HitPoints < worker.MaxHitPoints())
+				worker.HitPoints++;
 		}
-
-		return totalCombatLevel;
 	}
-
-	public int AverageCombatLevel()
+	
+	private void PayWeaponExpense()
 	{
-		int personCount = Workers.Count + (OverseerId > 0 ? 1 : 0);
+		Nation nation = NationArray[NationId];
 
-		return personCount > 0 ? TotalCombatLevel() / personCount : 0;
-	}
-
-	public bool ai_is_capturing_independent_village()
-	{
-		for (int i = 0; i < LinkedTowns.Count; i++)
+		for (int i = Workers.Count - 1; i >= 0; i--)
 		{
-			Town town = TownArray[LinkedTowns[i]];
-			if (town.NationId == 0)
-				return true;
+			Worker worker = Workers[i];
+			if (worker.UnitId != 0 && UnitRes[worker.UnitId].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+			{
+				if (nation.Cash > 0)
+				{
+					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].year_cost / 365.0, true);
+				}
+				else // decrease hit points if the nation cannot pay the unit
+				{
+					if (worker.HitPoints > 0)
+						worker.HitPoints--;
+
+					if (worker.HitPoints == 0)
+						KillWorker(worker); // if its hit points is zero, delete it
+				}
+			}
+		}
+	}
+	
+	public override void ChangeNation(int newNationId)
+	{
+		foreach (Worker worker in Workers)
+		{
+			UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
 		}
 
-		return false;
+		ClearDefenseMode(FirmId);
+
+		ResetUnitHomeCamp(FirmId);
+
+		ResetAttackCamp(FirmId);
+
+		AICaptureTownId = 0;
+		AIRecruitingSoldier = false;
+
+		base.ChangeNation(newNationId);
 	}
 
-	public override bool AIHasExcessWorker()
+	private void ResetUnitHomeCamp(int firmId)
 	{
-		if (LinkedTowns.Count == 0)
-			return true;
-
-		if (ai_is_capturing_independent_village()) // no if the camp is trying to capture an independent town
-			return false;
-
-		if (IsAttackCamp) // no if the camp is trying to capture an independent town
-			return false;
-
-		if (ShouldCloseFlag)
-			return true;
-
-		return false;
+		foreach (Unit unit in UnitArray)
+		{
+			if (unit.HomeCampId == firmId)
+				unit.HomeCampId = 0;
+		}
 	}
 
-	public override bool IsWorkerFull()
+	private void ResetAttackCamp(int firmId)
 	{
-		return Workers.Count + PatrolUnits.Count + ComingUnits.Count >= MAX_WORKER;
+		if (AIFirm)
+		{
+			Nation nation = NationArray[NationId];
+
+			for (int i = nation.attack_camps.Count - 1; i >= 0; i--)
+			{
+				if (nation.attack_camps[i].firm_recno == firmId)
+				{
+					nation.attack_camps.RemoveAt(i);
+				}
+			}
+		}
+	}
+	
+	
+	public override void AssignUnit(int unitId)
+	{
+		Unit unit = UnitArray[unitId];
+
+		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
+		{
+			SetBuilder(unitId);
+			return;
+		}
+
+		if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
+		{
+			AssignOverseer(unitId);
+		}
+		else
+		{
+			AssignWorker(unitId);
+		}
 	}
 
+	public override void AssignOverseer(int newOverseerId)
+	{
+		if (newOverseerId != 0)
+		{
+			Unit unit = UnitArray[newOverseerId];
+			unit.TeamInfo.Members.Clear();
+			unit.HomeCampId = 0;
+		}
+
+		base.AssignOverseer(newOverseerId);
+
+		UpdateInfluence();
+	}
+
+	protected override void AssignWorker(int workerUnitId)
+	{
+		base.AssignWorker(workerUnitId);
+
+		ValidatePatrolUnit();
+	}
+	
+	public override int MobilizeOverseer()
+	{
+		int unitId = base.MobilizeOverseer();
+
+		if (unitId != 0)
+		{
+			UnitArray[unitId].HomeCampId = FirmId;
+			return unitId;
+		}
+
+		return 0;
+	}
+	
+	public override int MobilizeWorker(int workerId, int remoteAction)
+	{
+		int unitId = base.MobilizeWorker(workerId, remoteAction);
+
+		if (unitId != 0)
+		{
+			UnitArray[unitId].HomeCampId = FirmId;
+			return unitId;
+		}
+
+		return 0;
+	}
+	
 	public void Patrol()
 	{
 		//------------------------------------------------------------//
@@ -273,48 +458,16 @@ public class FirmCamp : Firm
 		UnitArray.CurTeamId++;
 		return true;
 	}
-
-	public override void AssignUnit(int unitId)
+	
+	
+	public override void AutoDefense(int targetId)
 	{
-		Unit unit = UnitArray[unitId];
-
-		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
-		{
-			SetBuilder(unitId);
-			return;
-		}
-
-		if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
-		{
-			AssignOverseer(unitId);
-		}
-		else
-		{
-			AssignWorker(unitId);
-		}
+		DefendTargetId = targetId;
+		Defense(targetId);
+		
+		base.AutoDefense(targetId);
 	}
-
-	public override void AssignOverseer(int newOverseerId)
-	{
-		if (newOverseerId != 0)
-		{
-			Unit unit = UnitArray[newOverseerId];
-			unit.TeamInfo.Members.Clear();
-			unit.HomeCampId = 0;
-		}
-
-		base.AssignOverseer(newOverseerId);
-
-		UpdateInfluence();
-	}
-
-	protected override void AssignWorker(int workerUnitId)
-	{
-		base.AssignWorker(workerUnitId);
-
-		ValidatePatrolUnit();
-	}
-
+	
 	public void Defense(int targetId)
 	{
 		if (!DefenseFlag)
@@ -459,74 +612,7 @@ public class FirmCamp : Firm
 				unit.DefenseDetectTarget();
 		}
 	}
-
-	private void ClearDefenseMode(int firmId)
-	{
-		//------------------------------------------------------------------//
-		// change defense unit's to non-defense mode
-		//------------------------------------------------------------------//
-		foreach (Unit unit in UnitArray)
-		{
-			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == firmId)
-				unit.ClearUnitDefenseMode();
-		}
-
-		DefenseUnits.Clear();
-	}
-
-	public override int MobilizeWorker(int workerId, int remoteAction)
-	{
-		int unitId = base.MobilizeWorker(workerId, remoteAction);
-
-		if (unitId != 0)
-		{
-			UnitArray[unitId].HomeCampId = FirmId;
-			return unitId;
-		}
-
-		return 0;
-	}
-
-	public override int MobilizeOverseer()
-	{
-		int unitId = base.MobilizeOverseer();
-
-		if (unitId != 0)
-		{
-			UnitArray[unitId].HomeCampId = FirmId;
-			return unitId;
-		}
-
-		return 0;
-	}
-
-	public override void ChangeNation(int newNationId)
-	{
-		foreach (Worker worker in Workers)
-		{
-			UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
-		}
-
-		ClearDefenseMode(FirmId);
-
-		ResetUnitHomeCamp(FirmId);
-
-		ResetAttackCamp(FirmId);
-
-		AICaptureTownId = 0;
-		AIRecruitingSoldier = false;
-
-		base.ChangeNation(newNationId);
-	}
-
-	public override void AutoDefense(int targetId)
-	{
-		DefendTargetId = targetId;
-		Defense(targetId);
-		
-		base.AutoDefense(targetId);
-	}
-
+	
 	public void UpdateDefenseUnit(int unitId)
 	{
 		bool allInCamp = true;
@@ -563,30 +649,22 @@ public class FirmCamp : Firm
 			DefenseUnits.Clear();
 		}
 	}
-
-	public void ValidatePatrolUnit()
+	
+	private void ClearDefenseMode(int firmId)
 	{
-		for (int i = PatrolUnits.Count - 1; i >= 0; i--)
+		//------------------------------------------------------------------//
+		// change defense unit's to non-defense mode
+		//------------------------------------------------------------------//
+		foreach (Unit unit in UnitArray)
 		{
-			int unitId = PatrolUnits[i];
-			bool isPatrolUnit;
-			if (UnitArray.IsDeleted(unitId))
-			{
-				isPatrolUnit = false;
-			}
-			else
-			{
-				Unit unit = UnitArray[unitId];
-				isPatrolUnit = (unit.IsVisible() && unit.NationId == NationId);
-			}
-
-			if (!isPatrolUnit)
-			{
-				PatrolUnits.RemoveAt(i);
-			}
+			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == firmId)
+				unit.ClearUnitDefenseMode();
 		}
-	}
 
+		DefenseUnits.Clear();
+	}
+	
+	
 	private void SetEmployWorker(bool newValue)
 	{
 		EmployNewWorker = newValue;
@@ -594,8 +672,75 @@ public class FirmCamp : Firm
 		AIStatus = EmployNewWorker ? FIRM_WITHOUT_ACTION : CAMP_IN_DEFENSE;
 	}
 
-	//----------- AI functions ----------//
+	private void UpdateInfluence()
+	{
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			if (TownArray.IsDeleted(LinkedTowns[i]))
+				continue;
 
+			Town town = TownArray[LinkedTowns[i]];
+
+			if (LinkedTownsEnable[i] == InternalConstants.LINK_EE)
+			{
+				if (town.NationId != 0)
+					town.UpdateTargetLoyalty();
+				else
+					town.UpdateTargetResistance();
+			}
+		}
+	}
+
+	public int TotalCombatLevel()
+	{
+		int totalCombatLevel = 0;
+
+		foreach (Worker worker in Workers)
+		{
+			// use it points instead of combat level because HitPoints represent both combat level and hit points left
+			totalCombatLevel += worker.HitPoints;
+
+			//---- the combat level of weapons are higher ------//
+
+			UnitInfo unitInfo = UnitRes[worker.UnitId];
+
+			// ExtraPara keeps the weapon version
+			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+				totalCombatLevel += (unitInfo.weapon_power + worker.ExtraPara - 1) * 30;
+		}
+
+		if (OverseerId != 0)
+		{
+			Unit unit = UnitArray[OverseerId];
+
+			//--- the commander's leadership effects over the soldiers ---//
+
+			// divided by 150 instead of 100 because while the attacking ability of the unit is affected by the general,
+			// the hit points isn't, so we shouldn't do a direct multiplication.
+			totalCombatLevel += totalCombatLevel * unit.Skill.SkillLevel / 150;
+
+			//------ the leader's own hit points ------//
+
+			totalCombatLevel += (int)unit.HitPoints;
+		}
+
+		return totalCombatLevel;
+	}
+	
+	
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawCampDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleCampDetailsInput(this);
+	}
+	
+
+	#region Old AI Functions
+	
 	public override void ProcessAI()
 	{
 		if (Info.TotalDays % 10 == FirmId % 10)
@@ -712,6 +857,11 @@ public class FirmCamp : Firm
 		}
 	}
 
+	public override bool IsWorkerFull()
+	{
+		return Workers.Count + PatrolUnits.Count + ComingUnits.Count >= MAX_WORKER;
+	}
+	
 	public int cur_commander_leadership(int bestRaceId = 0)
 	{
 		int commanderLeadership = 0;
@@ -751,183 +901,7 @@ public class FirmCamp : Firm
 
 		return commanderLeadership;
 	}
-
-	private void ResetUnitHomeCamp(int firmId)
-	{
-		foreach (Unit unit in UnitArray)
-		{
-			if (unit.HomeCampId == firmId)
-				unit.HomeCampId = 0;
-		}
-	}
-
-	private void ResetAttackCamp(int firmId)
-	{
-		if (AIFirm)
-		{
-			Nation nation = NationArray[NationId];
-
-			for (int i = nation.attack_camps.Count - 1; i >= 0; i--)
-			{
-				if (nation.attack_camps[i].firm_recno == firmId)
-				{
-					nation.attack_camps.RemoveAt(i);
-				}
-			}
-		}
-	}
-
-	private void TrainUnit()
-	{
-		if (OverseerId == 0)
-			return;
-
-		Unit overseerUnit = UnitArray[OverseerId];
-
-		if (overseerUnit.Skill.SkillId != Skill.SKILL_LEADING)
-			return;
-
-		int overseerSkill = overseerUnit.Skill.SkillLevel;
-		int incValue;
-
-		//------- increase the commander's leadership ---------//
-
-		if (Workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
-		{
-			//-- the more soldiers this commander has, the higher the leadership will increase ---//
-
-			incValue = (int)(5.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
-				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
-
-			overseerUnit.Skill.SkillLevelMinor += incValue;
-
-			if (overseerUnit.Skill.SkillLevelMinor >= 100)
-			{
-				overseerUnit.Skill.SkillLevelMinor -= 100;
-				overseerUnit.Skill.SkillLevel++;
-			}
-		}
-
-		//------- increase the commander's combat level ---------//
-
-		if (overseerUnit.Skill.CombatLevel < 100)
-		{
-			incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
-				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
-
-			overseerUnit.Skill.CombatLevelMinor += incValue;
-
-			if (overseerUnit.Skill.CombatLevelMinor >= 100)
-			{
-				overseerUnit.Skill.CombatLevelMinor -= 100;
-
-				overseerUnit.SetCombatLevel(overseerUnit.Skill.CombatLevel + 1);
-			}
-		}
-
-		//------- increase the soldier's combat level -------//
-
-		foreach (Worker worker in Workers)
-		{
-			if (worker.RaceId == 0)
-				continue;
-
-			//------- increase worker combat level -----------//
-
-			if (worker.CombatLevel < overseerSkill)
-			{
-				incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
-					* worker.HitPoints / worker.MaxHitPoints()
-					* (100 + worker.SkillPotential * 2) / 100;
-				
-				// with random factors, resulting in 75% to 125% of the original
-				int levelMinor = worker.CombatLevelMinor + incValue;
-
-				while (levelMinor >= 100)
-				{
-					levelMinor -= 100;
-					worker.CombatLevel++;
-				}
-
-				worker.CombatLevelMinor = levelMinor;
-			}
-
-			//-- if the soldier has leadership potential, he learns leadership --//
-
-			if (worker.SkillPotential > 0 && worker.SkillLevel < 100)
-			{
-				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.SkillLevel)
-					* worker.HitPoints / worker.MaxHitPoints()
-					* worker.SkillPotential * 2 / 100;
-
-				worker.SkillLevelMinor += incValue;
-
-				if (worker.SkillLevelMinor > 100)
-				{
-					worker.SkillLevel++;
-					worker.SkillLevelMinor -= 100;
-				}
-			}
-		}
-
-		SortWorkers();
-	}
-
-	private void RecoverHitPoints()
-	{
-		foreach (Worker worker in Workers)
-		{
-			if (worker.HitPoints < worker.MaxHitPoints())
-				worker.HitPoints++;
-		}
-	}
-
-	private void PayWeaponExpense()
-	{
-		Nation nation = NationArray[NationId];
-
-		for (int i = Workers.Count - 1; i >= 0; i--)
-		{
-			Worker worker = Workers[i];
-			if (worker.UnitId != 0 && UnitRes[worker.UnitId].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-			{
-				if (nation.Cash > 0)
-				{
-					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].year_cost / 365.0, true);
-				}
-				else // decrease hit points if the nation cannot pay the unit
-				{
-					if (worker.HitPoints > 0)
-						worker.HitPoints--;
-
-					if (worker.HitPoints == 0)
-						KillWorker(worker); // if its hit points is zero, delete it
-				}
-			}
-		}
-	}
-
-	private void UpdateInfluence()
-	{
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			if (TownArray.IsDeleted(LinkedTowns[i]))
-				continue;
-
-			Town town = TownArray[LinkedTowns[i]];
-
-			if (LinkedTownsEnable[i] == InternalConstants.LINK_EE)
-			{
-				if (town.NationId != 0)
-					town.UpdateTargetLoyalty();
-				else
-					town.UpdateTargetResistance();
-			}
-		}
-	}
-
-	//-------------- AI functions --------------//
-
+	
 	private void ai_reset_defense_mode()
 	{
 		if (AIStatus != CAMP_IN_DEFENSE)
@@ -1967,14 +1941,42 @@ public class FirmCamp : Firm
 			unit.Assign(LocX1, LocY1);
 		}
 	}
-
-	public override void DrawDetails(IRenderer renderer)
+	
+	public int AverageCombatLevel()
 	{
-		renderer.DrawCampDetails(this);
+		int personCount = Workers.Count + (OverseerId > 0 ? 1 : 0);
+
+		return personCount > 0 ? TotalCombatLevel() / personCount : 0;
 	}
 
-	public override void HandleDetailsInput(IRenderer renderer)
+	public bool ai_is_capturing_independent_village()
 	{
-		renderer.HandleCampDetailsInput(this);
+		for (int i = 0; i < LinkedTowns.Count; i++)
+		{
+			Town town = TownArray[LinkedTowns[i]];
+			if (town.NationId == 0)
+				return true;
+		}
+
+		return false;
 	}
+
+	public override bool AIHasExcessWorker()
+	{
+		if (LinkedTowns.Count == 0)
+			return true;
+
+		if (ai_is_capturing_independent_village()) // no if the camp is trying to capture an independent town
+			return false;
+
+		if (IsAttackCamp) // no if the camp is trying to capture an independent town
+			return false;
+
+		if (ShouldCloseFlag)
+			return true;
+
+		return false;
+	}
+	
+	#endregion
 }

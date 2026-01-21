@@ -280,6 +280,7 @@ public class UnitGod : Unit
 		}
 	}
 
+
 	private void VikingSummonRain()
 	{
 		MagicWeather.cast_rain(10, 8); // 10 days, rain scale 8
@@ -449,7 +450,19 @@ public class UnitGod : Unit
 		// no effect
 	}
 
-	//--------- AI functions ----------//
+
+	public override void DrawDetails(IRenderer renderer)
+	{
+		renderer.DrawGodDetails(this);
+	}
+
+	public override void HandleDetailsInput(IRenderer renderer)
+	{
+		renderer.HandleGodDetailsInput(this);
+	}
+	
+
+	#region Old AI Functions
 
 	public override void ProcessAI()
 	{
@@ -964,14 +977,6 @@ public class UnitGod : Unit
 
 		return false;
 	}
-
-	public override void DrawDetails(IRenderer renderer)
-	{
-		renderer.DrawGodDetails(this);
-	}
-
-	public override void HandleDetailsInput(IRenderer renderer)
-	{
-		renderer.HandleGodDetailsInput(this);
-	}
+	
+	#endregion
 }
