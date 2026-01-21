@@ -3198,7 +3198,7 @@ public abstract class Firm : IIdObject
 			bool useAllCamp = captureNation.pref_military_courage > 60 || Misc.Random(3) == 0;
 
 			captureNation.ai_attack_target(bestTarget.LocX1, bestTarget.LocY1,
-				bestTarget.total_combat_level(), false, 0, 0, useAllCamp);
+				bestTarget.TotalCombatLevel(), false, 0, 0, useAllCamp);
 		}
 
 		return true;

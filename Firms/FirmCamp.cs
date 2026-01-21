@@ -8,108 +8,93 @@ public class DefenseUnit
 	public const int INSIDE_CAMP = 0;
 	public const int OUTSIDE_CAMP = 1;
 
-	public int unit_recno;
-	public int status; // inside / outside the camp
+	public int UnitId { get; set; }
+	public int Status { get; set; } // inside / outside the camp
 }
 
 public class FirmCamp : Firm
 {
-	public List<DefenseUnit> defense_array = new List<DefenseUnit>();
-	public bool			employ_new_worker;
-	public int			defend_target_recno; // used in defend mode, store recno of the latest target attacking this firm
-	public bool			defense_flag;
+	public List<DefenseUnit> DefenseUnits { get; } = new List<DefenseUnit>();
+	public bool			EmployNewWorker { get; set; }
+	public int			DefendTargetId { get; set; } // used in defend mode, store id of the latest target attacking this firm
+	public bool			DefenseFlag { get; set; }
 
 	//---------- AI related vars ----------//
 
-	public List<int> patrol_unit_array = new List<int>(MAX_WORKER+1);
-	public List<int> coming_unit_array = new List<int>(MAX_WORKER+1);
+	public List<int> PatrolUnits { get; } = new List<int>(MAX_WORKER + 1);
+	public List<int> ComingUnits { get; } = new List<int>(MAX_WORKER + 1);
 
-	public int			ai_capture_town_recno;		// >0 if the troop is in the process of attacking the independent village for capturing it.
-	public bool			ai_recruiting_soldier;
-
-	public bool			is_attack_camp;
+	public int			AICaptureTownId { get; set; }		// >0 if the troop is in the process of attacking the independent village for capturing it.
+	public bool			AIRecruitingSoldier { get; set; }
+	public bool			IsAttackCamp { get; set; }
 
 	public FirmCamp()
 	{
 		FirmSkillId = Skill.SKILL_LEADING;
 
-		employ_new_worker = true;
-		defend_target_recno = 0;
-		defense_flag = true;
+		EmployNewWorker = true;
+		DefenseFlag = true;
 
-		is_attack_camp = false;
+		IsAttackCamp = false;
 	}
 
 	protected override void InitDerived()
 	{
-		ai_capture_town_recno = 0;
-		ai_recruiting_soldier = true;
+		AICaptureTownId = 0;
+		AIRecruitingSoldier = true;
 	}
 
 	public override void Deinit()
 	{
-		int firmRecno = FirmId; // save the firm_recno first for reset_unit_home_camp()
+		int firmId = FirmId;
 
 		base.Deinit();
 
-		//-------------------------------------------//
+		int saveOverseerId = OverseerId;
 
-		int saveOverseerRecno = OverseerId;
+		//TODO looks like it is already reset in base.Deinit()
+		OverseerId = 0; // set OverseerId to 0 when calling UpdateInfluence(), so this base is disregarded.
 
-		OverseerId = 0; // set overseer_recno to 0 when calling update_influence(), so this base is disregarded.
+		UpdateInfluence();
 
-		update_influence();
+		OverseerId = saveOverseerId;
 
-		OverseerId = saveOverseerRecno;
+		ClearDefenseMode(firmId);
 
-		clear_defense_mode(firmRecno);
+		ResetUnitHomeCamp(firmId); // this must be called at last as Firm.Deinit() will create new units.
 
-		//---- reset all units whose home_camp_firm_recno is this firm ----//
-
-		reset_unit_home_camp(firmRecno); // this must be called at last as Firm::deinit() will create new units.
-
-		//--- if this camp is in the Nation::attack_camp_array[], remove it now ---//
-
-		reset_attack_camp(firmRecno);
+		ResetAttackCamp(firmId);
 	}
 
 	public override void NextDay()
 	{
-		//----- call next_day() of the base class -----//
-
 		base.NextDay();
 
-		//----- update the patrol_unit_array -----//
+		ValidatePatrolUnit();
 
-		validate_patrol_unit();
-
-		//--------------------------------------//
-
-		if (Info.TotalDays % 15 == FirmId % 15) // once a week
+		if (Info.TotalDays % 15 == FirmId % 15)
 		{
-			train_unit();
-			recover_hit_point();
+			TrainUnit();
+			RecoverHitPoints();
 		}
 
-		//--- if there are weapons in the firm, pay for their expenses ---//
-
-		pay_weapon_expense();
+		PayWeaponExpense();
 	}
 
-	public int total_combat_level()
+	public int TotalCombatLevel()
 	{
 		int totalCombatLevel = 0;
 
 		foreach (Worker worker in Workers)
 		{
-			// use it points instead of combat level because hit_points represent both combat level and hit points left
+			// use it points instead of combat level because HitPoints represent both combat level and hit points left
 			totalCombatLevel += worker.HitPoints;
 
 			//---- the combat level of weapons are higher ------//
 
 			UnitInfo unitInfo = UnitRes[worker.UnitId];
 
-			// extra_para keeps the weapon version
+			// ExtraPara keeps the weapon version
 			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
 				totalCombatLevel += (unitInfo.weapon_power + worker.ExtraPara - 1) * 30;
 		}
@@ -132,49 +117,11 @@ public class FirmCamp : Firm
 		return totalCombatLevel;
 	}
 
-	public int average_combat_level()
+	public int AverageCombatLevel()
 	{
 		int personCount = Workers.Count + (OverseerId > 0 ? 1 : 0);
 
-		return personCount > 0 ? total_combat_level() / personCount : 0;
-	}
-
-	public int ai_combat_level_needed()
-	{
-		int combatNeeded = 0;
-		Nation nation = NationArray[NationId];
-
-		//------- scan for linked towns ---------//
-
-		for (int i = 0; i < LinkedTowns.Count; i++)
-		{
-			Town town = TownArray[LinkedTowns[i]];
-
-			if (town.NationId == 0)
-				combatNeeded += 1000;
-
-			//------- this is its own town -------//
-
-			if (town.NationId == NationId)
-			{
-				if (town.ShouldAIMigrate()) // no need for this if this town is going to migrate
-					continue;
-
-				combatNeeded += town.Population * 10; // 30 people need 300 combat levels
-
-				if (town.IsBaseTown)
-					combatNeeded += town.Population * 10; // double the combat level need for base town
-			}
-		}
-
-		//--- if the overseer is the king, increase its combat level needed ---//
-
-		if (OverseerId != 0 && UnitArray[OverseerId].Rank == Unit.RANK_KING)
-			combatNeeded = Math.Max(400, combatNeeded);
-
-		//---------------------------------------//
-
-		return combatNeeded;
+		return personCount > 0 ? TotalCombatLevel() / personCount : 0;
 	}
 
 	public bool ai_is_capturing_independent_village()
@@ -183,9 +130,7 @@ public class FirmCamp : Firm
 		{
 			Town town = TownArray[LinkedTowns[i]];
 			if (town.NationId == 0)
-			{
 				return true;
-			}
 		}
 
 		return false;
@@ -199,7 +144,7 @@ public class FirmCamp : Firm
 		if (ai_is_capturing_independent_village()) // no if the camp is trying to capture an independent town
 			return false;
 
-		if (is_attack_camp) // no if the camp is trying to capture an independent town
+		if (IsAttackCamp) // no if the camp is trying to capture an independent town
 			return false;
 
 		if (ShouldCloseFlag)
@@ -210,15 +155,14 @@ public class FirmCamp : Firm
 
 	public override bool IsWorkerFull()
 	{
-		return Workers.Count + patrol_unit_array.Count + coming_unit_array.Count >= MAX_WORKER;
+		return Workers.Count + PatrolUnits.Count + ComingUnits.Count >= MAX_WORKER;
 	}
 
-	public void patrol()
+	public void Patrol()
 	{
 		//------------------------------------------------------------//
-		// If the commander in this camp has units under his lead
-		// outside and he is now going to lead a new team, then
-		// the old team members should be reset.
+		// If the commander in this camp has units under his lead outside
+		// and he is now going to lead a new team, then the old team members should be reset.
 		//------------------------------------------------------------//
 
 		if (OverseerId != 0)
@@ -229,12 +173,12 @@ public class FirmCamp : Firm
 			{
 				for (int i = 0; i < teamInfo.Members.Count; i++)
 				{
-					int unitRecno = teamInfo.Members[i];
+					int unitId = teamInfo.Members[i];
 
-					if (UnitArray.IsDeleted(unitRecno))
+					if (UnitArray.IsDeleted(unitId))
 						continue;
 
-					UnitArray[unitRecno].LeaderId = 0;
+					UnitArray[unitId].LeaderId = 0;
 				}
 			}
 		}
@@ -243,12 +187,12 @@ public class FirmCamp : Firm
 		// mobilize workers first, then the overseer.
 		//------------------------------------------------------------//
 
-		int overseerRecno = OverseerId;
+		int overseerId = OverseerId;
 
-		if (patrol_all_soldier() && OverseerId != 0)
+		if (PatrolAllSoldier() && OverseerId != 0)
 		{
 			Unit unit = UnitArray[OverseerId];
-			// set it to the same team as the soldiers which are defined in mobilize_all_worker()
+			// set it to the same team as the soldiers which are defined in MobilizeAllWorkers()
 			unit.TeamId = UnitArray.CurTeamId - 1;
 
 			//TODO selection
@@ -262,47 +206,40 @@ public class FirmCamp : Firm
 
 		AssignOverseer(0);
 
-		//---------------------------------------------------//
-
-		if (overseerRecno != 0 && OverseerId == 0) // has overseer and the overseer is mobilized
+		if (overseerId != 0 && OverseerId == 0) // has overseer and the overseer is mobilized
 		{
-			Unit overseerUnit = UnitArray[overseerRecno];
+			Unit overseerUnit = UnitArray[overseerId];
 
 			if (overseerUnit.IsOwn())
 			{
 				SERes.sound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
 			}
 
-			//--- add the overseer into the patrol_unit_array[] of this camp ---//
-
-			patrol_unit_array.Add(overseerRecno);
-
-			//------- set the team_info of the overseer -------//
+			PatrolUnits.Add(overseerId);
 
 			overseerUnit.TeamInfo.Members.Clear();
-			for (int i = 0; i < patrol_unit_array.Count; i++)
+			foreach (var patrolUnitId in PatrolUnits)
 			{
-				overseerUnit.TeamInfo.Members.Add(patrol_unit_array[i]);
+				overseerUnit.TeamInfo.Members.Add(patrolUnitId);
 			}
 		}
 	}
 
-	public bool patrol_all_soldier()
+	public bool PatrolAllSoldier()
 	{
-		//------- detect buttons on hiring firm workers -------//
-
-		int unitRecno;
+		PatrolUnits.Clear(); // reset it, it will be increased later
+		
 		int mobileWorkerId = 1;
-
-		patrol_unit_array.Clear(); // reset it, it will be increased later
 
 		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
 		{
+			int unitId;
+			
 			if (Workers[mobileWorkerId - 1].SkillId == Skill.SKILL_LEADING)
 			{
-				unitRecno = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
-
-				patrol_unit_array.Add(unitRecno);
+				//TODO unitId may be zero
+				unitId = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
+				PatrolUnits.Add(unitId);
 			}
 			else
 			{
@@ -310,11 +247,10 @@ public class FirmCamp : Firm
 				continue;
 			}
 
-			if (unitRecno == 0)
+			if (unitId == 0)
 				return false; // keep the rest workers as there is no space for creating the unit
 
-			Unit unit = UnitArray[unitRecno];
-
+			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId; // define it as a team
 
 			if (OverseerId != 0)
@@ -342,15 +278,11 @@ public class FirmCamp : Firm
 	{
 		Unit unit = UnitArray[unitId];
 
-		//------- if this is a construction worker -------//
-
 		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
 		{
 			SetBuilder(unitId);
 			return;
 		}
-
-		//-------- assign the unit ----------//
 
 		if (unit.Rank == Unit.RANK_GENERAL || unit.Rank == Unit.RANK_KING)
 		{
@@ -364,8 +296,6 @@ public class FirmCamp : Firm
 
 	public override void AssignOverseer(int newOverseerId)
 	{
-		//---- reset the team member count of the general ----//
-
 		if (newOverseerId != 0)
 		{
 			Unit unit = UnitArray[newOverseerId];
@@ -375,36 +305,29 @@ public class FirmCamp : Firm
 
 		base.AssignOverseer(newOverseerId);
 
-		update_influence();
+		UpdateInfluence();
 	}
 
 	protected override void AssignWorker(int workerUnitId)
 	{
 		base.AssignWorker(workerUnitId);
 
-		//--- remove the unit from patrol_unit_array when it returns to the base ---//
-
-		validate_patrol_unit();
+		ValidatePatrolUnit();
 	}
 
-	public void defense(int targetRecno, bool useRangeAttack = false)
+	public void Defense(int targetId)
 	{
-		//--******* BUGHERE , please provide a reasonable condition to set useRangeAttack to 1
-		useRangeAttack = UnitArray[targetRecno].MobileType != UnitConstants.UNIT_LAND ? true : false;
-		//#### end alex 15/10 ####//
-
-		if (!defense_flag)
+		if (!DefenseFlag)
 			return;
 
-		if (employ_new_worker)
+		if (EmployNewWorker)
 		{
 			//---------- reset unit's parameters in the previous defense -----------//
-			foreach (DefenseUnit defenseUnit in defense_array)
+			foreach (DefenseUnit defenseUnit in DefenseUnits)
 			{
-				if (defenseUnit.status == DefenseUnit.OUTSIDE_CAMP &&
-				    defenseUnit.unit_recno != 0 && !UnitArray.IsDeleted(defenseUnit.unit_recno))
+				if (defenseUnit.Status == DefenseUnit.OUTSIDE_CAMP && defenseUnit.UnitId != 0 && !UnitArray.IsDeleted(defenseUnit.UnitId))
 				{
-					Unit unit = UnitArray[defenseUnit.unit_recno];
+					Unit unit = UnitArray[defenseUnit.UnitId];
 					if (unit.NationId == NationId &&
 					    unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
 					    unit.ActionMiscParam == FirmId)
@@ -414,7 +337,7 @@ public class FirmCamp : Firm
 				}
 			}
 
-			defense_array.Clear();
+			DefenseUnits.Clear();
 		}
 
 		//------------------------------------------------------------------//
@@ -422,26 +345,26 @@ public class FirmCamp : Firm
 		// them in the front part of the array.
 		//------------------------------------------------------------------//
 
-		if (!employ_new_worker) // some soliders may be outside the camp
+		if (!EmployNewWorker) // some soldiers may be outside the camp
 		{
 			List<DefenseUnit> newDefenseUnits = new List<DefenseUnit>();
-			foreach (DefenseUnit defenseUnit in defense_array)
+			foreach (DefenseUnit defenseUnit in DefenseUnits)
 			{
-				if (defenseUnit.unit_recno == 0)
+				if (defenseUnit.UnitId == 0)
 					continue; // a free slot
 
-				if (UnitArray.IsDeleted(defenseUnit.unit_recno))
+				if (UnitArray.IsDeleted(defenseUnit.UnitId))
 				{
-					defenseUnit.unit_recno = 0;
+					defenseUnit.UnitId = 0;
 					continue; // unit is dead
 				}
 
 				//----------------------------------------------------------------//
-				// arrange the recno in the array front part
+				// arrange the ids in the array front part
 				//----------------------------------------------------------------//
-				if (defenseUnit.status == DefenseUnit.OUTSIDE_CAMP)
+				if (defenseUnit.Status == DefenseUnit.OUTSIDE_CAMP)
 				{
-					Unit unit = UnitArray[defenseUnit.unit_recno];
+					Unit unit = UnitArray[defenseUnit.UnitId];
 
 					//-------------- ignore this unit if it is dead --------------------//
 					if (unit.IsUnitDead())
@@ -452,30 +375,32 @@ public class FirmCamp : Firm
 
 					//--------------- the unit is in defense mode ----------------//
 					DefenseUnit newDefenseUnit = new DefenseUnit();
-					newDefenseUnit.unit_recno = defenseUnit.unit_recno;
-					newDefenseUnit.status = DefenseUnit.OUTSIDE_CAMP;
+					newDefenseUnit.UnitId = defenseUnit.UnitId;
+					newDefenseUnit.Status = DefenseUnit.OUTSIDE_CAMP;
 					newDefenseUnits.Add(newDefenseUnit);
 				}
 			}
 
-			defense_array.Clear();
-			defense_array.AddRange(newDefenseUnits);
+			DefenseUnits.Clear();
+			DefenseUnits.AddRange(newDefenseUnits);
 		}
 
-		set_employ_worker(false);
+		SetEmployWorker(false);
 
-		//------------------------------------------------------------------//
-		// the unit outside the camp should be in defense mode and ready to
-		// attack new target
-		//------------------------------------------------------------------//
-		foreach (DefenseUnit defenseUnit in defense_array)
+		//-----------------------------------------------------------------------------------//
+		// the unit outside the camp should be in defense mode and ready to attack new target
+		//-----------------------------------------------------------------------------------//
+		foreach (DefenseUnit defenseUnit in DefenseUnits)
 		{
-			Unit unit = UnitArray[defenseUnit.unit_recno];
-			defense_outside_camp(defenseUnit.unit_recno, targetRecno);
+			Unit unit = UnitArray[defenseUnit.UnitId];
+			DefenseOutsideCamp(defenseUnit.UnitId, targetId);
 			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
 			unit.ActionMiscParam = FirmId;
 		}
 
+		//--******* BUGHERE , please provide a reasonable condition to set useRangeAttack to 1
+		bool useRangeAttack = UnitArray[targetId].MobileType != UnitConstants.UNIT_LAND ? true : false;
+		
 		//TODO check for bugs
 		for (int i = 0; i < Workers.Count; i++)
 		{
@@ -483,22 +408,17 @@ public class FirmCamp : Firm
 			// order those soldier inside the firm to move to target for attacking
 			// keep those unable to attack inside the firm
 			//------------------------------------------------------------------//
-			//### begin alex 13/10 ###//
-			//if(worker_array[mobilizePos].unit_id==UNIT_EXPLOSIVE_CART)
 			if (Workers[i].UnitId == UnitConstants.UNIT_EXPLOSIVE_CART || (useRangeAttack && Workers[i].MaxAttackRange() == 1))
-				//#### end alex 13/10 ####//
-			{
 				continue;
-			}
 
-			int unitRecno = MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
-			if (unitRecno == 0)
+			int unitId = MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
+			if (unitId == 0)
 				break;
 
-			Unit unit = UnitArray[unitRecno];
+			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId; // define it as a team
 			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
-			unit.ActionMiscParam = FirmId; // store the firm_recno for going back camp
+			unit.ActionMiscParam = FirmId;
 
 			if (OverseerId != 0)
 			{
@@ -506,85 +426,62 @@ public class FirmCamp : Firm
 				unit.UpdateLoyalty(); // update target loyalty based on having a leader assigned
 			}
 
-			defense_inside_camp(unitRecno, targetRecno);
+			DefenseInsideCamp(unitId, targetId);
 			DefenseUnit newDefenseUnit = new DefenseUnit();
-			newDefenseUnit.unit_recno = unitRecno;
-			newDefenseUnit.status = DefenseUnit.OUTSIDE_CAMP;
-			defense_array.Add(newDefenseUnit);
+			newDefenseUnit.UnitId = unitId;
+			newDefenseUnit.Status = DefenseUnit.OUTSIDE_CAMP;
+			DefenseUnits.Add(newDefenseUnit);
 		}
-
-		/*if(overseer_recno>0)
-		{
-			//------------------------------------------------------------------//
-			// order those overseer inside the firm to move to target for attacking
-			//------------------------------------------------------------------//
-			unit = UnitArray[overseer_recno];
-			assign_overseer(0);
-			unit.team_id = UnitArray.cur_team_id;   // define it as a team
-			unit.action_misc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
-			unit.action_misc_para = firm_recno; // store the firm_recno for going back camp
-	
-			defense_inside_camp(unit.sprite_recno, targetRecno);
-			def.unit_recno = unit.sprite_recno;
-			def.status = OUTSIDE_CAMP;
-		}*/
 
 		UnitArray.CurTeamId++;
 	}
 
-	public void defense_inside_camp(int unitRecno, int targetRecno)
+	private void DefenseInsideCamp(int unitId, int targetId)
 	{
-		Unit unit = UnitArray[unitRecno];
-		unit.DefenseAttackUnit(targetRecno);
+		Unit unit = UnitArray[unitId];
+		unit.DefenseAttackUnit(targetId);
 
 		if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
 		    unit.ActionLocX == -1 && unit.ActionLocY == -1)
 			unit.DefenseDetectTarget();
 	}
 
-	public void defense_outside_camp(int unitRecno, int targetRecno)
+	private void DefenseOutsideCamp(int unitId, int targetId)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
-		if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET ||
-		    unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP ||
-		    (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET &&
-		     unit.CurAction == Sprite.SPRITE_IDLE))
+		if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_DETECT_TARGET || unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP ||
+		    (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET && unit.CurAction == Sprite.SPRITE_IDLE))
 		{
-			//----------------- attack new target now -------------------//
-			unit.DefenseAttackUnit(targetRecno);
+			unit.DefenseAttackUnit(targetId);
 
-			if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
-			    unit.ActionLocX == -1 && unit.ActionLocY == -1)
+			if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 && unit.ActionLocX == -1 && unit.ActionLocY == -1)
 				unit.DefenseDetectTarget();
 		}
 	}
 
-	public void clear_defense_mode(int firmRecno)
+	private void ClearDefenseMode(int firmId)
 	{
 		//------------------------------------------------------------------//
 		// change defense unit's to non-defense mode
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
-			    unit.ActionMiscParam == firmRecno)
+			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == firmId)
 				unit.ClearUnitDefenseMode();
 		}
 
-		defense_array.Clear();
+		DefenseUnits.Clear();
 	}
 
 	public override int MobilizeWorker(int workerId, int remoteAction)
 	{
-		int unitRecno = base.MobilizeWorker(workerId, remoteAction);
+		int unitId = base.MobilizeWorker(workerId, remoteAction);
 
-		//--- set the home camp firm recno of the unit for later return ---//
-
-		if (unitRecno != 0)
+		if (unitId != 0)
 		{
-			UnitArray[unitRecno].HomeCampId = FirmId;
-			return unitRecno;
+			UnitArray[unitId].HomeCampId = FirmId;
+			return unitId;
 		}
 
 		return 0;
@@ -592,77 +489,65 @@ public class FirmCamp : Firm
 
 	public override int MobilizeOverseer()
 	{
-		int unitRecno = base.MobilizeOverseer();
+		int unitId = base.MobilizeOverseer();
 
-		//--- set the home camp firm recno of the unit for later return ---//
-
-		if (unitRecno != 0)
+		if (unitId != 0)
 		{
-			UnitArray[unitRecno].HomeCampId = FirmId;
-			return unitRecno;
+			UnitArray[unitId].HomeCampId = FirmId;
+			return unitId;
 		}
 
 		return 0;
 	}
 
-	public override void ChangeNation(int newNationRecno)
+	public override void ChangeNation(int newNationId)
 	{
-		//--- update the UnitInfo vars of the workers in this firm ---//
-
 		foreach (Worker worker in Workers)
 		{
-			UnitRes[worker.UnitId].unit_change_nation(newNationRecno, NationId, worker.RankId);
+			UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
 		}
 
-		clear_defense_mode(FirmId);
+		ClearDefenseMode(FirmId);
 
-		//----- reset unit's home camp to this firm -----//
+		ResetUnitHomeCamp(FirmId);
 
-		reset_unit_home_camp(FirmId);
+		ResetAttackCamp(FirmId);
 
-		//--- if this camp is in the Nation::attack_camp_array[], remove it now ---//
+		AICaptureTownId = 0;
+		AIRecruitingSoldier = false;
 
-		reset_attack_camp(FirmId);
-
-		//---- reset AI vars --------//
-
-		ai_capture_town_recno = 0;
-		ai_recruiting_soldier = false;
-
-		//-------- change the nation of this firm now ----------//
-
-		base.ChangeNation(newNationRecno);
+		base.ChangeNation(newNationId);
 	}
 
 	public override void AutoDefense(int targetId)
 	{
-		defend_target_recno = targetId;
-		defense(targetId);
+		DefendTargetId = targetId;
+		Defense(targetId);
 		
 		base.AutoDefense(targetId);
 	}
 
-	public void update_defense_unit(int unitRecno)
+	public void UpdateDefenseUnit(int unitId)
 	{
 		bool allInCamp = true;
 
-		foreach (DefenseUnit defenseUnit in defense_array)
+		foreach (DefenseUnit defenseUnit in DefenseUnits)
 		{
-			if (defenseUnit.unit_recno == 0)
+			if (defenseUnit.UnitId == 0)
 				continue; // empty slot
 
-			if (UnitArray.IsDeleted(defenseUnit.unit_recno))
+			if (UnitArray.IsDeleted(defenseUnit.UnitId))
 			{
-				defenseUnit.unit_recno = 0;
-				defenseUnit.status = DefenseUnit.INSIDE_CAMP;
+				defenseUnit.UnitId = 0;
+				defenseUnit.Status = DefenseUnit.INSIDE_CAMP;
 				continue;
 			}
 
-			if (defenseUnit.unit_recno == unitRecno)
+			if (defenseUnit.UnitId == unitId)
 			{
-				defenseUnit.unit_recno = 0;
-				defenseUnit.status = DefenseUnit.INSIDE_CAMP;
-				Unit unit = UnitArray[unitRecno];
+				defenseUnit.UnitId = 0;
+				defenseUnit.Status = DefenseUnit.INSIDE_CAMP;
+				Unit unit = UnitArray[unitId];
 				unit.Stop2();
 				unit.ResetActionMiscParameters();
 			}
@@ -674,42 +559,39 @@ public class FirmCamp : Firm
 
 		if (allInCamp)
 		{
-			set_employ_worker(true);
-			defense_array.Clear();
+			SetEmployWorker(true);
+			DefenseUnits.Clear();
 		}
 	}
 
-	public void validate_patrol_unit()
+	public void ValidatePatrolUnit()
 	{
-		for (int i = patrol_unit_array.Count - 1; i >= 0; i--)
+		for (int i = PatrolUnits.Count - 1; i >= 0; i--)
 		{
-			int unitRecno = patrol_unit_array[i];
-			bool isPatrolUnit = true;
-			if (UnitArray.IsDeleted(unitRecno))
+			int unitId = PatrolUnits[i];
+			bool isPatrolUnit;
+			if (UnitArray.IsDeleted(unitId))
 			{
 				isPatrolUnit = false;
 			}
 			else
 			{
-				Unit unit = UnitArray[unitRecno];
+				Unit unit = UnitArray[unitId];
 				isPatrolUnit = (unit.IsVisible() && unit.NationId == NationId);
 			}
 
 			if (!isPatrolUnit)
 			{
-				patrol_unit_array.RemoveAt(i);
+				PatrolUnits.RemoveAt(i);
 			}
 		}
 	}
 
-	public void set_employ_worker(bool flag)
+	private void SetEmployWorker(bool newValue)
 	{
-		employ_new_worker = flag;
-	
-		if(!flag)
-			AIStatus = CAMP_IN_DEFENSE;
-		else
-			AIStatus = FIRM_WITHOUT_ACTION;
+		EmployNewWorker = newValue;
+
+		AIStatus = EmployNewWorker ? FIRM_WITHOUT_ACTION : CAMP_IN_DEFENSE;
 	}
 
 	//----------- AI functions ----------//
@@ -734,16 +616,16 @@ public class FirmCamp : Firm
 
 		//---- if this firm is currently trying to capture a town ----//
 
-		if (ai_capture_town_recno != 0)
+		if (AICaptureTownId != 0)
 		{
 			// disable should_close_flag when trying to capture a firm, should_close_flag is set in process_common_ai()
 			ShouldCloseFlag = false;
 
 			// only when attack_camp_count==0, the attack mission is complete
-			if (NationArray[NationId].attack_camps.Count == 0 && patrol_unit_array.Count == 0)
+			if (NationArray[NationId].attack_camps.Count == 0 && PatrolUnits.Count == 0)
 			{
-				ai_capture_town_recno = 0;
-				defense_flag = true; // turn it on again after the capturing plan is finished
+				AICaptureTownId = 0;
+				DefenseFlag = true; // turn it on again after the capturing plan is finished
 				return;
 			}
 
@@ -753,8 +635,7 @@ public class FirmCamp : Firm
 
 		//--- if the firm is empty and should be closed, sell/destruct it now ---//
 
-		if (ShouldCloseFlag && Workers.Count == 0 && patrol_unit_array.Count == 0 && coming_unit_array.Count == 0 &&
-		    AIStatus != CAMP_IN_DEFENSE)
+		if (ShouldCloseFlag && Workers.Count == 0 && PatrolUnits.Count == 0 && ComingUnits.Count == 0 && AIStatus != CAMP_IN_DEFENSE)
 		{
 			AIDelFirm();
 			return;
@@ -784,9 +665,9 @@ public class FirmCamp : Firm
 
 		//------ think about capturing independent town -------//
 
-		int[] interval_days_array = new int[] { 60, 30, 20, 10 };
+		int[] intervalDaysArray = { 60, 30, 20, 10 };
 
-		int intervalDays = interval_days_array[Config.ai_aggressiveness - 1];
+		int intervalDays = intervalDaysArray[Config.ai_aggressiveness - 1];
 
 		// do not call too often because when an AI action is queued, it will take a while to carry it out
 		if (Info.TotalDays % intervalDays == FirmId % intervalDays)
@@ -871,33 +752,24 @@ public class FirmCamp : Firm
 		return commanderLeadership;
 	}
 
-	//-------------- multiplayer checking codes ---------------//
-	//virtual	uint8_t crc8();
-	//virtual	void	clear_ptr();
-	//virtual	void	init_crc(FirmCampCrc *c);
-
-	private void reset_unit_home_camp(int firmRecno)
+	private void ResetUnitHomeCamp(int firmId)
 	{
-		//---- reset all units whose home_camp_firm_recno is this firm ----//
-
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.HomeCampId == firmRecno)
+			if (unit.HomeCampId == firmId)
 				unit.HomeCampId = 0;
 		}
 	}
 
-	private void reset_attack_camp(int firmRecno)
+	private void ResetAttackCamp(int firmId)
 	{
-		//--- if this camp is in the Nation::attack_camp_array[], remove it now ---//
-
 		if (AIFirm)
 		{
 			Nation nation = NationArray[NationId];
 
 			for (int i = nation.attack_camps.Count - 1; i >= 0; i--)
 			{
-				if (nation.attack_camps[i].firm_recno == firmRecno)
+				if (nation.attack_camps[i].firm_recno == firmId)
 				{
 					nation.attack_camps.RemoveAt(i);
 				}
@@ -905,9 +777,7 @@ public class FirmCamp : Firm
 		}
 	}
 
-	//private void		disp_camp_info(int dispY1, int refreshFlag);
-
-	private void train_unit()
+	private void TrainUnit()
 	{
 		if (OverseerId == 0)
 			return;
@@ -955,20 +825,21 @@ public class FirmCamp : Firm
 			}
 		}
 
-		//------- increase the solider's combat level -------//
+		//------- increase the soldier's combat level -------//
 
 		foreach (Worker worker in Workers)
 		{
 			if (worker.RaceId == 0)
 				continue;
 
-			//------- increase worker skill -----------//
+			//------- increase worker combat level -----------//
 
 			if (worker.CombatLevel < overseerSkill)
 			{
 				incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
 					* worker.HitPoints / worker.MaxHitPoints()
 					* (100 + worker.SkillPotential * 2) / 100;
+				
 				// with random factors, resulting in 75% to 125% of the original
 				int levelMinor = worker.CombatLevelMinor + incValue;
 
@@ -1002,7 +873,7 @@ public class FirmCamp : Firm
 		SortWorkers();
 	}
 
-	private void recover_hit_point()
+	private void RecoverHitPoints()
 	{
 		foreach (Worker worker in Workers)
 		{
@@ -1011,7 +882,7 @@ public class FirmCamp : Firm
 		}
 	}
 
-	private void pay_weapon_expense()
+	private void PayWeaponExpense()
 	{
 		Nation nation = NationArray[NationId];
 
@@ -1022,8 +893,7 @@ public class FirmCamp : Firm
 			{
 				if (nation.Cash > 0)
 				{
-					nation.AddExpense(NationBase.EXPENSE_WEAPON,
-						Convert.ToDouble(UnitRes[worker.UnitId].year_cost) / 365.0, true);
+					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].year_cost / 365.0, true);
 				}
 				else // decrease hit points if the nation cannot pay the unit
 				{
@@ -1037,7 +907,7 @@ public class FirmCamp : Firm
 		}
 	}
 
-	private void update_influence()
+	private void UpdateInfluence()
 	{
 		for (int i = 0; i < LinkedTowns.Count; i++)
 		{
@@ -1068,24 +938,23 @@ public class FirmCamp : Firm
 		//------------------------------------------------------------//
 		bool found = false;
 
-		foreach (DefenseUnit defenseUnit in defense_array)
+		foreach (DefenseUnit defenseUnit in DefenseUnits)
 		{
-			if (defenseUnit.unit_recno == 0)
+			if (defenseUnit.UnitId == 0)
 				continue; // empty slot
 
-			if (UnitArray.IsDeleted(defenseUnit.unit_recno))
+			if (UnitArray.IsDeleted(defenseUnit.UnitId))
 				continue;
 
-			Unit unit = UnitArray[defenseUnit.unit_recno];
-			if (unit.NationId == NationId && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
-			    unit.ActionMiscParam == FirmId) // is a soldier of this camp
+			Unit unit = UnitArray[defenseUnit.UnitId];
+			if (unit.NationId == NationId && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == FirmId)
 				found = true;
 		}
 
 		if (!found)
 		{
-			set_employ_worker(true); // all soldiers have died, reset defense mode to employ new workers
-			defense_array.Clear();
+			SetEmployWorker(true); // all soldiers have died, reset defense mode to employ new workers
+			DefenseUnits.Clear();
 		}
 	}
 
@@ -1112,7 +981,7 @@ public class FirmCamp : Firm
 
 		if (shouldClose)
 		{
-			patrol();
+			Patrol();
 			AIDelFirm();
 			return true;
 		}
@@ -1122,14 +991,14 @@ public class FirmCamp : Firm
 
 	private void think_recruit()
 	{
-		if (patrol_unit_array.Count > 0) // if there are units of this camp patrolling outside
+		if (PatrolUnits.Count > 0) // if there are units of this camp patrolling outside
 			return;
 
 		//Do not recruit if we are defending until battle ends
 		bool defending = false;
-		foreach (DefenseUnit defenseUnit in defense_array)
+		foreach (DefenseUnit defenseUnit in DefenseUnits)
 		{
-			if (defenseUnit.unit_recno != 0)
+			if (defenseUnit.UnitId != 0)
 			{
 				defending = true;
 				break;
@@ -1141,17 +1010,17 @@ public class FirmCamp : Firm
 
 		Nation nation = NationArray[NationId];
 
-		ai_recruiting_soldier = true; // the AI is currently trying to recruit soldiers
+		AIRecruitingSoldier = true; // the AI is currently trying to recruit soldiers
 
 		//---- if there are currently units coming to this firm ----//
 
 		int realComingCount = 0;
-		for (int i = 0; i < coming_unit_array.Count; i++)
+		for (int i = 0; i < ComingUnits.Count; i++)
 		{
-			if (UnitArray.IsDeleted(coming_unit_array[i]))
+			if (UnitArray.IsDeleted(ComingUnits[i]))
 				continue;
 
-			Unit unit = UnitArray[coming_unit_array[i]];
+			Unit unit = UnitArray[ComingUnits[i]];
 
 			//--- check if any of them are still on their way to this firm ---//
 
@@ -1162,7 +1031,7 @@ public class FirmCamp : Firm
 		}
 
 		if (realComingCount == 0)
-			coming_unit_array.Clear();
+			ComingUnits.Clear();
 
 		//-- if this camp is empty, think about move a whole troop from a useless camp (should_ai_close()==1)
 
@@ -1182,8 +1051,7 @@ public class FirmCamp : Firm
 
 				if (firmCamp.ShouldCloseFlag && (firmCamp.OverseerId != 0 || firmCamp.Workers.Count > 0))
 				{
-					int curRating = 100 - Misc.points_distance(LocCenterX, LocCenterY,
-						firmCamp.LocCenterX, firmCamp.LocCenterY);
+					int curRating = 100 - Misc.points_distance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 
 					if (curRating > bestRating)
 					{
@@ -1197,20 +1065,20 @@ public class FirmCamp : Firm
 
 			if (bestCamp != null)
 			{
-				bestCamp.patrol();
+				bestCamp.Patrol();
 
 				// there could be chances that there are no some for mobilizing the units
-				if (bestCamp.patrol_unit_array.Count == 0)
+				if (bestCamp.PatrolUnits.Count == 0)
 					return;
 
 				//--- set coming_unit_count for later checking ---//
 
-				coming_unit_array.Clear();
-				coming_unit_array.AddRange(bestCamp.patrol_unit_array);
+				ComingUnits.Clear();
+				ComingUnits.AddRange(bestCamp.PatrolUnits);
 
 				//---- order the unit to move to this camp now ---//
 
-				UnitArray.Assign(LocX1, LocY1, false, bestCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
+				UnitArray.Assign(LocX1, LocY1, false, bestCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 
 				//------ delete the camp as it no longer has any use ----//
 
@@ -1222,12 +1090,11 @@ public class FirmCamp : Firm
 		//------- get an overseer if there isn't any right now -----//
 
 		if (OverseerId == 0)
-			nation.add_action(LocX1, LocY1, -1, -1,
-				Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP);
+			nation.add_action(LocX1, LocY1, -1, -1, Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP);
 
 		if (Workers.Count == MAX_WORKER)
 		{
-			ai_recruiting_soldier = false;
+			AIRecruitingSoldier = false;
 			return;
 		}
 
@@ -1314,17 +1181,15 @@ public class FirmCamp : Firm
 
 		for (int i = 0; i < recruitCount; i++)
 		{
-			int unitRecno = NationArray[NationId].recruit_jobless_worker(this, 0);
-			if (unitRecno != 0)
+			int unitId = NationArray[NationId].recruit_jobless_worker(this, 0);
+			if (unitId != 0)
 			{
-				Unit unit = UnitArray[unitRecno];
+				Unit unit = UnitArray[unitId];
 				unit.Assign(LocX1, LocY1);
-				if (coming_unit_array.Count < MAX_WORKER)
-					coming_unit_array.Add(unitRecno);
+				if (ComingUnits.Count < MAX_WORKER)
+					ComingUnits.Add(unitId);
 			}
 		}
-
-		//DieselMachine TODO if we need to recruit more and have cash, try to hire from inn
 
 		return 1;
 	}
@@ -1340,7 +1205,7 @@ public class FirmCamp : Firm
 		{
 			//--- if this unit is currently attacking the town, ask it to attack a defender unit ---//
 
-			Town town = TownArray[ai_capture_town_recno];
+			Town town = TownArray[AICaptureTownId];
 
 			if (attackerUnit.ActionLocX == town.LocX1 && attackerUnit.ActionLocY == town.LocY1)
 				shouldAttackUnit = true;
@@ -1353,16 +1218,14 @@ public class FirmCamp : Firm
 
 		foreach (Unit unit in UnitArray.EnumerateRandom())
 		{
-			if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN && unit.UnitModeParam == ai_capture_town_recno)
+			if (unit.UnitMode == UnitConstants.UNIT_MODE_DEFEND_TOWN && unit.UnitModeParam == AICaptureTownId)
 			{
 				if (unit.NationId != 0)
-					NationArray[NationId].SetRelationShouldAttack(unit.NationId, true,
-						InternalConstants.COMMAND_AI);
+					NationArray[NationId].SetRelationShouldAttack(unit.NationId, true, InternalConstants.COMMAND_AI);
 
 				List<int> selectedUnits = new List<int>(1);
 				selectedUnits.Add(attackerUnit.SpriteId);
-				UnitArray.Attack(unit.NextLocX, unit.NextLocY, false, selectedUnits,
-					InternalConstants.COMMAND_AI, unit.SpriteId);
+				UnitArray.Attack(unit.NextLocX, unit.NextLocY, false, selectedUnits, InternalConstants.COMMAND_AI, unit.SpriteId);
 				break;
 			}
 		}
@@ -1409,8 +1272,7 @@ public class FirmCamp : Firm
 
 					//--- if the unit is idle and he is our enemy ---//
 
-					if (unit.CurAction == Sprite.SPRITE_ATTACK &&
-					    nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
+					if (unit.CurAction == Sprite.SPRITE_ATTACK && nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.HitPoints;
 
@@ -1431,12 +1293,12 @@ public class FirmCamp : Firm
 
 		if (Workers.Count > 0)
 		{
-			patrol_all_soldier();
+			PatrolAllSoldier();
 
-			if (patrol_unit_array.Count > 0)
+			if (PatrolUnits.Count > 0)
 			{
-				UnitArray.Attack(enemyXLoc, enemyYLoc, false, patrol_unit_array, InternalConstants.COMMAND_AI,
-					World.GetLoc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND));
+				int targetUnitId = World.GetLoc(enemyXLoc, enemyYLoc).UnitId(UnitConstants.UNIT_LAND);
+				UnitArray.Attack(enemyXLoc, enemyYLoc, false, PatrolUnits, InternalConstants.COMMAND_AI, targetUnitId);
 				return true;
 			}
 		}
@@ -1459,16 +1321,15 @@ public class FirmCamp : Firm
 
 			//---- only enable links to non-friendly towns ----//
 
-			bool enableFlag = town.NationId == 0 ||
-			                  ownNation.GetRelation(town.NationId).Status == NationBase.NATION_HOSTILE;
+			bool enableFlag = town.NationId == 0 || ownNation.GetRelation(town.NationId).Status == NationBase.NATION_HOSTILE;
 
 			ToggleTownLink(i + 1, enableFlag, InternalConstants.COMMAND_AI);
 		}
 	}
 
-	private new void think_capture()
+	private void think_capture()
 	{
-		if (is_attack_camp) // if this camp has been assigned to an attack mission already
+		if (IsAttackCamp) // if this camp has been assigned to an attack mission already
 			return;
 
 		int targetTownRecno = think_capture_target_town();
@@ -1498,7 +1359,7 @@ public class FirmCamp : Firm
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
-			if (targetTown.RacesPopulation[i] < 5) // if the pop count is lower than 5, ingore it
+			if (targetTown.RacesPopulation[i] < 5) // if the pop count is lower than 5, ignore it
 				continue;
 
 			if (targetTown.NationId != 0)
@@ -1541,8 +1402,7 @@ public class FirmCamp : Firm
 				//return;
 
 				// depending on the peacefulness, the nation won't attack if resistance > (0-20)
-				if (defenseCombatLevel > 100 + ownNation.pref_military_courage &&
-				    resistanceDiff > (100 - ownNation.pref_peacefulness) / 5)
+				if (defenseCombatLevel > 100 + ownNation.pref_military_courage && resistanceDiff > (100 - ownNation.pref_peacefulness) / 5)
 				{
 					return;
 				}
@@ -1551,8 +1411,7 @@ public class FirmCamp : Firm
 			{
 				//--- don't attack if the target nation's military rating is higher than ours ---//
 	
-				if( NationArray[targetTown.nation_recno].military_rank_rating()
-					 > ownNation.military_rank_rating() )
+				if( NationArray[targetTown.nation_recno].military_rank_rating() > ownNation.military_rank_rating() )
 				{
 					return;
 				}
@@ -1589,14 +1448,15 @@ public class FirmCamp : Firm
 
 		if (rc)
 		{
-			ai_capture_town_recno = targetTownRecno;
+			AICaptureTownId = targetTownRecno;
 			// turn off the defense flag during capturing so the general is staying in the base to influence the town
-			defense_flag = false;
+			DefenseFlag = false;
 
-			//--- as the current commander has been out to attack the town by ai_attack_target(), we need to assign him back to the camp for influencing the town and eventually capture it ---//
+			//--- as the current commander has been out to attack the town by ai_attack_target(),
+			//we need to assign him back to the camp for influencing the town and eventually capture it ---//
 
-			if (OverseerId == 0 && targetTown.NationId != 0 && patrol_unit_array.Count > 0)
-				UnitArray[patrol_unit_array[0]].Assign(LocX1, LocY1);
+			if (OverseerId == 0 && targetTown.NationId != 0 && PatrolUnits.Count > 0)
+				UnitArray[PatrolUnits[0]].Assign(LocX1, LocY1);
 		}
 	}
 
@@ -1606,13 +1466,13 @@ public class FirmCamp : Firm
 
 		bool returnCamp = false;
 
-		if (TownArray.IsDeleted(ai_capture_town_recno))
+		if (TownArray.IsDeleted(AICaptureTownId))
 		{
 			returnCamp = true;
 		}
 		else //---- check whether the town has been captured ----//
 		{
-			Town town = TownArray[ai_capture_town_recno];
+			Town town = TownArray[AICaptureTownId];
 
 			if (town.NationId == NationId) // the town has been captured
 				returnCamp = true;
@@ -1622,16 +1482,16 @@ public class FirmCamp : Firm
 
 		if (returnCamp)
 		{
-			for (int i = 0; i < patrol_unit_array.Count; i++)
+			for (int i = 0; i < PatrolUnits.Count; i++)
 			{
-				Unit unit = UnitArray[patrol_unit_array[i]];
+				Unit unit = UnitArray[PatrolUnits[i]];
 
 				if (unit.IsVisible())
 					unit.Assign(LocX1, LocY1);
 			}
 
-			ai_capture_town_recno = 0; // turn it on again after the capturing plan is finished
-			defense_flag = true;
+			AICaptureTownId = 0; // turn it on again after the capturing plan is finished
+			DefenseFlag = true;
 			return true;
 		}
 
@@ -1654,8 +1514,7 @@ public class FirmCamp : Firm
 
 		Nation ownNation = NationArray[NationId];
 
-		if (ownNation.get_action(LocX1, LocY1, -1, -1,
-			    Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP) != null)
+		if (ownNation.get_action(LocX1, LocY1, -1, -1, Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP) != null)
 		{
 			return true; // there is a queued action being processed already
 		}
@@ -1693,8 +1552,7 @@ public class FirmCamp : Firm
 		int targetResistance = 100;
 		//DieselMachine TODO we should try to hire capturer also
 		int bestUnitRecno = ownNation.find_best_capturer(targetTownRecno, raceId, ref targetResistance);
-		if (targetResistance >= currentTargetResistance ||
-		    targetResistance >= 50 - ownNation.pref_peacefulness / 5) // 30 to 50 depending on
+		if (targetResistance >= currentTargetResistance || targetResistance >= 50 - ownNation.pref_peacefulness / 5) // 30 to 50 depending on
 			return false;
 
 		if (bestUnitRecno == 0 || bestUnitRecno == OverseerId) // if we already got the best one here
@@ -1715,15 +1573,14 @@ public class FirmCamp : Firm
 
 		//---------- add the action to the queue now ----------//
 
-		ownNation.add_action(LocX1, LocY1, -1, -1,
-			Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, bestUnitRecno);
+		ownNation.add_action(LocX1, LocY1, -1, -1, Nation.ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, bestUnitRecno);
 
 		return true;
 	}
 
 	private void process_ai_capturing()
 	{
-		if (ai_capture_town_recno == 0)
+		if (AICaptureTownId == 0)
 			return;
 
 		if (think_capture_return()) // if the capturing units should now return to their base.
@@ -1731,13 +1588,13 @@ public class FirmCamp : Firm
 
 		//--- there are still town defender out there, order idle units to attack them ---//
 
-		Town town = TownArray[ai_capture_town_recno];
+		Town town = TownArray[AICaptureTownId];
 
 		if (town.DefendersCount > 0)
 		{
-			for (int i = patrol_unit_array.Count; i > 0; i--)
+			for (int i = PatrolUnits.Count; i > 0; i--)
 			{
-				Unit unit = UnitArray[patrol_unit_array[i - 1]];
+				Unit unit = UnitArray[PatrolUnits[i - 1]];
 
 				if (unit.CurAction == Sprite.SPRITE_IDLE)
 					ai_attack_town_defender(unit);
@@ -1751,13 +1608,11 @@ public class FirmCamp : Firm
 			//----- have one of the units attack the town ----//
 
 			if (town.NationId != 0)
-				NationArray[NationId].SetRelationShouldAttack(town.NationId, true,
-					InternalConstants.COMMAND_AI);
+				NationArray[NationId].SetRelationShouldAttack(town.NationId, true, InternalConstants.COMMAND_AI);
 
 			List<int> selectedUnits = new List<int>(1);
-			selectedUnits.Add(patrol_unit_array[Misc.Random(patrol_unit_array.Count)]);
-			UnitArray.Attack(town.LocX1, town.LocY1, false, selectedUnits,
-				InternalConstants.COMMAND_AI, 0);
+			selectedUnits.Add(PatrolUnits[Misc.Random(PatrolUnits.Count)]);
+			UnitArray.Attack(town.LocX1, town.LocY1, false, selectedUnits, InternalConstants.COMMAND_AI, 0);
 		}
 	}
 
@@ -1850,8 +1705,7 @@ public class FirmCamp : Firm
 
 		//---- use all camps to attack the enemy if the enemy is a human player
 
-		else if (Config.ai_aggressiveness >= Config.OPTION_MODERATE &&
-		         !targetNation.IsAI() && ourMilitary > enemyMilitary)
+		else if (Config.ai_aggressiveness >= Config.OPTION_MODERATE && !targetNation.IsAI() && ourMilitary > enemyMilitary)
 		{
 			if (Config.ai_aggressiveness >= Config.OPTION_HIGH || ownNation.pref_peacefulness < 50)
 			{

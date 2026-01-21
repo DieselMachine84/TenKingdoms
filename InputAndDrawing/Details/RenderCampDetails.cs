@@ -167,7 +167,7 @@ public partial class Renderer
             else
                 Graphics.DrawBitmap(_buttonUpTexture, Button4X, ButtonsCampY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
 
-            if (camp.defense_flag)
+            if (camp.DefenseFlag)
                 Graphics.DrawBitmap(_buttonDefenseOnTexture, Button4X + 10, ButtonsCampY + 4, Scale(_buttonDefenseOnWidth), Scale(_buttonDefenseOnHeight));
             else
                 Graphics.DrawBitmap(_buttonDefenseOffTexture, Button4X + 10, ButtonsCampY + 5, Scale(_buttonDefenseOffWidth), Scale(_buttonDefenseOffHeight));
@@ -208,7 +208,7 @@ public partial class Renderer
                 }
                 else
                 {*/
-                    camp.patrol();
+                    camp.Patrol();
                 //}
             }
             
@@ -234,9 +234,9 @@ public partial class Renderer
                 }
                 else
                 {*/
-                    camp.defense_flag = !camp.defense_flag;
+                    camp.DefenseFlag = !camp.DefenseFlag;
                 //}
-                SECtrl.immediate_sound(camp.defense_flag ? "TURN_OFF" : "TURN_ON");
+                SECtrl.immediate_sound(camp.DefenseFlag ? "TURN_OFF" : "TURN_ON");
             }
         }
     }

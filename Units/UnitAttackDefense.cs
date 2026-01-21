@@ -1646,7 +1646,7 @@ public partial class Unit
 				if (firm.FirmType == Firm.FIRM_CAMP)
 				{
 					FirmCamp camp = (FirmCamp)firm;
-					camp.defense(parentUnit.SpriteId);
+					camp.Defense(parentUnit.SpriteId);
 				}
 			}
 			else
@@ -3753,13 +3753,13 @@ public partial class Unit
 			}
 
 			FirmCamp camp = (FirmCamp)firm;
-			if (UnitArray.IsDeleted(camp.defend_target_recno))
+			if (UnitArray.IsDeleted(camp.DefendTargetId))
 			{
 				ProcessAutoDefenseBackCamp();
 				return;
 			}
 
-			Unit target = UnitArray[camp.defend_target_recno];
+			Unit target = UnitArray[camp.DefendTargetId];
 			if (target.ActionMode != UnitConstants.ACTION_ATTACK_FIRM || target.ActionParam != camp.FirmId)
 			{
 				ProcessAutoDefenseBackCamp();

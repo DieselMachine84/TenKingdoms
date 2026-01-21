@@ -4,11 +4,9 @@ namespace TenKingdoms;
 
 public class UnitGod : Unit
 {
-	public int god_id;
-	public int base_firm_recno; // recno of the seat of power which creates and supports this god unit
-	public int cast_power_type;
-	public int cast_origin_x, cast_origin_y;
-	public int cast_target_x, cast_target_y;
+	public int GodId { get; set; }
+	public int BaseFirmId { get; set; }
+	public int CastPowerType { get; set; }
 
 	private GodRes GodRes => Sys.Instance.GodRes;
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
@@ -17,7 +15,8 @@ public class UnitGod : Unit
 	public override void Init(int unitType, int nationId, int rank, int unitLoyalty, int startLocX, int startLocY)
 	{
 		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
-		cast_power_type = 0;
+		
+		//TODO what about UNIT_PHOENIX?
 		if (UnitType == UnitConstants.UNIT_PERSIAN_HEALER || UnitType == UnitConstants.UNIT_VIKING_GOD ||
 		    UnitType == UnitConstants.UNIT_KUKULCAN || UnitType == UnitConstants.UNIT_JAPANESE_GOD)
 			CanAttack = false; // unable to attack
@@ -31,34 +30,28 @@ public class UnitGod : Unit
 	{
 		base.PreProcess();
 
-		//---- set force_move_flag to 1 if the god does not have the ability to attack ----//
-
-		if (god_id != GodRes.GOD_CHINESE && god_id != GodRes.GOD_NORMAN) // only Chinese and Norman dragon can attack
+		if (GodId != GodRes.GOD_CHINESE && GodId != GodRes.GOD_NORMAN) // only Chinese and Norman dragon can attack
 			ForceMove = true;
 
-		//--- if the seat of power supporting this unit is destroyed, this unit dies ---//
-
-		if (FirmArray.IsDeleted(base_firm_recno))
+		if (FirmArray.IsDeleted(BaseFirmId))
 		{
-			HitPoints = 0;
+			HitPoints = 0.0;
 			SetDie();
 			return;
 		}
 
 		//---- this unit consume pray points as it exists ----//
 
-		FirmBase firmBase = (FirmBase)FirmArray[base_firm_recno];
+		FirmBase firmBase = (FirmBase)FirmArray[BaseFirmId];
 
-		firmBase.pray_points -= GodRes[god_id].exist_pray_points / 200.0;
+		firmBase.PrayPoints -= GodRes[GodId].exist_pray_points / 200.0;
 
-		if (firmBase.pray_points < 0)
-			firmBase.pray_points = 0.0;
+		if (firmBase.PrayPoints < 0.0)
+			firmBase.PrayPoints = 0.0;
 
-		//--------- update hit points --------//
+		HitPoints = firmBase.PrayPoints;
 
-		HitPoints = (int)firmBase.pray_points;
-
-		if (HitPoints == 0)
+		if (HitPoints == 0.0)
 			SetDie();
 	}
 
@@ -68,19 +61,18 @@ public class UnitGod : Unit
 			return 0;
 
 		//------- consumer pray points --------//
-		/* The other gods have their prayer points consumed
-		 * in UnitGod::cast_power(). See comments there for an
-		 * explanation of the exploit this avoids.
-		 */
-		if (god_id == GodRes.GOD_CHINESE || god_id == GodRes.GOD_NORMAN)
-			consume_power_pray_points();
+		// The other gods have their prayer points consumed in UnitGod.CastPower().
+		// See comments there for an explanation of the exploit this avoids.
+		
+		if (GodId == GodRes.GOD_CHINESE || GodId == GodRes.GOD_NORMAN)
+			ConsumePowerPrayPoints();
 
 		return 1;
 	}
 
-	public void cast_power(int xLoc, int yLoc)
+	public void CastPower(int locX, int locY)
 	{
-		if (FirmArray.IsDeleted(base_firm_recno))
+		if (FirmArray.IsDeleted(BaseFirmId))
 			return;
 
 		//------- consumer pray points --------//
@@ -88,75 +80,72 @@ public class UnitGod : Unit
 		 * can cast an ability and then order the god to move within a 
 		 * few frames and not consumer prayer points. This function is not
 		 * used for the Chinese and Norman dragons so the function is also
-		 * called in UnitGod::process_attack() for the dragons.
+		 * called in UnitGod.ProcessAttack() for the dragons.
 		 */
-		if (!consume_power_pray_points())
+		if (!ConsumePowerPrayPoints())
 			return;
 
 		//---- viking god does not need a range for casting power ----//
 
-		if (god_id == GodRes.GOD_VIKING)
+		if (GodId == GodRes.GOD_VIKING)
 		{
-			if (cast_power_type == 1)
-				viking_summon_rain();
+			if (CastPowerType == 1)
+				VikingSummonRain();
 			else
-				viking_summon_tornado();
+				VikingSummonTornado();
 			return;
 		}
 
 		//------ cast power on the selected area ------//
 
-		GodInfo godInfo = GodRes[god_id];
+		GodInfo godInfo = GodRes[GodId];
 
-		int xLoc1 = xLoc - godInfo.cast_power_range + 1;
-		int yLoc1 = yLoc - godInfo.cast_power_range + 1;
-		int xLoc2 = xLoc + godInfo.cast_power_range - 1;
-		int yLoc2 = yLoc + godInfo.cast_power_range - 1;
+		int locX1 = locX - godInfo.cast_power_range + 1;
+		int locY1 = locY - godInfo.cast_power_range + 1;
+		int locX2 = locX + godInfo.cast_power_range - 1;
+		int locY2 = locY + godInfo.cast_power_range - 1;
 
-		int centerY = (yLoc1 + yLoc2) / 2;
+		int centerY = (locY1 + locY2) / 2;
 
-		for (yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		for (locY = locY1; locY <= locY2; locY++)
 		{
-			int t = Math.Abs(yLoc - centerY) / 2;
+			int edgeX = Math.Abs(locY - centerY) / 2;
 
-			for (xLoc = xLoc1 + t; xLoc <= xLoc2 - t; xLoc++)
+			for (locX = locX1 + edgeX; locX <= locX2 - edgeX; locX++)
 			{
-				if (xLoc >= 0 && xLoc < GameConstants.MapSize && yLoc >= 0 && yLoc < GameConstants.MapSize)
-				{
-					cast_on_loc(xLoc, yLoc);
-				}
+				if (Misc.IsLocationValid(locX, locY))
+					CastOnLoc(locX, locY);
 			}
 		}
 	}
 
-	private bool consume_power_pray_points()
+	private bool ConsumePowerPrayPoints()
 	{
-		if (FirmArray.IsDeleted(base_firm_recno))
+		if (FirmArray.IsDeleted(BaseFirmId))
 			return false;
 
-		FirmBase firmBase = (FirmBase)FirmArray[base_firm_recno];
+		FirmBase firmBase = (FirmBase)FirmArray[BaseFirmId];
 
-		firmBase.pray_points -= GodRes[god_id].power_pray_points;
+		firmBase.PrayPoints -= GodRes[GodId].power_pray_points;
 
-		if (firmBase.pray_points < 0.0)
-			firmBase.pray_points = 0.0;
+		if (firmBase.PrayPoints < 0.0)
+			firmBase.PrayPoints = 0.0;
 
-		HitPoints = (int)firmBase.pray_points;
+		HitPoints = firmBase.PrayPoints;
 
 		return true;
 	}
 
-	private void cast_on_loc(int castXLoc, int castYLoc)
+	private void CastOnLoc(int castLocX, int castLocY)
 	{
-		Location location = World.GetLoc(castXLoc, castYLoc);
-
-		//--- if there is any unit on the location ---//
+		Location location = World.GetLoc(castLocX, castLocY);
 
 		if (location.HasUnit(UnitConstants.UNIT_LAND))
 		{
-			cast_on_unit(location.UnitId(UnitConstants.UNIT_LAND), 1);
+			CastOnUnit(location.UnitId(UnitConstants.UNIT_LAND), 1);
 		}
-		else if (location.HasUnit(UnitConstants.UNIT_SEA))
+		
+		if (location.HasUnit(UnitConstants.UNIT_SEA))
 		{
 			Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
 
@@ -171,42 +160,37 @@ public class UnitGod : Unit
 					int divider = 4; // the size of a ship is 4 locations (2x2)
 
 					// the effects are weaken on ship units, only 50% of the original effects
-					cast_on_unit(unitMarine.UnitsOnBoard[i], divider);
+					CastOnUnit(unitMarine.UnitsOnBoard[i], divider);
 				}
 			}
 		}
 
-		//--------- on firms ---------//
-
-		else if (location.IsFirm())
+		if (location.IsFirm())
 		{
 			Firm firm = FirmArray[location.FirmId()];
 			int divider = (firm.LocX2 - firm.LocX1 + 1) * (firm.LocY2 - firm.LocY1 + 1);
-			if (god_id == GodRes.GOD_ZULU)
+			if (GodId == GodRes.GOD_ZULU)
 				divider = 1; // range of zulu god is 1, no need to divide
 
 			if (firm.OverseerId != 0)
 			{
-				cast_on_unit(firm.OverseerId, divider);
+				CastOnUnit(firm.OverseerId, divider);
 			}
 
 			if (!FirmRes[firm.FirmType].LiveInTown)
 			{
-				for (int i = 0; i < firm.Workers.Count; i++)
+				foreach (var worker in firm.Workers)
 				{
-					Worker worker = firm.Workers[i];
-					cast_on_worker(worker, firm.NationId, divider);
+					CastOnWorker(worker, firm.NationId, divider);
 				}
 			}
 		}
 
-		//--------- on towns ----------//
-
-		else if (location.IsTown())
+		if (location.IsTown())
 		{
 			Town town = TownArray[location.TownId()];
 
-			if (god_id == GodRes.GOD_JAPANESE && town.NationId != NationId)
+			if (GodId == GodRes.GOD_JAPANESE && town.NationId != NationId)
 			{
 				int divider = InternalConstants.TOWN_WIDTH * InternalConstants.TOWN_HEIGHT;
 
@@ -223,114 +207,112 @@ public class UnitGod : Unit
 						town.ChangeResistance(i + 1, NationId, -changePoints / divider);
 				}
 			}
-			else if (god_id == GodRes.GOD_EGYPTIAN && town.NationId == NationId)
+			
+			if (GodId == GodRes.GOD_EGYPTIAN && town.NationId == NationId)
 			{
-				int raceId;
-
-				for (int headCount = 5;
-				     headCount > 0 && town.Population < GameConstants.MAX_TOWN_GROWTH_POPULATION
-				                   && (raceId = town.PickRandomRace(true, true)) != 0;
-				     --headCount)
+				for (int headCount = 5; headCount > 0 && town.Population < GameConstants.MAX_TOWN_POPULATION; headCount--)
 				{
-					town.IncPopulation(raceId, false, (int)town.RacesLoyalty[raceId - 1]);
+					int raceId = town.PickRandomRace(true, true);
+					if (raceId != 0)
+						town.IncPopulation(raceId, false, (int)town.RacesLoyalty[raceId - 1]);
 				}
 			}
 		}
 	}
 
-	private void cast_on_unit(int unitRecno, int divider)
+	private void CastOnUnit(int unitId, int divider)
 	{
-		switch (god_id)
+		switch (GodId)
 		{
 			case GodRes.GOD_PERSIAN:
-				persian_cast_power(unitRecno, divider);
+				PersianCastPower(unitId, divider);
 				break;
 
 			case GodRes.GOD_JAPANESE:
-				japanese_cast_power(unitRecno, divider);
+				JapaneseCastPower(unitId, divider);
 				break;
 
 			case GodRes.GOD_MAYA:
-				maya_cast_power(unitRecno, divider);
+				MayaCastPower(unitId, divider);
 				break;
 
 			case GodRes.GOD_EGYPTIAN:
-				egyptian_cast_power(unitRecno, divider);
+				EgyptianCastPower(unitId, divider);
 				break;
 
 			case GodRes.GOD_INDIAN:
-				indian_cast_power(unitRecno, divider);
+				IndianCastPower(unitId, divider);
 				break;
 
 			case GodRes.GOD_ZULU:
-				zulu_cast_power(unitRecno, divider);
+				ZuluCastPower(unitId, divider);
 				break;
 		}
 	}
 
-	private void cast_on_worker(Worker worker, int nationRecno, int divider)
+	private void CastOnWorker(Worker worker, int nationId, int divider)
 	{
-		switch (god_id)
+		switch (GodId)
 		{
 			case GodRes.GOD_PERSIAN:
-				persian_cast_power(worker, nationRecno, divider);
+				PersianCastPower(worker, nationId, divider);
 				break;
 
 			case GodRes.GOD_JAPANESE:
-				japanese_cast_power(worker, nationRecno, divider);
+				JapaneseCastPower(worker, nationId, divider);
 				break;
 
 			case GodRes.GOD_MAYA:
-				maya_cast_power(worker, nationRecno, divider);
+				MayaCastPower(worker, nationId, divider);
 				break;
 
 			case GodRes.GOD_EGYPTIAN:
-				egyptian_cast_power(worker, nationRecno, divider);
+				EgyptianCastPower(worker, nationId, divider);
 				break;
 
 			case GodRes.GOD_INDIAN:
-				indian_cast_power(worker, nationRecno, divider);
+				IndianCastPower(worker, nationId, divider);
 				break;
 
 			case GodRes.GOD_ZULU:
-				zulu_cast_power(worker, nationRecno, divider);
+				ZuluCastPower(worker, nationId, divider);
 				break;
 		}
 	}
 
-	private void viking_summon_rain()
+	private void VikingSummonRain()
 	{
 		MagicWeather.cast_rain(10, 8); // 10 days, rain scale 8
 		MagicWeather.cast_lightning(7); // 7 days
 	}
 
-	private void viking_summon_tornado()
+	private void VikingSummonTornado()
 	{
-		int xLoc = NextLocX;
-		int yLoc = NextLocY;
+		int locX = NextLocX;
+		int locY = NextLocY;
 		int dir = FinalDir % 8;
 
 		// put a tornado one location ahead
-		if (dir == 0 || dir == 1 || dir == 7)
-			if (yLoc > 0)
-				yLoc--;
+		if (dir == 7 || dir == 0 || dir == 1)
+			if (locY > 0)
+				locY--;
 		if (dir >= 1 && dir <= 3)
-			if (xLoc < GameConstants.MapSize - 1)
-				xLoc++;
+			if (locX < GameConstants.MapSize - 1)
+				locX++;
 		if (dir >= 3 && dir <= 5)
-			if (yLoc < GameConstants.MapSize - 1)
-				yLoc++;
+			if (locY < GameConstants.MapSize - 1)
+				locY++;
 		if (dir >= 5 && dir <= 7)
-			if (xLoc > 0)
-				xLoc--;
+			if (locX > 0)
+				locX--;
 
-		TornadoArray.AddTornado(xLoc, yLoc, 600);
+		TornadoArray.AddTornado(locX, locY, 600);
 		MagicWeather.cast_wind(10, 1, dir * 45); // 10 days
 	}
 
-	private void persian_cast_power(int unitRecno, int divider)
+	private void PersianCastPower(int unitId, int divider)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		//-- only heal human units belonging to our nation --//
 
@@ -338,17 +320,17 @@ public class UnitGod : Unit
 		{
 			double changePoints = (double)unit.MaxHitPoints / (6.0 + Misc.Random(4)); // divided by (6 to 9)
 
-			changePoints = Math.Max(changePoints, 10);
+			changePoints = Math.Max(changePoints, 10.0);
 
-			unit.ChangeHitPoints(changePoints / divider);
+			unit.ChangeHitPoints(changePoints / (double)divider);
 		}
 	}
 
-	private void japanese_cast_power(int unitRecno, int divider)
+	private void JapaneseCastPower(int unitId, int divider)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
-		//-- only cast on enemy units -----//
+		//---- only cast on enemy units -----//
 
 		if (unit.NationId != NationId && unit.RaceId > 0)
 		{
@@ -358,17 +340,17 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void maya_cast_power(int unitRecno, int divider)
+	private void MayaCastPower(int unitId, int divider)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
-		//-- only cast on mayan units belonging to our nation --//
+		//---- only cast on mayan units belonging to our nation --//
 
 		if (unit.NationId == NationId && unit.RaceId == (int)Race.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
-			int newCombatLevel = unit.Skill.CombatLevel + changePoints / divider;
+			int newCombatLevel = unit.Skill.CombatLevel + Math.Max(1, changePoints / divider);
 
 			if (newCombatLevel > 100)
 				newCombatLevel = 100;
@@ -381,14 +363,14 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void egyptian_cast_power(int unitRecno, int divider)
+	private void EgyptianCastPower(int unitId, int divider)
 	{
 		// no effect
 	}
 
-	private void indian_cast_power(int unitRecno, int divider)
+	private void IndianCastPower(int unitId, int divider)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		if (unit.IsVisible() && NationArray.ShouldAttack(NationId, unit.NationId))
 		{
@@ -396,37 +378,24 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void zulu_cast_power(int unitRecno, int divider)
+	private void ZuluCastPower(int unitId, int divider)
 	{
-		// no effect
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
 		if (NationId == unit.NationId && unit.RaceId == (int)Race.RACE_ZULU && unit.Rank != RANK_SOLDIER)
 		{
 			int changePoints = 30; // add 15 twice to avoid 130 becomes -126
-			if (divider > 2)
-			{
-				unit.Skill.SkillLevel += changePoints / divider;
-				if (unit.Skill.SkillLevel > 100)
-					unit.Skill.SkillLevel = 100;
-			}
-			else
-			{
-				for (int t = 2; t > 0; --t)
-				{
-					unit.Skill.SkillLevel += changePoints / 2 / divider;
-					if (unit.Skill.SkillLevel > 100)
-						unit.Skill.SkillLevel = 100;
-				}
-			}
+			unit.Skill.SkillLevel += changePoints / divider;
+			if (unit.Skill.SkillLevel > 100)
+				unit.Skill.SkillLevel = 100;
 		}
 	}
 
-	private void persian_cast_power(Worker worker, int nationRecno, int divider)
+	private void PersianCastPower(Worker worker, int nationId, int divider)
 	{
 		//-- only heal human units belonging to our nation --//
 
-		if (nationRecno == NationId && worker.RaceId > 0)
+		if (nationId == NationId && worker.RaceId > 0)
 		{
 			int changePoints = worker.MaxHitPoints() / (4 + Misc.Random(4)); // divided by (4 to 7)
 
@@ -436,11 +405,11 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void japanese_cast_power(Worker worker, int nationRecno, int divider)
+	private void JapaneseCastPower(Worker worker, int nationId, int divider)
 	{
-		//-- only cast on enemy units -----//
+		//---- only cast on enemy units -----//
 
-		if (nationRecno != NationId && worker.RaceId > 0)
+		if (nationId != NationId && worker.RaceId > 0)
 		{
 			int changePoints = 7 + Misc.Random(8); // decrease 7 to 15 loyalty points instantly
 
@@ -448,11 +417,11 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void maya_cast_power(Worker worker, int nationRecno, int divider)
+	private void MayaCastPower(Worker worker, int nationId, int divider)
 	{
-		//-- only cast on mayan units belonging to our nation --//
+		//---- only cast on mayan units belonging to our nation --//
 
-		if (nationRecno == NationId && worker.RaceId == (int)Race.RACE_MAYA)
+		if (nationId == NationId && worker.RaceId == (int)Race.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
@@ -465,17 +434,17 @@ public class UnitGod : Unit
 		}
 	}
 
-	private void egyptian_cast_power(Worker worker, int nationRecno, int divider)
+	private void EgyptianCastPower(Worker worker, int nationId, int divider)
 	{
 		// no effect
 	}
 
-	private void indian_cast_power(Worker worker, int nationRecno, int divider)
+	private void IndianCastPower(Worker worker, int nationId, int divider)
 	{
 		// no effect
 	}
 
-	private void zulu_cast_power(Worker worker, int nationRecno, int divider)
+	private void ZuluCastPower(Worker worker, int nationId, int divider)
 	{
 		// no effect
 	}
@@ -490,7 +459,7 @@ public class UnitGod : Unit
 		if (Info.TotalDays % 7 != SpriteId % 7)
 			return;
 
-		switch (god_id)
+		switch (GodId)
 		{
 			case GodRes.GOD_NORMAN:
 				think_dragon();
@@ -692,7 +661,7 @@ public class UnitGod : Unit
 
 				//------ calculate the rating of the firm -------//
 
-				int curRating = ((FirmCamp)firm).total_combat_level() / 10;
+				int curRating = ((FirmCamp)firm).TotalCombatLevel() / 10;
 
 				if (curRating > bestRating)
 				{
@@ -737,7 +706,7 @@ public class UnitGod : Unit
 	{
 		int bestRating = 0;
 		int targetXLoc = -1, targetYLoc = -1;
-		const int MaxTownPop = GameConstants.MAX_TOWN_GROWTH_POPULATION;
+		const int MAX_TOWN_POP = GameConstants.MAX_TOWN_POPULATION;
 
 		foreach (Town town in TownArray)
 		{
@@ -748,17 +717,17 @@ public class UnitGod : Unit
 
 			//------ calculate the rating of the firm -------//
 
-			if (town.Population > MaxTownPop - 5)
+			if (town.Population > MAX_TOWN_POP - 5)
 				continue;
 
 			// maximize the total loyalty gain.
 			int curRating = 5 * town.AverageLoyalty();
 
 			// calc rating on the number of people
-			if (town.Population >= MaxTownPop / 2)
-				curRating -= (town.Population - MaxTownPop / 2) * 300 / MaxTownPop;
+			if (town.Population >= MAX_TOWN_POP / 2)
+				curRating -= (town.Population - MAX_TOWN_POP / 2) * 300 / MAX_TOWN_POP;
 			else
-				curRating -= (MaxTownPop / 2 - town.Population) * 300 / MaxTownPop;
+				curRating -= (MAX_TOWN_POP / 2 - town.Population) * 300 / MAX_TOWN_POP;
 
 			if (curRating > bestRating)
 			{
@@ -871,7 +840,7 @@ public class UnitGod : Unit
 
 			if (bestUnitCost < 100)
 			{
-				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[god_id].cast_power_range)
+				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[GodId].cast_power_range)
 					GoCastPower(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
 					MoveTo(xLoc, yLoc);

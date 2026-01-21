@@ -109,9 +109,9 @@ public class GodInfo
 
         UnitGod unitGod = (UnitGod)unit;
 
-        unitGod.god_id = god_id;
-        unitGod.base_firm_recno = firmRecno;
-        unitGod.HitPoints = Convert.ToInt32(firmBase.pray_points);
+        unitGod.GodId = god_id;
+        unitGod.BaseFirmId = firmRecno;
+        unitGod.HitPoints = Convert.ToInt32(firmBase.PrayPoints);
 
         return unitGod.SpriteId;
     }

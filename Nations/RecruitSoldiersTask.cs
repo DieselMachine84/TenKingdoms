@@ -22,7 +22,7 @@ public class RecruitSoldiersTask : AITask
                 continue;
 
             FirmCamp camp = (FirmCamp)firm;
-            if (camp.patrol_unit_array.Count == Firm.MAX_WORKER + 1)
+            if (camp.PatrolUnits.Count == Firm.MAX_WORKER + 1)
                 continue;
 
             foreach (int linkedTownId in camp.LinkedTowns)

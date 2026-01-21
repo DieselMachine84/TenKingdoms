@@ -786,7 +786,7 @@ public class Town : IIdObject
 		if (DefendersCount > 0)
 			return;
 
-		if (Population >= GameConstants.MAX_TOWN_GROWTH_POPULATION || Population >= GameConstants.MAX_TOWN_POPULATION)
+		if (Population >= GameConstants.MAX_TOWN_POPULATION)
 			return;
 
 		//-------- population growth by birth ---------//
@@ -2816,7 +2816,7 @@ public class Town : IIdObject
 
 			if (linkedTownsCount > 0)
 			{
-				townSoldiersCount += (double)(firmCamp.Workers.Count + firmCamp.patrol_unit_array.Count + firmCamp.coming_unit_array.Count)
+				townSoldiersCount += (double)(firmCamp.Workers.Count + firmCamp.PatrolUnits.Count + firmCamp.ComingUnits.Count)
 				                     / (double)linkedTownsCount;
 			}
 		}
@@ -3236,7 +3236,7 @@ public class Town : IIdObject
 				continue;
 
 			FirmCamp camp = (FirmCamp)firm;
-			camp.defense(targetId);
+			camp.Defense(targetId);
 
 			if (TownArray.IsDeleted(TownId))
 				break;
@@ -4328,7 +4328,7 @@ public class Town : IIdObject
 				continue;
 
 			// if this camp is still trying to recruit soldiers
-			if (firmCamp.UnderConstruction || firmCamp.ai_recruiting_soldier || firmCamp.Workers.Count < Firm.MAX_WORKER)
+			if (firmCamp.UnderConstruction || firmCamp.AIRecruitingSoldier || firmCamp.Workers.Count < Firm.MAX_WORKER)
 				return false;
 
 			campCount++;
@@ -4525,7 +4525,7 @@ public class Town : IIdObject
 		{
 			FirmBase firmBase = (FirmBase)FirmArray[nation.ai_base_array[i]];
 
-			buildRatingArray[GodRes[firmBase.god_id].race_id - 1] = 0; // only build one 
+			buildRatingArray[GodRes[firmBase.GodId].race_id - 1] = 0; // only build one 
 
 			/*
 			if( firmBase.prayer_count < MAX_BASE_PRAYER )
@@ -4964,7 +4964,7 @@ public class Town : IIdObject
 					continue;
 				}
 
-				targetCombatLevel = ((FirmCamp)firm).total_combat_level();
+				targetCombatLevel = ((FirmCamp)firm).TotalCombatLevel();
 			}
 			else //--- if this is another type of firm ----//
 			{
@@ -5351,7 +5351,7 @@ public class Town : IIdObject
 						linkedTownsCount++;
 				}
 
-				int combatLevel = ((FirmCamp)firm).total_combat_level();
+				int combatLevel = ((FirmCamp)firm).TotalCombatLevel();
 				if (linkedTownsCount > 1)
 					combatLevel = combatLevel / linkedTownsCount;
 				protectionLevel += 10 + combatLevel; // +10 for the existence of the camp structure
@@ -5382,7 +5382,7 @@ public class Town : IIdObject
 
 			//DieselMachine TODO if there is a battle going on, all linked camps should be protection camps
 			FirmCamp firmCamp = (FirmCamp)firm;
-			if (firmCamp.OverseerId == 0 || firmCamp.Workers.Count == 0 || firmCamp.patrol_unit_array.Count > 0)
+			if (firmCamp.OverseerId == 0 || firmCamp.Workers.Count == 0 || firmCamp.PatrolUnits.Count > 0)
 				continue;
 
 			if (firmCamp.OverseerId == ownNation.KingUnitId)
@@ -5439,7 +5439,7 @@ public class Town : IIdObject
 			if (thisTownProtectionCamps[i] != 0)
 			{
 				FirmCamp firmCamp = (FirmCamp)FirmArray[thisTownProtectionCamps[i]];
-				totalCombatLevel += firmCamp.total_combat_level();
+				totalCombatLevel += firmCamp.TotalCombatLevel();
 			}
 		}
 
@@ -5471,7 +5471,7 @@ public class Town : IIdObject
 					continue;
 
 				FirmCamp firmCamp = (FirmCamp)firm;
-				totalCombatLevel += firmCamp.total_combat_level();
+				totalCombatLevel += firmCamp.TotalCombatLevel();
 				thisTownProtectionCamps.Add(firmRecno);
 				if (totalCombatLevel >= neededProtection)
 					break;

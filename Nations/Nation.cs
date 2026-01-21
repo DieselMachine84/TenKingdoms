@@ -3397,7 +3397,7 @@ public class NationOld : NationBase
 			FirmCamp firmCamp = (FirmCamp)FirmArray[leadAttackCampRecno];
 			AttackCamp attackCamp = new AttackCamp();
 			attackCamp.firm_recno = leadAttackCampRecno;
-			attackCamp.combat_level = firmCamp.total_combat_level();
+			attackCamp.combat_level = firmCamp.TotalCombatLevel();
 			attackCamp.distance = Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
 			attack_camps.Add(attackCamp);
 		}
@@ -3437,18 +3437,18 @@ public class NationOld : NationBase
 			if (firmCamp.ai_is_capturing_independent_village()) // the camp is trying to capture an independent town
 				continue;
 
-			if (firmCamp.is_attack_camp) // the camp is on another attack mission already
+			if (firmCamp.IsAttackCamp) // the camp is on another attack mission already
 				continue;
 
 			if (leadAttackCampRecno != 0 && firmRecno == leadAttackCampRecno) // the camp was already added before
 				continue;
 
-			if (attackerMinCombatLevel > 0 && firmCamp.average_combat_level() < attackerMinCombatLevel)
+			if (attackerMinCombatLevel > 0 && firmCamp.AverageCombatLevel() < attackerMinCombatLevel)
 				continue;
 
 			AttackCamp attackCamp = new AttackCamp();
 			attackCamp.firm_recno = firmRecno;
-			attackCamp.combat_level = firmCamp.total_combat_level();
+			attackCamp.combat_level = firmCamp.TotalCombatLevel();
 			attackCamp.distance = Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
 			attack_camps.Add(attackCamp);
 		}
@@ -3535,7 +3535,7 @@ public class NationOld : NationBase
 		for (int i = 0; i < attack_camps.Count; i++)
 		{
 			Firm firm = FirmArray[attack_camps[i].firm_recno];
-			((FirmCamp)firm).is_attack_camp = true;
+			((FirmCamp)firm).IsAttackCamp = true;
 		}
 	}
 
@@ -3580,8 +3580,8 @@ public class NationOld : NationBase
 						if (attack_camps[i].patrol_date == default(DateTime)) //troop is patrolling, call them back
 						{
 							FirmCamp firmCamp = (FirmCamp)FirmArray[firmRecno];
-							firmCamp.validate_patrol_unit();
-							UnitArray.Assign(firmCamp.LocX1, firmCamp.LocY1, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
+							firmCamp.ValidatePatrolUnit();
+							UnitArray.Assign(firmCamp.LocX1, firmCamp.LocY1, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 						}
 					}
 				}
@@ -3611,15 +3611,15 @@ public class NationOld : NationBase
 				//--- if this is the lead attack camp, don't mobilize the overseer ---//
 
 				if (lead_attack_camp_recno == firmRecno)
-					firmCamp.patrol_all_soldier(); // don't mobilize the overseer
+					firmCamp.PatrolAllSoldier(); // don't mobilize the overseer
 				else
-					firmCamp.patrol(); // mobilize the overseer and the soldiers
+					firmCamp.Patrol(); // mobilize the overseer and the soldiers
 
 				//----------------------------------------//
 
-				firmCamp.validate_patrol_unit();
+				firmCamp.ValidatePatrolUnit();
 				// there could be chances that there are no some for mobilizing the units
-				if (firmCamp.patrol_unit_array.Count > 0)
+				if (firmCamp.PatrolUnits.Count > 0)
 				{
 					//------- declare war with the target nation -------//
 
@@ -3631,7 +3631,7 @@ public class NationOld : NationBase
 					if (!directAttack)
 					{
 						UnitArray.MoveTo(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
-							firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
+							firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 					}
 					else
 					{
@@ -3642,7 +3642,7 @@ public class NationOld : NationBase
 						//---------- attack now -----------//
 
 						UnitArray.Attack(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
-							firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI, 0);
+							firmCamp.PatrolUnits, InternalConstants.COMMAND_AI, 0);
 					}
 				}
 			}
@@ -3849,7 +3849,7 @@ public class NationOld : NationBase
 		for (int i = 0; i < camps.Count; i++)
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[camps[i]];
-			totalCombatLevel += firmCamp.total_combat_level();
+			totalCombatLevel += firmCamp.TotalCombatLevel();
 		}
 
 		for (int i = 0; i < units.Count; i++)
@@ -4049,7 +4049,7 @@ public class NationOld : NationBase
 			if (distanceFromAttacker > GameConstants.MapSize / 2)
 				continue;
 
-			if (firmCamp.is_attack_camp && distanceFromAttacker < 15)
+			if (firmCamp.IsAttackCamp && distanceFromAttacker < 15)
 			{
 				bool calledFromAttack = false;
 				for (int j = attack_camps.Count - 1; j >= 0; j--)
@@ -4058,14 +4058,14 @@ public class NationOld : NationBase
 					{
 						if (attack_camps[j].patrol_date == default(DateTime)) //troop is patrolling, call them back
 						{
-							firmCamp.validate_patrol_unit();
-							UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
+							firmCamp.ValidatePatrolUnit();
+							UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 
 							calledFromAttack = true;
 						}
 
 						//remove this camp from the attack camps
-						firmCamp.is_attack_camp = false;
+						firmCamp.IsAttackCamp = false;
 						attack_camps.RemoveAt(j);
 						break;
 					}
@@ -4075,7 +4075,7 @@ public class NationOld : NationBase
 					continue;
 			}
 
-			totalCombatLevel += firmCamp.total_combat_level();
+			totalCombatLevel += firmCamp.TotalCombatLevel();
 			defendingCamps.Add(firmRecno);
 		}
 
@@ -4090,9 +4090,9 @@ public class NationOld : NationBase
 		for (int i = 0; i < defendingCamps.Count; i++)
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[defendingCamps[i]];
-			firmCamp.patrol();
-			firmCamp.validate_patrol_unit();
-			UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.patrol_unit_array, InternalConstants.COMMAND_AI);
+			firmCamp.Patrol();
+			firmCamp.ValidatePatrolUnit();
+			UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 		}
 
 		//------ request military aid from allies ----//
@@ -4130,7 +4130,7 @@ public class NationOld : NationBase
 		{
 			FirmCamp firmCamp = (FirmCamp)FirmArray[attack_camps[i].firm_recno];
 
-			firmCamp.is_attack_camp = false;
+			firmCamp.IsAttackCamp = false;
 		}
 
 		attack_camps.Clear();
@@ -4264,11 +4264,11 @@ public class NationOld : NationBase
 			//---- only build a new one when existing ones are all full ----//
 
 			int soldierCount = (firmCamp.OverseerId > 0 ? 1 : 0) + firmCamp.Workers.Count +
-			                   firmCamp.patrol_unit_array.Count;
+			                   firmCamp.PatrolUnits.Count;
 
 			freeSpaceCount += Firm.MAX_WORKER + 1 - soldierCount;
 
-			if (firmCamp.ai_recruiting_soldier)
+			if (firmCamp.AIRecruitingSoldier)
 				return false;
 		}
 
@@ -5265,7 +5265,7 @@ public class NationOld : NationBase
 
 			if (firm.NationId == targetTown.NationId && firm.FirmType == Firm.FIRM_CAMP)
 			{
-				int campCombatLevel = ((FirmCamp)firm).total_combat_level();
+				int campCombatLevel = ((FirmCamp)firm).TotalCombatLevel();
 
 				if (campCombatLevel > maxCampCombatLevel)
 				{
@@ -6027,7 +6027,7 @@ public class NationOld : NationBase
 			if (firmCamp.ai_is_capturing_independent_village()) // the base is trying to capture an independent town
 				continue;
 
-			if (firmCamp.is_attack_camp)
+			if (firmCamp.IsAttackCamp)
 				continue;
 
 			if (firmCamp.OverseerId == kingRecno) // if the king oversees this firm
@@ -6063,14 +6063,14 @@ public class NationOld : NationBase
 
 		//----- patrol the camp troop ajnd assign it to a ship -----//
 
-		bestCamp.patrol();
+		bestCamp.Patrol();
 
 		// there could be chances that there are no some for mobilizing the units
-		if (bestCamp.patrol_unit_array.Count > 0)
+		if (bestCamp.PatrolUnits.Count > 0)
 		{
 			ActionNode actionNode = add_action(destXLoc, destYLoc, 0, 0,
 				ACTION_AI_SEA_TRAVEL, seaActionId,
-				bestCamp.patrol_unit_array.Count, 0, 0, bestCamp.patrol_unit_array);
+				bestCamp.PatrolUnits.Count, 0, 0, bestCamp.PatrolUnits);
 
 			if (actionNode != null) // must process it immediately otherwise the recruited units will do something else
 				return process_action(actionNode);

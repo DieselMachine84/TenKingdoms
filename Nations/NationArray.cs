@@ -400,7 +400,7 @@ public class NationArray : DynArray<Nation>
 				continue;
 
 			// 20 is the base military points for a unit, so the nation that has many more units can be reflected in the military rating
-			nationCombatLevels[firm.NationId - 1] += ((FirmCamp)firm).total_combat_level() +
+			nationCombatLevels[firm.NationId - 1] += ((FirmCamp)firm).TotalCombatLevel() +
 			                                         ((firm.OverseerId > 0 ? 1 : 0) + firm.Workers.Count) * 20;
 		}
 

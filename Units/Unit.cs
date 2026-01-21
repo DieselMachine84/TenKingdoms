@@ -759,7 +759,7 @@ public abstract partial class Unit : Sprite
 						if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP)
 						{
 							FirmCamp camp = (FirmCamp)firm;
-							camp.update_defense_unit(SpriteId);
+							camp.UpdateDefenseUnit(SpriteId);
 						}
 
 						//---------------------------------------------------------------//
@@ -1135,7 +1135,7 @@ public abstract partial class Unit : Sprite
 			}
 			else
 			{
-				GoCastPower(ActionLocX2, ActionLocY2, unitGod.cast_power_type, InternalConstants.COMMAND_AUTO);
+				GoCastPower(ActionLocX2, ActionLocY2, unitGod.CastPowerType, InternalConstants.COMMAND_AUTO);
 			}
 		}
 		else if (CurAction == SPRITE_ATTACK)
@@ -1149,7 +1149,7 @@ public abstract partial class Unit : Sprite
 				// add effect
 				AddCloseAttackEffect();
 
-				unitGod.cast_power(ActionLocX2, ActionLocY2);
+				unitGod.CastPower(ActionLocX2, ActionLocY2);
 				SetRemainAttackDelay();
 			}
 
@@ -1857,7 +1857,7 @@ public abstract partial class Unit : Sprite
 		// ActionMode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
 		if (ActionMode2 == UnitConstants.ACTION_GO_CAST_POWER && ActionPara2 == 0 &&
-		    ActionLocX2 == castLocX && ActionLocY2 == castLocY && unitGod.cast_power_type == castPowerType)
+		    ActionLocX2 == castLocX && ActionLocY2 == castLocY && unitGod.CastPowerType == castPowerType)
 		{
 			if (CurAction != SPRITE_IDLE)
 				return;
@@ -1886,11 +1886,7 @@ public abstract partial class Unit : Sprite
 		ActionLocX = castLocX;
 		ActionLocY = castLocY;
 
-		unitGod.cast_power_type = castPowerType;
-		unitGod.cast_origin_x = NextLocX;
-		unitGod.cast_origin_y = NextLocY;
-		unitGod.cast_target_x = castLocX;
-		unitGod.cast_target_y = castLocY;
+		unitGod.CastPowerType = castPowerType;
 	}
 
 	public override void ProcessIdle()
@@ -2234,7 +2230,7 @@ public abstract partial class Unit : Sprite
 				break;
 
 			case UnitConstants.ACTION_GO_CAST_POWER:
-				GoCastPower(ActionLocX2, ActionLocY2, ((UnitGod)this).cast_power_type, InternalConstants.COMMAND_AUTO);
+				GoCastPower(ActionLocX2, ActionLocY2, ((UnitGod)this).CastPowerType, InternalConstants.COMMAND_AUTO);
 				//TODO hasSearch = true;?
 				returnFlag = true;
 				break;
@@ -5229,9 +5225,9 @@ public abstract partial class Unit : Sprite
 				if (bestFirm.FirmType == Firm.FIRM_CAMP)
 				{
 					FirmCamp firmCamp = (FirmCamp)bestFirm;
-					if (firmCamp.coming_unit_array.Count < Firm.MAX_WORKER)
+					if (firmCamp.ComingUnits.Count < Firm.MAX_WORKER)
 					{
-						firmCamp.coming_unit_array.Add(SpriteId);
+						firmCamp.ComingUnits.Add(SpriteId);
 					}
 				}
 
@@ -5818,7 +5814,7 @@ public abstract partial class Unit : Sprite
 			if (firmCamp.RegionId != curRegionId)
 				continue;
 
-			int curRating = firmCamp.total_combat_level();
+			int curRating = firmCamp.TotalCombatLevel();
 
 			if (curRating > bestRating)
 			{

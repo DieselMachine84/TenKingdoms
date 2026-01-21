@@ -25,7 +25,6 @@ public static class GameConstants
     public const int MAX_WEATHER_FORECAST = 3;
 
     //Town
-    public const int MAX_TOWN_GROWTH_POPULATION = 60;
     public const int MAX_TOWN_POPULATION = 60;
     public const int TRAIN_SKILL_COST = 30;
     public const int TRAIN_SKILL_LEVEL = 20;
