@@ -83,7 +83,7 @@ public class Worker
     {
         if (TownId != 0) // if the worker lives in a town
         {
-            return (int)TownArray[TownId].RacesLoyalty[RaceId - 1];
+            return TownArray[TownId].RacesTargetLoyalty[RaceId - 1];
         }
 
         Firm firm = FirmArray[firmId];
