@@ -131,14 +131,18 @@ public partial class Nation : NationBase
 
         foreach (Town town in TownArray)
         {
-            if (town.NationId == NationId)
-                KingdomTowns.Add(town);
+            if (town.NationId != NationId)
+                continue;
+            
+            KingdomTowns.Add(town);
         }
 
         foreach (Unit unit in UnitArray)
         {
-            if (unit.NationId == NationId)
-                KingdomUnits.Add(unit);
+            if (unit.NationId != NationId)
+                continue;
+            
+            KingdomUnits.Add(unit);
             
             if (unit.UnitType == UnitConstants.UNIT_CARAVAN)
                 KingdomCaravans.Add(unit);
