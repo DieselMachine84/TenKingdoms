@@ -172,6 +172,7 @@ public class FirmMonster : Firm
 				break;
 		}
 
+		//TODO other AssignUnit() overloads do no call DisappearInFirm()
 		UnitArray.DisappearInFirm(unitId);
 	}
 

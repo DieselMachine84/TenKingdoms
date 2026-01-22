@@ -111,16 +111,13 @@ public class FirmCamp : Firm
 		if (overseerUnit.Skill.SkillId != Skill.SKILL_LEADING)
 			return;
 
-		int overseerSkill = overseerUnit.Skill.SkillLevel;
-		int incValue;
-
 		//------- increase the commander's leadership ---------//
 
 		if (Workers.Count > 0 && overseerUnit.Skill.SkillLevel < 100)
 		{
 			//-- the more soldiers this commander has, the higher the leadership will increase ---//
 
-			incValue = (int)(5.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+			int incValue = (int)(5.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
 				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
 			overseerUnit.Skill.SkillLevelMinor += incValue;
@@ -136,7 +133,7 @@ public class FirmCamp : Firm
 
 		if (overseerUnit.Skill.CombatLevel < 100)
 		{
-			incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
+			int incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
 				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
 			overseerUnit.Skill.CombatLevelMinor += incValue;
@@ -144,7 +141,6 @@ public class FirmCamp : Firm
 			if (overseerUnit.Skill.CombatLevelMinor >= 100)
 			{
 				overseerUnit.Skill.CombatLevelMinor -= 100;
-
 				overseerUnit.SetCombatLevel(overseerUnit.Skill.CombatLevel + 1);
 			}
 		}
@@ -157,10 +153,11 @@ public class FirmCamp : Firm
 				continue;
 
 			//------- increase worker combat level -----------//
+			int overseerSkill = overseerUnit.Skill.SkillLevel;
 
 			if (worker.CombatLevel < overseerSkill)
 			{
-				incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
+				int incValue = Math.Max(20, overseerSkill - worker.CombatLevel)
 					* worker.HitPoints / worker.MaxHitPoints()
 					* (100 + worker.SkillPotential * 2) / 100;
 				
@@ -180,7 +177,7 @@ public class FirmCamp : Firm
 
 			if (worker.SkillPotential > 0 && worker.SkillLevel < 100)
 			{
-				incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.SkillLevel)
+				int incValue = Math.Max(50, overseerUnit.Skill.SkillLevel - worker.SkillLevel)
 					* worker.HitPoints / worker.MaxHitPoints()
 					* worker.SkillPotential * 2 / 100;
 
@@ -322,12 +319,9 @@ public class FirmCamp : Firm
 		int unitId = base.MobilizeOverseer();
 
 		if (unitId != 0)
-		{
 			UnitArray[unitId].HomeCampId = FirmId;
-			return unitId;
-		}
 
-		return 0;
+		return unitId;
 	}
 	
 	public override int MobilizeWorker(int workerId, int remoteAction)
@@ -335,12 +329,9 @@ public class FirmCamp : Firm
 		int unitId = base.MobilizeWorker(workerId, remoteAction);
 
 		if (unitId != 0)
-		{
 			UnitArray[unitId].HomeCampId = FirmId;
-			return unitId;
-		}
 
-		return 0;
+		return unitId;
 	}
 	
 	public void Patrol()
@@ -494,8 +485,8 @@ public class FirmCamp : Firm
 		}
 
 		//------------------------------------------------------------------//
-		// check all the exist(not dead) units outside the camp and arrange
-		// them in the front part of the array.
+		// check all the exist(not dead) units outside the camp
+		// and arrange them in the front part of the array.
 		//------------------------------------------------------------------//
 
 		if (!EmployNewWorker) // some soldiers may be outside the camp
@@ -503,14 +494,8 @@ public class FirmCamp : Firm
 			List<DefenseUnit> newDefenseUnits = new List<DefenseUnit>();
 			foreach (DefenseUnit defenseUnit in DefenseUnits)
 			{
-				if (defenseUnit.UnitId == 0)
-					continue; // a free slot
-
-				if (UnitArray.IsDeleted(defenseUnit.UnitId))
-				{
-					defenseUnit.UnitId = 0;
-					continue; // unit is dead
-				}
+				if (defenseUnit.UnitId == 0 || UnitArray.IsDeleted(defenseUnit.UnitId))
+					continue;
 
 				//----------------------------------------------------------------//
 				// arrange the ids in the array front part
@@ -552,7 +537,7 @@ public class FirmCamp : Firm
 		}
 
 		//--******* BUGHERE , please provide a reasonable condition to set useRangeAttack to 1
-		bool useRangeAttack = UnitArray[targetId].MobileType != UnitConstants.UNIT_LAND ? true : false;
+		bool useRangeAttack = UnitArray[targetId].MobileType != UnitConstants.UNIT_LAND;
 		
 		//TODO check for bugs
 		for (int i = 0; i < Workers.Count; i++)
@@ -594,8 +579,7 @@ public class FirmCamp : Firm
 		Unit unit = UnitArray[unitId];
 		unit.DefenseAttackUnit(targetId);
 
-		if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 &&
-		    unit.ActionLocX == -1 && unit.ActionLocY == -1)
+		if (unit.ActionMode == UnitConstants.ACTION_STOP && unit.ActionParam == 0 && unit.ActionLocX == -1 && unit.ActionLocY == -1)
 			unit.DefenseDetectTarget();
 	}
 

@@ -1633,6 +1633,7 @@ public abstract class Firm : IIdObject
 		return unitId != 0 ? unitId : unitId2;
 	}
 
+	//TODO check the difference between AssignOverseer(0) and MobilizeOverseer()
 	public virtual int MobilizeOverseer()
 	{
 		if (OverseerId == 0)
@@ -1673,7 +1674,7 @@ public abstract class Firm : IIdObject
 		return overseer.SpriteId;
 	}
 
-	public bool MobilizeBuilder(int builderId)
+	private void MobilizeBuilder(int builderId)
 	{
 		Unit unit = UnitArray[builderId];
 
@@ -1688,7 +1689,7 @@ public abstract class Firm : IIdObject
 			    spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_LAND, BuilderRegionId))
 		{
 			UnitArray.DeleteUnit(UnitArray[builderId]);
-			return false;
+			return;
 		}
 
 		unit.InitSprite(locX, locY);
@@ -1698,8 +1699,6 @@ public abstract class Firm : IIdObject
 		//--- set builder to non-aggressive, except ai ---//
 		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
 			unit.AggressiveMode = false;
-
-		return true;
 	}
 
 	private void ResignAllWorkers()
@@ -2706,23 +2705,10 @@ public abstract class Firm : IIdObject
 	{
 		for (int i = LinkedTowns.Count - 1; i >= 0; i--)
 		{
-			if (LinkedTowns[i] == 0 || TownArray.IsDeleted(LinkedTowns[i]))
-				continue;
-
 			Town town = TownArray[LinkedTowns[i]];
-
-			//-------------------------------------------------------//
-			// find whether military camp is linked to this town. If so, defense for this firm
-			//-------------------------------------------------------//
+			
 			if (town.NationId == NationId)
 				town.AutoDefense(targetId);
-
-			//-------------------------------------------------------//
-			// some linked towns may be deleted after calling AutoDefense().
-			// Also, the data in the LinkedTowns may also be changed.
-			//-------------------------------------------------------//
-			if (i > LinkedTowns.Count)
-				i = LinkedTowns.Count;
 		}
 	}
 

@@ -38,14 +38,14 @@ public class FirmBase : Firm
     {
         base.NextDay();
 
-        CalcProductivity();
-
         if (Info.TotalDays % 15 == FirmId % 15)
         {
             TrainUnit();
             RecoverHitPoint();
         }
 
+        CalcProductivity();
+        
         if (OverseerId != 0 && PrayPoints < GameConstants.MAX_PRAY_POINTS)
         {
             if (Config.fast_build)
@@ -67,7 +67,6 @@ public class FirmBase : Firm
             return;
 
         Unit overseerUnit = UnitArray[OverseerId];
-        int overseerSkill = overseerUnit.Skill.SkillLevel;
 
         //------- increase the commander's leadership ---------//
 
@@ -91,6 +90,8 @@ public class FirmBase : Firm
 
         foreach (Worker worker in Workers)
         {
+            int overseerSkill = overseerUnit.Skill.SkillLevel;
+            
             if (worker.SkillLevel < overseerSkill)
             {
                 int incValue = Math.Max(20, overseerSkill - worker.SkillLevel)
@@ -109,6 +110,8 @@ public class FirmBase : Firm
                 worker.SkillLevelMinor = levelMinor;
             }
         }
+        
+        SortWorkers();
     }
 
     private void RecoverHitPoint()

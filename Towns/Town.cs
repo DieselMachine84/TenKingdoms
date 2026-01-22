@@ -3237,9 +3237,6 @@ public class Town : IIdObject
 
 			FirmCamp camp = (FirmCamp)firm;
 			camp.Defense(targetId);
-
-			if (TownArray.IsDeleted(TownId))
-				break;
 		}
 	}
 

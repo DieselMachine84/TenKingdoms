@@ -136,6 +136,8 @@ public class FirmFactory : Firm
 
 		UpdateWorker();
 
+		CalcProductivity();
+		
 		// produce product once every 3 days
 		if (Info.TotalDays % GameConstants.PROCESS_GOODS_INTERVAL == FirmId % GameConstants.PROCESS_GOODS_INTERVAL)
 		{
@@ -232,10 +234,6 @@ public class FirmFactory : Firm
 			IsManufacturing = false;
 			return;
 		}
-
-		//------- calculate the productivity of the workers -----------//
-
-		CalcProductivity();
 
 		//------- manufacture product --------//
 
