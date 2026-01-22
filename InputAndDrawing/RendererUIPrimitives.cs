@@ -22,6 +22,7 @@ public partial class Renderer
 	private const int ButtonsWarFactoryY = DetailsY1 + 367;
 	private const int ButtonsInnY = DetailsY1 + 407;
 	private const int ButtonsCampY = DetailsY1 + 376;
+	private const int ButtonsBaseY = DetailsY1 + 376;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
 	private const int ButtonsUnitShipY = DetailsY1 + 358;
@@ -236,6 +237,10 @@ public partial class Renderer
 	private IntPtr _buttonPatrolDisabledTexture;
 	private int _buttonPatrolWidth;
 	private int _buttonPatrolHeight;
+	private IntPtr _buttonInvokeTexture;
+	private IntPtr _buttonInvokeDisabledTexture;
+	private int _buttonInvokeWidth;
+	private int _buttonInvokeHeight;
 	private IntPtr _buttonChangeProductionTexture;
 	private int _buttonChangeProductionWidth;
 	private int _buttonChangeProductionHeight;
@@ -716,6 +721,13 @@ public partial class Renderer
 		_buttonPatrolTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
 		buttonData = CreateDisabledButtonTexture(buttonData, _buttonPatrolWidth, _buttonPatrolHeight);
 		_buttonPatrolDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonPatrolWidth, _buttonPatrolHeight, 32);
+		buttonData = buttonImages.Read("INVOKE");
+		_buttonInvokeWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonInvokeHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonInvokeWidth, _buttonInvokeHeight);
+		_buttonInvokeTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonInvokeWidth, _buttonInvokeHeight);
+		buttonData = CreateDisabledButtonTexture(buttonData, _buttonInvokeWidth, _buttonInvokeHeight);
+		_buttonInvokeDisabledTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonInvokeWidth, _buttonInvokeHeight, 32);
 		buttonData = buttonImages.Read("CHGPROD");
 		_buttonChangeProductionWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonChangeProductionHeight = BitConverter.ToInt16(buttonData, 2);
@@ -823,7 +835,7 @@ public partial class Renderer
 		_buttonSpyMenuHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyMenuWidth, _buttonSpyMenuHeight);
 		_buttonSpyMenuTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
-		buttonData = buttonImages.Read("REWARDCB");
+		buttonData = buttonImages.Read("REWARD");
 		_buttonRewardWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonRewardHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonRewardWidth, _buttonRewardHeight);

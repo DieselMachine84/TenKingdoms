@@ -273,6 +273,31 @@ public partial class Renderer
         }
     }
 
+    private void DrawLoyalty(int loyaltyX, int loyaltyY, int loyalty, int targetLoyalty, bool smallSize = true)
+    {
+        if (NationArray.Player != null && NationArray.Player.Cash <= 0.0)
+            targetLoyalty = 0;
+        
+        PutText(FontSan, loyalty.ToString(), loyaltyX, loyaltyY, -1, smallSize);
+        if (loyalty != targetLoyalty)
+        {
+            int loyaltyWidth = FontSan.TextWidth(loyalty.ToString()) + 1;
+            if (smallSize)
+                loyaltyWidth = loyaltyWidth * 2 / 3;
+            int targetLoyaltyX = loyaltyX + loyaltyWidth;
+            int targetLoyaltyY = loyaltyY;
+            int arrowDownWidth = smallSize ? _arrowDownWidth : _arrowDownWidth * 2;
+            int arrowDownHeight = smallSize ? _arrowDownHeight : _arrowDownHeight * 2;
+            int arrowUpWidth = smallSize ? _arrowUpWidth : _arrowUpWidth * 2;
+            int arrowUpHeight = smallSize ? _arrowUpHeight : _arrowUpHeight * 2;
+            if (targetLoyalty < loyalty)
+                Graphics.DrawBitmap(_arrowDownTexture, targetLoyaltyX, targetLoyaltyY + 4, arrowDownWidth, arrowDownHeight);
+            if (targetLoyalty > loyalty)
+                Graphics.DrawBitmap(_arrowUpTexture, targetLoyaltyX, targetLoyaltyY + 4, arrowUpWidth, arrowUpHeight);
+            PutText(FontSan, targetLoyalty.ToString(), targetLoyaltyX + (smallSize ? 8 : 16), targetLoyaltyY, -1, smallSize);
+        }
+    }
+
     private void HandleUnitDetailsInput(Unit unit)
     {
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&

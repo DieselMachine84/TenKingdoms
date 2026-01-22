@@ -1,3 +1,5 @@
+using System;
+
 namespace TenKingdoms;
 
 public partial class Renderer
@@ -88,11 +90,22 @@ public partial class Renderer
             Graphics.DrawLine(hitBarX2, hitBarY + 2, hitBarX2, hitBarY + 3, hitBarColor + HIT_BAR_DARK_BORDER); //right
             Graphics.DrawLine(hitBarX1 + 2, hitBarY + 2, hitBarX2 - 2, hitBarY + 2, hitBarColor + HIT_BAR_BODY); //body
             Graphics.DrawLine(hitBarX1 + 2, hitBarY + 3, hitBarX2 - 2, hitBarY + 3, hitBarColor + HIT_BAR_BODY); //body
-            
+
+            int combatLevelWidth = FontSan.TextWidth(unit.Skill.CombatLevel.ToString()) + 4;
+            bool drawSkillIcon = false;
+            IntPtr skillTexture = GetSkillTexture(unit.Rank, unit.Skill.SkillId);
+            if (skillTexture != IntPtr.Zero)
+            {
+                drawSkillIcon = true;
+                Graphics.DrawBitmapScaled(skillTexture, unitX + combatLevelWidth + 52, unitY + 8, _skillWidth, _skillHeight);
+            }
+
             if (unit.SpyId != 0 && (SpyArray[unit.SpyId].TrueNationId == NationArray.PlayerId || Config.show_ai_info))
             {
-                int spyIconX = unitX + 78;
-                int spyIconY = unitY + 12;
+                int spyIconX = unitX + combatLevelWidth + 52;
+                int spyIconY = unitY + 8;
+                if (drawSkillIcon)
+                    spyIconY += Scale(_skillHeight);
                 DrawSpyIcon(spyIconX, spyIconY, SpyArray[unit.SpyId].TrueNationId);
             }
 

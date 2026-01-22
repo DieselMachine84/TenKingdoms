@@ -76,6 +76,48 @@ public partial class Renderer
             firm.DrawDetails(this);
     }
 
+    private void DrawOverseer(Firm firm)
+    {
+        DrawOverseerPanel(DetailsX1 + 2, DetailsY1 + 96);
+        
+        Unit overseer = (firm.OverseerId != 0) ? UnitArray[firm.OverseerId] : null;
+        if (overseer != null)
+        {
+            UnitInfo unitInfo = UnitRes[overseer.UnitType];
+            Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, overseer.Rank), DetailsX1 + 12, DetailsY1 + 104,
+                unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+            
+            if (firm.SelectedWorkerId == 0)
+            {
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, unitInfo.soldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101 + unitInfo.soldierIconHeight * 2 + 3,
+                    unitInfo.soldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, 3, unitInfo.soldierIconHeight * 2 + 6, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9 + unitInfo.soldierIconWidth * 2 + 3, DetailsY1 + 101,
+                    3, unitInfo.soldierIconHeight * 2 + 6, Colors.V_YELLOW);
+            }
+
+            if (overseer.Rank == Unit.RANK_KING)
+            {
+                PutText(FontSan, "King", DetailsX1 + 111, DetailsY1 + 96);
+                PutText(FontSan, overseer.GetUnitName(false), DetailsX1 + 111, DetailsY1 + 126);
+                PutText(FontSan, "Leadership: " + overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING), DetailsX1 + 111, DetailsY1 + 156);
+            }
+            else
+            {
+                string leadershipText = "Leadership: " + overseer.Skill.GetSkillLevel(Skill.SKILL_LEADING);
+                string loyaltyText = "Loyalty: ";
+                PutText(FontSan, overseer.GetUnitName(false), DetailsX1 + 111, DetailsY1 + 96);
+                PutText(FontSan, leadershipText, DetailsX1 + 111, DetailsY1 + 126);
+                PutText(FontSan, loyaltyText, DetailsX1 + 111, DetailsY1 + 156);
+                DrawLoyalty(DetailsX1 + 219, DetailsY1 + 156, overseer.Loyalty, overseer.TargetLoyalty, false);
+                
+                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
+                    DrawSpyIcon(DetailsX1 + 111 + FontSan.TextWidth(leadershipText) + 2, DetailsY1 + 132, overseer.TrueNationId());
+            }
+        }
+    }
+
     private void DrawWorkers(Firm firm)
     {
         int workersY = GetWorkersY(firm);
@@ -113,7 +155,7 @@ public partial class Renderer
         {
             Worker worker = firm.Workers[firm.SelectedWorkerId - 1];
             PutText(FontSan, TownArray[worker.TownId].Name, DetailsX1 + 113, workersY + 121, -1, true);
-            PutText(FontSan, worker.Loyalty().ToString(), DetailsX1 + 113, workersY + 150, -1, true);
+            DrawLoyalty(DetailsX1 + 113, workersY + 150, worker.Loyalty(), worker.TargetLoyalty(firm.FirmId));
             PutText(FontSan, worker.SkillLevel.ToString(), DetailsX1 + 327, workersY + 150, -1, true);
         }
     }
@@ -216,7 +258,7 @@ public partial class Renderer
             return DetailsY1 + 228;
         if (firm.FirmType == Firm.FIRM_RESEARCH || firm.FirmType == Firm.FIRM_WAR_FACTORY)
             return DetailsY1 + 183;
-        if (firm.FirmType == Firm.FIRM_CAMP)
+        if (firm.FirmType == Firm.FIRM_CAMP || firm.FirmType == Firm.FIRM_BASE)
             return DetailsY1 + 192;
         return DetailsY1;
     }

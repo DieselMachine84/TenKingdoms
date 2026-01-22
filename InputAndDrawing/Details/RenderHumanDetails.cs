@@ -9,7 +9,6 @@ public partial class Renderer
     // TODO draw and handle buttons
     // TODO draw and handle spy panel
     // TODO draw spy loyalty or loyalty?
-    // TODO draw loyalty arrow
     // TODO group change aggressive mode
     // TODO group reward
     // TODO group settle
@@ -145,7 +144,7 @@ public partial class Renderer
                 {
                     DrawFieldPanel62(DetailsX1 + 208, screenY + 5);
                     PutText(FontSan, "Loyalty", DetailsX1 + 214, screenY + 8, -1, true);
-                    PutText(FontSan, unit.Loyalty + " " + unit.TargetLoyalty, DetailsX1 + 307, screenY + 10, -1, true);
+                    DrawLoyalty(DetailsX1 + 307, screenY + 10, unit.Loyalty, unit.TargetLoyalty);
                 }
             }
         }
