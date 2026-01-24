@@ -34,15 +34,15 @@ public partial class Renderer
         {
             UnitInfo unitInfo = UnitRes[warFactory.BuildUnitType];
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), DetailsX1 + 6, DetailsY1 + 100,
-                unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+                unitInfo.SoldierIconWidth * 2, unitInfo.SoldierIconHeight * 2);
 
-            string description = unitInfo.name;
+            string description = unitInfo.Name;
             int techLevel = unitInfo.get_nation_tech_level(warFactory.NationId);
             if (techLevel > 1)
                 description += " " + Misc.roman_number(techLevel);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
-            PutText(FontSan, (warFactory.BuildProgressInDays / unitInfo.build_days).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
+            PutText(FontSan, (warFactory.BuildProgressInDays / unitInfo.BuildDays).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
             //TODO cancel weapon button
         }
 
@@ -85,7 +85,7 @@ public partial class Renderer
         for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
             UnitInfo unitInfo = UnitRes[unitType];
-            if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+            if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
                 buildUnitCounts.Add(unitType, 0);
         }
 
@@ -106,7 +106,7 @@ public partial class Renderer
             bool showCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
             UnitInfo unitInfo = !showCancelButton ? UnitRes[unitType] : null;
-            if (!showCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
+            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
                 continue;
 
             //TODO Done button is not pressed when you press it close to the right edge
@@ -120,9 +120,9 @@ public partial class Renderer
             if (!showCancelButton)
             {
                 Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), BuildWeaponPanelX + 4, BuildWeaponPanelY + dy + 4,
-                    unitInfo.soldierIconWidth * 3 / 2, unitInfo.soldierIconHeight * 3 / 2);
+                    unitInfo.SoldierIconWidth * 3 / 2, unitInfo.SoldierIconHeight * 3 / 2);
                 
-                string description = unitInfo.name;
+                string description = unitInfo.Name;
                 int techLevel = unitInfo.get_nation_tech_level(warFactory.NationId);
                 if (techLevel > 1)
                     description += " " + Misc.roman_number(techLevel);
@@ -185,7 +185,7 @@ public partial class Renderer
             bool onCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
             UnitInfo unitInfo = !onCancelButton ? UnitRes[unitType] : null;
-            if (!onCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
+            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(warFactory.NationId) == 0))
                 continue;
 
             bool mouseOnBuildButton = _mouseButtonX >= MouseOnBuildWeaponButtonX1 && _mouseButtonX <= MouseOnBuildWeaponButtonX2 &&

@@ -1054,7 +1054,7 @@ public class NationBase : IIdObject
 
     public bool RevealedByPhoenix(int locX, int locY)
     {
-        int effectiveRange = UnitRes[UnitConstants.UNIT_PHOENIX].visual_range;
+        int effectiveRange = UnitRes[UnitConstants.UNIT_PHOENIX].VisualRange;
 
         foreach (Unit unit in UnitArray)
         {
@@ -1225,21 +1225,37 @@ public class NationBase : IIdObject
         if (Config.monster_type == Config.OPTION_MONSTER_NONE)
             return false;
 
-        //------- when all monsters have been killed -------//
-
-        if (FirmRes[Firm.FIRM_MONSTER].total_firm_count == 0 && UnitRes.mobile_monster_count == 0)
+        int monsterFirmCount = 0;
+        foreach (Firm firm in FirmArray)
         {
-            double maxScore = 0.0;
+            if (firm.FirmType == Firm.FIRM_MONSTER)
+                monsterFirmCount++;
+        }
 
-            foreach (Nation nation in NationArray)
+        //------- when all monsters have been killed -------//
+        if (monsterFirmCount == 0)
+        {
+            int mobileMonsterCount = 0;
+            foreach (Unit unit in UnitArray)
             {
-                if (nation.KillMonsterScore > maxScore)
-                    maxScore = nation.KillMonsterScore;
+                if (UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
+                    mobileMonsterCount++;
             }
 
-            //-- if this nation is the one that has destroyed most monsters, it wins, otherwise it loses --//
+            if (mobileMonsterCount == 0)
+            {
+                double maxScore = 0.0;
 
-            return (int)maxScore == (int)KillMonsterScore;
+                foreach (Nation nation in NationArray)
+                {
+                    if (nation.KillMonsterScore > maxScore)
+                        maxScore = nation.KillMonsterScore;
+                }
+
+                //-- if this nation is the one that has destroyed most monsters, it wins, otherwise it loses --//
+
+                return (int)maxScore == (int)KillMonsterScore;
+            }
         }
 
         return false;
@@ -1531,7 +1547,7 @@ public class NationBase : IIdObject
 
             if (techLevel > 0)
             {
-                if (unitClass == 0 || UnitRes[techInfo.unit_id].unit_class == unitClass)
+                if (unitClass == 0 || UnitRes[techInfo.UnitId].UnitClass == unitClass)
                 {
                     totalTechLevel += techLevel;
                 }

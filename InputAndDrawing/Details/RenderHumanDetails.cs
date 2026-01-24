@@ -91,12 +91,12 @@ public partial class Renderer
 
         UnitInfo unitInfo = UnitRes[unit.UnitType];
         Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, unit.Rank), DetailsX1 + 12, DetailsY1 + 56,
-            unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+            unitInfo.SoldierIconWidth * 2, unitInfo.SoldierIconHeight * 2);
 
-        PutTextCenter(FontSan, title, DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56,
-            DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight);
-        PutTextCenter(FontSan, unit.GetUnitName(false), DetailsX1 + 10 + unitInfo.soldierIconWidth * 2, DetailsY1 + 56 + unitInfo.soldierIconHeight,
-            DetailsX2 - 4, DetailsY1 + 56 + unitInfo.soldierIconHeight * 2);
+        PutTextCenter(FontSan, title, DetailsX1 + 10 + unitInfo.SoldierIconWidth * 2, DetailsY1 + 56,
+            DetailsX2 - 4, DetailsY1 + 56 + unitInfo.SoldierIconHeight);
+        PutTextCenter(FontSan, unit.GetUnitName(false), DetailsX1 + 10 + unitInfo.SoldierIconWidth * 2, DetailsY1 + 56 + unitInfo.SoldierIconHeight,
+            DetailsX2 - 4, DetailsY1 + 56 + unitInfo.SoldierIconHeight * 2);
         
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 144);
         DrawUnitFields(unit, DetailsY1 + 144);

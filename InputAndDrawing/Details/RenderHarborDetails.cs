@@ -43,8 +43,8 @@ public partial class Renderer
         {
             Unit ship = UnitArray[harbor.Ships[i]];
             UnitInfo unitInfo = UnitRes[ship.UnitType];
-            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, ship.Rank), DetailsX1 + 14, shipY, unitInfo.soldierIconWidth, unitInfo.soldierIconHeight);
-            PutText(FontSan, unitInfo.name, DetailsX1 + 70, shipY + 5);
+            Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, ship.Rank), DetailsX1 + 14, shipY, unitInfo.SoldierIconWidth, unitInfo.SoldierIconHeight);
+            PutText(FontSan, unitInfo.Name, DetailsX1 + 70, shipY + 5);
             PutText(FontSan, (int)ship.HitPoints + "/" + ship.MaxHitPoints, DetailsX1 + 280, shipY + 5);
             
             if (harbor.Ships[i] == _selectedShipId)
@@ -170,7 +170,7 @@ public partial class Renderer
         for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
             UnitInfo unitInfo = UnitRes[unitType];
-            if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_SHIP)
+            if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_SHIP)
                 buildUnitCounts.Add(unitType, 0);
         }
 
@@ -197,7 +197,7 @@ public partial class Renderer
                 correctedUnitType = UnitConstants.UNIT_TRANSPORT;
 
             UnitInfo unitInfo = !showCancelButton ? UnitRes[correctedUnitType] : null;
-            if (!showCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
+            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
                 continue;
 
             //TODO Done button is not pressed when you press it close to the right edge
@@ -211,9 +211,9 @@ public partial class Renderer
             if (!showCancelButton)
             {
                 Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), BuildShipPanelX + 4, BuildShipPanelY + dy + 4,
-                    unitInfo.soldierIconWidth * 3 / 2, unitInfo.soldierIconHeight * 3 / 2);
+                    unitInfo.SoldierIconWidth * 3 / 2, unitInfo.SoldierIconHeight * 3 / 2);
                 
-                PutText(FontBible, unitInfo.name, BuildShipPanelX + 96, BuildShipPanelY + dy + 10);
+                PutText(FontBible, unitInfo.Name, BuildShipPanelX + 96, BuildShipPanelY + dy + 10);
 
                 mouseOnButton = _mouseButtonX >= MouseOnBuildShipNumberButtonX1 && _mouseButtonX <= MouseOnBuildShipNumberButtonX2 &&
                                 _mouseButtonY >= MouseOnBuildShipNumberButtonY1 + dy && _mouseButtonY <= MouseOnBuildShipNumberButtonY2 + dy;
@@ -318,7 +318,7 @@ public partial class Renderer
                 correctedUnitType = UnitConstants.UNIT_TRANSPORT;
             
             UnitInfo unitInfo = !onCancelButton ? UnitRes[correctedUnitType] : null;
-            if (!onCancelButton && (unitInfo.unit_class != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
+            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
                 continue;
 
             bool mouseOnBuildButton = _mouseButtonX >= MouseOnBuildShipButtonX1 && _mouseButtonX <= MouseOnBuildShipButtonX2 &&

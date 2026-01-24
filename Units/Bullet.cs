@@ -47,11 +47,11 @@ public class Bullet : Sprite
 		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 
 		AttackDamage = parentUnit.ActualDamage();
-		DamageRadius = attackInfo.bullet_radius;
+		DamageRadius = attackInfo.BulletRadius;
 		NationId = parentUnit.NationId;
-		FireRadius = attackInfo.fire_radius;
+		FireRadius = attackInfo.FireRadius;
 
-		SpriteResId = attackInfo.bullet_sprite_id;
+		SpriteResId = attackInfo.BulletSpriteId;
 		SpriteInfo = SpriteRes[SpriteResId];
 
 		//--------- set the starting position of the bullet -------//
@@ -75,8 +75,8 @@ public class Bullet : Sprite
 
 		//---------- set bullet movement steps -----------//
 
-		int xStep = (GoX - CurX) / attackInfo.bullet_speed;
-		int yStep = (GoY - CurY) / attackInfo.bullet_speed;
+		int xStep = (GoX - CurX) / attackInfo.BulletSpeed;
+		int yStep = (GoY - CurY) / attackInfo.BulletSpeed;
 
 		CurStep = 0;
 		TotalStep = Math.Max(1, Math.Max(Math.Abs(xStep), Math.Abs(yStep)));

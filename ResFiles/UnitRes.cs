@@ -309,75 +309,75 @@ public class UnitAttackRec
 
 public class UnitInfo
 {
-	public string name;
+	public string Name { get; set; }
 
-	public int unit_id;
-	public int sprite_id;
-	public int dll_sprite_id;
-	public int race_id;
-	public char unit_class;
+	public int UnitId { get; set; }
+	public int SpriteId { get; set; }
+	public int DllSpriteId { get; set; }
+	public int RaceId { get; set; }
+	public char UnitClass { get; set; }
 
-	public int mobile_type;
+	public int MobileType { get; set; }
 
-	public int visual_range;
-	public int visual_extend;
-	public int stealth;
-	public int armor;
+	public int VisualRange { get; set; }
+	public int VisualExtend { get; set; }
+	public int Stealth { get; set; }
+	public int Armor { get; set; }
 
-	public int hit_points;
+	public int HitPoints { get; set; }
 
-	public int build_days;
-	public int build_cost;
-	public int year_cost;
+	public int BuildDays { get; set; }
+	public int BuildCost { get; set; }
+	public int YearCost { get; set; }
 
-	public int weapon_power; // an index from 1 to 9 indicating the powerfulness of the weapon
+	public int WeaponPower { get; set; } // an index from 1 to 9 indicating the powerfulness of the weapon
 
-	public int carry_unit_capacity;
-	public int carry_goods_capacity;
-	public int free_weapon_count; // only for ships. It's the no. of free weapons can be loaded onto the ship
+	public int CarryUnitCapacity { get; set; }
+	public int CarryGoodsCapacity { get; set; }
+	public int FreeWeaponCount { get; set; } // only for ships. It's the no. of free weapons can be loaded onto the ship
 
-	public int vehicle_id;
-	public int vehicle_unit_id;
-	public int solider_id;
+	public int VehicleId { get; set; }
+	public int VehicleUnitId { get; set; }
+	public int SoliderId { get; set; }
 
-	public int transform_unit_id;
-	public int transform_combat_level;
-	public int guard_combat_level;
+	public int TransformUnitId { get; set; }
+	public int TransformCombatLevel { get; set; }
+	public int GuardCombatLevel { get; set; }
 
-	public int first_attack;
-	public int attack_count;
-	public int die_effect_id;
+	public int FirstAttack { get; set; }
+	public int AttackCount { get; set; }
+	public int DieEffectId { get; set; }
 
-	public byte[] soldierIcon;
-	public int soldierIconWidth;
-	public int soldierIconHeight;
+	public byte[] SoldierIcon { get; set; }
+	public int SoldierIconWidth { get; set; }
+	public int SoldierIconHeight { get; set; }
 	private IntPtr _soldierIconTexture;
-	public byte[] generalIcon;
-	public int generalIconWidth;
-	public int generalIconHeight;
+	public byte[] GeneralIcon { get; set; }
+	public int GeneralIconWidth { get; set; }
+	public int GeneralIconHeight { get; set; }
 	private IntPtr _generalIconTexture;
-	public byte[] kingIcon;
-	public int kingIconWidth;
-	public int kingIconHeight;
+	public byte[] KingIcon { get; set; }
+	public int KingIconWidth { get; set; }
+	public int KingIconHeight { get; set; }
 	private IntPtr _kingIconTexture;
 
-	public byte[] soldierSmallIcon;
-	public int soldierSmallIconWidth;
-	public int soldierSmallIconHeight;
+	public byte[] SoldierSmallIcon { get; set; }
+	public int SoldierSmallIconWidth { get; set; }
+	public int SoldierSmallIconHeight { get; set; }
 	private IntPtr _soldierSmallIconTexture;
-	public byte[] generalSmallIcon;
-	public int generalSmallIconWidth;
-	public int generalSmallIconHeight;
+	public byte[] GeneralSmallIcon { get; set; }
+	public int GeneralSmallIconWidth { get; set; }
+	public int GeneralSmallIconHeight { get; set; }
 	private IntPtr _generalSmallIconTexture;
-	public byte[] kingSmallIcon;
-	public int kingSmallIconWidth;
-	public int kingSmallIconHeight;
+	public byte[] KingSmallIcon { get; set; }
+	public int KingSmallIconWidth { get; set; }
+	public int KingSmallIconHeight { get; set; }
 	private IntPtr _kingSmallIconTexture;
 
 	public IntPtr GetSoldierIconTexture(Graphics graphics)
 	{
 		if (_soldierIconTexture == default)
-			_soldierIconTexture = graphics.CreateTextureFromBmp(soldierIcon, soldierIconWidth, soldierIconHeight);
+			_soldierIconTexture = graphics.CreateTextureFromBmp(SoldierIcon, SoldierIconWidth, SoldierIconHeight);
 
 		return _soldierIconTexture;
 	}
@@ -385,7 +385,7 @@ public class UnitInfo
 	public IntPtr GetGeneralIconTexture(Graphics graphics)
 	{
 		if (_generalIconTexture == default)
-			_generalIconTexture = graphics.CreateTextureFromBmp(generalIcon, generalIconWidth, generalIconHeight);
+			_generalIconTexture = graphics.CreateTextureFromBmp(GeneralIcon, GeneralIconWidth, GeneralIconHeight);
 
 		return _generalIconTexture;
 	}
@@ -393,7 +393,7 @@ public class UnitInfo
 	public IntPtr GetKingIconTexture(Graphics graphics)
 	{
 		if (_kingIconTexture == default)
-			_kingIconTexture = graphics.CreateTextureFromBmp(kingIcon, kingIconWidth, kingIconHeight);
+			_kingIconTexture = graphics.CreateTextureFromBmp(KingIcon, KingIconWidth, KingIconHeight);
 
 		return _kingIconTexture;
 	}
@@ -401,7 +401,7 @@ public class UnitInfo
 	public IntPtr GetSoldierSmallIconTexture(Graphics graphics)
 	{
 		if (_soldierSmallIconTexture == default)
-			_soldierSmallIconTexture = graphics.CreateTextureFromBmp(soldierSmallIcon, soldierSmallIconWidth, soldierSmallIconHeight);
+			_soldierSmallIconTexture = graphics.CreateTextureFromBmp(SoldierSmallIcon, SoldierSmallIconWidth, SoldierSmallIconHeight);
 
 		return _soldierSmallIconTexture;
 	}
@@ -409,7 +409,7 @@ public class UnitInfo
 	public IntPtr GetGeneralSmallIconTexture(Graphics graphics)
 	{
 		if (_generalSmallIconTexture == default)
-			_generalSmallIconTexture = graphics.CreateTextureFromBmp(generalSmallIcon, generalSmallIconWidth, generalSmallIconHeight);
+			_generalSmallIconTexture = graphics.CreateTextureFromBmp(GeneralSmallIcon, GeneralSmallIconWidth, GeneralSmallIconHeight);
 
 		return _generalSmallIconTexture;
 	}
@@ -417,7 +417,7 @@ public class UnitInfo
 	public IntPtr GetKingSmallIconTexture(Graphics graphics)
 	{
 		if (_kingSmallIconTexture == default)
-			_kingSmallIconTexture = graphics.CreateTextureFromBmp(kingSmallIcon, kingSmallIconWidth, kingSmallIconHeight);
+			_kingSmallIconTexture = graphics.CreateTextureFromBmp(KingSmallIcon, KingSmallIconWidth, KingSmallIconHeight);
 
 		return _kingSmallIconTexture;
 	}
@@ -462,32 +462,6 @@ public class UnitInfo
 
 	public int[] nation_general_count_array = new int[GameConstants.MAX_NATION];
 
-	public byte[] get_large_icon_ptr(int rankId)
-	{
-		switch (rankId)
-		{
-			case Unit.RANK_KING:
-				return kingIcon;
-			case Unit.RANK_GENERAL:
-				return generalIcon;
-			default:
-				return soldierIcon;
-		}
-	}
-
-	public byte[] get_small_icon_ptr(int rankId)
-	{
-		switch (rankId)
-		{
-			case Unit.RANK_KING:
-				return kingSmallIcon;
-			case Unit.RANK_GENERAL:
-				return generalSmallIcon;
-			default:
-				return soldierSmallIcon;
-		}
-	}
-
 	public void inc_nation_unit_count(int nationRecno)
 	{
 		nation_unit_count_array[nationRecno - 1]++;
@@ -498,15 +472,15 @@ public class UnitInfo
 
 		nation.TotalUnitCount++;
 
-		if (unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+		if (UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 		{
 			nation.TotalWeaponCount++;
 		}
-		else if (unit_class == UnitConstants.UNIT_CLASS_SHIP)
+		else if (UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			nation.TotalShipCount++;
 		}
-		else if (race_id != 0)
+		else if (RaceId != 0)
 		{
 			nation.TotalHumanCount++;
 		}
@@ -524,15 +498,15 @@ public class UnitInfo
 
 			nation.TotalUnitCount--;
 
-			if (unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+			if (UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 			{
 				nation.TotalWeaponCount--;
 			}
-			else if (unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			else if (UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 			{
 				nation.TotalShipCount--;
 			}
-			else if (race_id != 0)
+			else if (RaceId != 0)
 			{
 				nation.TotalHumanCount--;
 
@@ -583,46 +557,34 @@ public class UnitInfo
 
 public class AttackInfo
 {
-	public int combat_level;
+	public int CombatLevel { get; set; }
 
-	public int attack_delay;
-	public int attack_range;
+	public int AttackDelay { get; set; }
+	public int AttackRange { get; set; }
 
-	public int attack_damage;
-	public int pierce_damage;
+	public int AttackDamage { get; set; }
+	public int PierceDamage { get; set; }
 
-	public int bullet_out_frame; // on which attacking frames the bullet should be out
-	public int bullet_speed;
-	public int bullet_radius;
-	public int bullet_sprite_id;
-	public int dll_bullet_sprite_id;
+	public int BulletOutFrame { get; set; } // on which attacking frames the bullet should be out
+	public int BulletSpeed { get; set; }
+	public int BulletRadius { get; set; }
+	public int BulletSpriteId { get; set; }
+	public int DllBulletSpriteId { get; set; }
 
-	public int eqv_attack_next;
+	public int EqvAttackNext { get; set; }
 
 	// cur_attack of the next equivalent attack
 	// so as to cycle through several similar attacks
-	public int min_power;
-	public int consume_power;
-	public int fire_radius;
-	public int effect_id;
+	public int MinPower { get; set; }
+	public int ConsumePower { get; set; }
+	public int FireRadius { get; set; }
+	public int EffectId { get; set; }
 }
 
 public class UnitRes
 {
-	private const string UNIT_DB = "UNIT";
-	private const string UNIT_ATTACK_DB = "UNITATTK";
-
-	public UnitInfo[] unit_info_array;
-	public AttackInfo[] attack_info_array;
-
-	public ResourceDb res_large_icon;
-	public ResourceDb res_general_icon;
-	public ResourceDb res_king_icon;
-	public ResourceDb res_small_icon;
-	public ResourceDb res_general_small_icon;
-	public ResourceDb res_king_small_icon;
-
-	public int mobile_monster_count;
+	public UnitInfo[] UnitInfos { get; private set; }
+	public AttackInfo[] AttackInfos { get; private set; }
 
 	public GameSet GameSet { get; }
 	
@@ -630,29 +592,18 @@ public class UnitRes
 	{
 		GameSet = gameSet;
 		
-		//----- open unit bitmap resource file -------//
-
-		res_large_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITLI.RES");
-		res_general_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITGI.RES");
-		res_king_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITKI.RES");
-		res_small_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITSI.RES");
-		res_general_small_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITTI.RES");
-		res_king_small_icon = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITUI.RES");
-
-		//------- load database information --------//
-
 		LoadInfo();
 		LoadAttackInfo();
 	}
 
-	public UnitInfo this[int unitType] => unit_info_array[unitType - 1];
+	public UnitInfo this[int unitType] => UnitInfos[unitType - 1];
 
 	public AttackInfo GetAttackInfo(int attackId)
 	{
-		return attack_info_array[attackId - 1];
+		return AttackInfos[attackId - 1];
 	}
 
-	public static int mobile_type_to_mask(char mobileType)
+	public static int MobileTypeToMask(char mobileType)
 	{
 		switch (mobileType)
 		{
@@ -672,116 +623,123 @@ public class UnitRes
 
 	private void LoadInfo()
 	{
-		Database dbUnit = GameSet.OpenDb(UNIT_DB);
-		unit_info_array = new UnitInfo[dbUnit.RecordCount];
+		ResourceDb soldierLargeIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITLI.RES");
+		ResourceDb generalLargeIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITGI.RES");
+		ResourceDb kingLargeIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITKI.RES");
+		ResourceDb soldierSmallIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITSI.RES");
+		ResourceDb generalSmallIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITTI.RES");
+		ResourceDb kingSmallIconBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_UNITUI.RES");
+		
+		Database dbUnit = GameSet.OpenDb("UNIT");
+		UnitInfos = new UnitInfo[dbUnit.RecordCount];
 
-		for (int i = 0; i < unit_info_array.Length; i++)
+		for (int i = 0; i < UnitInfos.Length; i++)
 		{
 			UnitRec unitRec = new UnitRec(dbUnit, i + 1);
 			UnitInfo unitInfo = new UnitInfo();
-			unit_info_array[i] = unitInfo;
+			UnitInfos[i] = unitInfo;
 
-			unitInfo.name = Misc.ToString(unitRec.name);
+			unitInfo.Name = Misc.ToString(unitRec.name);
 
-			unitInfo.unit_id = i + 1;
-			unitInfo.sprite_id = Misc.ToInt32(unitRec.sprite_id);
-			unitInfo.dll_sprite_id = Misc.ToInt32(unitRec.dll_sprite_id);
-			unitInfo.race_id = Misc.ToInt32(unitRec.race_id);
+			unitInfo.UnitId = i + 1;
+			unitInfo.SpriteId = Misc.ToInt32(unitRec.sprite_id);
+			unitInfo.DllSpriteId = Misc.ToInt32(unitRec.dll_sprite_id);
+			unitInfo.RaceId = Misc.ToInt32(unitRec.race_id);
 
-			unitInfo.unit_class = unitRec.unit_class[0];
-			unitInfo.mobile_type = unitRec.mobile_type;
+			unitInfo.UnitClass = unitRec.unit_class[0];
+			unitInfo.MobileType = unitRec.mobile_type;
 
-			unitInfo.visual_range = Misc.ToInt32(unitRec.visual_range);
-			unitInfo.visual_extend = Misc.ToInt32(unitRec.visual_extend);
-			unitInfo.stealth = Misc.ToInt32(unitRec.stealth);
-			unitInfo.hit_points = Misc.ToInt32(unitRec.hit_points);
-			unitInfo.armor = Misc.ToInt32(unitRec.armor);
+			unitInfo.VisualRange = Misc.ToInt32(unitRec.visual_range);
+			unitInfo.VisualExtend = Misc.ToInt32(unitRec.visual_extend);
+			unitInfo.Stealth = Misc.ToInt32(unitRec.stealth);
+			unitInfo.HitPoints = Misc.ToInt32(unitRec.hit_points);
+			unitInfo.Armor = Misc.ToInt32(unitRec.armor);
 
-			unitInfo.build_days = Misc.ToInt32(unitRec.build_days);
-			unitInfo.year_cost = Misc.ToInt32(unitRec.year_cost);
-			unitInfo.build_cost = unitInfo.year_cost;
+			unitInfo.BuildDays = Misc.ToInt32(unitRec.build_days);
+			unitInfo.YearCost = Misc.ToInt32(unitRec.year_cost);
+			unitInfo.BuildCost = unitInfo.YearCost;
 
-			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				unitInfo.weapon_power = unitRec.weapon_power - '0';
+			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+				unitInfo.WeaponPower = unitRec.weapon_power - '0';
 
-			unitInfo.carry_unit_capacity = Misc.ToInt32(unitRec.carry_unit_capacity);
-			unitInfo.carry_goods_capacity = Misc.ToInt32(unitRec.carry_goods_capacity);
-			unitInfo.free_weapon_count = Misc.ToInt32(unitRec.free_weapon_count);
+			unitInfo.CarryUnitCapacity = Misc.ToInt32(unitRec.carry_unit_capacity);
+			unitInfo.CarryGoodsCapacity = Misc.ToInt32(unitRec.carry_goods_capacity);
+			unitInfo.FreeWeaponCount = Misc.ToInt32(unitRec.free_weapon_count);
 
-			unitInfo.vehicle_id = Misc.ToInt32(unitRec.vehicle_id);
-			unitInfo.vehicle_unit_id = Misc.ToInt32(unitRec.vehicle_unit_id);
+			unitInfo.VehicleId = Misc.ToInt32(unitRec.vehicle_id);
+			unitInfo.VehicleUnitId = Misc.ToInt32(unitRec.vehicle_unit_id);
 
-			unitInfo.transform_unit_id = Misc.ToInt32(unitRec.transform_unit_id);
-			unitInfo.transform_combat_level = Misc.ToInt32(unitRec.transform_combat_level);
-			unitInfo.guard_combat_level = Misc.ToInt32(unitRec.guard_combat_level);
+			unitInfo.TransformUnitId = Misc.ToInt32(unitRec.transform_unit_id);
+			unitInfo.TransformCombatLevel = Misc.ToInt32(unitRec.transform_combat_level);
+			unitInfo.GuardCombatLevel = Misc.ToInt32(unitRec.guard_combat_level);
 
 			int bitmapOffset = BitConverter.ToInt32(unitRec.large_icon_ptr, 0);
-			byte[] soldierIconData = res_large_icon.Read(bitmapOffset);
-			unitInfo.soldierIconWidth = BitConverter.ToInt16(soldierIconData, 0);
-			unitInfo.soldierIconHeight = BitConverter.ToInt16(soldierIconData, 2);
-			unitInfo.soldierIcon = soldierIconData.Skip(4).ToArray();
+			byte[] soldierIconData = soldierLargeIconBitmaps.Read(bitmapOffset);
+			unitInfo.SoldierIconWidth = BitConverter.ToInt16(soldierIconData, 0);
+			unitInfo.SoldierIconHeight = BitConverter.ToInt16(soldierIconData, 2);
+			unitInfo.SoldierIcon = soldierIconData.Skip(4).ToArray();
 
 			if (unitRec.general_icon_file_name[0] != '\0' && unitRec.general_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.general_icon_ptr, 0);
-				byte[] generalIconData = res_general_icon.Read(bitmapOffset);
-				unitInfo.generalIconWidth = BitConverter.ToInt16(generalIconData, 0);
-				unitInfo.generalIconHeight = BitConverter.ToInt16(generalIconData, 2);
-				unitInfo.generalIcon = generalIconData.Skip(4).ToArray();
+				byte[] generalIconData = generalLargeIconBitmaps.Read(bitmapOffset);
+				unitInfo.GeneralIconWidth = BitConverter.ToInt16(generalIconData, 0);
+				unitInfo.GeneralIconHeight = BitConverter.ToInt16(generalIconData, 2);
+				unitInfo.GeneralIcon = generalIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.generalIcon = soldierIconData.Skip(4).ToArray();
+				unitInfo.GeneralIcon = soldierIconData.Skip(4).ToArray();
 			}
 
 			if (unitRec.king_icon_file_name[0] != '\0' && unitRec.king_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.king_icon_ptr, 0);
-				byte[] kingIconData = res_king_icon.Read(bitmapOffset);
-				unitInfo.kingIconWidth = BitConverter.ToInt16(kingIconData, 0);
-				unitInfo.kingIconHeight = BitConverter.ToInt16(kingIconData, 2);
-				unitInfo.kingIcon = kingIconData.Skip(4).ToArray();
+				byte[] kingIconData = kingLargeIconBitmaps.Read(bitmapOffset);
+				unitInfo.KingIconWidth = BitConverter.ToInt16(kingIconData, 0);
+				unitInfo.KingIconHeight = BitConverter.ToInt16(kingIconData, 2);
+				unitInfo.KingIcon = kingIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.kingIcon = soldierIconData.Skip(4).ToArray();
+				unitInfo.KingIcon = soldierIconData.Skip(4).ToArray();
 			}
 
 			bitmapOffset = BitConverter.ToInt32(unitRec.small_icon_ptr, 0);
-			byte[] soldierSmallIconData = res_small_icon.Read(bitmapOffset);
-			unitInfo.soldierSmallIconWidth = BitConverter.ToInt16(soldierSmallIconData, 0);
-			unitInfo.soldierSmallIconHeight = BitConverter.ToInt16(soldierSmallIconData, 2);
-			unitInfo.soldierSmallIcon = soldierSmallIconData.Skip(4).ToArray();
+			byte[] soldierSmallIconData = soldierSmallIconBitmaps.Read(bitmapOffset);
+			unitInfo.SoldierSmallIconWidth = BitConverter.ToInt16(soldierSmallIconData, 0);
+			unitInfo.SoldierSmallIconHeight = BitConverter.ToInt16(soldierSmallIconData, 2);
+			unitInfo.SoldierSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 
 			if (unitRec.general_small_icon_file_name[0] != '\0' && unitRec.general_small_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.general_small_icon_ptr, 0);
-				byte[] generalSmallIconData = res_general_small_icon.Read(bitmapOffset);
-				unitInfo.generalSmallIconWidth = BitConverter.ToInt16(generalSmallIconData, 0);
-				unitInfo.generalSmallIconHeight = BitConverter.ToInt16(generalSmallIconData, 2);
-				unitInfo.generalSmallIcon = generalSmallIconData.Skip(4).ToArray();
+				byte[] generalSmallIconData = generalSmallIconBitmaps.Read(bitmapOffset);
+				unitInfo.GeneralSmallIconWidth = BitConverter.ToInt16(generalSmallIconData, 0);
+				unitInfo.GeneralSmallIconHeight = BitConverter.ToInt16(generalSmallIconData, 2);
+				unitInfo.GeneralSmallIcon = generalSmallIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.generalSmallIcon = soldierSmallIconData.Skip(4).ToArray();
+				unitInfo.GeneralSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 			}
 
 			if (unitRec.king_small_icon_file_name[0] != '\0' && unitRec.king_small_icon_file_name[0] != ' ')
 			{
 				bitmapOffset = BitConverter.ToInt32(unitRec.king_small_icon_ptr, 0);
-				byte[] kingSmallIconData = res_king_small_icon.Read(bitmapOffset);
-				unitInfo.kingSmallIconWidth = BitConverter.ToInt16(kingSmallIconData, 0);
-				unitInfo.kingSmallIconHeight = BitConverter.ToInt16(kingSmallIconData, 2);
-				unitInfo.kingSmallIcon = kingSmallIconData.Skip(4).ToArray();
+				byte[] kingSmallIconData = kingSmallIconBitmaps.Read(bitmapOffset);
+				unitInfo.KingSmallIconWidth = BitConverter.ToInt16(kingSmallIconData, 0);
+				unitInfo.KingSmallIconHeight = BitConverter.ToInt16(kingSmallIconData, 2);
+				unitInfo.KingSmallIcon = kingSmallIconData.Skip(4).ToArray();
 			}
 			else
 			{
-				unitInfo.kingSmallIcon = soldierSmallIconData.Skip(4).ToArray();
+				unitInfo.KingSmallIcon = soldierSmallIconData.Skip(4).ToArray();
 			}
 
-			unitInfo.first_attack = Misc.ToInt32(unitRec.first_attack);
-			unitInfo.attack_count = Misc.ToInt32(unitRec.attack_count);
-			unitInfo.die_effect_id = Misc.ToInt32(unitRec.die_effect_id);
+			unitInfo.FirstAttack = Misc.ToInt32(unitRec.first_attack);
+			unitInfo.AttackCount = Misc.ToInt32(unitRec.attack_count);
+			unitInfo.DieEffectId = Misc.ToInt32(unitRec.die_effect_id);
 
 			if (unitRec.all_know == '1')
 			{
@@ -794,44 +752,44 @@ public class UnitRes
 
 		//--------- set vehicle info  ---------//
 
-		for (int i = 0; i < unit_info_array.Length; i++)
+		for (int i = 0; i < UnitInfos.Length; i++)
 		{
-			UnitInfo unitInfo = unit_info_array[i];
+			UnitInfo unitInfo = UnitInfos[i];
 
-			if (unitInfo.vehicle_unit_id != 0)
+			if (unitInfo.VehicleUnitId != 0)
 			{
-				unit_info_array[unitInfo.vehicle_unit_id - 1].vehicle_id = unitInfo.vehicle_id;
-				unit_info_array[unitInfo.vehicle_unit_id - 1].solider_id = i + 1;
+				UnitInfos[unitInfo.VehicleUnitId - 1].VehicleId = unitInfo.VehicleId;
+				UnitInfos[unitInfo.VehicleUnitId - 1].SoliderId = i + 1;
 			}
 		}
 	}
 
 	private void LoadAttackInfo()
 	{
-		Database dbUnitAttack = GameSet.OpenDb(UNIT_ATTACK_DB);
-		attack_info_array = new AttackInfo[dbUnitAttack.RecordCount];
+		Database dbUnitAttack = GameSet.OpenDb("UNITATTK");
+		AttackInfos = new AttackInfo[dbUnitAttack.RecordCount];
 
-		for (int i = 0; i < attack_info_array.Length; i++)
+		for (int i = 0; i < AttackInfos.Length; i++)
 		{
 			UnitAttackRec attackRec = new UnitAttackRec(dbUnitAttack, i + 1);
 			AttackInfo attackInfo = new AttackInfo();
-			attack_info_array[i] = attackInfo;
+			AttackInfos[i] = attackInfo;
 
-			attackInfo.combat_level = Misc.ToInt32(attackRec.combat_level);
-			attackInfo.attack_delay = Misc.ToInt32(attackRec.attack_delay);
-			attackInfo.attack_range = Misc.ToInt32(attackRec.attack_range);
-			attackInfo.attack_damage = Misc.ToInt32(attackRec.attack_damage);
-			attackInfo.pierce_damage = Misc.ToInt32(attackRec.pierce_damage);
-			attackInfo.bullet_out_frame = Misc.ToInt32(attackRec.bullet_out_frame);
-			attackInfo.bullet_speed = Misc.ToInt32(attackRec.bullet_speed);
-			attackInfo.bullet_radius = Misc.ToInt32(attackRec.bullet_radius);
-			attackInfo.bullet_sprite_id = Misc.ToInt32(attackRec.bullet_sprite_id);
-			attackInfo.dll_bullet_sprite_id = Misc.ToInt32(attackRec.dll_bullet_sprite_id);
-			attackInfo.eqv_attack_next = Misc.ToInt32(attackRec.eqv_attack_next);
-			attackInfo.min_power = Misc.ToInt32(attackRec.min_power);
-			attackInfo.consume_power = Misc.ToInt32(attackRec.consume_power);
-			attackInfo.fire_radius = Misc.ToInt32(attackRec.fire_radius);
-			attackInfo.effect_id = Misc.ToInt32(attackRec.effect_id);
+			attackInfo.CombatLevel = Misc.ToInt32(attackRec.combat_level);
+			attackInfo.AttackDelay = Misc.ToInt32(attackRec.attack_delay);
+			attackInfo.AttackRange = Misc.ToInt32(attackRec.attack_range);
+			attackInfo.AttackDamage = Misc.ToInt32(attackRec.attack_damage);
+			attackInfo.PierceDamage = Misc.ToInt32(attackRec.pierce_damage);
+			attackInfo.BulletOutFrame = Misc.ToInt32(attackRec.bullet_out_frame);
+			attackInfo.BulletSpeed = Misc.ToInt32(attackRec.bullet_speed);
+			attackInfo.BulletRadius = Misc.ToInt32(attackRec.bullet_radius);
+			attackInfo.BulletSpriteId = Misc.ToInt32(attackRec.bullet_sprite_id);
+			attackInfo.DllBulletSpriteId = Misc.ToInt32(attackRec.dll_bullet_sprite_id);
+			attackInfo.EqvAttackNext = Misc.ToInt32(attackRec.eqv_attack_next);
+			attackInfo.MinPower = Misc.ToInt32(attackRec.min_power);
+			attackInfo.ConsumePower = Misc.ToInt32(attackRec.consume_power);
+			attackInfo.FireRadius = Misc.ToInt32(attackRec.fire_radius);
+			attackInfo.EffectId = Misc.ToInt32(attackRec.effect_id);
 		}
 	}
 }

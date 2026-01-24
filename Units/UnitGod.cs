@@ -151,7 +151,7 @@ public class UnitGod : Unit
 
 			//-- only heal human units belonging to our nation in ships --//
 
-			if (unit.NationId == NationId && UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			if (unit.NationId == NationId && UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 			{
 				UnitMarine unitMarine = (UnitMarine)unit;
 

@@ -51,7 +51,7 @@ public partial class Unit
 					//-------- the old order is processing --------//
 					if (PathNodes.Count == 0) // cannot move
 					{
-						if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+						if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 						{
 							if (CurAction != SPRITE_SHIP_EXTRA_MOVE)
 							{
@@ -155,7 +155,7 @@ public partial class Unit
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
 		Location loc = World.GetLoc(destLocX, destLocY);
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
+		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
 		{
 			Firm firm = FirmArray[loc.FirmId()];
 			FirmHarbor harbor = (FirmHarbor)firm;
@@ -2003,7 +2003,7 @@ public partial class Unit
 		}
 
 		int result = 0;
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			UnitMarine ship = (UnitMarine)this;
 			switch (ship.ExtraMoveInBeach)

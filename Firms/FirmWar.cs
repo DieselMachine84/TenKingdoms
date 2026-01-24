@@ -96,12 +96,12 @@ public class FirmWar : Firm
         //--- first check if the nation has enough money to build the weapon ---//
 
         Nation nation = NationArray[NationId];
-        if (nation.Cash < UnitRes[BuildQueue[0]].build_cost)
+        if (nation.Cash < UnitRes[BuildQueue[0]].BuildCost)
             return;
 
         BuildUnitType = BuildQueue[0];
         BuildQueue.RemoveAt(0);
-        nation.AddExpense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitType].build_cost);
+        nation.AddExpense(NationBase.EXPENSE_WEAPON, UnitRes[BuildUnitType].BuildCost);
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
         BuildProgressInDays = 0.0;
@@ -118,14 +118,14 @@ public class FirmWar : Firm
             BuildProgressInDays += 2.0;
 
         UnitInfo unitInfo = UnitRes[BuildUnitType];
-        int totalBuildDays = unitInfo.build_days;
+        int totalBuildDays = unitInfo.BuildDays;
         if (BuildProgressInDays > totalBuildDays)
         {
-            SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
+            SpriteInfo spriteInfo = SpriteRes[unitInfo.SpriteId];
             int locX = LocX1;
             int locY = LocY1;
 
-            if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
+            if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.MobileType))
             {
                 BuildProgressInDays = totalBuildDays + 1;
                 return;
@@ -134,7 +134,7 @@ public class FirmWar : Firm
             UnitArray.AddUnit(BuildUnitType, NationId, 0, 0, locX, locY);
 
             if (OwnFirm())
-                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].sprite_id);
+                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].SpriteId);
 
             BuildUnitType = 0;
         }
@@ -192,7 +192,7 @@ public class FirmWar : Firm
         {
             UnitInfo unitInfo = UnitRes[unitId];
 
-            if (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(NationId) == 0)
+            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(NationId) == 0)
                 continue;
 
             if (unitId == UnitConstants.UNIT_EXPLOSIVE_CART) // AI doesn't use Porcupine
@@ -215,7 +215,7 @@ public class FirmWar : Firm
         {
             UnitInfo unitInfo = UnitRes[unitId];
 
-            if (unitInfo.unit_class != UnitConstants.UNIT_CLASS_WEAPON)
+            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON)
                 continue;
 
             int techLevel = unitInfo.get_nation_tech_level(NationId);

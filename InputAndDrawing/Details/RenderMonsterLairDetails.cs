@@ -13,7 +13,7 @@ public partial class Renderer
             MonsterInfo monsterInfo = MonsterRes[monsterLair.MonsterKing.MonsterId];
             UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), DetailsX1 + 12, DetailsY1 + 104,
-                unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+                unitInfo.SoldierIconWidth * 2, unitInfo.SoldierIconHeight * 2);
             PutText(FontSan, UnitMonster.MonsterKingNames[monsterLair.MonsterKing.MonsterId - 1], DetailsX1 + 116, DetailsY1 + 124);
         }
         
@@ -25,7 +25,7 @@ public partial class Renderer
             MonsterInfo monsterInfo = MonsterRes[monsterGeneral.MonsterId];
             UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, Unit.RANK_SOLDIER), DetailsX1 + 12 + (i % 3) * 131, DetailsY1 + 228 + (i / 3) * 82,
-                unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+                unitInfo.SoldierIconWidth * 2, unitInfo.SoldierIconHeight * 2);
             PutText(FontSan, monsterGeneral.SoldierCount.ToString(), DetailsX1 + 112 + (i % 3) * 131, DetailsY1 + 252 + (i / 3) * 82);
         }
     }

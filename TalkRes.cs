@@ -836,7 +836,7 @@ public class TalkRes
         {
             TechInfo techInfo = TechRes[cur_talk_msg.talk_para1];
 
-            if (techInfo.max_tech_level == 1) // this tech only has one level
+            if (techInfo.MaxTechLevel == 1) // this tech only has one level
                 return false;
 
             choice_question = "Which version?";

@@ -313,8 +313,8 @@ public partial class Renderer
                 if (unit1.Rank > unit2.Rank)
                     return true;
 
-                if (UnitRes[unit1.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN &&
-                    UnitRes[unit2.UnitType].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
+                if (UnitRes[unit1.UnitType].UnitClass == UnitConstants.UNIT_CLASS_HUMAN &&
+                    UnitRes[unit2.UnitType].UnitClass != UnitConstants.UNIT_CLASS_HUMAN)
                 {
                     return true;
                 }
@@ -479,7 +479,7 @@ public partial class Renderer
                         break;
 
                     case UnitConstants.UNIT_SEA:
-                        if (UnitRes[targetUnit.UnitType].carry_unit_capacity > 0)
+                        if (UnitRes[targetUnit.UnitType].CarryUnitCapacity > 0)
                             UnitArray.AssignToShip(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
                                 InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
                         UnitArray.MoveTo(targetUnit.NextLocX, targetUnit.NextLocY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
@@ -828,8 +828,8 @@ public partial class Renderer
         if (UnitDetailsMode == UnitDetailsMode.SetStop)
         {
             Unit unit = UnitArray[selectedId];
-            bool isCaravan = UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_CARAVAN;
-            bool isShip = UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP;
+            bool isCaravan = UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_CARAVAN;
+            bool isShip = UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP;
             ITrader trader = (ITrader)unit;
             if (pointingObjectType == ScreenObjectType.FriendFirm || pointingObjectType == ScreenObjectType.EnemyFirm)
             {

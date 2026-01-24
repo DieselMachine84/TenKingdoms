@@ -264,7 +264,7 @@ public class FirmInfo
 
     public int TeraType { get; set; }
 
-    // whether this building can be built by the player or it exists in the game since the beginning of the game. If setup_cost==0, this firm is not buildable
+    // whether this building can be built by the player or it exists in the game since the beginning of the game. If SetupCost == 0, this firm is not buildable
     public bool Buildable { get; set; }
     public bool LiveInTown { get; set; } // whether the workers of the firm lives in towns or not.
     public int MaxHitPoints { get; set; }
@@ -292,8 +292,6 @@ public class FirmInfo
     
     private FirmRes FirmRes { get; }
 
-    private NationArray NationArray => Sys.Instance.NationArray;
-
     public FirmInfo(FirmRes firmRes)
     {
         FirmRes = firmRes;
@@ -304,60 +302,6 @@ public class FirmInfo
         return NeedOverseer || NeedWorker;
     }
     
-    public bool IsLinkableToFirm(int linkFirmId)
-    {
-        switch (FirmType)
-        {
-            case Firm.FIRM_FACTORY:
-                return linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_HARBOR;
-
-            case Firm.FIRM_MINE:
-                return linkFirmId == Firm.FIRM_FACTORY || linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_HARBOR;
-
-            case Firm.FIRM_MARKET:
-                return linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_FACTORY || linkFirmId == Firm.FIRM_HARBOR;
-
-            case Firm.FIRM_INN: // for an inn to scan for neighbor inns quickly, the link line is not displayed
-                return linkFirmId == Firm.FIRM_INN;
-
-            case Firm.FIRM_HARBOR:
-                return linkFirmId == Firm.FIRM_MARKET || linkFirmId == Firm.FIRM_MINE || linkFirmId == Firm.FIRM_FACTORY;
-
-            default:
-                return false;
-        }
-    }
-
-    public int DefaultLinkStatus(int linkFirmId)
-    {
-        bool enabled = false;
-
-        switch (FirmType)
-        {
-            case Firm.FIRM_MINE:
-                enabled = (linkFirmId != Firm.FIRM_MARKET);
-                break;
-
-            case Firm.FIRM_FACTORY:
-                enabled = (linkFirmId == Firm.FIRM_MARKET) || (linkFirmId == Firm.FIRM_MINE);
-                break;
-
-            case Firm.FIRM_MARKET:
-                enabled = (linkFirmId == Firm.FIRM_FACTORY) || (linkFirmId == Firm.FIRM_HARBOR);
-                break;
-
-            case Firm.FIRM_HARBOR:
-                enabled = (linkFirmId == Firm.FIRM_MARKET) || (linkFirmId == Firm.FIRM_MINE) || (linkFirmId == Firm.FIRM_FACTORY);
-                break;
-
-            default:
-                enabled = true;
-                break;
-        }
-
-        return enabled ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
-    }
-
     public int GetBuildId(string buildCode)
     {
         if (BuildCount == 1) // if this firm has only one building type
@@ -392,8 +336,6 @@ public class FirmInfo
     //TODO remove
     //---------- game vars -----------//
 
-    public int total_firm_count { get; set; } // total no. of this firm type on the map
-    public int[] nation_firm_count_array { get; } = new int[GameConstants.MAX_NATION];
     public int[] nation_tech_level_array { get; } = new int[GameConstants.MAX_NATION];
 
     public int get_nation_tech_level(int nationRecno)
@@ -404,21 +346,6 @@ public class FirmInfo
     public void set_nation_tech_level(int nationRecno, int techLevel)
     {
         nation_tech_level_array[nationRecno - 1] = techLevel;
-    }
-
-    public void inc_nation_firm_count(int nationRecno)
-    {
-        nation_firm_count_array[nationRecno - 1]++;
-        NationArray[nationRecno].TotalFirmCount++;
-    }
-
-    public void dec_nation_firm_count(int nationRecno)
-    {
-        nation_firm_count_array[nationRecno - 1]--;
-        NationArray[nationRecno].TotalFirmCount--;
-
-        if (nation_firm_count_array[nationRecno - 1] < 0) // run-time bug fixing
-            nation_firm_count_array[nationRecno - 1] = 0;
     }
 }
 
@@ -500,11 +427,6 @@ public class FirmBitmap
 
 public class FirmRes
 {
-    private const string FIRM_DB = "FIRM";
-    private const string FIRM_BUILD_DB = "FBUILD";
-    private const string FIRM_FRAME_DB = "FFRAME";
-    private const string FIRM_BITMAP_DB = "FBITMAP";
-
     private FirmInfo[] FirmInfos { get; set; }
     private FirmBuild[] FirmBuilds { get; set; }
     private FirmBitmap[] FirmBitmaps { get; set; }
@@ -544,7 +466,7 @@ public class FirmRes
     {
         ResourceIdx flagResources = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
 
-        Database dbFirm = GameSet.OpenDb(FIRM_DB);
+        Database dbFirm = GameSet.OpenDb("FIRM");
         FirmInfos = new FirmInfo[dbFirm.RecordCount];
 
         for (int i = 0; i < FirmInfos.Length; i++)
@@ -603,7 +525,7 @@ public class FirmRes
 
     private void LoadFirmBuild()
     {
-        Database dbFirmBuild = GameSet.OpenDb(FIRM_BUILD_DB);
+        Database dbFirmBuild = GameSet.OpenDb("FBUILD");
         FirmBuilds = new FirmBuild[dbFirmBuild.RecordCount];
         int[] firstFrameIds = new int[FirmBuilds.Length];
 
@@ -627,14 +549,14 @@ public class FirmRes
             firstFrameIds[i] = Misc.ToInt32(firmBuildRec.first_frame);
         }
 
-        Database dbFirmFrame = GameSet.OpenDb(FIRM_FRAME_DB);
+        Database dbFirmFrame = GameSet.OpenDb("FFRAME");
         for (int i = 0; i < FirmBuilds.Length; i++)
         {
             FirmBuild firmBuild = FirmBuilds[i];
             int firstFrameId = firstFrameIds[i];
 
-            int minOffsetX = Int32.MaxValue / 2;
-            int minOffsetY = Int32.MaxValue / 2;
+            int minOffsetX = Int16.MaxValue;
+            int minOffsetY = Int16.MaxValue;
             int maxX2 = 0;
             int maxY2 = 0;
 
@@ -701,7 +623,7 @@ public class FirmRes
     private void LoadFirmBitmap()
     {
         ResourceDb firmBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_FIRM.RES");
-        Database dbFirmBitmap = GameSet.OpenDb(FIRM_BITMAP_DB);
+        Database dbFirmBitmap = GameSet.OpenDb("FBITMAP");
         FirmBitmaps = new FirmBitmap[dbFirmBitmap.RecordCount];
 
         for (int i = 0; i < FirmBitmaps.Length; i++)

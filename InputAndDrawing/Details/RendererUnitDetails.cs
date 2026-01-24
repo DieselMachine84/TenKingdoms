@@ -226,13 +226,13 @@ public partial class Renderer
     private void DrawUnitIcon(int drawX, int drawY, UnitInfo unitInfo, int rank, int skillId, int skillLevel, int hitPoints, int maxHitPoints, int spyId)
     {
         Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, rank), drawX, drawY,
-            unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
+            unitInfo.SoldierSmallIconWidth * 2, unitInfo.SoldierSmallIconHeight * 2);
         if (skillLevel != 0)
             PutText(FontSan, skillLevel.ToString(), drawX + 52, drawY + 6);
 
         int hitBarX1 = drawX;
         int hitBarY = drawY + 41;
-        int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * hitPoints / maxHitPoints;
+        int hitBarX2 = hitBarX1 + (unitInfo.SoldierSmallIconWidth * 2 - 1) * hitPoints / maxHitPoints;
         const int HIT_BAR_LIGHT_BORDER = 0;
         const int HIT_BAR_DARK_BORDER = 3;
         const int HIT_BAR_BODY = 1;

@@ -62,7 +62,7 @@ public class MonsterInfo
         FirmInfo firmInfo = FirmRes[Firm.FIRM_MONSTER];
 
         int xLoc = 0, yLoc = 0;
-        int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
+        int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 
         // leave at least one location space around the building
         if (!World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1,

@@ -2405,7 +2405,7 @@ public class Town : IIdObject
 		//--- scan for the 5 rows right below the building ---//
 
 		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
 		int locX = LocX1, locY = LocY1; // locX & locY are used for returning results
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
@@ -3627,7 +3627,7 @@ public class Town : IIdObject
 		//--- scan for the 5 rows right below the building ---//
 
 		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
 		int locX = LocX1, locY = LocY1; // xLoc & yLoc are used for returning results
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
@@ -3683,7 +3683,7 @@ public class Town : IIdObject
 
 		int unitId = RaceRes[raceId].basic_unit_id;
 		int locX = LocX1, locY = LocY1;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return;

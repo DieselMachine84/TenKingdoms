@@ -55,7 +55,7 @@ public class BulletArray : SpriteArray
 			// time is saved 'cos no need to check for BulletPathPossible()
 			//-------------------------------------------------------//
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
-			int bulletId = attackInfo.bullet_sprite_id;
+			int bulletId = attackInfo.BulletSpriteId;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
 			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, targetUnit.MobileType);
 			return bullet;
@@ -100,7 +100,7 @@ public class BulletArray : SpriteArray
 			// time is saved 'cos no need to check for BulletPathPossible()
 			//-------------------------------------------------------//
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
-			int bulletId = attackInfo.bullet_sprite_id;
+			int bulletId = attackInfo.BulletSpriteId;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
 			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, UnitConstants.UNIT_LAND);
 			return bullet;

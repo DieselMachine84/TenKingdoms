@@ -39,7 +39,7 @@ public class UnitArray : SpriteArray
     protected override Sprite CreateNewObject(int objectType)
     {
 	    UnitInfo unitInfo = UnitRes[objectType];
-	    switch (unitInfo.unit_class)
+	    switch (unitInfo.UnitClass)
 	    {
 		    case UnitConstants.UNIT_CLASS_HUMAN:
 			    return new UnitHuman();
@@ -1218,7 +1218,7 @@ public class UnitArray : SpriteArray
 	    for (; i < selectedUnits.Count; i++) // for first unit
 	    {
 		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.UnitType].carry_unit_capacity > 0)
+		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0)
 		    {
 			    unit.ShipToBeach(destX, destY, out landLocX, out landLocY);
 			    i++;
@@ -1234,7 +1234,7 @@ public class UnitArray : SpriteArray
 	    for (; i < selectedUnits.Count; i++) // for the rest units
 	    {
 		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.UnitType].carry_unit_capacity > 0 && landLocX != -1 && landLocY != -1)
+		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0 && landLocX != -1 && landLocY != -1)
 		    {
 			    bool found = false;
 			    for (int j = 1; j <= CHECK_SEA_SIZE; j++, totalCheck++)
@@ -3215,7 +3215,7 @@ public class UnitArray : SpriteArray
 			if (sameNation && unit.NationId != selectedUnit.NationId)
 				continue;
 			
-			if (UnitRes[unit.UnitType].unit_class != UnitRes[selectedUnit.UnitType].unit_class)
+			if (UnitRes[unit.UnitType].UnitClass != UnitRes[selectedUnit.UnitType].UnitClass)
 				continue;
 
 			if (!World.GetLoc(unit.NextLocX, unit.NextLocY).IsExplored())

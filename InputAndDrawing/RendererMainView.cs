@@ -730,7 +730,7 @@ public partial class Renderer
             int hitBarY = 0;
             if (unit.MobileType == UnitConstants.UNIT_LAND)
             {
-                if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_HUMAN)
+                if (UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_HUMAN)
                     maxHitBarWidth = CellTextureWidth - 16;
                 else
                     maxHitBarWidth = CellTextureWidth;

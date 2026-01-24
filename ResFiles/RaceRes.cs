@@ -378,7 +378,7 @@ public class RaceRes
 
 			for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
 			{
-				if (UnitRes[unitId].race_id == i + 1)
+				if (UnitRes[unitId].RaceId == i + 1)
 				{
 					raceInfo.basic_unit_id = unitId;
 					break;

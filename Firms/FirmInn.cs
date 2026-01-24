@@ -320,7 +320,7 @@ public class FirmInn : Firm
 			if (innUnit.Skill.SkillId != Skill.SKILL_SPYING)
 				continue;
 
-			int raceId = UnitRes[innUnit.UnitType].race_id;
+			int raceId = UnitRes[innUnit.UnitType].RaceId;
 			int locX1 = 0;
 			int locY1 = 0;
 			int cloakedNationRecno = 0;
@@ -358,7 +358,7 @@ public class FirmInn : Firm
 			if (innUnit.Skill.SkillId != Skill.SKILL_LEADING)
 				continue;
 
-			int raceId = UnitRes[innUnit.UnitType].race_id;
+			int raceId = UnitRes[innUnit.UnitType].RaceId;
 
 			if (ThinkAssignGeneralTo(raceId, innUnit))
 				return true;

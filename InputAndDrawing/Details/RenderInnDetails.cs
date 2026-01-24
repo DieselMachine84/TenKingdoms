@@ -18,7 +18,7 @@ public partial class Renderer
         {
             InnUnit innUnit = inn.InnUnits[i];
             UnitInfo unitInfo = UnitRes[innUnit.UnitType];
-            Graphics.DrawBitmap(unitInfo.GetSoldierSmallIconTexture(Graphics), DetailsX1 + 14, innUnitY, unitInfo.soldierIconWidth, unitInfo.soldierIconHeight);
+            Graphics.DrawBitmap(unitInfo.GetSoldierSmallIconTexture(Graphics), DetailsX1 + 14, innUnitY, unitInfo.SoldierIconWidth, unitInfo.SoldierIconHeight);
             PutText(FontSan, innUnit.Skill.SkillDescription(), DetailsX1 + 70, innUnitY + 5);
             PutText(FontSan, innUnit.Skill.SkillLevel.ToString(), DetailsX1 + 250, innUnitY + 5);
             PutText(FontSan, "$" + innUnit.HireCost, DetailsX1 + 330, innUnitY + 5);
@@ -116,7 +116,7 @@ public partial class Renderer
                 //}
             }
 
-            SERes.far_sound(inn.LocCenterX, inn.LocCenterY, 1, 'S', UnitRes[_selectedInnUnit.UnitType].sprite_id, "RDY");
+            SERes.far_sound(inn.LocCenterX, inn.LocCenterY, 1, 'S', UnitRes[_selectedInnUnit.UnitType].SpriteId, "RDY");
         }
     }
 }

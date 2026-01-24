@@ -37,7 +37,7 @@ public partial class Renderer
                 PutText(FontSan, "Nationality", DetailsX1 + 13, DetailsY1 + 56, -1, true);
                 PutText(FontSan, RaceRes[godInfo.race_id].name, DetailsX1 + 113, DetailsY1 + 56, -1, true);
                 PutText(FontSan, "Invoke", DetailsX1 + 13, DetailsY1 + 85, -1, true);
-                PutText(FontSan, UnitRes[godInfo.unit_id].name, DetailsX1 + 113, DetailsY1 + 85, -1, true);
+                PutText(FontSan, UnitRes[godInfo.unit_id].Name, DetailsX1 + 113, DetailsY1 + 85, -1, true);
                 break;
 
             case Site.SITE_GOLD_COIN:

@@ -448,7 +448,7 @@ public partial class Nation : NationBase
                 for (int i = 0; i < inn.InnUnits.Count; i++)
                 {
                     InnUnit innUnit = inn.InnUnits[i];
-                    if (UnitRes[innUnit.UnitType].race_id == raceId && innUnit.Skill.SkillId == Skill.SKILL_LEADING &&
+                    if (UnitRes[innUnit.UnitType].RaceId == raceId && innUnit.Skill.SkillId == Skill.SKILL_LEADING &&
                         innUnit.Skill.SkillLevel > minSkillLevel && ShouldHire(inn, innUnit))
                     {
                         int rating = innUnit.Skill.SkillLevel;

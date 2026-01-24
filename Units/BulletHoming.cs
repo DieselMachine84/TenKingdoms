@@ -30,8 +30,8 @@ public class BulletHoming : Bullet
 		Unit parentUnit = UnitArray[parentId];
 		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 		
-		Speed = attackInfo.bullet_speed;
-		MaxStep = (attackInfo.attack_range * InternalConstants.CellWidth + Speed - 1) / Speed;
+		Speed = attackInfo.BulletSpeed;
+		MaxStep = (attackInfo.AttackRange * InternalConstants.CellWidth + Speed - 1) / Speed;
 
 		//--------- keep backup of center of the bullet ---------//
 		SpriteFrame spriteFrame = CurSpriteFrame(out _);

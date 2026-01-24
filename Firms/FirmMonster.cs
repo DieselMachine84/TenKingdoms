@@ -26,7 +26,7 @@ public class MonsterInFirm
 
 		CombatLevel = combatLevel;
 
-		MaxHitPoints = unitInfo.hit_points * combatLevel / 100;
+		MaxHitPoints = unitInfo.HitPoints * combatLevel / 100;
 	}
 }
 
@@ -136,19 +136,33 @@ public class FirmMonster : Firm
 			//------ attack human towns and firms randomly -----//
 
 			// only start attacking 3 years after the game starts so the human can build up things
-			if (Info.GameDate > Info.GameStartDate.AddDays(1000.0) &&
-			    Info.TotalDays % 30 == FirmId % 30 &&
-			    Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * ConfigAdv.monster_attack_divisor) == 0)
+			if (Info.TotalDays % 30 == FirmId % 30 && Info.GameDate > Info.GameStartDate.AddDays(1000.0))
 			{
-				ThinkAttackHuman();
+				int monsterFirmCount = 0;
+				foreach (Firm firm in FirmArray)
+				{
+					if (firm.FirmType == Firm.FIRM_MONSTER)
+						monsterFirmCount++;
+				}
+				
+				if (monsterFirmCount > 0 && Misc.Random(monsterFirmCount * ConfigAdv.monster_attack_divisor) == 0)
+					ThinkAttackHuman();
 			}
 
 			//--------- think expansion ---------//
 
 			// it will expand slower when there are already a lot of the monster structures on the map
-			if (Info.TotalDays % 180 == FirmId % 180 && Misc.Random(FirmRes[FIRM_MONSTER].total_firm_count * 10) == 0)
+			if (Info.TotalDays % 180 == FirmId % 180)
 			{
-				ThinkExpansion();
+				int monsterFirmCount = 0;
+				foreach (Firm firm in FirmArray)
+				{
+					if (firm.FirmType == Firm.FIRM_MONSTER)
+						monsterFirmCount++;
+				}
+				
+				if (monsterFirmCount > 0 && Misc.Random(monsterFirmCount * 10) == 0)
+					ThinkExpansion();
 			}
 		}
 	}
@@ -358,12 +372,12 @@ public class FirmMonster : Firm
 		int locX = LocCenterX, locY = LocCenterY;
 		MonsterInfo monsterInfo = MonsterRes[monsterId];
 		UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
-		SpriteInfo spriteInfo = SpriteRes[unitInfo.sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[unitInfo.SpriteId];
 
-		if (!World.LocateSpace(ref locX, ref locY, locX, locY, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.mobile_type))
+		if (!World.LocateSpace(ref locX, ref locY, locX, locY, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.MobileType))
 			return 0;
 
-		Unit unit = UnitArray.AddUnit(unitInfo.unit_id, 0, rankId, 0, locX, locY);
+		Unit unit = UnitArray.AddUnit(unitInfo.UnitId, 0, rankId, 0, locX, locY);
 
 		UnitMonster monster = (UnitMonster)unit;
 		monster.SetMode(UnitConstants.UNIT_MODE_MONSTER, FirmId);
@@ -785,7 +799,7 @@ public class FirmMonster : Firm
 
 		MonsterInfo monsterInfo = MonsterRes[MonsterKing.MonsterId];
 		FirmInfo firmInfo = FirmRes[FIRM_MONSTER];
-		int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
+		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 		int locX1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
 		int locY1 = Math.Max(0, LocY1 - GameConstants.EXPAND_FIRM_DISTANCE);
 		int locX2 = Math.Min(GameConstants.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);

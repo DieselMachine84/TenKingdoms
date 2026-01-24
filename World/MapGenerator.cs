@@ -1614,7 +1614,7 @@ public class MapGenerator
 
 	private Unit CreateUnit(Town town, int unitId, int rankId)
 	{
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
 
 		//------ locate space for the unit ------//
 

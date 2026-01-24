@@ -86,6 +86,7 @@ public class GodInfo
 
     public bool is_nation_know(int nationRecno)
     {
+        //TODO check duplicate with NationArray[NationId].KnowBases[RaceId - 1]
         return nation_know_array[nationRecno - 1];
     }
 
@@ -95,7 +96,7 @@ public class GodInfo
 
         //------- create the god unit --------//
 
-        SpriteInfo spriteInfo = SpriteRes[UnitRes[unit_id].sprite_id];
+        SpriteInfo spriteInfo = SpriteRes[UnitRes[unit_id].SpriteId];
 
         if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
                 spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_AIR))

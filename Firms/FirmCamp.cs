@@ -210,11 +210,11 @@ public class FirmCamp : Firm
 		for (int i = Workers.Count - 1; i >= 0; i--)
 		{
 			Worker worker = Workers[i];
-			if (worker.UnitId != 0 && UnitRes[worker.UnitId].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+			if (worker.UnitId != 0 && UnitRes[worker.UnitId].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 			{
 				if (nation.Cash > 0)
 				{
-					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].year_cost / 365.0, true);
+					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].YearCost / 365.0, true);
 				}
 				else // decrease hit points if the nation cannot pay the unit
 				{
@@ -689,8 +689,8 @@ public class FirmCamp : Firm
 			UnitInfo unitInfo = UnitRes[worker.UnitId];
 
 			// ExtraPara keeps the weapon version
-			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				totalCombatLevel += (unitInfo.weapon_power + worker.ExtraPara - 1) * 30;
+			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+				totalCombatLevel += (unitInfo.WeaponPower + worker.ExtraPara - 1) * 30;
 		}
 
 		if (OverseerId != 0)

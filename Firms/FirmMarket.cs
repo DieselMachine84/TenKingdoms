@@ -386,7 +386,7 @@ public class FirmMarket : Firm
 	{
 		Nation nation = NationArray[NationId];
 
-		if (nation.Cash < UnitRes[UnitConstants.UNIT_CARAVAN].build_cost)
+		if (nation.Cash < UnitRes[UnitConstants.UNIT_CARAVAN].BuildCost)
 			return false;
 
 		int supportedCaravan = nation.TotalPopulation / GameConstants.POPULATION_PER_CARAVAN;
@@ -417,7 +417,7 @@ public class FirmMarket : Firm
 		UnitCaravan unitCaravan = (UnitCaravan)UnitArray[unitId];
 		unitCaravan.SetStop(1, LocX1, LocY1, InternalConstants.COMMAND_AUTO);
 		Nation nation = NationArray[NationId];
-		nation.AddExpense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].build_cost, true);
+		nation.AddExpense(NationBase.EXPENSE_CARAVAN, UnitRes[UnitConstants.UNIT_CARAVAN].BuildCost, true);
 
 		return unitCaravan.SpriteId;
 	}

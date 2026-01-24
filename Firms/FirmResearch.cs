@@ -82,7 +82,7 @@ public class FirmResearch : Firm
         double levelDivider = (newLevel + 1) / 2.0; // from 1.0 to 2.0
 
         // more complex and higher level technology will take longer to research
-        progressPoint = progressPoint * 30.0 / techInfo.complex_level / levelDivider;
+        progressPoint = progressPoint * 30.0 / techInfo.ComplexLevel / levelDivider;
 
         // techInfo.Progress() will reset TechId if the current research level is the MAX tech level, so we have to save it now
         int techIdCopy = TechId;
@@ -97,7 +97,7 @@ public class FirmResearch : Firm
 
                 if (!AIFirm)
                 {
-                    if (techInfo.get_nation_tech_level(NationId) < techInfo.max_tech_level)
+                    if (techInfo.get_nation_tech_level(NationId) < techInfo.MaxTechLevel)
                     {
                         StartResearch(techIdCopy, InternalConstants.COMMAND_AUTO);
                     }
@@ -109,7 +109,7 @@ public class FirmResearch : Firm
                 NewsArray.tech_researched(techIdCopy, TechRes[techIdCopy].get_nation_tech_level(NationId));
 
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
-                    UnitRes[TechRes[techIdCopy].unit_id].sprite_id);
+                    UnitRes[TechRes[techIdCopy].UnitId].SpriteId);
             }
         }
     }

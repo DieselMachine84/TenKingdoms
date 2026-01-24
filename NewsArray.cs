@@ -302,7 +302,7 @@ public class NewsArray
 			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
 				news.short_para3 = News.DESTROYER_REBEL;
 
-			else if (UnitRes[attackUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
+			else if (UnitRes[attackUnit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
 				news.short_para3 = News.DESTROYER_MONSTER;
 		}
 
@@ -357,7 +357,7 @@ public class NewsArray
 			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
 				news.short_para2 = News.DESTROYER_REBEL;
 
-			else if (UnitRes[attackUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
+			else if (UnitRes[attackUnit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
 				news.short_para2 = News.DESTROYER_MONSTER;
 		}
 

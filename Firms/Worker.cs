@@ -53,20 +53,20 @@ public class Worker
 
     public int MaxHitPoints()
     {
-        return UnitRes[UnitId].hit_points * CombatLevel / 100;
+        return UnitRes[UnitId].HitPoints * CombatLevel / 100;
     }
 
     public int MaxAttackRange()
     {
         int maxRange = 0;
-        int attackCount = UnitRes[UnitId].attack_count;
+        int attackCount = UnitRes[UnitId].AttackCount;
 
         for (int i = 0; i < attackCount; i++)
         {
-            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[UnitId].first_attack + i);
-            if (CombatLevel >= attackInfo.combat_level && attackInfo.attack_range > maxRange)
+            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[UnitId].FirstAttack + i);
+            if (CombatLevel >= attackInfo.CombatLevel && attackInfo.AttackRange > maxRange)
             {
-                maxRange = attackInfo.attack_range;
+                maxRange = attackInfo.AttackRange;
             }
         }
 

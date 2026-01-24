@@ -65,7 +65,7 @@ public class UnitMarine : Unit, ITrader
 		base.Init(unitType, nationId, rank, unitLoyalty, startLocX, startLocY);
 		
 		ExtraMoveInBeach = NO_EXTRA_MOVE;
-		CarryGoodsCapacity = UnitRes[unitType].carry_goods_capacity;
+		CarryGoodsCapacity = UnitRes[unitType].CarryGoodsCapacity;
 		LastLoadGoodsDate = Info.GameDate;
 
 		//int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
@@ -1766,12 +1766,12 @@ public class UnitMarine : Unit, ITrader
 
 		if (AttackCount > 0)
 		{
-			ShipAttackInfo = UnitRes.GetAttackInfo(UnitRes[UnitType].first_attack);
+			ShipAttackInfo = UnitRes.GetAttackInfo(UnitRes[UnitType].FirstAttack);
 
 			AttackInfos = new AttackInfo[AttackCount];
 			for (int i = 0; i < AttackCount; i++)
 			{
-				AttackInfos[i] = UnitRes.GetAttackInfo(UnitRes[UnitType].first_attack + i);
+				AttackInfos[i] = UnitRes.GetAttackInfo(UnitRes[UnitType].FirstAttack + i);
 			}
 		}
 		else

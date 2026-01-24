@@ -2314,7 +2314,7 @@ public class NationOld : NationBase
 		if (targetNode.action_mode == ACTION_AI_SEA_TRAVEL)
 		{
 			if (!UnitArray.IsDeleted(unitRecno) &&
-			    UnitRes[UnitArray[unitRecno].UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			    UnitRes[UnitArray[unitRecno].UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 			{
 				if (targetNode.action_para != 0)
 				{
@@ -2696,7 +2696,7 @@ public class NationOld : NationBase
 				InnUnit innUnit = firmInn.InnUnits[j];
 				Skill innUnitSkill = innUnit.Skill;
 
-				if (innUnitSkill.SkillId == skillId && (raceId != 0 || UnitRes[innUnit.UnitType].race_id == raceId) &&
+				if (innUnitSkill.SkillId == skillId && (raceId != 0 || UnitRes[innUnit.UnitType].RaceId == raceId) &&
 				    Cash >= innUnit.HireCost)
 				{
 					//----------------------------------------------//
@@ -2708,7 +2708,7 @@ public class NationOld : NationBase
 
 					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / GameConstants.MapSize);
 
-					if (UnitRes[innUnit.UnitType].race_id == RaceId)
+					if (UnitRes[innUnit.UnitType].RaceId == RaceId)
 						curRating += 50;
 
 					if (curRating > bestRating)
@@ -3514,7 +3514,7 @@ public class NationOld : NationBase
 				maxDistance = attackCamp.distance;
 		}
 
-		int travelFrames = InternalConstants.CellWidth * maxDistance / SpriteRes[UnitRes[UnitConstants.UNIT_NORMAN].sprite_id].Speed;
+		int travelFrames = InternalConstants.CellWidth * maxDistance / SpriteRes[UnitRes[UnitConstants.UNIT_NORMAN].SpriteId].Speed;
 		// + 10% for circumstances that the units are blocked and needed to wait and turning, etc.
 		int maxTravelDays = travelFrames / InternalConstants.FRAMES_PER_DAY * 110 / 100;;
 
@@ -5011,7 +5011,7 @@ public class NationOld : NationBase
 			{
 				InnUnit innUnit = firmInn.InnUnits[j];
 
-				if (innUnit.Skill.SkillId == Skill.SKILL_LEADING && UnitRes[innUnit.UnitType].race_id == raceId && Cash >= innUnit.HireCost)
+				if (innUnit.Skill.SkillId == Skill.SKILL_LEADING && UnitRes[innUnit.UnitType].RaceId == raceId && Cash >= innUnit.HireCost)
 				{
 					//----------------------------------------------//
 					// evaluate a unit on:
@@ -6240,7 +6240,7 @@ public class NationOld : NationBase
 
 		UnitMarine unitMarine = (UnitMarine)UnitArray[actionNode.action_para2];
 
-		if (UnitRes[unitMarine.UnitType].unit_class != UnitConstants.UNIT_CLASS_SHIP)
+		if (UnitRes[unitMarine.UnitType].UnitClass != UnitConstants.UNIT_CLASS_SHIP)
 			return -1;
 
 		if (unitMarine.NationId != NationId)
@@ -6261,7 +6261,7 @@ public class NationOld : NationBase
 
 		UnitMarine unitMarine = (UnitMarine)UnitArray[actionNode.action_para2];
 
-		if (UnitRes[unitMarine.UnitType].unit_class != UnitConstants.UNIT_CLASS_SHIP)
+		if (UnitRes[unitMarine.UnitType].UnitClass != UnitConstants.UNIT_CLASS_SHIP)
 			return -1;
 
 		if (unitMarine.NationId != NationId)
@@ -6371,7 +6371,7 @@ public class NationOld : NationBase
 			UnitMarine unitMarine = (UnitMarine)UnitArray[ai_ship_array[i]];
 
 			// if there are already units in the ship or if the ship does not carry units
-			if (unitMarine.UnitsOnBoard.Count > 0 || UnitRes[unitMarine.UnitType].carry_unit_capacity == 0)
+			if (unitMarine.UnitsOnBoard.Count > 0 || UnitRes[unitMarine.UnitType].CarryUnitCapacity == 0)
 			{
 				continue;
 			}

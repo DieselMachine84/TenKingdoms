@@ -148,7 +148,7 @@ public abstract partial class Unit : Sprite
 		InitUnitType(unitType);
 
 		GroupId = UnitArray.CurGroupId++;
-		RaceId = UnitRes[UnitType].race_id;
+		RaceId = UnitRes[UnitType].RaceId;
 
 		if (RaceId != 0)
 		{
@@ -175,7 +175,7 @@ public abstract partial class Unit : Sprite
 		RangeAttackLocX = -1;
 		RangeAttackLocY = -1;
 
-		MaxHitPoints = UnitRes[UnitType].hit_points;
+		MaxHitPoints = UnitRes[UnitType].HitPoints;
 		HitPoints = MaxHitPoints;
 
 		Loyalty = unitLoyalty;
@@ -215,7 +215,7 @@ public abstract partial class Unit : Sprite
 			if (Rank == RANK_GENERAL || Rank == RANK_KING)
 				nation.add_general_info(SpriteId);
 
-			switch (UnitRes[UnitType].unit_class)
+			switch (UnitRes[UnitType].UnitClass)
 			{
 				case UnitConstants.UNIT_CLASS_CARAVAN:
 					nation.add_caravan_info(SpriteId);
@@ -327,7 +327,7 @@ public abstract partial class Unit : Sprite
 				if (Rank == RANK_GENERAL || Rank == RANK_KING)
 					nation.del_general_info(SpriteId);
 
-				switch (UnitRes[UnitType].unit_class)
+				switch (UnitRes[UnitType].UnitClass)
 				{
 					case UnitConstants.UNIT_CLASS_CARAVAN:
 						nation.del_caravan_info(SpriteId);
@@ -345,7 +345,7 @@ public abstract partial class Unit : Sprite
 
 	public void InitSprite(int startLocX, int startLocY)
 	{
-		base.Init(UnitRes[UnitType].sprite_id, startLocX, startLocY);
+		base.Init(UnitRes[UnitType].SpriteId, startLocX, startLocY);
 
 		//--------------------------------------------------------------------//
 		// MoveToLocX and MoveToLocY are always the current location of the unit as CurAction == SPRITE_IDLE
@@ -375,7 +375,7 @@ public abstract partial class Unit : Sprite
 		{
 			World.Unveil(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1);
 			World.Visit(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1,
-				UnitRes[UnitType].visual_range, UnitRes[UnitType].visual_extend);
+				UnitRes[UnitType].VisualRange, UnitRes[UnitType].VisualExtend);
 		}
 	}
 
@@ -426,17 +426,17 @@ public abstract partial class Unit : Sprite
 
 		UnitInfo unitInfo = UnitRes[UnitType];
 
-		SpriteResId = unitInfo.sprite_id;
+		SpriteResId = unitInfo.SpriteId;
 		SpriteInfo = SpriteRes[SpriteResId];
 
-		MobileType = unitInfo.mobile_type;
+		MobileType = unitInfo.MobileType;
 
 		//--- if this unit is a weapon unit with multiple versions ---//
 
 		SetCombatLevel(100); // set combat level default to 100, for human units, it will be adjusted later by individual functions
 
 		int techLevel;
-		if (NationId != 0 && unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON &&
+		if (NationId != 0 && unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON &&
 		    (techLevel = unitInfo.nation_tech_level_array[NationId - 1]) > 0)
 		{
 			WeaponVersion = techLevel;
@@ -454,11 +454,6 @@ public abstract partial class Unit : Sprite
 			if (Rank == RANK_GENERAL)
 				unitInfo.inc_nation_general_count(NationId);
 		}
-
-		//--------- increase monster count ----------//
-
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
-			UnitRes.mobile_monster_count++;
 	}
 
 	private void DeinitUnitType()
@@ -492,13 +487,6 @@ public abstract partial class Unit : Sprite
 
 			if (Rank == RANK_GENERAL)
 				unitInfo.dec_nation_general_count(trueNationId);
-		}
-
-		//--------- decrease monster count ----------//
-
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_MONSTER)
-		{
-			UnitRes.mobile_monster_count--;
 		}
 	}
 
@@ -546,7 +534,7 @@ public abstract partial class Unit : Sprite
 		Loyalty = worker.Loyalty();
 		Rank = worker.RankId;
 
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 		{
 			WeaponVersion = worker.ExtraPara;
 		}
@@ -597,7 +585,7 @@ public abstract partial class Unit : Sprite
 			if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 			{
 				World.Visit(NextLocX, NextLocY, NextLocX + SpriteInfo.LocWidth - 1, NextLocY + SpriteInfo.LocHeight - 1,
-					UnitRes[UnitType].visual_range, UnitRes[UnitType].visual_extend);
+					UnitRes[UnitType].VisualRange, UnitRes[UnitType].VisualExtend);
 			}
 		}
 
@@ -1144,7 +1132,7 @@ public abstract partial class Unit : Sprite
 			// do casting power now
 			//----------------------------------------------------------------------------------------//
 			AttackInfo attackInfo = AttackInfos[CurAttack];
-			if (CurFrame == attackInfo.bullet_out_frame)
+			if (CurFrame == attackInfo.BulletOutFrame)
 			{
 				// add effect
 				AddCloseAttackEffect();
@@ -1163,7 +1151,7 @@ public abstract partial class Unit : Sprite
 		Firm firm = FirmArray[firmId];
 		FirmInfo firmInfo = FirmRes[firm.FirmType];
 
-		switch (UnitRes[UnitType].unit_class)
+		switch (UnitRes[UnitType].UnitClass)
 		{
 			case UnitConstants.UNIT_CLASS_HUMAN:
 				if (NationId == firm.NationId)
@@ -1249,7 +1237,7 @@ public abstract partial class Unit : Sprite
 			if (firm.FirmType == Firm.FIRM_HARBOR)
 			{
 				FirmHarbor harbor = (FirmHarbor)firm;
-				switch (UnitRes[UnitType].unit_class)
+				switch (UnitRes[UnitType].UnitClass)
 				{
 					case UnitConstants.UNIT_CLASS_HUMAN:
 						if (unitRegionId != harbor.LandRegionId)
@@ -1327,7 +1315,7 @@ public abstract partial class Unit : Sprite
 		}
 		else if (loc.IsTown())
 		{
-			if (UnitRes[UnitType].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
+			if (UnitRes[UnitType].UnitClass != UnitConstants.UNIT_CLASS_HUMAN)
 				return;
 
 			int townId = loc.TownId();
@@ -1487,7 +1475,7 @@ public abstract partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// change to MoveTo if the unit is dead or if the ship cannot carry units
 		//----------------------------------------------------------------//
-		if (IsUnitDead() || UnitRes[UnitType].carry_unit_capacity <= 0)
+		if (IsUnitDead() || UnitRes[UnitType].CarryUnitCapacity <= 0)
 		{
 			MoveTo(destLocX, destLocY, 1);
 			finalDestLocX = finalDestLocY = -1;
@@ -1685,7 +1673,7 @@ public abstract partial class Unit : Sprite
 			return;
 
 		//---------- no settle for non-human -----------//
-		if (UnitRes[UnitType].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
+		if (UnitRes[UnitType].UnitClass != UnitConstants.UNIT_CLASS_HUMAN)
 			return;
 
 		//----------------------------------------------------------------//
@@ -1995,7 +1983,7 @@ public abstract partial class Unit : Sprite
 
 		UnitInfo unitInfo = UnitRes[UnitType];
 
-		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_MONSTER || AggressiveMode)
+		if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_MONSTER || AggressiveMode)
 		{
 			//----------- detect target to attack -----------//
 
@@ -2008,7 +1996,7 @@ public abstract partial class Unit : Sprite
 		// wander around for monster
 		//------------------------------------------------------------------//
 
-		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_MONSTER)
+		if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
 		{
 			// TODO check this
 			if (Misc.Random(500) == 0)
@@ -2433,9 +2421,9 @@ public abstract partial class Unit : Sprite
 		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
 		//------------- add die effect on first frame --------- //
-		if (CurFrame == 1 && UnitRes[UnitType].die_effect_id != 0)
+		if (CurFrame == 1 && UnitRes[UnitType].DieEffectId != 0)
 		{
-			EffectArray.AddEffect(UnitRes[UnitType].die_effect_id, CurX, CurY, SPRITE_DIE, CurDir,
+			EffectArray.AddEffect(UnitRes[UnitType].DieEffectId, CurX, CurY, SPRITE_DIE, CurDir,
 				MobileType == UnitConstants.UNIT_AIR ? 8 : 2, 0);
 		}
 
@@ -2898,7 +2886,7 @@ public abstract partial class Unit : Sprite
 	
 	public override bool IsStealth()
 	{
-		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[UnitType].stealth;
+		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[UnitType].Stealth;
 	}
 
 	public bool IsCivilian()
@@ -2996,14 +2984,14 @@ public abstract partial class Unit : Sprite
 		}
 		else
 		{
-			result = unitInfo.name;
+			result = unitInfo.Name;
 
-			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON && WeaponVersion > 1)
+			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON && WeaponVersion > 1)
 			{
 				result += " " + Misc.roman_number(WeaponVersion);
 			}
 
-			if (unitInfo.unit_class != UnitConstants.UNIT_CLASS_GOD) // God doesn't have any series no.
+			if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_GOD) // God doesn't have any series no.
 			{
 				result += " " + NameId; // name id is the series no. of the unit
 			}
@@ -3032,8 +3020,8 @@ public abstract partial class Unit : Sprite
 		int unitPower = (int)HitPoints;
 		
 		UnitInfo unitInfo = UnitRes[UnitType];
-		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-			unitPower += (unitInfo.weapon_power + WeaponVersion - 1) * 15;
+		if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+			unitPower += (unitInfo.WeaponPower + WeaponVersion - 1) * 15;
 
 		return unitPower;
 	}
@@ -3198,7 +3186,7 @@ public abstract partial class Unit : Sprite
 
 	private void GainExperience()
 	{
-		if (UnitRes[UnitType].unit_class != UnitConstants.UNIT_CLASS_HUMAN)
+		if (UnitRes[UnitType].UnitClass != UnitConstants.UNIT_CLASS_HUMAN)
 			return;
 
 		if (NationContribution < GameConstants.MAX_NATION_CONTRIBUTION)
@@ -3266,14 +3254,14 @@ public abstract partial class Unit : Sprite
 
 		int oldMaxHitPoints = MaxHitPoints;
 
-		MaxHitPoints = unitInfo.hit_points * combatLevel / 100;
+		MaxHitPoints = unitInfo.HitPoints * combatLevel / 100;
 
 		if (oldMaxHitPoints != 0)
 			HitPoints = HitPoints * MaxHitPoints / oldMaxHitPoints;
 
 		HitPoints = Math.Min(HitPoints, MaxHitPoints);
 
-		if (combatLevel >= unitInfo.guard_combat_level)
+		if (combatLevel >= unitInfo.GuardCombatLevel)
 		{
 			CanGuard = SpriteInfo.CanGuard;
 			if (UnitType == UnitConstants.UNIT_ZULU)
@@ -3321,7 +3309,7 @@ public abstract partial class Unit : Sprite
 
 		Nation nation = NationArray[NationId];
 
-		if (UnitRes[UnitType].race_id != 0)
+		if (UnitRes[UnitType].RaceId != 0)
 		{
 			if (nation.Cash > 0)
 			{
@@ -3351,7 +3339,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (nation.Cash > 0)
 			{
-				int expenseType = UnitRes[UnitType].unit_class switch
+				int expenseType = UnitRes[UnitType].UnitClass switch
 				{
 					UnitConstants.UNIT_CLASS_WEAPON => NationBase.EXPENSE_WEAPON,
 					UnitConstants.UNIT_CLASS_SHIP => NationBase.EXPENSE_SHIP,
@@ -3359,12 +3347,12 @@ public abstract partial class Unit : Sprite
 					_ => NationBase.EXPENSE_MOBILE_UNIT
 				};
 
-				nation.AddExpense(expenseType, UnitRes[UnitType].year_cost / 365.0, true);
+				nation.AddExpense(expenseType, UnitRes[UnitType].YearCost / 365.0, true);
 			}
 			else // decrease hit points if the nation cannot pay the unit
 			{
 				// Even when caravans are not paid, they still stay in your service.
-				if (UnitRes[UnitType].unit_class != UnitConstants.UNIT_CLASS_CARAVAN)
+				if (UnitRes[UnitType].UnitClass != UnitConstants.UNIT_CLASS_CARAVAN)
 				{
 					if (HitPoints > 0.0)
 					{
@@ -3376,7 +3364,7 @@ public abstract partial class Unit : Sprite
 						{
 							if (NationId == NationArray.PlayerId)
 							{
-								int unitClass = UnitRes[UnitType].unit_class;
+								int unitClass = UnitRes[UnitType].UnitClass;
 
 								if (unitClass == UnitConstants.UNIT_CLASS_WEAPON)
 									NewsArray.weapon_ship_worn_out(UnitType, WeaponVersion);
@@ -3455,13 +3443,13 @@ public abstract partial class Unit : Sprite
 	public virtual double ActualDamage()
 	{
 		AttackInfo attackInfo = AttackInfos[CurAttack];
-		int attackDamage = attackInfo.attack_damage;
+		int attackDamage = attackInfo.AttackDamage;
 
 		//-------- pierce damage --------//
 
-		attackDamage += Misc.Random(3) + attackInfo.pierce_damage
-			* Misc.Random(Skill.CombatLevel - attackInfo.combat_level)
-			/ (100 - attackInfo.combat_level);
+		attackDamage += Misc.Random(3) + attackInfo.PierceDamage
+			* Misc.Random(Skill.CombatLevel - attackInfo.CombatLevel)
+			/ (100 - attackInfo.CombatLevel);
 
 		//--- if this unit is led by a general, its attacking ability is influenced by the general ---//
 		//
@@ -3617,7 +3605,7 @@ public abstract partial class Unit : Sprite
 
 	public void UpdateLoyalty()
 	{
-		if (NationId == 0 || Rank == RANK_KING || UnitRes[UnitType].race_id == 0)
+		if (NationId == 0 || Rank == RANK_KING || UnitRes[UnitType].RaceId == 0)
 			return;
 
 		// constructor worker will not change their loyalty when they are in a building
@@ -4007,10 +3995,10 @@ public abstract partial class Unit : Sprite
 			if (Rank == RANK_GENERAL || Rank == RANK_KING)
 				nation.del_general_info(SpriteId);
 
-			else if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_CARAVAN)
+			else if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_CARAVAN)
 				nation.del_caravan_info(SpriteId);
 
-			else if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			else if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 				nation.del_ship_info(SpriteId);
 		}
 
@@ -4021,10 +4009,10 @@ public abstract partial class Unit : Sprite
 			if (Rank == RANK_GENERAL || Rank == RANK_KING)
 				nation.add_general_info(SpriteId);
 
-			else if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_CARAVAN)
+			else if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_CARAVAN)
 				nation.add_caravan_info(SpriteId);
 
-			else if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			else if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 				nation.add_ship_info(SpriteId);
 		}
 
@@ -4246,7 +4234,7 @@ public abstract partial class Unit : Sprite
 		if (Loyalty >= GameConstants.UNIT_BETRAY_LOYALTY)
 			return false;
 
-		if (UnitRes[UnitType].race_id == 0 || NationId == 0 || Rank == RANK_KING)
+		if (UnitRes[UnitType].RaceId == 0 || NationId == 0 || Rank == RANK_KING)
 			return false;
 
 		//------ turn towards other nation --------//
@@ -4752,7 +4740,6 @@ public abstract partial class Unit : Sprite
 
 	#endregion
 	
-
 	#region Old AI Functions
 	
 	public int AIActionId { get; set; } // an unique id. for locating the AI action node this unit belongs to in Nation::action_array
@@ -4864,7 +4851,7 @@ public abstract partial class Unit : Sprite
 		}
 		else
 		{
-			if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+			if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 			{
 				// don't call too often as the action may fail and it takes a while to call the function each time
 				if (Info.TotalDays % 15 == SpriteId % 15)
@@ -5784,7 +5771,7 @@ public abstract partial class Unit : Sprite
 
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
 		int xLoc = 0, yLoc = 0;
-		int teraMask = UnitRes.mobile_type_to_mask(UnitConstants.UNIT_LAND);
+		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 
 		// leave at least one location space around the building
 		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,

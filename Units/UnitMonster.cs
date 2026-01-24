@@ -250,7 +250,7 @@ public class UnitMonster : Unit
 
             Unit unit = UnitArray[unitId];
 
-            if (UnitRes[unit.UnitType].unit_class != UnitConstants.UNIT_CLASS_MONSTER)
+            if (UnitRes[unit.UnitType].UnitClass != UnitConstants.UNIT_CLASS_MONSTER)
                 continue;
 
             orderedUnits.Add(unitId);

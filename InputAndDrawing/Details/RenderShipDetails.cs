@@ -13,7 +13,7 @@ public partial class Renderer
             return;
 
         UnitInfo unitInfo = UnitRes[ship.UnitType];
-        if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity > 0)
+        if (unitInfo.CarryUnitCapacity > 0 && unitInfo.CarryGoodsCapacity > 0)
         {
             bool mouseOnUnitsGoodsButton = _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 39 &&
                                            _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
@@ -43,12 +43,12 @@ public partial class Renderer
         }
         else
         {
-            if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity == 0)
+            if (unitInfo.CarryUnitCapacity > 0 && unitInfo.CarryGoodsCapacity == 0)
             {
                 DrawShipUnits(ship);
             }
 
-            if (unitInfo.carry_unit_capacity == 0 && unitInfo.carry_goods_capacity > 0)
+            if (unitInfo.CarryUnitCapacity == 0 && unitInfo.CarryGoodsCapacity > 0)
             {
                 DrawTradeStops(ship, ship.Stops);
                 DrawUnitGoods(ship.RawQty, ship.ProductQty);
@@ -66,12 +66,12 @@ public partial class Renderer
             Unit unit = UnitArray[ship.UnitsOnBoard[i]];
             UnitInfo unitInfo = UnitRes[unit.UnitType];
             Graphics.DrawBitmap(unitInfo.GetSmallIconTexture(Graphics, unit.Rank), unitX, unitY,
-                unitInfo.soldierSmallIconWidth * 2, unitInfo.soldierSmallIconHeight * 2);
+                unitInfo.SoldierSmallIconWidth * 2, unitInfo.SoldierSmallIconHeight * 2);
             PutText(FontSan, unit.Skill.CombatLevel.ToString(), unitX + 52, unitY + 6);
             
             int hitBarX1 = unitX;
             int hitBarY = unitY + 41;
-            int hitBarX2 = hitBarX1 + (unitInfo.soldierSmallIconWidth * 2 - 1) * (int)unit.HitPoints / unit.MaxHitPoints;
+            int hitBarX2 = hitBarX1 + (unitInfo.SoldierSmallIconWidth * 2 - 1) * (int)unit.HitPoints / unit.MaxHitPoints;
             const int HIT_BAR_LIGHT_BORDER = 0;
             const int HIT_BAR_DARK_BORDER = 3;
             const int HIT_BAR_BODY = 1;
@@ -110,10 +110,10 @@ public partial class Renderer
             }
 
             int frameColor = (ship.SelectedUnitId == unit.SpriteId) ? Colors.V_YELLOW : Colors.V_UP;
-            Graphics.DrawRect(unitX - 1, unitY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
-            Graphics.DrawRect(unitX - 1, unitY + unitInfo.soldierSmallIconHeight * 2 - 2, unitInfo.soldierSmallIconWidth * 2, 3, frameColor);
-            Graphics.DrawRect(unitX - 1, unitY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
-            Graphics.DrawRect(unitX + unitInfo.soldierSmallIconWidth * 2 - 2, unitY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(unitX - 1, unitY - 1, unitInfo.SoldierSmallIconWidth * 2 + 2, 3, frameColor);
+            Graphics.DrawRect(unitX - 1, unitY + unitInfo.SoldierSmallIconHeight * 2 - 2, unitInfo.SoldierSmallIconWidth * 2, 3, frameColor);
+            Graphics.DrawRect(unitX - 1, unitY - 1, 3, unitInfo.SoldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(unitX + unitInfo.SoldierSmallIconWidth * 2 - 2, unitY - 1, 3, unitInfo.SoldierSmallIconHeight * 2 + 2, frameColor);
         }
 
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 261);
@@ -162,7 +162,7 @@ public partial class Renderer
             return;
         
         UnitInfo unitInfo = UnitRes[ship.UnitType];
-        if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity > 0)
+        if (unitInfo.CarryUnitCapacity > 0 && unitInfo.CarryGoodsCapacity > 0)
         {
             bool mouseOnUnitsGoodsButton = _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 39 &&
                                            _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
@@ -204,12 +204,12 @@ public partial class Renderer
         }
         else
         {
-            if (unitInfo.carry_unit_capacity > 0 && unitInfo.carry_goods_capacity == 0)
+            if (unitInfo.CarryUnitCapacity > 0 && unitInfo.CarryGoodsCapacity == 0)
             {
                 HandleShipUnits(ship);
             }
 
-            if (unitInfo.carry_unit_capacity == 0 && unitInfo.carry_goods_capacity > 0)
+            if (unitInfo.CarryUnitCapacity == 0 && unitInfo.CarryGoodsCapacity > 0)
             {
                 HandleTradeStops(ship, ship.Stops, ship.IsOwn());
             }

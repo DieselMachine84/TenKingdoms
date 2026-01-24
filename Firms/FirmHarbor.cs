@@ -190,19 +190,19 @@ public class FirmHarbor : Firm
 			return;
 
 		Nation nation = NationArray[NationId];
-		if (nation.Cash < UnitRes[BuildQueue[0]].build_cost)
+		if (nation.Cash < UnitRes[BuildQueue[0]].BuildCost)
 			return;
 
 		BuildUnitType = BuildQueue[0];
 		BuildQueue.RemoveAt(0);
-		nation.AddExpense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitType].build_cost);
+		nation.AddExpense(NationBase.EXPENSE_SHIP, UnitRes[BuildUnitType].BuildCost);
 
 		_startBuildFrameNumber = Sys.Instance.FrameNumber;
 	}
 	
 	private void ProcessBuild()
 	{
-		int totalBuildDays = UnitRes[BuildUnitType].build_days;
+		int totalBuildDays = UnitRes[BuildUnitType].BuildDays;
 
 		if ((Sys.Instance.FrameNumber - _startBuildFrameNumber) / InternalConstants.FRAMES_PER_DAY >= totalBuildDays)
 		{
@@ -210,7 +210,7 @@ public class FirmHarbor : Firm
 			AddHostedShip(unit.SpriteId);
 
 			if (OwnFirm())
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].sprite_id);
+				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].SpriteId);
 
 			BuildUnitType = 0;
 		}
@@ -527,7 +527,7 @@ public class FirmHarbor : Firm
 
 			//--- if this is a goods carrying ship and it doesn't have a defined trade route ---//
 
-			if (unitMarine.StopDefinedNum < 2 && UnitRes[unitMarine.UnitType].carry_goods_capacity > 0)
+			if (unitMarine.StopDefinedNum < 2 && UnitRes[unitMarine.UnitType].CarryGoodsCapacity > 0)
 			{
 				return unitMarine;
 			}

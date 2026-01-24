@@ -205,10 +205,10 @@ public partial class Unit
 				return;
 
 			AttackInfo attackInfo = AttackInfos[CurAttack];
-			if (attackInfo.attack_range > 1) // range attack
+			if (attackInfo.AttackRange > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
-				if (CurFrame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.BulletOutFrame)
 					return;
 
 				//------- seek location to attack by bullet ----------//
@@ -216,12 +216,12 @@ public partial class Unit
 				int curYLoc = NextLocY;
 				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType,
 					    RangeAttackLocX, RangeAttackLocY, UnitConstants.UNIT_LAND,
-					    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+					    attackInfo.BulletSpeed, attackInfo.BulletSpriteId))
 				{
 					FirmInfo firmInfo = FirmRes[targetFirm.FirmType];
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -237,7 +237,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				// ------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -252,7 +252,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				// ------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -300,7 +300,7 @@ public partial class Unit
 					AttackInfo attackInfo = AttackInfos[CurAttack];
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, firmInfo.LocWidth, firmInfo.LocHeight,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -428,10 +428,10 @@ public partial class Unit
 				return;
 
 			AttackInfo attackInfo = AttackInfos[CurAttack];
-			if (attackInfo.attack_range > 1) // range attack
+			if (attackInfo.AttackRange > 1) // range attack
 			{
 				//---------- wait for bullet emit ---------//
-				if (CurFrame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.BulletOutFrame)
 					return;
 
 				//------- seek location to attack target by bullet --------//
@@ -439,11 +439,11 @@ public partial class Unit
 				int curYLoc = NextLocY;
 				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType, RangeAttackLocX,
 					    RangeAttackLocY,
-					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+					    UnitConstants.UNIT_LAND, attackInfo.BulletSpeed, attackInfo.BulletSpriteId))
 				{
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -460,7 +460,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				// ------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -475,7 +475,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				// ------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -522,7 +522,7 @@ public partial class Unit
 					int curYLoc = NextLocY;
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						targetXLoc, targetYLoc, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -591,10 +591,10 @@ public partial class Unit
 				return;
 
 			AttackInfo attackInfo = AttackInfos[CurAttack];
-			if (attackInfo.attack_range > 1) // range attack
+			if (attackInfo.AttackRange > 1) // range attack
 			{
 				//--------- wait for bullet emit ----------//
-				if (CurFrame != attackInfo.bullet_out_frame)
+				if (CurFrame != attackInfo.BulletOutFrame)
 					return;
 
 				//---------- seek location to attack target by bullet --------//
@@ -602,11 +602,11 @@ public partial class Unit
 				int curYLoc = NextLocY;
 				if (!BulletArray.BulletPathPossible(curXLoc, curYLoc, MobileType,
 					    RangeAttackLocX, RangeAttackLocY,
-					    UnitConstants.UNIT_LAND, attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+					    UnitConstants.UNIT_LAND, attackInfo.BulletSpeed, attackInfo.BulletSpriteId))
 				{
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -622,7 +622,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				// ------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -637,7 +637,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				//------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -681,7 +681,7 @@ public partial class Unit
 					int curYLoc = NextLocY;
 					bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 						ActionLocX, ActionLocY, UnitConstants.UNIT_LAND, 1, 1,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -941,7 +941,7 @@ public partial class Unit
 		ChooseBestAttackMode(attackDistance, targetMobileType);
 
 		AttackInfo attackInfo = AttackInfos[CurAttack];
-		if (attackInfo.attack_range < attackDistance) // need to move to target
+		if (attackInfo.AttackRange < attackDistance) // need to move to target
 		{
 			int searchResult = 1;
 
@@ -1012,7 +1012,7 @@ public partial class Unit
 			SetAttackDir(curXLoc, curYLoc, targetXLoc, targetYLoc);
 			if (IsDirCorrect())
 			{
-				if (attackInfo.attack_range == 1)
+				if (attackInfo.AttackRange == 1)
 				{
 					SetAttack();
 				}
@@ -1144,7 +1144,7 @@ public partial class Unit
 		ChooseBestAttackMode(attackDistance);
 
 		AttackInfo attackInfo = AttackInfos[CurAttack];
-		if (attackInfo.attack_range < attackDistance) // need to move to target
+		if (attackInfo.AttackRange < attackDistance) // need to move to target
 		{
 			bool pathEdited = true;
 
@@ -1233,7 +1233,7 @@ public partial class Unit
 
 			if (IsDirCorrect())
 			{
-				if (attackInfo.attack_range == 1)
+				if (attackInfo.AttackRange == 1)
 					SetAttack();
 				//else range_attack is processed in calling process_attack_firm()
 			}
@@ -1356,7 +1356,7 @@ public partial class Unit
 		ChooseBestAttackMode(attackDistance);
 
 		AttackInfo attackInfo = AttackInfos[CurAttack];
-		if (attackInfo.attack_range < attackDistance)
+		if (attackInfo.AttackRange < attackDistance)
 		{
 			bool pathEdited = true;
 
@@ -1423,7 +1423,7 @@ public partial class Unit
 			SetAttackDir(NextLocX, NextLocY, town.LocCenterX, town.LocCenterY);
 			if (IsDirCorrect())
 			{
-				if (attackInfo.attack_range == 1)
+				if (attackInfo.AttackRange == 1)
 					SetAttack();
 			}
 			else
@@ -1544,7 +1544,7 @@ public partial class Unit
 		ChooseBestAttackMode(attackDistance);
 
 		AttackInfo attackInfo = AttackInfos[CurAttack];
-		if (attackInfo.attack_range < attackDistance)
+		if (attackInfo.AttackRange < attackDistance)
 		{
 			bool pathEdited = true;
 
@@ -1611,7 +1611,7 @@ public partial class Unit
 			SetAttackDir(NextLocX, NextLocY, wallXLoc, wallYLoc);
 			if (IsDirCorrect())
 			{
-				if (attackInfo.attack_range == 1)
+				if (attackInfo.AttackRange == 1)
 					SetAttack();
 			}
 			else
@@ -1674,7 +1674,7 @@ public partial class Unit
 		
 		Nation parentNation = parentNationRecno != 0 ? NationArray[parentNationRecno] : null;
 		Nation targetNation = targetNationRecno != 0 ? NationArray[targetNationRecno] : null;
-		int targetUnitClass = UnitRes[targetUnit.UnitType].unit_class;
+		int targetUnitClass = UnitRes[targetUnit.UnitType].UnitClass;
 
 		if (targetUnit.HitPoints <= 0.0)
 		{
@@ -1728,7 +1728,7 @@ public partial class Unit
 
 			else
 			{
-				switch (UnitRes[targetUnit.UnitType].unit_class)
+				switch (UnitRes[targetUnit.UnitType].UnitClass)
 				{
 					case UnitConstants.UNIT_CLASS_WEAPON:
 						if (parentNation != null)
@@ -1807,7 +1807,7 @@ public partial class Unit
 				if (targetUnit.Rank >= RANK_GENERAL)
 					targetUnit.AILeaderBeingAttacked(parentUnit.SpriteId);
 
-				if (UnitRes[targetUnit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+				if (UnitRes[targetUnit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 					((UnitMarine)targetUnit).ai_ship_being_attacked(parentUnit.SpriteId);
 			}
 
@@ -1994,7 +1994,7 @@ public partial class Unit
 		if (SpriteInfo.SpriteSubType == 'M') //**** BUGHERE, is sprite_sub_type really representing UNIT_MARINE???
 		{
 			UnitInfo unitInfo = UnitRes[UnitType];
-			if (unitInfo.carry_goods_capacity != 0)
+			if (unitInfo.CarryGoodsCapacity != 0)
 			{
 				UnitMarine ship = (UnitMarine)this;
 				if (ship.AutoMode && ship.StopDefinedNum > 1)
@@ -2223,7 +2223,7 @@ public partial class Unit
 		if (SpriteInfo.SpriteSubType == 'M')
 		{
 			UnitInfo unitInfo = UnitRes[UnitType];
-			if (unitInfo.carry_goods_capacity != 0)
+			if (unitInfo.CarryGoodsCapacity != 0)
 			{
 				UnitMarine ship = (UnitMarine)this;
 				if (ship.AutoMode && ship.StopDefinedNum > 1)
@@ -2292,7 +2292,7 @@ public partial class Unit
 				// range attack possible
 				bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 				RangeAttackLocX = resultLocX;
 				RangeAttackLocY = resultLocY;
 				if (canAddBullet)
@@ -2354,12 +2354,12 @@ public partial class Unit
 			//---------------- use range attack -----------------//
 			AttackInfo attackInfo = AttackInfos[CurAttack];
 
-			if (CurFrame != attackInfo.bullet_out_frame)
+			if (CurFrame != attackInfo.BulletOutFrame)
 				return; // wait for bullet_out_frame
 
 			if (!BulletArray.BulletPathPossible(unitXLoc, unitYLoc, MobileType,
 				    RangeAttackLocX, RangeAttackLocY, targetUnit.MobileType,
-				    attackInfo.bullet_speed, attackInfo.bullet_sprite_id))
+				    attackInfo.BulletSpeed, attackInfo.BulletSpriteId))
 			{
 				SpriteInfo targetSpriteInfo = targetUnit.SpriteInfo;
 				// seek for another possible point to attack if target size > 1x1
@@ -2367,7 +2367,7 @@ public partial class Unit
 				{
 					bool canAddBullet = BulletArray.AddBulletPossible(unitXLoc, unitYLoc, MobileType,
 						ActionLocX, ActionLocY, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-						out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+						out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 					RangeAttackLocX = resultLocX;
 					RangeAttackLocY = resultLocY;
 					if (!canAddBullet)
@@ -2384,7 +2384,7 @@ public partial class Unit
 			AddCloseAttackEffect();
 
 			// ------- reduce power --------//
-			CurPower -= attackInfo.consume_power;
+			CurPower -= attackInfo.ConsumePower;
 			if (CurPower < 0) // ***** BUGHERE
 				CurPower = 0;
 			SetRemainAttackDelay();
@@ -2405,7 +2405,7 @@ public partial class Unit
 				AddCloseAttackEffect();
 
 				//------- reduce power --------//
-				CurPower -= attackInfo.consume_power;
+				CurPower -= attackInfo.ConsumePower;
 				if (CurPower < 0) // ***** BUGHERE
 					CurPower = 0;
 				SetRemainAttackDelay();
@@ -2415,7 +2415,7 @@ public partial class Unit
 
 	private void AddCloseAttackEffect()
 	{
-		int effectId = AttackInfos[CurAttack].effect_id;
+		int effectId = AttackInfos[CurAttack].EffectId;
 		if (effectId != 0)
 		{
 			int x = CurX;
@@ -2495,7 +2495,7 @@ public partial class Unit
 				int curYLoc = NextLocY;
 				bool canAddBullet = BulletArray.AddBulletPossible(curXLoc, curYLoc, MobileType,
 					targetXLoc, targetYLoc, targetUnit.MobileType, targetSpriteInfo.LocWidth, targetSpriteInfo.LocHeight,
-					out int resultLocX, out int resultLocY, attackInfo.bullet_speed, attackInfo.bullet_sprite_id);
+					out int resultLocX, out int resultLocY, attackInfo.BulletSpeed, attackInfo.BulletSpriteId);
 				RangeAttackLocX = resultLocX;
 				RangeAttackLocY = resultLocY;
 				if (!canAddBullet)
@@ -2607,7 +2607,7 @@ public partial class Unit
 	private void SetAttackDir(int curX, int curY, int targetX, int targetY)
 	{
 		int targetDir = GetDir(curX, curY, targetX, targetY);
-		if (UnitRes[UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 		{
 			int attackDir1 = (targetDir + 2) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 			int attackDir2 = (targetDir + 6) % InternalConstants.MAX_SPRITE_DIR_TYPE;
@@ -2629,7 +2629,7 @@ public partial class Unit
 
 	private void SetRemainAttackDelay()
 	{
-		RemainAttackDelay = AttackInfos[CurAttack].attack_delay;
+		RemainAttackDelay = AttackInfos[CurAttack].AttackDelay;
 	}
 	
 	private bool CanAttackDifferentTargetType()
@@ -3306,28 +3306,28 @@ public partial class Unit
 					continue; // it is the mode already used
 
 				attackInfoChecking = AttackInfos[i];
-				if (CanAttackWith(attackInfoChecking) && attackInfoChecking.attack_range >= attackDistance)
+				if (CanAttackWith(attackInfoChecking) && attackInfoChecking.AttackRange >= attackDistance)
 				{
 					//-------------------- able to attack ----------------------//
 					canAttack = true;
 
-					if (attackInfoSelected.attack_range < attackDistance)
+					if (attackInfoSelected.AttackRange < attackDistance)
 					{
 						attackModeBeingUsed = i;
 						attackInfoSelected = attackInfoChecking;
 						continue;
 					}
 
-					int checkingDamageWeight = attackInfoChecking.attack_damage;
-					int selectedDamageWeight = attackInfoSelected.attack_damage;
+					int checkingDamageWeight = attackInfoChecking.AttackDamage;
+					int selectedDamageWeight = attackInfoSelected.AttackDamage;
 
 					if (attackDistance == 1 &&
 					    (targetMobileType != UnitConstants.UNIT_AIR && MobileType != UnitConstants.UNIT_AIR))
 					{
 						//------------ force to use close attack if possible -----------//
-						if (attackInfoSelected.attack_range == attackDistance)
+						if (attackInfoSelected.AttackRange == attackDistance)
 						{
-							if (attackInfoChecking.attack_range == attackDistance && checkingDamageWeight > selectedDamageWeight)
+							if (attackInfoChecking.AttackRange == attackDistance && checkingDamageWeight > selectedDamageWeight)
 							{
 								attackModeBeingUsed = i; // choose the one with strongest damage
 								attackInfoSelected = attackInfoChecking;
@@ -3335,7 +3335,7 @@ public partial class Unit
 
 							continue;
 						}
-						else if (attackInfoChecking.attack_range == 1)
+						else if (attackInfoChecking.AttackRange == 1)
 						{
 							attackModeBeingUsed = i;
 							attackInfoSelected = attackInfoChecking;
@@ -3348,9 +3348,9 @@ public partial class Unit
 					//----------------------------------------------------------------------//
 					if (checkingDamageWeight == selectedDamageWeight)
 					{
-						if (attackInfoChecking.attack_range < attackInfoSelected.attack_range)
+						if (attackInfoChecking.AttackRange < attackInfoSelected.AttackRange)
 						{
-							if (attackInfoChecking.attack_range > 1 ||
+							if (attackInfoChecking.AttackRange > 1 ||
 							    (targetMobileType != UnitConstants.UNIT_AIR && MobileType != UnitConstants.UNIT_AIR))
 							{
 								//--------------------------------------------------------------------------//
@@ -3378,9 +3378,9 @@ public partial class Unit
 					// heavier damage
 					//------------------------------------------------------------------------------//
 					if (CanAttackWith(attackInfoChecking) &&
-					    (attackInfoChecking.attack_range > attackInfoMaxRange.attack_range ||
-					     (attackInfoChecking.attack_range == attackInfoMaxRange.attack_range &&
-					      attackInfoChecking.attack_damage > attackInfoMaxRange.attack_damage)))
+					    (attackInfoChecking.AttackRange > attackInfoMaxRange.AttackRange ||
+					     (attackInfoChecking.AttackRange == attackInfoMaxRange.AttackRange &&
+					      attackInfoChecking.AttackDamage > attackInfoMaxRange.AttackDamage)))
 					{
 						maxAttackRangeMode = i;
 						attackInfoMaxRange = attackInfoChecking;
@@ -3393,12 +3393,12 @@ public partial class Unit
 			else
 				CurAttack = maxAttackRangeMode; //	choose the longest attack range if unable to attack
 
-			AttackRange = AttackInfos[CurAttack].attack_range;
+			AttackRange = AttackInfos[CurAttack].AttackRange;
 		}
 		else
 		{
 			CurAttack = 0; // only one mode is supported
-			AttackRange = AttackInfos[0].attack_range;
+			AttackRange = AttackInfos[0].AttackRange;
 		}
 	}
 	
@@ -3409,8 +3409,8 @@ public partial class Unit
 		for (int i = 0; i < AttackCount; i++)
 		{
 			AttackInfo attackInfo = AttackInfos[i];
-			if (CanAttackWith(attackInfo) && attackInfo.attack_range > maxRange)
-				maxRange = attackInfo.attack_range;
+			if (CanAttackWith(attackInfo) && attackInfo.AttackRange > maxRange)
+				maxRange = attackInfo.AttackRange;
 		}
 
 		return maxRange;
@@ -3423,16 +3423,16 @@ public partial class Unit
 
 	private bool CanAttackWith(AttackInfo attackInfo)
 	{
-		return Skill.CombatLevel >= attackInfo.combat_level && CurPower >= attackInfo.min_power;
+		return Skill.CombatLevel >= attackInfo.CombatLevel && CurPower >= attackInfo.MinPower;
 	}
 
 	public void CycleEqvAttack()
 	{
-		if (AttackInfos[CurAttack].eqv_attack_next > 0)
+		if (AttackInfos[CurAttack].EqvAttackNext > 0)
 		{
 			do
 			{
-				CurAttack = AttackInfos[CurAttack].eqv_attack_next - 1;
+				CurAttack = AttackInfos[CurAttack].EqvAttackNext - 1;
 			} while (!CanAttackWith(CurAttack));
 		}
 		else
@@ -3440,11 +3440,11 @@ public partial class Unit
 			if (!CanAttackWith(CurAttack))
 			{
 				// force to search again
-				int attackRange = AttackInfos[CurAttack].attack_range;
+				int attackRange = AttackInfos[CurAttack].AttackRange;
 				for (int i = 0; i < AttackCount; i++)
 				{
 					AttackInfo attackInfo = AttackInfos[i];
-					if (attackInfo.attack_range >= attackRange && CanAttackWith(attackInfo))
+					if (attackInfo.AttackRange >= attackRange && CanAttackWith(attackInfo))
 					{
 						CurAttack = i;
 						break;
@@ -3458,14 +3458,14 @@ public partial class Unit
 	{
 		UnitInfo unitInfo = UnitRes[UnitType];
 
-		AttackCount = unitInfo.attack_count;
+		AttackCount = unitInfo.AttackCount;
 
-		if (AttackCount > 0 && unitInfo.first_attack > 0)
+		if (AttackCount > 0 && unitInfo.FirstAttack > 0)
 		{
 			AttackInfos = new AttackInfo[AttackCount];
 			for (int i = 0; i < AttackCount; i++)
 			{
-				AttackInfos[i] = UnitRes.attack_info_array[unitInfo.first_attack - 1 + i];
+				AttackInfos[i] = UnitRes.AttackInfos[unitInfo.FirstAttack - 1 + i];
 			}
 		}
 		else
@@ -3474,7 +3474,7 @@ public partial class Unit
 		}
 
 		int techLevel = WeaponVersion;
-		if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON && techLevel > 0)
+		if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON && techLevel > 0)
 		{
 			switch (UnitType)
 			{
@@ -3495,7 +3495,7 @@ public partial class Unit
 				AttackInfos = new AttackInfo[AttackCount];
 				for (int i = 0; i < AttackCount; i++)
 				{
-					AttackInfos[i] = UnitRes.attack_info_array[unitInfo.first_attack - 1 + (techLevel - 1) * AttackCount + i];
+					AttackInfos[i] = UnitRes.AttackInfos[unitInfo.FirstAttack - 1 + (techLevel - 1) * AttackCount + i];
 				}
 			}
 			else

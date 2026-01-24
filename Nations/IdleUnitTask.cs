@@ -65,7 +65,7 @@ public class IdleUnitTask : AITask, IUnitTask
         }
 
         UnitInfo unitInfo = UnitRes[unit.UnitType];
-        if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_SHIP)
+        if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_SHIP)
         {
             foreach (Firm firm in Nation.KingdomHarbors)
             {

@@ -168,11 +168,8 @@ public abstract class Firm : IIdObject
 		else
 			BuilderId = 0;
 
-		firmInfo.total_firm_count++;
-
 		if (NationId != 0)
 		{
-			firmInfo.inc_nation_firm_count(NationId);
 			Nation nation = NationArray[NationId];
 			AIFirm = nation.IsAI();
 			AIProcessed = true;
@@ -232,14 +229,6 @@ public abstract class Firm : IIdObject
 
 		if (BuilderId != 0)
 			MobilizeBuilder(BuilderId);
-
-		FirmInfo firmInfo = FirmRes[FirmType];
-		firmInfo.total_firm_count--;
-
-		if (NationId != 0)
-		{
-			firmInfo.dec_nation_firm_count(NationId);
-		}
 
 		LocX1 = -1; // mark deleted
 		LocY1 = -1;
@@ -963,14 +952,14 @@ public abstract class Firm : IIdObject
 			if (!Misc.AreFirmsLinked(this, firm))
 				continue;
 
-			if (!firmInfo.IsLinkableToFirm(firm.FirmType))
+			if (!IsLinkableToFirm(firm.FirmType))
 				continue;
 
 			//------- determine the default link status ------//
 
 			// if the two firms are of the same nation, get the default link status which is based on the types of the firms
 			// if the two firms are of different nations, default link status is both side disabled
-			int defaultLinkStatus = firm.NationId == NationId ? firmInfo.DefaultLinkStatus(firm.FirmType) : InternalConstants.LINK_DD;
+			int defaultLinkStatus = firm.NationId == NationId ? DefaultLinkStatus(firm.FirmType) : InternalConstants.LINK_DD;
 
 			LinkedFirms.Add(firm.FirmId);
 			LinkedFirmsEnable.Add(defaultLinkStatus);
@@ -1086,6 +1075,60 @@ public abstract class Firm : IIdObject
 		}
 	}
 
+	private int DefaultLinkStatus(int linkFirmType)
+	{
+		bool enabled = false;
+
+		switch (FirmType)
+		{
+			case FIRM_MINE:
+				enabled = (linkFirmType != FIRM_MARKET);
+				break;
+
+			case FIRM_FACTORY:
+				enabled = (linkFirmType == FIRM_MARKET) || (linkFirmType == FIRM_MINE);
+				break;
+
+			case FIRM_MARKET:
+				enabled = (linkFirmType == FIRM_FACTORY) || (linkFirmType == FIRM_HARBOR);
+				break;
+
+			case FIRM_HARBOR:
+				enabled = (linkFirmType == FIRM_MARKET) || (linkFirmType == FIRM_MINE) || (linkFirmType == FIRM_FACTORY);
+				break;
+
+			default:
+				enabled = true;
+				break;
+		}
+
+		return enabled ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
+	}
+	
+	private bool IsLinkableToFirm(int linkFirmType)
+	{
+		switch (FirmType)
+		{
+			case FIRM_FACTORY:
+				return linkFirmType == FIRM_MINE || linkFirmType == FIRM_MARKET || linkFirmType == FIRM_HARBOR;
+
+			case FIRM_MINE:
+				return linkFirmType == FIRM_FACTORY || linkFirmType == FIRM_MARKET || linkFirmType == FIRM_HARBOR;
+
+			case FIRM_MARKET:
+				return linkFirmType == FIRM_MINE || linkFirmType == FIRM_FACTORY || linkFirmType == FIRM_HARBOR;
+
+			case FIRM_HARBOR:
+				return linkFirmType == FIRM_MARKET || linkFirmType == FIRM_MINE || linkFirmType == FIRM_FACTORY;
+
+			case FIRM_INN: // for an inn to scan for neighbor inns quickly, the link line is not displayed
+				return linkFirmType == FIRM_INN;
+			
+			default:
+				return false;
+		}
+	}
+	
 	public bool CanToggleFirmLink(int firmId)
 	{
 		Firm firm = FirmArray[firmId];
@@ -1095,7 +1138,7 @@ public abstract class Firm : IIdObject
 		if ((FirmType == FIRM_MARKET && firm.FirmType == FIRM_HARBOR) || (FirmType == FIRM_HARBOR && firm.FirmType == FIRM_MARKET))
 			return false;
 
-		return FirmRes[FirmType].IsLinkableToFirm(firm.FirmType);
+		return IsLinkableToFirm(firm.FirmType);
 	}
 
 	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
@@ -1278,7 +1321,7 @@ public abstract class Firm : IIdObject
 			// the old overseer may be kept in firm or killed if IsDeleting is true
 			//------------------------------------------------------------------------------------------------//
 			Unit oldUnit = UnitArray[OverseerId];
-			SpriteInfo spriteInfo = SpriteRes[UnitRes[oldUnit.UnitType].sprite_id];
+			SpriteInfo spriteInfo = SpriteRes[UnitRes[oldUnit.UnitType].SpriteId];
 			int locX = LocX1;
 			int locY = LocY1;
 
@@ -1401,7 +1444,7 @@ public abstract class Firm : IIdObject
 		if (newWorker.HitPoints == 0) // 0.? will become 0 in (double) to (int) conversion
 			newWorker.HitPoints = 1;
 
-		if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_WEAPON)
+		if (UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 		{
 			newWorker.ExtraPara = unit.WeaponVersion;
 		}
@@ -1797,7 +1840,7 @@ public abstract class Firm : IIdObject
 
 	protected int CreateUnit(int unitType, int townId = 0, bool unitHasJob = false)
 	{
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].sprite_id];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].SpriteId];
 		int locX = LocX1;
 		int locY = LocY1;
 
@@ -2312,14 +2355,6 @@ public abstract class Firm : IIdObject
 			if (unit.SpyId != 0)
 				SpyArray[unit.SpyId].CloakedNationId = newNationId;
 		}
-
-		FirmInfo firmInfo = FirmRes[FirmType];
-
-		if (NationId != 0)
-			firmInfo.dec_nation_firm_count(NationId);
-
-		if (newNationId != 0)
-			firmInfo.inc_nation_firm_count(newNationId);
 
 		if (AIFirm)
 		{
@@ -3087,7 +3122,7 @@ public abstract class Firm : IIdObject
 
 				curRating += innUnit.Skill.SkillLevel;
 
-				if (majorityRace == UnitRes[innUnit.UnitType].race_id)
+				if (majorityRace == UnitRes[innUnit.UnitType].RaceId)
 				{
 					curRating += prefTownHarmony;
 				}

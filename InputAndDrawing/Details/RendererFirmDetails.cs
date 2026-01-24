@@ -85,16 +85,16 @@ public partial class Renderer
         {
             UnitInfo unitInfo = UnitRes[overseer.UnitType];
             Graphics.DrawBitmap(unitInfo.GetLargeIconTexture(Graphics, overseer.Rank), DetailsX1 + 12, DetailsY1 + 104,
-                unitInfo.soldierIconWidth * 2, unitInfo.soldierIconHeight * 2);
+                unitInfo.SoldierIconWidth * 2, unitInfo.SoldierIconHeight * 2);
             
             if (firm.SelectedWorkerId == 0)
             {
-                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, unitInfo.soldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
-                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101 + unitInfo.soldierIconHeight * 2 + 3,
-                    unitInfo.soldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
-                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, 3, unitInfo.soldierIconHeight * 2 + 6, Colors.V_YELLOW);
-                Graphics.DrawRect(DetailsX1 + 9 + unitInfo.soldierIconWidth * 2 + 3, DetailsY1 + 101,
-                    3, unitInfo.soldierIconHeight * 2 + 6, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, unitInfo.SoldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101 + unitInfo.SoldierIconHeight * 2 + 3,
+                    unitInfo.SoldierIconWidth * 2 + 6, 3, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9, DetailsY1 + 101, 3, unitInfo.SoldierIconHeight * 2 + 6, Colors.V_YELLOW);
+                Graphics.DrawRect(DetailsX1 + 9 + unitInfo.SoldierIconWidth * 2 + 3, DetailsY1 + 101,
+                    3, unitInfo.SoldierIconHeight * 2 + 6, Colors.V_YELLOW);
             }
 
             if (overseer.Rank == Unit.RANK_KING)
@@ -134,10 +134,10 @@ public partial class Renderer
                 worker.HitPoints, worker.MaxHitPoints(), worker.SpyId);
 
             int frameColor = (i == firm.SelectedWorkerId - 1) ? Colors.V_YELLOW : Colors.V_UP;
-            Graphics.DrawRect(workerX - 1, workerY - 1, unitInfo.soldierSmallIconWidth * 2 + 2, 3, frameColor);
-            Graphics.DrawRect(workerX - 1, workerY + unitInfo.soldierSmallIconHeight * 2 - 2, unitInfo.soldierSmallIconWidth * 2, 3, frameColor);
-            Graphics.DrawRect(workerX - 1, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
-            Graphics.DrawRect(workerX + unitInfo.soldierSmallIconWidth * 2 - 2, workerY - 1, 3, unitInfo.soldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(workerX - 1, workerY - 1, unitInfo.SoldierSmallIconWidth * 2 + 2, 3, frameColor);
+            Graphics.DrawRect(workerX - 1, workerY + unitInfo.SoldierSmallIconHeight * 2 - 2, unitInfo.SoldierSmallIconWidth * 2, 3, frameColor);
+            Graphics.DrawRect(workerX - 1, workerY - 1, 3, unitInfo.SoldierSmallIconHeight * 2 + 2, frameColor);
+            Graphics.DrawRect(workerX + unitInfo.SoldierSmallIconWidth * 2 - 2, workerY - 1, 3, unitInfo.SoldierSmallIconHeight * 2 + 2, frameColor);
         }
     }
 

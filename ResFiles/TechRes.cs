@@ -98,66 +98,49 @@ public class TechRec
 
 public class TechClass
 {
-    public int class_id;
-    public int first_tech_id;
-    public int tech_count;
-
-    public int icon_index;
-
-    public TechRes TechRes => Sys.Instance.TechRes;
-
-    public byte[] tech_icon()
-    {
-        return TechRes.res_bitmap.GetData(icon_index + 1);
-    }
+    public int ClassId { get; set; }
+    public int FirstTechId { get; set; }
+    public int TechCount { get; set; }
+    public int IconIndex { get; set; }
 }
 
 public class TechInfo
 {
-    public int tech_id;
-    public int class_id;
+    public int TechId { get; set; }
+    public int ClassId { get; set; }
 
-    public int max_tech_level; // maximum level for this technology
-    public int complex_level;
+    public int MaxTechLevel { get; set; }
+    public int ComplexLevel { get; set; }
 
-    public int unit_id;
-    public int firm_id;
-    public int parent_unit_id;
-    public int parent_firm_id;
-    public int parent_level;
+    public int UnitId { get; set; }
+    public int FirmId { get; set; }
+    public int ParentUnitId { get; set; }
+    public int ParentFirmId { get; set; }
+    public int ParentLevel { get; set; }
 
-    public int icon_index;
+    public int IconIndex { get; set; }
 
-    public TechRes TechRes => Sys.Instance.TechRes;
     public FirmRes FirmRes => Sys.Instance.FirmRes;
     public UnitRes UnitRes => Sys.Instance.UnitRes;
     public FirmArray FirmArray => Sys.Instance.FirmArray;
 
-    public int TechLargeIconWidth { get; set; }
-    public int TechLargeIconHeight { get; set; }
+    public int TechLargeIconWidth { get; private set; }
+    public int TechLargeIconHeight { get; private set; }
 
     public IntPtr GetTechLargeIconTexture(Graphics graphics)
     {
-        TechLargeIconWidth = UnitRes[unit_id].soldierIconWidth;
-        TechLargeIconHeight = UnitRes[unit_id].soldierIconHeight;
-        return UnitRes[unit_id].GetSoldierIconTexture(graphics);
-    }
-
-    public byte[] tech_small_icon()
-    {
-        if (unit_id != 0)
-            return UnitRes[unit_id].get_small_icon_ptr(Unit.RANK_SOLDIER);
-        else
-            return TechRes.res_bitmap.GetData(icon_index);
+        TechLargeIconWidth = UnitRes[UnitId].SoldierIconWidth;
+        TechLargeIconHeight = UnitRes[UnitId].SoldierIconHeight;
+        return UnitRes[UnitId].GetSoldierIconTexture(graphics);
     }
 
     public string Description()
     {
-        if (unit_id != 0)
-            return UnitRes[unit_id].name;
+        if (UnitId != 0)
+            return UnitRes[UnitId].Name;
 
-        if (firm_id != 0)
-            return FirmRes[firm_id].Name;
+        if (FirmId != 0)
+            return FirmRes[FirmId].Name;
 
         return String.Empty;
     }
@@ -177,15 +160,15 @@ public class TechInfo
     {
         nation_tech_level_array[nationRecno - 1] = techLevel;
 
-        if (unit_id != 0)
-            UnitRes[unit_id].set_nation_tech_level(nationRecno, techLevel);
+        if (UnitId != 0)
+            UnitRes[UnitId].set_nation_tech_level(nationRecno, techLevel);
 
-        else if (firm_id != 0)
-            FirmRes[firm_id].set_nation_tech_level(nationRecno, techLevel);
+        else if (FirmId != 0)
+            FirmRes[FirmId].set_nation_tech_level(nationRecno, techLevel);
 
         //--- if the MAX level has been reached and there are still other firms researching this technology ---//
 
-        if (techLevel == max_tech_level && is_nation_researching(nationRecno))
+        if (techLevel == MaxTechLevel && is_nation_researching(nationRecno))
         {
             //---- stop other firms researching the same tech -----//
 
@@ -194,7 +177,7 @@ public class TechInfo
                 if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == nationRecno)
                 {
                     FirmResearch firmResearch = (FirmResearch)firm;
-                    if (firmResearch.TechId == tech_id)
+                    if (firmResearch.TechId == TechId)
                         firmResearch.TerminateResearch();
                 }
             }
@@ -223,15 +206,15 @@ public class TechInfo
 
     public bool is_parent_tech_invented(int nationRecno)
     {
-        if (parent_unit_id != 0)
+        if (ParentUnitId != 0)
         {
-            if (UnitRes[parent_unit_id].get_nation_tech_level(nationRecno) < parent_level)
+            if (UnitRes[ParentUnitId].get_nation_tech_level(nationRecno) < ParentLevel)
                 return false;
         }
 
-        if (parent_firm_id != 0)
+        if (ParentFirmId != 0)
         {
-            if (FirmRes[parent_firm_id].get_nation_tech_level(nationRecno) < parent_level)
+            if (FirmRes[ParentFirmId].get_nation_tech_level(nationRecno) < ParentLevel)
                 return false;
         }
 
@@ -240,7 +223,7 @@ public class TechInfo
 
     public bool can_research(int nationRecno)
     {
-        return get_nation_tech_level(nationRecno) < max_tech_level && is_parent_tech_invented(nationRecno);
+        return get_nation_tech_level(nationRecno) < MaxTechLevel && is_parent_tech_invented(nationRecno);
     }
 
     public bool progress(int nationRecno, double progressPoint)
@@ -266,15 +249,10 @@ public class TechInfo
 
 public class TechRes
 {
-    public const string TECH_DB = "TECH";
-    public const string TECH_CLASS_DB = "TECHCLAS";
-
     public int total_tech_level; // the sum of research levels of all technology
 
-    public TechClass[] TechClasses { get; set; }
-    public TechInfo[] TechInfos { get; set; }
-
-    public ResourceIdx res_bitmap;
+    public TechClass[] TechClasses { get; private set; }
+    public TechInfo[] TechInfos { get; private set; }
 
     public GameSet GameSet { get; }
 
@@ -282,10 +260,6 @@ public class TechRes
     {
         GameSet = gameSet;
 
-        //---------- init bitmap resource ---------//
-        res_bitmap = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TECH.RES");
-
-        //------- load database information --------//
         LoadTechClass();
         LoadTechInfo();
     }
@@ -304,7 +278,7 @@ public class TechRes
         {
             int curTechLevel = techInfo.get_nation_tech_level(nationId);
 
-            if (curTechLevel < techInfo.max_tech_level)
+            if (curTechLevel < techInfo.MaxTechLevel)
                 techInfo.set_nation_tech_level(nationId, curTechLevel + 1);
         }
     }
@@ -318,28 +292,30 @@ public class TechRes
 
     private void LoadTechClass()
     {
-        Database dbTechClass = GameSet.OpenDb(TECH_CLASS_DB);
+        Database dbTechClass = GameSet.OpenDb("TECHCLAS");
         TechClasses = new TechClass[dbTechClass.RecordCount];
 
+        ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TECH.RES");
         for (int i = 0; i < TechClasses.Length; i++)
         {
             TechClassRec techClassRec = new TechClassRec(dbTechClass, i + 1);
             TechClass techClass = new TechClass();
             TechClasses[i] = techClass;
 
-            techClass.class_id = i + 1;
-            techClass.icon_index = res_bitmap.GetIndex(Misc.ToString(techClassRec.icon_name));
+            techClass.ClassId = i + 1;
+            techClass.IconIndex = images.GetIndex(Misc.ToString(techClassRec.icon_name));
         }
     }
 
     private void LoadTechInfo()
     {
-        Database dbTech = GameSet.OpenDb(TECH_DB);
+        Database dbTech = GameSet.OpenDb("TECH");
         TechInfos = new TechInfo[dbTech.RecordCount];
 
         int techClassId = 0;
         total_tech_level = 0;
-
+        
+        ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TECH.RES");
         TechClass techClass = null;
         for (int i = 0; i < TechInfos.Length; i++)
         {
@@ -347,33 +323,33 @@ public class TechRes
             TechInfo techInfo = new TechInfo();
             TechInfos[i] = techInfo;
 
-            techInfo.tech_id = i + 1;
-            techInfo.class_id = Misc.ToInt32(techRec.class_id);
+            techInfo.TechId = i + 1;
+            techInfo.ClassId = Misc.ToInt32(techRec.class_id);
 
-            techInfo.max_tech_level = Misc.ToInt32(techRec.max_tech_level);
-            techInfo.complex_level = Misc.ToInt32(techRec.complex_level);
+            techInfo.MaxTechLevel = Misc.ToInt32(techRec.max_tech_level);
+            techInfo.ComplexLevel = Misc.ToInt32(techRec.complex_level);
 
-            techInfo.unit_id = Misc.ToInt32(techRec.unit_id);
-            techInfo.firm_id = Misc.ToInt32(techRec.firm_id);
-            techInfo.parent_unit_id = Misc.ToInt32(techRec.parent_unit_id);
-            techInfo.parent_firm_id = Misc.ToInt32(techRec.parent_firm_id);
-            techInfo.parent_level = techRec.parent_level - '0';
-            techInfo.icon_index = res_bitmap.GetIndex(Misc.ToString(techRec.icon_name));
+            techInfo.UnitId = Misc.ToInt32(techRec.unit_id);
+            techInfo.FirmId = Misc.ToInt32(techRec.firm_id);
+            techInfo.ParentUnitId = Misc.ToInt32(techRec.parent_unit_id);
+            techInfo.ParentFirmId = Misc.ToInt32(techRec.parent_firm_id);
+            techInfo.ParentLevel = techRec.parent_level - '0';
+            techInfo.IconIndex = images.GetIndex(Misc.ToString(techRec.icon_name));
 
-            if (techClassId != techInfo.class_id)
+            if (techClassId != techInfo.ClassId)
             {
-                techClass = GetTechClass(techInfo.class_id);
-                techClassId = techInfo.class_id;
+                techClass = GetTechClass(techInfo.ClassId);
+                techClassId = techInfo.ClassId;
 
-                techClass.first_tech_id = i + 1;
-                techClass.tech_count = 1;
+                techClass.FirstTechId = i + 1;
+                techClass.TechCount = 1;
             }
             else
             {
-                techClass.tech_count++;
+                techClass.TechCount++;
             }
 
-            total_tech_level += techInfo.max_tech_level;
+            total_tech_level += techInfo.MaxTechLevel;
         }
     }
 }

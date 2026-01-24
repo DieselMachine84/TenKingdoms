@@ -411,7 +411,7 @@ public class NationArray : DynArray<Nation>
 			if (unit.NationId == 0)
 				continue;
 
-			if (UnitRes[unit.UnitType].unit_class == UnitConstants.UNIT_CLASS_SHIP)
+			if (UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP)
 			{
 				this[unit.NationId].TotalShipCombatLevel += (int)unit.HitPoints;
 			}
@@ -423,8 +423,8 @@ public class NationArray : DynArray<Nation>
 
 			UnitInfo unitInfo = UnitRes[unit.UnitType];
 
-			if (unitInfo.unit_class == UnitConstants.UNIT_CLASS_WEAPON)
-				addPoints += (unitInfo.weapon_power + unit.WeaponVersion - 1) * 30;
+			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+				addPoints += (unitInfo.WeaponPower + unit.WeaponVersion - 1) * 30;
 
 			if (unit.LeaderId != 0 && !UnitArray.IsDeleted(unit.LeaderId))
 				addPoints += addPoints * UnitArray[unit.LeaderId].Skill.SkillLevel / 100;

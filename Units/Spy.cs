@@ -180,7 +180,7 @@ public class Spy : IIdObject
 						int locY1 = ship.NextLocY;
 						int locX2 = locX1 + ship.SpriteInfo.LocWidth - 1;
 						int locY2 = locY1 + ship.SpriteInfo.LocHeight - 1;
-						int range = UnitRes[ship.UnitType].visual_range;
+						int range = UnitRes[ship.UnitType].VisualRange;
 
 						World.Unveil(locX1, locY1, locX2, locY2);
 						World.Visit(locX1, locY1, locX2, locY2, range);
