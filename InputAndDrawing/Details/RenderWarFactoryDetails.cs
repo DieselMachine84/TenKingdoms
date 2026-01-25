@@ -38,7 +38,7 @@ public partial class Renderer
 
             Nation warFactoryNation = NationArray[warFactory.NationId];
             string description = unitInfo.Name;
-            int techLevel = warFactoryNation.UnitTechLevels[warFactory.BuildUnitType];
+            int techLevel = warFactoryNation.GetTechLevelByUnitType(warFactory.BuildUnitType);
             if (techLevel > 1)
                 description += " " + Misc.roman_number(techLevel);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
@@ -108,7 +108,7 @@ public partial class Renderer
             bool showCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
             UnitInfo unitInfo = !showCancelButton ? UnitRes[unitType] : null;
-            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || warFactoryNation.UnitTechLevels[unitType] == 0))
+            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || warFactoryNation.GetTechLevelByUnitType(unitType) == 0))
                 continue;
 
             //TODO Done button is not pressed when you press it close to the right edge
@@ -125,7 +125,7 @@ public partial class Renderer
                     unitInfo.SoldierIconWidth * 3 / 2, unitInfo.SoldierIconHeight * 3 / 2);
                 
                 string description = unitInfo.Name;
-                int techLevel = warFactoryNation.UnitTechLevels[unitType];
+                int techLevel = warFactoryNation.GetTechLevelByUnitType(unitType);
                 if (techLevel > 1)
                     description += " " + Misc.roman_number(techLevel);
                 PutText(FontBible, description, BuildWeaponPanelX + 96, BuildWeaponPanelY + dy + 10);
@@ -188,7 +188,7 @@ public partial class Renderer
             bool onCancelButton = (shownItems == MaxBuildWeaponItems || unitType > UnitConstants.MAX_UNIT_TYPE);
             
             UnitInfo unitInfo = !onCancelButton ? UnitRes[unitType] : null;
-            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || warFactoryNation.UnitTechLevels[unitType] == 0))
+            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || warFactoryNation.GetTechLevelByUnitType(unitType) == 0))
                 continue;
 
             bool mouseOnBuildButton = _mouseButtonX >= MouseOnBuildWeaponButtonX1 && _mouseButtonX <= MouseOnBuildWeaponButtonX2 &&

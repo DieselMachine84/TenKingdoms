@@ -6454,10 +6454,10 @@ public class NationOld : NationBase
 		int unitId;
 		if (needTransportUnit)
 		{
-			if (ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
+			if (ownNation.GetTechLevelByUnitType(UnitConstants.UNIT_GALLEON) > 0)
 				unitId = UnitConstants.UNIT_GALLEON;
 
-			else if (ownNation.UnitTechLevels[UnitConstants.UNIT_CARAVEL] > 0)
+			else if (ownNation.GetTechLevelByUnitType(UnitConstants.UNIT_CARAVEL) > 0)
 				unitId = UnitConstants.UNIT_CARAVEL;
 
 			else
@@ -6465,7 +6465,7 @@ public class NationOld : NationBase
 		}
 		else
 		{
-			if (ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
+			if (ownNation.GetTechLevelByUnitType(UnitConstants.UNIT_GALLEON) > 0)
 				unitId = UnitConstants.UNIT_GALLEON;
 			else // don't use Caravel as it can only transport 5 units at a time
 				unitId = UnitConstants.UNIT_TRANSPORT;

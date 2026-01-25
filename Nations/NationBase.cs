@@ -103,8 +103,8 @@ public class NationBase : IIdObject
     private double CurYearReputationChange { get; set; }
     private double LastYearReputationChange { get; set; }
 
-    public int[] UnitTechLevels { get; } = new int[UnitConstants.MAX_UNIT_TYPE + 1];
-    private double[] UnitResearchProgress { get; } = new double[UnitConstants.MAX_UNIT_TYPE + 1];
+    private readonly int[] _techLevels;
+    private readonly double[] _researchProgress;
     public int[] KnowBases { get; } = new int[GameConstants.MAX_RACE];
     public int[] BaseCounts { get; } = new int[GameConstants.MAX_RACE];
     
@@ -182,6 +182,9 @@ public class NationBase : IIdObject
     {
         for (int i = 0; i < NationRelations.Length; i++)
             NationRelations[i] = new NationRelation();
+
+        _techLevels = new int[TechRes.TechInfos.Length];
+        _researchProgress = new double[TechRes.TechInfos.Length];
     }
 
     void IIdObject.SetId(int id)
@@ -220,8 +223,11 @@ public class NationBase : IIdObject
             nation.InitRelation(this);
         }
 
-        UnitTechLevels[UnitConstants.UNIT_TRANSPORT] = 1;
-        UnitTechLevels[UnitConstants.UNIT_VESSEL] = 1;
+        for (int i = 0; i < TechRes.TechInfos.Length; i++)
+        {
+            if (TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_TRANSPORT || TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_VESSEL)
+                _techLevels[i] = 1;
+        }
 
         //------- reset all god knowledge --------//
 
@@ -885,17 +891,28 @@ public class NationBase : IIdObject
 
     public int GetTechLevel(int techId)
     {
-        TechInfo techInfo = TechRes[techId];
-        return UnitTechLevels[techInfo.UnitId];
+        return _techLevels[techId - 1];
+    }
+
+    public int GetTechLevelByUnitType(int unitType)
+    {
+        for (int techId = 1; techId <= TechRes.TechInfos.Length; techId++)
+        {
+            TechInfo techInfo = TechRes[techId];
+            if (techInfo.UnitId == unitType)
+                return GetTechLevel(techId);
+        }
+
+        return 0;
     }
     
     public void SetTechLevel(int techId, int techLevel)
     {
-        TechInfo techInfo = TechRes[techId];
-        UnitTechLevels[techInfo.UnitId] = techLevel;
+        _techLevels[techId - 1] = techLevel;
 
         //--- if the MAX level has been reached and there are still other firms researching this technology ---//
 
+        TechInfo techInfo = TechRes[techId];
         if (techLevel == techInfo.MaxTechLevel)
         {
             //---- stop other firms researching the same tech -----//
@@ -916,27 +933,37 @@ public class NationBase : IIdObject
     {
         TechInfo techInfo = TechRes[techId];
 
-        bool isParentTechInvented = techInfo.ParentUnitId == 0 || UnitTechLevels[techInfo.ParentUnitId] >= techInfo.ParentLevel;
+        bool isParentTechInvented = techInfo.ParentUnitId == 0 || GetTechLevelByUnitType(techInfo.ParentUnitId) >= techInfo.ParentLevel;
         return isParentTechInvented && GetTechLevel(techId) < techInfo.MaxTechLevel;
     }
 
-    public bool MakeResearchProgress(int unitType, double progressPoint)
+    public bool MakeResearchProgress(int techId, double progressPoint)
     {
-        UnitResearchProgress[unitType] += progressPoint;
+        _researchProgress[techId - 1] += progressPoint;
 
-        if (UnitResearchProgress[unitType] > 100.0)
+        if (_researchProgress[techId - 1] > 100.0)
         {
-            UnitResearchProgress[unitType] = 0.0;
-            UnitTechLevels[unitType]++;
+            _researchProgress[techId - 1] = 0.0;
+            SetTechLevel(techId, GetTechLevel(techId) + 1);
+            
+            foreach (Firm firm in FirmArray)
+            {
+                if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == NationId && firm.AIFirm)
+                {
+                    FirmResearch firmResearch = (FirmResearch)firm;
+                    if (firmResearch.TechId == techId)
+                        firmResearch.TerminateResearch();
+                }
+            }
             return true;
         }
 
         return false;
     }
 
-    public double GetResearchProgress(int unitType)
+    public double GetResearchProgress(int techId)
     {
-        return UnitResearchProgress[unitType];
+        return _researchProgress[techId - 1];
     }
     
 

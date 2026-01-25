@@ -190,14 +190,14 @@ public class FirmWar : Firm
 
         int weaponTypeCount = 0, totalWeaponCount = 0;
 
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
-            UnitInfo unitInfo = UnitRes[unitId];
+            UnitInfo unitInfo = UnitRes[unitType];
 
-            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || ownNation.UnitTechLevels[unitId] == 0)
+            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || ownNation.GetTechLevelByUnitType(unitType) == 0)
                 continue;
 
-            if (unitId == UnitConstants.UNIT_EXPLOSIVE_CART) // AI doesn't use Porcupine
+            if (unitType == UnitConstants.UNIT_EXPLOSIVE_CART) // AI doesn't use Porcupine
                 continue;
 
             weaponTypeCount++;
@@ -213,20 +213,20 @@ public class FirmWar : Firm
 
         int bestRating = 0, bestUnitId = 0;
 
-        for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
+        for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
         {
-            UnitInfo unitInfo = UnitRes[unitId];
+            UnitInfo unitInfo = UnitRes[unitType];
 
             if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON)
                 continue;
 
-            int techLevel = ownNation.UnitTechLevels[unitId];
+            int techLevel = ownNation.GetTechLevelByUnitType(unitType);
 
             if (techLevel == 0)
                 continue;
 
             //**BUGHERE, don't produce it yet, it needs a different usage than than others.
-            if (unitId == UnitConstants.UNIT_EXPLOSIVE_CART)
+            if (unitType == UnitConstants.UNIT_EXPLOSIVE_CART)
                 continue;
 
             int unitCount = unitInfo.nation_unit_count_array[NationId - 1];
@@ -236,7 +236,7 @@ public class FirmWar : Firm
             if (curRating > bestRating)
             {
                 bestRating = curRating;
-                bestUnitId = unitId;
+                bestUnitId = unitType;
             }
         }
 

@@ -1866,7 +1866,7 @@ public class UnitMarine : Unit, ITrader
 		Nation ownNation = NationArray[NationId];
 		if (UnitType == UnitConstants.UNIT_TRANSPORT)
 		{
-			if (ownNation.UnitTechLevels[UnitConstants.UNIT_CARAVEL] > 0 || ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
+			if (ownNation.GetTechLevelByUnitType(UnitConstants.UNIT_CARAVEL) > 0 || ownNation.GetTechLevelByUnitType(UnitConstants.UNIT_GALLEON) > 0)
 			{
 				if (!NationArray[NationId].ai_is_sea_travel_safe())
 				{

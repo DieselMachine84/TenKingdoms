@@ -84,23 +84,8 @@ public class FirmResearch : Firm
         // techInfo.Progress() will reset TechId if the current research level is the MAX tech level, so we have to save it now
         int techIdCopy = TechId;
 
-        if (nation.MakeResearchProgress(techInfo.UnitId, progressPoint))
+        if (nation.MakeResearchProgress(TechId, progressPoint))
         {
-            if (TechId != 0) // techInfo.Progress() may have called TerminateResearch() if the tech level reaches the maximum
-            {
-                TerminateResearch();
-
-                //----- research next level technology automatically for player's firm only -----//
-
-                if (!AIFirm)
-                {
-                    if (nation.GetTechLevel(TechId) < techInfo.MaxTechLevel)
-                    {
-                        StartResearch(techIdCopy, InternalConstants.COMMAND_AUTO);
-                    }
-                }
-            }
-
             if (OwnFirm())
             {
                 NewsArray.tech_researched(techIdCopy, nation.GetTechLevel(techIdCopy));

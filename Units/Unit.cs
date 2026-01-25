@@ -437,7 +437,7 @@ public abstract partial class Unit : Sprite
 
 		if (NationId != 0 && unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			int techLevel = NationArray[NationId].UnitTechLevels[UnitType];
+			int techLevel = NationArray[NationId].GetTechLevelByUnitType(UnitType);
 			if (techLevel > 0)
 				WeaponVersion = techLevel;
 		}

@@ -33,7 +33,7 @@ public partial class Renderer
                 description += " " + Misc.roman_number(researchVersion);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
-            PutText(FontSan, firmNation.GetResearchProgress(techInfo.UnitId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
+            PutText(FontSan, firmNation.GetResearchProgress(research.TechId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
         }
 
         DrawWorkers(research);
