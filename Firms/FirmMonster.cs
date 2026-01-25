@@ -141,7 +141,7 @@ public class FirmMonster : Firm
 				int monsterFirmCount = 0;
 				foreach (Firm firm in FirmArray)
 				{
-					if (firm.FirmType == Firm.FIRM_MONSTER)
+					if (firm.FirmType == FIRM_MONSTER)
 						monsterFirmCount++;
 				}
 				
@@ -157,7 +157,7 @@ public class FirmMonster : Firm
 				int monsterFirmCount = 0;
 				foreach (Firm firm in FirmArray)
 				{
-					if (firm.FirmType == Firm.FIRM_MONSTER)
+					if (firm.FirmType == FIRM_MONSTER)
 						monsterFirmCount++;
 				}
 				

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 
 namespace TenKingdoms;
 
@@ -122,8 +121,6 @@ public class TechInfo
 
     public FirmRes FirmRes => Sys.Instance.FirmRes;
     public UnitRes UnitRes => Sys.Instance.UnitRes;
-    public FirmArray FirmArray => Sys.Instance.FirmArray;
-
     public int TechLargeIconWidth { get; private set; }
     public int TechLargeIconHeight { get; private set; }
 
@@ -144,143 +141,22 @@ public class TechInfo
 
         return String.Empty;
     }
-
-    //-------- dynamic game vars --------//
-
-    // each nation's the technology level of this unit,
-    public int[] nation_tech_level_array = new int[GameConstants.MAX_NATION];
-
-    // whether the nation is researching this technology, it stores the number of firms of each nation researching on this technology.
-    public int[] nation_is_researching_array = new int[GameConstants.MAX_NATION];
-
-    // the progresses of each nation researching this technology, when it reaches complex_level, the research is done.
-    public double[] nation_research_progress_array = new double[GameConstants.MAX_NATION];
-
-    public void set_nation_tech_level(int nationRecno, int techLevel)
-    {
-        nation_tech_level_array[nationRecno - 1] = techLevel;
-
-        if (UnitId != 0)
-            UnitRes[UnitId].set_nation_tech_level(nationRecno, techLevel);
-
-        else if (FirmId != 0)
-            FirmRes[FirmId].set_nation_tech_level(nationRecno, techLevel);
-
-        //--- if the MAX level has been reached and there are still other firms researching this technology ---//
-
-        if (techLevel == MaxTechLevel && is_nation_researching(nationRecno))
-        {
-            //---- stop other firms researching the same tech -----//
-
-            foreach (Firm firm in FirmArray)
-            {
-                if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == nationRecno)
-                {
-                    FirmResearch firmResearch = (FirmResearch)firm;
-                    if (firmResearch.TechId == TechId)
-                        firmResearch.TerminateResearch();
-                }
-            }
-        }
-    }
-
-    public int get_nation_tech_level(int nationRecno)
-    {
-        return nation_tech_level_array[nationRecno - 1];
-    }
-
-    public void inc_nation_is_researching(int nationRecno)
-    {
-        nation_is_researching_array[nationRecno - 1]++;
-    }
-
-    public void dec_nation_is_researching(int nationRecno)
-    {
-        nation_is_researching_array[nationRecno - 1]--;
-    }
-
-    public bool is_nation_researching(int nationRecno)
-    {
-        return nation_is_researching_array[nationRecno - 1] > 0;
-    }
-
-    public bool is_parent_tech_invented(int nationRecno)
-    {
-        if (ParentUnitId != 0)
-        {
-            if (UnitRes[ParentUnitId].get_nation_tech_level(nationRecno) < ParentLevel)
-                return false;
-        }
-
-        if (ParentFirmId != 0)
-        {
-            if (FirmRes[ParentFirmId].get_nation_tech_level(nationRecno) < ParentLevel)
-                return false;
-        }
-
-        return true;
-    }
-
-    public bool can_research(int nationRecno)
-    {
-        return get_nation_tech_level(nationRecno) < MaxTechLevel && is_parent_tech_invented(nationRecno);
-    }
-
-    public bool progress(int nationRecno, double progressPoint)
-    {
-        nation_research_progress_array[nationRecno - 1] += progressPoint;
-
-        if (nation_research_progress_array[nationRecno - 1] > 100.0)
-        {
-            set_nation_tech_level(nationRecno, nation_tech_level_array[nationRecno - 1] + 1);
-            nation_research_progress_array[nationRecno - 1] = 0.0;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public double get_progress(int nationRecno)
-    {
-        return nation_research_progress_array[nationRecno - 1];
-    }
 }
 
 public class TechRes
 {
-    public int total_tech_level; // the sum of research levels of all technology
+    public GameSet GameSet { get; }
+    public int TotalTechLevel { get; private set; } // the sum of research levels of all technology
 
     public TechClass[] TechClasses { get; private set; }
     public TechInfo[] TechInfos { get; private set; }
-
-    public GameSet GameSet { get; }
-
+    
     public TechRes(GameSet gameSet)
     {
         GameSet = gameSet;
 
         LoadTechClass();
         LoadTechInfo();
-    }
-
-    public void init_nation_tech(int nationId)
-    {
-        foreach (var techInfo in TechInfos)
-        {
-            techInfo.set_nation_tech_level(nationId, 0);
-        }
-    }
-
-    public void inc_all_tech_level(int nationId)
-    {
-        foreach (var techInfo in TechInfos)
-        {
-            int curTechLevel = techInfo.get_nation_tech_level(nationId);
-
-            if (curTechLevel < techInfo.MaxTechLevel)
-                techInfo.set_nation_tech_level(nationId, curTechLevel + 1);
-        }
     }
 
     public TechInfo this[int techId] => TechInfos[techId - 1];
@@ -313,7 +189,7 @@ public class TechRes
         TechInfos = new TechInfo[dbTech.RecordCount];
 
         int techClassId = 0;
-        total_tech_level = 0;
+        TotalTechLevel = 0;
         
         ResourceIdx images = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TECH.RES");
         TechClass techClass = null;
@@ -349,7 +225,7 @@ public class TechRes
                 techClass.TechCount++;
             }
 
-            total_tech_level += techInfo.MaxTechLevel;
+            TotalTechLevel += techInfo.MaxTechLevel;
         }
     }
 }

@@ -811,22 +811,24 @@ public class TalkRes
 
     private bool add_give_tech_choices()
     {
-        int techNationRecno;
+        int techNationId;
 
         if (cur_talk_msg.talk_id == TalkMsg.TALK_GIVE_TECH)
-            techNationRecno = cur_talk_msg.from_nation_recno;
+            techNationId = cur_talk_msg.from_nation_recno;
         else // demand tech
-            techNationRecno = cur_talk_msg.to_nation_recno;
+            techNationId = cur_talk_msg.to_nation_recno;
+
+        Nation techNation = NationArray[techNationId];
 
         if (cur_talk_msg.talk_para1 == 0)
         {
             choice_question = "Which technology?";
 
-            for (int i = 1; i <= TechRes.TechInfos.Length; i++)
+            for (int techId = 1; techId <= TechRes.TechInfos.Length; techId++)
             {
-                if (TechRes[i].get_nation_tech_level(techNationRecno) > 0)
+                if (techNation.GetTechLevel(techId) > 0)
                 {
-                    add_talk_choice(TechRes[i].Description(), i);
+                    add_talk_choice(TechRes[techId].Description(), techId);
                 }
             }
 
@@ -841,7 +843,7 @@ public class TalkRes
 
             choice_question = "Which version?";
 
-            int nationLevel = techInfo.get_nation_tech_level(techNationRecno);
+            int nationLevel = techNation.GetTechLevel(cur_talk_msg.talk_para1);
 
             string[] verStrArray = { "Mark I", "Mark II", "Mark III" };
 
@@ -1092,7 +1094,7 @@ public class TalkRes
 
             case TalkMsg.TALK_DEMAND_TECH:
                 // get the latest tech version id. of the agreed nation.
-                talkMsg.talk_para2 = TechRes[talkMsg.talk_para1].get_nation_tech_level(talkMsg.to_nation_recno);
+                talkMsg.talk_para2 = toNation.GetTechLevel(talkMsg.talk_para1);
                 toNation.GiveTech(talkMsg.from_nation_recno, talkMsg.talk_para1, talkMsg.talk_para2);
                 goodRelationDec = talkMsg.talk_para2 * 3;
                 break;

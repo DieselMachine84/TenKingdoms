@@ -103,6 +103,8 @@ public class NationBase : IIdObject
     private double CurYearReputationChange { get; set; }
     private double LastYearReputationChange { get; set; }
 
+    public int[] UnitTechLevels { get; } = new int[UnitConstants.MAX_UNIT_TYPE + 1];
+    private double[] UnitResearchProgress { get; } = new double[UnitConstants.MAX_UNIT_TYPE + 1];
     public int[] KnowBases { get; } = new int[GameConstants.MAX_RACE];
     public int[] BaseCounts { get; } = new int[GameConstants.MAX_RACE];
     
@@ -218,9 +220,8 @@ public class NationBase : IIdObject
             nation.InitRelation(this);
         }
 
-        //--------- init technology ----------//
-
-        TechRes.init_nation_tech(NationId);
+        UnitTechLevels[UnitConstants.UNIT_TRANSPORT] = 1;
+        UnitTechLevels[UnitConstants.UNIT_VESSEL] = 1;
 
         //------- reset all god knowledge --------//
 
@@ -861,10 +862,10 @@ public class NationBase : IIdObject
     {
         Nation toNation = NationArray[toNationId];
 
-        int curVersion = TechRes[techId].get_nation_tech_level(toNationId);
+        int curVersion = toNation.GetTechLevel(techId);
 
         if (curVersion < techVersion)
-            TechRes[techId].set_nation_tech_level(toNationId, techVersion);
+            toNation.SetTechLevel(techId, techVersion);
 
         NationRelation nationRelation = GetRelation(toNationId);
 
@@ -881,6 +882,63 @@ public class NationBase : IIdObject
         nationRelation2.LastTalkRejectDates[TalkMsg.TALK_GIVE_TECH - 1] = default(DateTime);
         nationRelation2.LastTalkRejectDates[TalkMsg.TALK_DEMAND_TECH - 1] = default(DateTime);
     }
+
+    public int GetTechLevel(int techId)
+    {
+        TechInfo techInfo = TechRes[techId];
+        return UnitTechLevels[techInfo.UnitId];
+    }
+    
+    public void SetTechLevel(int techId, int techLevel)
+    {
+        TechInfo techInfo = TechRes[techId];
+        UnitTechLevels[techInfo.UnitId] = techLevel;
+
+        //--- if the MAX level has been reached and there are still other firms researching this technology ---//
+
+        if (techLevel == techInfo.MaxTechLevel)
+        {
+            //---- stop other firms researching the same tech -----//
+
+            foreach (Firm firm in FirmArray)
+            {
+                if (firm.FirmType == Firm.FIRM_RESEARCH && firm.NationId == NationId)
+                {
+                    FirmResearch firmResearch = (FirmResearch)firm;
+                    if (firmResearch.TechId == techId)
+                        firmResearch.TerminateResearch();
+                }
+            }
+        }
+    }
+    
+    public bool CanResearch(int techId)
+    {
+        TechInfo techInfo = TechRes[techId];
+
+        bool isParentTechInvented = techInfo.ParentUnitId == 0 || UnitTechLevels[techInfo.ParentUnitId] >= techInfo.ParentLevel;
+        return isParentTechInvented && GetTechLevel(techId) < techInfo.MaxTechLevel;
+    }
+
+    public bool MakeResearchProgress(int unitType, double progressPoint)
+    {
+        UnitResearchProgress[unitType] += progressPoint;
+
+        if (UnitResearchProgress[unitType] > 100.0)
+        {
+            UnitResearchProgress[unitType] = 0.0;
+            UnitTechLevels[unitType]++;
+            return true;
+        }
+
+        return false;
+    }
+
+    public double GetResearchProgress(int unitType)
+    {
+        return UnitResearchProgress[unitType];
+    }
+    
 
     public void ChangeReputation(double changeLevel)
     {
@@ -1540,10 +1598,10 @@ public class NationBase : IIdObject
     {
         int totalTechLevel = 0;
 
-        for (int i = 1; i <= TechRes.TechInfos.Length; i++)
+        for (int techId = 1; techId <= TechRes.TechInfos.Length; techId++)
         {
-            TechInfo techInfo = TechRes[i];
-            int techLevel = techInfo.get_nation_tech_level(NationId);
+            TechInfo techInfo = TechRes[techId];
+            int techLevel = GetTechLevel(techId);
 
             if (techLevel > 0)
             {

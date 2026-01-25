@@ -26,13 +26,14 @@ public partial class Renderer
             Graphics.DrawBitmap(techInfo.GetTechLargeIconTexture(Graphics), DetailsX1 + 6, DetailsY1 + 100,
                 techInfo.TechLargeIconWidth * 2, techInfo.TechLargeIconHeight * 2);
 
+            Nation firmNation = NationArray[research.NationId];
             string description = techInfo.Description();
-            int researchVersion = techInfo.get_nation_tech_level(research.NationId) + 1;
+            int researchVersion = firmNation.GetTechLevel(research.TechId) + 1;
             if (researchVersion > 1)
                 description += " " + Misc.roman_number(researchVersion);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
-            PutText(FontSan, techInfo.get_progress(research.NationId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
+            PutText(FontSan, firmNation.GetResearchProgress(techInfo.UnitId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
         }
 
         DrawWorkers(research);
@@ -70,14 +71,14 @@ public partial class Renderer
 
     private void DrawResearchMenu(FirmResearch research)
     {
+        Nation firmNation = NationArray[research.NationId];
         int shownItems = 0;
         int dy = 0;
         for (int techId = 1; techId <= TechRes.TechInfos.Length + 1; techId++)
         {
             bool showCancelButton = (shownItems == MaxResearchItems || techId > TechRes.TechInfos.Length);
             
-            TechInfo techInfo = !showCancelButton ? TechRes[techId] : null;
-            if (!showCancelButton && !techInfo.can_research(research.NationId))
+            if (!showCancelButton && !firmNation.CanResearch(techId))
                 continue;
 
             bool mouseOnButton = _mouseButtonX >= MouseOnResearchButtonX1 && _mouseButtonX <= MouseOnResearchButtonX2 &&
@@ -89,11 +90,12 @@ public partial class Renderer
 
             if (!showCancelButton)
             {
+                TechInfo techInfo = TechRes[techId];
                 Graphics.DrawBitmap(techInfo.GetTechLargeIconTexture(Graphics), ResearchPanelX + 4, ResearchPanelY + dy + 4,
                     techInfo.TechLargeIconWidth * 3 / 2, techInfo.TechLargeIconHeight * 3 / 2);
                 
                 string description = techInfo.Description();
-                int researchVersion = techInfo.get_nation_tech_level(research.NationId) + 1;
+                int researchVersion = firmNation.GetTechLevel(techId) + 1;
                 if (researchVersion > 1)
                     description += " " + Misc.roman_number(researchVersion);
                 PutText(FontBible, description, ResearchPanelX + 96, ResearchPanelY + dy + 10);
@@ -138,14 +140,14 @@ public partial class Renderer
 
     private void HandleResearchMenu(FirmResearch research)
     {
+        Nation firmNation = NationArray[research.NationId];
         int shownItems = 0;
         int dy = 0;
         for (int techId = 1; techId <= TechRes.TechInfos.Length + 1; techId++)
         {
             bool onCancelButton = (shownItems == MaxResearchItems || techId > TechRes.TechInfos.Length);
             
-            TechInfo techInfo = !onCancelButton ? TechRes[techId] : null;
-            if (!onCancelButton && !techInfo.can_research(research.NationId))
+            if (!onCancelButton && !firmNation.CanResearch(techId))
                 continue;
 
             bool mouseOnButton = _mouseButtonX >= MouseOnResearchButtonX1 && _mouseButtonX <= MouseOnResearchButtonX2 &&

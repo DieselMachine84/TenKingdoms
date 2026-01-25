@@ -6449,22 +6449,23 @@ public class NationOld : NationBase
 
 		//------ think about the type of ship to build -----//
 
-		int unitId;
+		Nation ownNation = NationArray[NationId];
 
+		int unitId;
 		if (needTransportUnit)
 		{
-			if (UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
+			if (ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
 				unitId = UnitConstants.UNIT_GALLEON;
 
-			else if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(NationId) > 0)
-				unitId = UnitConstants.UNIT_GALLEON;
+			else if (ownNation.UnitTechLevels[UnitConstants.UNIT_CARAVEL] > 0)
+				unitId = UnitConstants.UNIT_CARAVEL;
 
 			else
 				unitId = UnitConstants.UNIT_VESSEL;
 		}
 		else
 		{
-			if (UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
+			if (ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
 				unitId = UnitConstants.UNIT_GALLEON;
 			else // don't use Caravel as it can only transport 5 units at a time
 				unitId = UnitConstants.UNIT_TRANSPORT;
@@ -7519,7 +7520,20 @@ public class NationOld : NationBase
 
 			//--- the nation will tend to surrender if there is only a small number of units left ---//
 
-			curRating += 50 - TotalUnitCount * 5;
+			int totalUnitCount = 0;
+			foreach (Unit unit in UnitArray)
+			{
+				if (unit.NationId == nation.NationId)
+					totalUnitCount++;
+			}
+
+			foreach (Firm firm in FirmArray)
+			{
+				if (!FirmRes[firm.FirmType].LiveInTown)
+					totalUnitCount += firm.Workers.Count;
+			}
+
+			curRating += 50 - totalUnitCount * 5;
 
 			if (curRating > bestRating)
 			{
@@ -8035,12 +8049,11 @@ public class NationOld : NationBase
 
 			//---- scan which tech that the nation has but we don't have ----//
 
+			Nation ownNation = NationArray[NationId];
 			int techId;
 			for (techId = 1; techId <= TechRes.TechInfos.Length; techId++)
 			{
-				TechInfo techInfo = TechRes[techId];
-
-				if (techInfo.get_nation_tech_level(NationId) == 0 && techInfo.get_nation_tech_level(nation.NationId) > 0)
+				if (ownNation.GetTechLevel(techId) == 0 && nation.GetTechLevel(techId) > 0)
 				{
 					break;
 				}
@@ -8698,7 +8711,8 @@ public class NationOld : NationBase
 				// (by 30 if its pref_use_weapon is 0).
 				//--------------------------------------------------------------//
 			{
-				int ownLevel = TechRes[talkMsg.talk_para1].get_nation_tech_level(NationId);
+				Nation ownNation = NationArray[NationId];
+				int ownLevel = ownNation.GetTechLevel(talkMsg.talk_para1);
 
 				if (talkMsg.talk_para2 > ownLevel)
 					relationChange = 30 * (talkMsg.talk_para2 - ownLevel) * (100 + pref_use_weapon) / 200;
@@ -9192,7 +9206,8 @@ public class NationOld : NationBase
 
 	public bool consider_take_tech(TalkMsg talkMsg)
 	{
-		int ourTechLevel = TechRes[talkMsg.talk_para1].get_nation_tech_level(NationId);
+		Nation ownNation = NationArray[NationId];
+		int ourTechLevel = ownNation.GetTechLevel(talkMsg.talk_para1);
 
 		if (ourTechLevel >= talkMsg.talk_para2)
 			return false;

@@ -347,7 +347,7 @@ public class TalkMsg
 				return toNation.Cash >= talk_para1;
 
 			case TALK_DEMAND_TECH: // the requested nation has the technology
-				return TechRes[talk_para1].get_nation_tech_level(to_nation_recno) > 0;
+				return toNation.GetTechLevel(talk_para1) > 0;
 		}
 
 		return true;

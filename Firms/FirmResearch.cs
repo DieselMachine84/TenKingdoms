@@ -43,8 +43,6 @@ public class FirmResearch : Firm
 
     public void StartResearch(int techId, int remoteAction)
     {
-        TechInfo techInfo = TechRes[techId];
-
         //if (!remoteAction && remote.is_enable())
         //{
             //// packet structure : <firm recno> <tech Id>
@@ -55,12 +53,9 @@ public class FirmResearch : Firm
         //}
 
         //---- if the firm currently is already researching something ---//
-
-        if (TechId != 0)
-            TerminateResearch();
+        TerminateResearch();
 
         TechId = techId;
-        techInfo.inc_nation_is_researching(NationId);
     }
 
     private void ProcessResearch()
@@ -78,7 +73,9 @@ public class FirmResearch : Firm
         else
             progressPoint = Productivity / 300.0;
 
-        int newLevel = techInfo.get_nation_tech_level(NationId) + 1;
+        Nation nation = NationArray[NationId];
+
+        int newLevel = nation.GetTechLevel(TechId) + 1;
         double levelDivider = (newLevel + 1) / 2.0; // from 1.0 to 2.0
 
         // more complex and higher level technology will take longer to research
@@ -87,7 +84,7 @@ public class FirmResearch : Firm
         // techInfo.Progress() will reset TechId if the current research level is the MAX tech level, so we have to save it now
         int techIdCopy = TechId;
 
-        if (techInfo.progress(NationId, progressPoint))
+        if (nation.MakeResearchProgress(techInfo.UnitId, progressPoint))
         {
             if (TechId != 0) // techInfo.Progress() may have called TerminateResearch() if the tech level reaches the maximum
             {
@@ -97,7 +94,7 @@ public class FirmResearch : Firm
 
                 if (!AIFirm)
                 {
-                    if (techInfo.get_nation_tech_level(NationId) < techInfo.MaxTechLevel)
+                    if (nation.GetTechLevel(TechId) < techInfo.MaxTechLevel)
                     {
                         StartResearch(techIdCopy, InternalConstants.COMMAND_AUTO);
                     }
@@ -106,7 +103,7 @@ public class FirmResearch : Firm
 
             if (OwnFirm())
             {
-                NewsArray.tech_researched(techIdCopy, TechRes[techIdCopy].get_nation_tech_level(NationId));
+                NewsArray.tech_researched(techIdCopy, nation.GetTechLevel(techIdCopy));
 
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
                     UnitRes[TechRes[techIdCopy].UnitId].SpriteId);
@@ -116,11 +113,7 @@ public class FirmResearch : Firm
 
     public void TerminateResearch()
     {
-        if (TechId != 0)
-        {
-            TechRes[TechId].dec_nation_is_researching(NationId);
-            TechId = 0;
-        }
+        TechId = 0;
     }
 
     public override void DrawDetails(IRenderer renderer)
@@ -162,15 +155,26 @@ public class FirmResearch : Firm
 
     private void ThinkNewResearch()
     {
+        Nation nation = NationArray[NationId];
+        
         int bestTechId = 0, bestRating = 0;
 
         for (int techId = TechRes.TechInfos.Length; techId > 0; techId--)
         {
-            TechInfo techInfo = TechRes[techId];
-
-            if (techInfo.can_research(NationId))
+            if (nation.CanResearch(techId))
             {
-                int curRating = 100 + (techInfo.is_nation_researching(NationId) ? 1 : 0) * 20;
+                bool isResearching = false;
+                foreach (Firm firm in FirmArray)
+                {
+                    if (firm.NationId == NationId && firm.FirmType == FIRM_RESEARCH)
+                    {
+                        FirmResearch research = (FirmResearch)firm;
+                        if (research.TechId == techId)
+                            isResearching = true;
+                    }
+                }
+                
+                int curRating = 100 + (isResearching ? 1 : 0) * 20;
 
                 if (curRating > bestRating || (curRating == bestRating && Misc.Random(2) == 0))
                 {
@@ -188,7 +192,7 @@ public class FirmResearch : Firm
     {
         //----- if all technologies have been researched -----//
 
-        if (NationArray[NationId].TotalTechLevel() == TechRes.total_tech_level)
+        if (NationArray[NationId].TotalTechLevel() == TechRes.TotalTechLevel)
         {
             AIDelFirm();
             return true;

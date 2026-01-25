@@ -435,11 +435,11 @@ public abstract partial class Unit : Sprite
 
 		SetCombatLevel(100); // set combat level default to 100, for human units, it will be adjusted later by individual functions
 
-		int techLevel;
-		if (NationId != 0 && unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON &&
-		    (techLevel = unitInfo.nation_tech_level_array[NationId - 1]) > 0)
+		if (NationId != 0 && unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 		{
-			WeaponVersion = techLevel;
+			int techLevel = NationArray[NationId].UnitTechLevels[UnitType];
+			if (techLevel > 0)
+				WeaponVersion = techLevel;
 		}
 
 		FixAttackInfo();
@@ -3817,9 +3817,6 @@ public abstract partial class Unit : Sprite
 
 		FirmInfo firmInfo = FirmRes[firmType];
 		if (!firmInfo.Buildable)
-			return false;
-
-		if (firmInfo.get_nation_tech_level(NationId) == 0)
 			return false;
 
 		if (firmType == Firm.FIRM_BASE) // only if the nation has acquired the myth to build it

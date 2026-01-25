@@ -1863,10 +1863,10 @@ public class UnitMarine : Unit, ITrader
 
 		//--- retire this ship if we have better ship technology available ---//
 
+		Nation ownNation = NationArray[NationId];
 		if (UnitType == UnitConstants.UNIT_TRANSPORT)
 		{
-			if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(NationId) > 0 ||
-			    UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
+			if (ownNation.UnitTechLevels[UnitConstants.UNIT_CARAVEL] > 0 || ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
 			{
 				if (!NationArray[NationId].ai_is_sea_travel_safe())
 				{

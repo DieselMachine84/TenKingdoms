@@ -442,21 +442,7 @@ public class UnitInfo
 		};
 	}
 	
-	// each nation's tech level on this unit
-	public int[] nation_tech_level_array = new int[GameConstants.MAX_NATION];
-	
 	private NationArray NationArray => Sys.Instance.NationArray;
-
-	public int get_nation_tech_level(int nationRecno)
-	{
-		return nation_tech_level_array[nationRecno - 1];
-	}
-
-	public void set_nation_tech_level(int nationRecno, int techLevel)
-	{
-		nation_tech_level_array[nationRecno - 1] = techLevel;
-	}
-
 	// mobile units + soldiers in camps, not including workers and prayers in bases
 	public int[] nation_unit_count_array = new int[GameConstants.MAX_NATION];
 
@@ -740,14 +726,6 @@ public class UnitRes
 			unitInfo.FirstAttack = Misc.ToInt32(unitRec.first_attack);
 			unitInfo.AttackCount = Misc.ToInt32(unitRec.attack_count);
 			unitInfo.DieEffectId = Misc.ToInt32(unitRec.die_effect_id);
-
-			if (unitRec.all_know == '1')
-			{
-				for (int j = 0; j < unitInfo.nation_tech_level_array.Length; j++)
-				{
-					unitInfo.nation_tech_level_array[j] = 1;
-				}
-			}
 		}
 
 		//--------- set vehicle info  ---------//

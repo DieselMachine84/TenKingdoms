@@ -343,7 +343,7 @@ public class FirmHarbor : Firm
 		int enemyShipCount = ownNation.max_human_battle_ship_count();
 		int aiShipCount = ownNation.ai_ship_array.Count;
 
-		if (UnitRes[UnitConstants.UNIT_GALLEON].get_nation_tech_level(NationId) > 0)
+		if (ownNation.UnitTechLevels[UnitConstants.UNIT_GALLEON] > 0)
 		{
 			buildId = UnitConstants.UNIT_GALLEON;
 
@@ -352,7 +352,7 @@ public class FirmHarbor : Firm
 			else
 				rc = enemyShipCount > aiShipCount;
 		}
-		else if (UnitRes[UnitConstants.UNIT_CARAVEL].get_nation_tech_level(NationId) > 0)
+		else if (ownNation.UnitTechLevels[UnitConstants.UNIT_CARAVEL] > 0)
 		{
 			buildId = UnitConstants.UNIT_CARAVEL;
 

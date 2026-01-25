@@ -184,6 +184,7 @@ public partial class Renderer
             buildUnitCounts[harbor.BuildUnitType]++;
         }
 
+        Nation harborNation = NationArray[harbor.NationId];
         int shownItems = 0;
         int dy = 0;
         for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
@@ -197,7 +198,7 @@ public partial class Renderer
                 correctedUnitType = UnitConstants.UNIT_TRANSPORT;
 
             UnitInfo unitInfo = !showCancelButton ? UnitRes[correctedUnitType] : null;
-            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
+            if (!showCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || harborNation.UnitTechLevels[correctedUnitType] == 0))
                 continue;
 
             //TODO Done button is not pressed when you press it close to the right edge
@@ -305,6 +306,7 @@ public partial class Renderer
 
     private void HandleBuildShipMenu(FirmHarbor harbor)
     {
+        Nation harborNation = NationArray[harbor.NationId];
         int shownItems = 0;
         int dy = 0;
         for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE + 1; unitType++)
@@ -318,7 +320,7 @@ public partial class Renderer
                 correctedUnitType = UnitConstants.UNIT_TRANSPORT;
             
             UnitInfo unitInfo = !onCancelButton ? UnitRes[correctedUnitType] : null;
-            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || unitInfo.get_nation_tech_level(harbor.NationId) == 0))
+            if (!onCancelButton && (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_SHIP || harborNation.UnitTechLevels[correctedUnitType] == 0))
                 continue;
 
             bool mouseOnBuildButton = _mouseButtonX >= MouseOnBuildShipButtonX1 && _mouseButtonX <= MouseOnBuildShipButtonX2 &&

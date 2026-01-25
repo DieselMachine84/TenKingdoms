@@ -3717,7 +3717,7 @@ public class Town : IIdObject
 		switch (Misc.Random(10))
 		{
 			case 1: // knowledge of weapon in the beginning.
-				TechRes[Misc.Random(TechRes.TechInfos.Length) + 1].set_nation_tech_level(newNation.NationId, 1);
+				newNation.SetTechLevel(Misc.Random(TechRes.TechInfos.Length) + 1, 1);
 				break;
 
 			case 2: // random additional cash
@@ -4404,9 +4404,7 @@ public class Town : IIdObject
 		if (!nation.ai_should_spend(25 + nation.pref_use_weapon / 2 - nation.ai_research_array.Count * 10))
 			return false;
 
-		int totalTechLevel = nation.TotalTechLevel();
-
-		if (totalTechLevel == TechRes.total_tech_level) // all technology have been researched
+		if (nation.TotalTechLevel() == TechRes.TotalTechLevel) // all technology have been researched
 			return false;
 
 		//--------------------------------------------//

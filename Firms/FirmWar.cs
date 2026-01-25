@@ -184,6 +184,8 @@ public class FirmWar : Firm
         if (!ShouldBuildNewWeapon())
             return;
 
+        Nation ownNation = NationArray[NationId];
+
         //---- calculate the average instance count of all available weapons ---//
 
         int weaponTypeCount = 0, totalWeaponCount = 0;
@@ -192,7 +194,7 @@ public class FirmWar : Firm
         {
             UnitInfo unitInfo = UnitRes[unitId];
 
-            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || unitInfo.get_nation_tech_level(NationId) == 0)
+            if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON || ownNation.UnitTechLevels[unitId] == 0)
                 continue;
 
             if (unitId == UnitConstants.UNIT_EXPLOSIVE_CART) // AI doesn't use Porcupine
@@ -218,7 +220,7 @@ public class FirmWar : Firm
             if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_WEAPON)
                 continue;
 
-            int techLevel = unitInfo.get_nation_tech_level(NationId);
+            int techLevel = ownNation.UnitTechLevels[unitId];
 
             if (techLevel == 0)
                 continue;

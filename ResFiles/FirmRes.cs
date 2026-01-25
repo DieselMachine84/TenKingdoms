@@ -332,21 +332,6 @@ public class FirmInfo
 
         return _flagTextures[textureKey];
     }
-
-    //TODO remove
-    //---------- game vars -----------//
-
-    public int[] nation_tech_level_array { get; } = new int[GameConstants.MAX_NATION];
-
-    public int get_nation_tech_level(int nationRecno)
-    {
-        return nation_tech_level_array[nationRecno - 1];
-    }
-
-    public void set_nation_tech_level(int nationRecno, int techLevel)
-    {
-        nation_tech_level_array[nationRecno - 1] = techLevel;
-    }
 }
 
 public class FirmBuild
@@ -498,14 +483,6 @@ public class FirmRes
             firmInfo.YearCost = Misc.ToInt32(firmRec.year_cost);
 
             firmInfo.Buildable = (firmInfo.SetupCost > 0);
-
-            if (firmRec.all_know == '1')
-            {
-                for (int j = 0; j < firmInfo.nation_tech_level_array.Length; j++)
-                {
-                    firmInfo.nation_tech_level_array[j] = 1;
-                }
-            }
 
             FirmBuild firmBuild = FirmBuilds[firmInfo.FirstBuildId - 1];
 
