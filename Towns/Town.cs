@@ -229,13 +229,6 @@ public class Town : IIdObject
 		if (AITown && NationId != 0)
 			NationArray[NationId].del_town_info(TownId);
 
-		//------ if this town is the nation's largest town, reset it ----//
-
-		if (NationId != 0 && NationArray[NationId].LargestTownId == TownId)
-			NationArray[NationId].LargestTownId = 0;
-
-		//-----------------------------------//
-
 		RestoreWorldMatrix();
 
 		ReleaseLink();

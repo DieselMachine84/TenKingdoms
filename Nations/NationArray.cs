@@ -302,11 +302,6 @@ public class NationArray : DynArray<Nation>
 		{
 			nation.TotalPopulation = 0;
 			nation.TotalJoblessPopulation = 0;
-
-			nation.LargestTownId = 0;
-			nation.LargestTownPop = 0;
-
-			nation.TotalSpyCount = 0;
 			nation.TotalShipCombatLevel = 0;
 		}
 
@@ -320,20 +315,7 @@ public class NationArray : DynArray<Nation>
 
 				nation.TotalPopulation += town.Population;
 				nation.TotalJoblessPopulation += town.JoblessPopulation;
-
-				if (town.Population > nation.LargestTownPop)
-				{
-					nation.LargestTownPop = town.Population;
-					nation.LargestTownId = town.TownId;
-				}
 			}
-		}
-
-		//------ calculate spy statistic -------//
-
-		foreach (Spy spy in SpyArray)
-		{
-			this[spy.TrueNationId].TotalSpyCount++;
 		}
 
 		//--- update nation rating (this must be called after the above code, which update vars like TotalPopulation ---//

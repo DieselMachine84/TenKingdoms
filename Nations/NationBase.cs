@@ -110,16 +110,6 @@ public class NationBase : IIdObject
     
     public int TotalPopulation { get; set; }
     public int TotalJoblessPopulation { get; set; }
-    public int LargestTownId { get; set; } // the id of the biggest town of this nation
-    public int LargestTownPop { get; set; }
-
-    public int TotalUnitCount { get; set; }
-    public int TotalHumanCount { get; set; }
-    public int TotalGeneralCount { get; set; }
-    public int TotalWeaponCount { get; set; }
-    public int TotalShipCount { get; set; }
-    public int TotalFirmCount { get; set; }
-    public int TotalSpyCount { get; set; }
     public int TotalShipCombatLevel { get; set; }
 
     // no. of natural resources site this nation possesses
@@ -1616,9 +1606,40 @@ public class NationBase : IIdObject
         return Math.Max(tradeRating1, tradeRating2);
     }
 
+    protected int GetTotalHumanCount()
+    {
+        int totalHumanCount = 0;
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.NationId == NationId && unit.RaceId != 0)
+                totalHumanCount++;
+        }
+
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId == NationId && !FirmRes[firm.FirmType].LiveInTown)
+            {
+                foreach (Worker worker in firm.Workers)
+                {
+                    if (worker.RaceId != 0)
+                        totalHumanCount++;
+                }
+            }
+        }
+
+        // Do not use unit.BelongsToNation(NationId) and check all spies because spy can be a worker
+        foreach (Spy spy in SpyArray)
+        {
+            if (spy.TrueNationId == NationId)
+                totalHumanCount++;
+        }
+
+        return totalHumanCount;
+    }
+	
     public int AllPopulation()
     {
-        return TotalPopulation + TotalHumanCount;
+        return TotalPopulation + GetTotalHumanCount();
     }
 
     public int TotalTechLevel(int unitClass = 0)

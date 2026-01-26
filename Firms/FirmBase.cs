@@ -125,13 +125,7 @@ public class FirmBase : Firm
     
     public override void ChangeNation(int newNationId)
     {
-        foreach (Worker worker in Workers)
-        {
-            UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
-        }
-
         NationArray[NationId].BaseCounts[RaceId - 1]--;
-
         NationArray[newNationId].BaseCounts[RaceId - 1]++;
 
         if (GodUnitId != 0 && !UnitArray.IsDeleted(GodUnitId))

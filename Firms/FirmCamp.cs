@@ -230,11 +230,6 @@ public class FirmCamp : Firm
 	
 	public override void ChangeNation(int newNationId)
 	{
-		foreach (Worker worker in Workers)
-		{
-			UnitRes[worker.UnitId].unit_change_nation(newNationId, NationId, worker.RankId);
-		}
-
 		ClearDefenseMode(FirmId);
 
 		ResetUnitHomeCamp(FirmId);

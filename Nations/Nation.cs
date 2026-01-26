@@ -1031,6 +1031,86 @@ public class NationOld : NationBase
 		return false;
 	}
 
+	private int GetTotalUnitCount()
+	{
+		int totalUnitCount = 0;
+		foreach (Unit unit in UnitArray)
+		{
+			if (unit.NationId == NationId)
+				totalUnitCount++;
+		}
+
+		foreach (Firm firm in FirmArray)
+		{
+			if (firm.NationId == NationId && !FirmRes[firm.FirmType].LiveInTown)
+				totalUnitCount += firm.Workers.Count;
+		}
+
+		// Do not use unit.BelongsToNation(NationId) and check all spies because spy can be a worker
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.TrueNationId == NationId)
+				totalUnitCount++;
+		}
+
+		return totalUnitCount;
+	}
+
+	private int GetTotalWeaponCount()
+	{
+		int totalWeaponCount = 0;
+		foreach (Unit unit in UnitArray)
+		{
+			if (unit.NationId == NationId && UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+			{
+				totalWeaponCount++;
+			}
+		}
+
+		foreach (Firm firm in FirmArray)
+		{
+			if (firm.NationId == NationId && !FirmRes[firm.FirmType].LiveInTown)
+			{
+				foreach (Worker worker in firm.Workers)
+				{
+					if (UnitRes[worker.UnitId].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+						totalWeaponCount++;
+				}
+			}
+		}
+
+		return totalWeaponCount;
+	}
+
+	private int GetTotalGeneralCount()
+	{
+		int totalUnitCount = 0;
+		foreach (Unit unit in UnitArray)
+		{
+			if (unit.BelongsToNation(NationId) && unit.Rank == Unit.RANK_GENERAL)
+				totalUnitCount++;
+		}
+
+		return totalUnitCount;
+	}
+
+	private int GetLargestTownId()
+	{
+		int largestTownId = 0;
+		int maxPopulation = 0;
+        
+		foreach (Town town in TownArray)
+		{
+			if (town.NationId == NationId && town.Population > maxPopulation)
+			{
+				maxPopulation = town.Population;
+				largestTownId = town.TownId;
+			}
+		}
+
+		return largestTownId;
+	}
+	
 	//-----------------------------------------------------------//
 	// functions for building firms
 	//-----------------------------------------------------------//
@@ -4193,11 +4273,12 @@ public class NationOld : NationBase
 	{
 		targetCombatLevel = 0;
 
-		if (LargestTownId == 0)
+		int largestTownId = GetLargestTownId();
+		if (largestTownId == 0)
 			return 0;
 
 		//TODO not only largest town
-		Town largestTown = TownArray[LargestTownId];
+		Town largestTown = TownArray[largestTownId];
 		int bestRating = Int32.MinValue, bestFirmRecno = 0;
 
 		foreach (Firm firm in FirmArray)
@@ -4289,8 +4370,8 @@ public class NationOld : NationBase
 
 		//----- if existing camps can already host all units ----//
 
-		int neededSoldierSpace = TotalHumanCount + TotalWeaponCount - ai_camp_array.Count * Firm.MAX_WORKER;
-		int neededGeneralSpace = TotalGeneralCount - ai_camp_array.Count;
+		int neededSoldierSpace = GetTotalHumanCount() + GetTotalWeaponCount() - ai_camp_array.Count * Firm.MAX_WORKER;
+		int neededGeneralSpace = GetTotalGeneralCount() - ai_camp_array.Count;
 
 		return neededSoldierSpace >= 9 + 20 * (100 - pref_military_development) / 200 &&
 		       neededGeneralSpace >= 2 + 4 * (100 - pref_military_development) / 200;
@@ -6827,7 +6908,14 @@ public class NationOld : NationBase
 	{
 		int aiPref = (onlyCounterSpy != 0 ? pref_counter_spy : pref_spy);
 
-		if (TotalSpyCount > TotalPopulation * (10 + aiPref / 10) / 100) // 10% to 20%
+		int totalSpyCount = 0;
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.TrueNationId == NationId)
+				totalSpyCount++;
+		}
+		
+		if (totalSpyCount > TotalPopulation * (10 + aiPref / 10) / 100) // 10% to 20%
 			return false;
 
 		if (!ai_should_spend(aiPref / 2))
@@ -6971,12 +7059,13 @@ public class NationOld : NationBase
 
 		//--------------------------------------------------------//
 
-		if (LargestTownId == 0)
+		int largestTownId = GetLargestTownId();
+		if (largestTownId == 0)
 			return false;
 
 		//--------------------------------------------------//
 
-		int baseRegionId = TownArray[LargestTownId].RegionId;
+		int baseRegionId = TownArray[largestTownId].RegionId;
 
 		// no region stat (region is too small), don't care
 		if (RegionArray.GetRegionInfo(baseRegionId).RegionStatId == 0)
@@ -7520,20 +7609,7 @@ public class NationOld : NationBase
 
 			//--- the nation will tend to surrender if there is only a small number of units left ---//
 
-			int totalUnitCount = 0;
-			foreach (Unit unit in UnitArray)
-			{
-				if (unit.NationId == nation.NationId)
-					totalUnitCount++;
-			}
-
-			foreach (Firm firm in FirmArray)
-			{
-				if (!FirmRes[firm.FirmType].LiveInTown)
-					totalUnitCount += firm.Workers.Count;
-			}
-
-			curRating += 50 - totalUnitCount * 5;
+			curRating += 50 - GetTotalUnitCount() * 5;
 
 			if (curRating > bestRating)
 			{
@@ -8525,10 +8601,11 @@ public class NationOld : NationBase
 					if (Config.ai_aggressiveness >= Config.OPTION_VERY_HIGH ||
 					    (Config.ai_aggressiveness >= Config.OPTION_HIGH && pref_peacefulness < 50))
 					{
-						if (LargestTownId != 0)
+						int largestTownId = GetLargestTownId();
+						if (largestTownId != 0)
 						{
 							// 1-use forces from all camps to attack the target
-							think_capture_new_enemy_town(TownArray[LargestTownId], true);
+							think_capture_new_enemy_town(TownArray[largestTownId], true);
 						}
 					}
 				}
@@ -8831,7 +8908,7 @@ public class NationOld : NationBase
 
 		//----- can't aid if we are too weak ourselves ---//
 
-		if (ai_general_array.Count * 10 + TotalHumanCount < 100 - pref_military_courage / 2)
+		if (ai_general_array.Count * 10 + GetTotalHumanCount() < 100 - pref_military_courage / 2)
 			return false;
 
 		//----- see what units are attacking the nation -----//

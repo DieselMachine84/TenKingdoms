@@ -177,6 +177,32 @@ public class FirmWar : Firm
         }
     }
     
+    private int GetTotalWeaponCount(int unitType)
+    {
+        int totalWeaponCount = 0;
+        foreach (Unit unit in UnitArray)
+        {
+            if (unit.NationId == NationId && unit.UnitType == unitType)
+            {
+                totalWeaponCount++;
+            }
+        }
+
+        foreach (Firm firm in FirmArray)
+        {
+            if (firm.NationId == NationId && !FirmRes[firm.FirmType].LiveInTown)
+            {
+                foreach (Worker worker in firm.Workers)
+                {
+                    if (worker.UnitId == unitType)
+                        totalWeaponCount++;
+                }
+            }
+        }
+
+        return totalWeaponCount;
+    }
+    
     private void ThinkNewProduction()
     {
         //----- first see if we have enough money to build & support the weapon ----//
@@ -201,7 +227,7 @@ public class FirmWar : Firm
                 continue;
 
             weaponTypeCount++;
-            totalWeaponCount += unitInfo.nation_unit_count_array[NationId - 1];
+            totalWeaponCount += GetTotalWeaponCount(unitType);
         }
 
         if (weaponTypeCount == 0) // none of weapon technologies is available
@@ -229,7 +255,7 @@ public class FirmWar : Firm
             if (unitType == UnitConstants.UNIT_EXPLOSIVE_CART)
                 continue;
 
-            int unitCount = unitInfo.nation_unit_count_array[NationId - 1];
+            int unitCount = GetTotalWeaponCount(unitType);
 
             int curRating = averageWeaponCount - unitCount + techLevel * 3;
 

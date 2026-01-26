@@ -390,7 +390,13 @@ public class FirmMarket : Firm
 			return false;
 
 		int supportedCaravan = nation.TotalPopulation / GameConstants.POPULATION_PER_CARAVAN;
-		int caravanCount = UnitRes[UnitConstants.UNIT_CARAVAN].nation_unit_count_array[NationId - 1];
+		
+		int caravanCount = 0;
+		foreach (Unit unit in UnitArray)
+		{
+			if (unit.NationId == NationId && unit.UnitType == UnitConstants.UNIT_CARAVAN)
+				caravanCount++;
+		}
 
 		return supportedCaravan > caravanCount;
 	}

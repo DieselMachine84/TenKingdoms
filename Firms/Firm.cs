@@ -1471,9 +1471,6 @@ public abstract class Firm : IIdObject
 		
 		SortWorkers();
 
-		if (!FirmRes[FirmType].LiveInTown) // if the unit does not live in town, increase the unit count now
-			UnitRes[unit.UnitType].inc_nation_unit_count(NationId);
-
 		UnitArray.DisappearInFirm(workerUnitId);
 	}
 
@@ -1576,11 +1573,6 @@ public abstract class Firm : IIdObject
 			spy.SetPlace(Spy.SPY_UNDEFINED, 0);
 			SpyArray.DeleteSpy(spy);
 		}
-
-		//--- decrease the nation unit count as the Unit has already increased it ----//
-
-		if (!FirmRes[FirmType].LiveInTown)
-			UnitRes[worker.UnitId].dec_nation_unit_count(NationId);
 
 		RemoveWorker(worker);
 	}
@@ -1826,10 +1818,6 @@ public abstract class Firm : IIdObject
 
 		Unit unit = UnitArray[unitId];
 		unit.InitFromWorker(worker);
-
-		//--- decrease the nation unit count as the Unit has already increased it ----//
-		if (!FirmRes[FirmType].LiveInTown) // if the unit does not live in town, increase the unit count now
-			UnitRes[unit.UnitType].dec_nation_unit_count(NationId);
 
 		//--- set non-military units to non-aggressive, except ai ---//
 		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId != 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
@@ -2169,17 +2157,6 @@ public abstract class Firm : IIdObject
 				worker.SkillLevel = GameConstants.CITIZEN_SKILL_LEVEL;
 
 				worker.InitPotential();
-
-				//--------- if this is a military camp ---------//
-				//
-				// Increase armed unit count of the race of the worker assigned,
-				// as when a unit is assigned to a camp, Unit.Deinit() will decrease
-				// the counter, so we need to increase it back here.
-				//
-				//---------------------------------------------------//
-
-				if (!FirmRes[FirmType].LiveInTown)
-					UnitRes[worker.UnitId].inc_nation_unit_count(NationId);
 
 				//------ if the recruited worker is a spy -----//
 

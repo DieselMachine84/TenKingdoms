@@ -303,10 +303,6 @@ public abstract partial class Unit : Sprite
 			SpyId = 0;
 		}
 
-		//-----------------------------------//
-
-		DeinitUnitType();
-
 		//-------- reset seek path ----------//
 
 		ResetPath();
@@ -443,51 +439,6 @@ public abstract partial class Unit : Sprite
 		}
 
 		FixAttackInfo();
-
-		//-------- set unit count ----------//
-
-		if (NationId != 0)
-		{
-			if (Rank != RANK_KING)
-				unitInfo.inc_nation_unit_count(NationId);
-
-			if (Rank == RANK_GENERAL)
-				unitInfo.inc_nation_general_count(NationId);
-		}
-	}
-
-	private void DeinitUnitType()
-	{
-		UnitInfo unitInfo = UnitRes[UnitType];
-
-		if (NationId != 0)
-		{
-			if (Rank != RANK_KING)
-				unitInfo.dec_nation_unit_count(NationId);
-
-			if (Rank == RANK_GENERAL)
-				unitInfo.dec_nation_general_count(NationId);
-		}
-
-		//--------- if the unit is a spy ----------//
-		//
-		// A spy has double identity and is counted
-		// by both the true controlling nation and the deceiving nation.
-		//
-		//-----------------------------------------//
-
-		if (SpyId != 0 && TrueNationId() != NationId)
-		{
-			// TODO there is no same code in InitUnitType(). Check this
-			
-			int trueNationId = TrueNationId();
-
-			if (Rank != RANK_KING)
-				unitInfo.dec_nation_unit_count(trueNationId);
-
-			if (Rank == RANK_GENERAL)
-				unitInfo.dec_nation_general_count(trueNationId);
-		}
 	}
 
 	private void DeinitUnitMode()
@@ -3730,29 +3681,6 @@ public abstract partial class Unit : Sprite
 		else if (rankId < Rank && Rank != RANK_KING)
 			ChangeLoyalty(-GameConstants.DEMOTE_LOYALTY_DECREASE);
 
-		if (NationId != 0)
-		{
-			UnitInfo unitInfo = UnitRes[UnitType];
-
-			if (Rank == RANK_GENERAL) // if it was a general originally
-				unitInfo.dec_nation_general_count(NationId);
-
-			if (rankId == RANK_GENERAL) // if the new rank is general
-				unitInfo.inc_nation_general_count(NationId);
-
-			//------ if demote a king to a unit ------//
-
-			// since kings are not included in nation_unit_count, when it is no longer a king, we need to re-increase it.
-			if (Rank == RANK_KING && rankId != RANK_KING)
-				unitInfo.inc_nation_unit_count(NationId);
-
-			//------ if promote a unit to a king ------//
-
-			// since kings are not included in nation_unit_count, we need to decrease it
-			if (Rank != RANK_KING && rankId == RANK_KING)
-				unitInfo.dec_nation_unit_count(NationId);
-		}
-
 		if (Rank == RANK_GENERAL && rankId == RANK_SOLDIER)
 		{
 			//----- reset LeaderId of the units he commands ----//
@@ -3956,10 +3884,6 @@ public abstract partial class Unit : Sprite
 		//---------- stop all action to attack this unit ------------//
 
 		UnitArray.StopAttackUnit(SpriteId);
-
-		//---- update nation_unit_count_array[] ----//
-
-		UnitRes[UnitType].unit_change_nation(newNationId, NationId, Rank);
 
 		//------- if the nation has an AI action -------//
 
