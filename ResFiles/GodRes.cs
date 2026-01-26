@@ -143,7 +143,6 @@ public class GodRes
     public const int GOD_INDIAN = 9;
     public const int GOD_ZULU = 10;
     public const int MAX_GOD = 10;
-    public const string GOD_DB = "GOD";
 
     public GodInfo[] god_info_array;
 
@@ -159,7 +158,7 @@ public class GodRes
 
     private void LoadGodInfo()
     {
-        Database dbGod = GameSet.OpenDb(GOD_DB);
+        Database dbGod = GameSet.OpenDb("GOD");
 
         god_info_array = new GodInfo[dbGod.RecordCount];
 

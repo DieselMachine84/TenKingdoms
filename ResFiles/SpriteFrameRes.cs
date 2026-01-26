@@ -66,11 +66,11 @@ public class SpriteFrameRec
 
 public class SpriteFrame
 {
-    public int OffsetX;
-    public int OffsetY;
-    public int Width;
-    public int Height;
-    public int BitmapOffset;
+    public int OffsetX { get; set; }
+    public int OffsetY { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public int BitmapOffset { get; set; }
     private readonly Dictionary<int, IntPtr> _unitTextures = new Dictionary<int, nint>();
 
     public IntPtr GetSpriteTexture(Graphics graphics, SpriteInfo spriteInfo, int nationId, bool isSelected)
@@ -79,9 +79,8 @@ public class SpriteFrame
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
         if (!_unitTextures.ContainsKey(textureKey))
         {
-            byte[] bitmaps = spriteInfo._resBitmap.ReadFull();
-            int bitmapSize = BitConverter.ToInt16(bitmaps, BitmapOffset);
-            byte[] bitmap = bitmaps.Skip(BitmapOffset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
+            int bitmapSize = BitConverter.ToInt16(spriteInfo.Bitmaps, BitmapOffset);
+            byte[] bitmap = spriteInfo.Bitmaps.Skip(BitmapOffset + sizeof(Int32) + 2 * sizeof(Int16)).Take(bitmapSize).ToArray();
             byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap, Width, Height,
                 ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
             IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, Width, Height);
@@ -94,8 +93,6 @@ public class SpriteFrame
 
 public class SpriteFrameRes
 {
-    private const string SPRITE_FRAME_DB = "SFRAME";
-
     private SpriteFrame[] _spriteFrames;
 
     public GameSet GameSet { get; }
@@ -111,7 +108,7 @@ public class SpriteFrameRes
 
     private void LoadInfo()
     {
-        Database dbSpriteFrame = GameSet.OpenDb(SPRITE_FRAME_DB);
+        Database dbSpriteFrame = GameSet.OpenDb("SFRAME");
         _spriteFrames = new SpriteFrame[dbSpriteFrame.RecordCount];
 
         for (int i = 0; i < _spriteFrames.Length; i++)

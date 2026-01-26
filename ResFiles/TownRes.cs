@@ -238,12 +238,6 @@ public class TownName
 
 public class TownRes
 {
-    public const string TOWN_LAYOUT_DB = "TOWNLAY";
-    public const string TOWN_SLOT_DB = "TOWNSLOT";
-    public const string TOWN_BUILD_TYPE_DB = "TOWNBTYP";
-    public const string TOWN_BUILD_DB = "TOWNBULD";
-    public const string TOWN_NAME_DB = "TOWNNAME";
-
     public const int POPULATION_PER_HOUSE = 6;
 
     public TownLayout[] TownLayouts { get; private set; }
@@ -414,7 +408,7 @@ public class TownRes
 
     private void LoadTownLayout()
     {
-        Database dbTownLayout = GameSet.OpenDb(TOWN_LAYOUT_DB);
+        Database dbTownLayout = GameSet.OpenDb("TOWNLAY");
         TownLayouts = new TownLayout[dbTownLayout.RecordCount];
         ResourceIdx groundImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.terrain_set}.RES");
 
@@ -446,7 +440,7 @@ public class TownRes
 
     private void LoadTownSlot()
     {
-        Database dbTownSlot = GameSet.OpenDb(TOWN_SLOT_DB);
+        Database dbTownSlot = GameSet.OpenDb("TOWNSLOT");
         _townSlots = new TownSlot[dbTownSlot.RecordCount];
 
         for (int i = 0; i < _townSlots.Length; i++)
@@ -465,7 +459,7 @@ public class TownRes
 
     private void LoadTownBuildType()
     {
-        Database dbTownBuildType = GameSet.OpenDb(TOWN_BUILD_TYPE_DB);
+        Database dbTownBuildType = GameSet.OpenDb("TOWNBTYP");
         _townBuildTypes = new TownBuildType[dbTownBuildType.RecordCount];
 
         for (int i = 0; i < _townBuildTypes.Length; i++)
@@ -481,7 +475,7 @@ public class TownRes
 
     private void LoadTownBuild()
     {
-        Database dbTownBuild = GameSet.OpenDb(TOWN_BUILD_DB);
+        Database dbTownBuild = GameSet.OpenDb("TOWNBULD");
         _townBuilds = new TownBuild[dbTownBuild.RecordCount];
         ResourceDb images = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TOWN.RES");
 
@@ -505,7 +499,7 @@ public class TownRes
 
     private void LoadTownName()
     {
-        Database dbTownName = GameSet.OpenDb(TOWN_NAME_DB);
+        Database dbTownName = GameSet.OpenDb("TOWNNAME");
         _townNames = new TownName[dbTownName.RecordCount];
         _townNamesUsed = new byte[_townNames.Length];
 

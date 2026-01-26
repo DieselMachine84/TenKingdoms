@@ -306,8 +306,6 @@ public class RaceRes
 {
 	public const int RACE_ICON_WIDTH = 24;
 	public const int RACE_ICON_HEIGHT = 20;
-	public const string RACE_DB = "RACE";
-	public const string RACE_NAME_DB = "RACENAME";
 
 	public RaceInfo[] race_info_array;
 	public RaceName[] name_array;
@@ -346,7 +344,7 @@ public class RaceRes
 
 	private void LoadRaceInfo()
 	{
-		Database dbRace = GameSet.OpenDb(RACE_DB);
+		Database dbRace = GameSet.OpenDb("RACE");
 		race_info_array = new RaceInfo[dbRace.RecordCount];
 
 		for (int i = 0; i < race_info_array.Length; i++)
@@ -392,7 +390,7 @@ public class RaceRes
 		// cannot be more than 255 in each name group, as Unit::name_id is an <int> and half of it is for the first name and another half of it is for the last name
 		const int MAX_SINGLE_RACE_NAME = 255;
 
-		Database dbRaceName = GameSet.OpenDb(RACE_NAME_DB);
+		Database dbRaceName = GameSet.OpenDb("RACENAME");
 
 		name_array = new RaceName[dbRaceName.RecordCount];
 		name_used_array = new byte[name_array.Length];

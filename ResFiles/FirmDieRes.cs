@@ -5,10 +5,6 @@ namespace TenKingdoms;
 
 public class FirmDieRes
 {
-	private const string FIRM_BUILD_DB = "FDBUILD";
-	private const string FIRM_FRAME_DB = "FDFRAME";
-	private const string FIRM_BITMAP_DB = "FDBITMAP";
-
 	private FirmBuild[] FirmBuilds { get; set; }
 	private FirmBitmap[] FirmBitmaps { get; set; }
 
@@ -34,7 +30,7 @@ public class FirmDieRes
 
 	private void LoadBuildInfo()
 	{
-		Database dbFirmBuild = GameSet.OpenDb(FIRM_BUILD_DB);
+		Database dbFirmBuild = GameSet.OpenDb("FDBUILD");
 		FirmBuilds = new FirmBuild[dbFirmBuild.RecordCount];
 		int[] firstFrameIds = new int[FirmBuilds.Length];
 
@@ -60,7 +56,7 @@ public class FirmDieRes
 			// BUGHERE : need to compare same Firm name and build code in firm database
 		}
 
-		Database dbFirmFrame = GameSet.OpenDb(FIRM_FRAME_DB);
+		Database dbFirmFrame = GameSet.OpenDb("FDFRAME");
 		for (int i = 0; i < FirmBuilds.Length; i++)
 		{
 			FirmBuild firmBuild = FirmBuilds[i];
@@ -134,7 +130,7 @@ public class FirmDieRes
 	private void LoadBitmapInfo()
 	{
 		ResourceDb firmDieBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_FIRMDI.RES");
-		Database dbFirmBitmap = GameSet.OpenDb(FIRM_BITMAP_DB);
+		Database dbFirmBitmap = GameSet.OpenDb("FDBITMAP");
 		FirmBitmaps = new FirmBitmap[dbFirmBitmap.RecordCount];
 
 		for (int i = 0; i < FirmBitmaps.Length; i++)

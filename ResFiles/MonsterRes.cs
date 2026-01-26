@@ -135,7 +135,6 @@ public class MonsterInfo
 public class MonsterRes
 {
     public const int MAX_ACTIVE_MONSTER = 13; // No. of monster type in each game
-    public const string MONSTER_DB = "MONSTER";
 
     public MonsterInfo[] monster_info_array;
 
@@ -247,7 +246,7 @@ public class MonsterRes
 
     private void LoadMonsterInfo()
     {
-        Database dbMonster = GameSet.OpenDb(MONSTER_DB);
+        Database dbMonster = GameSet.OpenDb("MONSTER");
 
         monster_info_array = new MonsterInfo[dbMonster.RecordCount];
 

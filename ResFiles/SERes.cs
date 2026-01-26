@@ -89,8 +89,6 @@ public class SETypeIndex
 
 public class SERes
 {
-	public const string SERES_DB = "SOUNDRES";
-
 	public SECtrl se_output;
 	public SEInfo[] se_array;
 	public SEInfoIndex[] se_index_array;
@@ -296,7 +294,7 @@ public class SERes
 
 	private void LoadInfo()
 	{
-		Database dbSE = GameSet.OpenDb(SERES_DB);
+		Database dbSE = GameSet.OpenDb("SOUNDRES");
 
 		se_array = new SEInfo[dbSE.RecordCount];
 

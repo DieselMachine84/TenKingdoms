@@ -117,81 +117,81 @@ public class SpriteActionRec
 
 public class SpriteMove
 {
-    public int FirstFrameId; // first frame id to frame_array.
-    public int FrameCount; // no. of frames in the movement
+    public int FirstFrameId { get; set; } // first frame id to frame_array.
+    public int FrameCount { get; set; } // no. of frames in the movement
 }
 
 public class SpriteAttack
 {
-    public int FirstFrameId; // first frame id to frame_array.
-    public int FrameCount; // no. of frames in the movement
+    public int FirstFrameId { get; set; } // first frame id to frame_array.
+    public int FrameCount { get; set; } // no. of frames in the movement
 
     // no. of frames should be delayed between attack motions. (i.e. when one motion is complete,
     // it will delay <delay_frames> before move on to the next action motion in the cycle
-    public int AttackDelay;
+    public int AttackDelay { get; set; }
 }
 
 public class SpriteStop
 {
-    public int FrameId; // frame id to frame_array.
-    public int FrameCount;
+    public int FrameId { get; set; } // frame id to frame_array.
+    public int FrameCount { get; set; }
 }
 
 public class SpriteDie
 {
-    public int FirstFrameId; // first frame id to frame_array.
-    public int FrameCount; // no. of frames in the movement
+    public int FirstFrameId { get; set; } // first frame id to frame_array.
+    public int FrameCount { get; set; } // no. of frames in the movement
 }
 
 public class SpriteGuardStop
 {
-    public int FirstFrameId; // first frame id to frame_array.
-    public int FrameCount;
+    public int FirstFrameId { get; set; } // first frame id to frame_array.
+    public int FrameCount { get; set; }
 }
 
 public class SpriteGuardMove
 {
-    public int FirstFrameId; // first frame recno to frame_array.
-    public int FrameCount; // no. of frames in the movement
+    public int FirstFrameId { get; set; } // first frame id to frame_array.
+    public int FrameCount { get; set; } // no. of frames in the movement
 }
 
 public class SpriteInfo
 {
-	public const int MAX_SPRITE_DIR_TYPE = 8;
-	public const int MAX_UNIT_ATTACK_TYPE = 3;
+	private const int MAX_SPRITE_DIR_TYPE = 8;
+	private const int MAX_UNIT_ATTACK_TYPE = 3;
 
-	public string SpriteCode;
+	public string SpriteCode { get; set; }
 
-	public int SpriteType;
-	public int SpriteSubType;
+	public int SpriteType { get; set; }
+	public int SpriteSubType { get; set; }
 
-	public int NeedTurning;
-	public int TurnResolution;
+	public int NeedTurning { get; set; }
+	public int TurnResolution { get; set; }
 
-	public int LocWidth; // no. of locations it takes horizontally and vertically
-	public int LocHeight;
+	public int LocWidth { get; set; } // no. of locations it takes horizontally and vertically
+	public int LocHeight { get; set; }
 
-	public int Speed; // based on UnitRes, can be upgraded during the game.
-	public int FramesPerStep;
-	public int MaxRainSlowdown;
-	public int MaxSnowSlowdown;
-	public int LightningDamage;
-	public bool RemapBitmap;
-	public int MaxSpeed; // original speed
-	public int CanGuard; // bit0= standing guard, bit1=moving guard
+	public int Speed { get; set; } // based on UnitRes, can be upgraded during the game.
+	public int FramesPerStep { get; set; }
+	public int MaxRainSlowdown { get; set; }
+	public int MaxSnowSlowdown { get; set; }
+	public int LightningDamage { get; set; }
+	public bool RemapBitmap { get; set; }
+	public int MaxSpeed { get; set; } // original speed
+	public int CanGuard { get; set; } // bit0 = standing guard, bit1 = moving guard
 
-	public ResourceDb _resBitmap; // frame bitmap resource
+	public byte[] Bitmaps { get; set; }
 
 	// move_array[24] to cater upward and downward directions for projectile
 	// and also 16-direction movement for weapons
-	public readonly SpriteMove[] Moves = new SpriteMove[3 * MAX_SPRITE_DIR_TYPE];
-	public readonly SpriteAttack[,] Attacks = new SpriteAttack[MAX_UNIT_ATTACK_TYPE, MAX_SPRITE_DIR_TYPE];
-	public readonly SpriteStop[] Stops = new SpriteStop[3 * MAX_SPRITE_DIR_TYPE];
-	public readonly SpriteDie Die = new SpriteDie();
-	public readonly SpriteGuardStop[] GuardStops = new SpriteGuardStop[MAX_SPRITE_DIR_TYPE];
-	public readonly SpriteGuardMove[] GuardMoves = new SpriteGuardMove[MAX_SPRITE_DIR_TYPE];
+	public SpriteMove[] Moves { get; } = new SpriteMove[3 * MAX_SPRITE_DIR_TYPE];
+	public SpriteAttack[,] Attacks { get; } = new SpriteAttack[MAX_UNIT_ATTACK_TYPE, MAX_SPRITE_DIR_TYPE];
+	public SpriteStop[] Stops { get; } = new SpriteStop[3 * MAX_SPRITE_DIR_TYPE];
+	public SpriteDie Die { get; } = new SpriteDie();
+	public SpriteGuardStop[] GuardStops { get; } = new SpriteGuardStop[MAX_SPRITE_DIR_TYPE];
+	public SpriteGuardMove[] GuardMoves { get; } = new SpriteGuardMove[MAX_SPRITE_DIR_TYPE];
 
-	public SubSpriteInfo[] SubSpriteInfo;
+	public SubSpriteInfo[] SubSpriteInfo { get; set; }
 
 	public SpriteInfo()
 	{
@@ -211,11 +211,6 @@ public class SpriteInfo
 		for (int i = 0; i < GuardMoves.Length; i++)
 			GuardMoves[i] = new SpriteGuardMove();
 	}
-
-	/*public void load_bitmap_res()
-	{
-		res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{sprite_code}.SPR");
-	}*/
 
 	public SubSpriteInfo GetSubSpriteInfo(int i)
 	{
@@ -276,18 +271,14 @@ public class SubSpriteRec
 
 public class SubSpriteInfo
 {
-    public SpriteInfo SpriteInfo;
-    public int SpriteId;
-    public int OffsetX;
-    public int OffsetY;
+    public SpriteInfo SpriteInfo { get; set; }
+    public int SpriteId { get; set; }
+    public int OffsetX { get; set; }
+    public int OffsetY { get; set; }
 }
 
 public class SpriteRes
 {
-	private const string SPRITE_DB = "SPRITE";
-	private const string SUB_SPRITE_DB = "SUB_SPR";
-	private const string SPRITE_ACTION_DB = "SACTION";
-
     private SpriteInfo[] _spriteInfos;
     private SubSpriteInfo[] _subSpriteInfos;
 
@@ -331,7 +322,7 @@ public class SpriteRes
 
     private void LoadSpriteInfo()
     {
-	    Database dbSprite = GameSet.OpenDb(SPRITE_DB);
+	    Database dbSprite = GameSet.OpenDb("SPRITE");
 	    _spriteInfos = new SpriteInfo[dbSprite.RecordCount];
 
 	    int[] firstDirIds = new int[_spriteInfos.Length];
@@ -372,13 +363,14 @@ public class SpriteRes
 		    else
 			    spriteInfo.RemapBitmap = true;
 		    
-		    spriteInfo._resBitmap = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{spriteInfo.SpriteCode}.SPR");
+		    ResourceDb spriteBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Sprite/{spriteInfo.SpriteCode}.SPR");
+		    spriteInfo.Bitmaps = spriteBitmaps.ReadFull();
 
 		    firstDirIds[i] = Misc.ToInt32(spriteRec.first_move_recno);
 		    dirCounts[i] = Misc.ToInt32(spriteRec.move_count);
 	    }
 
-	    Database dbSpriteMove = GameSet.OpenDb(SPRITE_ACTION_DB);
+	    Database dbSpriteMove = GameSet.OpenDb("SACTION");
 
 	    for (int i = 0; i < _spriteInfos.Length; i++)
 	    {
@@ -464,7 +456,7 @@ public class SpriteRes
 
     private void LoadSubSpriteInfo()
     {
-	    Database dbSubSprite = GameSet.OpenDb(SUB_SPRITE_DB);
+	    Database dbSubSprite = GameSet.OpenDb("SUB_SPR");
 	    _subSpriteInfos = new SubSpriteInfo[dbSubSprite.RecordCount];
 
 	    for (int i = 0; i < _subSpriteInfos.Length; i++)
@@ -484,7 +476,7 @@ public class SpriteRes
 		    int subNo = Misc.ToInt32(subSpriteRec.sub_no);
 		    SpriteInfo parentSprite = this[Misc.ToInt32(subSpriteRec.sprite_id)];
 
-		    var oldSubSpriteInfo = parentSprite.SubSpriteInfo;
+		    SubSpriteInfo[] oldSubSpriteInfo = parentSprite.SubSpriteInfo;
 		    parentSprite.SubSpriteInfo = new SubSpriteInfo[subNo];
 
 		    if (oldSubSpriteInfo != null)

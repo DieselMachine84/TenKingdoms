@@ -30,8 +30,6 @@ public class SetInfo
 
 public class GameSet
 {
-    private const string SET_HEADER_DB = "HEADER";
-
     private SetInfo[] _setInfos;
 
     private ResourceIdx _setResource;
@@ -73,7 +71,7 @@ public class GameSet
         for (int i = 0; i < files.Length; i++)
         {
             ResourceIdx setResource = new ResourceIdx($"{Sys.GameDataFolder}/Resource/" + files[i].Name);
-            Database setDatabase = new Database(setResource.Read(SET_HEADER_DB));
+            Database setDatabase = new Database(setResource.Read("HEADER"));
             SetRec setRec = new SetRec(setDatabase, 1);
             SetInfo setInfo = new SetInfo();
             _setInfos[i] = setInfo;
