@@ -44,7 +44,7 @@ public class UnitGod : Unit
 
 		FirmBase firmBase = (FirmBase)FirmArray[BaseFirmId];
 
-		firmBase.PrayPoints -= GodRes[GodId].exist_pray_points / 200.0;
+		firmBase.PrayPoints -= GodRes[GodId].ExistPrayPoints / 200.0;
 
 		if (firmBase.PrayPoints < 0.0)
 			firmBase.PrayPoints = 0.0;
@@ -100,10 +100,10 @@ public class UnitGod : Unit
 
 		GodInfo godInfo = GodRes[GodId];
 
-		int locX1 = locX - godInfo.cast_power_range + 1;
-		int locY1 = locY - godInfo.cast_power_range + 1;
-		int locX2 = locX + godInfo.cast_power_range - 1;
-		int locY2 = locY + godInfo.cast_power_range - 1;
+		int locX1 = locX - godInfo.CastPowerRange + 1;
+		int locY1 = locY - godInfo.CastPowerRange + 1;
+		int locX2 = locX + godInfo.CastPowerRange - 1;
+		int locY2 = locY + godInfo.CastPowerRange - 1;
 
 		int centerY = (locY1 + locY2) / 2;
 
@@ -126,7 +126,7 @@ public class UnitGod : Unit
 
 		FirmBase firmBase = (FirmBase)FirmArray[BaseFirmId];
 
-		firmBase.PrayPoints -= GodRes[GodId].power_pray_points;
+		firmBase.PrayPoints -= GodRes[GodId].PowerPrayPoints;
 
 		if (firmBase.PrayPoints < 0.0)
 			firmBase.PrayPoints = 0.0;
@@ -853,7 +853,7 @@ public class UnitGod : Unit
 
 			if (bestUnitCost < 100)
 			{
-				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[GodId].cast_power_range)
+				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[GodId].CastPowerRange)
 					GoCastPower(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
 					MoveTo(xLoc, yLoc);

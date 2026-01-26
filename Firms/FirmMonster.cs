@@ -22,7 +22,7 @@ public class MonsterInFirm
 
 	public void SetCombatLevel(int combatLevel)
 	{
-		UnitInfo unitInfo = UnitRes[MonsterRes[MonsterId].unit_id];
+		UnitInfo unitInfo = UnitRes[MonsterRes[MonsterId].UnitType];
 
 		CombatLevel = combatLevel;
 
@@ -96,7 +96,7 @@ public class FirmMonster : Firm
 
 		ClearDefenseMode();
 
-		int goldAmount = 800 * (MonsterRes[MonsterId].level * 30 + Misc.Random(50)) / 100;
+		int goldAmount = 800 * (MonsterRes[MonsterId].Level * 30 + Misc.Random(50)) / 100;
 
 		SiteArray.AddSite(LocCenterX, LocCenterY, Site.SITE_GOLD_COIN, goldAmount);
 		SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
@@ -371,7 +371,7 @@ public class FirmMonster : Firm
 
 		int locX = LocCenterX, locY = LocCenterY;
 		MonsterInfo monsterInfo = MonsterRes[monsterId];
-		UnitInfo unitInfo = UnitRes[monsterInfo.unit_id];
+		UnitInfo unitInfo = UnitRes[monsterInfo.UnitType];
 		SpriteInfo spriteInfo = SpriteRes[unitInfo.SpriteId];
 
 		if (!World.LocateSpace(ref locX, ref locY, locX, locY, spriteInfo.LocWidth, spriteInfo.LocHeight, unitInfo.MobileType))
@@ -797,7 +797,6 @@ public class FirmMonster : Firm
 
 		//------------- locate space to build monster firm randomly -------------//
 
-		MonsterInfo monsterInfo = MonsterRes[MonsterKing.MonsterId];
 		FirmInfo firmInfo = FirmRes[FIRM_MONSTER];
 		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 		int locX1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
@@ -815,7 +814,7 @@ public class FirmMonster : Firm
 
 		MonsterGenerals.RemoveAt(MonsterGenerals.Count - 1);
 
-		return monsterInfo.build_firm_monster(locX1 + GameConstants.FREE_SPACE_DISTANCE, locY1 + GameConstants.FREE_SPACE_DISTANCE, 1);
+		return FirmArray.BuildMonsterLair(locX1 + GameConstants.FREE_SPACE_DISTANCE, locY1 + GameConstants.FREE_SPACE_DISTANCE, MonsterKing.MonsterId);
 	}
 	
 	#endregion

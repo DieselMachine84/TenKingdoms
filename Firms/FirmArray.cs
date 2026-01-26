@@ -1,14 +1,14 @@
 using System;
-using System.Collections.Generic;
 
 namespace TenKingdoms;
 
 public class FirmArray : DynArray<Firm>
 {
-	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private SERes SERes => Sys.Instance.SERes;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
+	private FirmRes FirmRes => Sys.Instance.FirmRes;
+	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 	private NationArray NationArray => Sys.Instance.NationArray;
 
 	public FirmArray()
@@ -187,5 +187,44 @@ public class FirmArray : DynArray<Firm>
 		}
 
 		return currentFirmId;
+	}
+	
+	public int BuildMonsterLair(int locX, int locY, int monsterId)
+	{
+		//----- if this monster has a home building, create it first -----//
+
+		int firmId = BuildFirm(locX, locY, 0, Firm.FIRM_MONSTER, MonsterRes[monsterId].FirmBuildCode);
+
+		if (firmId == 0)
+			return 0;
+
+		FirmMonster firmMonster = (FirmMonster)this[firmId];
+		firmMonster.CompleteConstruction();
+		firmMonster.MonsterId = monsterId;
+		firmMonster.SetKing(monsterId, 100);
+
+		//-------- create monster generals ---------//
+
+		int generalCount = Misc.Random(2) + 1; // 1 to 3 generals in a monster firm
+
+		if (Misc.Random(5) == 0) // 20% chance of having 3 generals.
+			generalCount = 3;
+
+		for (int i = 0; i < generalCount; i++)
+			firmMonster.RecruitGeneral();
+
+		return firmId;
+	}
+	
+	public void StopAttackNation(int nationId)
+	{
+		foreach (Firm firm in this)
+		{
+			if (firm.FirmType != Firm.FIRM_MONSTER)
+				continue;
+
+			FirmMonster firmMonster = (FirmMonster)firm;
+			firmMonster.ResetHostileNation(nationId);
+		}
 	}
 }

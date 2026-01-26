@@ -678,7 +678,7 @@ public partial class Renderer
                 Graphics.DrawBitmapScaled(raceInfo.GetScrollTexture(Graphics), siteX, siteY, raceInfo.scrollBitmapWidth, raceInfo.scrollBitmapHeight);
                 break;
             case Site.SITE_GOLD_COIN:
-                Graphics.DrawBitmapScaled(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), siteX, siteY, MonsterRes.goldCoinWidth, MonsterRes.goldCoinHeight);
+                Graphics.DrawBitmapScaled(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), siteX, siteY, MonsterRes.GoldCoinWidth, MonsterRes.GoldCoinHeight);
                 break;
         }
 

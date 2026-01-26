@@ -2,27 +2,14 @@ using System;
 
 namespace TenKingdoms;
 
-public enum GodType
-{
-    GOD_MAYA,
-    GOD_GREEK,
-    GOD_VIKING,
-    GOD_PERSIAN,
-    GOD_CHINESE,
-    GOD_JAPANESE,
-    GOD_EGYPTIAN,
-    GOD_INDIAN,
-    GOD_ZULU
-}
-
 public class GodRec
 {
-    public const int RACE_CODE_LEN = 8;
-    public const int UNIT_CODE_LEN = 8;
-    public const int PRAY_POINTS_LEN = 3;
-    public const int CAST_POWER_RANGE_LEN = 3;
-    public const int RACE_ID_LEN = 3;
-    public const int UNIT_ID_LEN = 3;
+    private const int RACE_CODE_LEN = 8;
+    private const int UNIT_CODE_LEN = 8;
+    private const int PRAY_POINTS_LEN = 3;
+    private const int CAST_POWER_RANGE_LEN = 3;
+    private const int RACE_ID_LEN = 3;
+    private const int UNIT_ID_LEN = 3;
 
     public char[] race = new char[RACE_CODE_LEN];
     public char[] unit = new char[UNIT_CODE_LEN];
@@ -65,69 +52,13 @@ public class GodRec
 
 public class GodInfo
 {
-    public int god_id;
-    public int race_id;
-    public int unit_id;
-    public int exist_pray_points; // pray points consumption for the god to exist for 100 frames
-    public int power_pray_points; // pray points consumption for each casting of its power
-    public bool can_cast_power; // whether this god creature can cast power or not
-    public int cast_power_range; // location range of casting power
-
-    //------ game vars ------//
-
-    public bool[] nation_know_array = new bool[GameConstants.MAX_NATION];
-
-    private SpriteRes SpriteRes => Sys.Instance.SpriteRes;
-    private UnitRes UnitRes => Sys.Instance.UnitRes;
-    private World World => Sys.Instance.World;
-    private NationArray NationArray => Sys.Instance.NationArray;
-    private UnitArray UnitArray => Sys.Instance.UnitArray;
-    private FirmArray FirmArray => Sys.Instance.FirmArray;
-
-    public bool is_nation_know(int nationRecno)
-    {
-        //TODO check duplicate with NationArray[NationId].KnowBases[RaceId - 1]
-        return nation_know_array[nationRecno - 1];
-    }
-
-    public int invoke(int firmRecno, int xLoc, int yLoc)
-    {
-        FirmBase firmBase = (FirmBase)FirmArray[firmRecno];
-
-        //------- create the god unit --------//
-
-        SpriteInfo spriteInfo = SpriteRes[UnitRes[unit_id].SpriteId];
-
-        if (!World.LocateSpace(ref xLoc, ref yLoc, xLoc, yLoc,
-                spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_AIR))
-            return 0;
-
-        //---------- add the god unit now -----------//
-
-        Unit unit = UnitArray.AddUnit(unit_id, firmBase.NationId, Unit.RANK_SOLDIER, 0, xLoc, yLoc);
-
-        //------- set vars of the God unit ----------//
-
-        UnitGod unitGod = (UnitGod)unit;
-
-        unitGod.GodId = god_id;
-        unitGod.BaseFirmId = firmRecno;
-        unitGod.HitPoints = Convert.ToInt32(firmBase.PrayPoints);
-
-        return unitGod.SpriteId;
-    }
-
-    public void enable_know(int nationRecno)
-    {
-        nation_know_array[nationRecno - 1] = true;
-        NationArray[nationRecno].KnowBases[race_id - 1] = 1; // enable the nation to build the fortress of power
-    }
-
-    public void disable_know(int nationRecno)
-    {
-        nation_know_array[nationRecno - 1] = false;
-        NationArray[nationRecno].KnowBases[race_id - 1] = 0; // enable the nation to build the fortress of power
-    }
+    public int GodId { get; set; }
+    public int RaceId { get; set; }
+    public int UnitType { get; set; }
+    public int ExistPrayPoints { get; set; } // pray points consumption for the god to exist for 100 frames
+    public int PowerPrayPoints { get; set; } // pray points consumption for each casting of its power
+    public bool CanCastPower { get; set; } // whether this god creature can cast power or not
+    public int CastPowerRange { get; set; } // location range of casting power
 }
 
 public class GodRes
@@ -144,7 +75,7 @@ public class GodRes
     public const int GOD_ZULU = 10;
     public const int MAX_GOD = 10;
 
-    public GodInfo[] god_info_array;
+    public GodInfo[] GodInfos { get; private set; }
 
     public GameSet GameSet { get; }
 
@@ -154,46 +85,30 @@ public class GodRes
         LoadGodInfo();
     }
 
-    public GodInfo this[int godId] => god_info_array[godId - 1];
+    public GodInfo this[int godId] => GodInfos[godId - 1];
 
     private void LoadGodInfo()
     {
         Database dbGod = GameSet.OpenDb("GOD");
 
-        god_info_array = new GodInfo[dbGod.RecordCount];
+        GodInfos = new GodInfo[dbGod.RecordCount];
 
-        for (int i = 0; i < god_info_array.Length; i++)
+        for (int i = 0; i < GodInfos.Length; i++)
         {
             GodRec godRec = new GodRec(dbGod, i + 1);
             GodInfo godInfo = new GodInfo();
-            god_info_array[i] = godInfo;
+            GodInfos[i] = godInfo;
 
-            godInfo.god_id = i + 1;
+            godInfo.GodId = i + 1;
 
-            godInfo.race_id = Misc.ToInt32(godRec.race_id);
-            godInfo.unit_id = Misc.ToInt32(godRec.unit_id);
+            godInfo.RaceId = Misc.ToInt32(godRec.race_id);
+            godInfo.UnitType = Misc.ToInt32(godRec.unit_id);
 
-            godInfo.exist_pray_points = Misc.ToInt32(godRec.exist_pray_points);
-            godInfo.power_pray_points = Misc.ToInt32(godRec.power_pray_points);
+            godInfo.ExistPrayPoints = Misc.ToInt32(godRec.exist_pray_points);
+            godInfo.PowerPrayPoints = Misc.ToInt32(godRec.power_pray_points);
 
-            godInfo.can_cast_power = (godRec.can_cast_power == '1');
-            godInfo.cast_power_range = Misc.ToInt32(godRec.cast_power_range);
-        }
-    }
-
-    public void init_nation_know(int nationRecno)
-    {
-        for (int i = 1; i <= god_info_array.Length; i++)
-        {
-            this[i].disable_know(nationRecno);
-        }
-    }
-
-    public void enable_know_all(int nationRecno)
-    {
-        for (int i = 1; i <= god_info_array.Length; i++)
-        {
-            this[i].enable_know(nationRecno);
+            godInfo.CanCastPower = (godRec.can_cast_power == '1');
+            godInfo.CastPowerRange = Misc.ToInt32(godRec.cast_power_range);
         }
     }
 }

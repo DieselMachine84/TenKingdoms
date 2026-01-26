@@ -11,6 +11,7 @@ public class MapGenerator
 	private RaceRes RaceRes => Sys.Instance.RaceRes;
 	private SpriteRes SpriteRes => Sys.Instance.SpriteRes;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
+	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
 	private Config Config => Sys.Instance.Config;
@@ -1690,6 +1691,51 @@ public class MapGenerator
 		return unit;
 	}
 
+	private void CreateMonsterLair()
+	{
+		int monsterId = Misc.Random(MonsterRes.MonsterInfos.Length) + 1;
+		
+		if (String.IsNullOrEmpty(MonsterRes[monsterId].FirmBuildCode)) // this monster does not have a home
+			return;
+
+		//------- locate a home place for the monster group ------//
+
+		FirmInfo firmInfo = FirmRes[Firm.FIRM_MONSTER];
+
+		int locX = 0, locY = 0;
+		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
+
+		// leave at least one location space around the building
+		if (!World.LocateSpaceRandom(ref locX, ref locY, GameConstants.MapSize - 1,
+			    GameConstants.MapSize - 1, firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
+			    GameConstants.MapSize * GameConstants.MapSize, 0, true, teraMask))
+		{
+			return;
+		}
+
+		//------- don't place it too close to any towns or firms ------//
+
+		foreach (Town town in TownArray)
+		{
+			if (Misc.RectsDistance(locX, locY, locX + firmInfo.LocWidth - 1, locY + firmInfo.LocHeight - 1,
+				    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
+			{
+				return;
+			}
+		}
+
+		foreach (Firm firm in FirmArray)
+		{
+			if (Misc.RectsDistance(locX, locY, locX + firmInfo.LocWidth - 1, locY + firmInfo.LocHeight - 1,
+				    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MIN_MONSTER_CIVILIAN_DISTANCE)
+			{
+				return;
+			}
+		}
+
+		FirmArray.BuildMonsterLair(locX + 1, locY + 1, monsterId);
+	}
+
 	private void CreatePregameObjects()
 	{
 		//------- create nation and units --------//
@@ -1788,10 +1834,6 @@ public class MapGenerator
 			NationArray.DeleteNation(nation);
 		}
 
-		//---- init the type of active monsters in this game ----//
-
-		MonsterRes.init_active_monster();
-
 		//------ create independent towns -------//
 
 		int startUpIndependentTown = Config.start_up_independent_town;
@@ -1824,7 +1866,7 @@ public class MapGenerator
 				//------- create monsters --------//
 				if (Config.monster_type != Config.OPTION_MONSTER_NONE)
 				{
-					MonsterRes.generate(1);
+					CreateMonsterLair();
 					startUpMonsterFirm--;
 				}
 				else

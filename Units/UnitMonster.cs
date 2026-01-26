@@ -37,7 +37,7 @@ public class UnitMonster : Unit
         {
             RANK_KING => MonsterKingNames[MonsterId - 1],
             RANK_GENERAL => MonsterGeneralNames[MonsterId - 1],
-            _ => MonsterRes[MonsterId].name
+            _ => MonsterRes[MonsterId].Name
         };
     }
 
@@ -82,7 +82,7 @@ public class UnitMonster : Unit
             if (Rank == RANK_GENERAL)
             {
                 MonsterInfo monsterInfo = MonsterRes[MonsterId];
-                int goldAmount = 2 * MaxHitPoints * monsterInfo.level * (100 + Misc.Random(30)) / 100;
+                int goldAmount = 2 * MaxHitPoints * monsterInfo.Level * (100 + Misc.Random(30)) / 100;
 
                 SiteArray.AddSite(locX, locY, Site.SITE_GOLD_COIN, goldAmount);
                 SiteArray.OrderAIUnitsToGetSites(); // ask AI units to get the gold coins
@@ -203,7 +203,7 @@ public class UnitMonster : Unit
 
             if (firm.FirmType == Firm.FIRM_MONSTER)
             {
-                bool canAssignMonster = FirmRes.GetBuild(firm.FirmBuildId).BuildCode == MonsterRes[MonsterId].firm_build_code;
+                bool canAssignMonster = FirmRes.GetBuild(firm.FirmBuildId).BuildCode == MonsterRes[MonsterId].FirmBuildCode;
                 if (canAssignMonster)
                 {
                     GroupOrderMonster(firm.LocX1, firm.LocY1, 2); // 2 - the action is assign

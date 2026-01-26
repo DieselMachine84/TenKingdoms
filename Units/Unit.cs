@@ -3749,16 +3749,13 @@ public abstract partial class Unit : Sprite
 
 		if (firmType == Firm.FIRM_BASE) // only if the nation has acquired the myth to build it
 		{
-			if (Rank == RANK_GENERAL || Rank == RANK_KING || Skill.SkillId == Skill.SKILL_CONSTRUCTION)
+			if (RaceId != 0 && (Rank == RANK_GENERAL || Rank == RANK_KING || Skill.SkillId == Skill.SKILL_CONSTRUCTION))
 			{
+				//--- if this nation has acquired the needed scroll of power ---//
 				//----- each nation can only build one seat of power -----//
 
-				if (RaceId > 0 && NationArray[NationId].BaseCounts[RaceId - 1] == 0)
-				{
-					//--- if this nation has acquired the needed scroll of power ---//
-
-					return NationArray[NationId].KnowBases[RaceId - 1] != 0;
-				}
+				Nation nation = NationArray[NationId];
+				return nation.KnownBases[RaceId - 1] != 0 && nation.BaseCounts[RaceId - 1] == 0;
 			}
 
 			return false;

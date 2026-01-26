@@ -62,11 +62,12 @@ public class Site : IIdObject
 
         if (SiteType == SITE_SCROLL)
         {
-            if (GodRes[ObjectId].race_id == unit.RaceId)
+            int siteRaceId = GodRes[ObjectId].RaceId;
+            if (siteRaceId == unit.RaceId)
             {
-                GodRes[ObjectId].enable_know(unit.NationId);
+                NationArray[unit.NationId].KnownBases[siteRaceId - 1] = 1;
                 objectTaken = true;
-                NewsArray.scroll_acquired(unit.NationId, GodRes[ObjectId].race_id);
+                NewsArray.scroll_acquired(unit.NationId, siteRaceId);
             }
         }
 
@@ -94,7 +95,7 @@ public class Site : IIdObject
         int siteRaceId = 0;
 
         if (SiteType == SITE_SCROLL)
-            siteRaceId = GodRes[ObjectId].race_id;
+            siteRaceId = GodRes[ObjectId].RaceId;
 
         for (int i = 2; i < InternalConstants.GET_SITE_RANGE * InternalConstants.GET_SITE_RANGE; i++)
         {

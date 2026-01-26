@@ -4499,12 +4499,12 @@ public class Town : IIdObject
 
 		//--- increase build rating for the seats that this nation knows how to build ---//
 
-		for (int i = 1; i <= GodRes.god_info_array.Length; i++)
+		for (int i = 1; i <= GodRes.GodInfos.Length; i++)
 		{
 			GodInfo godInfo = GodRes[i];
 
-			if (godInfo.is_nation_know(NationId))
-				buildRatingArray[godInfo.race_id - 1] += 100;
+			if (NationArray[NationId].KnownBases[godInfo.RaceId - 1] != 0)
+				buildRatingArray[godInfo.RaceId - 1] += 100;
 		}
 
 		//--- decrease build rating for the seats that the nation currently has ---//
@@ -4513,7 +4513,7 @@ public class Town : IIdObject
 		{
 			FirmBase firmBase = (FirmBase)FirmArray[nation.ai_base_array[i]];
 
-			buildRatingArray[GodRes[firmBase.GodId].race_id - 1] = 0; // only build one 
+			buildRatingArray[GodRes[firmBase.GodId].RaceId - 1] = 0; // only build one 
 
 			/*
 			if( firmBase.prayer_count < MAX_BASE_PRAYER )

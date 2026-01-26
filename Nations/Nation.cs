@@ -4256,7 +4256,7 @@ public class NationOld : NationBase
 
 		FirmMonster targetFirm = (FirmMonster)FirmArray[targetFirmRecno];
 
-		int monsterLevel = MonsterRes[targetFirm.MonsterId].level;
+		int monsterLevel = MonsterRes[targetFirm.MonsterId].Level;
 
 		int attackerMinCombatLevel = 0;
 

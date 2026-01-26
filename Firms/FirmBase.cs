@@ -19,9 +19,9 @@ public class FirmBase : Firm
     {
         NationArray[NationId].BaseCounts[RaceId - 1]++;
 
-        for (int i = 1; i <= GodRes.god_info_array.Length; i++)
+        for (int i = 1; i <= GodRes.GodInfos.Length; i++)
         {
-            if (GodRes[i].race_id == RaceId && GodRes[i].is_nation_know(NationId))
+            if (GodRes[i].RaceId == RaceId)
             {
                 GodId = i;
                 break;
@@ -180,7 +180,24 @@ public class FirmBase : Firm
 
     public void InvokeGod()
     {
-        GodUnitId = GodRes[GodId].invoke(FirmId, LocCenterX, LocCenterY);
+        int unitType = GodRes[GodId].UnitType;
+        SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].SpriteId];
+
+        int locX1 = LocCenterX;
+        int locY1 = LocCenterY;
+        int locX2 = LocCenterX;
+        int locY2 = LocCenterY;
+        
+        if (!World.LocateSpace(ref locX1, ref locY1, locX2, locY2, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.UNIT_AIR))
+            return;
+
+        UnitGod unitGod = (UnitGod)UnitArray.AddUnit(unitType, NationId, Unit.RANK_SOLDIER, 0, locX1, locY1);
+
+        unitGod.GodId = GodId;
+        unitGod.BaseFirmId = FirmId;
+        unitGod.HitPoints = PrayPoints;
+
+        GodUnitId = unitGod.SpriteId;
     }
 
     public override void DrawDetails(IRenderer renderer)

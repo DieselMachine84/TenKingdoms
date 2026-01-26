@@ -105,7 +105,7 @@ public class NationBase : IIdObject
 
     private readonly int[] _techLevels;
     private readonly double[] _researchProgress;
-    public int[] KnowBases { get; } = new int[GameConstants.MAX_RACE];
+    public int[] KnownBases { get; } = new int[GameConstants.MAX_RACE];
     public int[] BaseCounts { get; } = new int[GameConstants.MAX_RACE];
     
     public int TotalPopulation { get; set; }
@@ -218,10 +218,6 @@ public class NationBase : IIdObject
             if (TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_TRANSPORT || TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_VESSEL)
                 _techLevels[i] = 1;
         }
-
-        //------- reset all god knowledge --------//
-
-        GodRes.init_nation_know(NationId);
     }
 
     private void InitRelation(NationBase otherNation)
@@ -1416,9 +1412,9 @@ public class NationBase : IIdObject
     private void HandOverTo(int handoverNationId)
     {
         RebelArray.StopAttackNation(NationId);
+        FirmArray.StopAttackNation(NationId);
         TownArray.StopAttackNation(NationId);
         UnitArray.StopAllWar(NationId);
-        MonsterRes.stop_attack_nation(NationId);
 
         NationHandOverFlag = NationId;
 
