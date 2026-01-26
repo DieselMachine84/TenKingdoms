@@ -5,7 +5,7 @@ namespace TenKingdoms;
 public class Worker
 {
     public int RaceId { get; set; }
-    public int UnitId { get; set; }
+    public int UnitType { get; set; }
     public int NameId { get; set; }
     public int RankId { get; set; }
 
@@ -53,17 +53,17 @@ public class Worker
 
     public int MaxHitPoints()
     {
-        return UnitRes[UnitId].HitPoints * CombatLevel / 100;
+        return UnitRes[UnitType].HitPoints * CombatLevel / 100;
     }
 
     public int MaxAttackRange()
     {
         int maxRange = 0;
-        int attackCount = UnitRes[UnitId].AttackCount;
+        int attackCount = UnitRes[UnitType].AttackCount;
 
         for (int i = 0; i < attackCount; i++)
         {
-            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[UnitId].FirstAttack + i);
+            AttackInfo attackInfo = UnitRes.GetAttackInfo(UnitRes[UnitType].FirstAttack + i);
             if (CombatLevel >= attackInfo.CombatLevel && attackInfo.AttackRange > maxRange)
             {
                 maxRange = attackInfo.AttackRange;
