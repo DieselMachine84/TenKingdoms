@@ -1429,7 +1429,7 @@ public abstract class Firm : IIdObject
 
 		newWorker.NameId = unit.NameId;
 		newWorker.RaceId = unit.RaceId;
-		newWorker.UnitId = unit.UnitType;
+		newWorker.UnitType = unit.UnitType;
 		newWorker.RankId = unit.Rank;
 
 		newWorker.SkillId = FirmSkillId;
@@ -1811,7 +1811,7 @@ public abstract class Firm : IIdObject
 	private int CreateUnitFromWorker(Worker worker)
 	{
 		// this worker no longer has a job as it has been resigned
-		int unitId = CreateUnit(worker.UnitId, worker.TownId, false);
+		int unitId = CreateUnit(worker.UnitType, worker.TownId, false);
 
 		if (unitId == 0)
 			return 0;
@@ -2144,7 +2144,7 @@ public abstract class Firm : IIdObject
 
 				worker.RaceId = raceId;
 				worker.RankId = Unit.RANK_SOLDIER;
-				worker.UnitId = RaceRes[raceId].basic_unit_id;
+				worker.UnitType = RaceRes[raceId].basic_unit_id;
 				worker.WorkerLoyalty = (int)town.RacesLoyalty[raceId - 1];
 
 				if (FirmRes[FirmType].LiveInTown)

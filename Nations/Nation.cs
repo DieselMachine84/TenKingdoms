@@ -1073,7 +1073,7 @@ public class NationOld : NationBase
 			{
 				foreach (Worker worker in firm.Workers)
 				{
-					if (UnitRes[worker.UnitId].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+					if (UnitRes[worker.UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 						totalWeaponCount++;
 				}
 			}

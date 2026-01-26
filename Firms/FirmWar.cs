@@ -194,7 +194,7 @@ public class FirmWar : Firm
             {
                 foreach (Worker worker in firm.Workers)
                 {
-                    if (worker.UnitId == unitType)
+                    if (worker.UnitType == unitType)
                         totalWeaponCount++;
                 }
             }

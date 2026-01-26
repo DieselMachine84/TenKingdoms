@@ -128,7 +128,7 @@ public partial class Renderer
             int workerX = DetailsX1 + 12 + 100 * (i % 4);
             int workerY = workersY + 7 + 50 * (i / 4);
             Worker worker = firm.Workers[i];
-            UnitInfo unitInfo = UnitRes[worker.UnitId];
+            UnitInfo unitInfo = UnitRes[worker.UnitType];
             DrawUnitIcon(workerX, workerY, unitInfo, worker.RankId, worker.SkillId,
                 firm.FirmType == Firm.FIRM_CAMP ? worker.CombatLevel : worker.SkillLevel,
                 worker.HitPoints, worker.MaxHitPoints(), worker.SpyId);

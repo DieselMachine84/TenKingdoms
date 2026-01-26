@@ -210,11 +210,11 @@ public class FirmCamp : Firm
 		for (int i = Workers.Count - 1; i >= 0; i--)
 		{
 			Worker worker = Workers[i];
-			if (worker.UnitId != 0 && UnitRes[worker.UnitId].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
+			if (worker.UnitType != 0 && UnitRes[worker.UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
 			{
 				if (nation.Cash > 0)
 				{
-					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitId].YearCost / 365.0, true);
+					nation.AddExpense(NationBase.EXPENSE_WEAPON, (double)UnitRes[worker.UnitType].YearCost / 365.0, true);
 				}
 				else // decrease hit points if the nation cannot pay the unit
 				{
@@ -541,7 +541,7 @@ public class FirmCamp : Firm
 			// order those soldier inside the firm to move to target for attacking
 			// keep those unable to attack inside the firm
 			//------------------------------------------------------------------//
-			if (Workers[i].UnitId == UnitConstants.UNIT_EXPLOSIVE_CART || (useRangeAttack && Workers[i].MaxAttackRange() == 1))
+			if (Workers[i].UnitType == UnitConstants.UNIT_EXPLOSIVE_CART || (useRangeAttack && Workers[i].MaxAttackRange() == 1))
 				continue;
 
 			int unitId = MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
@@ -681,7 +681,7 @@ public class FirmCamp : Firm
 
 			//---- the combat level of weapons are higher ------//
 
-			UnitInfo unitInfo = UnitRes[worker.UnitId];
+			UnitInfo unitInfo = UnitRes[worker.UnitType];
 
 			// ExtraPara keeps the weapon version
 			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
