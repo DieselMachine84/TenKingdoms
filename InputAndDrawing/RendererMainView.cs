@@ -405,9 +405,9 @@ public partial class Renderer
         switch (layer)
         {
             case BottomLayer:
-                int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.groundBitmapWidth)) / 2;
-                int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.groundBitmapHeight)) / 2;
-                Graphics.DrawBitmapScaled(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, townLayout.groundBitmapWidth, townLayout.groundBitmapHeight);
+                int townLayoutX = townX + (InternalConstants.TOWN_WIDTH * CellTextureWidth - Scale(townLayout.GroundBitmapWidth)) / 2;
+                int townLayoutY = townY + (InternalConstants.TOWN_HEIGHT * CellTextureHeight - Scale(townLayout.GroundBitmapHeight)) / 2;
+                Graphics.DrawBitmapScaled(townLayout.GetTexture(Graphics), townLayoutX, townLayoutY, townLayout.GroundBitmapWidth, townLayout.GroundBitmapHeight);
                 break;
             
             case NormalLayer:
@@ -419,10 +419,10 @@ public partial class Renderer
                     {
                         case TownSlot.TOWN_OBJECT_HOUSE:
                             TownBuild townBuild = TownRes.GetBuild(town.SlotObjectIds[i]);
-                            int townBuildX = townX + Scale(townSlot.BaseX) - Scale(townBuild.bitmapWidth) / 2;
-                            int townBuildY = townY + Scale(townSlot.BaseY) - Scale(townBuild.bitmapHeight);
+                            int townBuildX = townX + Scale(townSlot.BaseX) - Scale(townBuild.BitmapWidth) / 2;
+                            int townBuildY = townY + Scale(townSlot.BaseY) - Scale(townBuild.BitmapHeight);
                             Graphics.DrawBitmapScaled(townBuild.GetTexture(Graphics, town.NationId, isSelected), townBuildX, townBuildY,
-                                townBuild.bitmapWidth, townBuild.bitmapHeight);
+                                townBuild.BitmapWidth, townBuild.BitmapHeight);
                             break;
 
                         case TownSlot.TOWN_OBJECT_PLANT:

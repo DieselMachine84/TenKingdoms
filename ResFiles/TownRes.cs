@@ -6,13 +6,13 @@ namespace TenKingdoms;
 
 public class TownLayoutRec
 {
-    public const int CODE_LEN = 8;
-    public const int GROUND_NAME_LEN = 8;
-    public const int FIRST_SLOT_LEN = 5;
-    public const int SLOT_COUNT_LEN = 2;
+    private const int CODE_LEN = 8;
+    private const int GROUND_NAME_LEN = 8;
+    private const int FIRST_SLOT_LEN = 5;
+    private const int SLOT_COUNT_LEN = 2;
 
     public char[] code = new char[CODE_LEN];
-    public char[] ground_name = new char[GROUND_NAME_LEN];		// name of the ground bitmap in image_spict
+    public char[] ground_name = new char[GROUND_NAME_LEN];		// name of the ground bitmap
     public char[] first_slot = new char[FIRST_SLOT_LEN];
     public char[] slot_count = new char[SLOT_COUNT_LEN];
 
@@ -42,17 +42,17 @@ public class TownLayout
     public int FirstSlotId { get; set; }
     public int SlotCount { get; set; }
 
-    public byte[] groundBitmap;
-    public int groundBitmapWidth;
-    public int groundBitmapHeight;
+    public byte[] GroundBitmap { get; set; }
+    public int GroundBitmapWidth { get; set; }
+    public int GroundBitmapHeight { get; set; }
     private IntPtr _texture;
     
     public IntPtr GetTexture(Graphics graphics)
     {
         if (_texture == default)
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(groundBitmap, groundBitmapWidth, groundBitmapHeight);
-            _texture = graphics.CreateTextureFromBmp(decompressedBitmap, groundBitmapWidth, groundBitmapHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(GroundBitmap, GroundBitmapWidth, GroundBitmapHeight);
+            _texture = graphics.CreateTextureFromBmp(decompressedBitmap, GroundBitmapWidth, GroundBitmapHeight);
         }
 
         return _texture;
@@ -61,11 +61,11 @@ public class TownLayout
 
 public class TownSlotRec
 {
-    public const int CODE_LEN = 8;
-    public const int POS_LEN = 3;
-    public const int TYPE_LEN = 8;
-    public const int BUILD_CODE_LEN = 2;
-    public const int TYPE_ID_LEN = 3;
+    private const int CODE_LEN = 8;
+    private const int POS_LEN = 3;
+    private const int TYPE_LEN = 8;
+    private const int BUILD_CODE_LEN = 2;
+    private const int TYPE_ID_LEN = 3;
 
     public char[] layout_code = new char[CODE_LEN];
 
@@ -115,9 +115,9 @@ public class TownSlot
 
 public class TownBuildTypeRec
 {
-    public const int TYPE_CODE_LEN = 8;
-    public const int FIRST_BUILD_LEN = 5;
-    public const int BUILD_COUNT_LEN = 5;
+    private const int TYPE_CODE_LEN = 8;
+    private const int FIRST_BUILD_LEN = 5;
+    private const int BUILD_COUNT_LEN = 5;
 
     public char[] type_code = new char[TYPE_CODE_LEN];
     public char[] first_build = new char[FIRST_BUILD_LEN];
@@ -145,13 +145,13 @@ public class TownBuildType
 
 public class TownBuildRec
 {
-    public const int TYPE_LEN = 8;
-    public const int BUILD_CODE_LEN = 2;
-    public const int RACE_LEN = 8;
-    public const int TYPE_ID_LEN = 3;
-    public const int RACE_ID_LEN = 3;
-    public const int FILE_NAME_LEN = 8;
-    public const int BITMAP_PTR_LEN = 4;
+    private const int TYPE_LEN = 8;
+    private const int BUILD_CODE_LEN = 2;
+    private const int RACE_LEN = 8;
+    private const int TYPE_ID_LEN = 3;
+    private const int RACE_ID_LEN = 3;
+    private const int FILE_NAME_LEN = 8;
+    private const int BITMAP_PTR_LEN = 4;
 
     public char[] type = new char[TYPE_LEN];
     public char[] build_code = new char[BUILD_CODE_LEN];
@@ -196,9 +196,9 @@ public class TownBuild
     public int RaceId { get; set; }
     public int BuildCode { get; set; }
 
-    public byte[] bitmap;
-    public int bitmapWidth;
-    public int bitmapHeight;
+    public byte[] Bitmap { get; set; }
+    public int BitmapWidth { get; set; }
+    public int BitmapHeight { get; set; }
     private readonly Dictionary<int, IntPtr> _textures = new Dictionary<int, nint>();
 
     public IntPtr GetTexture(Graphics graphics, int nationColor, bool isSelected)
@@ -207,9 +207,9 @@ public class TownBuild
         int textureKey = ColorRemap.GetTextureKey(colorScheme, isSelected);
         if (!_textures.ContainsKey(textureKey))
         {
-            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(bitmap,
-                bitmapWidth, bitmapHeight, ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
-            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, bitmapWidth, bitmapHeight);
+            byte[] decompressedBitmap = graphics.DecompressTransparentBitmap(Bitmap,
+                BitmapWidth, BitmapHeight, ColorRemap.GetColorRemap(colorScheme, isSelected).ColorTable);
+            IntPtr texture = graphics.CreateTextureFromBmp(decompressedBitmap, BitmapWidth, BitmapHeight);
             _textures.Add(textureKey, texture);
         }
         
@@ -219,7 +219,7 @@ public class TownBuild
 
 public class TownNameRec
 {
-    public const int NAME_LEN = 15;
+    private const int NAME_LEN = 15;
 
     public char[] name = new char[NAME_LEN];
 
@@ -303,19 +303,18 @@ public class TownRes
         LoadFlags();
     }
 
+    private readonly List<int> _scanIds = new List<int>();
     public int ScanBuild(int slotId, int raceId)
     {
-        const int MAX_SCAN_ID = 100;
+        _scanIds.Clear();
 
         TownSlot townSlot = GetSlot(slotId);
-        int matchCount = 0;
-        int[] scanIdArray = new int[MAX_SCAN_ID];
 
         //---- get the building type of the slot ------//
 
         TownBuildType buildType = GetBuildType(townSlot.BuildType);
 
-        //------ scan_build buildings of the specified type ------//
+        //------ scan buildings of the specified type ------//
 
         int buildId = buildType.FirstBuildId;
 
@@ -326,58 +325,31 @@ public class TownRes
             {
                 if (raceId == 0 || townBuild.RaceId == raceId)
                 {
-                    scanIdArray[matchCount] = buildId;
-
-                    if (++matchCount >= MAX_SCAN_ID)
-                        break;
+                    _scanIds.Add(buildId);
                 }
             }
         }
 
         //--- pick one from those plants that match the criteria ---//
-        return matchCount > 0 ? scanIdArray[Misc.Random(matchCount)] : 0;
+        return _scanIds.Count > 0 ? _scanIds[Misc.Random(_scanIds.Count)] : 0;
     }
 
-    public string GetName(int recNo)
+    public string GetName(int nameId)
     {
-        return _townNames[recNo - 1].Name;
+        return _townNames[nameId - 1].Name;
     }
 
     public int GetNewNameId(int raceId)
     {
-        // TODO reuse town names, add numbers to town names
+        // TODO add numbers to town names
         RaceInfo raceInfo = RaceRes[raceId];
 
-        int townNameId = 0;
+        if (raceInfo.town_name_used_count >= raceInfo.town_name_count)
+            return 0;
 
-        //----- if all town names have been used already -----//
-        //--- scan the town name one by one and pick an unused one ---//
-
-        if (raceInfo.town_name_used_count == raceInfo.town_name_count)
-        {
-            int nameId = Misc.Random(raceInfo.town_name_count) + 1; // this is the id. of one race only
-
-            for (int i = raceInfo.town_name_count; i > 0; i--)
-            {
-                if (++nameId > raceInfo.town_name_count)
-                    nameId = 1;
-                
-                // -2 is the total of two -1, (one with first_town_name_recno, another with town_name_used_array[])
-                if (_townNamesUsed[raceInfo.first_town_name_recno + nameId - 2] == 0)
-                    break;
-            }
-
-            townNameId = raceInfo.first_town_name_recno + nameId - 1;
-        }
-        else
-        {
-            raceInfo.town_name_used_count++;
-
-            townNameId = raceInfo.first_town_name_recno + raceInfo.town_name_used_count - 1;
-        }
-
+        raceInfo.town_name_used_count++;
+        int townNameId = raceInfo.first_town_name_recno + raceInfo.town_name_used_count - 1;
         _townNamesUsed[townNameId - 1]++;
-
         return townNameId;
     }
 
@@ -420,10 +392,10 @@ public class TownRes
 
             townLayout.FirstSlotId = Misc.ToInt32(townLayoutRec.first_slot);
             townLayout.SlotCount = Misc.ToInt32(townLayoutRec.slot_count);
-            townLayout.groundBitmap = groundImages.Read(Misc.ToString(townLayoutRec.ground_name));
-            townLayout.groundBitmapWidth = BitConverter.ToInt16(townLayout.groundBitmap, 0);
-            townLayout.groundBitmapHeight = BitConverter.ToInt16(townLayout.groundBitmap, 2);
-            townLayout.groundBitmap = townLayout.groundBitmap.Skip(4).ToArray();
+            townLayout.GroundBitmap = groundImages.Read(Misc.ToString(townLayoutRec.ground_name));
+            townLayout.GroundBitmapWidth = BitConverter.ToInt16(townLayout.GroundBitmap, 0);
+            townLayout.GroundBitmapHeight = BitConverter.ToInt16(townLayout.GroundBitmap, 2);
+            townLayout.GroundBitmap = townLayout.GroundBitmap.Skip(4).ToArray();
 
             //----- calculate min_population & max_population -----//
 
@@ -490,10 +462,10 @@ public class TownRes
             townBuild.RaceId = Misc.ToInt32(townBuildRec.race_id);
 
             int bitmapOffset = BitConverter.ToInt32(townBuildRec.bitmap_ptr, 0);
-            townBuild.bitmap = images.Read(bitmapOffset);
-            townBuild.bitmapWidth = BitConverter.ToInt16(townBuild.bitmap, 0);
-            townBuild.bitmapHeight = BitConverter.ToInt16(townBuild.bitmap, 2);
-            townBuild.bitmap = townBuild.bitmap.Skip(4).ToArray();
+            townBuild.Bitmap = images.Read(bitmapOffset);
+            townBuild.BitmapWidth = BitConverter.ToInt16(townBuild.Bitmap, 0);
+            townBuild.BitmapHeight = BitConverter.ToInt16(townBuild.Bitmap, 2);
+            townBuild.Bitmap = townBuild.Bitmap.Skip(4).ToArray();
         }
     }
 
@@ -514,7 +486,6 @@ public class TownRes
             TownName townName = new TownName();
             _townNames[i - 1] = townName;
 
-            //misc.rtrim_fld( townName->name, townNameRec->name, townNameRec->NAME_LEN );
             townName.Name = Misc.ToString(townNameRec.name);
 
             if (townName.Name[0] == '@') // next race
