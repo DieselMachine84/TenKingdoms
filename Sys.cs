@@ -122,7 +122,7 @@ public class Sys
         TornadoArray = new TornadoArray();
         World = new World();
         
-        int quakeFreq = Int32.MaxValue;
+        int quakeFreq = Int16.MaxValue;
         if (Config.random_event_frequency != 0)
         {
             quakeFreq = 2000 - Config.random_event_frequency * 400 + Info.RandomSeed % 300;

@@ -1879,7 +1879,7 @@ public class FirmCamp : Firm
 
 		FirmCamp bestCamp = null;
 		int bestWorkerId = 0;
-		int bestDistance = Int32.MaxValue;
+		int bestDistance = Int16.MaxValue;
 		Nation nation = NationArray[NationId];
 		for (int i = nation.ai_camp_array.Count - 1; i >= 0; i--)
 		{

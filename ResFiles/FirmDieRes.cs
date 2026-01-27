@@ -62,8 +62,8 @@ public class FirmDieRes
 			FirmBuild firmBuild = FirmBuilds[i];
 			int firstFrameId = firstFrameIds[i];
 
-			int minOffsetX = Int32.MaxValue / 2;
-			int minOffsetY = Int32.MaxValue / 2;
+			int minOffsetX = Int16.MaxValue;
+			int minOffsetY = Int16.MaxValue;
 			int maxX2 = 0;
 			int maxY2 = 0;
 

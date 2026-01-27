@@ -36,7 +36,7 @@ public class FirmFactory : Firm
 	{
 		//---- automatically set the factory product type -----//
 
-		int minDistance = Int32.MaxValue;
+		int minDistance = Int16.MaxValue;
 
 		for (int i = 0; i < LinkedFirms.Count; i++)
 		{

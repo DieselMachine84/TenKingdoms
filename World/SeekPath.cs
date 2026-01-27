@@ -588,7 +588,7 @@ public class SeekPath
 
 			case PATH_IMPOSSIBLE:
 				int regionSize = 0;
-				int minDistance = Int32.MaxValue;
+				int minDistance = Int16.MaxValue;
 
 				void UpdateFunc(int locX, int locY)
 				{

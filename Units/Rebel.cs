@@ -321,7 +321,7 @@ public class Rebel : IIdObject
         //----------------------------------------------//
 
         int bestTownId = 0;
-        int closestTownDistance = Int32.MaxValue;
+        int closestTownDistance = Int16.MaxValue;
 
         foreach (Town town in TownArray.EnumerateRandom())
         {
@@ -363,7 +363,7 @@ public class Rebel : IIdObject
         //----------------------------------------------//
 
         int bestFirmId = 0;
-        int closestFirmDistance = Int32.MaxValue;
+        int closestFirmDistance = Int16.MaxValue;
 
         foreach (Firm firm in FirmArray.EnumerateRandom())
         {

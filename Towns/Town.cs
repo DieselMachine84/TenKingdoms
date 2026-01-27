@@ -2878,7 +2878,7 @@ public class Town : IIdObject
 	
 	public Firm ClosestOwnCamp()
 	{
-		int minDistance = Int32.MaxValue;
+		int minDistance = Int16.MaxValue;
 		Firm closestCamp = null;
 
 		for (int i = LinkedFirms.Count - 1; i >= 0; i--)

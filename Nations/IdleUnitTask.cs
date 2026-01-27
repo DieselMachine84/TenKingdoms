@@ -38,7 +38,7 @@ public class IdleUnitTask : AITask, IUnitTask
         Unit unit = UnitArray[UnitId];
         if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION)
         {
-            int minFirmDistance = Int32.MaxValue;
+            int minFirmDistance = Int16.MaxValue;
             Firm bestFirm = null;
             foreach (Firm firm in Nation.KingdomFirms)
             {

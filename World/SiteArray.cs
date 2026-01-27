@@ -155,7 +155,7 @@ public class SiteArray : DynArray<Site>
 
 		//---- find the minimum raw count ----//
 
-		int minCount = Int32.MaxValue;
+		int minCount = Int16.MaxValue;
 
 		for (int i = 0; i < rawCountArray.Length; i++)
 		{

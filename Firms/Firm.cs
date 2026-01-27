@@ -668,7 +668,7 @@ public abstract class Firm : IIdObject
 
 	public int GetClosestTownNameId()
 	{
-		int minTownDistance = Int32.MaxValue;
+		int minTownDistance = Int16.MaxValue;
 		int closestTownNameId = 0;
 
 		foreach (Town town in TownArray)
@@ -1511,7 +1511,7 @@ public abstract class Firm : IIdObject
 
 	private int FindSettleTown()
 	{
-		int minDistance = Int32.MaxValue;
+		int minDistance = Int16.MaxValue;
 		int nearestTownId = 0;
 
 		//-------- scan for our own town first -----------//
@@ -3171,7 +3171,7 @@ public abstract class Firm : IIdObject
 		//------ order troops to attack nearby enemy camps -----//
 
 		FirmCamp bestTarget = null;
-		int minDistance = Int32.MaxValue;
+		int minDistance = Int16.MaxValue;
 
 		foreach (Firm firm in FirmArray)
 		{

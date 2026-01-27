@@ -775,7 +775,7 @@ public class UnitMarine : Unit, ITrader
 		//-----------------------------------------------------------------------------------------//
 		int locX = NextLocX;
 		int locY = NextLocY;
-		int minDist = Int32.MaxValue;
+		int minDist = Int16.MaxValue;
 
 		for (i = 0, DestStopId = 0; i < StopDefinedNum; i++)
 		{

@@ -1352,7 +1352,7 @@ public class NationOld : NationBase
 		int[] buildYLoc = new int[GameConstants.MAX_RAW];
 
 		for (int i = 0; i < GameConstants.MAX_RAW; i++)
-			minDist[i] = Int32.MaxValue;
+			minDist[i] = Int16.MaxValue;
 
 		//--------------------------------------------//
 		// scan for the site array
@@ -1466,10 +1466,10 @@ public class NationOld : NationBase
 		//			raw material
 		//---------------------------------------------------------------------------//
 		int pos = -1;
-		int weight = Int32.MaxValue; // weight is the such kind of material mined, pos is the position in the array
+		int weight = Int16.MaxValue; // weight is the such kind of material mined, pos is the position in the array
 		int siteRecno = 0; // siteRecno is the recno of site to build
 		bool withoutThisRaw = false; // withoutThisRaw shows that this raw material is strongly recommended
-		int closestDist = Int32.MaxValue;
+		int closestDist = Int16.MaxValue;
 
 		for (int j = 0; j < GameConstants.MAX_RAW; j++)
 		{
@@ -2636,7 +2636,7 @@ public class NationOld : NationBase
 		//----- try to find an existing unit with the required skill -----//
 
 		Unit skilledUnit = null;
-		int minDist = Int32.MaxValue;
+		int minDist = Int16.MaxValue;
 		int destRegionId = World.GetRegionId(destX, destY);
 
 		foreach (Unit unit in UnitArray)
@@ -3247,7 +3247,7 @@ public class NationOld : NationBase
 
 	public int closest_enemy_firm_distance(int firmId, int xLoc, int yLoc)
 	{
-		int minDistance = Int32.MaxValue;
+		int minDistance = Int16.MaxValue;
 
 		foreach (Firm firm in FirmArray)
 		{
@@ -4279,7 +4279,7 @@ public class NationOld : NationBase
 
 		//TODO not only largest town
 		Town largestTown = TownArray[largestTownId];
-		int bestRating = Int32.MinValue, bestFirmRecno = 0;
+		int bestRating = Int16.MinValue, bestFirmRecno = 0;
 
 		foreach (Firm firm in FirmArray)
 		{
@@ -5389,7 +5389,7 @@ public class NationOld : NationBase
 	public Town think_capture_enemy_town_target(Town capturerTown)
 	{
 		Town bestTown = null;
-		int bestRating = Int32.MinValue;
+		int bestRating = Int16.MinValue;
 
 		foreach (Town town in TownArray)
 		{
@@ -5681,7 +5681,7 @@ public class NationOld : NationBase
 	{
 		//----- find the region with the least population -----//
 
-		int maxCampCount = 0, minCampCount = Int32.MaxValue;
+		int maxCampCount = 0, minCampCount = Int16.MaxValue;
 		int maxRegionId = 0, minRegionId = 0;
 		int minRegionRating = 0;
 
@@ -5778,7 +5778,7 @@ public class NationOld : NationBase
 	{
 		//----- find the region with the least population -----//
 
-		int maxJoblessPop = 0, minJoblessPop = Int32.MinValue;
+		int maxJoblessPop = 0, minJoblessPop = Int16.MinValue;
 		int maxRegionId = 0, minRegionId = 0;
 
 		for (int i = 0; i < RegionArray.RegionStats.Count; i++)
@@ -6683,7 +6683,7 @@ public class NationOld : NationBase
 		}
 
 		doublebreak:
-		int bestRating = Int32.MaxValue, bestFirmRecno = 0;
+		int bestRating = Int16.MaxValue, bestFirmRecno = 0;
 		int loc_x = 0;
 		int loc_y = 0;
 		if (nearbyTown != null && cloakedNationRecno == nearbyTown.NationId)
@@ -6725,7 +6725,7 @@ public class NationOld : NationBase
 				return bestFirmRecno;
 		}
 
-		bestRating = Int32.MaxValue;
+		bestRating = Int16.MaxValue;
 		bestFirmRecno = 0;
 		foreach (Firm firm in FirmArray)
 		{
@@ -6869,7 +6869,7 @@ public class NationOld : NationBase
 	public void think_drop_spy_identity()
 	{
 		Spy worstSpy = null;
-		int worstSkill = Int32.MaxValue;
+		int worstSkill = Int16.MaxValue;
 
 		foreach (Spy spy in SpyArray)
 		{
@@ -8048,7 +8048,7 @@ public class NationOld : NationBase
 
 		//------------------------------------------------//
 
-		int minStrength = Int32.MaxValue, bestTargetNation = 0;
+		int minStrength = Int16.MaxValue, bestTargetNation = 0;
 
 		foreach (Nation nation in NationArray)
 		{

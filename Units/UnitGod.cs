@@ -832,7 +832,7 @@ public class UnitGod : Unit
 		else
 		{
 			// find any unit suitable, go to that area first
-			int bestUnitCost = Int32.MaxValue;
+			int bestUnitCost = Int16.MaxValue;
 			foreach (Unit unit in UnitArray)
 			{
 				// don't affect independent unit

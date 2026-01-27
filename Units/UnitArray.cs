@@ -896,7 +896,7 @@ public class UnitArray : SpriteArray
 		//------ sorting the distance and store in sortedDistance Array -------//
 		for (j = 0; j < selectedCount; j++)
 		{
-			min = Int32.MaxValue;
+			min = Int16.MaxValue;
 			for (i = 0; i < selectedCount; i++)
 			{
 				if (doneFlag[i] == 0 && (dist = distance[i]) < min)
@@ -950,7 +950,7 @@ public class UnitArray : SpriteArray
 		//---------- sorting -------------//
 		for (j = 0; j < selectedCount; j++)
 		{
-			min = Int32.MaxValue;
+			min = Int16.MaxValue;
 			for (i = 0; i < selectedCount; i++)
 			{
 				if ((dist = distance[i]) < min)
@@ -961,7 +961,7 @@ public class UnitArray : SpriteArray
 			}
 
 			sortedMember[j] = k;
-			distance[k] = Int32.MaxValue;
+			distance[k] = Int16.MaxValue;
 		}
 	}
 
@@ -1512,7 +1512,7 @@ public class UnitArray : SpriteArray
 		    //------------------------------------------------------------------------------------//
 		    // find the closest unit to the ship
 		    //------------------------------------------------------------------------------------//
-		    int minDist = Int32.MaxValue;
+		    int minDist = Int16.MaxValue;
 		    int closestUnitId = -1;
 		    for (int i = 0; i < selectedUnits.Count; i++)
 		    {
@@ -1973,7 +1973,7 @@ public class UnitArray : SpriteArray
 			    int xLoc = targetLocX + xOffset;
 			    int yLoc = targetLocY + yOffset;
 
-			    int minDist = Int32.MaxValue;
+			    int minDist = Int16.MaxValue;
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
@@ -2180,7 +2180,7 @@ public class UnitArray : SpriteArray
 			    int xLoc = targetLocX + xOffset;
 			    int yLoc = targetLocY + yOffset;
 
-			    int minDist = Int32.MaxValue;
+			    int minDist = Int16.MaxValue;
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
@@ -2379,7 +2379,7 @@ public class UnitArray : SpriteArray
 			    int xLoc = targetLocX + xOffset;
 			    int yLoc = targetLocY + yOffset;
 
-			    int minDist = Int32.MaxValue;
+			    int minDist = Int16.MaxValue;
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
@@ -2573,7 +2573,7 @@ public class UnitArray : SpriteArray
 			    int xLoc = targetLocX + xOffset;
 			    int yLoc = targetLocY + yOffset;
 
-			    int minDist = Int32.MaxValue;
+			    int minDist = Int16.MaxValue;
 			    for (int i = 0; i < unprocessed; i++)
 			    {
 				    unit = this[curArray[i]];
