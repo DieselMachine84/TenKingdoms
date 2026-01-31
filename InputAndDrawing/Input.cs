@@ -57,15 +57,15 @@ public partial class Renderer
 
             if (!SelectObjects(oldMouseButtonX, oldMouseButtonY, mouseEventX, mouseEventY))
             {
+                if (clickOnMainView)
+                    HandleNewsButtons();
+                
                 if (clickOnMiniMap)
                     HandleMiniMap();
 
                 if (clickOnDetails)
                     HandleDetails();
             }
-
-            if (clickOnMainView)
-                HandleNewsButtons();
             
             _leftMouseReleased = false;
         }
@@ -265,6 +265,8 @@ public partial class Renderer
                     }
                 }
             }
+
+            return false;
         }
         else
         {
@@ -344,9 +346,9 @@ public partial class Renderer
                 if (_selectedUnitId == 0 || IsUnitHigherRank(unitToSelect, UnitArray[_selectedUnitId]))
                     _selectedUnitId = unitToSelect.SpriteId;
             }
-        }
 
-        return true;
+            return true;
+        }
     }
 
     private void ProcessLeftMouseAction()

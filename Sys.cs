@@ -364,7 +364,7 @@ public class Sys
         if (sdlEvent.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
         {
             ProcessMouseMotionEvent(sdlEvent.motion);
-            return sdlEvent.motion.state == 1;
+            return true;
         }
 
         return false;
