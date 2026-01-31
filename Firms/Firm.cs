@@ -41,7 +41,7 @@ public abstract class Firm : IIdObject
 	public int LocCenterY { get; private set; }
 	public int RegionId { get; protected set; }
 	
-	public int ClosestTownNameId { get; private set; }
+	public string ClosestTownName { get; private set; }
 	private int FirmNameInstanceId { get; set; }
 	public int FirmSkillId { get; protected init; }
 	public int OverseerId { get; protected set; }
@@ -337,12 +337,12 @@ public abstract class Firm : IIdObject
 		if (String.IsNullOrEmpty(FirmRes[FirmType].ShortName))
 			return;
 
-		ClosestTownNameId = GetClosestTownNameId();
+		ClosestTownName = GetClosestTownName();
 
 		List<int> usedNumbers = new List<int>();
 		foreach (Firm firm in FirmArray)
 		{
-			if (firm.FirmType == FirmType && firm.ClosestTownNameId == ClosestTownNameId && firm.FirmNameInstanceId != 0)
+			if (firm.FirmType == FirmType && firm.ClosestTownName == ClosestTownName && firm.FirmNameInstanceId != 0)
 			{
 				usedNumbers.Add(firm.FirmNameInstanceId);
 			}
@@ -367,7 +367,7 @@ public abstract class Firm : IIdObject
 	{
 		string result = String.Empty;
 
-		if (ClosestTownNameId == 0)
+		if (String.IsNullOrEmpty(ClosestTownName))
 		{
 			result = FirmRes[FirmType].Name;
 		}
@@ -376,7 +376,7 @@ public abstract class Firm : IIdObject
 			// display number when there are multiple linked firms of the same type
 			// TRANSLATORS: <Town> <Short Firm Name> <Firm #>
 			// This is the name of the firm when there are multiple linked firms to a town.
-			result = TownRes.GetName(ClosestTownNameId) + " " + FirmRes[FirmType].ShortName;
+			result = ClosestTownName + " " + FirmRes[FirmType].ShortName;
 			if (FirmNameInstanceId > 1)
 			{
 				result += " " + FirmNameInstanceId;
@@ -666,10 +666,10 @@ public abstract class Firm : IIdObject
 		return shouldSetPower;
 	}
 
-	public int GetClosestTownNameId()
+	public string GetClosestTownName()
 	{
 		int minTownDistance = Int16.MaxValue;
-		int closestTownNameId = 0;
+		string closestTownName = String.Empty;
 
 		foreach (Town town in TownArray)
 		{
@@ -678,11 +678,11 @@ public abstract class Firm : IIdObject
 			if (townDistance < minTownDistance)
 			{
 				minTownDistance = townDistance;
-				closestTownNameId = town.TownNameId;
+				closestTownName = town.Name;
 			}
 		}
 
-		return closestTownNameId;
+		return closestTownName;
 	}
 
 	public bool OwnFirm() // whether the firm is controlled by the current player

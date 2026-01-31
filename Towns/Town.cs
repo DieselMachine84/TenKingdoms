@@ -17,10 +17,10 @@ public class Town : IIdObject
 	public int LocCenterX { get; private set; }
 	public int LocCenterY { get; private set; }
 	public int RegionId { get; private set; }
-	public int TownNameId { get; private set; }
+	private int TownNameId { get; set; }
 	public int LayoutId { get; private set; }
 	public int[] SlotObjectIds { get; } = new int[TownLayout.MAX_TOWN_LAYOUT_SLOT]; // the race id. of each slot building
-	public string Name => TownRes.GetName(TownNameId);
+	public string Name => TownNameId != 0 ? TownRes.GetName(TownNameId) : "Village " + TownId;
 
 
 	public int Population { get; private set; }

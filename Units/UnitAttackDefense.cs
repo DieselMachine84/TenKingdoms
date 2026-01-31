@@ -2142,8 +2142,8 @@ public partial class Unit
 		//----------- attack town ----------//
 
 		Town targetTown = TownArray[loc.TownId()];
-		int targetTownRecno = targetTown.TownId;
-		int targetTownNameId = targetTown.TownNameId;
+		int targetTownId = targetTown.TownId;
+		string targetTownName = targetTown.Name;
 		int targetTownXLoc = targetTown.LocCenterX;
 		int targetTownYLoc = targetTown.LocCenterY;
 
@@ -2184,9 +2184,9 @@ public partial class Unit
 
 			//------ if the town is destroyed, add a news --------//
 
-			if (TownArray.IsDeleted(targetTownRecno) && townNationRecno == NationArray.PlayerId)
+			if (TownArray.IsDeleted(targetTownId) && townNationRecno == NationArray.PlayerId)
 			{
-				NewsArray.TownDestroyed(targetTownNameId, targetTownXLoc, targetTownYLoc, attackUnit, attackNationRecno);
+				NewsArray.TownDestroyed(targetTownName, targetTownXLoc, targetTownYLoc, attackUnit, attackNationRecno);
 			}
 
 			//---------- gain experience --------//
@@ -2196,7 +2196,7 @@ public partial class Unit
 
 			//------------ auto defense -----------------//
 
-			if (!FirmArray.IsDeleted(targetTownRecno))
+			if (!FirmArray.IsDeleted(targetTownId))
 				targetTown.AutoDefense(attackUnit.SpriteId);
 		}
 	}

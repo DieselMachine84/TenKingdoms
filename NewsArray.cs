@@ -153,8 +153,8 @@ public class NewsArray
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = town.TownNameId;
 		news.Param2 = rebelCount;
+		news.Param6 = town.Name;
 		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 	}
 
@@ -165,11 +165,11 @@ public class NewsArray
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = srcTown.TownNameId;
-		news.Param2 = destTown.TownNameId;
 		news.Param3 = raceId;
 		news.Param4 = migratedCount;
 		news.Param5 = firmId != 0 ? FirmArray[firmId].FirmType : 0;
+		news.Param6 = srcTown.Name;
+		news.Param7 = destTown.Name;
 
 		news.SetLoc(destTown.LocCenterX, destTown.LocCenterY, News.NEWS_LOC_TOWN, destTown.TownId);
 	}
@@ -229,8 +229,8 @@ public class NewsArray
 			return;
 
 		news.Param1 = firm.FirmType;
-		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
 		news.Param3 = News.DESTROYER_UNKNOWN;
+		news.Param6 = !String.IsNullOrEmpty(firm.ClosestTownName) ? firm.ClosestTownName : firm.GetClosestTownName();
 
 		if (destroyerNationId != 0)
 		{
@@ -257,21 +257,21 @@ public class NewsArray
 			return;
 
 		news.Param1 = firm.FirmType;
-		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
 		news.Param3 = spyTakeover;
+		news.Param6 = !String.IsNullOrEmpty(firm.ClosestTownName) ? firm.ClosestTownName : firm.GetClosestTownName();
 
 		news.SetLoc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
 	}
 
-	public void TownDestroyed(int townNameId, int locX, int locY, Unit attackUnit, int destroyerNationId)
+	public void TownDestroyed(string townName, int locX, int locY, Unit attackUnit, int destroyerNationId)
 	{
 		News news = AddNews(News.NEWS_TOWN_DESTROYED, News.NEWS_NORMAL, NationArray.PlayerId, destroyerNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = townNameId;
 		news.Param2 = News.DESTROYER_UNKNOWN;
+		news.Param6 = townName;
 
 		if (destroyerNationId != 0)
 		{
@@ -297,7 +297,7 @@ public class NewsArray
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = town.TownNameId;
+		news.Param6 = town.Name;
 		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_ANY);
 	}
 
@@ -308,7 +308,7 @@ public class NewsArray
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = town.TownNameId;
+		news.Param6 = town.Name;
 
 		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 	}
@@ -385,7 +385,7 @@ public class NewsArray
 			Firm firm = FirmArray[spy.SpyPlaceId];
 
 			news.Param1 = firm.FirmType;
-			news.Param2 = firm.GetClosestTownNameId();
+			news.Param6 = firm.GetClosestTownName();
 
 			news.SetLoc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
 		}
@@ -394,7 +394,7 @@ public class NewsArray
 			Town town = TownArray[spy.SpyPlaceId];
 
 			news.Param1 = 0;
-			news.Param2 = town.TownNameId;
+			news.Param6 = town.Name;
 
 			news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 		}
@@ -520,11 +520,11 @@ public class NewsArray
 			case News.NEWS_LOC_FIRM:
 				Firm firm = FirmArray[objectId];
 				news.Param2 = firm.FirmType;
-				news.Param3 = firm.ClosestTownNameId;
+				news.Param6 = firm.ClosestTownName;
 				break;
 			case News.NEWS_LOC_TOWN:
 				Town town = TownArray[objectId];
-				news.Param3 = town.TownNameId;
+				news.Param6 = town.Name;
 				break;
 		}
 
@@ -596,7 +596,7 @@ public class NewsArray
 			return;
 
 		news.Param1 = firm.FirmType;
-		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
+		news.Param6 = !String.IsNullOrEmpty(firm.ClosestTownName) ? firm.ClosestTownName : firm.GetClosestTownName();
 	}
 
 	public void ChatMsg(int fromNationId, string chatStr)

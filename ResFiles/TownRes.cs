@@ -341,7 +341,6 @@ public class TownRes
 
     public int GetNewNameId(int raceId)
     {
-        // TODO add numbers to town names
         RaceInfo raceInfo = RaceRes[raceId];
 
         if (raceInfo.town_name_used_count >= raceInfo.town_name_count)
