@@ -110,7 +110,7 @@ public class Worker
             if (overseer.Rank == Unit.RANK_KING)
                 targetLoyalty += 20;
 
-            if (RaceRes.is_same_race(RaceId, overseer.RaceId))
+            if (RaceId == overseer.RaceId)
                 targetLoyalty += 20;
 
             if (targetLoyalty < 0)

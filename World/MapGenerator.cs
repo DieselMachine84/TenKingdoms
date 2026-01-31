@@ -1763,7 +1763,7 @@ public class MapGenerator
 			//------- create military camp -------//
 
 			//TODO randomize camp location
-			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.RaceId].code);
+			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.RaceId].Code);
 
 			if (firmRecno == 0)
 			{
@@ -1775,9 +1775,9 @@ public class MapGenerator
 
 			//--------- create units ----------//
 
-			int unitId = RaceRes[nation.RaceId].basic_unit_id;
+			int unitType = RaceRes[nation.RaceId].BasicUnitType;
 
-			Unit king = CreateUnit(town, unitId, Unit.RANK_KING);
+			Unit king = CreateUnit(town, unitType, Unit.RANK_KING);
 
 			if (king != null)
 			{
@@ -1800,9 +1800,9 @@ public class MapGenerator
 				for (int i = 0; i < createCount; i++)
 				{
 					if (Misc.Random(2) == 0)
-						unitId = RaceRes[nation.RaceId].basic_unit_id;
+						unitType = RaceRes[nation.RaceId].BasicUnitType;
 					else
-						unitId = RaceRes[ConfigAdv.GetRandomRace()].basic_unit_id;
+						unitType = RaceRes[ConfigAdv.GetRandomRace()].BasicUnitType;
 
 					int rankId;
 					if (Misc.Random(3) == 0)
@@ -1810,7 +1810,7 @@ public class MapGenerator
 					else
 						rankId = Unit.RANK_SOLDIER;
 
-					if (CreateUnit(town, unitId, rankId) == null)
+					if (CreateUnit(town, unitType, rankId) == null)
 						break;
 				}
 			}

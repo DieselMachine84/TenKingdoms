@@ -87,7 +87,7 @@ public partial class Renderer
                 _selectedRaceId = i + 1;
 
             RaceInfo raceInfo = RaceRes[i + 1];
-            Graphics.DrawBitmap(raceInfo.GetIconTexture(Graphics), DetailsX1 + 14, raceY, raceInfo.iconBitmapWidth * 2, raceInfo.iconBitmapHeight * 2);
+            Graphics.DrawBitmap(raceInfo.GetIconTexture(Graphics), DetailsX1 + 14, raceY, raceInfo.IconBitmapWidth * 2, raceInfo.IconBitmapHeight * 2);
 
             int textY = raceY + 4;
             PutText(FontMid, town.RacesPopulation[i].ToString(), DetailsX1 + 100, textY);

@@ -7651,7 +7651,7 @@ public class NationOld : NationBase
 
 		//--- if the race of the kings are the same, the chance is higher ---//
 
-		if (RaceRes.is_same_race(nation.RaceId, RaceId))
+		if (nation.RaceId == RaceId)
 			curRating += 20;
 
 		return curRating;

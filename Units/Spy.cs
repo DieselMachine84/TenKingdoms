@@ -82,14 +82,14 @@ public class Spy : IIdObject
 
 		// the spy will free it up in deinit(). Keep an additional right because when a spy is assigned to a town,
 		// the normal program will free up the name id., so we have to keep an additional copy
-		RaceRes[RaceId].use_name_id(NameId);
+		RaceRes[RaceId].UseNameId(NameId);
 	}
 
 	public void Deinit()
 	{
 		SetPlace(SPY_UNDEFINED, 0); // reset spy place vars
 
-		RaceRes[RaceId].free_name_id(NameId);
+		RaceRes[RaceId].FreeNameId(NameId);
 	}
 
 	public void NextDay()
@@ -374,7 +374,7 @@ public class Spy : IIdObject
 
 		int nationScore = (int)nation.Reputation; // reputation can be negative
 
-		if (RaceRes.is_same_race(nation.RaceId, RaceId))
+		if (nation.RaceId == RaceId)
 			nationScore += 30;
 
 		if (SpyLoyalty < nationScore || SpyLoyalty == 0)
@@ -521,7 +521,7 @@ public class Spy : IIdObject
 
 					int obeyChance = unitLeadership / 2 + nationReputation / 2;
 
-					if (RaceRes.is_same_race(worker.RaceId, RaceId))
+					if (worker.RaceId == RaceId)
 						obeyChance += 50;
 
 					bool obeyFlag = (Misc.Random(100) < obeyChance); // if obeyChance >= 100, all units will object the overseer

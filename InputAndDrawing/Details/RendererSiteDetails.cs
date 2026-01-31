@@ -35,7 +35,7 @@ public partial class Renderer
                 DrawFieldPanel67(DetailsX1 + 7, DetailsY1 + 82);
                 GodInfo godInfo = GodRes[site.ObjectId];
                 PutText(FontSan, "Nationality", DetailsX1 + 13, DetailsY1 + 56, -1, true);
-                PutText(FontSan, RaceRes[godInfo.RaceId].name, DetailsX1 + 113, DetailsY1 + 56, -1, true);
+                PutText(FontSan, RaceRes[godInfo.RaceId].Name, DetailsX1 + 113, DetailsY1 + 56, -1, true);
                 PutText(FontSan, "Invoke", DetailsX1 + 13, DetailsY1 + 85, -1, true);
                 PutText(FontSan, UnitRes[godInfo.UnitType].Name, DetailsX1 + 113, DetailsY1 + 85, -1, true);
                 break;

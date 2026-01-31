@@ -347,7 +347,7 @@ public class UnitGod : Unit
 
 		//---- only cast on mayan units belonging to our nation --//
 
-		if (unit.NationId == NationId && unit.RaceId == (int)Race.RACE_MAYA)
+		if (unit.NationId == NationId && unit.RaceId == RaceRes.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
@@ -383,7 +383,7 @@ public class UnitGod : Unit
 	{
 		Unit unit = UnitArray[unitId];
 
-		if (NationId == unit.NationId && unit.RaceId == (int)Race.RACE_ZULU && unit.Rank != RANK_SOLDIER)
+		if (NationId == unit.NationId && unit.RaceId == RaceRes.RACE_ZULU && unit.Rank != RANK_SOLDIER)
 		{
 			int changePoints = 30; // add 15 twice to avoid 130 becomes -126
 			unit.Skill.SkillLevel += changePoints / divider;
@@ -422,7 +422,7 @@ public class UnitGod : Unit
 	{
 		//---- only cast on mayan units belonging to our nation --//
 
-		if (nationId == NationId && worker.RaceId == (int)Race.RACE_MAYA)
+		if (nationId == NationId && worker.RaceId == RaceRes.RACE_MAYA)
 		{
 			int changePoints = 15 + Misc.Random(10); // add 15 to 25 points to its combat level instantly
 
@@ -542,7 +542,7 @@ public class UnitGod : Unit
 			{
 				Unit unit = UnitArray[firm.OverseerId];
 
-				if (unit.RaceId == (int)Race.RACE_MAYA && unit.Skill.CombatLevel < 100)
+				if (unit.RaceId == RaceRes.RACE_MAYA && unit.Skill.CombatLevel < 100)
 					curRating += 10;
 			}
 
@@ -550,7 +550,7 @@ public class UnitGod : Unit
 			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
 				Worker worker = firm.Workers[j];
-				if (worker.RaceId == (int)Race.RACE_MAYA && worker.CombatLevel < 100)
+				if (worker.RaceId == RaceRes.RACE_MAYA && worker.CombatLevel < 100)
 					curRating += 5;
 			}
 
@@ -893,7 +893,7 @@ public class UnitGod : Unit
 			Unit unit;
 			if (firm.OverseerId != 0
 			    && (unit = UnitArray[firm.OverseerId]) != null
-			    && unit.RaceId == (int)Race.RACE_ZULU // only consider ZULU leader
+			    && unit.RaceId == RaceRes.RACE_ZULU // only consider ZULU leader
 			    && unit.Skill.SkillLevel <= 70)
 			{
 				if (unit.Rank == RANK_KING)
@@ -908,7 +908,7 @@ public class UnitGod : Unit
 				for (int j = firm.Workers.Count - 1; j >= 0; j--)
 				{
 					Worker worker = firm.Workers[j];
-					if (worker.RaceId == (int)Race.RACE_ZULU)
+					if (worker.RaceId == RaceRes.RACE_ZULU)
 						curRating += (unit.Skill.CombatLevel - worker.CombatLevel) * 2;
 					else
 						curRating += unit.Skill.CombatLevel - worker.CombatLevel;

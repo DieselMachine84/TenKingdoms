@@ -73,9 +73,9 @@ public class FirmInn : Firm
 		{
 			if (ShouldAddInnUnit())
 			{
-				int unitId = RaceRes[ConfigAdv.GetRandomRace()].basic_unit_id;
-				if (unitId != 0)
-					AddInnUnit(unitId);
+				int unitType = RaceRes[ConfigAdv.GetRandomRace()].BasicUnitType;
+				if (unitType != 0)
+					AddInnUnit(unitType);
 			}
 		}
 	}
@@ -94,12 +94,12 @@ public class FirmInn : Firm
 		return totalInnUnit < GameConstants.MAX_INN_UNIT_PER_REGION;
 	}
 
-	private void AddInnUnit(int unitId)
+	private void AddInnUnit(int unitType)
 	{
 		InnUnit innUnit = new InnUnit();
 		InnUnits.Add(innUnit);
 
-		innUnit.UnitType = unitId;
+		innUnit.UnitType = unitType;
 
 		int skillId = NextSkillId;
 
@@ -184,7 +184,7 @@ public class FirmInn : Firm
 
 		int unitLoyalty = 30 + (int)nation.Reputation / 2;
 
-		if (RaceRes.is_same_race(unit.RaceId, nation.RaceId))
+		if (unit.RaceId == nation.RaceId)
 			unitLoyalty += 20;
 
 		unitLoyalty = Math.Max(40, unitLoyalty);

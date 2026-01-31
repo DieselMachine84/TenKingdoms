@@ -1090,7 +1090,7 @@ public class Town : IIdObject
 
 			targetLoyalty += 30 - 30 * RacesJoblessPopulation[i] / RacesPopulation[i]; // +0 to +30
 
-			if (RaceRes.is_same_race(i + 1, nationRaceId))
+			if (i + 1 == nationRaceId)
 				targetLoyalty += 10;
 
 			if (targetLoyalty < 0) // targetLoyalty can be negative if there are hostile races conflicts
@@ -2098,7 +2098,7 @@ public class Town : IIdObject
 
 		//---- free the unit's name from the name database ----//
 
-		RaceRes[unit.RaceId].free_name_id(unit.NameId);
+		RaceRes[unit.RaceId].FreeNameId(unit.NameId);
 
 		//----- if it's a town defending unit -----//
 
@@ -2397,8 +2397,8 @@ public class Town : IIdObject
 		//----look for an empty location for the unit to stand ----//
 		//--- scan for the 5 rows right below the building ---//
 
-		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
+		int unitType = RaceRes[raceId].BasicUnitType;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].SpriteId];
 		int locX = LocX1, locY = LocY1; // locX & locY are used for returning results
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
@@ -2406,7 +2406,7 @@ public class Town : IIdObject
 
 		//---------- add the unit now -----------//
 
-		Unit unit = UnitArray.AddUnit(unitId, NationId, Unit.RANK_SOLDIER, (int)RacesLoyalty[raceId - 1], locX, locY);
+		Unit unit = UnitArray.AddUnit(unitType, NationId, Unit.RANK_SOLDIER, (int)RacesLoyalty[raceId - 1], locX, locY);
 
 		//------- set the unit's parameters --------//
 
@@ -3619,8 +3619,8 @@ public class Town : IIdObject
 		//----look for an empty location for the unit to stand ----//
 		//--- scan for the 5 rows right below the building ---//
 
-		int unitId = RaceRes[raceId].basic_unit_id;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
+		int unitType = RaceRes[raceId].BasicUnitType;
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].SpriteId];
 		int locX = LocX1, locY = LocY1; // xLoc & yLoc are used for returning results
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
@@ -3630,7 +3630,7 @@ public class Town : IIdObject
 
 		int rankId = isLeader ? Unit.RANK_GENERAL : Unit.RANK_SOLDIER;
 
-		Unit unit = UnitArray.AddUnit(unitId, 0, rankId, 0, locX, locY);
+		Unit unit = UnitArray.AddUnit(unitType, 0, rankId, 0, locX, locY);
 
 		DecPopulation(raceId, false); // decrease the town's population
 
@@ -3674,9 +3674,9 @@ public class Town : IIdObject
 			}
 		}
 
-		int unitId = RaceRes[raceId].basic_unit_id;
+		int unitType = RaceRes[raceId].BasicUnitType;
 		int locX = LocX1, locY = LocY1;
-		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
+		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitType].SpriteId];
 
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return;
@@ -3687,7 +3687,7 @@ public class Town : IIdObject
 
 		//-------- create the king --------//
 
-		Unit kingUnit = UnitArray.AddUnit(unitId, newNation.NationId, Unit.RANK_KING, 100, locX, locY);
+		Unit kingUnit = UnitArray.AddUnit(unitType, newNation.NationId, Unit.RANK_KING, 100, locX, locY);
 		kingUnit.Skill.SkillId = Skill.SKILL_LEADING;
 		kingUnit.Skill.SkillLevel = 50 + Misc.Random(51);
 		kingUnit.SetCombatLevel(70 + Misc.Random(31));

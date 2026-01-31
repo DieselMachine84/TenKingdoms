@@ -1562,7 +1562,7 @@ public abstract class Firm : IIdObject
 	public void KillWorker(Worker worker)
 	{
 		if (worker.RaceId != 0 && worker.NameId != 0)
-			RaceRes[worker.RaceId].free_name_id(worker.NameId);
+			RaceRes[worker.RaceId].FreeNameId(worker.NameId);
 
 		if (worker.TownId != 0)
 			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
@@ -1750,7 +1750,7 @@ public abstract class Firm : IIdObject
 	public int ResignWorker(Worker worker)
 	{
 		if (worker.RaceId != 0 && worker.NameId != 0)
-			RaceRes[worker.RaceId].free_name_id(worker.NameId);
+			RaceRes[worker.RaceId].FreeNameId(worker.NameId);
 
 		if (worker.TownId != 0)
 		{
@@ -2144,7 +2144,7 @@ public abstract class Firm : IIdObject
 
 				worker.RaceId = raceId;
 				worker.RankId = Unit.RANK_SOLDIER;
-				worker.UnitType = RaceRes[raceId].basic_unit_id;
+				worker.UnitType = RaceRes[raceId].BasicUnitType;
 				worker.WorkerLoyalty = (int)town.RacesLoyalty[raceId - 1];
 
 				if (FirmRes[FirmType].LiveInTown)
@@ -2596,7 +2596,7 @@ public abstract class Firm : IIdObject
 
 				// if this worker does not have a name, give him one now as a spy must reserve a name (see below on use_name_id() for reasons)
 				if (newSpy.NameId == 0)
-					newSpy.NameId = RaceRes[newSpy.RaceId].get_new_name_id();
+					newSpy.NameId = RaceRes[newSpy.RaceId].GetNewNameId();
 			}
 			else if (OverseerId != 0)
 			{
@@ -2611,7 +2611,7 @@ public abstract class Firm : IIdObject
 			//-- Spy always registers its name twice as his name will be freed up in Deinit().
 			//-- Keep an additional right because when a spy is assigned to a town, the normal program will free up the name id., so we have to keep an additional copy
 
-			RaceRes[newSpy.RaceId].use_name_id(newSpy.NameId);
+			RaceRes[newSpy.RaceId].UseNameId(newSpy.NameId);
 
 			BribeResult = Spy.BRIBE_SUCCEED;
 
@@ -2665,8 +2665,7 @@ public abstract class Firm : IIdObject
 
 			int spyKingRaceId = NationArray[spy.TrueNationId].RaceId;
 
-			succeedChance += (RaceRes.is_same_race(spy.RaceId, unitRaceId) ? 1 : 0) * 10 +
-			                 (RaceRes.is_same_race(spyKingRaceId, unitRaceId) ? 1 : 0) * 10;
+			succeedChance += (spy.RaceId == unitRaceId ? 1 : 0) * 10 + (spyKingRaceId == unitRaceId ? 1 : 0) * 10;
 
 			if (unitLoyalty > 60) // harder for bribe units with over 60 loyalty
 				succeedChance -= (unitLoyalty - 60);

@@ -152,7 +152,7 @@ public abstract partial class Unit : Sprite
 
 		if (RaceId != 0)
 		{
-			NameId = RaceRes[RaceId].get_new_name_id();
+			NameId = RaceRes[RaceId].GetNewNameId();
 		}
 		else //---- init non-human unit ----//
 		{
@@ -2931,7 +2931,7 @@ public abstract partial class Unit : Sprite
 			if (Rank == RANK_KING) // use the player name
 				result += NationArray[NationId].KingName();
 			else
-				result += RaceRes[RaceId].get_name(NameId);
+				result += RaceRes[RaceId].GetName(NameId);
 		}
 		else
 		{
@@ -2955,7 +2955,7 @@ public abstract partial class Unit : Sprite
 	{
 		//------- free up the existing name id. ------//
 
-		RaceRes[RaceId].free_name_id(NameId);
+		RaceRes[RaceId].FreeNameId(NameId);
 
 		//------- set the new name id. ---------//
 
@@ -2963,7 +2963,7 @@ public abstract partial class Unit : Sprite
 
 		//-------- register usage of the new name id. ------//
 
-		RaceRes[RaceId].use_name_id(NameId);
+		RaceRes[RaceId].UseNameId(NameId);
 	}
 
 	public int UnitPower()
@@ -3381,7 +3381,7 @@ public abstract partial class Unit : Sprite
 
 		int thisInfluence = Skill.GetSkillLevel(Skill.SKILL_LEADING) * 2 / 3; // 66% of the leadership
 
-		if (RaceRes.is_same_race(nation.RaceId, RaceId))
+		if (nation.RaceId == RaceId)
 			thisInfluence += thisInfluence / 3; // 33% bonus if the king's race is also the same as the general
 
 		thisInfluence += (int)(nation.Reputation / 2.0);
@@ -3496,7 +3496,7 @@ public abstract partial class Unit : Sprite
 			if (nation.Reputation > 0)
 				ChangeLoyalty((int)nation.Reputation);
 
-			if (RaceRes.is_same_race(nation.RaceId, RaceId))
+			if (nation.RaceId == RaceId)
 				ChangeLoyalty(30);
 
 			UpdateLoyalty(); // update target loyalty
@@ -3625,7 +3625,7 @@ public abstract partial class Unit : Sprite
 				if (leaderUnit.Rank == RANK_KING)
 					targetLoyalty += 20;
 
-				if (RaceRes.is_same_race(RaceId, leaderUnit.RaceId))
+				if (RaceId == leaderUnit.RaceId)
 					targetLoyalty += 20;
 
 				targetLoyalty = Math.Min(targetLoyalty, 100);
@@ -4178,7 +4178,7 @@ public abstract partial class Unit : Sprite
 
 			int nationScore = (int)nation.Reputation + (nation.OverallRating - curNation.OverallRating);
 
-			if (RaceRes.is_same_race(nation.RaceId, RaceId))
+			if (nation.RaceId == RaceId)
 				nationScore += 30;
 
 			if (nationScore > bestScore)

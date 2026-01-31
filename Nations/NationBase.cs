@@ -503,9 +503,9 @@ public class NationBase : IIdObject
         else
         {
             if (firstWordOnly)
-                return RaceRes[RaceId].get_single_name(NationNameId);
+                return RaceRes[RaceId].GetSingleName(NationNameId);
             else
-                return RaceRes[RaceId].get_name(NationNameId);
+                return RaceRes[RaceId].GetName(NationNameId);
         }
     }
 

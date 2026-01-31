@@ -674,7 +674,7 @@ public partial class Renderer
                 break;
             case Site.SITE_SCROLL:
                 RaceInfo raceInfo = RaceRes[site.ObjectId];
-                Graphics.DrawBitmapScaled(raceInfo.GetScrollTexture(Graphics), siteX, siteY, raceInfo.scrollBitmapWidth, raceInfo.scrollBitmapHeight);
+                Graphics.DrawBitmapScaled(raceInfo.GetScrollTexture(Graphics), siteX, siteY, raceInfo.ScrollBitmapWidth, raceInfo.ScrollBitmapHeight);
                 break;
             case Site.SITE_GOLD_COIN:
                 Graphics.DrawBitmapScaled(MonsterRes.GetGoldCoinTexture(Graphics, site.ObjectId), siteX, siteY, MonsterRes.GoldCoinWidth, MonsterRes.GoldCoinHeight);

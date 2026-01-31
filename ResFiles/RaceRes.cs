@@ -3,24 +3,6 @@ using System.Linq;
 
 namespace TenKingdoms;
 
-//------------ Define race id. -------------//
-
-public enum Race
-{
-	RACE_NORMAN = 1,
-	RACE_MAYA,
-	RACE_GREEK,
-	RACE_VIKING,
-	RACE_PERSIAN,
-	RACE_CHINESE,
-	RACE_JAPANESE,
-	RACE_EGYPTIAN,
-	RACE_INDIAN,
-	RACE_ZULU
-}
-
-//------------ Define struct RaceRec ---------------//
-
 public class RaceRec
 {
 	public const int CODE_LEN = 8;
@@ -58,26 +40,38 @@ public class RaceRec
 
 public class RaceInfo
 {
-	public int race_id;
+	public int RaceId { get; set; }
 
-	public string code;
-	public string name;
-	public string adjective;
+	public string Code { get; set; }
+	public string Name { get; set; }
+	public string Adjective { get; set; }
 
-	public byte[] iconBitmap;
-	public int iconBitmapWidth;
-	public int iconBitmapHeight;
+	public int FirstFirstNameId { get; set; } // first <first name> of this race in first_name_array[]
+	public int FirstLastNameId { get; set; } // first <last name> of this race in last_name_array[]
+
+	public int FirstNameCount { get; set; }
+	public int LastNameCount { get; set; }
+
+	public int FirstTownNameId { get; set; }
+	public int TownNameCount { get; set; }
+	public int TownNameUsedCount { get; set; }
+
+	public int BasicUnitType { get; set; }
+
+	public byte[] IconBitmap { get; set; }
+	public int IconBitmapWidth { get; set; }
+	public int IconBitmapHeight { get; set; }
 	private IntPtr _iconTexture;
 
-	public byte[] scrollBitmap;
-	public int scrollBitmapWidth;
-	public int scrollBitmapHeight;
+	public byte[] ScrollBitmap { get; set; }
+	public int ScrollBitmapWidth { get; set; }
+	public int ScrollBitmapHeight { get; set; }
 	private IntPtr _scrollTexture;
 
 	public IntPtr GetIconTexture(Graphics graphics)
 	{
 		if (_iconTexture == default)
-			_iconTexture = graphics.CreateTextureFromBmp(iconBitmap, iconBitmapWidth, iconBitmapHeight);
+			_iconTexture = graphics.CreateTextureFromBmp(IconBitmap, IconBitmapWidth, IconBitmapHeight);
 
 		return _iconTexture;
 	}
@@ -85,27 +79,10 @@ public class RaceInfo
 	public IntPtr GetScrollTexture(Graphics graphics)
 	{
 		if (_scrollTexture == default)
-			_scrollTexture = graphics.CreateTextureFromBmp(scrollBitmap, scrollBitmapWidth, scrollBitmapHeight);
+			_scrollTexture = graphics.CreateTextureFromBmp(ScrollBitmap, ScrollBitmapWidth, ScrollBitmapHeight);
 
 		return _scrollTexture;
 	}
-	
-	//----------------------//
-
-	public int first_first_name_id; // first <first name> of this race in first_name_array[]
-	public int first_last_name_id; // first <last name> of this race in last_name_array[]
-
-	public int first_name_count;
-	public int last_name_count;
-
-	public int first_town_name_recno;
-	public int town_name_count;
-
-	public int basic_unit_id;
-
-	//--------- game vars ----------//
-
-	public int town_name_used_count;
 	
 	public RaceRes RaceRes { get; }
 
@@ -114,129 +91,112 @@ public class RaceInfo
 		RaceRes = raceRes;
 	}
 
-	public string get_name(int nameId, int nameType = 0)
+	public string GetName(int nameId, int nameType = 0)
 	{
-		//TODO rewrite why static?
-		//static String str;
-
 		if (nameId == 0)
-			return "";
+			return String.Empty;
 
-		string str = string.Empty;
-		if (nameType != 2) // 2-is for last name only
+		string result;
+		if (nameType != 2) // 2 - is for last name only
 		{
 			int firstNameId = (nameId >> 8);
 
-			int nameRecno = first_first_name_id + firstNameId - 1;
-
-			str = new string(RaceRes.name_array[nameRecno - 1].name);
+			result = RaceRes.Names[FirstFirstNameId + firstNameId - 2].Name;
 
 			if (nameType == 1) // first name only
-				return str;
+				return result;
 		}
 		else
 		{
-			if (last_name_count == 0) // if this race does not have last name
-				return "";
+			if (LastNameCount == 0) // if this race does not have last name
+				return String.Empty;
 
-			str = "";
+			result = String.Empty;
 		}
-
-		//--------- last name ----------//
 
 		int lastNameId = (nameId & 0xFF);
 
-		if (last_name_count == 0) // if there is no last name for this race
+		if (LastNameCount == 0) // if there is no last name for this race
 		{
 			if (lastNameId > 1) // no need to display roman letter "I" for the first one
 			{
-				if (str.Length > 0)
-					str += " ";
+				if (result.Length > 0)
+					result += " ";
 
-				str += Misc.roman_number(lastNameId);
+				result += Misc.roman_number(lastNameId);
 			}
 		}
 		else
 		{
-			int nameRecno = first_last_name_id + lastNameId - 1;
+			if (result.Length > 0)
+				result += " ";
 
-			if (str.Length > 0)
-				str += " ";
-
-			str += RaceRes.name_array[nameRecno - 1].name;
+			result += RaceRes.Names[FirstLastNameId + lastNameId - 2].Name;
 		}
 
-		return str;
+		return result;
 	}
 
-	public string get_single_name(int nameId)
+	public string GetSingleName(int nameId)
 	{
-		switch (race_id)
+		switch (RaceId)
 		{
-			case (int)Race.RACE_NORMAN:
-			case (int)Race.RACE_VIKING:
-			case (int)Race.RACE_INDIAN:
-			case (int)Race.RACE_ZULU:
-				return get_name(nameId, 1); // 1-first name only
+			case RaceRes.RACE_NORMAN:
+			case RaceRes.RACE_VIKING:
+			case RaceRes.RACE_INDIAN:
+			case RaceRes.RACE_ZULU:
+				return GetName(nameId, 1); // 1 - first name only
 
-			case (int)Race.RACE_CHINESE:
-			case (int)Race.RACE_JAPANESE:
-				return get_name(nameId, 2); // 2-last name only
+			case RaceRes.RACE_CHINESE:
+			case RaceRes.RACE_JAPANESE:
+				return GetName(nameId, 2); // 2 - last name only
 
 			default:
-				return get_name(nameId); // the whole name
+				return GetName(nameId); // the whole name
 		}
 	}
 
-	public int get_new_name_id()
+	public int GetNewNameId()
 	{
-		//---------- get the first name ----------//
+		int firstNameId = Misc.Random(FirstNameCount) + 1;
 
-		int firstNameId = Misc.Random(first_name_count) + 1;
-
-		for (int i = 1; i <= first_name_count; i++)
+		for (int i = 1; i <= FirstNameCount; i++)
 		{
-			if (++firstNameId > first_name_count)
+			if (++firstNameId > FirstNameCount)
 				firstNameId = 1;
 
 			//--- try to get an unused first name -----//
-			//--- if all names have been used (when i>first_name_count), use the first selected random name id. --//
+			//--- if all names have been used (when i > FirstNameCount), use the first selected random name id. --//
 
-			if (RaceRes.name_used_array[first_first_name_id + firstNameId - 2] == 0)
+			if (RaceRes.NamesUsed[FirstFirstNameId + firstNameId - 2] == 0)
 				break;
 		}
 
-		int nameRecno = first_first_name_id + firstNameId - 1;
-
-		RaceRes.name_used_array[nameRecno - 1]++;
-
-		//---------- get the last name ----------//
+		RaceRes.NamesUsed[FirstFirstNameId + firstNameId - 2]++;
 
 		int lastNameId;
 
-		if (last_name_count == 0) // if there is no last name for this race, add Roman letter as the last name
+		if (LastNameCount == 0) // if there is no last name for this race, add Roman letter as the last name
 		{
-			lastNameId = RaceRes.name_used_array[first_first_name_id + firstNameId - 2];
+			lastNameId = RaceRes.NamesUsed[FirstFirstNameId + firstNameId - 2];
 		}
 		else // this race has last names
 		{
-			lastNameId = Misc.Random(last_name_count) + 1;
+			lastNameId = Misc.Random(LastNameCount) + 1;
 
-			for (int i = 1; i <= last_name_count; i++)
+			for (int i = 1; i <= LastNameCount; i++)
 			{
-				if (++lastNameId > last_name_count)
+				if (++lastNameId > LastNameCount)
 					lastNameId = 1;
 
 				//--- try to get an unused last name -----//
 				//--- if all names have been used, use the first selected random name id. --//
 
-				if (RaceRes.name_used_array[first_last_name_id + lastNameId - 2] == 0)
+				if (RaceRes.NamesUsed[FirstLastNameId + lastNameId - 2] == 0)
 					break;
 			}
 
-			nameRecno = first_last_name_id + lastNameId - 1;
-
-			RaceRes.name_used_array[nameRecno - 1]++;
+			RaceRes.NamesUsed[FirstLastNameId + lastNameId - 2]++;
 		}
 
 		//--- nameId is a combination of first & last name id. ----//
@@ -244,41 +204,35 @@ public class RaceInfo
 		return (firstNameId << 8) + lastNameId;
 	}
 
-	//TODO check that name is not feed twice when killing a spy inside a firm
-	public void free_name_id(int nameId)
+	public void UseNameId(int nameId)
 	{
 		int firstNameId = (nameId >> 8);
-		int nameRecno = first_first_name_id + firstNameId - 1;
 
-		RaceRes.name_used_array[nameRecno - 1]--;
+		RaceRes.NamesUsed[FirstFirstNameId + firstNameId - 2]++;
 
-		if (last_name_count > 0) // some races do not have last names
+		if (LastNameCount > 0) // some races do not have last names
 		{
 			int lastNameId = (nameId & 0xFF);
-			nameRecno = first_last_name_id + lastNameId - 1;
 
-			RaceRes.name_used_array[nameRecno - 1]--;
+			RaceRes.NamesUsed[FirstLastNameId + lastNameId - 2]++;
 		}
 	}
-
-	public void use_name_id(int nameId)
+	
+	//TODO check that name is not feed twice when killing a spy inside a firm
+	public void FreeNameId(int nameId)
 	{
 		int firstNameId = (nameId >> 8);
-		int nameRecno = first_first_name_id + firstNameId - 1;
+		
+		RaceRes.NamesUsed[FirstFirstNameId + firstNameId - 2]--;
 
-		RaceRes.name_used_array[nameRecno - 1]++;
-
-		if (last_name_count > 0) // some races do not have last names
+		if (LastNameCount > 0) // some races do not have last names
 		{
 			int lastNameId = (nameId & 0xFF);
-			nameRecno = first_last_name_id + lastNameId - 1;
 
-			RaceRes.name_used_array[nameRecno - 1]++;
+			RaceRes.NamesUsed[FirstLastNameId + lastNameId - 2]--;
 		}
 	}
 }
-
-//-------- Define struct NameRec ----------//
 
 public class RaceNameRec
 {
@@ -293,26 +247,27 @@ public class RaceNameRec
 	}
 }
 
-//-------- Define struct NameInfo ----------//
-
 public class RaceName
 {
-	public string name;
+	public string Name { get; set; }
 }
-
-//----------- Define class RaceRes ---------------//
 
 public class RaceRes
 {
-	public const int RACE_ICON_WIDTH = 24;
-	public const int RACE_ICON_HEIGHT = 20;
-
-	public RaceInfo[] race_info_array;
-	public RaceName[] name_array;
-	public byte[] name_used_array;
-
-	private ResourceDb res_bitmap;
-	private ResourceIdx _scrollResources;
+	public const int RACE_NORMAN = 1;
+	public const int RACE_MAYA = 2;
+	public const int RACE_GREEK = 3;
+	public const int RACE_VIKING = 4;
+	public const int RACE_PERSIAN = 5;
+	public const int RACE_CHINESE = 6;
+	public const int RACE_JAPANESE = 7;
+	public const int RACE_EGYPTIAN = 8;
+	public const int RACE_INDIAN = 9;
+	public const int RACE_ZULU = 10;
+	
+	public RaceInfo[] RaceInfos { get; private set; }
+	public RaceName[] Names { get; private set; }
+	public byte[] NamesUsed { get; private set; }
 
 	public GameSet GameSet { get; }
 	public UnitRes UnitRes { get; }
@@ -322,113 +277,91 @@ public class RaceRes
 		GameSet = gameSet;
 		UnitRes = unitRes;
 
-		res_bitmap = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_RACE.RES");
-		_scrollResources = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
-
-		//------- load database information --------//
-
 		LoadRaceInfo();
-		LoadName();
+		LoadNames();
 	}
 
-	//TODO rewrite
-	//public int write_file(File*);
-	//public int read_file(File*);
-
-	public bool is_same_race(int raceId1, int raceId2)
-	{
-		return raceId1 == raceId2;
-	}
-
-	public RaceInfo this[int raceId] => race_info_array[raceId - 1];
+	public RaceInfo this[int raceId] => RaceInfos[raceId - 1];
 
 	private void LoadRaceInfo()
 	{
+		ResourceDb raceImages = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_RACE.RES");
+		ResourceIdx scrollImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_SPICT.RES");
+		
 		Database dbRace = GameSet.OpenDb("RACE");
-		race_info_array = new RaceInfo[dbRace.RecordCount];
+		RaceInfos = new RaceInfo[dbRace.RecordCount];
 
-		for (int i = 0; i < race_info_array.Length; i++)
+		for (int i = 0; i < RaceInfos.Length; i++)
 		{
 			RaceRec raceRec = new RaceRec(dbRace, i + 1);
 			RaceInfo raceInfo = new RaceInfo(this);
-			race_info_array[i] = raceInfo;
-			raceInfo.race_id = i + 1;
+			RaceInfos[i] = raceInfo;
+			raceInfo.RaceId = i + 1;
 
-			//misc.rtrim_fld( raceInfo->code, raceRec->code, raceRec->CODE_LEN );
-			raceInfo.code = Misc.ToString(raceRec.code);
-
-			//misc.rtrim_fld( raceInfo->name, raceRec->name, raceRec->NAME_LEN );
-			raceInfo.name = Misc.ToString(raceRec.name);
-
-			//misc.rtrim_fld( raceInfo->adjective, raceRec->adjective, raceRec->ADJECTIVE_LEN );
-			raceInfo.adjective = Misc.ToString(raceRec.adjective);
+			raceInfo.Code = Misc.ToString(raceRec.code);
+			raceInfo.Name = Misc.ToString(raceRec.name);
+			raceInfo.Adjective = Misc.ToString(raceRec.adjective);
 
 			int bitmapOffset = BitConverter.ToInt32(raceRec.icon_bitmap_ptr, 0);
-			byte[] iconBitmapData = res_bitmap.Read(bitmapOffset);
-			raceInfo.iconBitmapWidth = BitConverter.ToInt16(iconBitmapData, 0);
-			raceInfo.iconBitmapHeight = BitConverter.ToInt16(iconBitmapData, 2);
-			raceInfo.iconBitmap = iconBitmapData.Skip(4).ToArray();
+			byte[] iconBitmapData = raceImages.Read(bitmapOffset);
+			raceInfo.IconBitmapWidth = BitConverter.ToInt16(iconBitmapData, 0);
+			raceInfo.IconBitmapHeight = BitConverter.ToInt16(iconBitmapData, 2);
+			raceInfo.IconBitmap = iconBitmapData.Skip(4).ToArray();
 
-			byte[] scrollData = _scrollResources.Read("SCROLL-" + raceInfo.code[0]);
-			raceInfo.scrollBitmapWidth = BitConverter.ToInt16(scrollData, 0);
-			raceInfo.scrollBitmapHeight = BitConverter.ToInt16(scrollData, 2);
-			raceInfo.scrollBitmap = scrollData.Skip(4).ToArray();
+			byte[] scrollData = scrollImages.Read("SCROLL-" + raceInfo.Code[0]);
+			raceInfo.ScrollBitmapWidth = BitConverter.ToInt16(scrollData, 0);
+			raceInfo.ScrollBitmapHeight = BitConverter.ToInt16(scrollData, 2);
+			raceInfo.ScrollBitmap = scrollData.Skip(4).ToArray();
 
-			for (int unitId = 1; unitId <= UnitConstants.MAX_UNIT_TYPE; unitId++)
+			for (int unitType = 1; unitType <= UnitConstants.MAX_UNIT_TYPE; unitType++)
 			{
-				if (UnitRes[unitId].RaceId == i + 1)
+				if (UnitRes[unitType].RaceId == i + 1)
 				{
-					raceInfo.basic_unit_id = unitId;
+					raceInfo.BasicUnitType = unitType;
 					break;
 				}
 			}
 		}
 	}
 
-	private void LoadName()
+	private void LoadNames()
 	{
-		// cannot be more than 255 in each name group, as Unit::name_id is an <int> and half of it is for the first name and another half of it is for the last name
-		const int MAX_SINGLE_RACE_NAME = 255;
-
 		Database dbRaceName = GameSet.OpenDb("RACENAME");
 
-		name_array = new RaceName[dbRaceName.RecordCount];
-		name_used_array = new byte[name_array.Length];
-
-		//------ read in RaceName info array -------//
+		Names = new RaceName[dbRaceName.RecordCount];
+		NamesUsed = new byte[Names.Length];
 
 		int raceId = 0;
 		bool isFirstName = false;
-		int i = 1;
+		int i;
 
-		for (i = 1; i <= name_array.Length; i++)
+		for (i = 1; i <= Names.Length; i++)
 		{
 			RaceNameRec raceNameRec = new RaceNameRec(dbRaceName, i);
 			RaceName raceName = new RaceName();
-			name_array[i - 1] = raceName;
+			Names[i - 1] = raceName;
 
-			//misc.rtrim_fld( raceName->name, raceNameRec->name, raceNameRec->NAME_LEN );
-			raceName.name = Misc.ToString(raceNameRec.name);
+			raceName.Name = Misc.ToString(raceNameRec.name);
 
 			//TODO Rewrite
 			// The default STD.SET uses a different code page than the used fonts.
 			//misc.dos_encoding_to_win(raceName.name, raceName.NAME_LEN);
 
-			if (raceName.name[0] == '@')
+			if (raceName.Name[0] == '@')
 			{
 				if (raceId != 0)
 				{
 					if (isFirstName)
-						this[raceId].first_name_count = i - this[raceId].first_first_name_id;
+						this[raceId].FirstNameCount = i - this[raceId].FirstFirstNameId;
 					else
-						this[raceId].last_name_count = i - this[raceId].first_last_name_id;
+						this[raceId].LastNameCount = i - this[raceId].FirstLastNameId;
 				}
 
 				//----- get the race id. of the following names -----//
 
 				for (int j = 1; j <= GameConstants.MAX_RACE; j++)
 				{
-					if (this[j].code == raceName.name.Substring(2))
+					if (this[j].Code == raceName.Name.Substring(2))
 					{
 						raceId = j;
 						break;
@@ -437,12 +370,12 @@ public class RaceRes
 
 				//----------------------------------------------//
 
-				isFirstName = (raceName.name[1] == '1'); // whether the following names are first names
+				isFirstName = (raceName.Name[1] == '1'); // whether the following names are first names
 
 				if (isFirstName)
-					this[raceId].first_first_name_id = i + 1; // next record following the "@RACECODE" is the first name record
+					this[raceId].FirstFirstNameId = i + 1; // next record following the "@RACECODE" is the first name record
 				else
-					this[raceId].first_last_name_id = i + 1; // next record following the "@RACECODE" is the first name record
+					this[raceId].FirstLastNameId = i + 1; // next record following the "@RACECODE" is the first name record
 			}
 		}
 
@@ -451,10 +384,9 @@ public class RaceRes
 		if (raceId != 0)
 		{
 			if (isFirstName)
-				this[raceId].first_name_count = i - this[raceId].first_first_name_id;
+				this[raceId].FirstNameCount = i - this[raceId].FirstFirstNameId;
 			else
-				this[raceId].last_name_count = i - this[raceId].first_last_name_id;
+				this[raceId].LastNameCount = i - this[raceId].FirstLastNameId;
 		}
-
 	}
 }

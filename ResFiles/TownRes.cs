@@ -343,11 +343,11 @@ public class TownRes
     {
         RaceInfo raceInfo = RaceRes[raceId];
 
-        if (raceInfo.town_name_used_count >= raceInfo.town_name_count)
+        if (raceInfo.TownNameUsedCount >= raceInfo.TownNameCount)
             return 0;
 
-        raceInfo.town_name_used_count++;
-        int townNameId = raceInfo.first_town_name_recno + raceInfo.town_name_used_count - 1;
+        raceInfo.TownNameUsedCount++;
+        int townNameId = raceInfo.FirstTownNameId + raceInfo.TownNameUsedCount - 1;
         _townNamesUsed[townNameId - 1]++;
         return townNameId;
     }
@@ -474,8 +474,6 @@ public class TownRes
         _townNames = new TownName[dbTownName.RecordCount];
         _townNamesUsed = new byte[_townNames.Length];
 
-        //------ read in TownName info array -------//
-
         int raceId = 0;
 
         int i = 1;
@@ -492,21 +490,19 @@ public class TownRes
                 int j = 1;
                 for (j = 1; j <= GameConstants.MAX_RACE; j++)
                 {
-                    if (RaceRes[j].code == townName.Name.Substring(1))
+                    if (RaceRes[j].Code == townName.Name.Substring(1))
                         break;
                 }
 
                 if (raceId != 0)
-                    RaceRes[raceId].town_name_count = i - RaceRes[raceId].first_town_name_recno;
+                    RaceRes[raceId].TownNameCount = i - RaceRes[raceId].FirstTownNameId;
 
                 raceId = j;
-                RaceRes[raceId].first_town_name_recno = i + 1;
+                RaceRes[raceId].FirstTownNameId = i + 1;
             }
         }
 
-        //-- set the town_name_count of the last town in TOWNNAME.DBF --//
-
-        RaceRes[raceId].town_name_count = i - RaceRes[raceId].first_town_name_recno;
+        RaceRes[raceId].TownNameCount = i - RaceRes[raceId].FirstTownNameId;
     }
 
     private void LoadFarms()

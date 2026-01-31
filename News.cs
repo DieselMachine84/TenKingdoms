@@ -105,7 +105,7 @@ public class News
 		if (NationNameId1 < 0) // human player - custom name
 			str += NationArray.GetHumanName(NationNameId1, true) + "'s Kingdom";
 		else
-			str += RaceRes[NationRaceId1].get_single_name(NationNameId1) + "'s Kingdom";
+			str += RaceRes[NationRaceId1].GetSingleName(NationNameId1) + "'s Kingdom";
 
 		//------ add color bar -------//
 
@@ -121,7 +121,7 @@ public class News
 		if (NationNameId2 < 0) // human player - custom name
 			str += NationArray.GetHumanName(NationNameId2, true) + "'s Kingdom";
 		else
-			str += RaceRes[NationRaceId2].get_single_name(NationNameId2) + "'s Kingdom";
+			str += RaceRes[NationRaceId2].GetSingleName(NationNameId2) + "'s Kingdom";
 
 		//------ add color bar -------//
 
@@ -137,7 +137,7 @@ public class News
 		if (NationNameId1 < 0) // human player - custom name
 			str = NationArray.GetHumanName(NationNameId1);
 		else
-			str = RaceRes[NationRaceId1].get_name(NationNameId1);
+			str = RaceRes[NationRaceId1].GetName(NationNameId1);
 
 		//------ add color bar -------//
 
@@ -154,7 +154,7 @@ public class News
 		if (NationNameId2 < 0) // human player - custom name
 			str = NationArray.GetHumanName(NationNameId2);
 		else
-			str = RaceRes[NationRaceId2].get_name(NationNameId2);
+			str = RaceRes[NationRaceId2].GetName(NationNameId2);
 
 		//------ add color bar -------//
 
@@ -178,16 +178,16 @@ public class News
 	{
 		return raceId switch
 		{
-			1 => "Norman",
-			2 => "Mayan",
-			3 => "Greek",
-			4 => "Viking",
-			5 => "Persian",
-			6 => "Chinese",
-			7 => "Japanese",
-			8 => "Eqyptian",
-			9 => "Mughul",
-			10 => "Zulu",
+			RaceRes.RACE_NORMAN => "Norman",
+			RaceRes.RACE_MAYA => "Mayan",
+			RaceRes.RACE_GREEK => "Greek",
+			RaceRes.RACE_VIKING => "Viking",
+			RaceRes.RACE_PERSIAN => "Persian",
+			RaceRes.RACE_CHINESE => "Chinese",
+			RaceRes.RACE_JAPANESE => "Japanese",
+			RaceRes.RACE_EGYPTIAN => "Eqyptian",
+			RaceRes.RACE_INDIAN => "Mughul",
+			RaceRes.RACE_ZULU => "Zulu",
 			_ => "Unknown"
 		};
 	}
@@ -394,22 +394,22 @@ public class News
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
 					}
 				}
 				else
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasant has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasant has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasants have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasants have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
 					}
 				}
 			}
@@ -419,22 +419,22 @@ public class News
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7}.";
 					}
 				}
 				else
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasant has emigrated from your village of {Param6} to {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasant has emigrated from your village of {Param6} to {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasants have emigrated from your village of {Param6} to {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasants have emigrated from your village of {Param6} to {Param7}.";
 					}
 				}
 			}
@@ -447,22 +447,22 @@ public class News
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
 					}
 				}
 				else
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasant has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasant has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasants have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasants have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
 					}
 				}
 			}
@@ -472,22 +472,22 @@ public class News
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} to your village of {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} to your village of {Param7}.";
 					}
 				}
 				else
 				{
 					if (Param4 == 1)
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasant has immigrated from {Param6} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasant has immigrated from {Param6} to your village of {Param7}.";
 					}
 					else
 					{
-						return $"{Param4} {RaceRes[Param3].name} peasants have immigrated from {Param6} to your village of {Param7}.";
+						return $"{Param4} {RaceRes[Param3].Name} peasants have immigrated from {Param6} to your village of {Param7}.";
 					}
 				}
 			}
@@ -532,11 +532,11 @@ public class News
 	{
 		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
 		{
-			return $"{RaceRes[Param1].get_name(Param2)} has ascended the throne as your new King.";
+			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as your new King.";
 		}
 		else
 		{
-			return $"{RaceRes[Param1].get_name(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom {NationColorStr1()}.";
+			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom {NationColorStr1()}.";
 		}
 	}
 
@@ -608,11 +608,11 @@ public class News
 	{
 		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
 		{
-			return $"You have acquired the {Param1} Scroll of Power.";
+			return $"You have acquired the {RaceName(Param1)} Scroll of Power.";
 		}
 		else
 		{
-			return $"{KingName1()}'s Kingdom {NationColorStr1()} has acquired the {Param1} Scroll of Power.";
+			return $"{KingName1()}'s Kingdom {NationColorStr1()} has acquired the {RaceName(Param1)} Scroll of Power.";
 		}
 	}
 
@@ -651,11 +651,11 @@ public class News
 		{
 			if (NationNameId2 != 0)
 			{
-				return $"Your spy {RaceRes[Param1].get_name(Param2)} has been exposed and executed on his mission to {KingName2()}'s Kingdom {NationColorStr2()}.";
+				return $"Your spy {RaceRes[Param1].GetName(Param2)} has been exposed and executed on his mission to {KingName2()}'s Kingdom {NationColorStr2()}.";
 			}
 			else
 			{
-				return $"Your spy {RaceRes[Param1].get_name(Param2)} has been exposed and executed on his mission.";
+				return $"Your spy {RaceRes[Param1].GetName(Param2)} has been exposed and executed on his mission.";
 			}
 		}
 
@@ -676,7 +676,7 @@ public class News
 
 		if (Param3 == Spy.SPY_MOBILE)
 		{
-			return $"Spy {RaceRes[Param1].get_name(Param2)} from {KingName2()}'s Kingdom {NationColorStr2()} has been uncovered and executed.";
+			return $"Spy {RaceRes[Param1].GetName(Param2)} from {KingName2()}'s Kingdom {NationColorStr2()} has been uncovered and executed.";
 		}
 		
 		return String.Empty;
