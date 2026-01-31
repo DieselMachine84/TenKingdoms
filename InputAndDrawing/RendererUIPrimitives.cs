@@ -201,6 +201,15 @@ public partial class Renderer
 	private IntPtr _prayingTexture;
 	private int _skillWidth;
 	private int _skillHeight;
+	private IntPtr _newsLogTexture;
+	private int _newsLogWidth;
+	private int _newsLogHeight;
+	private IntPtr _clearNewsTexture;
+	private int _clearNewsWidth;
+	private int _clearNewsHeight;
+	private IntPtr _newsLocTexture;
+	private int _newsLocWidth;
+	private int _newsLocHeight;
 
 	private IntPtr _buttonUpTexture;
 	private int _buttonUpWidth;
@@ -656,6 +665,18 @@ public partial class Renderer
 		_spyingTexture = Graphics.CreateTextureFromBmp(spyingData.Skip(4).ToArray(), _skillWidth, _skillHeight);
 		byte[] prayingData = iconResource.Read("U_PRAY");
 		_prayingTexture = Graphics.CreateTextureFromBmp(prayingData.Skip(4).ToArray(), _skillWidth, _skillHeight);
+		byte[] newsLogData = iconResource.Read("NEWS_LOG");
+		_newsLogWidth = BitConverter.ToInt16(newsLogData, 0);
+		_newsLogHeight = BitConverter.ToInt16(newsLogData, 2);
+		_newsLogTexture = Graphics.CreateTextureFromBmp(newsLogData.Skip(4).ToArray(), _newsLogWidth, _newsLogHeight);
+		byte[] clearNewsData = iconResource.Read("NEWS_CLR");
+		_clearNewsWidth = BitConverter.ToInt16(clearNewsData, 0);
+		_clearNewsHeight = BitConverter.ToInt16(clearNewsData, 2);
+		_clearNewsTexture = Graphics.CreateTextureFromBmp(clearNewsData.Skip(4).ToArray(), _clearNewsWidth, _clearNewsHeight);
+		byte[] newsLocData = iconResource.Read("NEWS_GO");
+		_newsLocWidth = BitConverter.ToInt16(newsLocData, 0);
+		_newsLocHeight = BitConverter.ToInt16(newsLocData, 2);
+		_newsLocTexture = Graphics.CreateTextureFromBmp(newsLocData.Skip(4).ToArray(), _newsLocWidth, _newsLocHeight);
 	}
 
 	private void CreateButtonTextures()

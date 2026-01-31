@@ -541,7 +541,7 @@ public class Spy : IIdObject
 			//--------- add news message --------//
 
 			if (firm.NationId == NationArray.PlayerId)
-				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
+				NewsArray.FirmCaptured(firm, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
 
@@ -559,7 +559,7 @@ public class Spy : IIdObject
 			//--------- add news message --------//
 
 			if (firm.NationId == NationArray.PlayerId)
-				NewsArray.firm_captured(SpyPlaceId, TrueNationId, 1);
+				NewsArray.FirmCaptured(firm, TrueNationId, 1);
 
 			//-------- if this is an AI firm --------//
 
@@ -998,7 +998,7 @@ public class Spy : IIdObject
 			//--- if the unit assassinated is the player's unit ---//
 
 			if (targetUnit.NationId == NationArray.PlayerId)
-				NewsArray.unit_assassinated(targetUnit.SpriteId, spyKillFlag);
+				NewsArray.UnitAssassinated(targetUnit.SpriteId, spyKillFlag);
 
 			firm.KillOverseer();
 
@@ -1130,7 +1130,7 @@ public class Spy : IIdObject
 
 		if (TrueNationId == NationArray.PlayerId || CloakedNationId == NationArray.PlayerId)
 		{
-			NewsArray.spy_killed(SpyId);
+			NewsArray.SpyKilled(SpyId);
 			SECtrl.immediate_sound("SPY_DIE");
 		}
 

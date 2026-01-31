@@ -116,7 +116,7 @@ public class Info
             int yearLeft = dayLeft / 365;
 
             if (dayLeft % 365 == 0 && yearLeft >= 1 && yearLeft <= 5)
-                Sys.Instance.NewsArray.goal_deadline(yearLeft, 0);
+                Sys.Instance.NewsArray.GoalDeadline(yearLeft, 0);
 
             if (dayLeft == 0) // deadline arrives, everybody loses the game
                 Sys.Instance.EndGame(0, 0);

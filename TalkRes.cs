@@ -191,7 +191,7 @@ public class TalkRes
         switch (toNation.NationType)
         {
             case NationBase.NATION_OWN: // can be from both AI or a remote player
-                NewsArray.diplomacy(talkMsg);
+                NewsArray.Diplomacy(talkMsg);
                 if (toNation.GetRelation(talkMsg.from_nation_recno).HasContact)
                     SECtrl.immediate_sound(talkMsg.talk_id == TalkMsg.TALK_DECLARE_WAR ? "DECL_WAR" : "GONG");
                 break;
@@ -243,7 +243,7 @@ public class TalkRes
         switch (fromNation.NationType)
         {
             case NationBase.NATION_OWN:
-                NewsArray.diplomacy(talkMsg);
+                NewsArray.Diplomacy(talkMsg);
                 SECtrl.immediate_sound("GONG");
                 break;
 
@@ -271,7 +271,7 @@ public class TalkRes
         //--- if the player has replyed the message, remove it from the news display ---//
 
         if (talkMsg.to_nation_recno == NationArray.PlayerId)
-            NewsArray.remove(News.NEWS_DIPLOMACY, talkMsgRecno);
+            NewsArray.Remove(News.NEWS_DIPLOMACY, talkMsgRecno);
     }
 
     public bool can_send_msg(int toNationRecno, int fromNationRecno, int talkId)
@@ -562,7 +562,7 @@ public class TalkRes
         if (talkMsg.to_nation_recno == NationArray.PlayerId ||
             talkMsg.from_nation_recno == NationArray.PlayerId)
         {
-            NewsArray.remove(News.NEWS_DIPLOMACY, talkMsgRecno);
+            NewsArray.Remove(News.NEWS_DIPLOMACY, talkMsgRecno);
         }
 
         //----- link it out from talk_msg_array -----//

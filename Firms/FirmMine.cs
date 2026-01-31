@@ -171,7 +171,7 @@ public class FirmMine : Firm
             SiteId = 0;
 
             if (NationId == NationArray.PlayerId)
-                NewsArray.raw_exhaust(RawId, LocCenterX, LocCenterY);
+                NewsArray.RawExhaust(RawId, LocCenterX, LocCenterY);
         }
     }
 

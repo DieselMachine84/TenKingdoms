@@ -53,7 +53,7 @@ public class FirmMonster : Firm
 	//TODO PatrolUnits contains only one general troop. Check
 	private List<int> PatrolUnits { get; } = new List<int>();
 
-	private static string[] MonsterFirmName { get; } =
+	public static string[] MonsterFirmName { get; } =
 	{
 		"Deezboanz Lair", "Rattus Lair", "Broosken Lair", "Haubudam Lair", "Pfith Lair", "Rokken Lair",
 		"Doink Lair", "Wyrm Lair", "Droog Lair", "Ick Lair", "Sauroid Lair", "Karrotten Lair", "Holgh Lair"

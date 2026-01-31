@@ -1502,7 +1502,7 @@ public class World
 			}
 		}
 
-		NewsArray.earthquake_damage(unitDamage - unitsDied, unitsDied, townDamage, firmDamage - firmDie, firmDie);
+		NewsArray.EarthquakeDamage(unitDamage - unitsDied, unitsDied, townDamage, firmDamage - firmDie, firmDie);
 	}
 
 	private void LightningStrike(int locX, int locY, int radius = 0)
@@ -1539,7 +1539,7 @@ public class World
 
 				// ---- add news -------//
 				if (unit.IsOwn())
-					NewsArray.lightning_damage(unit.CurLocX, unit.CurLocY,
+					NewsArray.LightningDamage(unit.CurLocX, unit.CurLocY,
 						News.NEWS_LOC_UNIT, unit.SpriteId, unit.HitPoints <= 0.0 ? 1 : 0);
 
 				if (unit.HitPoints <= 0.0)
@@ -1559,7 +1559,7 @@ public class World
 
 				// ---- add news -------//
 				if (firm.OwnFirm())
-					NewsArray.lightning_damage(firm.LocCenterX, firm.LocCenterY,
+					NewsArray.LightningDamage(firm.LocCenterX, firm.LocCenterY,
 						News.NEWS_LOC_FIRM, firm.FirmId, firm.HitPoints <= 0.0 ? 1 : 0);
 
 				// ---- add a fire on it ------//
@@ -1588,7 +1588,7 @@ public class World
 				// TODO check is objectDie: 0 correct?
 				// ---- add news -------//
 				if (town.NationId == NationArray.PlayerId)
-					NewsArray.lightning_damage(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId, 0);
+					NewsArray.LightningDamage(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//
 				Location location = GetLoc(town.LocCenterX, town.LocCenterY);

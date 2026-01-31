@@ -171,6 +171,7 @@ public class SpriteInfo
 	public int LocWidth { get; set; } // no. of locations it takes horizontally and vertically
 	public int LocHeight { get; set; }
 
+	//TODO save and load
 	public int Speed { get; set; } // based on UnitRes, can be upgraded during the game.
 	public int FramesPerStep { get; set; }
 	public int MaxRainSlowdown { get; set; }

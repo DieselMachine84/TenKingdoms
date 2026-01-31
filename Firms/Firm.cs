@@ -788,7 +788,7 @@ public abstract class Firm : IIdObject
 			//--- when the hit points drop to zero and the firm is destroyed ---//
 
 			if (HitPoints <= 0.0 && NationId == NationArray.PlayerId)
-				NewsArray.firm_worn_out(FirmId);
+				NewsArray.FirmWornOut(this);
 		}
 
 		//----- paying salary to workers from other nations -----//
@@ -2036,7 +2036,7 @@ public abstract class Firm : IIdObject
 		if (srcTown.NationId == NationArray.PlayerId || destTown.NationId == NationArray.PlayerId)
 		{
 			if (srcTown.NationId != destTown.NationId) // don't add news for migrating between own towns 
-				NewsArray.migrate(srcTown.TownId, destTownId, raceId, 1, FirmId);
+				NewsArray.Migrate(srcTown, destTown, raceId, 1, FirmId);
 		}
 
 		srcTown.DecPopulation(raceId, true);
@@ -2292,7 +2292,7 @@ public abstract class Firm : IIdObject
 	public void CaptureFirm(int newNationId)
 	{
 		if (NationId == NationArray.PlayerId)
-			NewsArray.firm_captured(FirmId, newNationId, 0); // 0 - the capturer is not a spy
+			NewsArray.FirmCaptured(this, newNationId, 0); // 0 - the capturer is not a spy
 
 		if (AIFirm)
 			AIFirmCaptured(newNationId);

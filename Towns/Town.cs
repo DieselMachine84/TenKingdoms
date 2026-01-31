@@ -731,7 +731,7 @@ public class Town : IIdObject
 		if (Population == 0)
 		{
 			if (NationId == NationArray.PlayerId)
-				NewsArray.town_abandoned(TownId);
+				NewsArray.TownAbandoned(this);
 
 			TownArray.DeleteTown(this);
 			return;
@@ -1954,7 +1954,7 @@ public class Town : IIdObject
 				{
 					if (NationId == NationArray.PlayerId || town.NationId == NationArray.PlayerId)
 					{
-						NewsArray.migrate(TownId, town.TownId, raceId, migratedCount);
+						NewsArray.Migrate(this, town, raceId, migratedCount);
 					}
 
 					return;
@@ -3449,7 +3449,7 @@ public class Town : IIdObject
 
 		if (NationId == NationArray.PlayerId || toNationId == NationArray.PlayerId)
 		{
-			NewsArray.town_surrendered(TownId, toNationId);
+			NewsArray.TownSurrendered(this, toNationId);
 			if (toNationId == NationArray.PlayerId)
 			{
 				SECtrl.immediate_sound("GET_TOWN");
@@ -3530,7 +3530,7 @@ public class Town : IIdObject
 
 		if (Population == 1)
 		{
-			NewsArray.town_rebel(TownId, 1);
+			NewsArray.TownRebel(this, 1);
 			oneRebelOnly = true;
 		}
 
@@ -3593,7 +3593,7 @@ public class Town : IIdObject
 
 		//--- add the news first as after calling ai_spy_town_rebel, the town may disappear as all peasants are gone ---//
 
-		NewsArray.town_rebel(TownId, rebelCount);
+		NewsArray.TownRebel(this, rebelCount);
 
 		//--- tell the AI spies in the town that a rebellion is happening ---//
 
@@ -3703,7 +3703,7 @@ public class Town : IIdObject
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 			RacesLoyalty[i] = 70 + Misc.Random(20); // 70 to 90 initial loyalty
 
-		NewsArray.new_nation(newNation.NationId);
+		NewsArray.NewNation(newNation.NationId);
 
 		//--- random extra beginning advantages -----//
 

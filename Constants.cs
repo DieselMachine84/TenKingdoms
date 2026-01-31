@@ -18,8 +18,6 @@ public static class GameConstants
     public const int MIN_FOOD_PURCHASE_PRICE = 5;
     public const int MAX_BRIBE_AMOUNT = 4000;
     public const int DISP_NEWS_DAYS = 60;     // how long a news should stay on the screen before it disappears
-    public const int DISP_NEWS_COUNT = 5;
-    public const int MAX_NEWS = 1000000;
     public const int TALK_MSG_KEEP_DAYS = 3650;
     public const int TALK_MSG_VALID_DAYS = 30;
     public const int MAX_WEATHER_FORECAST = 3;

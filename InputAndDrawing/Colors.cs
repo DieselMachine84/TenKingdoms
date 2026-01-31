@@ -41,6 +41,7 @@ public static class Colors
     public const byte HILL_COLOR = VGA_BROWN + 3;
     public const byte FIRE_COLOR = V_RED;
     public const byte TORNADO_COLOR = VGA_GRAY + 8;
+    public const byte NEWS_COLOR = 0x9D;
 
     public const byte INDEPENDENT_NATION_COLOR = V_WHITE;
 

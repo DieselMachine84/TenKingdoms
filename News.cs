@@ -43,11 +43,6 @@ public class News
 	public const int NEWS_TYPE_NUM = 1;
 	public const int NEWS_NORMAL = 0;
 
-	public const int NEWS_DISP_ALL = 0;
-	public const int NEWS_DISP_FRIENDLY = 1;
-	public const int NEWS_DISP_PLAYER = 2;
-	public const int NEWS_DISP_NONE = 3;
-
 	public const int NEWS_LOC_TOWN = 1;
 	public const int NEWS_LOC_FIRM = 2;
 	public const int NEWS_LOC_UNIT = 3;
@@ -58,36 +53,37 @@ public class News
 	public const int DESTROYER_MONSTER = 3;
 	public const int DESTROYER_UNKNOWN = 4;
 
-	public int id; // id. of the news, NEWS_???
+	public int Id { get; set; } // id. of the news, NEWS_???
 
 	// news type, type may be > NEWS_TYPE_NUM
 	// for indicating that the news has been displayed in the stock window, do display it on the newspaper again
-	public int type;
+	public int Type { get; set; }
 
-	public DateTime news_date; // date of the news
+	public DateTime NewsDate { get; set; } // date of the news
 
-	public int nation_color1; // nation color, can't use nation_recno directly, because it may bankrupt one day
-	public int nation_color2;
-	public int nation_race_id1;
-	public int nation_race_id2;
+	public int NationColor1 { get; set; } // nation color, can't use NationId directly, because it may bankrupt one day
+	public int NationColor2 { get; set; }
+	public int NationRaceId1 { get; set; }
+	public int NationRaceId2 { get; set; }
+	public int NationNameId1 { get; set; }
+	public int NationNameId2 { get; set; }
 
-	public int nation_name_id1; // nation res. id of the nation that generate the news
+	public int Param1 { get; set; }
+	public int Param2 { get; set; }
+	public int Param3 { get; set; }
+	public int Param4 { get; set; }
+	public int Param5 { get; set; }
 
-	// if the news is related to two nations (e.g. one nation buys the stock of another nation)
-	public int nation_name_id2;
-
-	public int short_para1;
-	public int short_para2;
-	public int short_para3;
-	public int short_para4;
-	public int short_para5;
-
-	public int loc_type;
-	public int loc_type_para;
-	public int loc_type_para2; // must use uint16_t as it will be used to store unit name id. 
-	public int loc_x, loc_y; // location where the news happens
+	public int LocType { get; set; }
+	public int LocTypeParam { get; set; }
+	public int LocTypeParam2 { get; set; } 
+	public int LocX { get; set; }
+	public int LocY { get; set; }
 
 	private RaceRes RaceRes => Sys.Instance.RaceRes;
+	private TownRes TownRes => Sys.Instance.TownRes;
+	private FirmRes FirmRes => Sys.Instance.FirmRes;
+	private TalkRes TalkRes => Sys.Instance.TalkRes;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
@@ -95,307 +91,621 @@ public class News
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 
-	public int news_type()
+	public int NewsType()
 	{
-		return type % NEWS_TYPE_NUM;
+		return Type % NEWS_TYPE_NUM;
 	}
 
-	public string nation_name1()
+	private string NationName1()
 	{
 		string str = String.Empty;
 
-		if (nation_name_id1 < 0) // human player - custom name
-			str += NationArray.GetHumanName(nation_name_id1, true) + "'s Kingdom";
+		if (NationNameId1 < 0) // human player - custom name
+			str += NationArray.GetHumanName(NationNameId1, true) + "'s Kingdom";
 		else
-			str += RaceRes[nation_race_id1].get_single_name(nation_name_id1) + "'s Kingdom";
+			str += RaceRes[NationRaceId1].get_single_name(NationNameId1) + "'s Kingdom";
 
 		//------ add color bar -------//
 
-		str += nation_color_str1();
+		str += NationColorStr1();
 
 		return str;
 	}
 
-	public string nation_name2()
+	private string NationName2()
 	{
 		string str = String.Empty;
 
-		if (nation_name_id2 < 0) // human player - custom name
-			str += NationArray.GetHumanName(nation_name_id2, true) + "'s Kingdom";
+		if (NationNameId2 < 0) // human player - custom name
+			str += NationArray.GetHumanName(NationNameId2, true) + "'s Kingdom";
 		else
-			str += RaceRes[nation_race_id2].get_single_name(nation_name_id2) + "'s Kingdom";
+			str += RaceRes[NationRaceId2].get_single_name(NationNameId2) + "'s Kingdom";
 
 		//------ add color bar -------//
 
-		str += nation_color_str2();
+		str += NationColorStr2();
 
 		return str;
 	}
 
-	public string king_name1(bool addColor = false)
+	private string KingName1(bool addColor = false)
 	{
 		string str;
 
-		if (nation_name_id1 < 0) // human player - custom name
-			str = NationArray.GetHumanName(nation_name_id1);
+		if (NationNameId1 < 0) // human player - custom name
+			str = NationArray.GetHumanName(NationNameId1);
 		else
-			str = RaceRes[nation_race_id1].get_name(nation_name_id1);
+			str = RaceRes[NationRaceId1].get_name(NationNameId1);
 
 		//------ add color bar -------//
 
 		if (addColor)
-			str += nation_color_str1();
+			str += NationColorStr1();
 
 		return str;
 	}
 
-	public string king_name2(bool addColor = false)
+	private string KingName2(bool addColor = false)
 	{
 		string str;
 
-		if (nation_name_id2 < 0) // human player - custom name
-			str = NationArray.GetHumanName(nation_name_id2);
+		if (NationNameId2 < 0) // human player - custom name
+			str = NationArray.GetHumanName(NationNameId2);
 		else
-			str = RaceRes[nation_race_id2].get_name(nation_name_id2);
+			str = RaceRes[NationRaceId2].get_name(NationNameId2);
 
 		//------ add color bar -------//
 
 		if (addColor)
-			str += nation_color_str2();
+			str += NationColorStr2();
 
 		return str;
 	}
 
-	public string nation_color_str1()
+	private string NationColorStr1()
 	{
-		return " @COL" + Convert.ToChar(30 + nation_color1);
+		return " @COL" + Convert.ToChar(30 + NationColor1);
 	}
 
-	public string nation_color_str2()
+	private string NationColorStr2()
 	{
-		return " @COL" + Convert.ToChar(30 + nation_color2);
+		return " @COL" + Convert.ToChar(30 + NationColor2);
 	}
 
-	public string msg() // return the news msg
+	public string RaceName(int raceId)
 	{
-		//TODO rewrite
-		return "This is a news message.";
+		return raceId switch
+		{
+			1 => "Norman",
+			2 => "Mayan",
+			3 => "Greek",
+			4 => "Viking",
+			5 => "Persian",
+			6 => "Chinese",
+			7 => "Japanese",
+			8 => "Eqyptian",
+			9 => "Mughul",
+			10 => "Zulu",
+			_ => "Unknown"
+		};
+	}
+	
+	private string FirmName(int firmType)
+	{
+		return firmType switch
+		{
+			Firm.FIRM_BASE => "Seat of Power",
+			Firm.FIRM_FACTORY => "Factory",
+			Firm.FIRM_INN => "Inn",
+			Firm.FIRM_MARKET => "Market",
+			Firm.FIRM_CAMP => "Fort",
+			Firm.FIRM_MINE => "Mine",
+			Firm.FIRM_RESEARCH => "Tower of Science",
+			Firm.FIRM_WAR_FACTORY => "War Factory",
+			Firm.FIRM_HARBOR => "Harbor",
+			Firm.FIRM_MONSTER => "Fryhtan Lair",
+			_ => "Firm"
+		};
 	}
 
-	public bool is_major()
+	public string Message() // return the news msg
 	{
-		//TODO rewrite
-		return true;
+		return Id switch
+		{
+			NEWS_DIPLOMACY => Diplomacy(),
+			NEWS_TOWN_REBEL => TownRebel(),
+			NEWS_MIGRATE => Migrate(),
+			NEWS_NEW_NATION => NewNation(),
+			NEWS_NATION_DESTROYED => NationDestroyed(),
+			NEWS_NATION_SURRENDER => NationSurrender(),
+			NEWS_KING_DIE => KingDie(),
+			NEWS_NEW_KING => NewKing(),
+			NEWS_FIRM_DESTROYED => FirmDestroyed(),
+			NEWS_FIRM_CAPTURED => FirmCaptured(),
+			NEWS_TOWN_DESTROYED => TownDestroyed(),
+			NEWS_TOWN_ABANDONED => TownAbandoned(),
+			NEWS_TOWN_SURRENDERED => TownSurrendered(),
+			NEWS_MONSTER_KING_KILLED => MonsterKingKilled(),
+			NEWS_MONSTER_FIRM_DESTROYED => MonsterFirmDestroyed(),
+			NEWS_SCROLL_ACQUIRED => ScrollAcquired(),
+			NEWS_MONSTER_GOLD_ACQUIRED => MonsterGoldAcquired(),
+			NEWS_YOUR_SPY_KILLED => YourSpyKilled(),
+			NEWS_ENEMY_SPY_KILLED => EnemySpyKilled(),
+			NEWS_UNIT_BETRAY => UnitBetray(),
+			NEWS_UNIT_ASSASSINATED => UnitAssassinated(),
+			NEWS_ASSASSINATOR_CAUGHT => AssassinatorCaught(),
+			NEWS_GENERAL_DIE => GeneralDie(),
+			NEWS_RAW_EXHAUST => RawExhaust(),
+			NEWS_TECH_RESEARCHED => TechResearched(),
+			NEWS_LIGHTNING_DAMAGE => LightningDamage(),
+			NEWS_EARTHQUAKE_DAMAGE => EarthquakeDamage(),
+			NEWS_GOAL_DEADLINE => GoalDeadline(),
+			NEWS_WEAPON_SHIP_WORN_OUT => WeaponShipWornOut(),
+			NEWS_FIRM_WORN_OUT => FirmWornOut(),
+			NEWS_CHAT_MSG => ChatMsg(),
+			NEWS_MULTI_RETIRE => MultiRetire(),
+			NEWS_MULTI_QUIT_GAME => MultiQuitGame(),
+			NEWS_MULTI_SAVE_GAME => MultiSaveGame(),
+			NEWS_MULTI_CONNECTION_LOST => MultiConnectionLost(),
+			_ => "Unknown news type"
+		};
 	}
 
-	public void set_loc(int xLoc, int yLoc, int locType, int locTypePara = 0, int locTypePara2 = 0)
+	public bool IsMajor()
 	{
-		loc_type = locType;
-		loc_type_para = locTypePara;
-		loc_type_para2 = locTypePara2;
-
-		loc_x = xLoc;
-		loc_y = yLoc;
+		return Id switch
+		{
+			NEWS_DIPLOMACY => true,
+			NEWS_TOWN_REBEL => true,
+			NEWS_MIGRATE => false,
+			NEWS_NEW_NATION => true,
+			NEWS_NATION_DESTROYED => true,
+			NEWS_NATION_SURRENDER => true,
+			NEWS_KING_DIE => true,
+			NEWS_NEW_KING => true,
+			NEWS_FIRM_DESTROYED => false,
+			NEWS_FIRM_CAPTURED => false,
+			NEWS_TOWN_DESTROYED => false,
+			NEWS_TOWN_ABANDONED => false,
+			NEWS_TOWN_SURRENDERED => false,
+			NEWS_MONSTER_KING_KILLED => false,
+			NEWS_MONSTER_FIRM_DESTROYED => false,
+			NEWS_SCROLL_ACQUIRED => true,
+			NEWS_MONSTER_GOLD_ACQUIRED => false,
+			NEWS_YOUR_SPY_KILLED => true,
+			NEWS_ENEMY_SPY_KILLED => true,
+			NEWS_UNIT_BETRAY => true,
+			NEWS_UNIT_ASSASSINATED => true,
+			NEWS_ASSASSINATOR_CAUGHT => true,
+			NEWS_GENERAL_DIE => true,
+			NEWS_RAW_EXHAUST => true,
+			NEWS_TECH_RESEARCHED => true,
+			NEWS_LIGHTNING_DAMAGE => false,
+			NEWS_EARTHQUAKE_DAMAGE => true,
+			NEWS_GOAL_DEADLINE => true,
+			NEWS_WEAPON_SHIP_WORN_OUT => false,
+			NEWS_FIRM_WORN_OUT => false,
+			NEWS_CHAT_MSG => true,
+			NEWS_MULTI_RETIRE => true,
+			NEWS_MULTI_QUIT_GAME => true,
+			NEWS_MULTI_SAVE_GAME => true,
+			NEWS_MULTI_CONNECTION_LOST => true,
+			_ => false
+		};
 	}
 
-	public bool is_loc_valid()
+	public void SetLoc(int locX, int locY, int locType, int locTypeParam = 0, int locTypeParam2 = 0)
 	{
-		if (loc_type == 0)
+		LocX = locX;
+		LocY = locY;
+		LocType = locType;
+		LocTypeParam = locTypeParam;
+		LocTypeParam2 = locTypeParam2;
+	}
+
+	public bool IsLocValid()
+	{
+		if (LocType == 0)
 			return false;
 
 		bool rc = false;
 
-		if (loc_type == NEWS_LOC_TOWN)
+		if (LocType == NEWS_LOC_TOWN)
 		{
-			if (!TownArray.IsDeleted(loc_type_para))
+			if (!TownArray.IsDeleted(LocTypeParam))
 			{
-				Town town = TownArray[loc_type_para];
+				Town town = TownArray[LocTypeParam];
 
-				rc = town.LocCenterX == loc_x && town.LocCenterY == loc_y;
+				rc = town.LocCenterX == LocX && town.LocCenterY == LocY;
 			}
 		}
-		else if (loc_type == NEWS_LOC_FIRM)
+		else if (LocType == NEWS_LOC_FIRM)
 		{
-			if (!FirmArray.IsDeleted(loc_type_para))
+			if (!FirmArray.IsDeleted(LocTypeParam))
 			{
-				Firm firm = FirmArray[loc_type_para];
+				Firm firm = FirmArray[LocTypeParam];
 
-				rc = firm.LocCenterX == loc_x && firm.LocCenterY == loc_y;
+				rc = firm.LocCenterX == LocX && firm.LocCenterY == LocY;
 			}
 		}
-		else if (loc_type == NEWS_LOC_UNIT)
+		else if (LocType == NEWS_LOC_UNIT)
 		{
-			if (!UnitArray.IsDeleted(loc_type_para))
+			if (!UnitArray.IsDeleted(LocTypeParam))
 			{
-				Unit unit = UnitArray[loc_type_para];
+				Unit unit = UnitArray[LocTypeParam];
 
-				if (unit.NameId == loc_type_para2)
+				if (unit.NameId == LocTypeParam2)
 				{
 					//--- if the unit is no longer belong to our nation ----//
 					//--- only keep track of the unit for one month --------//
 
-					if (unit.NationId == NationArray.PlayerId || Info.GameDate < news_date.AddDays(30.0))
+					if (unit.NationId == NationArray.PlayerId || Info.GameDate < NewsDate.AddDays(30.0))
 					{
-						if (unit.GetNextLoc(out loc_x, out loc_y))
+						if (unit.GetNextLoc(out int locX, out int locY))
 						{
-							Location location = World.GetLoc(loc_x, loc_y);
-
+							LocX = locX;
+							LocY = locY;
+							
+							Location location = World.GetLoc(LocX, LocY);
 							rc = location.VisitLevel > 0;
 						}
 					}
 				}
 			}
 		}
-		else if (loc_type == NEWS_LOC_ANY)
+		else if (LocType == NEWS_LOC_ANY)
 		{
 			rc = true;
 		}
 
 		if (!rc)
-			loc_type = 0;
+			LocType = 0;
 
 		return rc;
 	}
 
-	//---- functions for return news string ----//
-
-	public void diplomacy()
+	private string Diplomacy()
 	{
+		TalkMsg talkMsg = TalkRes.get_talk_msg(Param1);
+		return talkMsg.msg_str(NationArray.PlayerId);
 	}
 
-	public void town_rebel()
+	private string TownRebel()
 	{
+		if (Param2 == 1)
+		{
+			return $"{Param2} peasant in {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColorStr1()} is rebelling.";
+		}
+		else
+		{
+			return $"{Param2} peasants in {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColorStr1()} are rebelling.";
+		}
 	}
 
-	public void migrate()
+	private string Migrate()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId) // from player nation to another nation
+		{
+			if (NationNameId2 != 0) // only if it is not an independent town
+			{
+				if (Param5 != 0)
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)} in {KingName2()}'s Kingdom {NationColor2}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)} in {KingName2()}'s Kingdom {NationColor2}.";
+					}
+				}
+				else
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasant has emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)} in {KingName2()}'s Kingdom {NationColor2}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasants have emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)} in {KingName2()}'s Kingdom {NationColor2}.";
+					}
+				}
+			}
+			else
+			{
+				if (Param5 != 0)
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)}.";
+					}
+				}
+				else
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasant has emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasants have emigrated from your village of {TownRes.GetName(Param1)} to {TownRes.GetName(Param2)}.";
+					}
+				}
+			}
+		}
+		else
+		{
+			if (NationNameId1 != 0) // only if it is not an independent town
+			{
+				if (Param5 != 0)
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has immigrated from {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColor1} to your village of {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have immigrated from {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColor1} to your village of {TownRes.GetName(Param2)}.";
+					}
+				}
+				else
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasant has immigrated from {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColor1} to your village of {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasants have immigrated from {TownRes.GetName(Param1)} in {KingName1()}'s Kingdom {NationColor1} to your village of {TownRes.GetName(Param2)}.";
+					}
+				}
+			}
+			else
+			{
+				if (Param5 != 0)
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle} has immigrated from {TownRes.GetName(Param1)} to your village of {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} {FirmRes[Param5].WorkerTitle}s have immigrated from {TownRes.GetName(Param1)} to your village of {TownRes.GetName(Param2)}.";
+					}
+				}
+				else
+				{
+					if (Param4 == 1)
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasant has immigrated from {TownRes.GetName(Param1)} to your village of {TownRes.GetName(Param2)}.";
+					}
+					else
+					{
+						return $"{Param4} {RaceRes[Param3].name} peasants have immigrated from {TownRes.GetName(Param1)} to your village of {TownRes.GetName(Param2)}.";
+					}
+				}
+			}
+		}
 	}
 
-	public void new_nation()
+	private string NewNation()
 	{
+		return $"A new Kingdom has emerged under the leadership of {KingName1(true)}.";
 	}
 
-	public void nation_destroyed()
+	private string NationDestroyed()
 	{
+		return $"{KingName1()}'s Kingdom {NationColorStr1()} has been destroyed.";
 	}
 
-	public void nation_surrender()
+	private string NationSurrender()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
+		{
+			return $"{KingName1()}'s Kingdom {NationColorStr1()} has surrendered to you.";
+		}
+		else
+		{
+			return $"{KingName1()}'s Kingdom {NationColorStr1()} has surrendered to {KingName2()}'s Kingdom {NationColorStr2()}.";
+		}
 	}
 
-	public void king_die()
+	private string KingDie()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		{
+			return $"Your King, {KingName1()}, has been slain.";
+		}
+		else
+		{
+			return $"King {KingName1()} of {KingName1()}'s Kingdom {NationColorStr1()} has been slain.";
+		}
 	}
 
-	public void new_king()
+	private string NewKing()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		{
+			return $"{RaceRes[Param1].get_name(Param2)} has ascended the throne as your new King.";
+		}
+		else
+		{
+			return $"{RaceRes[Param1].get_name(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom {NationColorStr1()}.";
+		}
 	}
 
-	public void firm_destroyed()
+	private string FirmDestroyed()
 	{
+		return Param3 switch
+		{
+			DESTROYER_NATION => $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been destroyed by {KingName2()}'s Kingdom {NationColorStr2()}.",
+			DESTROYER_REBEL => $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been destroyed by Rebels.",
+			DESTROYER_MONSTER => $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been destroyed by Fryhtans.",
+			_ => $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been destroyed."
+		};
 	}
 
-	public void firm_captured()
+	private string FirmCaptured()
 	{
+		if (Param3 != 0)
+		{
+			return $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been captured by a spy from {KingName2()}'s Kingdom {NationColorStr2()}.";
+		}
+		else
+		{
+			return $"Your {FirmName(Param1)} near {TownRes.GetName(Param2)} has been captured by {KingName2()}'s Kingdom {NationColorStr2()}.";
+		}
 	}
 
-	public void town_destroyed()
+	private string TownDestroyed()
 	{
+		return Param2 switch
+		{
+			DESTROYER_NATION => $"Your village of {TownRes.GetName(Param1)} has been destroyed by {KingName2()}'s Kingdom {NationColorStr2()}.",
+			DESTROYER_REBEL => $"Your village of {TownRes.GetName(Param1)} has been destroyed by Rebels.",
+			DESTROYER_MONSTER => $"Your village of {TownRes.GetName(Param1)} has been destroyed by Fryhtans.",
+			_ => $"Your village of {TownRes.GetName(Param1)} has been destroyed."
+		};
 	}
 
-	public void town_abandoned()
+	private string TownAbandoned()
 	{
+		return $"Your village of {TownRes.GetName(Param1)} has been abandoned by its people.";
 	}
 
-	public void town_surrendered()
+	private string TownSurrendered()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
+		{
+			return $"Your village of {TownRes.GetName(Param1)} has surrendered to {KingName1()}'s Kingdom {NationColorStr1()}.";
+		}
+		
+		if (NationNameId2 != 0)
+		{
+			return $"The village of {TownRes.GetName(Param1)} in {KingName2()}'s Kingdom {NationColorStr2()} has surrendered to you.";
+		}
+
+		return $"The independent village of {TownRes.GetName(Param1)} has surrendered to you.";
 	}
 
-	public void monster_king_killed()
+	private string MonsterKingKilled()
 	{
+		return $"An {UnitMonster.MonsterKingNames[Param1 - 1]} has been slain.";
 	}
 
-	public void monster_firm_destroyed()
+	private string MonsterFirmDestroyed()
 	{
+		return $"A {FirmMonster.MonsterFirmName[Param1 - 1]} has been destroyed.";
 	}
 
-	public void scroll_acquired()
+	private string ScrollAcquired()
 	{
+		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		{
+			return $"You have acquired the {Param1} Scroll of Power.";
+		}
+		else
+		{
+			return $"{KingName1()}'s Kingdom {NationColorStr1()} has acquired the {Param1} Scroll of Power.";
+		}
 	}
 
-	public void monster_gold_acquired()
+	private string MonsterGoldAcquired()
 	{
+		return $"You have recovered {Param1} worth of treasure from the Fryhtans.";
 	}
 
-	public void your_spy_killed()
+	private string YourSpyKilled()
 	{
+		return String.Empty;
 	}
 
-	public void enemy_spy_killed()
+	private string EnemySpyKilled()
 	{
+		return String.Empty;
 	}
 
-	public void unit_betray()
+	private string UnitBetray()
 	{
+		return String.Empty;
 	}
 
-	public void unit_assassinated()
+	private string UnitAssassinated()
 	{
+		return String.Empty;
 	}
 
-	public void assassinator_caught()
+	private string AssassinatorCaught()
 	{
+		return String.Empty;
 	}
 
-	public void general_die()
+	private string GeneralDie()
 	{
+		return String.Empty;
 	}
 
-	public void raw_exhaust()
+	private string RawExhaust()
 	{
+		return String.Empty;
 	}
 
-	public void tech_researched()
+	private string TechResearched()
 	{
+		return String.Empty;
 	}
 
-	public void lightning_damage()
+	private string LightningDamage()
 	{
+		return String.Empty;
 	}
 
-	public void earthquake_damage()
+	private string EarthquakeDamage()
 	{
+		return String.Empty;
 	}
 
-	public void goal_deadline()
+	private string GoalDeadline()
 	{
+		return String.Empty;
 	}
 
-	public void weapon_ship_worn_out()
+	private string WeaponShipWornOut()
 	{
+		return String.Empty;
 	}
 
-	public void firm_worn_out()
+	private string FirmWornOut()
 	{
+		return String.Empty;
 	}
 
-	public void chat_msg()
+	private string ChatMsg()
 	{
+		return String.Empty;
 	}
 
-	public void multi_retire()
+	private string MultiRetire()
 	{
+		return String.Empty;
 	}
 
-	public void multi_quit_game()
+	private string MultiQuitGame()
 	{
+		return String.Empty;
 	}
 
-	public void multi_save_game()
+	private string MultiSaveGame()
 	{
+		return String.Empty;
 	}
 
-	public void multi_connection_lost()
+	private string MultiConnectionLost()
 	{
+		return String.Empty;
 	}
 }

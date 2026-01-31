@@ -3318,10 +3318,10 @@ public abstract partial class Unit : Sprite
 								int unitClass = UnitRes[UnitType].UnitClass;
 
 								if (unitClass == UnitConstants.UNIT_CLASS_WEAPON)
-									NewsArray.weapon_ship_worn_out(UnitType, WeaponVersion);
+									NewsArray.WeaponShipWornOut(UnitType, WeaponVersion);
 
 								else if (unitClass == UnitConstants.UNIT_CLASS_SHIP)
-									NewsArray.weapon_ship_worn_out(UnitType, 0);
+									NewsArray.WeaponShipWornOut(UnitType, 0);
 							}
 
 							HitPoints = 0.0;
@@ -3478,7 +3478,7 @@ public abstract partial class Unit : Sprite
 			//--- if this is a spy, don't display news message for betrayal as it is already displayed in Unit.SpyChangeNation() ---//
 
 			if (SpyId == 0)
-				NewsArray.unit_betray(SpriteId, newNationId);
+				NewsArray.UnitBetray(this, newNationId);
 		}
 
 		//------ change nation now ------//
@@ -3816,7 +3816,7 @@ public abstract partial class Unit : Sprite
 			// display when the player's spy is revealed or the player has revealed an enemy spy
 			if (TrueNationId() == NationArray.PlayerId || NationId == NationArray.PlayerId)
 			{
-				NewsArray.spy_killed(SpyId);
+				NewsArray.SpyKilled(SpyId);
 			}
 		}
 		else
@@ -3830,11 +3830,11 @@ public abstract partial class Unit : Sprite
 
 		// if this is a general, news_array.general_die() will be called, set news_add_flag to 0 to suppress the display of thew news
 		if (Rank == RANK_GENERAL)
-			NewsArray.news_add_flag = false;
+			NewsArray.Disable();
 
 		UnitArray.DeleteUnit(this);
 
-		NewsArray.news_add_flag = true;
+		NewsArray.Enable();
 	}
 
 	public void Reward(int rewardNationId)
@@ -4012,7 +4012,7 @@ public abstract partial class Unit : Sprite
 				//-- if this spy's cloaked nation is the player's nation, the player will be notified --//
 
 				if (NationId == NationArray.PlayerId)
-					NewsArray.unit_betray(SpriteId, newNationId);
+					NewsArray.UnitBetray(this, newNationId);
 			}
 
 			//---- send news to the cloaked nation if notify flag is on ---//
@@ -4020,7 +4020,7 @@ public abstract partial class Unit : Sprite
 			if (spy.NotifyCloakedNation && groupDefect == 0)
 			{
 				if (newNationId == NationArray.PlayerId) // cloaked as the player's nation
-					NewsArray.unit_betray(SpriteId, newNationId);
+					NewsArray.UnitBetray(this, newNationId);
 			}
 		}
 
@@ -4121,7 +4121,7 @@ public abstract partial class Unit : Sprite
 
 	private void KingDie()
 	{
-		NewsArray.king_die(NationId);
+		NewsArray.KingDie(NationId);
 
 		Nation nation = NationArray[NationId];
 		nation.KingUnitId = 0;
@@ -4130,7 +4130,7 @@ public abstract partial class Unit : Sprite
 	private void GeneralDie()
 	{
 		if (NationId == NationArray.PlayerId)
-			NewsArray.general_die(SpriteId);
+			NewsArray.GeneralDie(this);
 	}
 
 	public abstract void DrawDetails(IRenderer renderer);

@@ -2113,7 +2113,7 @@ public partial class Unit
 			SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 
 			if (targetFirm.NationId == NationArray.PlayerId)
-				NewsArray.firm_destroyed(targetFirm.FirmId, attackUnit, attackNationRecno);
+				NewsArray.FirmDestroyed(targetFirm, attackUnit, attackNationRecno);
 
 			if (targetFirm.NationId != 0)
 			{
@@ -2125,7 +2125,7 @@ public partial class Unit
 
 			else if (targetFirm.FirmType == Firm.FIRM_MONSTER)
 			{
-				NewsArray.monster_firm_destroyed(((FirmMonster)targetFirm).MonsterId, targetFirm.LocCenterX, targetFirm.LocCenterY);
+				NewsArray.MonsterFirmDestroyed(((FirmMonster)targetFirm).MonsterId, targetFirm.LocCenterX, targetFirm.LocCenterY);
 			}
 
 			FirmArray.DeleteFirm(targetFirm);
@@ -2176,17 +2176,17 @@ public partial class Unit
 			}
 
 			// don't add the town abandon news that might be called by Town::dec_pop() as the town is actually destroyed not abandoned
-			NewsArray.disable();
+			NewsArray.Disable();
 
 			targetTown.BeingAttacked(attackUnit.SpriteId, attackDamage);
 
-			NewsArray.enable();
+			NewsArray.Enable();
 
 			//------ if the town is destroyed, add a news --------//
 
 			if (TownArray.IsDeleted(targetTownRecno) && townNationRecno == NationArray.PlayerId)
 			{
-				NewsArray.town_destroyed(targetTownNameId, targetTownXLoc, targetTownYLoc, attackUnit, attackNationRecno);
+				NewsArray.TownDestroyed(targetTownNameId, targetTownXLoc, targetTownYLoc, attackUnit, attackNationRecno);
 			}
 
 			//---------- gain experience --------//

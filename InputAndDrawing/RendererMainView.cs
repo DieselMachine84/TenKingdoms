@@ -23,7 +23,6 @@ public partial class Renderer
 
     private void DrawMainView()
     {
-        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         for (int i = 0; i < _displayableObjects.Count; i++)
             _displayableObjects[i].ObjectType = DisplayableObjectType.None;
         _displayableObjectIndex = 0;

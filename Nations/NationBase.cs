@@ -1226,7 +1226,7 @@ public class NationBase : IIdObject
                 spy.ThinkBecomeKing();
         }
         
-        NewsArray.new_king(NationId, newKing.SpriteId);
+        NewsArray.NewKing(NationId, newKing.SpriteId);
     }
 
     private int SucceedKingLoyaltyChange(int thisRaceId, int newKingRaceId, int oldKingRaceId)
@@ -1378,7 +1378,7 @@ public class NationBase : IIdObject
         }
         else // AI and remote players 
         {
-            NewsArray.nation_destroyed(NationId);
+            NewsArray.NationDestroyed(NationId);
         }
 
         //---- delete this nation from NationArray ----//
@@ -1389,7 +1389,7 @@ public class NationBase : IIdObject
     
     public void Surrender(int toNationId)
     {
-        NewsArray.nation_surrender(NationId, toNationId);
+        NewsArray.NationSurrender(NationId, toNationId);
 
         //---- the king demote himself to general first ----//
 

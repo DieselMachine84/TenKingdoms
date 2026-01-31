@@ -6,8 +6,6 @@ public partial class Renderer
 {
     private void DrawMiniMap(bool nextFrame)
     {
-        Graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
-
         if (NeedFullRedraw)
         {
             //TODO support different minimap modes

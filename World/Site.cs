@@ -67,7 +67,7 @@ public class Site : IIdObject
             {
                 NationArray[unit.NationId].KnownBases[siteRaceId - 1] = 1;
                 objectTaken = true;
-                NewsArray.scroll_acquired(unit.NationId, siteRaceId);
+                NewsArray.ScrollAcquired(unit.NationId, siteRaceId);
             }
         }
 
@@ -77,7 +77,7 @@ public class Site : IIdObject
             objectTaken = true;
 
             if (unit.NationId == NationArray.PlayerId)
-                NewsArray.monster_gold_acquired(ObjectId);
+                NewsArray.MonsterGoldAcquired(ObjectId);
         }
 
         if (objectTaken)

@@ -18,6 +18,12 @@ public partial class Renderer
 
     public void ProcessInput(int eventType, int mouseEventX, int mouseEventY)
     {
+        bool clickOnViewModeButton = mouseEventX >= ViewModeX && mouseEventX < ViewModeX + ViewModeWidth &&
+                                     mouseEventY >= ViewModeY && mouseEventY < ViewModeY + ViewModeHeight;
+
+        if (clickOnViewModeButton && eventType == InputConstants.LeftMouseUp)
+            SelectViewMode(mouseEventX, mouseEventY);
+        
         bool clickOnMainView = mouseEventX >= MainViewX && mouseEventX < MainViewX + MainViewWidth &&
                                mouseEventY >= MainViewY && mouseEventY < MainViewY + MainViewHeight;
         bool clickOnMiniMap = mouseEventX >= MiniMapX && mouseEventX < MiniMapX + MiniMapSize &&
@@ -58,6 +64,9 @@ public partial class Renderer
                     HandleDetails();
             }
 
+            if (clickOnMainView)
+                HandleNewsButtons();
+            
             _leftMouseReleased = false;
         }
 
@@ -594,6 +603,65 @@ public partial class Renderer
                 UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
                 UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
             }
+        }
+    }
+
+    private void HandleNewsButtons()
+    {
+        bool hasNews = false;
+        int dy = 40;
+        for (int i = NewsArray.LastClearId + 1; i < NewsArray.Count(); i++)
+        {
+            News news = NewsArray[i];
+            if (Info.GameDate > news.NewsDate.AddDays(GameConstants.DISP_NEWS_DAYS))
+            {
+                NewsArray.LastClearId = i;
+                continue;
+            }
+
+            if (Config.disp_news_flag == Config.OPTION_DISPLAY_MAJOR_NEWS && !news.IsMajor())
+            {
+                continue;
+            }
+
+            if (news.Id == News.NEWS_DIPLOMACY)
+            {
+                TalkMsg talkMsg = TalkRes.get_talk_msg(news.Param1);
+                if (talkMsg.reply_type == TalkRes.REPLY_WAITING && !talkMsg.is_valid_to_reply())
+                {
+                    continue;
+                }
+            }
+
+            if (news.IsLocValid())
+            {
+                bool clickOnNewsLoc = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + _newsLocWidth * 2 &&
+                                      _mouseButtonY >= MainViewY + MainViewHeight - dy + 3 && _mouseButtonY < MainViewY + MainViewHeight + _newsLocHeight * 2;
+                if (clickOnNewsLoc)
+                {
+                    GoToLocation(news.LocX, news.LocY);
+                }
+            }
+
+            hasNews = true;
+            dy += 40;
+        }
+
+        if (hasNews)
+        {
+            bool clickOnClearNews = _mouseButtonX >= MainViewX + MainViewWidth - 30 && _mouseButtonX < MainViewX + MainViewWidth - 30 + _newsLocWidth * 2 &&
+                                    _mouseButtonY >= MainViewY + MainViewHeight - 54 && _mouseButtonY < MainViewY + MainViewHeight - 54 + _newsLocHeight * 2;
+            if (clickOnClearNews)
+            {
+                NewsArray.ClearDisplayedNews();
+            }
+        }
+
+        bool clickOnNewsLog = _mouseButtonX >= MainViewX + MainViewWidth - 30 && _mouseButtonX < MainViewX + MainViewWidth - 30 + _newsLocWidth * 2 &&
+                              _mouseButtonY >= MainViewY + MainViewHeight - 28 && _mouseButtonY < MainViewY + MainViewHeight - 28 + _newsLocHeight * 2;
+        if (clickOnNewsLog)
+        {
+            _viewMode = _viewMode == ViewMode.News ? ViewMode.Normal : ViewMode.News;
         }
     }
 

@@ -88,7 +88,7 @@ public class FirmResearch : Firm
         {
             if (OwnFirm())
             {
-                NewsArray.tech_researched(techIdCopy, nation.GetTechLevel(techIdCopy));
+                NewsArray.TechResearched(techIdCopy, nation.GetTechLevel(techIdCopy));
 
                 SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
                     UnitRes[TechRes[techIdCopy].UnitId].SpriteId);

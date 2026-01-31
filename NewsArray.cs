@@ -5,15 +5,9 @@ namespace TenKingdoms;
 
 public class NewsArray
 {
-	//------ display options ------//
-
-	public int[] news_type_option = new int[News.NEWS_TYPE_NUM];
-	public int news_who_option;
-	public bool news_add_flag;
-
-	public int last_clear_recno;
-
-	private List<News> newsList = new List<News>();
+	private readonly List<News> _newsList = new List<News>();
+	private bool NewsEnabled { get; set; }
+	public int LastClearId { get; set; }
 
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private Info Info => Sys.Instance.Info;
@@ -25,47 +19,33 @@ public class NewsArray
 
 	public NewsArray()
 	{
-		reset();
-
-		//TODO fonts
-		//set_font(&font_san); // use black font
+		LastClearId = -1;
+		Enable();
 	}
 
-	public void enable()
+	public News this[int id] => _newsList[id];
+
+	public int Count()
 	{
-		news_add_flag = true;
+		return _newsList.Count;
 	}
-
-	public void disable()
+	
+	public void Enable()
 	{
-		news_add_flag = false;
+		NewsEnabled = true;
 	}
 
-	public void reset()
+	public void Disable()
 	{
-		newsList.Clear();
-
-		last_clear_recno = 0;
-		news_add_flag = true;
-
-		default_setting();
+		NewsEnabled = false;
 	}
 
-	public void default_setting()
+	public void ClearDisplayedNews()
 	{
-		news_type_option[News.NEWS_NORMAL] = 1;
-
-		news_who_option = News.NEWS_DISP_PLAYER; // default display news of groups controlled by the player
+		LastClearId = _newsList.Count - 1;
 	}
 
-	//public void set_font(Font font);
-
-	public void clear_news_disp()
-	{
-		last_clear_recno = newsList.Count - 1;
-	}
-
-	public News add_news(int newsId, int newsType, int nationRecno1 = 0, int nationRecno2 = 0, bool forceAdd = false)
+	private News AddNews(int newsId, int newsType, int nationId1 = 0, int nationId2 = 0, bool forceAdd = false)
 	{
 		if (NationArray.PlayerId == 0) // if the player has lost
 			return null;
@@ -76,15 +56,15 @@ public class NewsArray
 		{
 			Nation playerNation = NationArray.Player;
 
-			if (nationRecno1 != 0 && nationRecno1 != NationArray.PlayerId)
+			if (nationId1 != 0 && nationId1 != NationArray.PlayerId)
 			{
-				if (!playerNation.GetRelation(nationRecno1).HasContact)
+				if (!playerNation.GetRelation(nationId1).HasContact)
 					return null;
 			}
 
-			if (nationRecno2 != 0 && nationRecno2 != NationArray.PlayerId)
+			if (nationId2 != 0 && nationId2 != NationArray.PlayerId)
 			{
-				if (!playerNation.GetRelation(nationRecno2).HasContact)
+				if (!playerNation.GetRelation(nationId2).HasContact)
 					return null;
 			}
 		}
@@ -92,72 +72,62 @@ public class NewsArray
 		//----------------------------------------------//
 
 		News news = new News();
-		news.id = newsId;
-		news.type = newsType;
-		news.news_date = Info.GameDate;
-		news.loc_type = 0;
+		news.Id = newsId;
+		news.Type = newsType;
+		news.NewsDate = Info.GameDate;
+		news.LocType = 0;
 
-		if (nationRecno1 != 0)
+		if (nationId1 != 0)
 		{
-			Nation nation1 = NationArray[nationRecno1];
+			Nation nation1 = NationArray[nationId1];
 
-			news.nation_name_id1 = nation1.NationNameId;
-			news.nation_race_id1 = nation1.RaceId;
-			news.nation_color1 = nation1.ColorSchemeId;
+			news.NationNameId1 = nation1.NationNameId;
+			news.NationRaceId1 = nation1.RaceId;
+			news.NationColor1 = nation1.ColorSchemeId;
 		}
 		else
 		{
-			news.nation_name_id1 = 0;
-			news.nation_color1 = -1;
+			news.NationNameId1 = 0;
+			news.NationColor1 = -1;
 		}
 
-		if (nationRecno2 != 0)
+		if (nationId2 != 0)
 		{
-			Nation nation2 = NationArray[nationRecno2];
+			Nation nation2 = NationArray[nationId2];
 
-			news.nation_name_id2 = nation2.NationNameId;
-			news.nation_race_id2 = nation2.RaceId;
-			news.nation_color2 = nation2.ColorSchemeId;
+			news.NationNameId2 = nation2.NationNameId;
+			news.NationRaceId2 = nation2.RaceId;
+			news.NationColor2 = nation2.ColorSchemeId;
 		}
 		else
 		{
-			news.nation_name_id2 = 0;
-			news.nation_color2 = -1;
+			news.NationNameId2 = 0;
+			news.NationColor2 = -1;
 		}
 
 		//--- if the news adding flag is turned off, don't add the news ---//
 
-		if (news_add_flag)
+		if (NewsEnabled)
 		{
-			//--- if no. of news reaches MAX., delete the oldest one ---//
-
-			if (newsList.Count >= GameConstants.MAX_NEWS)
-			{
-				newsList.RemoveAt(0);
-
-				if (last_clear_recno > 0)
-					last_clear_recno--;
-			}
-			
-			newsList.Add(news);
+			_newsList.Add(news);
 		}
 
 		return news;
 	}
 
-	public void remove(int newsId, int shortPara1)
+	//TODO remove diplomatic news that are no longer valid for reply
+	public void Remove(int newsId, int param1)
 	{
-		for (int i = newsList.Count - 1; i >= 0; i--)
+		for (int i = _newsList.Count - 1; i >= 0; i--)
 		{
-			News news = newsList[i];
+			News news = _newsList[i];
 
-			if (news.id == newsId && news.short_para1 == shortPara1)
+			if (news.Id == newsId && news.Param1 == param1)
 			{
-				newsList.RemoveAt(i);
+				_newsList.RemoveAt(i);
 
-				//if( i<last_clear_recno && last_clear_recno > 1 )
-				if (i <= last_clear_recno && last_clear_recno > 0)
-					last_clear_recno--;
+				if (i <= LastClearId)
+					LastClearId--;
 
 				break;
 			}
@@ -166,67 +136,47 @@ public class NewsArray
 
 	//------ functions for adding news -------//
 
-	public void diplomacy(TalkMsg talkMsg)
+	public void Diplomacy(TalkMsg talkMsg)
 	{
-		News news = add_news(News.NEWS_DIPLOMACY, News.NEWS_NORMAL,
-			talkMsg.from_nation_recno, talkMsg.to_nation_recno);
+		News news = AddNews(News.NEWS_DIPLOMACY, News.NEWS_NORMAL, talkMsg.from_nation_recno, talkMsg.to_nation_recno);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = talkMsg.RecNo;
+		news.Param1 = talkMsg.RecNo;
 	}
 
-	public void town_rebel(int townRecno, int rebelCount)
+	public void TownRebel(Town town, int rebelCount)
 	{
-		Town town = TownArray[townRecno];
-
-		//----------- add news --------------//
-
-		News news = add_news(News.NEWS_TOWN_REBEL, News.NEWS_NORMAL, town.NationId);
+		News news = AddNews(News.NEWS_TOWN_REBEL, News.NEWS_NORMAL, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.TownNameId;
-		news.short_para2 = rebelCount;
-
-		//-------- set location ----------//
-
-		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, townRecno);
+		news.Param1 = town.TownNameId;
+		news.Param2 = rebelCount;
+		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 	}
 
-	public void migrate(int srcTownRecno, int desTownRecno, int raceId, int migratedCount, int firmRecno = 0)
+	public void Migrate(Town srcTown, Town destTown, int raceId, int migratedCount, int firmId = 0)
 	{
-		Town srcTown = TownArray[srcTownRecno];
-		Town desTown = TownArray[desTownRecno];
-
-		//----------- add news --------------//
-
-		News news = add_news(News.NEWS_MIGRATE, News.NEWS_NORMAL,
-			srcTown.NationId, desTown.NationId);
+		News news = AddNews(News.NEWS_MIGRATE, News.NEWS_NORMAL, srcTown.NationId, destTown.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = srcTown.TownNameId;
-		news.short_para2 = desTown.TownNameId;
-		news.short_para3 = raceId;
-		news.short_para4 = migratedCount;
+		news.Param1 = srcTown.TownNameId;
+		news.Param2 = destTown.TownNameId;
+		news.Param3 = raceId;
+		news.Param4 = migratedCount;
+		news.Param5 = firmId != 0 ? FirmArray[firmId].FirmType : 0;
 
-		if (firmRecno != 0)
-			news.short_para5 = FirmArray[firmRecno].FirmType;
-		else
-			news.short_para5 = 0;
-
-		//-------- set location ----------//
-
-		news.set_loc(desTown.LocCenterX, desTown.LocCenterY, News.NEWS_LOC_TOWN, desTownRecno);
+		news.SetLoc(destTown.LocCenterX, destTown.LocCenterY, News.NEWS_LOC_TOWN, destTown.TownId);
 	}
 
-	public void new_nation(int nationRecno)
+	public void NewNation(int nationId)
 	{
-		News news = add_news(News.NEWS_NEW_NATION, News.NEWS_NORMAL, nationRecno);
+		News news = AddNews(News.NEWS_NEW_NATION, News.NEWS_NORMAL, nationId);
 
 		if (news == null)
 			return;
@@ -235,224 +185,192 @@ public class NewsArray
 
 		foreach (Town town in TownArray)
 		{
-			if (town.NationId == nationRecno)
+			if (town.NationId == nationId)
 			{
-				news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
+				news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 				break;
 			}
 		}
 	}
 
-	public void nation_destroyed(int nationRecno)
+	public void NationDestroyed(int nationId)
 	{
-		add_news(News.NEWS_NATION_DESTROYED, News.NEWS_NORMAL, nationRecno);
+		AddNews(News.NEWS_NATION_DESTROYED, News.NEWS_NORMAL, nationId);
 	}
 
-	public void nation_surrender(int nationRecno, int toNationRecno)
+	public void NationSurrender(int nationId, int toNationId)
 	{
-		add_news(News.NEWS_NATION_SURRENDER, News.NEWS_NORMAL, nationRecno, toNationRecno);
+		AddNews(News.NEWS_NATION_SURRENDER, News.NEWS_NORMAL, nationId, toNationId);
 	}
 
-	public void king_die(int nationRecno)
+	public void KingDie(int nationId)
 	{
-		add_news(News.NEWS_KING_DIE, News.NEWS_NORMAL, nationRecno);
+		AddNews(News.NEWS_KING_DIE, News.NEWS_NORMAL, nationId);
 	}
 
-	public void new_king(int nationRecno, int kingUnitRecno)
+	public void NewKing(int nationId, int kingUnitId)
 	{
-		News news = add_news(News.NEWS_NEW_KING, News.NEWS_NORMAL, nationRecno);
+		News news = AddNews(News.NEWS_NEW_KING, News.NEWS_NORMAL, nationId);
 
 		if (news == null)
 			return;
 
-		Unit unit = UnitArray[kingUnitRecno];
+		Unit unit = UnitArray[kingUnitId];
 
-		news.short_para1 = unit.RaceId;
-		news.short_para2 = unit.NameId;
+		news.Param1 = unit.RaceId;
+		news.Param2 = unit.NameId;
 	}
 
-	public void firm_destroyed(int firmRecno, Unit attackUnit, int destroyerNationRecno)
+	public void FirmDestroyed(Firm firm, Unit attackUnit, int destroyerNationId)
 	{
-		Firm firm = FirmArray[firmRecno];
-
-		News news = add_news(News.NEWS_FIRM_DESTROYED, News.NEWS_NORMAL,
-			firm.NationId, destroyerNationRecno);
+		News news = AddNews(News.NEWS_FIRM_DESTROYED, News.NEWS_NORMAL, firm.NationId, destroyerNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.FirmType;
+		news.Param1 = firm.FirmType;
+		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
+		news.Param3 = News.DESTROYER_UNKNOWN;
 
-		if (firm.ClosestTownNameId != 0)
-			news.short_para2 = firm.ClosestTownNameId;
-		else
-			news.short_para2 = firm.GetClosestTownNameId();
-
-		//-------- set destroyer type ------//
-
-		news.short_para3 = News.DESTROYER_UNKNOWN;
-
-		if (destroyerNationRecno != 0)
+		if (destroyerNationId != 0)
 		{
-			if (!NationArray.IsDeleted(destroyerNationRecno))
-				news.short_para3 = News.DESTROYER_NATION;
+			if (!NationArray.IsDeleted(destroyerNationId))
+				news.Param3 = News.DESTROYER_NATION;
 		}
 		else if (attackUnit != null)
 		{
 			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
-				news.short_para3 = News.DESTROYER_REBEL;
+				news.Param3 = News.DESTROYER_REBEL;
 
 			else if (UnitRes[attackUnit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
-				news.short_para3 = News.DESTROYER_MONSTER;
+				news.Param3 = News.DESTROYER_MONSTER;
 		}
 
-		news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_ANY);
+		news.SetLoc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_ANY);
 	}
 
-	public void firm_captured(int firmRecno, int takeoverNationRecno, int spyTakeover)
+	public void FirmCaptured(Firm firm, int takeoverNationId, int spyTakeover)
 	{
-		Firm firm = FirmArray[firmRecno];
-
-		News news = add_news(News.NEWS_FIRM_CAPTURED, News.NEWS_NORMAL,
-			firm.NationId, takeoverNationRecno);
+		News news = AddNews(News.NEWS_FIRM_CAPTURED, News.NEWS_NORMAL, firm.NationId, takeoverNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.FirmType;
+		news.Param1 = firm.FirmType;
+		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
+		news.Param3 = spyTakeover;
 
-		if (firm.ClosestTownNameId != 0)
-			news.short_para2 = firm.ClosestTownNameId;
-		else
-			news.short_para2 = firm.GetClosestTownNameId();
-
-		news.short_para3 = spyTakeover;
-
-		//--------- set location ---------//
-
-		news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firmRecno);
+		news.SetLoc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
 	}
 
-	public void town_destroyed(int townNameId, int xLoc, int yLoc, Unit attackUnit, int destroyerNationRecno)
+	public void TownDestroyed(int townNameId, int locX, int locY, Unit attackUnit, int destroyerNationId)
 	{
-		News news = add_news(News.NEWS_TOWN_DESTROYED, News.NEWS_NORMAL,
-			NationArray.PlayerId, destroyerNationRecno);
+		News news = AddNews(News.NEWS_TOWN_DESTROYED, News.NEWS_NORMAL, NationArray.PlayerId, destroyerNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = townNameId;
+		news.Param1 = townNameId;
+		news.Param2 = News.DESTROYER_UNKNOWN;
 
-		//-------- set destroyer type ------//
-
-		news.short_para2 = News.DESTROYER_UNKNOWN;
-
-		if (destroyerNationRecno != 0)
+		if (destroyerNationId != 0)
 		{
-			if (!NationArray.IsDeleted(destroyerNationRecno))
-				news.short_para2 = News.DESTROYER_NATION;
+			if (!NationArray.IsDeleted(destroyerNationId))
+				news.Param2 = News.DESTROYER_NATION;
 		}
 		else if (attackUnit != null)
 		{
 			if (attackUnit.UnitMode == UnitConstants.UNIT_MODE_REBEL)
-				news.short_para2 = News.DESTROYER_REBEL;
+				news.Param2 = News.DESTROYER_REBEL;
 
 			else if (UnitRes[attackUnit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_MONSTER)
-				news.short_para2 = News.DESTROYER_MONSTER;
+				news.Param2 = News.DESTROYER_MONSTER;
 		}
 
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void town_abandoned(int townRecno)
+	public void TownAbandoned(Town town)
 	{
-		Town town = TownArray[townRecno];
-
-		News news = add_news(News.NEWS_TOWN_ABANDONED, News.NEWS_NORMAL, town.NationId);
+		News news = AddNews(News.NEWS_TOWN_ABANDONED, News.NEWS_NORMAL, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.TownNameId;
-
-		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_ANY);
+		news.Param1 = town.TownNameId;
+		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_ANY);
 	}
 
-	public void town_surrendered(int townRecno, int toNationRecno)
+	public void TownSurrendered(Town town, int toNationId)
 	{
-		Town town = TownArray[townRecno];
-
-		News news = add_news(News.NEWS_TOWN_SURRENDERED, News.NEWS_NORMAL,
-			toNationRecno, town.NationId);
+		News news = AddNews(News.NEWS_TOWN_SURRENDERED, News.NEWS_NORMAL, toNationId, town.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = town.TownNameId;
+		news.Param1 = town.TownNameId;
 
-		news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, townRecno);
+		news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 	}
 
-	public void monster_king_killed(int monsterId, int xLoc, int yLoc)
+	public void MonsterKingKilled(int monsterId, int locX, int locY)
 	{
-		News news = add_news(News.NEWS_MONSTER_KING_KILLED, News.NEWS_NORMAL);
+		News news = AddNews(News.NEWS_MONSTER_KING_KILLED, News.NEWS_NORMAL);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = monsterId;
+		news.Param1 = monsterId;
 
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void monster_firm_destroyed(int monsterId, int xLoc, int yLoc)
+	public void MonsterFirmDestroyed(int monsterId, int locX, int locY)
 	{
-		News news = add_news(News.NEWS_MONSTER_FIRM_DESTROYED, News.NEWS_NORMAL);
+		News news = AddNews(News.NEWS_MONSTER_FIRM_DESTROYED, News.NEWS_NORMAL);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = monsterId;
+		news.Param1 = monsterId;
 
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void scroll_acquired(int acquireNationRecno, int scrollRaceId)
+	public void ScrollAcquired(int acquireNationId, int scrollRaceId)
 	{
-		News news = add_news(News.NEWS_SCROLL_ACQUIRED, News.NEWS_NORMAL, acquireNationRecno);
+		News news = AddNews(News.NEWS_SCROLL_ACQUIRED, News.NEWS_NORMAL, acquireNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = scrollRaceId;
+		news.Param1 = scrollRaceId;
 	}
 
-	public void monster_gold_acquired(int goldAmt)
+	public void MonsterGoldAcquired(int goldAmount)
 	{
-		News news = add_news(News.NEWS_MONSTER_GOLD_ACQUIRED, News.NEWS_NORMAL, NationArray.PlayerId);
+		News news = AddNews(News.NEWS_MONSTER_GOLD_ACQUIRED, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null)
 			return;
 
-		news.short_para1 = goldAmt;
+		news.Param1 = goldAmount;
 	}
 
-	public void spy_killed(int spyRecno)
+	public void SpyKilled(int spyId)
 	{
-		Spy spy = SpyArray[spyRecno];
+		Spy spy = SpyArray[spyId];
 		News news = null;
 
 		//---------- your spy is killed in an enemy nation ---------//
 
 		if (spy.TrueNationId == NationArray.PlayerId)
 		{
-			news = add_news(News.NEWS_YOUR_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.PlayerId, spy.CloakedNationId);
+			news = AddNews(News.NEWS_YOUR_SPY_KILLED, News.NEWS_NORMAL, NationArray.PlayerId, spy.CloakedNationId);
 		}
 		else //----- an enemy spy in your nation is uncovered and executed ----//
 		{
-			news = add_news(News.NEWS_ENEMY_SPY_KILLED, News.NEWS_NORMAL,
-				NationArray.PlayerId, spy.TrueNationId);
+			news = AddNews(News.NEWS_ENEMY_SPY_KILLED, News.NEWS_NORMAL, NationArray.PlayerId, spy.TrueNationId);
 		}
 
 		if (news == null) // only news of nations that have contact with the player are added
@@ -460,246 +378,228 @@ public class NewsArray
 
 		//-------------------------------------------//
 
-		news.short_para3 = spy.SpyPlace;
+		news.Param3 = spy.SpyPlace;
 
 		if (spy.SpyPlace == Spy.SPY_FIRM)
 		{
 			Firm firm = FirmArray[spy.SpyPlaceId];
 
-			news.short_para1 = firm.FirmType;
-			news.short_para2 = firm.GetClosestTownNameId();
+			news.Param1 = firm.FirmType;
+			news.Param2 = firm.GetClosestTownNameId();
 
-			news.set_loc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
+			news.SetLoc(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId);
 		}
 		else if (spy.SpyPlace == Spy.SPY_TOWN)
 		{
 			Town town = TownArray[spy.SpyPlaceId];
 
-			news.short_para1 = 0;
-			news.short_para2 = town.TownNameId;
+			news.Param1 = 0;
+			news.Param2 = town.TownNameId;
 
-			news.set_loc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
+			news.SetLoc(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId);
 		}
 		else if (spy.SpyPlace == Spy.SPY_MOBILE)
 		{
 			Unit unit = UnitArray[spy.SpyPlaceId];
 
-			news.short_para1 = unit.RaceId;
-			news.short_para2 = unit.NameId;
+			news.Param1 = unit.RaceId;
+			news.Param2 = unit.NameId;
 		}
 	}
 
-	public void unit_betray(int unitRecno, int betrayToNationRecno)
+	public void UnitBetray(Unit unit, int betrayToNationId)
 	{
-		Unit unit = UnitArray[unitRecno];
-
-		News news = add_news(News.NEWS_UNIT_BETRAY, News.NEWS_NORMAL,
-			unit.NationId, betrayToNationRecno);
+		News news = AddNews(News.NEWS_UNIT_BETRAY, News.NEWS_NORMAL, unit.NationId, betrayToNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.RaceId;
-		news.short_para2 = unit.NameId;
-		news.short_para3 = unit.Rank;
+		news.Param1 = unit.RaceId;
+		news.Param2 = unit.NameId;
+		news.Param3 = unit.Rank;
 
-		//------- set location --------//
-
-		if (betrayToNationRecno == NationArray.PlayerId)
-			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unitRecno, unit.NameId);
+		if (betrayToNationId == NationArray.PlayerId)
+			news.SetLoc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_UNIT, unit.SpriteId, unit.NameId);
 		else
-			news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
+			news.SetLoc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
 
-	public void unit_assassinated(int unitRecno, bool spyKilled)
+	public void UnitAssassinated(int unitId, bool spyKilled)
 	{
-		Unit unit = UnitArray[unitRecno];
+		Unit unit = UnitArray[unitId];
 
-		News news = add_news(News.NEWS_UNIT_ASSASSINATED, News.NEWS_NORMAL, unit.NationId);
+		News news = AddNews(News.NEWS_UNIT_ASSASSINATED, News.NEWS_NORMAL, unit.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.RaceId;
-		news.short_para2 = unit.NameId;
-		news.short_para3 = unit.Rank;
-		news.short_para4 = spyKilled ? 1 : 0;
+		news.Param1 = unit.RaceId;
+		news.Param2 = unit.NameId;
+		news.Param3 = unit.Rank;
+		news.Param4 = spyKilled ? 1 : 0;
 
-		//------- set location --------//
+		unit.GetNextLoc(out int locX, out int locY);
 
-		int xLoc, yLoc;
-
-		unit.GetNextLoc(out xLoc, out yLoc);
-
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void assassinator_caught(int spyRecno, int targetRankId)
+	public void AssassinatorCaught(int spyId, int targetRankId)
 	{
-		News news = add_news(News.NEWS_ASSASSINATOR_CAUGHT, News.NEWS_NORMAL);
+		News news = AddNews(News.NEWS_ASSASSINATOR_CAUGHT, News.NEWS_NORMAL);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = targetRankId;
+		news.Param1 = targetRankId;
 
-		//------- set location --------//
+		SpyArray[spyId].GetSpyLocation(out int locX, out int locY);
 
-		int xLoc, yLoc;
-
-		SpyArray[spyRecno].GetSpyLocation(out xLoc, out yLoc);
-
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void general_die(int unitRecno)
+	public void GeneralDie(Unit unit)
 	{
-		Unit unit = UnitArray[unitRecno];
-
-		News news = add_news(News.NEWS_GENERAL_DIE, News.NEWS_NORMAL, unit.NationId);
+		News news = AddNews(News.NEWS_GENERAL_DIE, News.NEWS_NORMAL, unit.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unit.RaceId;
-		news.short_para2 = unit.NameId;
+		news.Param1 = unit.RaceId;
+		news.Param2 = unit.NameId;
 
-		news.set_loc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
+		news.SetLoc(unit.NextLocX, unit.NextLocY, News.NEWS_LOC_ANY);
 	}
 
-	public void raw_exhaust(int rawId, int xLoc, int yLoc)
+	public void RawExhaust(int rawId, int locX, int locY)
 	{
-		News news = add_news(News.NEWS_RAW_EXHAUST, News.NEWS_NORMAL);
+		News news = AddNews(News.NEWS_RAW_EXHAUST, News.NEWS_NORMAL);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = rawId;
+		news.Param1 = rawId;
 
-		news.set_loc(xLoc, yLoc, News.NEWS_LOC_ANY);
+		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
-	public void tech_researched(int techId, int techVersion)
+	public void TechResearched(int techId, int techVersion)
 	{
-		News news = add_news(News.NEWS_TECH_RESEARCHED, News.NEWS_NORMAL, NationArray.PlayerId);
+		News news = AddNews(News.NEWS_TECH_RESEARCHED, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = techId;
-		news.short_para2 = techVersion;
+		news.Param1 = techId;
+		news.Param2 = techVersion;
 	}
 
-	public void lightning_damage(int xLoc, int yLoc, int objectId, int recno, int objectDie)
+	public void LightningDamage(int locX, int locY, int objectType, int objectId, int objectDie)
 	{
-		News news = add_news(News.NEWS_LIGHTNING_DAMAGE, News.NEWS_NORMAL);
+		News news = AddNews(News.NEWS_LIGHTNING_DAMAGE, News.NEWS_NORMAL);
 
 		if (news == null)
 			return;
 
-		news.set_loc(xLoc, yLoc, objectId, recno);
+		news.SetLoc(locX, locY, objectType, objectId);
 
-		news.short_para1 = objectId;
-		news.short_para2 = 0;
-		news.short_para3 = 0;
-		news.short_para4 = 0;
-		switch (objectId)
+		news.Param1 = objectType;
+		news.Param2 = 0;
+		news.Param3 = 0;
+		news.Param4 = 0;
+		switch (objectType)
 		{
 			case News.NEWS_LOC_UNIT:
-				news.short_para2 = UnitArray[recno].RaceId;
-				if (news.short_para2 > 0)
-					news.short_para3 = UnitArray[recno].NameId;
+				Unit unit = UnitArray[objectId];
+				news.Param2 = unit.RaceId;
+				if (news.Param2 > 0)
+					news.Param3 = unit.NameId;
 				else
-					news.short_para3 = UnitArray[recno].UnitType;
-				news.short_para4 = UnitArray[recno].Rank;
+					news.Param3 = unit.UnitType;
+				news.Param4 = unit.Rank;
 				break;
 			case News.NEWS_LOC_FIRM:
-				news.short_para2 = FirmArray[recno].FirmType;
-				news.short_para3 = FirmArray[recno].ClosestTownNameId;
+				Firm firm = FirmArray[objectId];
+				news.Param2 = firm.FirmType;
+				news.Param3 = firm.ClosestTownNameId;
 				break;
 			case News.NEWS_LOC_TOWN:
-				news.short_para3 = TownArray[recno].TownNameId;
+				Town town = TownArray[objectId];
+				news.Param3 = town.TownNameId;
 				break;
 		}
 
-		news.short_para5 = objectDie;
+		news.Param5 = objectDie;
 	}
 
-	public void earthquake_damage(int unitDamage, int unitDie, int townDamage, int firmDamage, int firmDie)
+	public void EarthquakeDamage(int unitDamage, int unitDie, int townDamage, int firmDamage, int firmDie)
 	{
 		if (unitDamage > 0 || unitDie > 0)
 		{
-			News news = add_news(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
+			News news = AddNews(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
 			if (news != null)
 			{
-				news.short_para1 = 1;
-				news.short_para2 = unitDamage;
-				news.short_para3 = unitDie;
+				news.Param1 = 1;
+				news.Param2 = unitDamage;
+				news.Param3 = unitDie;
 			}
 		}
 
 		if (townDamage > 0)
 		{
-			News news = add_news(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
+			News news = AddNews(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
 			if (news != null)
 			{
-				news.short_para1 = 2;
-				news.short_para2 = townDamage;
+				news.Param1 = 2;
+				news.Param2 = townDamage;
 			}
 		}
 
 		if (firmDamage > 0 || firmDie > 0)
 		{
-			News news = add_news(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
+			News news = AddNews(News.NEWS_EARTHQUAKE_DAMAGE, News.NEWS_NORMAL);
 			if (news != null)
 			{
-				news.short_para1 = 3;
-				news.short_para2 = firmDamage;
-				news.short_para3 = firmDie;
+				news.Param1 = 3;
+				news.Param2 = firmDamage;
+				news.Param3 = firmDie;
 			}
 		}
 	}
 
-	public void goal_deadline(int yearLeft, int monthLeft)
+	public void GoalDeadline(int yearLeft, int monthLeft)
 	{
-		News news = add_news(News.NEWS_GOAL_DEADLINE, News.NEWS_NORMAL, NationArray.PlayerId);
+		News news = AddNews(News.NEWS_GOAL_DEADLINE, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = yearLeft;
-		news.short_para2 = monthLeft;
+		news.Param1 = yearLeft;
+		news.Param2 = monthLeft;
 	}
 
-	public void weapon_ship_worn_out(int unitId, int weaponLevel)
+	public void WeaponShipWornOut(int unitType, int weaponLevel)
 	{
-		News news = add_news(News.NEWS_WEAPON_SHIP_WORN_OUT, News.NEWS_NORMAL, NationArray.PlayerId);
+		News news = AddNews(News.NEWS_WEAPON_SHIP_WORN_OUT, News.NEWS_NORMAL, NationArray.PlayerId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = unitId;
-		news.short_para2 = weaponLevel;
+		news.Param1 = unitType;
+		news.Param2 = weaponLevel;
 	}
 
-	public void firm_worn_out(int firmRecno)
+	public void FirmWornOut(Firm firm)
 	{
-		Firm firm = FirmArray[firmRecno];
-
-		News news = add_news(News.NEWS_FIRM_WORN_OUT, News.NEWS_NORMAL, firm.NationId);
+		News news = AddNews(News.NEWS_FIRM_WORN_OUT, News.NEWS_NORMAL, firm.NationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = firm.FirmType;
-
-		if (firm.ClosestTownNameId != 0)
-			news.short_para2 = firm.ClosestTownNameId;
-		else
-			news.short_para2 = firm.GetClosestTownNameId();
+		news.Param1 = firm.FirmType;
+		news.Param2 = firm.ClosestTownNameId != 0 ? firm.ClosestTownNameId : firm.GetClosestTownNameId();
 	}
 
-	public void chat_msg(int fromNationRecno, string chatStr)
+	public void ChatMsg(int fromNationId, string chatStr)
 	{
 		//---- add the chat string into Info::remote_chat_str_array[] ----//
 
@@ -729,37 +629,34 @@ public class NewsArray
 
 		//----------------------------------------------//
 
-		News news = add_news(News.NEWS_CHAT_MSG, News.NEWS_NORMAL, fromNationRecno);
+		News news = AddNews(News.NEWS_CHAT_MSG, News.NEWS_NORMAL, fromNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.short_para1 = useChatId;
+		news.Param1 = useChatId;
 	}
 
-	public void multi_retire(int nationRecno)
+	public void MultiRetire(int nationId)
 	{
-		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
-		add_news(News.NEWS_MULTI_RETIRE, News.NEWS_NORMAL,
-			nationRecno, NationArray.PlayerId, true);
+		// add player id as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
+		AddNews(News.NEWS_MULTI_RETIRE, News.NEWS_NORMAL, nationId, NationArray.PlayerId, true);
 	}
 
-	public void multi_quit_game(int nationRecno)
+	public void MultiQuitGame(int nationId)
 	{
-		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
-		add_news(News.NEWS_MULTI_QUIT_GAME, News.NEWS_NORMAL,
-			nationRecno, NationArray.PlayerId, true);
+		// add player id as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
+		AddNews(News.NEWS_MULTI_QUIT_GAME, News.NEWS_NORMAL, nationId, NationArray.PlayerId, true);
 	}
 
-	public void multi_save_game()
+	public void MultiSaveGame()
 	{
-		add_news(News.NEWS_MULTI_SAVE_GAME, News.NEWS_NORMAL);
+		AddNews(News.NEWS_MULTI_SAVE_GAME, News.NEWS_NORMAL);
 	}
 
-	public void multi_connection_lost(int nationRecno)
+	public void MultiConnectionLost(int nationId)
 	{
-		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
-		add_news(News.NEWS_MULTI_CONNECTION_LOST, News.NEWS_NORMAL,
-			nationRecno, NationArray.PlayerId, true);
+		// add player id as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
+		AddNews(News.NEWS_MULTI_CONNECTION_LOST, News.NEWS_NORMAL, nationId, NationArray.PlayerId, true);
 	}
 }

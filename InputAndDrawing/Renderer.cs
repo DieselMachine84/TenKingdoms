@@ -8,6 +8,8 @@ public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
 
 public enum ScreenObjectType { None, FriendTown, EnemyTown, FriendFirm, EnemyFirm, FriendUnit, EnemyUnit, SpyUnit, UnitGroup, Site }
 
+public enum ViewMode { Normal, Kingdoms, Villages, Economy, Trade, Military, Technology, Espionage, Ranking, News }
+
 public partial class Renderer : IRenderer
 {
     public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
@@ -23,6 +25,10 @@ public partial class Renderer : IRenderer
 
     public const int CellTextureWidth = 48;
     public const int CellTextureHeight = 48;
+    private const int ViewModeX = 0;
+    private const int ViewModeY = 0;
+    private const int ViewModeWidth = 400;
+    private const int ViewModeHeight = 84;
     private const int MainViewX = 0;
     private const int MainViewY = GameMenuHeight;
     private const int MainViewWidthInCells = 30;
@@ -47,6 +53,7 @@ public partial class Renderer : IRenderer
 
     private int _topLeftLocX;
     private int _topLeftLocY;
+    private ViewMode _viewMode = ViewMode.Normal;
     public bool NeedFullRedraw { get; set; }
     private int _screenSquareFrameCount = 0;
     private int _screenSquareFrameStep = 1;
@@ -88,6 +95,7 @@ public partial class Renderer : IRenderer
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private static GodRes GodRes => Sys.Instance.GodRes;
     private static TechRes TechRes => Sys.Instance.TechRes;
+    private static TalkRes TalkRes => Sys.Instance.TalkRes;
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
 
     private static Config Config => Sys.Instance.Config;
@@ -110,6 +118,7 @@ public partial class Renderer : IRenderer
     private static EffectArray EffectArray => Sys.Instance.EffectArray;
     private static TornadoArray TornadoArray => Sys.Instance.TornadoArray;
     private static WarPointArray WarPointArray => Sys.Instance.WarPointArray;
+    private static NewsArray NewsArray => Sys.Instance.NewsArray;
 
     public Renderer(Graphics graphics)
     {
@@ -168,7 +177,10 @@ public partial class Renderer : IRenderer
         
         Graphics.ResetClipRectangle();
         DrawMainScreen();
+        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
         DrawMainView();
+        DrawNews();
+        Graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
         DrawMiniMap(nextFrame);
         Graphics.ResetClipRectangle();
 
@@ -256,6 +268,48 @@ public partial class Renderer : IRenderer
             PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
             Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);
         }
+    }
+
+    private void DrawNews()
+    {
+        bool hasNews = false;
+        int dy = 40;
+        for (int i = NewsArray.LastClearId + 1; i < NewsArray.Count(); i++)
+        {
+            News news = NewsArray[i];
+            if (Info.GameDate > news.NewsDate.AddDays(GameConstants.DISP_NEWS_DAYS))
+            {
+                NewsArray.LastClearId = i;
+                continue;
+            }
+
+            if (Config.disp_news_flag == Config.OPTION_DISPLAY_MAJOR_NEWS && !news.IsMajor())
+            {
+                continue;
+            }
+
+            if (news.Id == News.NEWS_DIPLOMACY)
+            {
+                TalkMsg talkMsg = TalkRes.get_talk_msg(news.Param1);
+                if (talkMsg.reply_type == TalkRes.REPLY_WAITING && !talkMsg.is_valid_to_reply())
+                {
+                    continue;
+                }
+            }
+
+            Graphics.DrawRect(MainViewX + 6, MainViewY + MainViewHeight - dy - 6, MainViewWidth - 40, 40, Colors.NEWS_COLOR);
+            if (news.IsLocValid())
+                Graphics.DrawBitmap(_newsLocTexture, MainViewX + 12, MainViewY + MainViewHeight - dy + 3, _newsLocWidth * 2, _newsLocHeight * 2);
+            string newsText = news.NewsDate.ToString("MMM d, yyyy") + " " + news.Message();
+            PutText(FontSan, newsText, MainViewX + 47, MainViewY + MainViewHeight - dy);
+            
+            hasNews = true;
+            dy += 40;
+        }
+
+        if (hasNews)
+            Graphics.DrawBitmap(_clearNewsTexture, MainViewX + MainViewWidth - 30, MainViewY + MainViewHeight - 54, _clearNewsWidth * 2, _clearNewsHeight * 2);
+        Graphics.DrawBitmap(_newsLogTexture, MainViewX + MainViewWidth - 30, MainViewY + MainViewHeight - 28, _newsLogWidth * 2, _newsLogHeight * 2);
     }
 
     private void ResetDeletedSelectedObjects()

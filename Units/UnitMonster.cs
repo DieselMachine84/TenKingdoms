@@ -104,7 +104,7 @@ public class UnitMonster : Unit
         //---------- add news ----------//
 
         if (Rank == RANK_KING)
-            NewsArray.monster_king_killed(MonsterId, NextLocX, NextLocY);
+            NewsArray.MonsterKingKilled(MonsterId, NextLocX, NextLocY);
     }
 
     public override void ProcessAI()
