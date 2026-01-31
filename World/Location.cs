@@ -637,11 +637,14 @@ public class Location
 		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_FIRM;
 	}
 
-	public bool CanBuildFirm(int teraMask = LOCATE_WALK_LAND)
+	public bool CanBuildFirm(int teraMask = LOCATE_WALK_LAND, int unitId = 0)
 	{
-		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0) && !IsPowerOff();
-	}
+		if ((_locFlag & teraMask) == 0 || (_locFlag & LOCATE_BLOCK_MASK) != 0 || IsPowerOff())
+			return false;
 
+		return CargoId == 0 || CargoId == unitId;
+	}
+	
 	public bool CanBuildHarbor(int teraMask = LOCATE_WALK_LAND)
 	{
 		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0);
@@ -673,11 +676,14 @@ public class Location
 		return (_locFlag & LOCATE_BLOCK_MASK) == LOCATE_IS_TOWN;
 	}
 
-	public bool CanBuildTown()
+	public bool CanBuildTown(int unitId = 0)
 	{
-		return (CargoId == 0) && ((_locFlag & LOCATE_WALK_LAND) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0) && !IsPowerOff() && !HasSite();
-	}
+		if (!Walkable() || (_locFlag & LOCATE_BLOCK_MASK) != 0 || IsPowerOff() || HasSite())
+			return false;
 
+		return CargoId == 0 || CargoId == unitId;
+	}
+	
 	public void SetTown(int townId)
 	{
 		_locFlag = _locFlag & ~LOCATE_BLOCK_MASK | LOCATE_IS_TOWN;

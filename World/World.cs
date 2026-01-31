@@ -328,15 +328,12 @@ public class World
 				{
 					for (int locX = locX1; locX <= locX2; locX++)
 					{
+						// don't allow building any buildings other than mines on a location with a site
 						Location location = GetLoc(locX, locY);
-						if (!location.CanBuildFirm(teraMask))
+						if (firmType != Firm.FIRM_MINE && location.HasSite())
 							return 0;
 						
-						if (location.HasUnit(UnitConstants.UNIT_LAND) && location.UnitId(UnitConstants.UNIT_LAND) != unitId)
-							return 0;
-
-						// don't allow building any buildings other than mines on a location with a site
-						if (firmType != Firm.FIRM_MINE && location.HasSite())
+						if (!location.CanBuildFirm(teraMask, unitId))
 							return 0;
 					}
 				}
@@ -401,12 +398,9 @@ public class World
 		{
 			for (int locX = locX1; locX <= locX2; locX++)
 			{
-				Location location = GetLoc(locX, locY);
 				// allow the building unit to stand in the area
-				if (!location.CanBuildTown())
-					return false;
-				
-				if (location.HasUnit(UnitConstants.UNIT_LAND) && location.UnitId(UnitConstants.UNIT_LAND) != unitId)
+				Location location = GetLoc(locX, locY);
+				if (!location.CanBuildTown(unitId))
 					return false;
 			}
 		}
