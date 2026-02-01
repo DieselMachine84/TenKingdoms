@@ -592,7 +592,7 @@ public class Location
 	// call region_type only when generating region number
 	public RegionType RegionType()
 	{
-		return Walkable() ? TenKingdoms.RegionType.LAND : (Sailable() ? TenKingdoms.RegionType.SEA : TenKingdoms.RegionType.INPASSABLE);
+		return Walkable() ? TenKingdoms.RegionType.LAND : (Sailable() ? TenKingdoms.RegionType.SEA : TenKingdoms.RegionType.IMPASSABLE);
 	}
 
 	// --------- functions on fire ---------//

@@ -4,7 +4,7 @@ namespace TenKingdoms;
 
 public enum RegionType
 {
-    INPASSABLE, LAND, SEA
+    IMPASSABLE, LAND, SEA
 }
 
 public class RegionInfo
@@ -28,6 +28,7 @@ public class RegionPath
     }
 }
 
+//TODO rewrite region code
 public class RegionStat
 {
 	public int RegionId { get; } // sorted by region size

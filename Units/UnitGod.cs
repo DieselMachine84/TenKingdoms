@@ -283,8 +283,8 @@ public class UnitGod : Unit
 
 	private void VikingSummonRain()
 	{
-		MagicWeather.cast_rain(10, 8); // 10 days, rain scale 8
-		MagicWeather.cast_lightning(7); // 7 days
+		MagicWeather.CastRain(10, 8); // 10 days, rain scale 8
+		MagicWeather.CastLightning(7); // 7 days
 	}
 
 	private void VikingSummonTornado()
@@ -308,7 +308,7 @@ public class UnitGod : Unit
 				locX--;
 
 		TornadoArray.AddTornado(locX, locY, 600);
-		MagicWeather.cast_wind(10, 1, dir * 45); // 10 days
+		MagicWeather.CastWind(10, 1, dir * 45); // 10 days
 	}
 
 	private void PersianCastPower(int unitId, int divider)

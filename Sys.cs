@@ -128,17 +128,17 @@ public class Sys
             quakeFreq = 2000 - Config.random_event_frequency * 400 + Info.RandomSeed % 300;
         }
         Weather = new Weather();
-        Weather.init_date(Info.GameYear, Info.GameMonth, Info.GameDay, Config.latitude, quakeFreq);
+        Weather.InitDate(Info.GameYear, Info.GameMonth, Info.GameDay, Config.latitude, quakeFreq);
         for (int i = 0; i < WeatherForecast.Length; i++)
         {
             WeatherForecast[i] = new Weather();
         }
         WeatherForecast[0] = new Weather(Weather);
-        WeatherForecast[0].next_day();
+        WeatherForecast[0].NextDay();
         for (int foreDay = 1; foreDay < GameConstants.MAX_WEATHER_FORECAST; foreDay++)
         {
             WeatherForecast[foreDay] = new Weather(WeatherForecast[foreDay - 1]);
-            WeatherForecast[foreDay].next_day();
+            WeatherForecast[foreDay].NextDay();
         }
 
         MagicWeather = new MagicWeather();

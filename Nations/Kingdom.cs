@@ -827,24 +827,10 @@ public partial class Nation : NationBase
 
     private void AddBuildHarborTask(int toRegionId)
     {
-        RegionStat destinationRegionStat = RegionArray.GetRegionStat(toRegionId);
         foreach (Town town in KingdomTowns)
         {
             //TODO select best town
-            int seaRegionId = -1;
-            RegionStat townRegionStat = RegionArray.GetRegionStat(town.RegionId);
-            foreach (RegionPath townRegionPath in townRegionStat.ReachableRegions)
-            {
-                foreach (RegionPath siteRegionPath in destinationRegionStat.ReachableRegions)
-                {
-                    if (townRegionPath.SeaRegionId == siteRegionPath.SeaRegionId)
-                    {
-                        seaRegionId = townRegionPath.SeaRegionId;
-                        break;
-                    }
-                }
-            }
-
+            int seaRegionId = GetSeaRegion(town.RegionId, toRegionId);
             if (seaRegionId != -1)
             {
                 if (!HasHarbor(town.RegionId, toRegionId) && _buildHarborTasks.Count == 0)

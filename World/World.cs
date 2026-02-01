@@ -80,7 +80,7 @@ public class World
 			_scanFireY = 0;
 
 		//-------- process lightning ------//
-		if (_lightningSignal == 0 && Weather.is_lightning())
+		if (_lightningSignal == 0 && Weather.IsLightning())
 		{
 			// ------- create new lightning ----------//
 			_lightningSignal = 110;
@@ -127,17 +127,16 @@ public class World
 
 		int lastIndex = GameConstants.MAX_WEATHER_FORECAST - 1;
 		WeatherForecast[lastIndex] = new Weather(WeatherForecast[lastIndex]);
-		WeatherForecast[lastIndex].next_day();
+		WeatherForecast[lastIndex].NextDay();
 
-		MagicWeather.next_day();
+		MagicWeather.NextDay();
 
-		if (Weather.has_tornado() && Config.weather_effect != 0)
+		if (Weather.HasTornado() && Config.weather_effect != 0)
 		{
-			TornadoArray.AddTornado(Weather.tornado_x_loc(GameConstants.MapSize, GameConstants.MapSize),
-				Weather.tornado_y_loc(GameConstants.MapSize, GameConstants.MapSize), 600);
+			TornadoArray.AddTornado(Weather.TornadoLocX(GameConstants.MapSize), Weather.TornadoLocY(GameConstants.MapSize), 600);
 		}
 
-		if (Weather.is_quake() && Config.random_event_frequency != Config.OPTION_NONE)
+		if (Weather.IsQuake() && Config.random_event_frequency != Config.OPTION_NONE)
 		{
 			EarthQuake();
 		}
@@ -962,7 +961,7 @@ public class World
 			pReprod++; // higher probability to grow
 
 		// determine the rainful, temperature and sunlight
-		int temp = Weather.temp_c();
+		int temp = Weather.Temperature();
 
 		// scan the map for plant
 		int yBase = Misc.Random(scanDensity);
@@ -1056,7 +1055,7 @@ public class World
 			return;
 
 		// ------- determine temperature
-		int temp = Weather.temp_c();
+		int temp = Weather.Temperature();
 
 		// ------- randomly select a place to seed plant
 		int y = 1 + Misc.Random(GameConstants.MapSize - 2);
@@ -1244,8 +1243,8 @@ public class World
 
 	private void FireSpread(Weather weather)
 	{
-		int rainSnowReduction = (weather.rain_scale() > 0 || weather.snow_scale() > 0)
-			? Config.rain_reduce_fire_rate + (weather.rain_scale() + weather.snow_scale()) / 4 : 0;
+		int rainSnowReduction = (weather.RainScale() > 0 || weather.SnowScale() > 0)
+			? Config.rain_reduce_fire_rate + (weather.RainScale() + weather.SnowScale()) / 4 : 0;
 
 		double flameDamage = (double)Config.fire_damage / InternalConstants.ATTACK_SLOW_DOWN;
 
@@ -1305,9 +1304,9 @@ public class World
 					if (Config.fire_spread_rate > 0)
 					{
 						// -------- normalize wind_speed between -WIND_SPREADFIRE*SPREAD_RATE to +WIND_SPREADFIRE*SPREAD_RATE -------
-						int windCos = (int)(weather.wind_speed() * Math.Cos(weather.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
+						int windCos = (int)(weather.WindSpeed() * Math.Cos(weather.WindDirectionRadians()) / 100.0 * Config.fire_spread_rate *
 						                    Config.wind_spread_fire_rate);
-						int windSin = (int)(weather.wind_speed() * Math.Sin(weather.wind_direct_rad()) / 100.0 * Config.fire_spread_rate *
+						int windSin = (int)(weather.WindSpeed() * Math.Sin(weather.WindDirectionRadians()) / 100.0 * Config.fire_spread_rate *
 						                    Config.wind_spread_fire_rate);
 
 						Location nearLoc;
@@ -1427,7 +1426,7 @@ public class World
 				Location location = GetLoc(locX, locY);
 				if (location.IsWall())
 				{
-					location.AttackWall(Weather.quake_rate(locX, locY) / 2);
+					location.AttackWall(Weather.QuakeRate(locX, locY) / 2);
 				}
 			}
 		}
@@ -1442,7 +1441,7 @@ public class World
 
 			int locX = firm.LocCenterX;
 			int locY = firm.LocCenterY;
-			firm.HitPoints -= Weather.quake_rate(locX, locY);
+			firm.HitPoints -= Weather.QuakeRate(locX, locY);
 			if (firm.OwnFirm())
 				firmDamage++;
 			if (firm.HitPoints <= 0.0)
@@ -1460,7 +1459,7 @@ public class World
 		{
 			bool ownTown = (town.NationId == NationArray.PlayerId);
 			int beforePopulation = town.Population;
-			for (int damage = Weather.quake_rate(town.LocCenterX, town.LocCenterY) / 10; damage > 0 && !TownArray.IsDeleted(town.TownId); damage--)
+			for (int damage = Weather.QuakeRate(town.LocCenterX, town.LocCenterY) / 10; damage > 0 && !TownArray.IsDeleted(town.TownId); damage--)
 			{
 				town.KillTownPeople(0);
 			}
@@ -1478,7 +1477,7 @@ public class World
 			if (unit.MobileType == UnitConstants.UNIT_AIR || unit.MobileType == UnitConstants.UNIT_SEA || !unit.IsVisible())
 				continue;
 
-			double damage = Weather.quake_rate(unit.CurLocX, unit.CurLocY) * unit.MaxHitPoints / 200.0;
+			double damage = Weather.QuakeRate(unit.CurLocX, unit.CurLocY) * unit.MaxHitPoints / 200.0;
 			if (damage >= unit.HitPoints)
 				damage = unit.HitPoints - 1.0;
 			if (damage < 5.0)
@@ -1596,8 +1595,8 @@ public class World
 
 	private void ProcessAmbientSound()
 	{
-		int temp = Weather.temp_c();
-		if (Weather.rain_scale() == 0 && temp >= 15 && Misc.Random(temp) >= 12)
+		int temp = Weather.Temperature();
+		if (Weather.RainScale() == 0 && temp >= 15 && Misc.Random(temp) >= 12)
 		{
 			int bird = Misc.Random(InternalConstants.MAX_BIRD) + 1;
 			string sndFile = "BIRDS";

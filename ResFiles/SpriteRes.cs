@@ -295,8 +295,8 @@ public class SpriteRes
 
     public void UpdateSpeed()
     {
-	    int rainScale = Sys.Instance.Weather.rain_scale();
-	    int snowScale = Sys.Instance.Weather.snow_scale();
+	    int rainScale = Sys.Instance.Weather.RainScale();
+	    int snowScale = Sys.Instance.Weather.SnowScale();
 
 	    rainScale = rainScale > 7 ? 7 : rainScale;
 	    snowScale = snowScale > 7 ? 7 : snowScale;

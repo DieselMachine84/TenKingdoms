@@ -4,180 +4,166 @@ namespace TenKingdoms;
 
 public class Lightning
 {
-    public const int MAX_BRANCH = 8;
+    protected const int MAX_BRANCH = 8;
     
-    public static int bound_x1, bound_y1, bound_x2, bound_y2;
+    public double X { get; private set; } // particle coordinate
+    public double Y { get; private set; }
+    public double DestX { get; private set; } // destination coordinate
+    public double DestY { get; private set; }
 
-    public double x, y; // particle coordinate
-    public double destx, desty; // destination coordinate
+    public int Steps { get; set; } // no. of step
+    public int ExpectSteps { get; set; } // expected no. of steps
+    public double V { get; set; } // magnitude of movement of x,y
+    public double A { get; set; } // magnitude of ax, ay
+    public double A0 { get; set; }
+    public double R { get; set; } // magnitude of rx, ry
+    public double R0 { get; set; }
+    public double Wide { get; set; } // radian, MAX of angle of random vector
+    private uint Seed { get; set; } // last random number
+    public int EnergyLevel { get; set; } // initially 8
 
-    public int steps; // no. of step
-    public int expect_steps; // expected no. of steps
-    public double v; // magnitude of movement of x,y
-    public double a, a0; // magnitude of ax, ay
-    public double r, r0; // magnitude of rx, ry
-    public double wide; // radian, MAX of angle of random vector
-    public uint seed; // last random number
-    public int energy_level; // initially 8
-
-    public static double dist(double dx, double dy)
+    protected static double Distance(double dx, double dy)
     {
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    public static void set_clip(int x1, int y1, int x2, int y2)
+    private bool Goal()
     {
-        bound_x1 = x1;
-        bound_x2 = x2;
-        bound_y1 = y1;
-        bound_y2 = y2;
+        return Distance(DestX - X, DestY - Y) < V;
     }
 
-    public bool goal()
+    public virtual void Init(double fromX, double fromY, double toX, double toY, int energy)
     {
-        return dist(destx - x, desty - y) < v;
+        X = fromX;
+        Y = fromY;
+        DestX = toX;
+        DestY = toY;
+        EnergyLevel = energy;
+        V = 6.0;
+        ExpectSteps = (int)(Distance(DestY - Y, DestX - X) / V * 1.2);
+        if (ExpectSteps < 2)
+            ExpectSteps = 2;
+        Steps = 0;
+        A0 = A = 8.0;
+        R0 = R = 8.0 * A;
+        Wide = Math.PI / 4;
+        Seed = (uint)(fromX + fromY + toX + toY) | 1;
+        RandomSeed();
     }
 
-    public virtual void init(double fromX, double fromY, double toX, double toY, int energy)
+    private void UpdateParameter()
     {
-        x = fromX;
-        y = fromY;
-        destx = toX;
-        desty = toY;
-        energy_level = energy;
-        v = 6.0;
-        expect_steps = (int)(dist(desty - y, destx - x) / v * 1.2);
-        if (expect_steps < 2)
-            expect_steps = 2;
-        steps = 0;
-        a0 = a = 8.0;
-        r0 = r = 8.0 * a;
-        wide = Math.PI / 4;
-        seed = (uint)(fromX + fromY + toX + toY) | 1;
-        rand_seed();
+        double progress = (double)Steps / (double)ExpectSteps;
+        if (progress > 1.0)
+            progress = 1.0;
+
+        A = A0;		// constant
+        R = R0 * (1 - progress);
+        Wide = 0.25 * (1 + progress) * Math.PI;
     }
 
-    public virtual void update_parameter()
-    {
-        double progress = (double)steps / (double)expect_steps;
-        if (progress > 1)
-            progress = 1;
-
-        // a = a0;		// constant
-
-        r = r0 * (1 - progress);
-        wide = 0.25 * (1 + progress) * Math.PI;
-    }
-
-    public virtual void move_particle()
+    public virtual void MoveParticle()
     {
         // determine attraction
-        double attractionDist = dist(destx - x, desty - y);
-        if (attractionDist < v)
+        double attractionDist = Distance(DestX - X, DestY - Y);
+        if (attractionDist < V)
             return;
-        double aX = a * (destx - x) / attractionDist;
-        double aY = a * (desty - y) / attractionDist;
+        
+        double aX = A * (DestX - X) / attractionDist;
+        double aY = A * (DestY - Y) / attractionDist;
 
         // determine random component
-        double attractionAngle = Math.Atan2(desty - y, destx - x);
-        double randomAngle = ((rand_seed() & 255) / 128.0 - 1.0) * wide + attractionAngle;
-        double rX = r * Math.Cos(randomAngle);
-        double rY = r * Math.Sin(randomAngle);
+        double attractionAngle = Math.Atan2(DestY - Y, DestX - X);
+        double randomAngle = ((RandomSeed() & 255) / 128.0 - 1.0) * Wide + attractionAngle;
+        double rX = R * Math.Cos(randomAngle);
+        double rY = R * Math.Sin(randomAngle);
 
         // total
         double tX = aX + rX;
         double tY = aY + rY;
-        double distt = dist(tX, tY);
+        double distance = Distance(tX, tY);
 
         // move x and y, along tX, tY but the magnitude is v
-        if (distt > 0)
+        if (distance > 0)
         {
-            x += v * tX / distt;
-            y += v * tY / distt;
+            X += V * tX / distance;
+            Y += V * tY / distance;
         }
 
-        steps++;
-        update_parameter();
+        Steps++;
+        UpdateParameter();
     }
 
-    public double progress() // return 0.0 to 1.0
+    public double Progress() // return 0.0 to 1.0
     {
-        if (goal())
-            return 1.0;
-        else
-            return (double)steps / (double)expect_steps;
+        return Goal() ? 1.0 : (double)Steps / (double)ExpectSteps;
     }
 
-    protected uint rand_seed() // shuffle and return seed
+    protected uint RandomSeed() // shuffle and return seed
     {
         const int MULTIPLIER = 0x015a4e35;
         const int INCREMENT = 1;
-        seed = MULTIPLIER * seed + INCREMENT;
-        return seed;
+        Seed = MULTIPLIER * Seed + INCREMENT;
+        return Seed;
     }
 }
 
-//--------- Define class YLightning ----------//
-
 public class YLightning : Lightning
 {
-    public Lightning[] branch = new Lightning[MAX_BRANCH];
-    public int used_branch;
-    public int branch_prob; // probability * 1000;
-    public bool branch_left;
+    private Lightning[] Branch { get; } = new Lightning[MAX_BRANCH];
+    private int UsedBranch { get; set; }
+    private int BranchProbability { get; set; } // probability * 1000;
+    private bool BranchLeft { get; set; }
 
     public YLightning()
     {
     }
 
-    public override void init(double fromX, double fromY, double toX, double toY, int energy)
+    public override void Init(double fromX, double fromY, double toX, double toY, int energy)
     {
-        for (int i = 0; i < MAX_BRANCH; ++i)
+        for (int i = 0; i < MAX_BRANCH; i++)
         {
-            branch[i] = null;
+            Branch[i] = null;
         }
 
-        used_branch = 0;
-        base.init(fromX, fromY, toX, toY, energy);
-        branch_prob = 1000 * MAX_BRANCH / expect_steps;
-        if (branch_prob < 10)
-            branch_prob = 10;
-        if (branch_prob > 300)
-            branch_prob = 300;
-        branch_left = false;
+        UsedBranch = 0;
+        base.Init(fromX, fromY, toX, toY, energy);
+        BranchProbability = 1000 * MAX_BRANCH / ExpectSteps;
+        if (BranchProbability < 10)
+            BranchProbability = 10;
+        if (BranchProbability > 300)
+            BranchProbability = 300;
+        BranchLeft = false;
     }
 
-    public override void move_particle()
+    public override void MoveParticle()
     {
-        base.move_particle();
+        base.MoveParticle();
 
         // determine if branching occurs
-        if ((rand_seed() % 1000) <= branch_prob && used_branch < MAX_BRANCH)
+        if (RandomSeed() % 1000 <= BranchProbability && UsedBranch < MAX_BRANCH)
         {
-            int branch_energy;
-            if (energy_level > 4)
+            int branchEnergy;
+            if (EnergyLevel > 4)
             {
-                branch[used_branch] = new YLightning();
-                branch_energy = 4;
+                Branch[UsedBranch] = new YLightning();
+                branchEnergy = 4;
             }
             else
             {
-                branch[used_branch] = new Lightning();
-                branch_energy = 1;
+                Branch[UsedBranch] = new Lightning();
+                branchEnergy = 1;
             }
 
             //------ determine new location ------//
             // angle : attraction angle + or - PI/8 to PI*3/8
-            // distant : 1/2 to 3/4 from dist(destx-x, desty-y);
-            double branchDist = dist(destx - x, desty - y) * (32 + rand_seed() % 16) / 64.0;
-            double branchAngle = Math.Atan2(desty - y, destx - x) +
-                                 (4 + rand_seed() % 8) * (branch_left ? Math.PI / -32.0 : Math.PI / 32.0);
-            branch_left = !branch_left;
-
-            branch[used_branch].init(x, y, x + branchDist * Math.Cos(branchAngle),
-                y + branchDist * Math.Sin(branchAngle), branch_energy);
-
-            used_branch++;
+            // distant : 1/2 to 3/4 from Distance(DestX - X, DestY - Y);
+            double branchDist = Distance(DestX - X, DestY - Y) * (32 + RandomSeed() % 16) / 64.0;
+            double branchAngle = Math.Atan2(DestY - Y, DestX - X) + (4 + RandomSeed() % 8) * (BranchLeft ? Math.PI / -32.0 : Math.PI / 32.0);
+            
+            BranchLeft = !BranchLeft;
+            Branch[UsedBranch].Init(X, Y, X + branchDist * Math.Cos(branchAngle), Y + branchDist * Math.Sin(branchAngle), branchEnergy);
+            UsedBranch++;
         }
     }
 }

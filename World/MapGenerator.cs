@@ -1066,7 +1066,7 @@ public class MapGenerator
 			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (location.RegionId == 0 && location.RegionType() != RegionType.INPASSABLE)
+				if (location.RegionId == 0 && location.RegionType() != RegionType.IMPASSABLE)
 				{
 					regionId++;
 					FillRegion(locX, locY, regionId, location.RegionType());

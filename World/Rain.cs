@@ -2,61 +2,64 @@ namespace TenKingdoms;
 
 public class RainDrop
 {
-    public int cur_x, cur_y;
-    public int dest_x, dest_y;
-    public int fall_speed;
+    public int CurX { get; set; }
+    public int CurY { get; set; }
+    public int DestX { get; set; }
+    public int DestY { get; set; }
+    public int FallSpeed { get; set; }
 
-    public void init(int fromX, int fromY, int toX, int toY, int speed)
+    public void Init(int fromX, int fromY, int toX, int toY, int speed)
     {
-        cur_x = fromX;
-        cur_y = fromY;
-        dest_x = toX;
-        dest_y = toY;
-        fall_speed = speed;
+        CurX = fromX;
+        CurY = fromY;
+        DestX = toX;
+        DestY = toY;
+        FallSpeed = speed;
     }
 
-    public void fall()
+    public void Fall()
     {
-        if (cur_y + fall_speed >= dest_y)
+        if (CurY + FallSpeed >= DestY)
         {
-            cur_y = dest_y;
-            cur_x = dest_x;
+            CurY = DestY;
+            CurX = DestX;
         }
         else
         {
-            cur_x += (dest_x - cur_x) * fall_speed / (dest_y - cur_y);
-            cur_y += fall_speed;
+            CurX += (DestX - CurX) * FallSpeed / (DestY - CurY);
+            CurY += FallSpeed;
         }
     }
 
-    public bool is_goal()
+    public bool IsGoal()
     {
-        return cur_y + fall_speed >= dest_y;
+        return CurY + FallSpeed >= DestY;
     }
 }
 
 public class RainSpot
 {
-    public int center_x, center_y;
-    public int step;
-    public int max_step;
+    public int CenterX { get; set; }
+    public int CenterY { get; set; }
+    public int Step { get; set; }
+    public int MaxStep { get; set; }
 
-    public void init(int destX, int destY, int maxStep)
+    public void Init(int destX, int destY, int maxStep)
     {
-        center_x = destX;
-        center_y = destY;
-        step = 0;
-        max_step = maxStep;
+        CenterX = destX;
+        CenterY = destY;
+        Step = 0;
+        MaxStep = maxStep;
     }
 
-    public void fall()
+    public void Fall()
     {
-        step++;
+        Step++;
     }
 
-    public bool is_goal()
+    public bool IsGoal()
     {
-        return step > max_step;
+        return Step > MaxStep;
     }
 }
 
@@ -64,120 +67,123 @@ public class Rain
 {
     public const int MAX_RAINDROP = 50;
 
-    public int bound_x1, bound_x2, bound_y1, bound_y2;
-    public double wind_slope;
-    public int drop_per_turn;
+    public int BoundX1 { get; set; }
+    public int BoundY1 { get; set; }
+    public int BoundX2 { get; set; }
+    public int BoundY2 { get; set; }
+    public double WindSlope { get; set; }
+    public int DropPerTurn { get; set; }
 
-    private RainDrop[] drop = new RainDrop[MAX_RAINDROP];
-    private bool[] drop_flag = new bool[MAX_RAINDROP];
-    private int active_drop; // no. of active drops
-    private int last_drop;
+    private RainDrop[] _drops = new RainDrop[MAX_RAINDROP];
+    private bool[] _dropsFlag = new bool[MAX_RAINDROP];
+    private int ActiveDrop { get; set; } // no. of active drops
+    private int LastDrop { get; set; }
 
-    private RainSpot[] spot = new RainSpot[MAX_RAINDROP];
-    private bool[] spot_flag = new bool[MAX_RAINDROP];
-    private int active_spot; // no. of active drops
-    private int last_spot;
-    private uint seed;
+    private RainSpot[] _spots = new RainSpot[MAX_RAINDROP];
+    private bool[] _spotsFlag = new bool[MAX_RAINDROP];
+    private int ActiveSpot { get; set; } // no. of active drops
+    private int LastSpot { get; set; }
+    private uint Seed { get; set; }
 
-    public void start_rain(int x1, int y1, int x2, int y2, int density, double slope)
+    public void StartRain(int x1, int y1, int x2, int y2, int density, double slope)
     {
-        bound_x1 = x1;
-        bound_y1 = y1;
-        bound_x2 = x2;
-        bound_y2 = y2;
-        wind_slope = slope;
-        drop_per_turn = density;
-        clear();
-        last_drop = -1;
+        BoundX1 = x1;
+        BoundY1 = y1;
+        BoundX2 = x2;
+        BoundY2 = y2;
+        WindSlope = slope;
+        DropPerTurn = density;
+        Clear();
+        LastDrop = -1;
     }
 
-    public void clear() // remove all rain drops
+    public void Clear() // remove all rain drops
     {
         for (int i = 0; i < MAX_RAINDROP; i++)
         {
-            drop_flag[i] = false;
-            spot_flag[i] = false;
+            _dropsFlag[i] = false;
+            _spotsFlag[i] = false;
         }
 
-        active_drop = 0;
-        active_spot = 0;
+        ActiveDrop = 0;
+        ActiveSpot = 0;
     }
 
-    public void stop_rain() // no more new rain drops
+    public void StopRain() // no more new rain drops
     {
-        drop_per_turn = 0;
+        DropPerTurn = 0;
     }
 
-    public void new_drops()
+    public void NewDrops()
     {
-        int dropRemain = drop_per_turn;
+        int dropRemain = DropPerTurn;
         int maxScan = MAX_RAINDROP;
-        int i = last_drop;
+        int i = LastDrop;
         while (dropRemain > 0 && maxScan-- > 0)
         {
             i = (i + 1) % MAX_RAINDROP;
-            if (!drop_flag[i])
+            if (!_dropsFlag[i])
             {
-                int fromX = bound_x1 + (int)(rand_seed() % (bound_x2 - bound_x1));
-                int height = (bound_y2 - bound_y1) / 8 + (int)(rand_seed() % (((bound_y2 - bound_y1) * 7) / 8));
+                int fromX = BoundX1 + (int)(RandomSeed() % (BoundX2 - BoundX1));
+                int height = (BoundY2 - BoundY1) / 8 + (int)(RandomSeed() % ((BoundY2 - BoundY1) * 7 / 8));
                 int speed = height / 4;
-                drop[i].init(fromX, bound_y1, (int)(fromX + height * wind_slope), bound_y1 + height, speed);
-                drop_flag[i] = true;
-                active_drop++;
+                _drops[i].Init(fromX, BoundY1, (int)(fromX + height * WindSlope), BoundY1 + height, speed);
+                _dropsFlag[i] = true;
+                ActiveDrop++;
                 dropRemain--;
-                last_drop = i;
+                LastDrop = i;
             }
         }
     }
 
-    public void new_spot(int x, int y)
+    public void NewSpots(int x, int y)
     {
         int spotRemain = 1;
         int maxScan = MAX_RAINDROP;
-        int i = last_spot;
+        int i = LastSpot;
         while (spotRemain > 0 && maxScan-- > 0)
         {
             i = (i + 1) % MAX_RAINDROP;
-            if (!spot_flag[i])
+            if (!_spotsFlag[i])
             {
-                spot[i].init(x, y, drop_per_turn > 4 ? 6 : 4);
-                spot_flag[i] = true;
-                active_spot++;
+                _spots[i].Init(x, y, DropPerTurn > 4 ? 6 : 4);
+                _spotsFlag[i] = true;
+                ActiveSpot++;
                 spotRemain--;
-                last_spot = i;
+                LastSpot = i;
             }
         }
     }
 
-    public bool is_all_clear() // any raindrop is active?
+    public bool IsAllClear() // any raindrop is active?
     {
-        int count = 0;
-        int i;
-        for (i = 0; i < MAX_RAINDROP; ++i)
-            if (drop_flag[i])
-                count++;
-        // update active_drop;
-        active_drop = count;
+        int dropsCount = 0;
+        for (int i = 0; i < MAX_RAINDROP; i++)
+            if (_dropsFlag[i])
+                dropsCount++;
+        
+        ActiveDrop = dropsCount;
 
-        int count2 = 0;
-        for (i = 0; i < MAX_RAINDROP; ++i)
-            if (spot_flag[i])
-                count2++;
-        // update active_spot;
-        active_spot = count2;
-        return count + count2 > 0;
+        int spotsCount = 0;
+        for (int i = 0; i < MAX_RAINDROP; i++)
+            if (_spotsFlag[i])
+                spotsCount++;
+        
+        ActiveSpot = spotsCount;
+        
+        return dropsCount + spotsCount > 0;
     }
 
-    public bool is_raining()
+    public bool IsRaining()
     {
-        return active_drop > 0 || active_spot > 0;
+        return ActiveDrop > 0 || ActiveSpot > 0;
     }
 
-    private uint rand_seed()
+    private uint RandomSeed()
     {
         const int MULTIPLIER = 0x015a4e35;
         const int INCREMENT = 1;
-        seed = MULTIPLIER * seed + INCREMENT;
-        return seed;
+        Seed = MULTIPLIER * Seed + INCREMENT;
+        return Seed;
     }
 }

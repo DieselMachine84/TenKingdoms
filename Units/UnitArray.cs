@@ -3203,7 +3203,7 @@ public class UnitArray : SpriteArray
 	public int GetNextUnit(int currentUnitId, int seekDir, bool sameNation)
 	{
 		Unit selectedUnit = this[currentUnitId];
-		var enumerator = (seekDir >= 0) ? EnumerateAll(currentUnitId, true) : EnumerateAll(currentUnitId, false);
+		var enumerator = EnumerateAll(currentUnitId, seekDir >= 0);
 
 		foreach (int unitId in enumerator)
 		{

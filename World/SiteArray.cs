@@ -25,10 +25,10 @@ public class SiteArray : DynArray<Site>
 		return new Site();
 	}
 
-	public Site AddSite(int xLoc, int yLoc, int siteType, int objectId, int reserveQty = 0)
+	public Site AddSite(int locX, int locY, int siteType, int objectId, int reserveQty = 0)
 	{
 		Site site = CreateNew();
-		site.Init(siteType, objectId, xLoc, yLoc, reserveQty);
+		site.Init(siteType, objectId, locX, locY, reserveQty);
 
 		switch (siteType)
 		{
@@ -194,10 +194,8 @@ public class SiteArray : DynArray<Site>
 			locY1 = town.LocCenterY - MAX_TOWN_SITE_DISTANCE;
 			locY2 = town.LocCenterY + MAX_TOWN_SITE_DISTANCE;
 
-			locX1 = Math.Max(0, locX1);
-			locX2 = Math.Min(GameConstants.MapSize - 1, locX2);
-			locY1 = Math.Max(0, locY1);
-			locY2 = Math.Min(GameConstants.MapSize - 1, locY2);
+			Misc.BoundLocation(ref locX1, ref locY1);
+			Misc.BoundLocation(ref locX2, ref locY2);
 
 			maxTries = (locX2 - locX1 + 1) * (locY2 - locY1 + 1);
 			regionId = town.RegionId;
@@ -229,16 +227,14 @@ public class SiteArray : DynArray<Site>
 
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+		
+		return false;
 	}
 
 	public int GetNextSite(int currentSiteId, int seekDir)
 	{
 		int siteType = this[currentSiteId].SiteType;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(currentSiteId, true) : EnumerateAll(currentSiteId, false);
+		var enumerator = EnumerateAll(currentSiteId, seekDir >= 0);
 
 		foreach (int siteId in enumerator)
 		{

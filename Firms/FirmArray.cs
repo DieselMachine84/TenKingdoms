@@ -168,7 +168,7 @@ public class FirmArray : DynArray<Firm>
 	public int GetNextFirm(int currentFirmId, int seekDir, bool sameNation)
 	{
 		Firm currentFirm = this[currentFirmId];
-		var enumerator = (seekDir >= 0) ? EnumerateAll(currentFirmId, true) : EnumerateAll(currentFirmId, false);
+		var enumerator = EnumerateAll(currentFirmId, seekDir >= 0);
 
 		foreach (int firmId in enumerator)
 		{

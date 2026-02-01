@@ -104,13 +104,9 @@ public class Site : IIdObject
             int locX = LocX + xOffset;
             int locY = LocY + yOffset;
 
-            locX = Math.Max(0, locX);
-            locX = Math.Min(GameConstants.MapSize - 1, locX);
+            Misc.BoundLocation(ref locX, ref locY);
 
-            locY = Math.Max(0, locY);
-            locY = Math.Min(GameConstants.MapSize - 1, locY);
-
-            Location location = Sys.Instance.World.GetLoc(locX, locY);
+            Location location = World.GetLoc(locX, locY);
             if (!location.HasUnit(UnitConstants.UNIT_LAND))
                 continue;
 

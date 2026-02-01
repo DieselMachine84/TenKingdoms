@@ -355,7 +355,7 @@ public class TownArray : DynArray<Town>
 	public int GetNextTown(int currentTownId, int seekDir, bool sameNation)
 	{
 		int nationId = this[currentTownId].NationId;
-		var enumerator = (seekDir >= 0) ? EnumerateAll(currentTownId, true) : EnumerateAll(currentTownId, false);
+		var enumerator = EnumerateAll(currentTownId, seekDir >= 0);
 
 		foreach (int townId in enumerator)
 		{

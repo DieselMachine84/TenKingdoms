@@ -33,15 +33,15 @@ public class Tornado : Sprite
 
     public override void ProcessMove()
     {
-        int speed = Sys.Instance.Weather.wind_speed() / 6;
-        int minSpeed = Sys.Instance.MagicWeather.wind_day > 0 ? 1 : 5;
+        int speed = Sys.Instance.Weather.WindSpeed() / 6;
+        int minSpeed = Sys.Instance.MagicWeather.WindDay > 0 ? 1 : 5;
         if (speed < minSpeed)
             speed = minSpeed;
         if (speed > 10)
             speed = 10;
 
         //TODO check this
-        double windDir = Sys.Instance.Weather.wind_direct_rad() + (Misc.Random(31) - 15) * Math.PI / 180.0;
+        double windDir = Sys.Instance.Weather.WindDirectionRadians() + (Misc.Random(31) - 15) * Math.PI / 180.0;
         CurX += (int)(speed * Math.Cos(windDir));
         CurY -= (int)(speed * Math.Sin(windDir));
         if (++CurFrame > CurSpriteMove().FrameCount)

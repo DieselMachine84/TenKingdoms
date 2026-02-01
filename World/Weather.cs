@@ -7,45 +7,43 @@ public enum WeatherType
 {
 	WEATHER_SUNNY = 0x00,
 	WEATHER_CLOUDY = 0x01,
-
 	WEATHER_RAIN = 0x02,
 	WEATHER_LIGHTNING = 0x04,
-	WEATHER_LIGHTN_RAIN = 0x06,
+	WEATHER_LIGHTNING_RAIN = 0x06,
 	WEATHER_WINDY = 0x08,
 	WEATHER_WINDY_STORM = 0x0a,
 	WEATHER_HOT_WAVE = 0x10,
-
 	WEATHER_COLD_WAVE = 0x20,
 	WEATHER_SNOW = 0x40
 }
 
 public class Weather
 {
-	public const int RAIN_CLOUD = 1;
-	public const int LIGHTNING_CLOUD = 2;
-	public const int WINDY = 4;
-	public const int HOT_WAVE = 8;
-	public const int COLD_WAVE = 0x10;
+	private const int RAIN_CLOUD = 1;
+	private const int LIGHTNING_CLOUD = 2;
+	private const int WINDY = 4;
+	private const int HOT_WAVE = 8;
+	private const int COLD_WAVE = 0x10;
 
-	private uint seed;
-	private int season_phase; // 0 = early spring, 364 = end of winter
-	private int day_to_quake;
-	private int avg_temp;
-	private int temp_amp;
+	private uint Seed { get; set; }
+	private int SeasonPhase { get; set; } // 0 = early spring, 364 = end of winter
+	private int AvgTemp { get; set; }
+	private int TempAmp { get; set; }
 
-	private int wind_spd;
-	private int high_wind_day;
-	private int wind_dir;
-	private int windy_speed;
-	private int tornado_count; // 0=today has tornado, 1... no. of days of last tornado
+	private int WindSpd { get; set; }
+	private int HighWindDay { get; set; }
+	private int WindDir { get; set; }
+	private int WindySpeed { get; set; }
+	private int TornadoCount { get; set; } // 0=today has tornado, 1... no. of days of last tornado
 
-	private int cur_cloud_str; // 0 (shine) to 10 (dark)
-	private int cur_cloud_len;
-	private int cur_cloud_type; // type of cloud
-	private int quake_frequency;
-
-	private int quake_x; // center of quake, generated on the day of quake
-	private int quake_y;
+	private int CurCloudStrength { get; set; } // 0 (shine) to 10 (dark)
+	private int CurCloudLen { get; set; }
+	private int CurCloudType { get; set; } // type of cloud
+	
+	private int QuakeFrequency { get; set; }
+	private int DayToQuake { get; set; }
+	private int QuakeX { get; set; } // center of quake, generated on the day of quake
+	private int QuakeY { get; set; }
 
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
 
@@ -55,188 +53,193 @@ public class Weather
 
 	public Weather(Weather other)
 	{
-		seed = other.seed;
-		season_phase = other.season_phase;
-		day_to_quake = other.day_to_quake;
-		avg_temp = other.avg_temp;
-		temp_amp = other.temp_amp;
+		Seed = other.Seed;
+		SeasonPhase = other.SeasonPhase;
+		AvgTemp = other.AvgTemp;
+		TempAmp = other.TempAmp;
 
-		wind_spd = other.wind_spd;
-		high_wind_day = other.high_wind_day;
-		wind_dir = other.wind_dir;
-		windy_speed = other.windy_speed;
-		tornado_count = other.tornado_count;
+		WindSpd = other.WindSpd;
+		HighWindDay = other.HighWindDay;
+		WindDir = other.WindDir;
+		WindySpeed = other.WindySpeed;
+		TornadoCount = other.TornadoCount;
 
-		cur_cloud_str = other.cur_cloud_str;
-		cur_cloud_len = other.cur_cloud_len;
-		cur_cloud_type = other.cur_cloud_type;
-		quake_frequency = other.quake_frequency;
-
-		quake_x = other.quake_x;
-		quake_y = other.quake_y;
+		CurCloudStrength = other.CurCloudStrength;
+		CurCloudLen = other.CurCloudLen;
+		CurCloudType = other.CurCloudType;
+		
+		QuakeFrequency = other.QuakeFrequency;
+		DayToQuake = other.DayToQuake;
+		QuakeX = other.QuakeX;
+		QuakeY = other.QuakeY;
 	}
 
-	public void init_date(int year, int month, int day, int latitude, int quakeFreq)
+	public void InitDate(int year, int month, int day, int latitude, int quakeFreq)
 	{
 		// ----------- initialize random seed ------------//
-		seed = (uint)(2 * year + 1);
-		rand_seed(10);
+		Seed = (uint)(2 * year + 1);
+		RandomSeed(10);
 
-		// ----------- calculate season_phase from month, day ------------//
-		season_phase = (int)(month * 30.4 + day);
-		season_phase = (season_phase + 365 - 98) % 365; // 7th Mar becomes 0
+		// ----------- calculate SeasonPhase from month, day ------------//
+		SeasonPhase = (int)(month * 30.4 + day);
+		SeasonPhase = (SeasonPhase + 365 - 98) % 365; // 7th Mar becomes 0
 
 		// ----------- random number to earthquake -----------//
-		quake_frequency = quakeFreq;
-		day_to_quake = quakeFreq + rand_seed(quakeFreq);
+		QuakeFrequency = quakeFreq;
+		DayToQuake = quakeFreq + RandomSeed(quakeFreq);
 
-		// ----------- determine avg_temp and temp_amp from latitude
+		// ----------- determine AvgTemp and TempAmp from latitude
 		double angle = latitude * Math.PI / 180.0;
-		avg_temp = (int)(35.0 - Math.Abs(latitude / 90.0 * 40.0));
-		temp_amp = (int)(17.0 * Math.Abs(angle)); // negative for South Hemisphere
+		AvgTemp = (int)(35.0 - Math.Abs(latitude / 90.0 * 40.0));
+		TempAmp = (int)(17.0 * Math.Abs(angle)); // negative for South Hemisphere
 
 		// ----------- determine cloud ----------- //
-		cur_cloud_str = rand_seed(4);
-		cur_cloud_len = 5 + rand_seed(5);
-		cur_cloud_type = 0;
+		CurCloudStrength = RandomSeed(4);
+		CurCloudLen = 5 + RandomSeed(5);
+		CurCloudType = 0;
 
 		// ----------- determine wind ---------------//
-		wind_dir = rand_seed(360);
-		wind_spd = 10;
-		high_wind_day = 0;
-		windy_speed = 0;
+		WindDir = RandomSeed(360);
+		WindSpd = 10;
+		HighWindDay = 0;
+		WindySpeed = 0;
 
-		tornado_count = 1;
+		TornadoCount = 1;
 	}
 
-	public void next_day() // called when a day has passed
+	public void NextDay()
 	{
-		season_phase = (season_phase + 1) % 365;
+		SeasonPhase = (SeasonPhase + 1) % 365;
 
 		//---------- update/determine earthquake day ---------//
-		if (day_to_quake != 0)
+		if (DayToQuake != 0)
 		{
-			day_to_quake--;
-			if (is_quake())
+			DayToQuake--;
+			if (IsQuake())
 			{
-				// generate quake_x, quake_y
-				quake_x = rand_seed(0x10000) * GameConstants.MapSize / 0x10000;
-				quake_y = rand_seed(0x10000) * GameConstants.MapSize / 0x10000;
+				QuakeX = RandomSeed(0x10000) * GameConstants.MapSize / 0x10000;
+				QuakeY = RandomSeed(0x10000) * GameConstants.MapSize / 0x10000;
 			}
 		}
 		else
 		{
-			day_to_quake = quake_frequency + rand_seed(quake_frequency);
+			DayToQuake = QuakeFrequency + RandomSeed(QuakeFrequency);
 		}
 
-		//---------- update wind ----------//
-		wind_dir = (wind_dir + rand_seed(5)) % 360;
-		wind_spd += rand_seed(9) - 4 - (high_wind_day / 16);
-		if (wind_spd < -10)
-			wind_spd = -10;
-		if (wind_spd > 110)
-			wind_spd = 110;
+		WindDir = (WindDir + RandomSeed(5)) % 360;
+		WindSpd += RandomSeed(9) - 4 - (HighWindDay / 16);
+		if (WindSpd < -10)
+			WindSpd = -10;
+		if (WindSpd > 110)
+			WindSpd = 110;
 
-		if (wind_spd >= 20)
-			high_wind_day++;
+		if (WindSpd >= 20)
+			HighWindDay++;
 		else
-			high_wind_day--;
+			HighWindDay--;
 
-		//---------- generate cloud --------//
-		if (cur_cloud_len > 0)
+		if (CurCloudLen > 0)
 		{
-			cur_cloud_len--;
+			CurCloudLen--;
 		}
 		else
 		{
-			int t = base_temp();
-			int maxCloudStr;
-			if (t >= 30)
-				maxCloudStr = 10;
-			else if (t <= 18)
-				maxCloudStr = 4;
+			int temperature = BaseTemperature();
+			int maxCloudStrength;
+			if (temperature >= 30)
+				maxCloudStrength = 10;
+			else if (temperature <= 18)
+				maxCloudStrength = 4;
 			else
-				maxCloudStr = (t - 18) / 2 + 4;
-			cur_cloud_str = rand_seed(maxCloudStr + 4) - 3; // range : -2 to maxCloudStr
-			if (cur_cloud_str < 0)
-				cur_cloud_str = 0;
-			cur_cloud_len = 2 + rand_seed(3) + rand_seed(3);
+				maxCloudStrength = (temperature - 18) / 2 + 4;
+			
+			CurCloudStrength = RandomSeed(maxCloudStrength + 4) - 3; // range : -2 to maxCloudStr
+			if (CurCloudStrength < 0)
+				CurCloudStrength = 0;
+			CurCloudLen = 2 + RandomSeed(3) + RandomSeed(3);
+			CurCloudType = 0;
 
-			cur_cloud_type = 0;
-
-			// ------- summer weather
-			if (cur_cloud_str > 4)
+			// ------- summer weather -------
+			if (CurCloudStrength > 4)
 			{
-				if ((char)rand_seed(10) < cur_cloud_str)
-					cur_cloud_type |= RAIN_CLOUD;
-				if (cur_cloud_str >= 6 && (char)rand_seed(10) < cur_cloud_str - 4)
-					cur_cloud_type |= WINDY;
+				if (RandomSeed(10) < CurCloudStrength)
+					CurCloudType |= RAIN_CLOUD;
+				if (CurCloudStrength >= 6 && RandomSeed(10) < CurCloudStrength - 4)
+					CurCloudType |= WINDY;
 			}
 
-			if (cur_cloud_str <= 1 && t >= 30 && rand_seed(10) <= 1)
+			if (CurCloudStrength <= 1 && temperature >= 30 && RandomSeed(10) <= 1)
 			{
-				cur_cloud_type |= HOT_WAVE;
+				CurCloudType |= HOT_WAVE;
 			}
 
-			// ------- winter weather
-			if (t < 15)
+			// ------- winter weather -------
+			if (temperature < 15)
 			{
-				if (rand_seed(20) < 2)
-					cur_cloud_type |= COLD_WAVE;
+				if (RandomSeed(20) < 2)
+					CurCloudType |= COLD_WAVE;
 
-				if (t >= 10 && rand_seed(10) < 3)
-					cur_cloud_type |= WINDY;
-				if (t < 10 && rand_seed(10) < 7)
-					cur_cloud_type |= WINDY;
+				if (temperature >= 10 && RandomSeed(10) < 3)
+					CurCloudType |= WINDY;
+				if (temperature < 10 && RandomSeed(10) < 7)
+					CurCloudType |= WINDY;
 			}
 
-			if ((cur_cloud_type & WINDY) != 0)
-				windy_speed = 10 + cur_cloud_str * 5 + rand_seed(2 * cur_cloud_str + 1);
+			if ((CurCloudType & WINDY) != 0)
+			{
+				WindySpeed = 10 + CurCloudStrength * 5 + RandomSeed(2 * CurCloudStrength + 1);
+			}
 			else
 			{
-				windy_speed = 0;
-				if (cur_cloud_str > 4 && (char)rand_seed(50) < cur_cloud_str + 2)
-					cur_cloud_type |= LIGHTNING_CLOUD;
+				WindySpeed = 0;
+				if (CurCloudStrength > 4 && RandomSeed(50) < CurCloudStrength + 2)
+					CurCloudType |= LIGHTNING_CLOUD;
 			}
 
 			// ---- double the time of snow ------ //
-			if (snow_scale() != 0)
-				cur_cloud_len += cur_cloud_len;
+			if (SnowScale() != 0)
+				CurCloudLen += CurCloudLen;
 
 		}
 
 		//TODO check conditions
-		// -------- update tornado_count, at least 20 days between two tornadoes -------//
-		if (tornado_count > 20/* && base_temp() >= 30 && wind_speed() >= 40*/ && rand_seed(10) == 0)
+		// -------- update TornadoCount, at least 30 days between two tornadoes -------//
+		if (TornadoCount > 30/* && base_temp() >= 30 && wind_speed() >= 40*/ && RandomSeed(10) == 0)
 		{
-			tornado_count = 0; // today has a tornado
+			TornadoCount = 0; // today has a tornado
 		}
 		else
 		{
-			tornado_count++;
+			TornadoCount++;
 		}
 	}
 
-	public int cloud() // return 0 (shine) to 10 (dark)
+	private int Cloud() // return 0 (shine) to 10 (dark)
 	{
-		if (cur_cloud_str < 0)
+		if (CurCloudStrength < 0)
 			return 0;
-		if (cur_cloud_str > 10)
+		if (CurCloudStrength > 10)
 			return 10;
-		return cur_cloud_str;
+		return CurCloudStrength;
 	}
 
-	public int temp_c() // temperature in degree C
+	private int BaseTemperature()
 	{
-		return base_temp() - (cur_cloud_str < 1 ? 0 : (cur_cloud_str < 4 ? 2 : 4)) +
-			((cur_cloud_type & HOT_WAVE) != 0 ? 8 : 0) - ((cur_cloud_type & COLD_WAVE) != 0 ? 10 : 0);
+		return (int)(AvgTemp + TempAmp * Math.Sin(SeasonPhase / 365.0 * 2.0 * Math.PI));
+	}
+	
+	public int Temperature() // temperature in degree C
+	{
+		return BaseTemperature() - (CurCloudStrength < 1 ? 0 : (CurCloudStrength < 4 ? 2 : 4)) +
+			((CurCloudType & HOT_WAVE) != 0 ? 8 : 0) - ((CurCloudType & COLD_WAVE) != 0 ? 10 : 0);
 	}
 
-	public int wind_speed() // wind speed 0 to 100
+	public int WindSpeed() // wind speed 0 to 100
 	{
-		if (this == Sys.Instance.Weather && MagicWeather.wind_day > 0)
-			return MagicWeather.wind_speed();
-		int w = wind_spd + windy_speed;
+		if (this == Sys.Instance.Weather && MagicWeather.WindDay > 0)
+			return MagicWeather.WindSpeed;
+		
+		int w = WindSpd + WindySpeed;
 		if (w < 0)
 			return 0;
 		if (w > 100)
@@ -244,90 +247,96 @@ public class Weather
 		return w;
 	}
 
-	public int wind_direct() // 0 to 360
+	private int WindDirection() // 0 to 360
 	{
-		if (this == Sys.Instance.Weather && MagicWeather.wind_day > 0)
-			return MagicWeather.wind_direct();
-		return wind_dir;
+		if (this == Sys.Instance.Weather && MagicWeather.WindDay > 0)
+			return MagicWeather.WindDirection;
+		
+		return WindDir;
 	}
 
-	public double wind_direct_rad() // in radian
+	public double WindDirectionRadians() // in radian
 	{
-		if (this == Sys.Instance.Weather && MagicWeather.wind_day > 0)
-			return MagicWeather.wind_direct_rad();
-		return wind_dir * Math.PI / 180.0;
+		if (this == Sys.Instance.Weather && MagicWeather.WindDay > 0)
+			return MagicWeather.WindDirectionRadians;
+		
+		return WindDir * Math.PI / 180.0;
 	}
 
-	public int rain_scale() // rain scale, 0 (no rain) to 12 (heavy rain)
+	public int RainScale() // rain scale, 0 (no rain) to 12 (heavy rain)
 	{
-		if (this == Sys.Instance.Weather && MagicWeather.rain_day > 0)
-			return MagicWeather.rain_scale();
-		return cur_cloud_str > 4 ? cur_cloud_str * 2 - 8 : 0;
+		if (this == Sys.Instance.Weather && MagicWeather.RainDay > 0)
+			return MagicWeather.RainStrength;
+		
+		return CurCloudStrength > 4 ? CurCloudStrength * 2 - 8 : 0;
 	}
 
-	public int snow_scale() // snow scale, 0 (no snow) to 8 (heavy snow)
+	public int SnowScale() // snow scale, 0 (no snow) to 8 (heavy snow)
 	{
-		int t = temp_c();
-		if (t > 0)
+		int temperature = Temperature();
+		if (temperature > 0)
 			return 0;
 
-		if (t <= -15)
-		{
-			if (t <= -30)
-				return 8;
-			if (t <= -25)
-				return 7;
-			if (t <= -20)
-				return 6;
+		if (temperature <= -30)
+			return 8;
+		if (temperature <= -25)
+			return 7;
+		if (temperature <= -20)
+			return 6;
+		if (temperature <= -15)
 			return 5;
-		}
-		else
-		{
-			if (t <= -10)
-				return 4;
-			if (t <= -5)
-				return 3;
-			if (t <= -2)
-				return 2;
-			return 1;
-		}
+		if (temperature <= -10)
+			return 4;
+		if (temperature <= -5)
+			return 3;
+		if (temperature <= -2)
+			return 2;
+		return 1;
 	}
 
-	public bool is_lightning()
+	public bool IsLightning()
 	{
-		if (MagicWeather.lightning_day > 0)
+		if (MagicWeather.LightningDay > 0)
 			return true;
-		return (cur_cloud_type & LIGHTNING_CLOUD) != 0;
+		
+		return (CurCloudType & LIGHTNING_CLOUD) != 0;
 	}
 
-	public bool is_quake()
+	public bool IsQuake()
 	{
-		return day_to_quake == 0;
+		return DayToQuake == 0;
 	}
 
-	public bool has_tornado()
+	public int QuakeRate(int x, int y) // 0-100
 	{
-		return tornado_count == 0;
+		int dist = Math.Max(Math.Abs(x - QuakeX), Math.Abs(y - QuakeY));
+		int damage = 100 - dist / 2;
+		return damage > 0 ? damage : 0;
+	}
+	
+	public bool HasTornado()
+	{
+		return TornadoCount == 0;
 	}
 
-	public int tornado_x_loc(int maxXLoc, int maxYLoc)
+	public int TornadoLocX(int maxLocX)
 	{
-		int dir = (wind_direct() + 180) % 360;
+		int dir = (WindDirection() + 180) % 360;
 
 		if (dir < 45)
 		{
 			// north side
-			return maxXLoc * (dir + 45) / 90;
+			return maxLocX * (dir + 45) / 90;
 		}
 		else if (dir < 135)
 		{
 			// east side
-			return maxXLoc - 1;
+			return maxLocX - 1;
 		}
 		else if (dir < 225)
 		{
 			// south side
-			return maxXLoc * (224 - dir) / 90;
+			return maxLocX * (224 - dir) / 90;
 		}
 		else if (dir < 315)
 		{
@@ -337,13 +346,13 @@ public class Weather
 		else
 		{
 			// north side
-			return maxXLoc * (dir - 315) / 90;
+			return maxLocX * (dir - 315) / 90;
 		}
 	}
 
-	public int tornado_y_loc(int maxXLoc, int maxYLoc)
+	public int TornadoLocY(int maxLocY)
 	{
-		int dir = (wind_direct() + 180) % 360;
+		int dir = (WindDirection() + 180) % 360;
 
 		if (dir < 45)
 		{
@@ -353,17 +362,17 @@ public class Weather
 		else if (dir < 135)
 		{
 			// east side
-			return maxYLoc * (dir - 45) / 90;
+			return maxLocY * (dir - 45) / 90;
 		}
 		else if (dir < 225)
 		{
 			// south side
-			return maxYLoc - 1;
+			return maxLocY - 1;
 		}
 		else if (dir < 315)
 		{
 			// west side
-			return maxYLoc * (314 - dir) / 90;
+			return maxLocY * (314 - dir) / 90;
 		}
 		else
 		{
@@ -372,45 +381,33 @@ public class Weather
 		}
 	}
 
-	public WeatherType desc()
+	public WeatherType Description()
 	{
 		WeatherType w = WeatherType.WEATHER_SUNNY;
-		if (rain_scale() > 0)
+		if (RainScale() > 0)
 			w |= WeatherType.WEATHER_RAIN;
-		if (is_lightning())
+		if (IsLightning())
 			w |= WeatherType.WEATHER_LIGHTNING;
-		if (snow_scale() > 0)
+		if (SnowScale() > 0)
 			w |= WeatherType.WEATHER_SNOW;
-		else if ((cur_cloud_type & COLD_WAVE) != 0)
+		else if ((CurCloudType & COLD_WAVE) != 0)
 			w |= WeatherType.WEATHER_COLD_WAVE;
-		if ((cur_cloud_type & HOT_WAVE) != 0)
+		if ((CurCloudType & HOT_WAVE) != 0)
 			w |= WeatherType.WEATHER_HOT_WAVE;
-		if ((cur_cloud_type & WINDY) != 0)
+		if ((CurCloudType & WINDY) != 0)
 			w |= WeatherType.WEATHER_WINDY;
 
-		if (w == WeatherType.WEATHER_SUNNY && cloud() >= 4)
+		if (w == WeatherType.WEATHER_SUNNY && Cloud() >= 4)
 			w |= WeatherType.WEATHER_CLOUDY;
 
 		return w;
 	}
 
-	public int quake_rate(int x, int y) // 0-100
-	{
-		int dist = Math.Max(Math.Abs(x - quake_x), Math.Abs(y - quake_y));
-		int damage = 100 - dist / 2;
-		return damage > 0 ? damage : 0;
-	}
-
-	private int base_temp()
-	{
-		return (int)(avg_temp + temp_amp * Math.Sin(season_phase / 365.0 * 2.0 * Math.PI));
-	}
-
-	public int rand_seed(int max)
+	private int RandomSeed(int max)
 	{
 		const int MULTIPLIER = 0x015a4e35;
 		const int INCREMENT = 1;
-		seed = MULTIPLIER * seed + INCREMENT;
-		return (int)(seed % max);
+		Seed = MULTIPLIER * Seed + INCREMENT;
+		return (int)(Seed % max);
 	}
 }
