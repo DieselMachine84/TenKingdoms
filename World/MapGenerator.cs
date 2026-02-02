@@ -9,9 +9,9 @@ public class MapGenerator
 	private HillRes HillRes => Sys.Instance.HillRes;
 	private RockRes RockRes => Sys.Instance.RockRes;
 	private RaceRes RaceRes => Sys.Instance.RaceRes;
+	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private SpriteRes SpriteRes => Sys.Instance.SpriteRes;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
-	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
 	private Config Config => Sys.Instance.Config;
@@ -34,16 +34,8 @@ public class MapGenerator
 	
 	public void Generate()
 	{
-		//----------- start generating -----------//
-
-		// ---------- generate plasma map ----------//
-
 		Plasma heightMap = new Plasma(GameConstants.MapSize, GameConstants.MapSize);
-		heightMap.generate(Misc.Random(2), 5, Misc.Random());
-
-		// ###### begin Gilbert 27/8 ########//
-		// ---------- add base level --------//
-		// heightMap.add_base_level(heightMap.calc_tera_base_level(TerrainRes::min_height(TERRAIN_DARK_GRASS)));
+		heightMap.Generate(Misc.Random(2), 5);
 
 		// grouping plasma sample data, find sea or land first
 		int totalLoc = (GameConstants.MapSize + 1) * (GameConstants.MapSize + 1);
@@ -74,7 +66,7 @@ public class MapGenerator
 
 		heightLimit[0] = 0;
 		heightLimit[1] = initHeightLimit;
-		heightMap.stat(2, heightLimit, heightFreq);
+		heightMap.Stat(2, heightLimit, heightFreq);
 
 		int landCount = heightFreq[1];
 		int seaCount = heightFreq[0];
@@ -84,40 +76,37 @@ public class MapGenerator
 		{
 			if (landCount < minLandCount)
 			{
-				// positive add_base_level to gain more land
-				// find a level between 0 to TerrainRes::min_height(TERRAIN_DARK_GRASS)
-				// assume heightlevel below heightLimit[1] is evenly distributed,
+				// positive AddBaseLevel to gain more land
+				// find a level between 0 to TerrainRes::MinHeight(TERRAIN_DARK_GRASS)
+				// assume heightLevel below heightLimit[1] is evenly distributed,
 				// approximate a new heightLimit[1] such that landCount is avgLandCount
-
-				// (heightLimit[1] - newheightLimit[1]) * seaCount / (heightLimit[1] - heightLimit[0]) + landCount = avgLandCount
 
 				heightLimit[1] -= (avgLandCount - landCount) * (heightLimit[1] - heightLimit[0]) / seaCount;
 			}
 			else if (landCount > maxLandCount)
 			{
-				// negative add_base_level to reduce land
-				// find a level above TerrainRes::min_height(TERRAIN_DARK_GRASS)
-				// assume heightlevel above heightLimit[1] is evenly distributed,
+				// negative AddBaseLevel to reduce land
+				// find a level above TerrainRes::MinHeight(TERRAIN_DARK_GRASS)
+				// assume heightLevel above heightLimit[1] is evenly distributed,
 				// approximate a new heightLimit[1] such that landCount is avgLandCount
 
-				const int maxHeightLimit = 255;
-				// landCount * (maxHeightLimit - newheightLimit[1])/ (maxHeightLimit - heightLimit[1]) = avgLandCount
-				heightLimit[1] = maxHeightLimit - avgLandCount * (maxHeightLimit - heightLimit[1]) / landCount;
+				const int MAX_HEIGHT_LIMIT = 255;
+				heightLimit[1] = MAX_HEIGHT_LIMIT - avgLandCount * (MAX_HEIGHT_LIMIT - heightLimit[1]) / landCount;
 			}
 
-			heightMap.stat(2, heightLimit, heightFreq);
+			heightMap.Stat(2, heightLimit, heightFreq);
 		}
 
 		if (Math.Abs(heightLimit[1] - initHeightLimit) > 2)
 		{
-			heightMap.add_base_level(initHeightLimit - heightLimit[1]);
+			heightMap.AddBaseLevel(initHeightLimit - heightLimit[1]);
 		}
 
 		// --------- remove odd terrain --------//
 
-		for (int y = 0; y <= heightMap.max_y; ++y)
+		for (int y = 0; y <= heightMap.MaxY; y++)
 		{
-			for (int x = 0; x <= heightMap.max_x; ++x)
+			for (int x = 0; x <= heightMap.MaxX; x++)
 			{
 				RemoveOdd(heightMap, x, y, 5);
 			}
@@ -125,13 +114,13 @@ public class MapGenerator
 
 		// ------------ shuffle sub-terrain level ---------//
 
-		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_OCEAN),
+		heightMap.ShuffleLevel(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_OCEAN),
 			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_OCEAN), -3);
-		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_GRASS),
+		heightMap.ShuffleLevel(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_GRASS),
 			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_DARK_GRASS), 3);
-		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_LIGHT_GRASS),
+		heightMap.ShuffleLevel(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_LIGHT_GRASS),
 			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_LIGHT_GRASS), 3);
-		heightMap.shuffle_level(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_DIRT),
+		heightMap.ShuffleLevel(TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_DIRT),
 			TerrainRes.MaxHeight(TerrainTypeCode.TERRAIN_DARK_DIRT), 3);
 
 		SetTeraId(heightMap);
@@ -144,11 +133,11 @@ public class MapGenerator
 
 		SetRegionId();
 
-		//TODO should depend on map size
-		GenDirt(40, 30, 60);
+		double scaleFactor = (GameConstants.MapSize * GameConstants.MapSize) / (200.0 * 200.0);
+		
+		GenDirt((int)(40 * scaleFactor), (int)(30 * scaleFactor), (int)(60 * scaleFactor));
 
-		//TODO should depend on map size
-		GenRocks(5, 10, 30);
+		GenRocks((int)(5 * scaleFactor), (int)(10 * scaleFactor), (int)(30 * scaleFactor));
 
 		SetHarborBit();
 
@@ -158,19 +147,18 @@ public class MapGenerator
 
 		CreatePlayerNation();
 
-		CreateAINation(Config.ai_nation_count);
+		CreateAINations(Config.ai_nation_count);
 		
 		CreatePregameObjects();
 	}
 
-	private void RemoveOdd(Plasma plasma, int x, int y, int recur)
+	private void RemoveOdd(Plasma plasma, int x, int y, int recursionLevel)
 	{
-		if (recur < 0)
+		if (recursionLevel < 0)
 			return;
 
 		// -------- compare the TerrainTypeCode of four adjacent square ------//
-		int subPtr = 0;
-		int center = TerrainRes.TerrainHeight(plasma.get_pix(x, y), out subPtr);
+		int center = TerrainRes.TerrainHeight(plasma.GetPoint(x, y), out _);
 		int same = 0;
 		int diff = 0;
 		int diffTerrain = -1;
@@ -181,7 +169,7 @@ public class MapGenerator
 		// ------- compare north square -------//
 		if (y > 0)
 		{
-			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x, y - 1), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.GetPoint(x, y - 1), out _))
 			{
 				same++;
 				sameX = x;
@@ -193,23 +181,23 @@ public class MapGenerator
 				if (diffTerrain < 0)
 				{
 					// new diffHeight
-					diffHeight = plasma.get_pix(x, y - 1);
-					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
+					diffHeight = plasma.GetPoint(x, y - 1);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out _);
 
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x, y - 1), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.GetPoint(x, y - 1), out _))
 						return;
 				}
 			}
 		}
 
 		// ------- compare south square -------//
-		if (y < plasma.max_y)
+		if (y < plasma.MaxY)
 		{
-			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.GetPoint(x, y + 1), out _))
 			{
 				same++;
 				sameX = x;
@@ -221,13 +209,13 @@ public class MapGenerator
 				if (diffTerrain < 0)
 				{
 					// new diffHeight
-					diffHeight = plasma.get_pix(x, y + 1);
-					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
+					diffHeight = plasma.GetPoint(x, y + 1);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out _);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.GetPoint(x, y + 1), out _))
 						return;
 				}
 			}
@@ -236,7 +224,7 @@ public class MapGenerator
 		// ------- compare west square -------//
 		if (x > 0)
 		{
-			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x - 1, y), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.GetPoint(x - 1, y), out _))
 			{
 				same++;
 				sameX = x - 1;
@@ -248,22 +236,22 @@ public class MapGenerator
 				if (diffTerrain < 0)
 				{
 					// new diffHeight
-					diffHeight = plasma.get_pix(x - 1, y);
-					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
+					diffHeight = plasma.GetPoint(x - 1, y);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out _);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x - 1, y), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.GetPoint(x - 1, y), out _))
 						return;
 				}
 			}
 		}
 
 		// ------- compare east square -------//
-		if (x < plasma.max_x)
+		if (x < plasma.MaxX)
 		{
-			if (center == TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out subPtr))
+			if (center == TerrainRes.TerrainHeight(plasma.GetPoint(x + 1, y), out _))
 			{
 				same++;
 				sameX = x + 1;
@@ -275,13 +263,13 @@ public class MapGenerator
 				if (diffTerrain < 0)
 				{
 					// new diffHeight
-					diffHeight = plasma.get_pix(x + 1, y);
-					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out subPtr);
+					diffHeight = plasma.GetPoint(x + 1, y);
+					diffTerrain = TerrainRes.TerrainHeight(diffHeight, out _);
 				}
 				else
 				{
 					// three terrain types are close, don't change anything
-					if (diffTerrain != TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out subPtr))
+					if (diffTerrain != TerrainRes.TerrainHeight(plasma.GetPoint(x + 1, y), out _))
 						return;
 				}
 			}
@@ -290,34 +278,30 @@ public class MapGenerator
 		if (same <= 1 && diff >= 2)
 		{
 			// flatten
-			plasma.plot(x, y, diffHeight);
+			plasma.SetPoint(x, y, diffHeight);
 
 			// propagate to next square
 			if (same == 1)
 			{
-				RemoveOdd(plasma, sameX, sameY, recur - 1);
+				RemoveOdd(plasma, sameX, sameY, recursionLevel - 1);
 			}
 		}
 	}
 
 	private void SetTeraId(Plasma plasma)
 	{
-		for (int y = 0; y < GameConstants.MapSize; ++y)
+		for (int y = 0; y < GameConstants.MapSize; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
+			for (int x = 0; x < GameConstants.MapSize; x++)
 			{
-				int nwType, neType, swType, seType;
-				int nwSubType, neSubType, swSubType, seSubType;
-				nwType = TerrainRes.TerrainHeight(plasma.get_pix(x, y), out nwSubType);
-				neType = TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y), out neSubType);
-				swType = TerrainRes.TerrainHeight(plasma.get_pix(x, y + 1), out swSubType);
-				seType = TerrainRes.TerrainHeight(plasma.get_pix(x + 1, y + 1), out seSubType);
+				int nwType = TerrainRes.TerrainHeight(plasma.GetPoint(x, y), out int nwSubType);
+				int neType = TerrainRes.TerrainHeight(plasma.GetPoint(x + 1, y), out int neSubType);
+				int swType = TerrainRes.TerrainHeight(plasma.GetPoint(x, y + 1), out int swSubType);
+				int seType = TerrainRes.TerrainHeight(plasma.GetPoint(x + 1, y + 1), out int seSubType);
 
-				if ((World.GetLoc(x, y).TerrainId = TerrainRes.Scan(nwType, nwSubType,
-					    neType, neSubType, swType, swSubType, seType, seSubType, 0, 1, 0)) == 0)
+				if ((World.GetLoc(x, y).TerrainId = TerrainRes.Scan(nwType, nwSubType, neType, neSubType,
+					    swType, swSubType, seType, seSubType, 0, 1, 0)) == 0)
 				{
-					//err.run("Error World::set_tera_id, Cannot find terrain type %d:%d, %d:%d, %d:%d, %d:%d",
-					//nwType, nwSubType, neType, neSubType, swType, swSubType, seType, seSubType);
 				}
 			}
 		}
@@ -325,33 +309,30 @@ public class MapGenerator
 
 	private void SubstitutePattern()
 	{
-		const int resultArraySize = 20;
-		TerrainSubInfo[] candSub = new TerrainSubInfo[resultArraySize];
+		const int RESULT_ARRAY_SIZE = 20;
+		TerrainSubInfo[] candSub = new TerrainSubInfo[RESULT_ARRAY_SIZE];
 
-		for (int y = 0; y < GameConstants.MapSize; ++y)
+		for (int y = 0; y < GameConstants.MapSize; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; ++x)
+			for (int x = 0; x < GameConstants.MapSize; x++)
 			{
-				int terrainId = World.GetLoc(x, y).TerrainId;
-				int SubFound = TerrainRes.SearchPattern(TerrainRes[terrainId].PatternId, candSub, resultArraySize);
-				for (int i = 0; i < SubFound; ++i)
+				int subFound = TerrainRes.SearchPattern(TerrainRes[World.GetLoc(x, y).TerrainId].PatternId, candSub, RESULT_ARRAY_SIZE);
+				for (int i = 0; i < subFound; i++)
 				{
 					int tx = x, ty = y;
 					bool flag = true;
-					TerrainSubInfo terrainSubInfo = candSub[i];
 
 					// ----- test if a substitution matches
-					for (terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.NextStep)
+					for (TerrainSubInfo terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.NextStep)
 					{
 						if (tx < 0 || tx >= GameConstants.MapSize || ty < 0 || ty >= GameConstants.MapSize ||
-						    TerrainRes[World.GetLoc(tx, ty).TerrainId].PatternId !=
-						    terrainSubInfo.OldPatternId)
+						    TerrainRes[World.GetLoc(tx, ty).TerrainId].PatternId != terrainSubInfo.OldPatternId)
 						{
 							flag = false;
 							break;
 						}
 
-						// ----- update tx, ty according to post_move -----//
+						// ----- update tx, ty according to PostMove -----//
 						switch (terrainSubInfo.PostMove)
 						{
 							case 1:
@@ -390,21 +371,14 @@ public class MapGenerator
 					{
 						tx = x;
 						ty = y;
-						for (terrainSubInfo = candSub[i];
-						     terrainSubInfo != null;
-						     terrainSubInfo = terrainSubInfo.NextStep)
+						for (TerrainSubInfo terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.NextStep)
 						{
 							TerrainInfo oldTerrain = TerrainRes[World.GetLoc(tx, ty).TerrainId];
-							int terrain_id = TerrainRes.Scan(oldTerrain.AverageType,
-								oldTerrain.SecondaryType + terrainSubInfo.SecAdj,
+							int terrainId = TerrainRes.Scan(oldTerrain.AverageType, oldTerrain.SecondaryType + terrainSubInfo.SecAdj,
 								terrainSubInfo.NewPatternId, 0, 1, 0);
-							World.GetLoc(tx, ty).TerrainId = terrain_id;
-							if (terrain_id == 0)
-							{
-								//err_here();		// cannot find terrain_id
-							}
+							World.GetLoc(tx, ty).TerrainId = terrainId;
 
-							// ----- update tx, ty according to post_move -----//
+							// ----- update tx, ty according to PostMove -----//
 							switch (terrainSubInfo.PostMove)
 							{
 								case 1:
@@ -447,7 +421,7 @@ public class MapGenerator
 
 	private void SetLocFlags()
 	{
-		//----- set power_off of the map edges -----//
+		//----- set power off of the map edges -----//
 
 		for (int locX = 0; locX < GameConstants.MapSize; locX++) // set the top and bottom edges
 		{
@@ -507,34 +481,27 @@ public class MapGenerator
 	{
 		// ------- scan each tile for an above-hill terrain tile -----//
 		int x, y = 0;
-		int priTerrain, secTerrain, lowTerrain, highTerrain;
-		int patternId;
-		Location aboveLoc;
-		TerrainInfo terrainInfo;
 
-		for (y = 0; y < GameConstants.MapSize; ++y)
+		for (y = 0; y < GameConstants.MapSize; y++)
 		{
-			for (x = 0; x < GameConstants.MapSize; ++x)
+			for (x = 0; x < GameConstants.MapSize; x++)
 			{
 				Location location = World.GetLoc(x, y);
-				aboveLoc = y > 0 ? World.GetLoc(x, y - 1) : null;
-				terrainInfo = TerrainRes[location.TerrainId];
-				priTerrain = terrainInfo.AverageType;
-				secTerrain = terrainInfo.SecondaryType;
-				highTerrain = (priTerrain >= secTerrain ? priTerrain : secTerrain);
-				lowTerrain = (priTerrain >= secTerrain ? secTerrain : priTerrain);
+				TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
+				int priTerrain = terrainInfo.AverageType;
+				int secTerrain = terrainInfo.SecondaryType;
+				int highTerrain = (priTerrain >= secTerrain ? priTerrain : secTerrain);
+				int lowTerrain = (priTerrain >= secTerrain ? secTerrain : priTerrain);
 				if (highTerrain >= terrainType)
 				{
 					// BUGHERE : ignore special or extra flag
-					patternId = terrainInfo.PatternId;
+					int patternId = terrainInfo.PatternId;
 					if (lowTerrain >= terrainType)
 					{
 						// move this terrain one square north
 						if (y > 0)
 						{
-							aboveLoc = location;
-
-							// if y is max_y_loc-1, aboveLoc and locPtr looks the same
+							// if y is GameConstants.MapSize - 1, aboveLoc and locPtr looks the same
 							// BUGHERE : repeat the same pattern below is a bug if patternId is not 0,9,10,13,14
 							if (y == GameConstants.MapSize - 1)
 								location.TerrainId = TerrainRes.Scan(priTerrain, secTerrain, patternId);
@@ -543,25 +510,20 @@ public class MapGenerator
 					else
 					{
 						int hillId = HillRes.Scan(patternId, HillRes.LOW_HILL_PRIORITY, 0, false);
-						//err_when( !hillId );
 						location.SetHill(hillId);
 						location.SetFlammability(-100);
-						//### begin alex 24/6 ###//
 						location.SetPowerOff();
 						SetSurroundPowerOff(x, y);
-						//#### end alex 24/6 ####//
 						if (y > 0)
 						{
-							aboveLoc.SetHill(HillRes.Locate(patternId,
-								HillRes[hillId].SubPatternId, HillRes.HIGH_HILL_PRIORITY, 0));
+							Location aboveLoc = World.GetLoc(x, y - 1);
+							aboveLoc.SetHill(HillRes.Locate(patternId, HillRes[hillId].SubPatternId, HillRes.HIGH_HILL_PRIORITY, 0));
 							aboveLoc.SetFlammability(-100);
-							//### begin alex 24/6 ###//
 							aboveLoc.SetPowerOff();
 							SetSurroundPowerOff(x, y - 1);
-							//#### end alex 24/6 ####//
 						}
 
-						// set terrain type to pure teraType-1
+						// set terrain type to pure teraType - 1
 						location.TerrainId = TerrainRes.Scan(lowTerrain, lowTerrain, 0);
 					}
 				}
@@ -590,18 +552,17 @@ public class MapGenerator
 		const char SOUTH_RIGHT_SPECIAL = 'C';
 		const char SOUTH_CENTRE_SPECIAL = 'A';
 
-		for (y = 1; y < GameConstants.MapSize - 1; ++y)
+		for (y = 1; y < GameConstants.MapSize - 1; y++)
 		{
 			lastExit = 0;
-			for (x = 0; x < GameConstants.MapSize - 2; ++x, lastExit = lastExit > 0 ? lastExit - 1 : 0)
+			for (x = 0; x < GameConstants.MapSize - 2; x++, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
 				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 11,15,19 or 23,
 				// block above the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() &&
-					    World.GetLoc(x + 2, y).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() && World.GetLoc(x + 2, y).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.PatternId;
@@ -616,14 +577,14 @@ public class MapGenerator
 						{
 							if (World.GetLoc(x + 1, y - 1).Walkable())
 							{
-								int hillId, terrainId;
+								int terrainId;
 
 								// change this square
 								if (h1p == SOUTH_PATTERN3)
 									h1p = SOUTH_PATTERN1;
 								else if (h1p == SOUTH_PATTERN4)
 									h1p = SOUTH_PATTERN2;
-								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, SOUTH_LEFT_SPECIAL, false);
+								int hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, SOUTH_LEFT_SPECIAL, false);
 								location.RemoveHill();
 								location.SetHill(hillId);
 								location.SetPowerOff();
@@ -633,32 +594,26 @@ public class MapGenerator
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.Locate(h1p,
-									HillRes[hillId].SubPatternId,
-									HillRes.LOW_HILL_PRIORITY, SOUTH_LEFT_SPECIAL);
+								hillId = HillRes.Locate(h1p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, SOUTH_LEFT_SPECIAL);
 								if (loc2.HillId2() == 0)
 								{
 									// if the location has only one block, remove it
 									// if the location has two block, the bottom one is replaced
 									loc2.RemoveHill();
 								}
-
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 1);
-								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1,
-									    0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// second square
 								loc2 = World.GetLoc(x + 1, y);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								//if((terrainId = terrain_res.scan(terrainType, terrainType,
-								//	0, 0, 1, 0)) != 0 )
 								if ((terrainId = TerrainRes.Scan(terrainType, (int)SubTerrainMask.BOTTOM_MASK,
-									    terrainType,
-									    (int)SubTerrainMask.BOTTOM_MASK, terrainType, (int)SubTerrainMask.BOTTOM_MASK,
+									    terrainType, (int)SubTerrainMask.BOTTOM_MASK,
+									    terrainType, (int)SubTerrainMask.BOTTOM_MASK,
 									    terrainType, (int)SubTerrainMask.BOTTOM_MASK)) != 0)
 									loc2.TerrainId = terrainId;
 
@@ -666,15 +621,13 @@ public class MapGenerator
 								loc2 = World.GetLoc(x + 1, y + 1);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1,
-									    SOUTH_PATTERN2, 0, 1, SOUTH_CENTRE_SPECIAL)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, SOUTH_PATTERN2, 0, 1, SOUTH_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// prev row
-								// loc2 = get_loc(x+1, y-1);
-								// if((terrainId = terrain_res.scan(terrainType, terrainType-1,
-								// 	SOUTH_PATTERN2, 0, 1, SOUTH_CENTRE_SPECIAL )) != 0 )
-								//	loc2->terrain_id = terrainId;
+								// loc2 = World.GetLoc(x + 1, y - 1);
+								// if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, SOUTH_PATTERN2, 0, 1, SOUTH_CENTRE_SPECIAL)) != 0)
+								//	loc2.TerrainId = terrainId;
 
 								// third square
 								loc2 = World.GetLoc(x + 2, y);
@@ -682,28 +635,23 @@ public class MapGenerator
 									h3p = SOUTH_PATTERN1;
 								if (h3p == SOUTH_PATTERN3)
 									h3p = SOUTH_PATTERN2;
-								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL,
-									false);
+								hillId = HillRes.Scan(h3p, HillRes.HIGH_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL, false);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x + 2, y);
-								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1,
-									    0, 0, 1, 0)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType - 1, terrainType - 1, 0, 0, 1, 0)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next row
 								loc2 = World.GetLoc(x + 2, y + 1);
-								hillId = HillRes.Locate(h3p,
-									HillRes[hillId].SubPatternId,
-									HillRes.LOW_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL);
+								hillId = HillRes.Locate(h3p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, SOUTH_RIGHT_SPECIAL);
 								if (loc2.HillId2() == 0)
 								{
 									// if the location has only one block, remove it
 									// if the location has two block, the bottom one is replaced
 									loc2.RemoveHill();
 								}
-
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x + 2, y + 1);
@@ -745,8 +693,7 @@ public class MapGenerator
 				// block below the second block is a walkable
 				if (lastExit == 0)
 				{
-					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() &&
-					    World.GetLoc(x + 2, y).HasHill())
+					if (World.GetLoc(x, y).HasHill() && World.GetLoc(x + 1, y).HasHill() && World.GetLoc(x + 2, y).HasHill())
 					{
 						HillBlockInfo h1 = HillRes[World.GetLoc(x, y).HillId1()];
 						int h1p = h1.PatternId;
@@ -761,15 +708,14 @@ public class MapGenerator
 						{
 							if (World.GetLoc(x + 1, y + 1).Walkable())
 							{
-								int hillId, terrainId;
+								int terrainId;
 
 								// change this square
 								if (h1p == NORTH_PATTERN4)
 									h1p = NORTH_PATTERN1;
 								else if (h1p == NORTH_PATTERN3)
 									h1p = NORTH_PATTERN2;
-								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, NORTH_LEFT_SPECIAL,
-									false);
+								int hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, NORTH_LEFT_SPECIAL, false);
 								location.RemoveHill();
 								location.SetHill(hillId);
 								location.SetPowerOff();
@@ -781,18 +727,13 @@ public class MapGenerator
 								Location loc2 = World.GetLoc(x + 1, y);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
-								//	0, 0, 1, NORTH_CENTRE_SPECIAL)) != 0 )
-								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, NORTH_PATTERN2, 0, 1,
-									    NORTH_CENTRE_SPECIAL)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, NORTH_PATTERN2, 0, 1, NORTH_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next row
-								//loc2 = get_loc(x+1, y+1);
-								//if((terrainId = terrain_res.scan(terrainType, terrainType-1,
-								//	NORTH_PATTERN2, 0, 1, NORTH_CENTRE_SPECIAL )) != 0 )
-								//	loc2->terrain_id = terrainId;
+								//loc2 = World.GetLoc(x + 1, y + 1);
+								//if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, NORTH_PATTERN2, 0, 1, NORTH_CENTRE_SPECIAL)) != 0)
+								//	loc2.TerrainId = terrainId;
 
 								// third square
 								loc2 = World.GetLoc(x + 2, y);
@@ -857,30 +798,27 @@ public class MapGenerator
 						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsWestExitPattern(h2p) &&
 						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsWestExitPattern(h3p))
 						{
-							if ((h3p == WEST_PATTERN1 || h3p == WEST_PATTERN4) &&
-							    World.GetLoc(x + 1, y + 2).Walkable())
+							if ((h3p == WEST_PATTERN1 || h3p == WEST_PATTERN4) && World.GetLoc(x + 1, y + 2).Walkable())
 							{
-								int hillId, terrainId, hill2;
+								int terrainId;
 
 								// change this square
 								if (h1p == WEST_PATTERN3)
 									h1p = WEST_PATTERN1;
 								else if (h1p == WEST_PATTERN4)
 									h1p = WEST_PATTERN2;
-								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, WEST_TOP_SPECIAL, false);
-								hill2 = location.HillId2();
+								int hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, WEST_TOP_SPECIAL, false);
+								int hillId2 = location.HillId2();
 								location.RemoveHill();
 								location.SetHill(hillId);
 								location.SetPowerOff();
 								SetSurroundPowerOff(x, y);
-								if (hill2 != 0)
-									location.SetHill(hill2);
+								if (hillId2 != 0)
+									location.SetHill(hillId2);
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.Locate(h1p,
-									HillRes[hillId].SubPatternId,
-									HillRes.LOW_HILL_PRIORITY, WEST_TOP_SPECIAL);
+								hillId = HillRes.Locate(h1p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, WEST_TOP_SPECIAL);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -892,18 +830,13 @@ public class MapGenerator
 								loc2 = World.GetLoc(x, y + 2);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
-								//	0, 0, 1, WEST_CENTRE_SPECIAL)) != 0 )
-								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, WEST_PATTERN2, 0, 1,
-									    WEST_CENTRE_SPECIAL)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, WEST_PATTERN2, 0, 1, WEST_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next column
-								//loc2 = get_loc(x+1, y+2);
-								//if((terrainId = terrain_res.scan(terrainType, terrainType-1,
-								//	WEST_PATTERN2, 0, 1, WEST_CENTRE_SPECIAL )) != 0 )
-								//	loc2->terrain_id = terrainId;
+								//loc2 = World.GetLoc(x+1, y+2);
+								//if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, WEST_PATTERN2, 0, 1, WEST_CENTRE_SPECIAL )) != 0)
+								//	loc2.TerrainId = terrainId;
 
 								// fourth row
 								loc2 = World.GetLoc(x, y + 3);
@@ -921,9 +854,7 @@ public class MapGenerator
 
 								// next row
 								loc2 = World.GetLoc(x, y + 4);
-								hillId = HillRes.Locate(h3p,
-									HillRes[hillId].SubPatternId,
-									HillRes.LOW_HILL_PRIORITY, WEST_BOTTOM_SPECIAL);
+								hillId = HillRes.Locate(h3p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, WEST_BOTTOM_SPECIAL);
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 4);
@@ -977,30 +908,27 @@ public class MapGenerator
 						    h2.Priority == HillRes.HIGH_HILL_PRIORITY && h2p != 0 && IsEastExitPattern(h2p) &&
 						    h3.Priority == HillRes.HIGH_HILL_PRIORITY && h3p != 0 && IsEastExitPattern(h3p))
 						{
-							if ((h3p == EAST_PATTERN1 || h3p == EAST_PATTERN4) &&
-							    World.GetLoc(x - 1, y + 2).Walkable())
+							if ((h3p == EAST_PATTERN1 || h3p == EAST_PATTERN4) && World.GetLoc(x - 1, y + 2).Walkable())
 							{
-								int hillId, terrainId, hill2;
+								int terrainId;
 
 								// change this square
 								if (h1p == EAST_PATTERN3)
 									h1p = EAST_PATTERN1;
 								else if (h1p == EAST_PATTERN4)
 									h1p = EAST_PATTERN2;
-								hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, EAST_TOP_SPECIAL, false);
-								hill2 = location.HillId2();
+								int hillId = HillRes.Scan(h1p, HillRes.HIGH_HILL_PRIORITY, EAST_TOP_SPECIAL, false);
+								int hillId2 = location.HillId2();
 								location.RemoveHill();
 								location.SetHill(hillId);
-								if (hill2 != 0)
-									location.SetHill(hill2);
+								if (hillId2 != 0)
+									location.SetHill(hillId2);
 								location.SetPowerOff();
 								SetSurroundPowerOff(x, y);
 
 								// next row
 								Location loc2 = World.GetLoc(x, y + 1);
-								hillId = HillRes.Locate(h1p,
-									HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY,
-									EAST_TOP_SPECIAL);
+								hillId = HillRes.Locate(h1p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, EAST_TOP_SPECIAL);
 								loc2.RemoveHill();
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
@@ -1012,18 +940,13 @@ public class MapGenerator
 								loc2 = World.GetLoc(x, y + 2);
 								loc2.RemoveHill();
 								loc2.ResetWalkable();
-								//if((terrainId = terrain_res.scan(terrainType-1, terrainType-1,
-								//	0, 0, 1, EAST_CENTRE_SPECIAL)) != 0 )
-								//	loc2->terrain_id = terrainId;
-								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, EAST_PATTERN2,
-									    0, 1, EAST_CENTRE_SPECIAL)) != 0)
+								if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, EAST_PATTERN2, 0, 1, EAST_CENTRE_SPECIAL)) != 0)
 									loc2.TerrainId = terrainId;
 
 								// next column
-								//loc2 = get_loc(x-1, y+2);
-								//if((terrainId = terrain_res.scan(terrainType, terrainType-1,
-								//	EAST_PATTERN2, 0, 1, EAST_CENTRE_SPECIAL )) != 0 )
-								//	loc2->terrain_id = terrainId;
+								//loc2 = World.GetLoc(x - 1, y + 2);
+								//if ((terrainId = TerrainRes.Scan(terrainType, terrainType - 1, EAST_PATTERN2, 0, 1, EAST_CENTRE_SPECIAL)) != 0)
+								//	loc2.TerrainId = terrainId;
 
 								// fourth row
 								loc2 = World.GetLoc(x, y + 3);
@@ -1041,9 +964,7 @@ public class MapGenerator
 
 								// next row
 								loc2 = World.GetLoc(x, y + 4);
-								hillId = HillRes.Locate(h3p,
-									HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY,
-									EAST_BOTTOM_SPECIAL);
+								hillId = HillRes.Locate(h3p, HillRes[hillId].SubPatternId, HillRes.LOW_HILL_PRIORITY, EAST_BOTTOM_SPECIAL);
 								loc2.SetHill(hillId);
 								loc2.SetPowerOff();
 								SetSurroundPowerOff(x, y + 4);
@@ -1203,9 +1124,8 @@ public class MapGenerator
 
 				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("DE", 1, LARGE_ROCK_SIZE,
-						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("DE", 1, LARGE_ROCK_SIZE, 1, LARGE_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1229,9 +1149,8 @@ public class MapGenerator
 
 							if (CanAddDirt(sx, sy, sx2, sy2))
 							{
-								int rock2Id = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
-									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
+								int rock2Id = RockRes.Search("DE", 1, SMALL_ROCK_SIZE, 1, SMALL_ROCK_SIZE,
+									-1, false, TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
 								if (rock2Id == 0)
 									continue;
 
@@ -1262,9 +1181,8 @@ public class MapGenerator
 
 				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
-						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("DE", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1291,9 +1209,8 @@ public class MapGenerator
 
 				if (CanAddDirt(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("DE", 1, SMALL_ROCK_SIZE,
-						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("DE", 1, SMALL_ROCK_SIZE, 1, SMALL_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1371,9 +1288,8 @@ public class MapGenerator
 
 				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("R", 1, LARGE_ROCK_SIZE,
-						1, LARGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("R", 1, LARGE_ROCK_SIZE, 1, LARGE_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1397,9 +1313,8 @@ public class MapGenerator
 
 							if (CanAddRock(sx, sy, sx2, sy2))
 							{
-								int rock2Id = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
-									1, SMALL_ROCK_SIZE, -1, false,
-									TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
+								int rock2Id = RockRes.Search("R", 1, SMALL_ROCK_SIZE, 1, SMALL_ROCK_SIZE,
+									-1, false, TerrainRes[World.GetLoc(sx, sy).TerrainId].AverageType);
 								if (rock2Id == 0)
 									continue;
 
@@ -1430,9 +1345,8 @@ public class MapGenerator
 
 				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
-						SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("R", SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE, SMALL_ROCK_SIZE + 1, HUGE_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1459,9 +1373,8 @@ public class MapGenerator
 
 				if (CanAddRock(x, y, x2, y2))
 				{
-					int rockId = RockRes.Search("R", 1, SMALL_ROCK_SIZE,
-						1, SMALL_ROCK_SIZE, -1, false,
-						TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
+					int rockId = RockRes.Search("R", 1, SMALL_ROCK_SIZE, 1, SMALL_ROCK_SIZE,
+						-1, false, TerrainRes[World.GetLoc(x, y).TerrainId].AverageType);
 					if (rockId == 0)
 						continue;
 
@@ -1519,11 +1432,9 @@ public class MapGenerator
 
 	private void SetHarborBit()
 	{
-		// a pass during genmap to set LOCATE_HARBOR_BIT
-		// notice this bit is only a necessary condition to build harbor
-		for (int y = 0; y < GameConstants.MapSize - 2; ++y)
+		for (int y = 0; y < GameConstants.MapSize - 2; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize - 2; ++x)
+			for (int x = 0; x < GameConstants.MapSize - 2; x++)
 			{
 				if (World.CanBuildFirm(x, y, Firm.FIRM_HARBOR) != 0)
 				{
@@ -1535,14 +1446,13 @@ public class MapGenerator
 
 	private void CreatePlayerNation()
 	{
-		// if Config.race_id == 0, select a random race, but don't call misc.random
-		Nation nation = NationArray.NewNation(NationBase.NATION_OWN,
-			Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1, Config.player_nation_color);
-
+		// if Config.race_id == 0, select a random race, but don't call Misc.Random()
+		int raceId = Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1;
+		Nation nation = NationArray.NewNation(NationBase.NATION_OWN, raceId, Config.player_nation_color);
 		NationArray.SetHumanName(nation.NationId, Config.player_name);
 	}
 	
-	private void CreateAINation(int aiNationCount)
+	private void CreateAINations(int aiNationCount)
 	{
 		for (int i = 0; i < aiNationCount; i++)
 		{
@@ -1551,16 +1461,16 @@ public class MapGenerator
 		}
 	}
 
-	private Town CreateTown(int nationRecno, int raceId, out int xLoc, out int yLoc)
+	private Town CreateTown(int nationId, int raceId)
 	{
-		if (!TownArray.ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize, out xLoc, out yLoc))
+		if (!TownArray.ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize, out int xLoc, out int yLoc))
 			return null;
 
-		Town town = TownArray.AddTown(nationRecno, raceId, xLoc, yLoc);
+		Town town = TownArray.AddTown(nationId, raceId, xLoc, yLoc);
 
 		//--------- no. of mixed races ---------//
 
-		if (nationRecno != 0)
+		if (nationId != 0)
 		{
 			int initPop;
 
@@ -1606,8 +1516,6 @@ public class MapGenerator
 			}
 		}
 
-		//---------- set town layout -----------//
-
 		town.AutoSetLayout();
 
 		return town;
@@ -1617,23 +1525,18 @@ public class MapGenerator
 	{
 		SpriteInfo spriteInfo = SpriteRes[UnitRes[unitId].SpriteId];
 
-		//------ locate space for the unit ------//
+		int locX = town.LocX1;
+		int locY = town.LocY1;
 
-		int xLoc = town.LocX1;
-		int yLoc = town.LocY1;
-
-		if (!World.LocateSpace(ref xLoc, ref yLoc,
-			    xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
+		if (!World.LocateSpace(ref locX, ref locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
 			    spriteInfo.LocWidth, spriteInfo.LocHeight))
 		{
 			return null;
 		}
 
-		//---------- create the unit --------//
-
 		int unitLoyalty = 80 + Misc.Random(20);
 
-		Unit unit = UnitArray.AddUnit(unitId, town.NationId, rankId, unitLoyalty, xLoc, yLoc);
+		Unit unit = UnitArray.AddUnit(unitId, town.NationId, rankId, unitLoyalty, locX, locY);
 
 		if (unit == null)
 			return null;
@@ -1706,8 +1609,8 @@ public class MapGenerator
 		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 
 		// leave at least one location space around the building
-		if (!World.LocateSpaceRandom(ref locX, ref locY, GameConstants.MapSize - 1,
-			    GameConstants.MapSize - 1, firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
+		if (!World.LocateSpaceRandom(ref locX, ref locY, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+			    firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
 			    GameConstants.MapSize * GameConstants.MapSize, 0, true, teraMask))
 		{
 			return;
@@ -1746,49 +1649,27 @@ public class MapGenerator
 			uninitializedNations.Add(nation);
 		}
 
-		bool noSpaceFlag = false;
-
 		foreach (Nation nation in NationArray)
 		{
-			//--------- create town -----------//
-
-			Town town = CreateTown(nation.NationId, nation.RaceId, out _, out _);
-
+			Town town = CreateTown(nation.NationId, nation.RaceId);
 			if (town == null)
-			{
-				noSpaceFlag = true;
 				break;
-			}
-
-			//------- create military camp -------//
 
 			//TODO randomize camp location
-			int firmRecno = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.RaceId].Code);
-
-			if (firmRecno == 0)
-			{
-				noSpaceFlag = true;
+			int firmId = FirmArray.BuildFirm(town.LocX1 + 5, town.LocY1, nation.NationId, Firm.FIRM_CAMP, RaceRes[nation.RaceId].Code);
+			if (firmId == 0)
 				break;
-			}
 
-			FirmArray[firmRecno].CompleteConstruction();
-
-			//--------- create units ----------//
+			FirmArray[firmId].CompleteConstruction();
 
 			int unitType = RaceRes[nation.RaceId].BasicUnitType;
 
 			Unit king = CreateUnit(town, unitType, Unit.RANK_KING);
-
-			if (king != null)
-			{
-				nation.SetKing(king.SpriteId, true);
-				FirmArray[firmRecno].AssignOverseer(king.SpriteId);
-			}
-			else
-			{
-				noSpaceFlag = true;
+			if (king == null)
 				break;
-			}
+			
+			nation.SetKing(king.SpriteId, true);
+			FirmArray[firmId].AssignOverseer(king.SpriteId);
 
 			//----- create skilled units if config.random_start_up is 1 -----//
 
@@ -1837,7 +1718,7 @@ public class MapGenerator
 		//------ create independent towns -------//
 
 		int startUpIndependentTown = Config.start_up_independent_town;
-		//int startUpRawSite = config.start_up_raw_site;
+		//TODO move constant to the config
 		int startUpMonsterFirm = 15;
 
 		SiteArray.GenerateRawSite(Config.start_up_raw_site);
@@ -1850,14 +1731,13 @@ public class MapGenerator
 			{
 				//------ create independent towns -------//
 				int raceId = ConfigAdv.race_random_list[k % ConfigAdv.race_random_list_max];
-				if (CreateTown(0, raceId, out _, out _) == null)
+				if (CreateTown(0, raceId) != null)
 				{
-					startUpIndependentTown = 0;
-					break;
+					startUpIndependentTown--;
 				}
 				else
 				{
-					startUpIndependentTown--;
+					startUpIndependentTown = 0;
 				}
 			}
 
@@ -1879,6 +1759,6 @@ public class MapGenerator
 				break;
 		}
 
-		Sys.Instance.NationArray.UpdateStatistic();
+		NationArray.UpdateStatistic();
 	}
 }
