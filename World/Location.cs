@@ -6,28 +6,28 @@ public class Location
 {
 	public const int LOCATE_WALK_LAND = 0x01;
 	public const int LOCATE_WALK_SEA = 0x02;
-	public const int LOCATE_COAST = 0x08;
+	private const int LOCATE_COAST = 0x08;
 
 	// ----- govern the usage of ExtraPara ---------//
-	public const int LOCATE_SITE_MASK = 0xf0;
-	public const int LOCATE_HAS_SITE = 0x10;
-	public const int LOCATE_HAD_WALL = 0x20;
-	public const int LOCATE_HAS_DIRT = 0x30;
+	private const int LOCATE_SITE_MASK = 0xf0;
+	private const int LOCATE_HAS_SITE = 0x10;
+	private const int LOCATE_HAD_WALL = 0x20;
+	private const int LOCATE_HAS_DIRT = 0x30;
 
-	public const int LOCATE_SITE_RESERVED = 0xf0;
+	private const int LOCATE_SITE_RESERVED = 0xf0;
 	//	occupied by other block such as hill, plant
 
 	// ----- govern the usage of CargoId -------//
-	public const int LOCATE_BLOCK_MASK = 0xf00;
-	public const int LOCATE_IS_HILL = 0x100;
-	public const int LOCATE_IS_PLANT = 0x200;
-	public const int LOCATE_IS_TOWN = 0x300;
-	public const int LOCATE_IS_FIRM = 0x400;
-	public const int LOCATE_IS_WALL = 0x500;
-	public const int LOCATE_IS_ROCK = 0xf00;
+	private const int LOCATE_BLOCK_MASK = 0xf00;
+	private const int LOCATE_IS_HILL = 0x100;
+	private const int LOCATE_IS_PLANT = 0x200;
+	private const int LOCATE_IS_TOWN = 0x300;
+	private const int LOCATE_IS_FIRM = 0x400;
+	private const int LOCATE_IS_WALL = 0x500;
+	private const int LOCATE_IS_ROCK = 0xf00;
 
-	public const int LOCATE_POWER_OFF = 0x1000; // true if no power_nation_recno can be set in this location
-	public const int LOCATE_HARBOR_BIT = 0x2000; // true if the terrain is suitable to build harbor (x,y) to (x+2,y+2)
+	private const int LOCATE_POWER_OFF = 0x1000; // true if no PowerNationId can be set in this location
+	private const int LOCATE_HARBOR_BIT = 0x2000; // true if the terrain is suitable to build harbor (x, y) to (x + 2, y + 2)
 
 	// ------- constant on visibility ----------//
 	// const unsigned char FULL_VISIBILITY = MAX_BRIGHTNESS_ADJUST_DEGREE * 8 + 7;
@@ -35,8 +35,8 @@ public class Location
 
 	// if a location has not been explored, visibility = 0
 	// if a location has been explored, visibility is between 36-87
-	public const int EXPLORED_VISIBILITY = 30; // don't see this to multiple of 8
-	public const int MAX_VISIT_LEVEL = FULL_VISIBILITY;
+	public const int EXPLORED_VISIBILITY = 30; // don't set this to multiple of 8
+	private const int MAX_VISIT_LEVEL = FULL_VISIBILITY;
 
 	private int _locFlag;
 	public int TerrainId { get; set; }
@@ -54,43 +54,41 @@ public class Location
 	
 	//------------------------------------------------//
 	// when (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_SITE
-	// > extra_para = raw recno
+	// > _extraPara = raw id
 	//
 	// when (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAD_WALL
-	// > extra_para = time remained that can't build wall
+	// > _extraPara = time remained that can't build wall
 	//
 	// when (loc_flag & LOCATE_SITE_MASK) == LOCATE_HAS_DIRT
-	// > extra_para = dirt recno
+	// > _extraPara = dirt id
 	//
 	// when (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_HILL
-	// > cargo_recno = top hill block id
-	// > extra_para = bottom hill block id
+	// > CargoId = top hill block id
+	// > _extraPara = bottom hill block id
 	//
 	// when (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_FIRM
-	// > cargo_recno = firm recno
+	// > CargoId = firm id
 	//
 	// when (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_TOWN
-	// > cargo_recno = town zone recno
+	// > CargoId = town id
 	//
 	//	when (loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_PLANT
-	// > extra_para  = id. of the plant bitmap
-	// > cargo_recno = low byte - inner x, high byte - inner y
+	// > _extraPara  = id. of the plant bitmap
+	// > CargoId = low byte - inner x, high byte - inner y
 	//
 	//	when (loc_flag & LOCATE_BLOCK_MASK) == LOCATION_IS_WALL
-	// > extra_para  = id. of the city wall bitmap
-	// > high byte of cargo_recno = hit points remained for the wall
+	// > _extraPara  = id. of the city wall bitmap
+	// > high byte of CargoId = hit points remained for the wall
 	//
 	//	when (loc_flag & LOCATE_BLOCK_MASK) == LOCATION_IS_ROCK
-	// > cargo_recno = rock recno in rock_array
+	// > CargoId = rock id in RockArray
 	//
-	// when (loc_flag & LOCATE_BLOCK_MASK) == 0 and cargo_recno != 0
-	// > carge_recno = unit id
+	// when (loc_flag & LOCATE_BLOCK_MASK) == 0 and CargoId != 0
+	// > CargoId = unit id
 	//------------------------------------------------//
 
 	private TerrainRes TerrainRes { get; }
 	private HillRes HillRes { get; }
-
-	private UnitArray UnitArray => Sys.Instance.UnitArray;
 
 	public Location(TerrainRes terrainRes, HillRes hillRes)
 	{
@@ -233,7 +231,7 @@ public class Location
 	}
 
 	// ------------ wall timeout ----------//
-	public bool had_wall()
+	public bool HadWall()
 	{
 		return (_locFlag & LOCATE_SITE_MASK) == LOCATE_HAD_WALL;
 	}
@@ -303,6 +301,11 @@ public class Location
 	}
 
 	// ---------- rock ------------//
+	public bool CanAddRock(int teraMask = LOCATE_WALK_LAND)
+	{
+		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0);
+	}
+	
 	public void SetRock(int rockArrayId)
 	{
 		_locFlag = _locFlag & ~LOCATE_BLOCK_MASK | LOCATE_IS_ROCK;
@@ -325,11 +328,6 @@ public class Location
 	public int RockArrayId()
 	{
 		return IsRock() ? CargoId : 0;
-	}
-	
-	public bool CanAddRock(int teraMask = LOCATE_WALK_LAND)
-	{
-		return (CargoId == 0) && ((_locFlag & teraMask) != 0) && ((_locFlag & LOCATE_BLOCK_MASK) == 0);
 	}
 
 	// ---------- hill -------------//
@@ -589,7 +587,7 @@ public class Location
 		_extraPara++;
 	}
 
-	// call region_type only when generating region number
+	// call RegionType() only when generating region number
 	public RegionType RegionType()
 	{
 		return Walkable() ? TenKingdoms.RegionType.LAND : (Sailable() ? TenKingdoms.RegionType.SEA : TenKingdoms.RegionType.IMPASSABLE);
@@ -783,7 +781,7 @@ public class Location
 		if (IsAccessible(mobileType))
 		{
 			int unitId = UnitId(mobileType);
-			return unitId == 0 || UnitArray[unitId].GroupId == curGroupId;
+			return unitId == 0 || Sys.Instance.UnitArray[unitId].GroupId == curGroupId;
 		}
 
 		return false;

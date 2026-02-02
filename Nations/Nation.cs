@@ -6176,6 +6176,26 @@ public class NationOld : NationBase
 		return curRating;
 	}
 
+	private bool IsHarborRegion(int xLoc, int yLoc, int landRegionId, int seaRegionId)
+	{
+		if (xLoc + 2 >= GameConstants.MapSize || yLoc + 2 >= GameConstants.MapSize)
+			return false;
+
+		for (int y = 0; y < 3; y++)
+		{
+			for (int x = 0; x < 3; x++)
+			{
+				int regionId = World.GetRegionId(xLoc + x, yLoc + y);
+				if (regionId != landRegionId && regionId != seaRegionId)
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+	
 	public bool ai_build_harbor(int landRegionId, int seaRegionId)
 	{
 		const int ADEQUATE_ENEMY_HARBOR_DISTANCE = 10;
@@ -6229,7 +6249,7 @@ public class NationOld : NationBase
 			if (!location.CanBuildWholeHarbor())
 				continue;
 
-			if (!World.IsHarborRegion(xLoc, yLoc, landRegionId, seaRegionId))
+			if (!IsHarborRegion(xLoc, yLoc, landRegionId, seaRegionId))
 				continue;
 
 			if (World.CanBuildFirm(xLoc, yLoc, Firm.FIRM_HARBOR) == 0)

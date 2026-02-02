@@ -30,7 +30,6 @@ public class World
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
 	private TownArray TownArray => Sys.Instance.TownArray;
-	private SiteArray SiteArray => Sys.Instance.SiteArray;
 	private TornadoArray TornadoArray => Sys.Instance.TornadoArray;
 	private NewsArray NewsArray => Sys.Instance.NewsArray;
 
@@ -65,7 +64,6 @@ public class World
 
 	public void Process()
 	{
-		// ------- process visibility --------//
 		ProcessVisibility();
 
 		//-------- process fire -----------//
@@ -149,14 +147,16 @@ public class World
 		return 100 - 100 * curDistance / GameConstants.MapSize;
 	}
 
+	//TODO merge Unveil and Explore
 	public void Unveil(int locX1, int locY1, int locX2, int locY2)
 	{
 		if (Config.explore_whole_map)
 			return;
 
-		Misc.BoundLocation(ref locX1, ref locY1);
-		Misc.BoundLocation(ref locX2, ref locY2);
-
+		locX1 = Math.Max(0, locX1 - GameConstants.EXPLORE_RANGE);
+		locY1 = Math.Max(0, locY1 - GameConstants.EXPLORE_RANGE);
+		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + GameConstants.EXPLORE_RANGE);
+		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + GameConstants.EXPLORE_RANGE);
 		Explore(locX1, locY1, locX2, locY2);
 	}
 
@@ -201,13 +201,13 @@ public class World
 
 				if (relation != null && !relation.HasContact)
 				{
-					//if( !remote.is_enable() )
+					//if (!remote.is_enable())
 					//{
 						NationArray.Player.EstablishContact(nationId);
 					//}
 					//else
 					//{
-					//if( !relation.contact_msg_flag )
+					//if (!relation.contact_msg_flag)
 					//{
 					// packet structure : <player nation> <explored nation>
 					//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_NATION_CONTACT, 2*sizeof(short));
@@ -232,7 +232,7 @@ public class World
 		int right = Math.Min(GameConstants.MapSize - 1, locX2 + range);
 		int bottom = Math.Min(GameConstants.MapSize - 1, locY2 + range);
 
-		// ----- mark the visit_level of the square around the unit ------//
+		// ----- mark the VisitLevel of the square around the unit ------//
 		for (int locY = top; locY <= bottom; locY++)
 		{
 			for (int locX = left; locX <= right; locX++)
@@ -241,7 +241,7 @@ public class World
 			}
 		}
 
-		// ----- visit_level decreasing outside the visible range ------//
+		// ----- VisitLevel decreasing outside the visible range ------//
 		if (extend > 0)
 		{
 			int visitLevel = Location.FULL_VISIBILITY;
@@ -272,7 +272,7 @@ public class World
 		// ------- left side -----------//
 		if (locX1 >= 0)
 		{
-			for (int y = top; y <= bottom; ++y)
+			for (int y = top; y <= bottom; y++)
 			{
 				GetLoc(locX1, y).SetVisited(visitLevel);
 			}
@@ -281,7 +281,7 @@ public class World
 		// ------- top side ---------//
 		if (locY1 >= 0)
 		{
-			for (int x = left; x <= right; ++x)
+			for (int x = left; x <= right; x++)
 			{
 				GetLoc(x, locY1).SetVisited(visitLevel);
 			}
@@ -290,7 +290,7 @@ public class World
 		// ------- right side -----------//
 		if (locX2 < GameConstants.MapSize)
 		{
-			for (int y = top; y <= bottom; ++y)
+			for (int y = top; y <= bottom; y++)
 			{
 				GetLoc(locX2, y).SetVisited(visitLevel);
 			}
@@ -299,7 +299,7 @@ public class World
 		// ------- bottom side ---------//
 		if (locY2 < GameConstants.MapSize)
 		{
-			for (int x = left; x <= right; ++x)
+			for (int x = left; x <= right; x++)
 			{
 				GetLoc(x, locY2).SetVisited(visitLevel);
 			}
@@ -376,7 +376,6 @@ public class World
 
 				return pierFlag;
 
-			// other tera_type here
 			default:
 				return 0;
 		}
@@ -407,8 +406,9 @@ public class World
 		return true;
 	}
 
-	public bool LocateSpace(ref int locX1, ref int locY1, int locX2, int locY2,
-		int spaceLocWidth, int spaceLocHeight, int mobileType = UnitConstants.UNIT_LAND, int regionId = 0, bool buildFlag = false)
+	// TODO rewrite
+	public bool LocateSpace(ref int locX1, ref int locY1, int locX2, int locY2, int spaceLocWidth, int spaceLocHeight,
+		int mobileType = UnitConstants.UNIT_LAND, int regionId = 0, bool buildFlag = false)
 	{
 		Location location1 = GetLoc(locX1, locY1);
 		
@@ -591,11 +591,11 @@ public class World
 	}
 
 	// TODO rewrite
-	public bool LocateSpaceRandom(ref int locX1, ref int locY1, int locX2, int locY2,
-		int spaceLocWidth, int spaceLocHeight, int maxTries, int regionId = 0, bool buildSite = false, int teraMask = 1)
+	public bool LocateSpaceRandom(ref int locX1, ref int locY1, int locX2, int locY2, int spaceLocWidth, int spaceLocHeight,
+		int maxTries, int regionId = 0, bool buildSite = false, int teraMask = 1)
 	{
-		int scanWidth = locX2 - locX1 - spaceLocWidth + 2; //xLoc2-xLoc1+1-spaceLocWidth+1;
-		int scanHeight = locY2 - locY1 - spaceLocHeight + 2; //yLoc2-yLoc1+1-spaceLocHeight+1;
+		int scanWidth = locX2 - locX1 - spaceLocWidth + 2; //locX2 - locX1 + 1 - spaceLocWidth + 1;
+		int scanHeight = locY2 - locY1 - spaceLocHeight + 2; //locY2 - locY1 + 1 - spaceLocHeight + 1;
 
 		for (int i = 0; i < maxTries; i++)
 		{
@@ -642,26 +642,6 @@ public class World
 		}
 
 		return false;
-	}
-
-	public bool IsHarborRegion(int xLoc, int yLoc, int landRegionId, int seaRegionId)
-	{
-		if (xLoc + 2 >= GameConstants.MapSize || yLoc + 2 >= GameConstants.MapSize)
-			return false;
-
-		for (int y = 0; y < 3; y++)
-		{
-			for (int x = 0; x < 3; x++)
-			{
-				int regionId = GetRegionId(xLoc + x, yLoc + y);
-				if (regionId != landRegionId && regionId != seaRegionId)
-				{
-					return false;
-				}
-			}
-		}
-
-		return true;
 	}
 
 	public void SetAllPower()
@@ -720,19 +700,16 @@ public class World
 	// TODO rewrite - works incorrectly
 	public void RestorePower(int locX1, int locY1, int locX2, int locY2, int townId, int firmId)
 	{
-		//TODO rewrite bad code
-		int nationRecno = 0;
+		int nationId = 0;
 
 		if (townId != 0)
 		{
-			nationRecno = TownArray[townId].NationId;
-			//TownArray[townRecno].nation_recno = 0;
+			nationId = TownArray[townId].NationId;
 		}
 
 		if (firmId != 0)
 		{
-			nationRecno = FirmArray[firmId].NationId;
-			//FirmArray[firmRecno].nation_recno = 0;
+			nationId = FirmArray[firmId].NationId;
 		}
 
 		locX1 = Math.Max(0, locX1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
@@ -750,24 +727,12 @@ public class World
 			{
 				Location location = GetLoc(locX, locY);
 
-				if (location.PowerNationId == nationRecno)
+				if (location.PowerNationId == nationId)
 					location.PowerNationId = 0;
 			}
 		}
 
 		//--- if some power areas are freed up, see if neighbor towns/firms should take up these power areas ----//
-
-		//TODO drawing
-		//if( sys.map_need_redraw )	// when calls set_all_power(), the nation_recno of the calling firm must be reset
-		//set_all_power();
-
-		//------- restore the nation recno of the calling town/firm -------//
-
-		//if (townRecno != 0)
-			//TownArray[townRecno].nation_recno = nationRecno;
-
-		//if (firmRecno != 0)
-			//FirmArray[firmRecno].nation_recno = nationRecno;
 	}
 
 	//------- functions related to plants -----//
@@ -786,9 +751,9 @@ public class World
 	{
 		const int PLANT_ARRAY_SIZE = 8;
 
-		//TODO should depend on map size
 		PlantCount = 0;
-		for (int trial = 50; trial > 0; trial--)
+		double scaleFactor = (GameConstants.MapSize * GameConstants.MapSize) / (200.0 * 200.0);
+		for (int trial = (int)(50 * scaleFactor); trial > 0; trial--)
 		{
 			// ------- randomly select a place to seed plant
 			int y = 1 + Misc.Random(GameConstants.MapSize - 2);
@@ -812,7 +777,7 @@ public class World
 			if (buildFlag)
 			{
 				int[] plantArray = new int[PLANT_ARRAY_SIZE];
-				for (int i = 0; i < PLANT_ARRAY_SIZE; ++i)
+				for (int i = 0; i < PLANT_ARRAY_SIZE; i++)
 				{
 					plantArray[i] = PlantRes.PlantId(PlantRes.Scan(0, teraType, 0));
 				}
@@ -827,7 +792,7 @@ public class World
 		_plantLimit = PlantCount * 3 / 2;
 
 		// ------- kill some plant ----------//
-		for (int trial = 8; trial > 0; trial--)
+		for (int trial = (int)(8 * scaleFactor); trial > 0; trial--)
 		{
 			PlantDeath(2);
 		}
@@ -847,7 +812,7 @@ public class World
 			plantSize = strength;
 
 		int teraType;
-		if (newLoc != null && newLoc.CanAddPlant() &&
+		if (newLoc.CanAddPlant() &&
 		    (plantInfo.TeraType[0] == (teraType = TerrainRes[newLoc.TerrainId].AverageType) ||
 		     plantInfo.TeraType[1] == teraType || plantInfo.TeraType[2] == teraType))
 		{
@@ -855,13 +820,13 @@ public class World
 			newLoc.SetFlammability(100);
 			PlantCount++;
 		}
-		else if (newLoc != null && newLoc.IsPlant() &&
+		else if (newLoc.IsPlant() &&
 		         // 1. same type, large override small
-		         // newLoc.plant_id() >= plant_res[basePlantId].first_bitmap &&
-		         // newLoc.plant_id() < plant_res[basePlantId].first_bitmap + plantSize)
+		         // newLoc.PlantId() >= PlantRes[basePlantId].FirstBitmap &&
+		         // newLoc.PlantId() < PlantRes[basePlantId].FirstBitmap + plantSize)
 		         // 2. same type, small override large
-		         // newLoc.plant_id() > plant_res[basePlantId].first_bitmap + plantSize &&
-		         // newLoc.plant_id() < plant_res[basePlantId].first_bitmap + plant_res[basePlantId].bitmap_count)
+		         // newLoc.PlantId() > PlantRes[basePlantId].FirstBitmap + plantSize &&
+		         // newLoc.PlantId() < PlantRes[basePlantId].FirstBitmap + PlantRes[basePlantId].BitmapCount)
 		         // 3. all types, small override large
 		         (newLoc.PlantId() - PlantRes[PlantRes.PlantId(newLoc.PlantId())].FirstBitmap) > plantSize)
 		{
@@ -1145,7 +1110,7 @@ public class World
 						if (x > 0)
 						{
 							totalSpace++;
-							if (GetLoc(x - 1, y).IsPlant())
+							if (GetLoc(x - 1, y - 1).IsPlant())
 								neighbour++;
 						}
 
@@ -1153,7 +1118,7 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (GetLoc(x + 1, y).IsPlant())
+							if (GetLoc(x + 1, y - 1).IsPlant())
 								neighbour++;
 						}
 					}
@@ -1171,7 +1136,7 @@ public class World
 						if (x > 0)
 						{
 							totalSpace++;
-							if (GetLoc(x - 1, y).IsPlant())
+							if (GetLoc(x - 1, y + 1).IsPlant())
 								neighbour++;
 						}
 
@@ -1179,7 +1144,7 @@ public class World
 						if (x < GameConstants.MapSize - 1)
 						{
 							totalSpace++;
-							if (GetLoc(x + 1, y).IsPlant())
+							if (GetLoc(x + 1, y + 1).IsPlant())
 								neighbour++;
 						}
 					}
@@ -1188,7 +1153,7 @@ public class World
 					if (Misc.Random(totalSpace) + 2 * totalSpace / 3 <= neighbour)
 					{
 						location = GetLoc(x, y);
-						GetLoc(x, y).RemovePlant();
+						location.RemovePlant();
 						if (location.Flammability() > 50)
 							location.SetFlammability(50);
 						PlantCount--;
@@ -1532,8 +1497,7 @@ public class World
 
 				// ---- add news -------//
 				if (unit.IsOwn())
-					NewsArray.LightningDamage(unit.CurLocX, unit.CurLocY,
-						News.NEWS_LOC_UNIT, unit.SpriteId, unit.HitPoints <= 0.0 ? 1 : 0);
+					NewsArray.LightningDamage(unit.CurLocX, unit.CurLocY, News.NEWS_LOC_UNIT, unit.SpriteId, unit.HitPoints <= 0.0 ? 1 : 0);
 
 				if (unit.HitPoints <= 0.0)
 					unit.HitPoints = 0.0;
@@ -1552,8 +1516,7 @@ public class World
 
 				// ---- add news -------//
 				if (firm.OwnFirm())
-					NewsArray.LightningDamage(firm.LocCenterX, firm.LocCenterY,
-						News.NEWS_LOC_FIRM, firm.FirmId, firm.HitPoints <= 0.0 ? 1 : 0);
+					NewsArray.LightningDamage(firm.LocCenterX, firm.LocCenterY, News.NEWS_LOC_FIRM, firm.FirmId, firm.HitPoints <= 0.0 ? 1 : 0);
 
 				// ---- add a fire on it ------//
 				Location location = GetLoc(firm.LocCenterX, firm.LocCenterY);
