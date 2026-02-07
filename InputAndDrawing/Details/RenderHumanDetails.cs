@@ -551,7 +551,7 @@ public partial class Renderer
 
     private bool IsRewardEnabled(Unit unit)
     {
-        return unit.IsOwn() && unit.Rank != Unit.RANK_KING;
+        return unit.IsOwn() && unit.Rank != Unit.RANK_KING && NationArray.Player != null && NationArray.Player.Cash > 0.0;
     }
 
     private bool IsSettleEnabled(Unit unit)

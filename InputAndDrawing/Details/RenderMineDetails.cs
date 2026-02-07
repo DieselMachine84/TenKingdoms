@@ -57,20 +57,44 @@ public partial class Renderer
             }
         }
         
-        // TODO display spy list and capture buttons
+        if (IsFirmSpyListEnabled(mine))
+        {
+            bool mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                                 _mouseButtonY >= ButtonsMineY + 2 && _mouseButtonY <= ButtonsMineY + ButtonHeight;
+            if (_leftMousePressed && mouseOnButton)
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsMineY, _buttonDownWidth, _buttonDownHeight);
+            else
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsMineY, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsMineY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+        }
+        
+        // TODO display capture button
     }
     
     public void HandleMineDetailsInput(FirmMine mine)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(mine.NationId, mine.GetPlayerSpies());
+            return;
+        }
+        
         if (!mine.OwnFirm())
             return;
         
         bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsMineY + 2 && _mouseButtonY <= ButtonsMineY + ButtonHeight;
+        bool mouseOnButton3 = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                              _mouseButtonY >= ButtonsMineY + 2 && _mouseButtonY <= ButtonsMineY + ButtonHeight;
         
         if (_leftMouseReleased && mouseOnButton1 && mine.HaveOwnWorkers())
         {
             mine.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+        }
+
+        if (_leftMouseReleased && mouseOnButton3)
+        {
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
 }

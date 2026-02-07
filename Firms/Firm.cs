@@ -2535,6 +2535,21 @@ public abstract class Firm : IIdObject
 	}
 
 
+	public List<Spy> GetPlayerSpies()
+	{
+		List<Spy> result = new List<Spy>();
+		
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == FirmId && spy.TrueNationId == NationArray.PlayerId)
+			{
+				result.Add(spy);
+			}
+		}
+
+		return result;
+	}
+	
 	public bool CanSpyBribe(int workerId, int briberNationId)
 	{
 		int spyId;

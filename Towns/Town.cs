@@ -47,8 +47,8 @@ public class Town : IIdObject
 	public int AccumulatedRewardPenalty { get; private set; }
 	public int AccumulatedRecruitPenalty { get; private set; }
 	public int AccumulatedEnemyGrantPenalty { get; private set; }
-	private int _autoCollectTaxLoyalty; // auto collect tax if the loyalty reaches this level
-	private int _autoGrantLoyalty; // auto grant if the loyalty drop below this level
+	public int AutoCollectTaxLoyalty { get; private set;  } // auto collect tax if the loyalty reaches this level
+	public int AutoGrantLoyalty { get; private set; } // auto grant if the loyalty drop below this level
 
 	
 	public List<int> LinkedFirms { get; } = new List<int>();
@@ -1308,26 +1308,26 @@ public class Town : IIdObject
 		}
 	}
 
-	private void SetAutoCollectTaxLoyalty(int loyaltyLevel)
+	public void SetAutoCollectTaxLoyalty(int loyaltyLevel)
 	{
-		_autoCollectTaxLoyalty = loyaltyLevel;
+		AutoCollectTaxLoyalty = loyaltyLevel;
 
-		if (loyaltyLevel != 0 && _autoGrantLoyalty >= _autoCollectTaxLoyalty)
+		if (loyaltyLevel != 0 && AutoGrantLoyalty >= AutoCollectTaxLoyalty)
 		{
-			_autoGrantLoyalty = _autoCollectTaxLoyalty - 10;
+			AutoGrantLoyalty = AutoCollectTaxLoyalty - 10;
 		}
 	}
 
-	private void SetAutoGrantLoyalty(int loyaltyLevel)
+	public void SetAutoGrantLoyalty(int loyaltyLevel)
 	{
-		_autoGrantLoyalty = loyaltyLevel;
+		AutoGrantLoyalty = loyaltyLevel;
 
-		if (loyaltyLevel != 0 && _autoGrantLoyalty >= _autoCollectTaxLoyalty)
+		if (loyaltyLevel != 0 && AutoGrantLoyalty >= AutoCollectTaxLoyalty)
 		{
-			_autoCollectTaxLoyalty = _autoGrantLoyalty + 10;
+			AutoCollectTaxLoyalty = AutoGrantLoyalty + 10;
 
-			if (_autoCollectTaxLoyalty > 100)
-				_autoCollectTaxLoyalty = 0; // disable auto collect tax if it's over 100
+			if (AutoCollectTaxLoyalty > 100)
+				AutoCollectTaxLoyalty = 0; // disable auto collect tax if it's over 100
 		}
 	}
 
@@ -1338,21 +1338,17 @@ public class Town : IIdObject
 
 		Nation nation = NationArray[NationId];
 
-		//----- auto collect tax -----//
-
-		if (_autoCollectTaxLoyalty > 0)
+		if (AutoCollectTaxLoyalty > 0)
 		{
-			if (AccumulatedCollectTaxPenalty == 0 && AverageLoyalty() >= _autoCollectTaxLoyalty)
+			if (AccumulatedCollectTaxPenalty == 0 && AverageLoyalty() >= AutoCollectTaxLoyalty)
 			{
 				CollectTax(InternalConstants.COMMAND_AI);
 			}
 		}
 
-		//---------- auto grant -----------//
-
-		if (_autoGrantLoyalty > 0)
+		if (AutoGrantLoyalty > 0)
 		{
-			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < _autoGrantLoyalty && nation.Cash > 0.0)
+			if (AccumulatedRewardPenalty == 0 && AverageLoyalty() < AutoGrantLoyalty && nation.Cash > 0.0)
 			{
 				Reward(InternalConstants.COMMAND_AI);
 			}

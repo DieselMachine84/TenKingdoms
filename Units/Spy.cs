@@ -613,7 +613,7 @@ public class Spy : IIdObject
 		}
 	}
 
-	private void Reward(int remoteAction)
+	public void Reward(int remoteAction)
 	{
 		//if( !remoteAction && remote.is_enable() )
 		//{
@@ -684,10 +684,10 @@ public class Spy : IIdObject
 		return unit;
 	}
 
-	public int MobilizeFirmSpy()
+	public Unit MobilizeFirmSpy()
 	{
 		if (SpyPlace != SPY_FIRM)
-			return 0;
+			return null;
 
 		Firm firm = FirmArray[SpyPlaceId];
 		int spyUnitId = 0;
@@ -718,7 +718,7 @@ public class Spy : IIdObject
 			spyUnitId = firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 		}
 
-		return spyUnitId;
+		return spyUnitId != 0 ? UnitArray[spyUnitId] : null;
 	}
 
 	public void SetNextActionMode()

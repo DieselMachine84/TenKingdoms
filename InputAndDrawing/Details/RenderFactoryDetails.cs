@@ -60,17 +60,36 @@ public partial class Renderer
             }
         }
         
-        // TODO display spy list and capture buttons
+        if (IsFirmSpyListEnabled(factory))
+        {
+            bool mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                                 _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
+            if (_leftMousePressed && mouseOnButton)
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsFactoryY, _buttonDownWidth, _buttonDownHeight);
+            else
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsFactoryY, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsFactoryY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+        }
+        
+        // TODO display capture button
     }
 
     public void HandleFactoryDetailsInput(FirmFactory factory)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(factory.NationId, factory.GetPlayerSpies());
+            return;
+        }
+        
         if (!factory.OwnFirm())
             return;
 
         bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
         bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+                              _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
+        bool mouseOnButton3 = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
                               _mouseButtonY >= ButtonsFactoryY + 2 && _mouseButtonY <= ButtonsFactoryY + ButtonHeight;
 
         if (_leftMouseReleased && mouseOnButton1)
@@ -82,6 +101,11 @@ public partial class Renderer
         if (_leftMouseReleased && mouseOnButton2 && factory.HaveOwnWorkers())
         {
             factory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+        }
+        
+        if (_leftMouseReleased && mouseOnButton3)
+        {
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
 }

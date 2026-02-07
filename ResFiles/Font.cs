@@ -121,23 +121,14 @@ public class Font
         InterCharSpace *= 2;
     }
 
-    public int TextWidth(string text, int maxDispWidth = 0)
+    public int TextWidth(string text, bool smallSize = false)
     {
 	    int x = 0;
 	    int maxLen = 0;
-	    int wordWidth = 0;
 
-	    for (int i = 0; i < text.Length; i++, x += InterCharSpace)
+	    for (int i = 0; i < text.Length; i++, x += smallSize ? InterCharSpace * 2 / 3 : InterCharSpace)
 	    {
 		    char textChar = text[i];
-
-		    //-- if the line exceed the given MAX width, advance to next line --//
-
-		    if (maxDispWidth != 0 && x > maxDispWidth)
-		    {
-			    maxLen = maxDispWidth;
-			    x = wordWidth; // the last word of the prev line wraps to next line
-		    }
 
 		    //--- if the text has more than 1 line, get the longest line ---//
 
@@ -148,14 +139,10 @@ public class Font
 				    maxLen = x;
 
 			    x = 0;
-			    wordWidth = 0;
-			    continue; // next character
 		    }
-
-		    // --------- control word: @COL# (nation color) -----------//
-
 		    else
 		    {
+			    // --------- control word: @COL# (nation color) -----------//
 			    int colLength = "@COL".Length;
 			    bool hasColorCode = (textChar == '@') && (i + colLength <= text.Length && text.Substring(i, colLength) == "@COL");
 			    if (hasColorCode) // display nation color bar in text
@@ -163,7 +150,6 @@ public class Font
 				    // skip over the word
 				    i += colLength;
 				    x += NATION_COLOR_BAR_WIDTH;
-				    wordWidth = 0;
 			    }
 
 			    //--- add the width of the character to the total line width ---//
@@ -171,26 +157,17 @@ public class Font
 			    else if (textChar == ' ')
 			    {
 				    x += SpaceWidth;
-				    wordWidth = 0;
 			    }
 
 			    else if (textChar >= FirstChar && textChar <= LastChar)
 			    {
 				    int charWidth = _fontInfos[textChar - FirstChar].width;
-				    x += charWidth;
-				    wordWidth += charWidth;
+				    x += smallSize ? charWidth * 2 / 3 : charWidth;
 			    }
 			    else
 			    {
 				    x += SpaceWidth;
-				    wordWidth += SpaceWidth;
 			    }
-		    }
-
-		    if (maxDispWidth != 0 && wordWidth > maxDispWidth)
-		    {
-			    x -= wordWidth - maxDispWidth;
-			    wordWidth = maxDispWidth;
 		    }
 	    }
 

@@ -77,7 +77,18 @@ public partial class Renderer
             }
         }
         
-        // TODO display spy list and capture buttons
+        if (IsFirmSpyListEnabled(warFactory))
+        {
+            bool mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                                 _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
+            if (_leftMousePressed && mouseOnButton)
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsWarFactoryY, _buttonDownWidth, _buttonDownHeight);
+            else
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsWarFactoryY, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsWarFactoryY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+        }
+        
+        // TODO display and capture button
     }
 
     private void DrawWarFactoryMenu(FirmWar warFactory)
@@ -153,6 +164,12 @@ public partial class Renderer
 
     public void HandleWarFactoryDetailsInput(FirmWar warFactory)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(warFactory.NationId, warFactory.GetPlayerSpies());
+            return;
+        }
+
         if (!warFactory.OwnFirm())
             return;
 
@@ -166,6 +183,8 @@ public partial class Renderer
                               _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
         bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
+        bool mouseOnButton3 = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                              _mouseButtonY >= ButtonsWarFactoryY + 2 && _mouseButtonY <= ButtonsWarFactoryY + ButtonHeight;
 
         if (_leftMouseReleased && mouseOnButton1)
         {
@@ -175,6 +194,11 @@ public partial class Renderer
         if (_leftMouseReleased && mouseOnButton2 && warFactory.HaveOwnWorkers())
         {
             warFactory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+        }
+        
+        if (_leftMouseReleased && mouseOnButton3)
+        {
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
 

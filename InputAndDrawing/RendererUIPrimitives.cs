@@ -23,6 +23,7 @@ public partial class Renderer
 	private const int ButtonsInnY = DetailsY1 + 407;
 	private const int ButtonsCampY = DetailsY1 + 376;
 	private const int ButtonsBaseY = DetailsY1 + 376;
+	private const int ButtonsSpyY = DetailsY1 + 337;
 	private const int ButtonsUnitHuman1Y = DetailsY1 + 245;
 	private const int ButtonsUnitHuman2Y = DetailsY1 + 315;
 	private const int ButtonsUnitShipY = DetailsY1 + 358;
@@ -144,6 +145,13 @@ public partial class Renderer
 	private IntPtr _skillPanelDownTexture;
 	private int _skillPanelWidth;
 	private int _skillPanelHeight;
+	private IntPtr _autoTaxTextTexture;
+	private int _autoTaxTextWidth;
+	private int _autoTaxTextHeight;
+	private IntPtr _taxPanelUpTexture;
+	private IntPtr _taxPanelDownTexture;
+	private int _taxPanelWidth;
+	private int _taxPanelHeight;
 	private IntPtr _numberPanelUpTexture;
 	private IntPtr _numberPanelDownTexture;
 	private int _numberPanelWidth;
@@ -310,10 +318,23 @@ public partial class Renderer
 	private IntPtr _buttonDropSpyIdentityTexture;
 	private int _buttonDropSpyIdentityWidth;
 	private int _buttonDropSpyIdentityHeight;
-
+	
 	private IntPtr _buttonSpyMenuTexture;
 	private int _buttonSpyMenuWidth;
 	private int _buttonSpyMenuHeight;
+	private IntPtr _buttonMobilizeSpyTexture;
+	private int _buttonMobilizeSpyWidth;
+	private int _buttonMobilizeSpyHeight;
+	private IntPtr _buttonSpyChangeActionTexture;
+	private int _buttonSpyChangeActionWidth;
+	private int _buttonSpyChangeActionHeight;
+	private IntPtr _buttonSpyViewSecretTexture;
+	private int _buttonSpyViewSecretWidth;
+	private int _buttonSpyViewSecretHeight;
+	private IntPtr _buttonSpyPrevMenuTexture;
+	private int _buttonSpyPrevMenuWidth;
+	private int _buttonSpyPrevMenuHeight;
+
 	private IntPtr _buttonRewardTexture;
 	private IntPtr _buttonRewardDisabledTexture;
 	private int _buttonRewardWidth;
@@ -568,6 +589,16 @@ public partial class Renderer
 		_skillPanelUpTexture = Graphics.CreateTextureFromBmp(skillPanelUpBitmap, _skillPanelWidth, _skillPanelHeight, 32);
 		byte[] skillPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _skillPanelWidth, _skillPanelHeight);
 		_skillPanelDownTexture = Graphics.CreateTextureFromBmp(skillPanelDownBitmap, _skillPanelWidth, _skillPanelHeight, 32);
+		_autoTaxTextWidth = _smallPanelWidth;
+		_autoTaxTextHeight = 70;
+		byte[] autoTaxTextBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _autoTaxTextWidth, _autoTaxTextHeight);
+		_autoTaxTextTexture = Graphics.CreateTextureFromBmp(autoTaxTextBitmap, _autoTaxTextWidth, _autoTaxTextHeight, 32);
+		_taxPanelWidth = _smallPanelWidth;
+		_taxPanelHeight = 20;
+		byte[] taxPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _taxPanelWidth, _taxPanelHeight);
+		_taxPanelUpTexture = Graphics.CreateTextureFromBmp(taxPanelUpBitmap, _taxPanelWidth, _taxPanelHeight, 32);
+		byte[] taxPanelDownBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _taxPanelWidth, _taxPanelHeight);
+		_taxPanelDownTexture = Graphics.CreateTextureFromBmp(taxPanelDownBitmap, _taxPanelWidth, _taxPanelHeight, 32);
 		_numberPanelWidth = 30;
 		_numberPanelHeight = _smallPanelHeight;
 		byte[] numberPanelUpBitmap = CreatePanelUpBitmap(detailsBitmap1, detailsBitmap2, _numberPanelWidth, _numberPanelHeight);
@@ -856,6 +887,27 @@ public partial class Renderer
 		_buttonSpyMenuHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyMenuWidth, _buttonSpyMenuHeight);
 		_buttonSpyMenuTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+		buttonData = buttonImages.Read("MOBILSPY");
+		_buttonMobilizeSpyWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonMobilizeSpyHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonMobilizeSpyWidth, _buttonMobilizeSpyHeight);
+		_buttonMobilizeSpyTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonMobilizeSpyWidth, _buttonMobilizeSpyHeight);
+		buttonData = buttonImages.Read("SPYCHACT");
+		_buttonSpyChangeActionWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpyChangeActionHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyChangeActionWidth, _buttonSpyChangeActionHeight);
+		_buttonSpyChangeActionTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyChangeActionWidth, _buttonSpyChangeActionHeight);
+		buttonData = buttonImages.Read("VSECRET");
+		_buttonSpyViewSecretWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpyViewSecretHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyViewSecretWidth, _buttonSpyViewSecretHeight);
+		_buttonSpyViewSecretTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyViewSecretWidth, _buttonSpyViewSecretHeight);
+		buttonData = buttonImages.Read("PREVMENU");
+		_buttonSpyPrevMenuWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonSpyPrevMenuHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonSpyPrevMenuWidth, _buttonSpyPrevMenuHeight);
+		_buttonSpyPrevMenuTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonSpyPrevMenuWidth, _buttonSpyPrevMenuHeight);
+		
 		buttonData = buttonImages.Read("REWARD");
 		_buttonRewardWidth = BitConverter.ToInt16(buttonData, 0);
 		_buttonRewardHeight = BitConverter.ToInt16(buttonData, 2);
@@ -1203,6 +1255,21 @@ public partial class Renderer
 		Graphics.DrawBitmap(_skillPanelDownTexture, x, y, Scale(_skillPanelWidth), Scale(_skillPanelHeight));
 	}
 
+	private void DrawAutoTaxTextPanel(int x, int y)
+	{
+		Graphics.DrawBitmapScaled(_autoTaxTextTexture, x, y, _autoTaxTextWidth, _autoTaxTextHeight);
+	}
+	
+	private void DrawTaxPanelUp(int x, int y)
+	{
+		Graphics.DrawBitmapScaled(_taxPanelUpTexture, x, y, _taxPanelWidth, _taxPanelHeight);
+	}
+
+	private void DrawTaxPanelDown(int x, int y)
+	{
+		Graphics.DrawBitmapScaled(_taxPanelDownTexture, x, y, _taxPanelWidth, _taxPanelHeight);
+	}
+
 	private void DrawNumberPanelUp(int x, int y)
 	{
 		Graphics.DrawBitmap(_numberPanelUpTexture, x, y, Scale(_numberPanelWidth), Scale(_numberPanelHeight));
@@ -1306,15 +1373,15 @@ public partial class Renderer
 		Graphics.DrawBitmap(_indicatorTexture, x, y, _indicatorWidth * 2, _indicatorHeight * 2);
 	}
 
-	private void PutTextCenter(Font font, string text, int x1, int y1, int x2, int y2)
+	private void PutTextCenter(Font font, string text, int x1, int y1, int x2, int y2, bool smallSize = false)
 	{
-		int textX = x1 + ((x2 - x1 + 1) - font.TextWidth(text)) / 2;
+		int textX = x1 + ((x2 - x1 + 1) - font.TextWidth(text, smallSize)) / 2;
 		int textY = y1 + ((y2 - y1 + 1) - font.FontHeight) / 2;
 
 		if (textX < 0)
 			textX = 0;
 
-		PutText(font, text, textX, textY, x2);
+		PutText(font, text, textX, textY, x2, smallSize);
 	}
 
 	private void PutText(Font font, string text, int x, int y, int x2 = -1, bool smallSize = false)
@@ -1357,7 +1424,7 @@ public partial class Renderer
 					i += colLength;
 					textChar = text[i];
 
-					byte colorCode = ColorRemap.ColorRemaps[textChar - '0'].MainColor;
+					//byte colorCode = ColorRemap.ColorRemaps[textChar - '0'].MainColor;
 
 					//TODO
 					//NationArray.disp_nation_color(x, y + 2, colorCode);

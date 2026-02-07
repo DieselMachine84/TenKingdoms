@@ -66,7 +66,18 @@ public partial class Renderer
             }
         }
         
-        // TODO display spy list and capture buttons
+        if (IsFirmSpyListEnabled(research))
+        {
+            bool mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                                 _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
+            if (_leftMousePressed && mouseOnButton)
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsResearchY, _buttonDownWidth, _buttonDownHeight);
+            else
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsResearchY, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsResearchY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
+        }
+        
+        // TODO display and capture button
     }
 
     private void DrawResearchMenu(FirmResearch research)
@@ -113,6 +124,12 @@ public partial class Renderer
 
     public void HandleResearchDetailsInput(FirmResearch research)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(research.NationId, research.GetPlayerSpies());
+            return;
+        }
+        
         if (!research.OwnFirm())
             return;
 
@@ -126,6 +143,8 @@ public partial class Renderer
                               _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
         bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
+        bool mouseOnButton3 = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+                              _mouseButtonY >= ButtonsResearchY + 2 && _mouseButtonY <= ButtonsResearchY + ButtonHeight;
 
         if (_leftMouseReleased && mouseOnButton1)
         {
@@ -135,6 +154,11 @@ public partial class Renderer
         if (_leftMouseReleased && mouseOnButton2 && research.HaveOwnWorkers())
         {
             research.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+        }
+
+        if (_leftMouseReleased && mouseOnButton3)
+        {
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
 

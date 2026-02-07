@@ -4,7 +4,7 @@ enum FirmDetailsMode { Normal, Research, WarMachine, BuildShip, ShipGoods, Spy }
 
 public partial class Renderer
 {
-    // TODO show spies list, show bribe menu, show assassination result, show view secret menu
+    // TODO show bribe menu, show assassination result, show view secret menu
 
     private FirmDetailsMode FirmDetailsMode { get; set; } = FirmDetailsMode.Normal;
     
@@ -25,6 +25,12 @@ public partial class Renderer
 
         string firmName = firm.FirmName() + (Config.show_ai_info ? " (" + firm.FirmId + ")" : "");
         PutTextCenter(FontSan, firmName, DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            DrawSpyList(firm.NationId, firm.GetPlayerSpies());
+            return;
+        }
 
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
 
@@ -171,7 +177,7 @@ public partial class Renderer
                                         _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
         if (_leftMouseReleased && mouseOnColorSquareButton)
             GoToLocation(firm.LocCenterX, firm.LocCenterY);
-        
+
         if (_leftMouseReleased && IsMouseOnBuilderOrRequestBuilderButton())
         {
             if (ShowBuilderButton(firm) && UnitArray[firm.BuilderId].IsOwn())

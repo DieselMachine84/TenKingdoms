@@ -1,17 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace TenKingdoms;
 
-enum TownDetailsMode { Normal, Train, Spy }
+enum TownDetailsMode { Normal, Train, Spy, CollectTax, Grant }
 
 public partial class Renderer
 {
-    // TODO show spies list, auto collect tax, auto grant
-    // TODO Controlled by Rebels panel
-    // TODO train unit progress
-    // TODO display auto collect and auto grant values
+    // TODO controlled by rebels panel conflicts with grant and spy list buttons
     // TODO list box scroll
+    // TODO train unit progress
 
     private const int TrainSkillPanelX = DetailsX1 + 2;
     private const int TrainSkillPanelY = DetailsY1 + 48;
@@ -26,6 +25,9 @@ public partial class Renderer
     private const int MouseOnTrainNumberButtonX2 = TrainButtonNumberX + 40;
     private const int MouseOnTrainNumberButtonY1 = TrainButtonNumberY + 4;
     private const int MouseOnTrainNumberButtonY2 = TrainButtonNumberY + 42;
+    private const int TaxButtonX = DetailsX1 + 2;
+    private const int TaxButtonY = DetailsY1 + 109;
+    private const int MouseOnTaxButtonY = DetailsY1 + 112;
 
     private TownDetailsMode TownDetailsMode { get; set; } = TownDetailsMode.Normal;
     
@@ -34,6 +36,12 @@ public partial class Renderer
         if (TownDetailsMode == TownDetailsMode.Train)
         {
             DrawTrainMenu(town);
+            return;
+        }
+
+        if (TownDetailsMode == TownDetailsMode.CollectTax || TownDetailsMode == TownDetailsMode.Grant)
+        {
+            DrawAutoCollectTaxOrGrantMenu();
             return;
         }
         
@@ -48,6 +56,12 @@ public partial class Renderer
         
         string townName = town.Name + (Config.show_ai_info ? " (" + town.TownId + ")" : "");
         PutTextCenter(FontSan, townName, townNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
+
+        if (TownDetailsMode == TownDetailsMode.Spy)
+        {
+            DrawSpyList(town.NationId, town.GetPlayerSpies());
+            return;
+        }
         
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
         int populationTextY = DetailsY1 + 55;
@@ -147,38 +161,46 @@ public partial class Renderer
         else
             PutText(FontMid, NationArray.PlayerId != 0 ? town.AverageResistance(NationArray.PlayerId).ToString() : "0", avgLoyaltyX, totalTextY - 1);
 
-        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId && _selectedRaceId != 0)
+        if (town.RebelId != 0)
         {
-            if (town.CanRecruit(_selectedRaceId))
+            bool hasButtons = ShowGrantToNonOwnTownButton(town) || town.HasPlayerSpy();
+            DrawSmallPanel(DetailsX1 + 2, hasButtons ? DetailsY1 + 440 : DetailsY1 + 381);
+            PutTextCenter(FontSan, "Controlled by Rebels", DetailsX1 + 2, hasButtons ? DetailsY1 + 460 : DetailsY1 + 401,
+                DetailsX2 - 4, hasButtons ? DetailsY1 + 460 : DetailsY1 + 401);
+        }
+
+        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId)
+        {
+            if (_selectedRaceId != 0 && town.CanRecruit(_selectedRaceId))
             {
                 bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonRecruitTexture, Button1X + 2, ButtonsTownY + 8, Scale(_buttonRecruitWidth), Scale(_buttonRecruitHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonRecruitTexture, Button1X + 2, ButtonsTownY + 8, _buttonRecruitWidth, _buttonRecruitHeight);
             }
             else
             {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonRecruitDisabledTexture, Button1X + 2, ButtonsTownY + 8, Scale(_buttonRecruitWidth), Scale(_buttonRecruitHeight));
+                Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button1X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
+                Graphics.DrawBitmapScaled(_buttonRecruitDisabledTexture, Button1X + 2, ButtonsTownY + 8, _buttonRecruitWidth, _buttonRecruitHeight);
             }
 
-            if (IsTrainEnabled(town))
+            if (_selectedRaceId != 0 && IsTrainEnabled(town))
             {
                 bool mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button2X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonTrainTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button2X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonTrainTexture, Button2X + 4, ButtonsTownY + 4, _buttonTrainWidth, _buttonTrainHeight);
             }
             else
             {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button2X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonTrainDisabledTexture, Button2X + 4, ButtonsTownY + 4, Scale(_buttonTrainWidth), Scale(_buttonTrainHeight));
+                Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button2X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
+                Graphics.DrawBitmapScaled(_buttonTrainDisabledTexture, Button2X + 4, ButtonsTownY + 4, _buttonTrainWidth, _buttonTrainHeight);
             }
 
             if (town.HasPlayerSpy())
@@ -186,10 +208,10 @@ public partial class Renderer
                 bool mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button3X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button3X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonSpyMenuTexture, Button3X + 4, ButtonsTownY + 16, Scale(_buttonSpyMenuWidth), Scale(_buttonSpyMenuHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsTownY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
             }
 
             if (IsCollectTaxEnabled(town))
@@ -197,15 +219,15 @@ public partial class Renderer
                 bool mouseOnButton = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button4X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button4X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button4X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonCollectTaxTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button4X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonCollectTaxTexture, Button4X + 10, ButtonsTownY + 4, _buttonCollectTaxWidth, _buttonCollectTaxHeight);
             }
             else
             {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button4X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonCollectTaxDisabledTexture, Button4X + 10, ButtonsTownY + 4, Scale(_buttonCollectTaxWidth), Scale(_buttonCollectTaxHeight));
+                Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button4X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
+                Graphics.DrawBitmapScaled(_buttonCollectTaxDisabledTexture, Button4X + 10, ButtonsTownY + 4, _buttonCollectTaxWidth, _buttonCollectTaxHeight);
             }
 
             if (IsGrantEnabled(town))
@@ -213,51 +235,63 @@ public partial class Renderer
                 bool mouseOnButton = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, Button5X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, Button5X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, Button5X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonGrantTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, Button5X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonGrantTexture, Button5X + 2, ButtonsTownY + 4, _buttonGrantWidth, _buttonGrantHeight);
             }
             else
             {
-                Graphics.DrawBitmap(_buttonDisabledTexture, Button5X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button5X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+                Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button5X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
+                Graphics.DrawBitmapScaled(_buttonGrantDisabledTexture, Button5X + 2, ButtonsTownY + 4, _buttonGrantWidth, _buttonGrantHeight);
             }
         }
         else
         {
-            bool displayGrantButton = NationArray.PlayerId != 0 && town.HasLinkedCamp(NationArray.PlayerId, false);
-            if (displayGrantButton)
+            if (ShowGrantToNonOwnTownButton(town))
             {
                 if (IsGrantToNonOwnTownEnabled(town))
                 {
                     bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                                          _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                     if (_leftMousePressed && mouseOnButton)
-                        Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                        Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                     else
-                        Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                    Graphics.DrawBitmap(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth), Scale(_buttonGrantHeight));
+                        Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                    Graphics.DrawBitmapScaled(_buttonGrantTexture, Button1X + 2, ButtonsTownY + 4, _buttonGrantWidth, _buttonGrantHeight);
                 }
                 else
                 {
-                    Graphics.DrawBitmap(_buttonDisabledTexture, Button1X, ButtonsTownY, Scale(_buttonDisabledWidth), Scale(_buttonDisabledHeight));
-                    Graphics.DrawBitmap(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, Scale(_buttonGrantWidth),
-                        Scale(_buttonGrantHeight));
+                    Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button1X, ButtonsTownY, _buttonDisabledWidth, _buttonDisabledHeight);
+                    Graphics.DrawBitmapScaled(_buttonGrantDisabledTexture, Button1X + 2, ButtonsTownY + 4, _buttonGrantWidth, _buttonGrantHeight);
                 }
             }
 
             if (town.HasPlayerSpy())
             {
-                int buttonSpyMenuX = displayGrantButton ? Button2X : Button1X;
+                int buttonSpyMenuX = ShowGrantToNonOwnTownButton(town) ? Button2X : Button1X;
                 bool mouseOnButton = _mouseButtonX >= buttonSpyMenuX + 2 && _mouseButtonX <= buttonSpyMenuX + ButtonWidth &&
                                      _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
                 if (_leftMousePressed && mouseOnButton)
-                    Graphics.DrawBitmap(_buttonDownTexture, buttonSpyMenuX, ButtonsTownY, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                    Graphics.DrawBitmapScaled(_buttonDownTexture, buttonSpyMenuX, ButtonsTownY, _buttonDownWidth, _buttonDownHeight);
                 else
-                    Graphics.DrawBitmap(_buttonUpTexture, buttonSpyMenuX, ButtonsTownY, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-                Graphics.DrawBitmap(_buttonSpyMenuTexture, buttonSpyMenuX + 4, ButtonsTownY + 16, Scale(_buttonSpyMenuWidth), Scale(_buttonSpyMenuHeight));
+                    Graphics.DrawBitmapScaled(_buttonUpTexture, buttonSpyMenuX, ButtonsTownY, _buttonUpWidth, _buttonUpHeight);
+                Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, buttonSpyMenuX + 4, ButtonsTownY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
             }
+        }
+
+        if (town.AutoCollectTaxLoyalty != 0)
+        {
+            Graphics.DrawRect(Button4X + 13, ButtonsTownY + 13, 46, 30, Colors.V_WHITE);
+            Graphics.DrawFrame(Button4X + 13, ButtonsTownY + 13, 46, 30, Colors.V_BLACK);
+            PutTextCenter(FontMid, town.AutoCollectTaxLoyalty.ToString(), Button4X, ButtonsTownY + 25, Button4X + Scale(_buttonUpWidth), ButtonsTownY + 25);
+        }
+
+        if (town.AutoGrantLoyalty != 0)
+        {
+            Graphics.DrawRect(Button5X + 13, ButtonsTownY + 13, 46, 30, Colors.V_WHITE);
+            Graphics.DrawFrame(Button5X + 13, ButtonsTownY + 13, 46, 30, Colors.V_BLACK);
+            PutTextCenter(FontMid, town.AutoGrantLoyalty.ToString(), Button5X, ButtonsTownY + 25, Button5X + Scale(_buttonUpWidth), ButtonsTownY + 25);
         }
     }
 
@@ -269,10 +303,22 @@ public partial class Renderer
             return;
         }
 
+        if (TownDetailsMode == TownDetailsMode.CollectTax || TownDetailsMode == TownDetailsMode.Grant)
+        {
+            HandleAutoCollectTaxOrGrantMenu(town);
+            return;
+        }
+
         bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
                                         _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
         if (colorSquareButtonPressed)
             GoToLocation(town.LocCenterX, town.LocCenterY);
+
+        if (TownDetailsMode == TownDetailsMode.Spy)
+        {
+            HandleSpyList(town.NationId, town.GetPlayerSpies());
+            return;
+        }
 
         bool race1Selected = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 11 && _mouseButtonX <= DetailsX1 + 402 &&
                              _mouseButtonY >= DetailsY1 + 105 && _mouseButtonY <= DetailsY1 + 153;
@@ -298,58 +344,68 @@ public partial class Renderer
             }
         }
 
-        bool button1Pressed = _leftMouseReleased && _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
+        bool mouseOnButton1 = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-        bool button2Pressed = _leftMouseReleased && _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
+        bool mouseOnButton2 = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-        bool button3Pressed = _leftMouseReleased && _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
+        bool mouseOnButton3 = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-        bool button4Pressed = _leftMouseReleased && _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
+        bool mouseOnButton4 = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
-        bool button5Pressed = _leftMouseReleased && _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
+        bool mouseOnButton5 = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
                               _mouseButtonY >= ButtonsTownY + 2 && _mouseButtonY <= ButtonsTownY + ButtonHeight;
 
-        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId && _selectedRaceId != 0)
+        if (NationArray.PlayerId != 0 && town.NationId == NationArray.PlayerId)
         {
-            if (button1Pressed && town.CanRecruit(_selectedRaceId))
+            if (_leftMouseReleased && mouseOnButton1 && _selectedRaceId != 0 && town.CanRecruit(_selectedRaceId))
             {
                 town.Recruit(-1, _selectedRaceId, InternalConstants.COMMAND_PLAYER);
             }
 
-            if (button2Pressed && IsTrainEnabled(town))
+            if (_leftMouseReleased && mouseOnButton2 && _selectedRaceId != 0 && IsTrainEnabled(town))
             {
                 TownDetailsMode = TownDetailsMode.Train;
             }
             
-            if (button3Pressed && town.HasPlayerSpy())
+            if (_leftMouseReleased && mouseOnButton3 && town.HasPlayerSpy())
             {
-                // TODO show spies list
+                TownDetailsMode = TownDetailsMode.Spy;
             }
 
-            if (button4Pressed && IsCollectTaxEnabled(town))
+            if (_leftMouseReleased && mouseOnButton4 && IsCollectTaxEnabled(town))
             {
-                SECtrl.immediate_sound("TURN_ON");
                 town.CollectTax(InternalConstants.COMMAND_PLAYER);
+                SECtrl.immediate_sound("TURN_ON");
             }
 
-            if (button5Pressed && IsGrantEnabled(town))
+            if (_rightMouseReleased && mouseOnButton4)
             {
-                SECtrl.immediate_sound("TURN_ON");
+                TownDetailsMode = TownDetailsMode.CollectTax;
+            }
+
+            if (_leftMouseReleased && mouseOnButton5 && IsGrantEnabled(town))
+            {
                 town.Reward(InternalConstants.COMMAND_PLAYER);
+                SECtrl.immediate_sound("TURN_ON");
+            }
+            
+            if (_rightMouseReleased && mouseOnButton5)
+            {
+                TownDetailsMode = TownDetailsMode.Grant;
             }
         }
         else
         {
-            if (button1Pressed && IsGrantToNonOwnTownEnabled(town))
+            if (_leftMouseReleased && mouseOnButton1 && IsGrantToNonOwnTownEnabled(town))
             {
-                // TODO grant
+                town.GrantToNonOwnTown(NationArray.PlayerId, InternalConstants.COMMAND_PLAYER);
+                SECtrl.immediate_sound("TURN_ON");
             }
             
-            bool displayGrantButton = NationArray.PlayerId != 0 && town.HasLinkedCamp(NationArray.PlayerId, false);
-            bool spiesButtonPressed = (displayGrantButton ? button2Pressed : button1Pressed);
-            if (spiesButtonPressed && town.HasPlayerSpy())
+            bool mouseOnSpyListButton = (ShowGrantToNonOwnTownButton(town) ? mouseOnButton2 : mouseOnButton1);
+            if (_leftMouseReleased && mouseOnSpyListButton && town.HasPlayerSpy())
             {
-                // TODO show spies list
+                TownDetailsMode = TownDetailsMode.Spy;
             }
         }
     }
@@ -367,6 +423,11 @@ public partial class Renderer
     private bool IsGrantEnabled(Town town)
     {
         return town.HasLinkedOwnCamp && NationArray.Player.Cash > 0.0;
+    }
+
+    private bool ShowGrantToNonOwnTownButton(Town town)
+    {
+        return NationArray.PlayerId != 0 && town.HasLinkedCamp(NationArray.PlayerId, false);
     }
 
     private bool IsGrantToNonOwnTownEnabled(Town town)
@@ -395,231 +456,263 @@ public partial class Renderer
             else
                 trainSkillCounts[trainUnit.Skill.SkillId]++;
         }
+
+        IntPtr[] skillIconTextures =
+        {
+            _buttonConstructionSkillTexture, _buttonLeadershipSkillTexture, _buttonMineSkillTexture,
+            _buttonManufactureSkillTexture, _buttonResearchSkillTexture, _buttonSpySkillTexture
+        };
+        int[] skillIconWidths =
+        {
+            _buttonConstructionSkillWidth, _buttonLeadershipSkillWidth, _buttonMineSkillWidth,
+            _buttonManufactureSkillWidth, _buttonResearchSkillWidth, _buttonSpySkillWidth
+        };
+
+        int[] skillIconHeights =
+        {
+            _buttonConstructionSkillHeight, _buttonLeadershipSkillHeight, _buttonMineSkillHeight,
+            _buttonManufactureSkillHeight, _buttonResearchSkillHeight, _buttonSpySkillHeight
+        };
         
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
         PutTextCenter(FontSan, "Train (Cost: $30, Skill: 20)", DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
-        bool mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                             _mouseButtonY >= MouseOnTrainButtonY1 && _mouseButtonY <= MouseOnTrainButtonY2;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY);
-        Graphics.DrawBitmap(_buttonConstructionSkillTexture, DetailsX1 + 2, DetailsY1 + 59, _buttonConstructionSkillWidth, _buttonConstructionSkillHeight);
-        PutText(FontBible, "Construction", TrainButtonTextX, DetailsY1 + 53);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 && _mouseButtonY <= MouseOnTrainNumberButtonY2;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_CONSTRUCTION].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53);
+        int dy = 0;
+        for (int i = Skill.SKILL_CONSTRUCTION; i <= Skill.MAX_TRAINABLE_SKILL; i++)
+        {
+            bool mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
+                                 _mouseButtonY >= MouseOnTrainButtonY1 + dy && _mouseButtonY <= MouseOnTrainButtonY2 + dy;
+            if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
+                DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + dy);
+            else
+                DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + dy);
+            Graphics.DrawBitmap(skillIconTextures[i - 1], DetailsX1 + 2, DetailsY1 + 59 + dy, skillIconWidths[i - 1], skillIconHeights[i - 1]);
+            PutText(FontBible, Skill.SkillDescriptions[i - 1], TrainButtonTextX, DetailsY1 + 53 + dy);
+            mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
+                            _mouseButtonY >= MouseOnTrainNumberButtonY1 + dy && _mouseButtonY <= MouseOnTrainNumberButtonY2 + dy;
+            if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
+                DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + dy);
+            else
+                DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + dy);
+            PutText(FontBible, trainSkillCounts[i].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + dy);
 
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 && _mouseButtonY <= MouseOnTrainButtonY2 + 63;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63);
+            dy += 63;
+        }
+
+        bool mouseOnDoneButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 + 82 &&
+                                 _mouseButtonY >= MouseOnTrainButtonY1 + dy && _mouseButtonY <= MouseOnTrainButtonY2 + dy;
+        if ((_leftMousePressed || _rightMousePressed) && mouseOnDoneButton)
+            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + dy);
         else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63);
-        Graphics.DrawBitmap(_buttonLeadershipSkillTexture, DetailsX1 + 2, DetailsY1 + 59 + 63, _buttonLeadershipSkillWidth, _buttonLeadershipSkillHeight);
-        PutText(FontBible, "Leadership", TrainButtonTextX, DetailsY1 + 53 + 63);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + 63);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + 63);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_LEADING].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + 63);
-        
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 2 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 2;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63 * 2);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63 * 2);
-        Graphics.DrawBitmap(_buttonMineSkillTexture, DetailsX1 + 2, DetailsY1 + 59 + 63 * 2, _buttonMineSkillWidth, _buttonMineSkillHeight);
-        PutText(FontBible, "Mining", TrainButtonTextX, DetailsY1 + 53 + 63 * 2);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 2 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 2;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + 63 * 2);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + 63 * 2);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_MINING].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + 63 * 2);
-        
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 3 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 3;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63 * 3);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63 * 3);
-        Graphics.DrawBitmap(_buttonManufactureSkillTexture, DetailsX1 + 2, DetailsY1 + 59 + 63 * 3, _buttonManufactureSkillWidth, _buttonManufactureSkillHeight);
-        PutText(FontBible, "Manufacturing", TrainButtonTextX, DetailsY1 + 53 + 63 * 3);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 3 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 3;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + 63 * 3);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + 63 * 3);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_MFT].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + 63 * 3);
-        
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 4 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 4;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63 * 4);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63 * 4);
-        Graphics.DrawBitmap(_buttonResearchSkillTexture, DetailsX1 + 2, DetailsY1 + 59 + 63 * 4, _buttonResearchSkillWidth, _buttonResearchSkillHeight);
-        PutText(FontBible, "Research", TrainButtonTextX, DetailsY1 + 53 + 63 * 4);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 4 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 4;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + 63 * 4);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + 63 * 4);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_RESEARCH].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + 63 * 4);
-        
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 5 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 5;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63 * 5);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63 * 5);
-        Graphics.DrawBitmap(_buttonSpySkillTexture, DetailsX1 + 2, DetailsY1 + 59 + 63 * 5, _buttonSpySkillWidth, _buttonSpySkillHeight);
-        PutText(FontBible, "Spying", TrainButtonTextX, DetailsY1 + 53 + 63 * 5);
-        mouseOnButton = _mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                        _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 5 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 5;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawNumberPanelDown(TrainButtonNumberX, TrainButtonNumberY + 63 * 5);
-        else
-            DrawNumberPanelUp(TrainButtonNumberX, TrainButtonNumberY + 63 * 5);
-        PutText(FontBible, trainSkillCounts[Skill.SKILL_SPYING].ToString(), TrainButtonNumberX + 14, DetailsY1 + 53 + 63 * 5);
-        
-        mouseOnButton = _mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 + 82 &&
-                        _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 6 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 6;
-        if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
-            DrawSkillPanelDown(TrainSkillPanelX, TrainSkillPanelY + 63 * 6);
-        else
-            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + 63 * 6);
-        PutTextCenter(FontBible, "Done", DetailsX1 + 2, DetailsY1 + 53 + 63 * 6, DetailsX2 - 4, DetailsY1 + 53 + 63 * 6 + 40);
+            DrawSkillPanelUp(TrainSkillPanelX, TrainSkillPanelY + dy);
+        PutTextCenter(FontBible, "Done", DetailsX1 + 2, DetailsY1 + 53 + dy, DetailsX2 - 4, DetailsY1 + 53 + dy + 40);
     }
-
+    
     private void HandleTrainMenuInput(Town town)
     {
         int selectedTrainSkill = 0;
 
         if (_leftMouseReleased || _rightMouseReleased)
         {
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 && _mouseButtonY <= MouseOnTrainButtonY2)
+            int dy = 0;
+            for (int i = Skill.SKILL_CONSTRUCTION; i <= Skill.MAX_TRAINABLE_SKILL; i++)
             {
-                selectedTrainSkill = Skill.SKILL_CONSTRUCTION;
-                TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 && _mouseButtonY <= MouseOnTrainButtonY2 + 63)
-            {
-                selectedTrainSkill = Skill.SKILL_LEADING;
-                TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 2 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 2)
-            {
-                selectedTrainSkill = Skill.SKILL_MINING;
-                TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 3 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 3)
-            {
-                selectedTrainSkill = Skill.SKILL_MFT;
-                TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 4 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 4)
-            {
-                selectedTrainSkill = Skill.SKILL_RESEARCH;
-                TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 5 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 5)
-            {
-                selectedTrainSkill = Skill.SKILL_SPYING;
-                TownDetailsMode = TownDetailsMode.Normal;
+                if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 &&
+                    _mouseButtonY >= MouseOnTrainButtonY1 + dy && _mouseButtonY <= MouseOnTrainButtonY2 + dy)
+                {
+                    selectedTrainSkill = i;
+                    TownDetailsMode = TownDetailsMode.Normal;
+                }
+                
+                if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
+                    _mouseButtonY >= MouseOnTrainNumberButtonY1 + dy && _mouseButtonY <= MouseOnTrainNumberButtonY2 + dy)
+                {
+                    selectedTrainSkill = i;
+                }
+                
+                dy += 63;
             }
 
             if (_mouseButtonX >= MouseOnTrainButtonX1 && _mouseButtonX <= MouseOnTrainButtonX2 + 82 &&
-                _mouseButtonY >= MouseOnTrainButtonY1 + 63 * 6 && _mouseButtonY <= MouseOnTrainButtonY2 + 63 * 6)
+                _mouseButtonY >= MouseOnTrainButtonY1 + dy && _mouseButtonY <= MouseOnTrainButtonY2 + dy)
             {
                 TownDetailsMode = TownDetailsMode.Normal;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 && _mouseButtonY <= MouseOnTrainNumberButtonY2)
-            {
-                selectedTrainSkill = Skill.SKILL_CONSTRUCTION;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63)
-            {
-                selectedTrainSkill = Skill.SKILL_LEADING;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 2 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 2)
-            {
-                selectedTrainSkill = Skill.SKILL_MINING;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 3 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 3)
-            {
-                selectedTrainSkill = Skill.SKILL_MFT;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 4 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 4)
-            {
-                selectedTrainSkill = Skill.SKILL_RESEARCH;
-            }
-
-            if (_mouseButtonX >= MouseOnTrainNumberButtonX1 && _mouseButtonX <= MouseOnTrainNumberButtonX2 &&
-                _mouseButtonY >= MouseOnTrainNumberButtonY1 + 63 * 5 && _mouseButtonY <= MouseOnTrainNumberButtonY2 + 63 * 5)
-            {
-                selectedTrainSkill = Skill.SKILL_SPYING;
             }
         }
 
         if (selectedTrainSkill != 0)
         {
-            // if (remote.is_enable())
-            //{
-                //// packet structure : <town recno> <skill id> <race id> <amount>
-                //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short) );
-                //shortPtr[0] = town_recno;
-                //shortPtr[1] = b;
-                // if (_leftMouseReleased)
-                    //shortPtr[2] = race_filter(browse_race.recno());
-                // if (_rightMouseReleased)
-                    //shortPtr[2] = -1;
-                //shortPtr[3] = (short)trainCancelAmount;
-            //}
+            /*if (remote.is_enable())
+            {
+                // packet structure : <town recno> <skill id> <race id> <amount>
+                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short) );
+                shortPtr[0] = town_recno;
+                shortPtr[1] = b;
+                if (_leftMouseReleased)
+                    shortPtr[2] = race_filter(browse_race.recno());
+                if (_rightMouseReleased)
+                    shortPtr[2] = -1;
+                shortPtr[3] = (short)trainCancelAmount;
+            }*/
             //else
-            
-            if (_leftMouseReleased)
-                town.AddQueue(selectedTrainSkill, _selectedRaceId);
-            if (_rightMouseReleased)
-                town.RemoveQueue(selectedTrainSkill);
+            //{
+                if (_leftMouseReleased)
+                    town.AddQueue(selectedTrainSkill, _selectedRaceId);
+                if (_rightMouseReleased)
+                    town.RemoveQueue(selectedTrainSkill);
+            //}
             
             if (_leftMouseReleased)
                 SECtrl.immediate_sound("TURN_ON");
             if (_rightMouseReleased)
                 SECtrl.immediate_sound("TURN_OFF");
+        }
+    }
+    
+    private void DrawAutoCollectTaxOrGrantMenu()
+    {
+        string header = String.Empty;
+        if (TownDetailsMode == TownDetailsMode.CollectTax)
+            header = "Automatically collect tax";
+        if (TownDetailsMode == TownDetailsMode.Grant)
+            header = "Automatically grant money";
+        
+        DrawAutoTaxTextPanel(DetailsX1 + 2, DetailsY1);
+        PutTextCenter(FontSan, header, DetailsX1 + 2, DetailsY1 + 2, DetailsX2 - 4, DetailsY1 + 36);
+        PutText(FontSan, "Left-click for this village", DetailsX1 + 8, DetailsY1 + 35);
+        PutText(FontSan, "Right-click for all villages", DetailsX1 + 8, DetailsY1 + 65);
+        
+        int dy = 0;
+        for (int i = 30; i <= 120; i += 10)
+        {
+            bool mouseOnButton = _mouseButtonX >= DetailsX1 + 8 && _mouseButtonX <= DetailsX2 - 8 &&
+                                 _mouseButtonY >= MouseOnTaxButtonY + dy && _mouseButtonY <= MouseOnTaxButtonY + 24 + dy;
+            if ((_leftMousePressed || _rightMousePressed) && mouseOnButton)
+                DrawTaxPanelDown(TaxButtonX, TaxButtonY + dy);
+            else
+                DrawTaxPanelUp(TaxButtonX, TaxButtonY + dy);
+
+            string text = i.ToString();
+            if (i == 110)
+                text = "Disabled";
+            if (i == 120)
+                text = "Cancel";
+            PutTextCenter(FontSan, text, DetailsX1 + 2, TaxButtonY + 19 + dy, DetailsX2 - 4, TaxButtonY + 19 + dy, true);
+
+            dy += 34;
+        }
+    }
+    
+    private void HandleAutoCollectTaxOrGrantMenu(Town town)
+    {
+        int dy = 0;
+        for (int i = 30; i <= 120; i += 10)
+        {
+            bool mouseOnButton = _mouseButtonX >= DetailsX1 + 8 && _mouseButtonX <= DetailsX2 - 8 &&
+                                 _mouseButtonY >= MouseOnTaxButtonY + dy && _mouseButtonY <= MouseOnTaxButtonY + 24 + dy;
+
+            if (mouseOnButton)
+            {
+                if (i <= 110)
+                {
+                    int loyaltyLevel = i;
+                    if (loyaltyLevel == 110)
+                        loyaltyLevel = 0;
+
+                    if (_leftMouseReleased)
+                    {
+                        if (TownDetailsMode == TownDetailsMode.CollectTax)
+                        {
+                            /*if (remote.is_enable())
+                            {
+                                // packet structure <town recno> <loyalty level>
+                                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_AUTO_TAX, 2*sizeof(short) );
+                                *shortPtr = town_recno;
+                                shortPtr[1] = loyaltyLevel;
+                            }*/
+                            //else
+                            //{
+                                town.SetAutoCollectTaxLoyalty(loyaltyLevel);
+                            //}
+                        }
+
+                        if (TownDetailsMode == TownDetailsMode.Grant)
+                        {
+                            /*if (remote.is_enable())
+                            {
+				                // packet structure <town recno> <loyalty level>
+				                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_AUTO_GRANT, 2*sizeof(short) );
+				                *shortPtr = town_recno;
+				                shortPtr[1] = loyaltyLevel;
+                            }*/
+                            //else
+                            //{
+                                town.SetAutoGrantLoyalty(loyaltyLevel);
+                            //}
+                        }
+                        
+                        SECtrl.immediate_sound("TURN_ON");
+                        TownDetailsMode = TownDetailsMode.Normal;
+                    }
+
+                    if (_rightMouseReleased)
+                    {
+                        if (TownDetailsMode == TownDetailsMode.CollectTax)
+                        {
+                            /*if (remote.is_enable())
+                            {
+                                // packet structure <-nation recno> <loyalty level>
+                                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_AUTO_TAX, 2*sizeof(short) );
+                                *shortPtr = -nation_recno;
+                                shortPtr[1] = loyaltyLevel;
+                            }*/
+                            //else
+                            //{
+                                Nation nation = NationArray[town.NationId];
+                                nation.SetAutoCollectTaxLoyalty(loyaltyLevel);
+                                foreach (Town nationTown in TownArray)
+                                {
+                                    nationTown.SetAutoCollectTaxLoyalty(nation.AutoCollectTaxLoyalty);
+                                }
+                            //}
+                        }
+
+                        if (TownDetailsMode == TownDetailsMode.Grant)
+                        {
+                            /*if (remote.is_enable())
+                            {
+				                // packet structure <-nation recno> <loyalty level>
+				                short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_AUTO_GRANT, 2*sizeof(short) );
+				                *shortPtr = -nation_recno;
+				                shortPtr[1] = loyaltyLevel;
+                            }*/
+                            //else
+                            //{
+                                Nation nation = NationArray[town.NationId];
+                                nation.SetAutoGrantLoyalty(loyaltyLevel);
+                                foreach (Town nationTown in TownArray)
+                                {
+                                    nationTown.SetAutoGrantLoyalty(nation.AutoCollectTaxLoyalty);
+                                }
+                            //}
+                        }
+                        
+                        SECtrl.immediate_sound("TURN_ON");
+                        TownDetailsMode = TownDetailsMode.Normal;
+                    }
+                }
+
+                if (i == 120)
+                {
+                    if (_leftMouseReleased || _rightMouseReleased)
+                    {
+                        SECtrl.immediate_sound("TURN_OFF");
+                        TownDetailsMode = TownDetailsMode.Normal;
+                    }
+                }
+            }
+            
+            dy += 34;
         }
     }
 }

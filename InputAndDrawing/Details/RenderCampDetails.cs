@@ -112,11 +112,17 @@ public partial class Renderer
             Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsCampY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
         }
         
-        // TODO spy list, bribe and capture buttons
+        // TODO bribe, assassination and capture buttons
     }
     
     public void HandleCampDetailsInput(FirmCamp camp)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(camp.NationId, camp.GetPlayerSpies());
+            return;
+        }
+        
         Unit overseer = (camp.OverseerId != 0) ? UnitArray[camp.OverseerId] : null;
 
         if (_leftMouseReleased && IsMouseOnCampLeaderIcon())
@@ -186,7 +192,7 @@ public partial class Renderer
         
         if (button3Pressed)
         {
-            //
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
     

@@ -122,11 +122,17 @@ public partial class Renderer
             Graphics.DrawBitmapScaled(_buttonSpyMenuTexture, Button3X + 4, ButtonsBaseY + 16, _buttonSpyMenuWidth, _buttonSpyMenuHeight);
         }
         
-        // TODO spy list, bribe and capture buttons
+        // TODO bribe and capture buttons
     }
     
     public void HandleBaseDetailsInput(FirmBase firmBase)
     {
+        if (FirmDetailsMode == FirmDetailsMode.Spy)
+        {
+            HandleSpyList(firmBase.NationId, firmBase.GetPlayerSpies());
+            return;
+        }
+        
         Unit overseer = (firmBase.OverseerId != 0) ? UnitArray[firmBase.OverseerId] : null;
 
         if (_leftMouseReleased && IsMouseOnFirmBaseLeaderIcon())
@@ -185,7 +191,7 @@ public partial class Renderer
         
         if (button3Pressed)
         {
-            //
+            FirmDetailsMode = FirmDetailsMode.Spy;
         }
     }
 
