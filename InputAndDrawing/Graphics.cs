@@ -176,13 +176,12 @@ public class Graphics
         return result;
     }
 
-    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, int depth = 8, bool addToList = true)
+    public IntPtr CreateTextureFromBmp(byte[] bmpImage, int width, int height, bool addToList = true)
     {
         GCHandle pinnedBmpImage = GCHandle.Alloc(bmpImage, GCHandleType.Pinned);
         IntPtr imageSurface = SDL.SDL_CreateRGBSurfaceFrom(pinnedBmpImage.AddrOfPinnedObject(),
-            width, height, depth, width * depth / 8, 0, 0, 0, 0);
-        if (depth == 8)
-            SDL.SDL_SetSurfacePalette(imageSurface, _palette);
+            width, height, 8, width, 0, 0, 0, 0);
+        SDL.SDL_SetSurfacePalette(imageSurface, _palette);
         SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
 
         IntPtr texture = SDL.SDL_CreateTextureFromSurface(_renderer, imageSurface);
@@ -194,6 +193,22 @@ public class Graphics
         return texture;
     }
 
+    public IntPtr Create32BitTextureFromBmp(byte[] bmpImage, int width, int height, bool addToList = true)
+    {
+        GCHandle pinnedBmpImage = GCHandle.Alloc(bmpImage, GCHandleType.Pinned);
+        IntPtr imageSurface = SDL.SDL_CreateRGBSurfaceFrom(pinnedBmpImage.AddrOfPinnedObject(),
+            width, height, 32, width * 4, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        SDL.SDL_SetSurfaceBlendMode(imageSurface, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
+
+        IntPtr texture = SDL.SDL_CreateTextureFromSurface(_renderer, imageSurface);
+        SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
+        if (addToList)
+            _textures.Add(texture);
+        pinnedBmpImage.Free();
+        SDL.SDL_FreeSurface(imageSurface);
+        return texture;
+    }
+    
     public IntPtr CreateCursor(byte[] bmpImage, int width, int height, int hotSpotX, int hotSpotY)
     {
         GCHandle pinnedBmpImage = GCHandle.Alloc(bmpImage, GCHandleType.Pinned);
@@ -241,7 +256,7 @@ public class Graphics
         if (_miniMapTexture != IntPtr.Zero)
             SDL.SDL_DestroyTexture(_miniMapTexture);
         
-        _miniMapTexture = CreateTextureFromBmp(image, width, height, 8, false);
+        _miniMapTexture = CreateTextureFromBmp(image, width, height, false);
     }
 
     public void DrawMiniMapGround(int x, int y, int width, int height)
