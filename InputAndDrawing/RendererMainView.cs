@@ -1015,6 +1015,18 @@ public partial class Renderer
             width = InternalConstants.TOWN_WIDTH;
             height = InternalConstants.TOWN_HEIGHT;
             color = World.CanBuildTown(locX, locY, _selectedUnitId) ? Colors.V_DARK_GREEN : Colors.V_RED;
+
+            Location location = World.GetLoc(locX, locY);
+            if (location.IsTown())
+            {
+                Town town = TownArray[location.TownId()];
+                if (town.NationId == NationArray.PlayerId)
+                {
+                    locX = town.LocX1;
+                    locY = town.LocY1;
+                    color = Colors.V_DARK_GREEN;
+                }
+            }
         }
 
         for (int i = 0; i < width; i++)
