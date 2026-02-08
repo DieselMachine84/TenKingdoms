@@ -20,7 +20,7 @@ public abstract partial class Unit : Sprite
 	public int Loyalty { get; set; }
 	public int TargetLoyalty { get; private set; }
 	public Skill Skill { get; } = new Skill();
-	public int UnitMode { get; set; }
+	public int UnitMode { get; private set; }
 	public int UnitModeParam { get; set; } // if UnitMode == UNIT_MODE_REBEL, UnitModeParam is rebelId this unit belongs to
 	public int SpyId { get; set; }
 	public int NationContribution { get; private set; } // For humans: contribution to the nation. For weapons: the tech level!
@@ -4584,6 +4584,7 @@ public abstract partial class Unit : Sprite
 		}
 		else
 		{
+			// TODO rebel unit may be resigned if there is no appropriate town. It should not be resigned, should be settled to a new town
 			Resign(InternalConstants.COMMAND_AI);
 		}
 	}

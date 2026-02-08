@@ -82,6 +82,7 @@ public class Town : IIdObject
 
 	private int _qualityOfLife;
 	public bool[] HasProductSupply { get; } = new bool[GameConstants.MAX_PRODUCT];
+	//TODO think about removing this flag
 	public bool NoNeighborSpace { get; set; } // true if there is no space to build firms/towns next to this town
 
 
@@ -138,8 +139,6 @@ public class Town : IIdObject
 	public void Init(int nationId, int raceId, int locX, int locY)
 	{
 		NationId = nationId;
-
-		//---- set the town section's absolute positions on the map ----//
 
 		LocX1 = locX;
 		LocY1 = locY;
@@ -456,6 +455,7 @@ public class Town : IIdObject
 					//}
 					//else
 					//{
+						//TODO use NationBase.EstablishContact
 						relation.HasContact = true;
 					//}
 				}
@@ -689,8 +689,6 @@ public class Town : IIdObject
 
 	public void IncPopulation(int raceId, bool unitHasJob, int unitLoyalty)
 	{
-		//---------- increase population ----------//
-
 		Population++;
 		RacesPopulation[raceId - 1]++;
 
@@ -749,10 +747,9 @@ public class Town : IIdObject
 	{
 		//--- if the only pop of this race in the source town are spies ---//
 
-		// only for peasant, for job unit, spy_place==Spy.SPY_FIRM and it isn't related to RacesSpyCount[]
+		// only for peasant, for job unit, SpyPlace == Spy.SPY_FIRM and it isn't related to RacesSpyCount[]
 		if (!hasJob)
 		{
-
 			if (RacesSpyCount[raceId - 1] == RacesJoblessPopulation[raceId - 1])
 			{
 				int spySeqId = Misc.Random(RacesSpyCount[raceId - 1]) + 1; // randomly pick one of the spies
@@ -770,7 +767,7 @@ public class Town : IIdObject
 
 		destTown.IncPopulation(raceId, hasJob, (int)RacesLoyalty[raceId - 1]);
 
-		// the unit doesn't have a job - this must be called finally as dec_pop() will have the whole town deleted if there is only one pop left
+		// the unit doesn't have a job - this must be called finally as DecPopulation() will have the whole town deleted if there is only one pop left
 		DecPopulation(raceId, hasJob);
 	}
 
@@ -928,12 +925,12 @@ public class Town : IIdObject
 		if (Population == 0)
 			return 0;
 		
-		int totalLoyalty = 0;
+		double totalLoyalty = 0.0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-			totalLoyalty += (int)RacesLoyalty[i] * RacesPopulation[i];
+			totalLoyalty += RacesLoyalty[i] * RacesPopulation[i];
 
-		return totalLoyalty / Population;
+		return (int)totalLoyalty / Population;
 	}
 
 	public int AverageTargetLoyalty()
@@ -957,11 +954,7 @@ public class Town : IIdObject
 		double totalResistance = 0.0;
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
-		{
-			int thisPop = RacesPopulation[i];
-			if (thisPop > 0)
-				totalResistance += RacesResistance[i, nationId - 1] * thisPop;
-		}
+			totalResistance += RacesResistance[i, nationId - 1] * RacesPopulation[i];
 
 		return (int)totalResistance / Population;
 	}
@@ -1016,8 +1009,6 @@ public class Town : IIdObject
 	{
 		if (NationId == 0)
 			return;
-
-		//------------- update loyalty -------------//
 
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
@@ -1195,11 +1186,11 @@ public class Town : IIdObject
 				continue;
 
 			//------------------------------------------//
-			// If this town is linked to a own camp,
-			// disable all links to enemy camps, otherwise
-			// enable all links to enemy camps.
+			// If this town is linked to a own camp disable all links to enemy camps,
+			// otherwise enable all links to enemy camps.
 			//------------------------------------------//
 
+			//TODO check this
 			if (firm.NationId != NationId)
 				ToggleFirmLink(i + 1, !HasLinkedOwnCamp, InternalConstants.COMMAND_AUTO);
 		}
@@ -1207,8 +1198,6 @@ public class Town : IIdObject
 
 	private void UpdateResistance()
 	{
-		//------------- update resistance ----------------//
-
 		bool[] zeroResistance = new bool[GameConstants.MAX_NATION];
 		for (int i = 0; i < zeroResistance.Length; i++)
 			zeroResistance[i] = true;
@@ -1367,18 +1356,17 @@ public class Town : IIdObject
 
 		//------------------------------------------//
 
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <town recno> <race id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_COLLECT_TAX, sizeof(short));
-		//shortPtr[0] = town_recno;
-		//return;
+			//// packet structure : <town recno> <race id>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_COLLECT_TAX, sizeof(short));
+			//shortPtr[0] = town_recno;
+			//return;
 		//}
 
 		//----- calculate the loyalty decrease amount ------//
 		//
-		// If you reward too frequently, the negative effect
-		// on loyalty will get larger.
+		// If you collect tax too frequently, the negative effect on loyalty will get larger.
 		//
 		//--------------------------------------------------//
 
@@ -1411,18 +1399,17 @@ public class Town : IIdObject
 
 		//------------------------------------------//
 
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <town recno> <race id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_REWARD, sizeof(short));
-		//shortPtr[0] = town_recno;
-		//return;
+			//// packet structure : <town recno> <race id>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_REWARD, sizeof(short));
+			//shortPtr[0] = town_recno;
+			//return;
 		//}
 
 		//----- calculate the loyalty increase amount ------//
 		//
-		// If you reward too frequently, the effect of the
-		// granting will be diminished.
+		// If you reward too frequently, the effect of the granting will be diminished.
 		//
 		//--------------------------------------------------//
 
@@ -1451,7 +1438,7 @@ public class Town : IIdObject
 		}
 		else // for nation town, when the enemy doesn't have camps linked to it and the granting nation has camps linked to it
 		{
-			return !HasLinkedCamp(NationId, false) && HasLinkedCamp(grantNationId, true);
+			return HasLinkedCamp(grantNationId, true) && !HasLinkedCamp(NationId, false);
 		}
 	}
 
@@ -1465,12 +1452,12 @@ public class Town : IIdObject
 		if (grantNation.Cash < 0.0)
 			return 0;
 
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_GRANT_INDEPENDENT, 2*sizeof(short) );
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = grantNationRecno;
-		//return 1;
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_GRANT_INDEPENDENT, 2*sizeof(short) );
+			//shortPtr[0] = town_recno;
+			//shortPtr[1] = grantNationRecno;
+			//return 1;
 		//}
 
 		//---- calculate the resistance to be decreased -----//
@@ -1503,8 +1490,6 @@ public class Town : IIdObject
 					RacesLoyalty[i] = 0.0;
 			}
 		}
-
-		//----------- decrease cash ------------//
 
 		grantNation.AddExpense(NationBase.EXPENSE_GRANT_OTHER_TOWN, Population * GameConstants.IND_TOWN_GRANT_PER_PERSON);
 
@@ -1689,6 +1674,7 @@ public class Town : IIdObject
 		//
 		//-----------------------------------------------------------------//
 
+		//TODO >= ?
 		if (RacesSpyCount[raceId - 1] == RacesJoblessPopulation[raceId - 1])
 			cancelFlag = true;
 
@@ -1728,7 +1714,7 @@ public class Town : IIdObject
 		if (unit.IsOwn())
 			SERes.far_sound(locX, locY, 1, 'S', unit.SpriteResId, "RDY");
 
-		unit.UnitMode = 0; // reset it to 0 from UNIT_MODE_UNDER_TRAINING
+		unit.SetMode(0); // reset it to 0 from UNIT_MODE_UNDER_TRAINING
 		TrainUnitId = 0;
 
 		DecPopulation(unit.RaceId, false); // decrease the population now as the recruit() does do so
@@ -1828,13 +1814,8 @@ public class Town : IIdObject
 	}
 
 	
-	private bool CanMigrate(int destTownId, bool migrateNow = false, int raceId = 0)
+	private bool CanMigrate(int destTownId, bool migrateNow, int raceId)
 	{
-		if (raceId == 0)
-		{
-			//TODO get race from user interface
-		}
-
 		Town destTown = TownArray[destTownId];
 
 		if (destTown.Population >= GameConstants.MAX_TOWN_POPULATION)
@@ -1856,9 +1837,9 @@ public class Town : IIdObject
 		{
 			//---- scan for firms that are linked to this town ----//
 
-			for (int i = 0; i < LinkedFirms.Count; i++)
+			foreach (int linkedFirmId in LinkedFirms)
 			{
-				Firm firm = FirmArray[LinkedFirms[i]];
+				Firm firm = FirmArray[linkedFirmId];
 
 				//---- only for firms whose workers live in towns ----//
 
@@ -1867,7 +1848,7 @@ public class Town : IIdObject
 
 				//---- if the target town is within the effective range of this firm ----//
 
-				if (!Misc.AreTownAndFirmLinked(this, firm))
+				if (!Misc.AreTownAndFirmLinked(destTown, firm))
 					continue;
 
 				//------- scan for workers -----------//
@@ -1911,10 +1892,7 @@ public class Town : IIdObject
 			if (town.Population >= GameConstants.MAX_TOWN_POPULATION)
 				continue;
 
-			int townDistance = Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
-				town.LocX1, town.LocY1, town.LocX2, town.LocY2);
-
-			if (townDistance > InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE)
+			if (!Misc.AreTownsLinked(town, this))
 				continue;
 
 			//---- scan all jobless population, see if any of them want to migrate ----//
@@ -1943,8 +1921,6 @@ public class Town : IIdObject
 					if (migratedCount >= GameConstants.MAX_MIGRATE_PER_DAY || Misc.Random(4) == 0)
 						break;
 				}
-
-				//------------- add news --------------//
 
 				if (migratedCount > 0)
 				{
@@ -2017,7 +1993,6 @@ public class Town : IIdObject
 			//---------- migrate now ----------//
 
 			int newLoyalty = Math.Max(targetAttractLevel / 2, 40);
-
 			Migrate(raceId, targetTown.TownId, newLoyalty);
 			return true;
 		}
@@ -2036,36 +2011,31 @@ public class Town : IIdObject
 		destTown.IncPopulation(raceId, false, newLoyalty);
 	}
 
-	private bool MigrateTo(int destTownRecno, int remoteAction, int raceId = 0, int count = 1)
+	private bool MigrateTo(int destTownId, int remoteAction, int raceId, int count = 1)
 	{
 		if (count <= 0 || count > GameConstants.MAX_TOWN_POPULATION)
 		{
 			return false;
 		}
 
-		if (raceId == 0)
-		{
-			//TODO get race from user interface
-		}
-
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <town recno> <dest town recno> <race id> <count>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_MIGRATE, 4*sizeof(short));
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = destTownRecno;
-		//shortPtr[2] = raceId;
-		//shortPtr[3] = count;
-		//return 0;
+			//// packet structure : <town recno> <dest town recno> <race id> <count>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_MIGRATE, 4*sizeof(short));
+			//shortPtr[0] = town_recno;
+			//shortPtr[1] = destTownRecno;
+			//shortPtr[2] = raceId;
+			//shortPtr[3] = count;
+			//return 0;
 		//}
 
 		bool continueMigrate = true;
 		int migrated = 0;
 		while (continueMigrate && migrated < count)
 		{
-			continueMigrate = CanMigrate(destTownRecno, true, raceId);	
+			continueMigrate = CanMigrate(destTownId, true, raceId);	
 			if (continueMigrate)
-				++migrated;
+				migrated++;
 		}
 
 		return migrated > 0;
@@ -2078,7 +2048,7 @@ public class Town : IIdObject
 		{
 			unit.Stop2();
 			//----------------------------------------------------------------------//
-			// codes for handle_blocked_move set unit_group_id to a different value 
+			// codes for handle_blocked_move set CurGroupId to a different value 
 			// s.t. the members in this group will not be blocked by this unit.
 			//----------------------------------------------------------------------//
 			unit.GroupId = UnitArray.CurGroupId++;
@@ -2109,7 +2079,7 @@ public class Town : IIdObject
 
 			if (unit.NationId == NationId && unit.UnitModeParam == TownId)
 			{
-				// if the unit is a town defender, skill.skill_level is temporarily used for storing the loyalty
+				// if the unit is a town defender, Skill.SkillLevel is temporarily used for storing the loyalty
 				// that will be added back to the town if the defender returns to the town
 
 				int loyaltyInc = unit.Skill.SkillLevel;
@@ -2201,21 +2171,14 @@ public class Town : IIdObject
 		if (trainSkillId >= 1 && TrainUnitId != 0)
 			return 0;
 
-		//--------------------------------------------//
-
-		if (raceId == 0)
-		{
-			//TODO get race from user interface
-		}
-
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		// packet structure : <town recno> <skill id> <race id>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 3*sizeof(short));
-		//shortPtr[0] = town_recno;
-		//shortPtr[1] = trainSkillId;
-		//shortPtr[2] = raceId;
-		//return 0;
+			// packet structure : <town recno> <skill id> <race id>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 3*sizeof(short));
+			//shortPtr[0] = town_recno;
+			//shortPtr[1] = trainSkillId;
+			//shortPtr[2] = raceId;
+			//return 0;
 		//}
 
 		int recruitableCount = RecruitableRacePopulation(raceId, true);
@@ -2321,8 +2284,7 @@ public class Town : IIdObject
 			_startTrainFrameNumber = Sys.Instance.FrameNumber; // as an offset for displaying the progress bar correctly
 
 			unit.DeinitSprite();
-			unit.UnitMode = UnitConstants.UNIT_MODE_UNDER_TRAINING;
-			unit.UnitModeParam = TownId;
+			unit.SetMode(UnitConstants.UNIT_MODE_UNDER_TRAINING, TownId);
 			
 			NationArray[NationId].AddExpense(NationBase.EXPENSE_TRAIN_UNIT, GameConstants.TRAIN_SKILL_COST);
 		}
@@ -2400,15 +2362,8 @@ public class Town : IIdObject
 		if (!World.LocateSpace(ref locX, ref locY, LocX2, LocY2, spriteInfo.LocWidth, spriteInfo.LocHeight))
 			return null;
 
-		//---------- add the unit now -----------//
-
 		Unit unit = UnitArray.AddUnit(unitType, NationId, Unit.RANK_SOLDIER, (int)RacesLoyalty[raceId - 1], locX, locY);
-
-		//------- set the unit's parameters --------//
-
 		unit.SetCombatLevel(GameConstants.CITIZEN_COMBAT_LEVEL);
-
-		//-------- decrease the town's population ------//
 
 		if (decPop)
 			DecPopulation(raceId, false);
@@ -2422,9 +2377,9 @@ public class Town : IIdObject
 
 		int racesJoblessPop = RacesJoblessPopulation[raceId - 1];
 
-		for (int i = 0; i < LinkedFirms.Count; i++)
+		foreach (int linkedFirmId in LinkedFirms)
 		{
-			Firm firm = FirmArray[LinkedFirms[i]];
+			Firm firm = FirmArray[linkedFirmId];
 
 			//------- scan for workers -----------//
 
@@ -2450,9 +2405,9 @@ public class Town : IIdObject
 
 		if (unjobOverseer)
 		{
-			for (int i = 0; i < LinkedFirms.Count; i++)
+			foreach (int linkedFirmId in LinkedFirms)
 			{
-				Firm firm = FirmArray[LinkedFirms[i]];
+				Firm firm = FirmArray[linkedFirmId];
 
 				//------- scan for overseer -----------//
 
@@ -2657,12 +2612,12 @@ public class Town : IIdObject
 		if (NationId == 0) // cannot toggle for independent town
 			return false;
 
-		for (int i = 0; i < LinkedFirms.Count; i++)
+		foreach (int linkedFirmId in LinkedFirms)
 		{
-			if (LinkedFirms[i] != firmId)
+			if (linkedFirmId != firmId)
 				continue;
 
-			Firm firm = FirmArray[LinkedFirms[i]];
+			Firm firm = FirmArray[linkedFirmId];
 
 			switch (firm.FirmType)
 			{
@@ -2759,7 +2714,6 @@ public class Town : IIdObject
 		return;
 	}
 
-
 	public int LinkedActiveCampCount()
 	{
 		int linkedCount = 0;
@@ -2778,39 +2732,6 @@ public class Town : IIdObject
 		}
 
 		return linkedCount;
-	}
-
-	private double LinkedCampSoldiersCount()
-	{
-		double townSoldiersCount = 0.0;
-		for (int firmIndex = 0; firmIndex < LinkedFirms.Count; firmIndex++)
-		{
-			Firm firm = FirmArray[LinkedFirms[firmIndex]];
-
-			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_CAMP)
-				continue;
-
-			FirmCamp firmCamp = (FirmCamp)firm;
-
-			int linkedTownsCount = 0;
-			for (int townIndex = 0; townIndex < firmCamp.LinkedTowns.Count; townIndex++)
-			{
-				Town firmTown = TownArray[firmCamp.LinkedTowns[townIndex]];
-
-				if (firmTown.NationId != NationId)
-					continue;
-
-				linkedTownsCount++;
-			}
-
-			if (linkedTownsCount > 0)
-			{
-				townSoldiersCount += (double)(firmCamp.Workers.Count + firmCamp.PatrolUnits.Count + firmCamp.ComingUnits.Count)
-				                     / (double)linkedTownsCount;
-			}
-		}
-
-		return townSoldiersCount;
 	}
 
 	private void UpdateCampLink()
@@ -2884,8 +2805,7 @@ public class Town : IIdObject
 			if (firm.FirmType != Firm.FIRM_CAMP || firm.NationId != NationId)
 				continue;
 
-			int curDistance = Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
-				firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+			int curDistance = Misc.FirmTownDistance(firm, this);
 
 			if (curDistance < minDistance)
 			{
@@ -2924,6 +2844,21 @@ public class Town : IIdObject
 		}
 
 		return false;
+	}
+
+	public List<Spy> GetPlayerSpies()
+	{
+		List<Spy> result = new List<Spy>();
+		
+		foreach (Spy spy in SpyArray)
+		{
+			if (spy.SpyPlace == Spy.SPY_TOWN && spy.SpyPlaceId == TownId && spy.TrueNationId == NationArray.PlayerId)
+			{
+				result.Add(spy);
+			}
+		}
+
+		return result;
 	}
 	
 	
@@ -3022,6 +2957,7 @@ public class Town : IIdObject
 
 		//----- if an AI nation took over this town, see if the AI can capture all firms linked to this town ----//
 
+		//TODO AI code without checking AITown
 		if (NationId != 0 && NationArray[NationId].IsAI())
 			ThinkCaptureLinkedFirm();
 
@@ -3067,6 +3003,10 @@ public class Town : IIdObject
 
 	private bool MobilizeDefender(int attackerNationId)
 	{
+		// independent units do not attack independent towns
+		if (NationId == 0 && attackerNationId == 0)
+			return false;
+		
 		// do not call out defenders any more if there is only one person left in the town, otherwise the town will be gone.
 		if (Population == 1)
 			return false;
@@ -3096,19 +3036,7 @@ public class Town : IIdObject
 		//
 		//-----------------------------------------------------------------//
 
-		double curLoyalty;
-
-		if (NationId != 0)
-		{
-			curLoyalty = RacesLoyalty[raceId - 1];
-		}
-		else
-		{
-			if (attackerNationId == 0) // if independent units do not attack independent towns
-				return false;
-
-			curLoyalty = RacesResistance[raceId - 1, attackerNationId - 1];
-		}
+		double curLoyalty = NationId != 0 ? RacesLoyalty[raceId - 1] : RacesResistance[raceId - 1, attackerNationId - 1];
 
 		//--- only mobilize new defenders when there aren't too many existing ones ---//
 
@@ -3157,6 +3085,7 @@ public class Town : IIdObject
 		}
 		else
 		{
+			//TODO negative RacesResistance?
 			for (int i = 0; i < GameConstants.MAX_NATION; i++)
 				RacesResistance[raceId - 1, i] -= loyaltyDec;
 		}
@@ -3164,6 +3093,8 @@ public class Town : IIdObject
 		//------- mobilize jobless people if there are any -------//
 
 		Unit unit = MobilizeTownPeople(raceId, true, false); // don't mobilize spies
+		if (unit == null)
+			return false;
 
 		unit.SetMode(UnitConstants.UNIT_MODE_DEFEND_TOWN, TownId);
 
@@ -3217,9 +3148,9 @@ public class Town : IIdObject
 
 	public void AutoDefense(int targetId)
 	{
-		for (int i = LinkedFirms.Count - 1; i >= 0; i--)
+		foreach (int linkedFirmId in LinkedFirms)
 		{
-			Firm firm = FirmArray[LinkedFirms[i]];
+			Firm firm = FirmArray[linkedFirmId];
 
 			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_CAMP)
 				continue;
@@ -3231,11 +3162,11 @@ public class Town : IIdObject
 
 	public void BeingAttacked(int attackerUnitId, double attackDamage)
 	{
-		if (RebelId != 0)
-			RebelArray[RebelId].TownBeingAttacked(attackerUnitId);
-
 		if (Population == 0)
 			return;
+		
+		if (RebelId != 0)
+			RebelArray[RebelId].TownBeingAttacked(attackerUnitId);
 
 		DefendTargetId = attackerUnitId; // store the target attacker id
 
@@ -3403,9 +3334,9 @@ public class Town : IIdObject
 		int bestRating = AverageLoyalty();
 		int bestNationId = 0;
 
-		for (int i = 0; i < LinkedFirms.Count; i++)
+		foreach (int linkedFirmId in LinkedFirms)
 		{
-			Firm firm = FirmArray[LinkedFirms[i]];
+			Firm firm = FirmArray[linkedFirmId];
 
 			//---- if this is an enemy camp ----//
 
@@ -3434,7 +3365,7 @@ public class Town : IIdObject
 	private void Surrender(int toNationId)
 	{
 		// if this is a rebel town and the mobile rebel count is > 0, don't surrender
-		// this function can be called by update_resistance() when resistance drops to zero
+		// this function can be called by UpdateResistance() when resistance drops to zero
 
 		if (RebelId != 0)
 		{
@@ -3484,9 +3415,9 @@ public class Town : IIdObject
 				discontentedCount += RacesPopulation[i];
 
 				// count firm spies that reside in this town
-				for (int j = 0; j < LinkedFirms.Count; j++)
+				foreach (int linkedFirmId in LinkedFirms)
 				{
-					Firm firm = FirmArray[LinkedFirms[j]];
+					Firm firm = FirmArray[linkedFirmId];
 					foreach (Worker worker in firm.Workers)
 					{
 						if (worker.SpyId != 0 && worker.TownId == TownId)
@@ -3511,14 +3442,8 @@ public class Town : IIdObject
 		if (rebelLeaderRaceId == 0) // no discontention or no one can lead
 			return;
 
-		if (Population == 1) // if population is 1 only, handle otherwise
-		{
-		}
-		else
-		{
-			if (discontentedCount < Population * 2 / 3)
-				return;
-		}
+		if (Population > 1 && discontentedCount < Population * 2 / 3)
+			return;
 
 		//----- if there was just one unit in the town and he rebels ----//
 
@@ -3533,7 +3458,7 @@ public class Town : IIdObject
 		//----- create the rebel leader and the rebel group ------//
 
 		int rebelCount = 1;
-		Unit rebelLeader = CreateRebelUnit(rebelLeaderRaceId, true); // 1-the unit is the rebel leader
+		Unit rebelLeader = CreateRebelUnit(rebelLeaderRaceId, true);
 
 		if (rebelLeader == null)
 			return;
@@ -4276,9 +4201,7 @@ public class Town : IIdObject
 
 		//------ queue building a new market -------//
 
-		int buildXLoc, buildYLoc;
-
-		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, LocX1, LocY1, out buildXLoc, out buildYLoc))
+		if (!ownNation.find_best_firm_loc(Firm.FIRM_MARKET, LocX1, LocY1, out int buildXLoc, out int buildYLoc))
 		{
 			NoNeighborSpace = true;
 			return false;
@@ -4554,10 +4477,9 @@ public class Town : IIdObject
 
 	public bool AIBuildNeighborFirm(int firmId, int firmRaceId = 0)
 	{
-		int buildXLoc, buildYLoc;
 		Nation nation = NationArray[NationId];
 
-		if (!nation.find_best_firm_loc(firmId, LocX1, LocY1, out buildXLoc, out buildYLoc))
+		if (!nation.find_best_firm_loc(firmId, LocX1, LocY1, out int buildXLoc, out int buildYLoc))
 		{
 			NoNeighborSpace = true;
 			return false;
@@ -4814,7 +4736,6 @@ public class Town : IIdObject
 
 		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
 		{
-
 			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
 			{
 				Location location = World.GetLoc(xLoc, yLoc);
@@ -4829,8 +4750,7 @@ public class Town : IIdObject
 
 					//--- if the unit is idle and he is our enemy ---//
 
-					if (unit.CurAction == Sprite.SPRITE_IDLE &&
-					    nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
+					if (unit.CurAction == Sprite.SPRITE_IDLE && nation.GetRelationStatus(unit.NationId) == NationBase.NATION_HOSTILE)
 					{
 						enemyCombatLevel += (int)unit.HitPoints;
 
@@ -4858,7 +4778,9 @@ public class Town : IIdObject
 					if (nation.GetRelationStatus(firm.NationId) == NationBase.NATION_HOSTILE)
 					{
 						if (firm.Workers.Count == 0)
+						{
 							enemyCombatLevel += 50; // empty firm
+						}
 						else
 						{
 							for (int i = 0; i < firm.Workers.Count; i++)
@@ -5202,17 +5124,14 @@ public class Town : IIdObject
 
 				if (spy.SpySkill > 50)
 				{
-					int xLoc, yLoc;
-					int cloakedNationRecno;
-
-					bool hasNewMission = ownNation.think_spy_new_mission(spy.RaceId, RegionId, out xLoc, out yLoc, out cloakedNationRecno);
+					bool hasNewMission = ownNation.think_spy_new_mission(spy.RaceId, RegionId, out int xLoc, out int yLoc, out int cloakedNationId);
 
 					if (hasNewMission)
 					{
 						Unit unit = spy.MobilizeTownSpy();
 						if (unit != null)
 						{
-							ownNation.ai_start_spy_new_mission(unit, xLoc, yLoc, cloakedNationRecno);
+							ownNation.ai_start_spy_new_mission(unit, xLoc, yLoc, cloakedNationId);
 							return true;
 						}
 					}
@@ -5230,7 +5149,7 @@ public class Town : IIdObject
 
 		Nation ownNation = NationArray[NationId];
 
-		if (!ownNation.ai_should_create_new_spy(1)) //1 means take into account only conter-spies
+		if (!ownNation.ai_should_create_new_spy(1)) //1 means take into account only counter-spies
 			return false;
 
 		//------- check if we need additional spies ------//
@@ -5469,6 +5388,38 @@ public class Town : IIdObject
 		}
 	}
 
+	private double LinkedCampSoldiersCount()
+	{
+		double townSoldiersCount = 0.0;
+		for (int firmIndex = 0; firmIndex < LinkedFirms.Count; firmIndex++)
+		{
+			Firm firm = FirmArray[LinkedFirms[firmIndex]];
+
+			if (firm.NationId != NationId || firm.FirmType != Firm.FIRM_CAMP)
+				continue;
+
+			FirmCamp firmCamp = (FirmCamp)firm;
+
+			int linkedTownsCount = 0;
+			for (int townIndex = 0; townIndex < firmCamp.LinkedTowns.Count; townIndex++)
+			{
+				Town firmTown = TownArray[firmCamp.LinkedTowns[townIndex]];
+
+				if (firmTown.NationId != NationId)
+					continue;
+
+				linkedTownsCount++;
+			}
+
+			if (linkedTownsCount > 0)
+			{
+				townSoldiersCount += (double)(firmCamp.Workers.Count + firmCamp.PatrolUnits.Count + firmCamp.ComingUnits.Count) / (double)linkedTownsCount;
+			}
+		}
+
+		return townSoldiersCount;
+	}
+	
 	public bool CanRecruitPeople()
 	{
 		if (Population == GameConstants.MAX_TOWN_POPULATION)
@@ -5489,8 +5440,7 @@ public class Town : IIdObject
 		int xLoc = LocX1, yLoc = LocY1; // xLoc & yLoc are used for returning results
 
 		// InternalConstants.TOWN_WIDTH + 2 for space around the town
-		if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2,
-			    InternalConstants.TOWN_WIDTH + 2, InternalConstants.TOWN_HEIGHT + 2,
+		if (!World.LocateSpace(ref xLoc, ref yLoc, LocX2, LocY2, InternalConstants.TOWN_WIDTH + 2, InternalConstants.TOWN_HEIGHT + 2,
 			    UnitConstants.UNIT_LAND, RegionId, true))
 		{
 			return false;

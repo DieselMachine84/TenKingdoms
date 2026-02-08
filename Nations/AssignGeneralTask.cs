@@ -198,6 +198,7 @@ public class AssignGeneralTask : AITask, IUnitTask
 
         if (bestTown != null)
         {
+            //TODO recruit will return 0 if there is already training unit. Use AddQueue()
             generalId = bestTown.Recruit(Skill.SKILL_LEADING, bestRace, InternalConstants.COMMAND_AI);
         }
 

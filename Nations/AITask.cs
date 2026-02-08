@@ -169,6 +169,7 @@ public abstract class AITask
 
         if (bestTown != null)
         {
+            //TODO recruit will return 0 if there is already training unit. Use AddQueue()
             builderId = bestTown.Recruit(Skill.SKILL_CONSTRUCTION, bestRace, InternalConstants.COMMAND_AI);
         }
 

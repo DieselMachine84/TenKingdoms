@@ -100,7 +100,6 @@ public class RebelArray : DynArray<Rebel>
                 {
                     rebel.SetAction(Rebel.REBEL_IDLE);
                     rebel.StopAllRebelUnit();
-                    break;
                 }
             }
         }
@@ -116,7 +115,6 @@ public class RebelArray : DynArray<Rebel>
                 {
                     rebel.SetAction(Rebel.REBEL_IDLE);
                     rebel.StopAllRebelUnit();
-                    return;
                 }
             }
         }

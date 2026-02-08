@@ -328,7 +328,7 @@ public class Rebel : IIdObject
             if (!IsHostileNation(town.NationId))
                 continue;
 
-            if (World.GetRegionId(town.LocX1, town.LocY1) != curRegionId)
+            if (town.RegionId != curRegionId)
                 continue;
 
             int townDistance = Misc.RectsDistance(leaderLocX, leaderLocY, leaderLocX, leaderLocY,
@@ -370,7 +370,7 @@ public class Rebel : IIdObject
             if (!IsHostileNation(firm.NationId))
                 continue;
 
-            if (World.GetRegionId(firm.LocX1, firm.LocY1) != curRegionId)
+            if (firm.RegionId != curRegionId)
                 continue;
 
             int firmDistance = Misc.points_distance(leaderLocX, leaderLocY, firm.LocCenterX, firm.LocCenterY);
@@ -476,8 +476,6 @@ public class Rebel : IIdObject
                 unit.LeaderId = LeaderUnitId;
             }
         }
-
-        return;
     }
 
     public void ProcessLeaderQuit()
