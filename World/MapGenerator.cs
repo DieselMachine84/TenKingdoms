@@ -34,11 +34,11 @@ public class MapGenerator
 	
 	public void Generate()
 	{
-		Plasma heightMap = new Plasma(GameConstants.MapSize, GameConstants.MapSize);
+		Plasma heightMap = new Plasma(Config.MapSize, Config.MapSize);
 		heightMap.Generate(Misc.Random(2), 5);
 
 		// grouping plasma sample data, find sea or land first
-		int totalLoc = (GameConstants.MapSize + 1) * (GameConstants.MapSize + 1);
+		int totalLoc = (Config.MapSize + 1) * (Config.MapSize + 1);
 		int[] heightLimit = new int[2];
 		int[] heightFreq = new int[2];
 		int minLandCount = 0;
@@ -133,7 +133,7 @@ public class MapGenerator
 
 		SetRegionId();
 
-		double scaleFactor = (GameConstants.MapSize * GameConstants.MapSize) / (200.0 * 200.0);
+		double scaleFactor = (Config.MapSize * Config.MapSize) / (200.0 * 200.0);
 		
 		GenDirt((int)(40 * scaleFactor), (int)(30 * scaleFactor), (int)(60 * scaleFactor));
 
@@ -290,9 +290,9 @@ public class MapGenerator
 
 	private void SetTeraId(Plasma plasma)
 	{
-		for (int y = 0; y < GameConstants.MapSize; y++)
+		for (int y = 0; y < Config.MapSize; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; x++)
+			for (int x = 0; x < Config.MapSize; x++)
 			{
 				int nwType = TerrainRes.TerrainHeight(plasma.GetPoint(x, y), out int nwSubType);
 				int neType = TerrainRes.TerrainHeight(plasma.GetPoint(x + 1, y), out int neSubType);
@@ -312,9 +312,9 @@ public class MapGenerator
 		const int RESULT_ARRAY_SIZE = 20;
 		TerrainSubInfo[] candSub = new TerrainSubInfo[RESULT_ARRAY_SIZE];
 
-		for (int y = 0; y < GameConstants.MapSize; y++)
+		for (int y = 0; y < Config.MapSize; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize; x++)
+			for (int x = 0; x < Config.MapSize; x++)
 			{
 				int subFound = TerrainRes.SearchPattern(TerrainRes[World.GetLoc(x, y).TerrainId].PatternId, candSub, RESULT_ARRAY_SIZE);
 				for (int i = 0; i < subFound; i++)
@@ -325,7 +325,7 @@ public class MapGenerator
 					// ----- test if a substitution matches
 					for (TerrainSubInfo terrainSubInfo = candSub[i]; terrainSubInfo != null; terrainSubInfo = terrainSubInfo.NextStep)
 					{
-						if (tx < 0 || tx >= GameConstants.MapSize || ty < 0 || ty >= GameConstants.MapSize ||
+						if (tx < 0 || tx >= Config.MapSize || ty < 0 || ty >= Config.MapSize ||
 						    TerrainRes[World.GetLoc(tx, ty).TerrainId].PatternId != terrainSubInfo.OldPatternId)
 						{
 							flag = false;
@@ -423,23 +423,23 @@ public class MapGenerator
 	{
 		//----- set power off of the map edges -----//
 
-		for (int locX = 0; locX < GameConstants.MapSize; locX++) // set the top and bottom edges
+		for (int locX = 0; locX < Config.MapSize; locX++) // set the top and bottom edges
 		{
 			World.GetLoc(locX, 0).SetPowerOff();
-			World.GetLoc(locX, GameConstants.MapSize - 1).SetPowerOff();
+			World.GetLoc(locX, Config.MapSize - 1).SetPowerOff();
 		}
 
-		for (int locY = 0; locY < GameConstants.MapSize; locY++) // set the left and right edges
+		for (int locY = 0; locY < Config.MapSize; locY++) // set the left and right edges
 		{
 			World.GetLoc(0, locY).SetPowerOff();
-			World.GetLoc(GameConstants.MapSize - 1, locY).SetPowerOff();
+			World.GetLoc(Config.MapSize - 1, locY).SetPowerOff();
 		}
 
 		//-----------------------------------------//
 
-		for (int locY = 0; locY < GameConstants.MapSize; locY++)
+		for (int locY = 0; locY < Config.MapSize; locY++)
 		{
-			for (int locX = 0; locX < GameConstants.MapSize; locX++)
+			for (int locX = 0; locX < Config.MapSize; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
 				if (Config.ExploreWholeMap)
@@ -467,13 +467,13 @@ public class MapGenerator
 		if (locX > 0) // west
 			World.GetLoc(locX - 1, locY).SetPowerOff();
 
-		if (locX < GameConstants.MapSize - 1) // east
+		if (locX < Config.MapSize - 1) // east
 			World.GetLoc(locX + 1, locY).SetPowerOff();
 
 		if (locY > 0) // north
 			World.GetLoc(locX, locY - 1).SetPowerOff();
 
-		if (locY < GameConstants.MapSize - 1) // south
+		if (locY < Config.MapSize - 1) // south
 			World.GetLoc(locX, locY + 1).SetPowerOff();
 	}
 
@@ -482,9 +482,9 @@ public class MapGenerator
 		// ------- scan each tile for an above-hill terrain tile -----//
 		int x, y = 0;
 
-		for (y = 0; y < GameConstants.MapSize; y++)
+		for (y = 0; y < Config.MapSize; y++)
 		{
-			for (x = 0; x < GameConstants.MapSize; x++)
+			for (x = 0; x < Config.MapSize; x++)
 			{
 				Location location = World.GetLoc(x, y);
 				TerrainInfo terrainInfo = TerrainRes[location.TerrainId];
@@ -503,7 +503,7 @@ public class MapGenerator
 						{
 							// if y is GameConstants.MapSize - 1, aboveLoc and locPtr looks the same
 							// BUGHERE : repeat the same pattern below is a bug if patternId is not 0,9,10,13,14
-							if (y == GameConstants.MapSize - 1)
+							if (y == Config.MapSize - 1)
 								location.TerrainId = TerrainRes.Scan(priTerrain, secTerrain, patternId);
 						}
 					}
@@ -552,10 +552,10 @@ public class MapGenerator
 		const char SOUTH_RIGHT_SPECIAL = 'C';
 		const char SOUTH_CENTRE_SPECIAL = 'A';
 
-		for (y = 1; y < GameConstants.MapSize - 1; y++)
+		for (y = 1; y < Config.MapSize - 1; y++)
 		{
 			lastExit = 0;
-			for (x = 0; x < GameConstants.MapSize - 2; x++, lastExit = lastExit > 0 ? lastExit - 1 : 0)
+			for (x = 0; x < Config.MapSize - 2; x++, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
 				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 11,15,19 or 23,
@@ -683,10 +683,10 @@ public class MapGenerator
 		const char NORTH_RIGHT_SPECIAL = 'E';
 		const char NORTH_CENTRE_SPECIAL = 'F';
 
-		for (y = 1; y < GameConstants.MapSize - 2; ++y)
+		for (y = 1; y < Config.MapSize - 2; ++y)
 		{
 			lastExit = 0;
-			for (x = GameConstants.MapSize - 3; x >= 0; --x, lastExit = lastExit > 0 ? lastExit - 1 : 0)
+			for (x = Config.MapSize - 3; x >= 0; --x, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
 				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 12,16,20 or 24,
@@ -774,10 +774,10 @@ public class MapGenerator
 		const char WEST_BOTTOM_SPECIAL = 'I';
 		const char WEST_CENTRE_SPECIAL = 'H';
 
-		for (x = 1; x < GameConstants.MapSize - 1; ++x)
+		for (x = 1; x < Config.MapSize - 1; ++x)
 		{
 			lastExit = 0;
-			for (y = 0; y < GameConstants.MapSize - 4; ++y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
+			for (y = 0; y < Config.MapSize - 4; ++y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
 				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 9, 13, 17, 21
@@ -884,10 +884,10 @@ public class MapGenerator
 		const char EAST_BOTTOM_SPECIAL = 'L';
 		const char EAST_CENTRE_SPECIAL = 'K';
 
-		for (x = 1; x < GameConstants.MapSize - 1; ++x)
+		for (x = 1; x < Config.MapSize - 1; ++x)
 		{
 			lastExit = 0;
-			for (y = GameConstants.MapSize - 5; y >= 0; --y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
+			for (y = Config.MapSize - 5; y >= 0; --y, lastExit = lastExit > 0 ? lastExit - 1 : 0)
 			{
 				Location location = World.GetLoc(x, y);
 				// three hill blocks on a row are pattern 9, 13, 17, 21
@@ -982,9 +982,9 @@ public class MapGenerator
 	private void SetRegionId()
 	{
 		int regionId = 0;
-		for (int locY = 0; locY < GameConstants.MapSize; locY++)
+		for (int locY = 0; locY < Config.MapSize; locY++)
 		{
-			for (int locX = 0; locX < GameConstants.MapSize; locX++)
+			for (int locX = 0; locX < Config.MapSize; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
 				if (location.RegionId == 0 && location.RegionType() != RegionType.IMPASSABLE)
@@ -1000,9 +1000,9 @@ public class MapGenerator
 		// ------ update adjacency information and region area ------//
 
 		regionId = 0;
-		for (int locY = 0; locY < GameConstants.MapSize; locY++)
+		for (int locY = 0; locY < Config.MapSize; locY++)
 		{
-			for (int locX = 0; locX < GameConstants.MapSize; locX++)
+			for (int locX = 0; locX < Config.MapSize; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
 				int thisRegionId = location.RegionId;
@@ -1025,22 +1025,22 @@ public class MapGenerator
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 					if ((adjRegionId = World.GetLoc(locX, locY - 1).RegionId) < thisRegionId)
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
-					if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY - 1).RegionId) < thisRegionId)
+					if (locX < Config.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY - 1).RegionId) < thisRegionId)
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 				}
 
 				if (locX > 0 && (adjRegionId = World.GetLoc(locX - 1, locY).RegionId) < thisRegionId)
 					RegionArray.SetAdjacent(thisRegionId, adjRegionId);
-				if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY).RegionId) < thisRegionId)
+				if (locX < Config.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY).RegionId) < thisRegionId)
 					RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 
-				if (locY < GameConstants.MapSize - 1)
+				if (locY < Config.MapSize - 1)
 				{
 					if (locX > 0 && (adjRegionId = World.GetLoc(locX - 1, locY + 1).RegionId) < thisRegionId)
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 					if ((adjRegionId = World.GetLoc(locX, locY + 1).RegionId) < thisRegionId)
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
-					if (locX < GameConstants.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY + 1).RegionId) < thisRegionId)
+					if (locX < Config.MapSize - 1 && (adjRegionId = World.GetLoc(locX + 1, locY + 1).RegionId) < thisRegionId)
 						RegionArray.SetAdjacent(thisRegionId, adjRegionId);
 				}
 			}
@@ -1064,7 +1064,7 @@ public class MapGenerator
 		left++;
 
 		for (right = locX + 1;
-		     right < GameConstants.MapSize && World.GetLoc(right, locY).RegionId == 0 &&
+		     right < Config.MapSize && World.GetLoc(right, locY).RegionId == 0 &&
 		     World.GetLoc(right, locY).RegionType() == regionType;
 		     right++)
 		{
@@ -1075,9 +1075,9 @@ public class MapGenerator
 
 		// ------- scan line below ---------//
 		locY++;
-		if (locY < GameConstants.MapSize)
+		if (locY < Config.MapSize)
 		{
-			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < GameConstants.MapSize; ++locX)
+			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < Config.MapSize; ++locX)
 			{
 				if (World.GetLoc(locX, locY).RegionId == 0 && World.GetLoc(locX, locY).RegionType() == regionType)
 				{
@@ -1090,7 +1090,7 @@ public class MapGenerator
 		locY -= 2;
 		if (locY >= 0)
 		{
-			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < GameConstants.MapSize; ++locX)
+			for (locX = left > 0 ? left - 1 : 0; locX <= right + 1 && locX < Config.MapSize; ++locX)
 			{
 				if (World.GetLoc(locX, locY).RegionId == 0 && World.GetLoc(locX, locY).RegionType() == regionType)
 				{
@@ -1117,8 +1117,8 @@ public class MapGenerator
 			// generate grouped dirt
 			if (nGrouped > 0)
 			{
-				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
-				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(Config.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(Config.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
 				int x2 = x + LARGE_ROCK_SIZE - 1;
 				int y2 = y + LARGE_ROCK_SIZE - 1;
 
@@ -1174,8 +1174,8 @@ public class MapGenerator
 			// generate stand-alone large dirt
 			if (nLarge > 0)
 			{
-				int x = Misc.Random(GameConstants.MapSize - HUGE_ROCK_SIZE);
-				int y = Misc.Random(GameConstants.MapSize - HUGE_ROCK_SIZE);
+				int x = Misc.Random(Config.MapSize - HUGE_ROCK_SIZE);
+				int y = Misc.Random(Config.MapSize - HUGE_ROCK_SIZE);
 				int x2 = x + HUGE_ROCK_SIZE - 1;
 				int y2 = y + HUGE_ROCK_SIZE - 1;
 
@@ -1202,8 +1202,8 @@ public class MapGenerator
 			// generate stand-alone small dirt
 			if (nSmall > 0)
 			{
-				int x = Misc.Random(GameConstants.MapSize - SMALL_ROCK_SIZE);
-				int y = Misc.Random(GameConstants.MapSize - SMALL_ROCK_SIZE);
+				int x = Misc.Random(Config.MapSize - SMALL_ROCK_SIZE);
+				int y = Misc.Random(Config.MapSize - SMALL_ROCK_SIZE);
 				int x2 = x + SMALL_ROCK_SIZE - 1;
 				int y2 = y + SMALL_ROCK_SIZE - 1;
 
@@ -1250,9 +1250,9 @@ public class MapGenerator
 		int dirtArrayId = DirtArray.Add(newDirt);
 		RockInfo dirtInfo = RockRes.GetRockInfo(dirtId);
 
-		for (int dy = 0; dy < dirtInfo.LocHeight && y1 + dy < GameConstants.MapSize; dy++)
+		for (int dy = 0; dy < dirtInfo.LocHeight && y1 + dy < Config.MapSize; dy++)
 		{
-			for (int dx = 0; dx < dirtInfo.LocWidth && x1 + dx < GameConstants.MapSize; dx++)
+			for (int dx = 0; dx < dirtInfo.LocWidth && x1 + dx < Config.MapSize; dx++)
 			{
 				int dirtBlockId = RockRes.LocateBlock(dirtId, dx, dy);
 				if (dirtBlockId != 0)
@@ -1281,8 +1281,8 @@ public class MapGenerator
 			// generate grouped rocks
 			if (nGrouped > 0)
 			{
-				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
-				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(GameConstants.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int x = (GAP + SMALL_ROCK_SIZE) + Misc.Random(Config.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
+				int y = (GAP + SMALL_ROCK_SIZE) + Misc.Random(Config.MapSize - LARGE_ROCK_SIZE + 1 - 2 * (GAP + SMALL_ROCK_SIZE));
 				int x2 = x + LARGE_ROCK_SIZE - 1;
 				int y2 = y + LARGE_ROCK_SIZE - 1;
 
@@ -1338,8 +1338,8 @@ public class MapGenerator
 			// generate stand-alone large rock
 			if (nLarge > 0)
 			{
-				int x = Misc.Random(GameConstants.MapSize - HUGE_ROCK_SIZE);
-				int y = Misc.Random(GameConstants.MapSize - HUGE_ROCK_SIZE);
+				int x = Misc.Random(Config.MapSize - HUGE_ROCK_SIZE);
+				int y = Misc.Random(Config.MapSize - HUGE_ROCK_SIZE);
 				int x2 = x + HUGE_ROCK_SIZE - 1;
 				int y2 = y + HUGE_ROCK_SIZE - 1;
 
@@ -1366,8 +1366,8 @@ public class MapGenerator
 			// generate stand-alone small rock
 			if (nSmall > 0)
 			{
-				int x = Misc.Random(GameConstants.MapSize - SMALL_ROCK_SIZE);
-				int y = Misc.Random(GameConstants.MapSize - SMALL_ROCK_SIZE);
+				int x = Misc.Random(Config.MapSize - SMALL_ROCK_SIZE);
+				int y = Misc.Random(Config.MapSize - SMALL_ROCK_SIZE);
 				int x2 = x + SMALL_ROCK_SIZE - 1;
 				int y2 = y + SMALL_ROCK_SIZE - 1;
 
@@ -1414,9 +1414,9 @@ public class MapGenerator
 		int rockArrayId = RockArray.Add(newRock);
 		RockInfo rockInfo = RockRes.GetRockInfo(rockId);
 
-		for (int dy = 0; dy < rockInfo.LocHeight && y1 + dy < GameConstants.MapSize; dy++)
+		for (int dy = 0; dy < rockInfo.LocHeight && y1 + dy < Config.MapSize; dy++)
 		{
-			for (int dx = 0; dx < rockInfo.LocWidth && x1 + dx < GameConstants.MapSize; dx++)
+			for (int dx = 0; dx < rockInfo.LocWidth && x1 + dx < Config.MapSize; dx++)
 			{
 				int rockBlockId = RockRes.LocateBlock(rockId, dx, dy);
 				if (rockBlockId != 0)
@@ -1432,9 +1432,9 @@ public class MapGenerator
 
 	private void SetHarborBit()
 	{
-		for (int y = 0; y < GameConstants.MapSize - 2; y++)
+		for (int y = 0; y < Config.MapSize - 2; y++)
 		{
-			for (int x = 0; x < GameConstants.MapSize - 2; x++)
+			for (int x = 0; x < Config.MapSize - 2; x++)
 			{
 				if (World.CanBuildFirm(x, y, Firm.FIRM_HARBOR) != 0)
 				{
@@ -1463,7 +1463,7 @@ public class MapGenerator
 
 	private Town CreateTown(int nationId, int raceId)
 	{
-		if (!TownArray.ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize, out int xLoc, out int yLoc))
+		if (!TownArray.ThinkTownLoc(Config.MapSize * Config.MapSize, out int xLoc, out int yLoc))
 			return null;
 
 		Town town = TownArray.AddTown(nationId, raceId, xLoc, yLoc);
@@ -1609,9 +1609,9 @@ public class MapGenerator
 		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 
 		// leave at least one location space around the building
-		if (!World.LocateSpaceRandom(ref locX, ref locY, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+		if (!World.LocateSpaceRandom(ref locX, ref locY, Config.MapSize - 1, Config.MapSize - 1,
 			    firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
-			    GameConstants.MapSize * GameConstants.MapSize, 0, true, teraMask))
+			    Config.MapSize * Config.MapSize, 0, true, teraMask))
 		{
 			return;
 		}

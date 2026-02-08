@@ -20,6 +20,7 @@ public class UnitArray : SpriteArray
 
     public override Unit this[int recNo] => (Unit)base[recNo];
 
+    private Config Config => Sys.Instance.Config;
     private World World => Sys.Instance.World;
     private SeekPath SeekPath => Sys.Instance.SeekPath;
     private TerrainRes TerrainRes => Sys.Instance.TerrainRes;
@@ -619,7 +620,7 @@ public class UnitArray : SpriteArray
 				x = destX + vecX;
 				y = destY + vecY;
 
-				if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
+				if (x >= 0 && y >= 0 && x < Config.MapSize && y < Config.MapSize)
 				{
 					Location location = World.GetLoc(x, y);
 					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
@@ -651,7 +652,7 @@ public class UnitArray : SpriteArray
 					x = destX + vecX;
 					y = destY + vecY;
 
-					if (x >= 0 && y >= 0 && x < GameConstants.MapSize && y < GameConstants.MapSize)
+					if (x >= 0 && y >= 0 && x < Config.MapSize && y < Config.MapSize)
 					{
 						Location location = World.GetLoc(x, y);
 						if (location.IsUnitGroupAccessible(mobileType, curGroupId))
@@ -811,7 +812,7 @@ public class UnitArray : SpriteArray
 
 				y += moveScale;
 				//-******************* auto correct ***********************-//
-				if (unprocessCount > 0 && y >= GameConstants.MapSize)
+				if (unprocessCount > 0 && y >= Config.MapSize)
 				{
 					y = autoCorrectStartY;
 				}
@@ -870,7 +871,7 @@ public class UnitArray : SpriteArray
 			{
 				Unit unit = this[selectedUnitArray[i]];
 				// d(x,y)=x+c*|y|
-				distance[i] = GameConstants.MapSize; // to avoid -ve no. in the following line
+				distance[i] = Config.MapSize; // to avoid -ve no. in the following line
 				// plus/minus x coord difference
 				distance[i] += (x - unit.CurLocX + c * Math.Abs(unit.CurLocY - y));
 			}
@@ -881,7 +882,7 @@ public class UnitArray : SpriteArray
 			{
 				Unit unit = this[selectedUnitArray[i]];
 				// d(x,y)=x+c*|y|
-				distance[i] = GameConstants.MapSize; // to avoid -ve no. in the following line
+				distance[i] = Config.MapSize; // to avoid -ve no. in the following line
 				// plus/minus x coord difference
 				distance[i] += (unit.CurLocX - x + c * Math.Abs(unit.CurLocY - y));
 			}
@@ -1000,19 +1001,19 @@ public class UnitArray : SpriteArray
 					x = y = 0;
 				}
 				//------------ bottom left corner ---------------//
-				else if (y >= GameConstants.MapSize - moveScale)
+				else if (y >= Config.MapSize - moveScale)
 				{
 					if (notTestedLoc >= square_size / moveScale)
 						recWidth -= moveScale;
 
 					x = recWidth - moveScale;
-					y = GameConstants.MapSize - moveScale;
+					y = Config.MapSize - moveScale;
 				}
 				//------------- just left edge -------------//
 				else
 					x = recWidth - moveScale;
 			}
-			else if (x >= GameConstants.MapSize - moveScale)
+			else if (x >= Config.MapSize - moveScale)
 			{
 				//============== right edge ==============//
 
@@ -1027,14 +1028,14 @@ public class UnitArray : SpriteArray
 					recWidth = recHeight = sqrtValue;
 
 					upperLeftCase = lowerRightCase + 1;
-					x = GameConstants.MapSize - recWidth;
+					x = Config.MapSize - recWidth;
 					y = 0;
 				}
 				//---------- bottom right corner ------------//
-				else if (y >= GameConstants.MapSize - moveScale)
+				else if (y >= Config.MapSize - moveScale)
 				{
-					y = GameConstants.MapSize - moveScale;
-					x = GameConstants.MapSize - moveScale;
+					y = Config.MapSize - moveScale;
+					x = Config.MapSize - moveScale;
 				}
 				//---------- just right edge ---------------//
 				else
@@ -1042,7 +1043,7 @@ public class UnitArray : SpriteArray
 					int squareSize = square_size / moveScale;
 					if (squareSize * (squareSize - 1) >= selectedCount)
 						recWidth -= moveScale;
-					x = GameConstants.MapSize - moveScale;
+					x = Config.MapSize - moveScale;
 				}
 			}
 			else if (y < recHeight)
@@ -1063,7 +1064,7 @@ public class UnitArray : SpriteArray
 				x = CalcRectangleUpperLeftLocX(destXLoc, moveScale, recWidth);
 				y = 0;
 			}
-			else if (y >= GameConstants.MapSize - moveScale)
+			else if (y >= Config.MapSize - moveScale)
 			{
 				//================== bottom edge ====================//
 				if (notTestedLoc >= square_size / moveScale)
@@ -1074,7 +1075,7 @@ public class UnitArray : SpriteArray
 				//else
 				//	x = destXLoc+(rec_width/4)*2;
 				x = CalcRectangleLowerRightLocX(destXLoc, moveScale, recWidth);
-				y = GameConstants.MapSize - moveScale;
+				y = Config.MapSize - moveScale;
 			}
 		}
 		//======================================================================//
@@ -1102,11 +1103,11 @@ public class UnitArray : SpriteArray
 					x = y = 0;
 				}
 				//------------- bottom left corner --------------//
-				else if (y + recHeight >= GameConstants.MapSize - moveScale)
+				else if (y + recHeight >= Config.MapSize - moveScale)
 				{
 					lowerRightCase = upperLeftCase + 1;
 					x = recWidth - moveScale;
-					y = GameConstants.MapSize - moveScale;
+					y = Config.MapSize - moveScale;
 				}
 				//------------- just left edge ------------------//
 				else
@@ -1121,7 +1122,7 @@ public class UnitArray : SpriteArray
 				}
 			}
 			//================ right edge ================//
-			else if (x + recWidth >= GameConstants.MapSize - moveScale)
+			else if (x + recWidth >= Config.MapSize - moveScale)
 			{
 				//------------- top right corner ------------------//
 				if (y < 0)
@@ -1132,15 +1133,15 @@ public class UnitArray : SpriteArray
 					if (mobileType != UnitConstants.UNIT_LAND)
 						sqrtValue = sqrtValue << 1; // change to scale 2
 					recWidth = recHeight = sqrtValue;
-					x = GameConstants.MapSize - recWidth;
+					x = Config.MapSize - recWidth;
 					y = 0;
 				}
 				//------------- bottom right corner ------------------//
-				else if (y + recHeight >= GameConstants.MapSize - moveScale)
+				else if (y + recHeight >= Config.MapSize - moveScale)
 				{
 					lowerRightCase = upperLeftCase + 1;
-					x = GameConstants.MapSize - moveScale;
-					y = GameConstants.MapSize - moveScale;
+					x = Config.MapSize - moveScale;
+					y = Config.MapSize - moveScale;
 				}
 				//------------- just right edge ------------------//
 				else
@@ -1156,7 +1157,7 @@ public class UnitArray : SpriteArray
 					if (squareSize * (squareSize - 1) >= selectedCount)
 						recWidth -= moveScale;
 					lowerRightCase = upperLeftCase + 1;
-					x = GameConstants.MapSize - moveScale;
+					x = Config.MapSize - moveScale;
 					//if(mobileType==UNIT_LAND)
 					//	y = destYLoc+((rec_height-1)/2);
 					//else
@@ -1175,11 +1176,11 @@ public class UnitArray : SpriteArray
 				y = 0;
 			}
 			//================= bottom edge ================//
-			else if (y + recHeight >= GameConstants.MapSize - moveScale)
+			else if (y + recHeight >= Config.MapSize - moveScale)
 			{
 				if (notTestedLoc >= square_size)
 					recWidth += moveScale;
-				y = GameConstants.MapSize - moveScale;
+				y = Config.MapSize - moveScale;
 			}
 		}
 	}
@@ -2642,7 +2643,7 @@ public class UnitArray : SpriteArray
 			yLoc1 = targetYLoc - 1;
 		}
 
-		if (targetYLoc + targetHeight >= GameConstants.MapSize)
+		if (targetYLoc + targetHeight >= Config.MapSize)
 			i--;
 
 		for (yLoc2 = yLoc1 - targetYLoc + SHIFT_ADJUST; i > 0; i--, yLoc1++, yLoc2++)
@@ -2655,7 +2656,7 @@ public class UnitArray : SpriteArray
 			}
 
 			//----- right edge -----//
-			if (xLoc2 < GameConstants.MapSize && !unreachable_table[targetWidth + 1, yLoc2] &&
+			if (xLoc2 < Config.MapSize && !unreachable_table[targetWidth + 1, yLoc2] &&
 			    !World.GetLoc(xLoc2, yLoc1).CanMove(mobileType))
 			{
 				unreachable_table[targetWidth + 1, yLoc2] = true;
@@ -2681,7 +2682,7 @@ public class UnitArray : SpriteArray
 			}
 
 			//----- bottom edge -----//
-			if (yLoc2 < GameConstants.MapSize && !unreachable_table[xLoc2, targetHeight + 1] &&
+			if (yLoc2 < Config.MapSize && !unreachable_table[xLoc2, targetHeight + 1] &&
 			    !World.GetLoc(xLoc1, yLoc2).CanMove(mobileType))
 			{
 				unreachable_table[xLoc2, targetHeight + 1] = true;
@@ -2786,7 +2787,7 @@ public class UnitArray : SpriteArray
 
 		for (int i = 0; i < bound; i++)
 		{
-			if (xLoc < 0 || xLoc >= GameConstants.MapSize || yLoc < 0 || yLoc >= GameConstants.MapSize)
+			if (xLoc < 0 || xLoc >= Config.MapSize || yLoc < 0 || yLoc >= Config.MapSize)
 				unreachable_table[xLoc - targetXLoc + SHIFT_ADJUST, yLoc - targetYLoc + SHIFT_ADJUST] = true;
 			else
 			{
@@ -2963,7 +2964,7 @@ public class UnitArray : SpriteArray
 					leftYIncre = leftYIncreTable[leftIncreCount];
 				}
 
-				if (leftXLoc >= 0 && leftXLoc < GameConstants.MapSize && leftYLoc >= 0 && leftYLoc < GameConstants.MapSize)
+				if (leftXLoc >= 0 && leftXLoc < Config.MapSize && leftYLoc >= 0 && leftYLoc < Config.MapSize)
 				{
 					// concept incorrect, but it is used to terminate this part of checking
 					if (unreachable_table[leftXLoc - targetXLoc + SHIFT_ADJUST, leftYLoc - targetYLoc + SHIFT_ADJUST])
@@ -3009,7 +3010,7 @@ public class UnitArray : SpriteArray
 					rightYIncre = rightYIncreTable[rightIncreCount];
 				}
 
-				if (rightXLoc >= 0 && rightXLoc < GameConstants.MapSize && rightYLoc >= 0 && rightYLoc < GameConstants.MapSize)
+				if (rightXLoc >= 0 && rightXLoc < Config.MapSize && rightYLoc >= 0 && rightYLoc < Config.MapSize)
 				{
 					if (unreachable_table[rightXLoc - targetXLoc + SHIFT_ADJUST, rightYLoc - targetYLoc + SHIFT_ADJUST])
 						canReach = 1; // concept incorrect, but it is used to terminate this part of checking

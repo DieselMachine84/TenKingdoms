@@ -174,14 +174,12 @@ public class TownArray : DynArray<Town>
 
 		//------- locate for a space to build the town ------//
 
-		int xLoc, yLoc;
-
-		if (!ThinkTownLoc(GameConstants.MapSize * GameConstants.MapSize / 4, out xLoc, out yLoc))
+		if (!ThinkTownLoc(Config.MapSize * Config.MapSize / 4, out int locX, out int locY))
 			return;
 
 		//--------------- create town ---------------//
 
-		Town newTown = AddTown(0, raceId, xLoc, yLoc);
+		Town newTown = AddTown(0, raceId, locX, locY);
 
 		int maxTownPop = 20 + Misc.Random(10);
 
@@ -252,8 +250,8 @@ public class TownArray : DynArray<Town>
 		for (int i = 0; i < maxTries; i++)
 		{
 			// do not build on the upper most location as the flag will go beyond the view area
-			xLoc = Misc.Random(GameConstants.MapSize - BUILD_TOWN_LOC_WIDTH);
-			yLoc = 2 + Misc.Random(GameConstants.MapSize - BUILD_TOWN_LOC_HEIGHT - 2);
+			xLoc = Misc.Random(Config.MapSize - BUILD_TOWN_LOC_WIDTH);
+			yLoc = 2 + Misc.Random(Config.MapSize - BUILD_TOWN_LOC_HEIGHT - 2);
 
 			bool canBuildFlag = true;
 

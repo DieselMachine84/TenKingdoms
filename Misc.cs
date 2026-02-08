@@ -17,6 +17,7 @@ public class Misc
     private static Random InternalRandom = new Random();
     private static long StartTicks;
 
+    private static Config Config => Sys.Instance.Config;
     private static World World => Sys.Instance.World;
     
     static Misc()
@@ -80,15 +81,15 @@ public class Misc
 
     public static bool IsLocationValid(int locX, int locY)
     {
-        return (locX >= 0 && locX < GameConstants.MapSize && locY >= 0 && locY < GameConstants.MapSize);
+        return (locX >= 0 && locX < Config.MapSize && locY >= 0 && locY < Config.MapSize);
     }
 
     public static void BoundLocation(ref int locX, ref int locY)
     {
         locX = Math.Max(locX, 0);
         locY = Math.Max(locY, 0);
-        locX = Math.Min(locX, GameConstants.MapSize - 1);
-        locY = Math.Min(locY, GameConstants.MapSize - 1);
+        locX = Math.Min(locX, Config.MapSize - 1);
+        locY = Math.Min(locY, Config.MapSize - 1);
     }
 
     public static IEnumerable<Location> EnumerateNearLocations(int locX1, int locY1, int locX2, int locY2)
@@ -241,7 +242,7 @@ public class Misc
         int sqtCount = 1;
 
         //TODO Strange constant
-        while (sqtCount < GameConstants.MapSize + 10) // the MAX. size of the map is 200x200
+        while (sqtCount < Config.MapSize + 10) // the MAX. size of the map is 200x200
         {
             if (num2 <= sqtCount * sqtCount)
                 break;

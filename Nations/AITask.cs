@@ -10,6 +10,7 @@ public abstract class AITask
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
     protected UnitRes UnitRes => Sys.Instance.UnitRes;
+    protected Config Config => Sys.Instance.Config;
     protected World World => Sys.Instance.World;
     
     protected FirmArray FirmArray => Sys.Instance.FirmArray;

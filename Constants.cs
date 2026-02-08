@@ -2,7 +2,6 @@ namespace TenKingdoms;
 
 public static class GameConstants
 {
-    public const int MapSize = 400;
     public const int MAX_RACE = 10;
     public const int MAX_NATION = 10;
     public const int NEW_NATION_INTERVAL_DAYS = 365;

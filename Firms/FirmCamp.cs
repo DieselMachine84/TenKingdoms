@@ -1199,8 +1199,8 @@ public class FirmCamp : Firm
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
-		xLoc2 = Math.Min(xLoc2, GameConstants.MapSize - 1);
-		yLoc2 = Math.Min(yLoc2, GameConstants.MapSize - 1);
+		xLoc2 = Math.Min(xLoc2, Config.MapSize - 1);
+		yLoc2 = Math.Min(yLoc2, Config.MapSize - 1);
 
 		//------------------------------------------//
 

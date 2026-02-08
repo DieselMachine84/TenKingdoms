@@ -950,12 +950,12 @@ public partial class Unit
 				int xLoc = targetXLoc + xOffset, yLoc = targetYLoc + yOffset;
 				if (xLoc < 0)
 					xLoc = 0;
-				else if (xLoc >= GameConstants.MapSize)
-					xLoc = GameConstants.MapSize - 1;
+				else if (xLoc >= Config.MapSize)
+					xLoc = Config.MapSize - 1;
 				if (yLoc < 0)
 					yLoc = 0;
-				else if (yLoc >= GameConstants.MapSize)
-					yLoc = GameConstants.MapSize - 1;
+				else if (yLoc >= Config.MapSize)
+					yLoc = Config.MapSize - 1;
 
 				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
@@ -1153,12 +1153,12 @@ public partial class Unit
 				int xLoc = firmXLoc + xOffset, yLoc = firmYLoc + yOffset;
 				if (xLoc < 0)
 					xLoc = 0;
-				else if (xLoc >= GameConstants.MapSize)
-					xLoc = GameConstants.MapSize - 1;
+				else if (xLoc >= Config.MapSize)
+					xLoc = Config.MapSize - 1;
 				if (yLoc < 0)
 					yLoc = 0;
-				else if (yLoc >= GameConstants.MapSize)
-					yLoc = GameConstants.MapSize - 1;
+				else if (yLoc >= Config.MapSize)
+					yLoc = Config.MapSize - 1;
 
 				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
@@ -1365,12 +1365,12 @@ public partial class Unit
 				int xLoc = townXLoc + xOffset, yLoc = townYLoc + yOffset;
 				if (xLoc < 0)
 					xLoc = 0;
-				else if (xLoc >= GameConstants.MapSize)
-					xLoc = GameConstants.MapSize - 1;
+				else if (xLoc >= Config.MapSize)
+					xLoc = Config.MapSize - 1;
 				if (yLoc < 0)
 					yLoc = 0;
-				else if (yLoc >= GameConstants.MapSize)
-					yLoc = GameConstants.MapSize - 1;
+				else if (yLoc >= Config.MapSize)
+					yLoc = Config.MapSize - 1;
 
 				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
@@ -1553,12 +1553,12 @@ public partial class Unit
 				int xLoc = wallXLoc + xOffset, yLoc = wallYLoc + yOffset;
 				if (xLoc < 0)
 					xLoc = 0;
-				else if (xLoc >= GameConstants.MapSize)
-					xLoc = GameConstants.MapSize - 1;
+				else if (xLoc >= Config.MapSize)
+					xLoc = Config.MapSize - 1;
 				if (yLoc < 0)
 					yLoc = 0;
-				else if (yLoc >= GameConstants.MapSize)
-					yLoc = GameConstants.MapSize - 1;
+				else if (yLoc >= Config.MapSize)
+					yLoc = Config.MapSize - 1;
 
 				Search(xLoc, yLoc, 1); // offset location is given, so move there directly
 			}
@@ -2550,7 +2550,7 @@ public partial class Unit
 			Misc.cal_move_around_a_point(i, DIMENSION, DIMENSION, out xShift, out yShift);
 			checkXLoc = curXLoc + xShift;
 			checkYLoc = curYLoc + yShift;
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
 				continue;
 
 			Location loc = World.GetLoc(checkXLoc, checkYLoc);
@@ -2657,8 +2657,8 @@ public partial class Unit
 		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
-		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, GameConstants.MapSize - 1);
-		int yLoc2 = Math.Min(targetYLoc + targetHeight - 1 + maxRange, GameConstants.MapSize - 1);
+		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, Config.MapSize - 1);
+		int yLoc2 = Math.Min(targetYLoc + targetHeight - 1 + maxRange, Config.MapSize - 1);
 		int checkXLoc, checkYLoc;
 
 		//--------- do adjustment for UnitConstants.UNIT_SEA and UnitConstants.UNIT_AIR ---------//
@@ -2859,7 +2859,7 @@ public partial class Unit
 		sum = 0;
 		if ((testXLoc = squareXLoc - 1) >= 0)
 		{
-			if (squareYLoc + height <= GameConstants.MapSize - 1) // have lower left corner
+			if (squareYLoc + height <= Config.MapSize - 1) // have lower left corner
 			{
 				i = height;
 				locWeight = 1;
@@ -2892,9 +2892,9 @@ public partial class Unit
 
 		//------------------- bottom edge ------------------//
 		sum = 0;
-		if ((testYLoc = squareYLoc + height) <= GameConstants.MapSize - 1)
+		if ((testYLoc = squareYLoc + height) <= Config.MapSize - 1)
 		{
-			if (squareXLoc + width <= GameConstants.MapSize - 1) // have lower right corner
+			if (squareXLoc + width <= Config.MapSize - 1) // have lower right corner
 			{
 				i = width;
 				locWeight = 1;
@@ -2927,7 +2927,7 @@ public partial class Unit
 
 		//---------------------- right edge ----------------------//
 		sum = 0;
-		if ((testXLoc = squareXLoc + width) <= GameConstants.MapSize - 1)
+		if ((testXLoc = squareXLoc + width) <= Config.MapSize - 1)
 		{
 			if (squareYLoc >= 1) // have upper right corner
 			{
@@ -3016,7 +3016,7 @@ public partial class Unit
 		sum = 0;
 		if (xLoc1 >= 0)
 		{
-			if (yLoc2 <= GameConstants.MapSize - 1)
+			if (yLoc2 <= Config.MapSize - 1)
 			{
 				i = yLoc2;
 				locWeight = 1;
@@ -3049,9 +3049,9 @@ public partial class Unit
 
 		//----------------------- bottom edge ---------------------------//
 		sum = 0;
-		if (yLoc2 <= GameConstants.MapSize - 1)
+		if (yLoc2 <= Config.MapSize - 1)
 		{
-			if (xLoc2 <= GameConstants.MapSize - 1)
+			if (xLoc2 <= Config.MapSize - 1)
 			{
 				i = xLoc2;
 				locWeight = 1;
@@ -3084,7 +3084,7 @@ public partial class Unit
 
 		//---------------------- right edge ------------------------//
 		sum = 0;
-		if (xLoc2 <= GameConstants.MapSize - 1)
+		if (xLoc2 <= Config.MapSize - 1)
 		{
 			if (yLoc1 >= 0)
 			{
@@ -3128,7 +3128,7 @@ public partial class Unit
 			int checkXLoc = targetXLoc + xShift;
 			int checkYLoc = targetYLoc + yShift;
 
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
 				continue;
 
 			Location loc = World.GetLoc(checkXLoc, checkYLoc);
@@ -3154,8 +3154,8 @@ public partial class Unit
 		int regionId = loc.RegionId;
 		int xLoc1 = Math.Max(targetXLoc - maxRange, 0);
 		int yLoc1 = Math.Max(targetYLoc - maxRange, 0);
-		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, GameConstants.MapSize - 1);
-		int yLoc2 = Math.Min(targetYLoc + targetHeight - 1 + maxRange, GameConstants.MapSize - 1);
+		int xLoc2 = Math.Min(targetXLoc + targetWidth - 1 + maxRange, Config.MapSize - 1);
+		int yLoc2 = Math.Min(targetYLoc + targetHeight - 1 + maxRange, Config.MapSize - 1);
 		int checkXLoc, checkYLoc;
 
 		//--------- do adjustment for UnitConstants.UNIT_SEA and UnitConstants.UNIT_AIR ---------//
@@ -4311,7 +4311,7 @@ public partial class Unit
 			Misc.cal_move_around_a_point(i, dimension, dimension, out xOffset, out yOffset);
 			int checkXLoc = MoveToLocX + xOffset;
 			int checkYLoc = MoveToLocY + yOffset;
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
 				continue;
 
 			//------------------ verify location ---------------//

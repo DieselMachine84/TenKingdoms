@@ -1480,7 +1480,7 @@ public class UnitMarine : Unit, ITrader
 
 		while (unprocessed > 0) // using the calculated 'i' to reduce useless calculation
 		{
-			Misc.cal_move_around_a_point(i, GameConstants.MapSize, GameConstants.MapSize, out int xShift, out int yShift);
+			Misc.cal_move_around_a_point(i, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
 			int checkLocX = curLocX + xShift;
 			int checkLocY = curLocY + yShift;
 			if (!Misc.IsLocationValid(checkLocX, checkLocY))

@@ -45,6 +45,7 @@ public class Weather
 	private int QuakeX { get; set; } // center of quake, generated on the day of quake
 	private int QuakeY { get; set; }
 
+	private Config Config => Sys.Instance.Config;
 	private MagicWeather MagicWeather => Sys.Instance.MagicWeather;
 
 	public Weather()
@@ -117,8 +118,8 @@ public class Weather
 			DayToQuake--;
 			if (IsQuake())
 			{
-				QuakeX = RandomSeed(0x10000) * GameConstants.MapSize / 0x10000;
-				QuakeY = RandomSeed(0x10000) * GameConstants.MapSize / 0x10000;
+				QuakeX = RandomSeed(0x10000) * Config.MapSize / 0x10000;
+				QuakeY = RandomSeed(0x10000) * Config.MapSize / 0x10000;
 			}
 		}
 		else

@@ -249,7 +249,7 @@ public class SERes
 		int relYLoc = yLoc;
 
 		PosVolume posVolume = new PosVolume(relXLoc, relYLoc);
-		RelVolume relVolume = new RelVolume(posVolume, 200, GameConstants.MapSize);
+		RelVolume relVolume = new RelVolume(posVolume, 200, Config.MapSize);
 		if (!Config.PanControl)
 			relVolume.ds_pan = 0;
 

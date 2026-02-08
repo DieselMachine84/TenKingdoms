@@ -4724,8 +4724,8 @@ public class Town : IIdObject
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
-		xLoc2 = Math.Min(xLoc2, GameConstants.MapSize - 1);
-		yLoc2 = Math.Min(yLoc2, GameConstants.MapSize - 1);
+		xLoc2 = Math.Min(xLoc2, Config.MapSize - 1);
+		yLoc2 = Math.Min(yLoc2, Config.MapSize - 1);
 
 		//------------------------------------------//
 
@@ -4953,7 +4953,7 @@ public class Town : IIdObject
 		switch (dir)
 		{
 			case 0:
-				destX = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
+				destX = Misc.Random(Config.MapSize - 1 - 20) + 10;
 				if (LocCenterX - destX > 100)
 					destX = LocCenterX - (LocCenterX - destX) % 100;
 				if (destX - LocCenterX > 100)
@@ -4961,24 +4961,24 @@ public class Town : IIdObject
 				destY = Math.Max(LocCenterY - 100, 10);
 				break;
 			case 1:
-				destX = Math.Min(LocCenterX + 100, GameConstants.MapSize - 1 - 10);
-				destY = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
+				destX = Math.Min(LocCenterX + 100, Config.MapSize - 1 - 10);
+				destY = Misc.Random(Config.MapSize - 1 - 20) + 10;
 				if (LocCenterY - destY > 100)
 					destY = LocCenterY - (LocCenterY - destY) % 100;
 				if (destY - LocCenterY > 100)
 					destY = LocCenterY + (destY - LocCenterY) % 100;
 				break;
 			case 2:
-				destX = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
+				destX = Misc.Random(Config.MapSize - 1 - 20) + 10;
 				if (LocCenterX - destX > 100)
 					destX = LocCenterX - (LocCenterX - destX) % 100;
 				if (destX - LocCenterX > 100)
 					destX = LocCenterX + (destX - LocCenterX) % 100;
-				destY = Math.Min(LocCenterY + 100, GameConstants.MapSize - 1 - 10);
+				destY = Math.Min(LocCenterY + 100, Config.MapSize - 1 - 10);
 				break;
 			case 3:
 				destX = Math.Max(LocCenterX - 100, 10);
-				destY = Misc.Random(GameConstants.MapSize - 1 - 20) + 10;
+				destY = Misc.Random(Config.MapSize - 1 - 20) + 10;
 				if (LocCenterY - destY > 100)
 					destY = LocCenterY - (LocCenterY - destY) % 100;
 				if (destY - LocCenterY > 100)

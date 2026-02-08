@@ -446,10 +446,10 @@ public partial class Unit
 
 		Misc.BoundLocation(ref locX1, ref locY1);
 		// TODO: strange conditions, check
-		if (locX2 >= GameConstants.MapSize)
-			locY1 = GameConstants.MapSize - moveScale;
-		if (locY2 >= GameConstants.MapSize)
-			locX2 = GameConstants.MapSize - moveScale;
+		if (locX2 >= Config.MapSize)
+			locY1 = Config.MapSize - moveScale;
+		if (locY2 >= Config.MapSize)
+			locX2 = Config.MapSize - moveScale;
 
 		//--------------- adjust for air and sea units -----------------//
 		if (MobileType != UnitConstants.UNIT_LAND)
@@ -465,10 +465,10 @@ public partial class Unit
 				locY2++;
 
 			// TODO: strange conditions, check
-			if (locX2 > GameConstants.MapSize - moveScale)
-				locX2 = GameConstants.MapSize - moveScale;
-			if (locY2 > GameConstants.MapSize - moveScale)
-				locY2 = GameConstants.MapSize - moveScale;
+			if (locX2 > Config.MapSize - moveScale)
+				locX2 = Config.MapSize - moveScale;
+			if (locY2 > Config.MapSize - moveScale)
+				locY2 = Config.MapSize - moveScale;
 		}
 
 		int checkLocX = NextLocX;
@@ -1249,7 +1249,7 @@ public partial class Unit
 				checkYLoc = unitYLoc + yShift;
 			}
 
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
 				continue;
 
 			Location loc = World.GetLoc(checkXLoc, checkYLoc);

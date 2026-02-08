@@ -731,9 +731,9 @@ public class NationOld : NationBase
 				int xCopy = x;
 				int yCopy = y;
 				xCopy = Math.Max(0, xCopy);
-				xCopy = Math.Min(GameConstants.MapSize - 1, xCopy);
+				xCopy = Math.Min(Config.MapSize - 1, xCopy);
 				yCopy = Math.Max(0, yCopy);
-				yCopy = Math.Min(GameConstants.MapSize - 1, yCopy);
+				yCopy = Math.Min(Config.MapSize - 1, yCopy);
 				Location location = World.GetLoc(xCopy, yCopy);
 				if (location.IsTown())
 				{
@@ -764,10 +764,10 @@ public class NationOld : NationBase
 			int destYLoc = spyUnit.NextLocY + Misc.Random(20) - 10;
 
 			destXLoc = Math.Max(0, destXLoc);
-			destXLoc = Math.Min(GameConstants.MapSize - 1, destXLoc);
+			destXLoc = Math.Min(Config.MapSize - 1, destXLoc);
 
 			destYLoc = Math.Max(0, destYLoc);
-			destYLoc = Math.Min(GameConstants.MapSize - 1, destXLoc);
+			destYLoc = Math.Min(Config.MapSize - 1, destXLoc);
 
 			spyUnit.MoveTo(destXLoc, destYLoc);
 
@@ -1414,12 +1414,12 @@ public class NationOld : NationBase
 
 					for (int ix = site.LocX - firmInfo.LocWidth + 1; ix <= site.LocX && !canBuild; ix++)
 					{
-						if (ix < 0 || ix >= GameConstants.MapSize)
+						if (ix < 0 || ix >= Config.MapSize)
 							continue;
 
 						for (int iy = site.LocY - firmInfo.LocHeight + 1; iy <= site.LocY && !canBuild; iy++)
 						{
-							if (iy < 0 || iy >= GameConstants.MapSize)
+							if (iy < 0 || iy >= Config.MapSize)
 								continue;
 
 							if (World.CanBuildFirm(ix, iy, Firm.FIRM_MINE) != 0)
@@ -1539,12 +1539,12 @@ public class NationOld : NationBase
 
 		for (int ix = xLeftLimit; ix <= mapXLoc; ix++)
 		{
-			if (ix < 0 || ix >= GameConstants.MapSize)
+			if (ix < 0 || ix >= Config.MapSize)
 				continue;
 
 			for (int iy = yLeftLimit; iy <= mapYLoc; iy++)
 			{
-				if (iy < 0 || iy >= GameConstants.MapSize)
+				if (iy < 0 || iy >= Config.MapSize)
 					continue;
 
 				//---------------------------------------------------------------//
@@ -1627,7 +1627,7 @@ public class NationOld : NationBase
 		}
 
 		//---------- right edge ---------//
-		if ((x = x1 + width) < GameConstants.MapSize)
+		if ((x = x1 + width) < Config.MapSize)
 		{
 			int count = 0;
 			for (int i = 0; i < height; i++)
@@ -1641,7 +1641,7 @@ public class NationOld : NationBase
 
 		//----------- lower edge -----------//
 
-		if ((y = y1 + height) < GameConstants.MapSize)
+		if ((y = y1 + height) < Config.MapSize)
 		{
 			int count = 0;
 			for (int i = 0; i < width; i++)
@@ -1662,15 +1662,15 @@ public class NationOld : NationBase
 			score += 50;
 
 		//------- upper right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 > 0 && World.GetLoc(x1 + 1, y1 - 1).CanBuildFirm())
+		if (x1 < Config.MapSize - 1 && y1 > 0 && World.GetLoc(x1 + 1, y1 - 1).CanBuildFirm())
 			score += 50;
 
 		//----------- lower left corner ----------//
-		if (x1 > 0 && y1 < GameConstants.MapSize - 1 && World.GetLoc(x1 - 1, y1 + 1).CanBuildFirm())
+		if (x1 > 0 && y1 < Config.MapSize - 1 && World.GetLoc(x1 - 1, y1 + 1).CanBuildFirm())
 			score += 50;
 
 		//------- lower right corner ---------//
-		if (x1 < GameConstants.MapSize - 1 && y1 < GameConstants.MapSize - 1 && World.GetLoc(x1 + 1, y1 + 1).CanBuildFirm())
+		if (x1 < Config.MapSize - 1 && y1 < Config.MapSize - 1 && World.GetLoc(x1 + 1, y1 + 1).CanBuildFirm())
 			score += 50;
 	}
 
@@ -1733,13 +1733,13 @@ public class NationOld : NationBase
 		refX1 = Math.Max(0, refX1);
 		refY1 = Math.Max(0, refY1);
 
-		if (refX2 - firmLocWidth / 2 >= GameConstants.MapSize)
-			refX2 = GameConstants.MapSize - 1;
+		if (refX2 - firmLocWidth / 2 >= Config.MapSize)
+			refX2 = Config.MapSize - 1;
 		else
 			refX2 -= firmLocWidth / 2;
 
-		if (refY2 - firmLocHeight / 2 >= GameConstants.MapSize)
-			refY2 = GameConstants.MapSize - 1;
+		if (refY2 - firmLocHeight / 2 >= Config.MapSize)
+			refY2 = Config.MapSize - 1;
 		else
 			refY2 -= firmLocHeight / 2;
 
@@ -2783,7 +2783,7 @@ public class NationOld : NationBase
 					// -the skill level of the unit.
 					//----------------------------------------------//
 
-					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / GameConstants.MapSize);
+					int curRating = innUnitSkill.SkillLevel - (100 - 100 * curFirmDist / Config.MapSize);
 
 					if (UnitRes[innUnit.UnitType].RaceId == RaceId)
 						curRating += 50;
@@ -2841,7 +2841,7 @@ public class NationOld : NationBase
 
 			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destX, destY);
 
-			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
+			int curRating = 100 - 100 * curDist / Config.MapSize;
 
 			if (curRating > bestRating)
 			{
@@ -2933,7 +2933,7 @@ public class NationOld : NationBase
 
 			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
 
-			int curRating = 100 - 100 * curDist / GameConstants.MapSize;
+			int curRating = 100 - 100 * curDist / Config.MapSize;
 
 			//--- recruit units from non-base town first ------//
 
@@ -3026,7 +3026,7 @@ public class NationOld : NationBase
 
 			int curDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
 
-			int curRating = 100 - 100 * curDistance / GameConstants.MapSize;
+			int curRating = 100 - 100 * curDistance / Config.MapSize;
 
 			bool hasHuman = false;
 
@@ -3740,10 +3740,10 @@ public class NationOld : NationBase
 			int yLoc = targetYLoc + yOffset;
 
 			xLoc = Math.Max(0, xLoc);
-			xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+			xLoc = Math.Min(Config.MapSize - 1, xLoc);
 
 			yLoc = Math.Max(0, yLoc);
-			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
+			yLoc = Math.Min(Config.MapSize - 1, yLoc);
 
 			Location location = World.GetLoc(xLoc, yLoc);
 
@@ -3812,8 +3812,8 @@ public class NationOld : NationBase
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
-		xLoc2 = Math.Min(xLoc2, GameConstants.MapSize - 1);
-		yLoc2 = Math.Min(yLoc2, GameConstants.MapSize - 1);
+		xLoc2 = Math.Min(xLoc2, Config.MapSize - 1);
+		yLoc2 = Math.Min(yLoc2, Config.MapSize - 1);
 
 		//------------------------------------------//
 
@@ -4123,7 +4123,7 @@ public class NationOld : NationBase
 
 			int distanceFromAttacker =
 				Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, attackerXLoc, attackerYLoc);
-			if (distanceFromAttacker > GameConstants.MapSize / 2)
+			if (distanceFromAttacker > Config.MapSize / 2)
 				continue;
 
 			if (firmCamp.IsAttackCamp && distanceFromAttacker < 15)
@@ -4784,7 +4784,7 @@ public class NationOld : NationBase
 		//------- try to capture the town in their resistance order ----//
 
 		bool needToCheckDistance = !Config.ExploreWholeMap && (Info.GameDate - Info.GameStartDate).Days >
-			Math.Max(GameConstants.MapSize, GameConstants.MapSize) * (5 - Config.AIAggressiveness) / 5; // 3 to 5 / 5
+			Math.Max(Config.MapSize, Config.MapSize) * (5 - Config.AIAggressiveness) / 5; // 3 to 5 / 5
 
 		foreach (CaptureTown captureTown in captureTownQueue.OrderByDescending(t => t.min_resistance))
 		{
@@ -5537,8 +5537,8 @@ public class NationOld : NationBase
 
 		xLoc1 = Math.Max(xLoc1, 0);
 		yLoc1 = Math.Max(yLoc1, 0);
-		xLoc2 = Math.Min(xLoc2, GameConstants.MapSize - 1);
-		yLoc2 = Math.Min(yLoc2, GameConstants.MapSize - 1);
+		xLoc2 = Math.Min(xLoc2, Config.MapSize - 1);
+		yLoc2 = Math.Min(yLoc2, Config.MapSize - 1);
 
 		//------------------------------------------//
 
@@ -5582,10 +5582,6 @@ public class NationOld : NationBase
 
 	public void think_marine()
 	{
-		return;
-		//if( pref_use_marine < 50 )		// don't use marine at all
-		//return;
-
 		if (!ai_should_spend(20 + pref_use_marine / 2)) // 20 to 70 importance rating
 			return;
 
@@ -5762,8 +5758,8 @@ public class NationOld : NationBase
 		int xLoc = 0, yLoc = 0;
 		FirmInfo firmInfo = FirmRes[Firm.FIRM_CAMP];
 
-		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
-			    firmInfo.LocWidth, firmInfo.LocHeight, GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
+		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, Config.MapSize - 1, Config.MapSize - 1,
+			    firmInfo.LocWidth, firmInfo.LocHeight, Config.MapSize * Config.MapSize, destRegionId, true))
 		{
 			return ai_patrol_to_region(xLoc, yLoc, SEA_ACTION_BUILD_CAMP);
 		}
@@ -5840,9 +5836,9 @@ public class NationOld : NationBase
 		int xLoc = 0, yLoc = 0;
 
 		if (World.LocateSpaceRandom(ref xLoc, ref yLoc,
-			    GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+			    Config.MapSize - 1, Config.MapSize - 1,
 			    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-			    GameConstants.MapSize * GameConstants.MapSize, destRegionId, true))
+			    Config.MapSize * Config.MapSize, destRegionId, true))
 		{
 			return ai_settle_to_region(xLoc, yLoc, SEA_ACTION_SETTLE);
 		}
@@ -6175,7 +6171,7 @@ public class NationOld : NationBase
 
 	private bool IsHarborRegion(int xLoc, int yLoc, int landRegionId, int seaRegionId)
 	{
-		if (xLoc + 2 >= GameConstants.MapSize || yLoc + 2 >= GameConstants.MapSize)
+		if (xLoc + 2 >= Config.MapSize || yLoc + 2 >= Config.MapSize)
 			return false;
 
 		for (int y = 0; y < 3; y++)
@@ -6226,20 +6222,18 @@ public class NationOld : NationBase
 
 		int xLoc = -1, yLoc = -1, bestXLoc = -1, bestYLoc = -1, maxEnemyDistance = 0;
 
-		for (int i = 2; i < GameConstants.MapSize * GameConstants.MapSize; i++)
+		for (int i = 2; i < Config.MapSize * Config.MapSize; i++)
 		{
-			int xOffset;
-			int yOffset;
-			Misc.cal_move_around_a_point(i, GameConstants.MapSize, GameConstants.MapSize, out xOffset, out yOffset);
+			Misc.cal_move_around_a_point(i, Config.MapSize, Config.MapSize, out int xOffset, out int yOffset);
 
 			xLoc = homeXLoc + xOffset;
 			yLoc = homeYLoc + yOffset;
 
 			xLoc = Math.Max(0, xLoc);
-			xLoc = Math.Min(GameConstants.MapSize - 1, xLoc);
+			xLoc = Math.Min(Config.MapSize - 1, xLoc);
 
 			yLoc = Math.Max(0, yLoc);
-			yLoc = Math.Min(GameConstants.MapSize - 1, yLoc);
+			yLoc = Math.Min(Config.MapSize - 1, yLoc);
 
 			Location location = World.GetLoc(xLoc, yLoc);
 
@@ -6687,9 +6681,9 @@ public class NationOld : NationBase
 			for (int y = loc_y1 - 1; y <= loc_y1 + 1; y++)
 			{
 				x = Math.Max(0, x);
-				x = Math.Min(GameConstants.MapSize - 1, x);
+				x = Math.Min(Config.MapSize - 1, x);
 				y = Math.Max(0, y);
-				y = Math.Min(GameConstants.MapSize - 1, y);
+				y = Math.Min(Config.MapSize - 1, y);
 				Location location = World.GetLoc(x, y);
 				if (location.IsTown())
 				{
@@ -6915,8 +6909,8 @@ public class NationOld : NationBase
 		else
 		{
 			//--- move to the random location and then change its color there ---//
-			int destXLoc = Misc.Random(GameConstants.MapSize);
-			int destYLoc = Misc.Random(GameConstants.MapSize);
+			int destXLoc = Misc.Random(Config.MapSize);
+			int destYLoc = Misc.Random(Config.MapSize);
 			spyUnit.MoveTo(destXLoc, destYLoc);
 		}
 	}

@@ -39,7 +39,7 @@ public partial class Renderer : IRenderer
     private const int MiniMapX = MainViewX + MainViewWidth + BorderWidth;
     private const int MiniMapY = MainViewY;
     private const int MiniMapSize = 400;
-    private const int MiniMapScale = MiniMapSize / GameConstants.MapSize;
+    private int MiniMapScale => MiniMapSize / Config.MapSize;
 
     private const int DetailsX1 = MainViewX + MainViewWidth + 12;
     private const int DetailsX2 = DetailsX1 + DetailsWidth;
@@ -157,13 +157,13 @@ public partial class Renderer : IRenderer
         int locX = screenX - MiniMapX;
         int locY = screenY - MiniMapY;
         
-        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
+        if (Config.MapSize == 100 || Config.MapSize == 200)
         {
             locX /= MiniMapScale;
             locY /= MiniMapScale;
         }
 
-        if (GameConstants.MapSize == 300)
+        if (Config.MapSize == 300)
         {
             locX = locX * 3 / 4;
             locY = locY * 3 / 4;

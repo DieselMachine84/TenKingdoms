@@ -11,6 +11,7 @@ public class SiteArray : DynArray<Site>
 	// standard no. of raw site in one game, based on this number, new mines pop up when existing mines run out of deposit
 	private int _stdRawSiteCount;
 
+	private Config Config => Sys.Instance.Config;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
@@ -204,8 +205,8 @@ public class SiteArray : DynArray<Site>
 		{
 			locX1 = 0;
 			locY1 = 0;
-			locX2 = GameConstants.MapSize - 1;
-			locY2 = GameConstants.MapSize - 1;
+			locX2 = Config.MapSize - 1;
+			locY2 = Config.MapSize - 1;
 
 			maxTries = 10000;
 		}

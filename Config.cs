@@ -21,8 +21,9 @@ public class Config
 	public int PlayerRaceId { get; private set; } = 1;	
 	public int PlayerColor { get; private set; } = 1;
 	public string PlayerName { get; private set; } = "New Player";
+	public int MapSize { get; private set; } = 200;
 	public int LandMass { get; private set; } = OPTION_MODERATE;
-	public int TerrainSet { get; private set; } = 3;
+	public int TerrainSet { get; private set; } = 1;
 	public int AINationCount { get; private set; } = 9;
 	public int AIAggressiveness { get; private set; } = OPTION_MODERATE;
 	public int StartUpCash { get; private set; } = OPTION_MODERATE;
@@ -34,7 +35,7 @@ public class Config
 	public int RawResourceCount { get; private set; } = 5;
 	public bool RawResourceNearby { get; private set; }
 	public int MonsterType { get; private set; } = OPTION_MONSTER_DEFENSIVE;
-	public int MonsterLairCount { get; private set; } = 10;
+	public int MonsterLairCount { get; private set; } = 15;
 	public int IndependentTownCount { get; private set; } = 15;
 	public int IndependentTownResistance { get; private set; } = OPTION_MODERATE;
 	public bool NewIndependentTownEmerge { get; private set; } = true;

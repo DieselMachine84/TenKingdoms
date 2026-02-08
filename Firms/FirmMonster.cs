@@ -801,8 +801,8 @@ public class FirmMonster : Firm
 		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 		int locX1 = Math.Max(0, LocX1 - GameConstants.EXPAND_FIRM_DISTANCE);
 		int locY1 = Math.Max(0, LocY1 - GameConstants.EXPAND_FIRM_DISTANCE);
-		int locX2 = Math.Min(GameConstants.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);
-		int locY2 = Math.Min(GameConstants.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int locX2 = Math.Min(Config.MapSize - 1, LocX2 + GameConstants.EXPAND_FIRM_DISTANCE);
+		int locY2 = Math.Min(Config.MapSize - 1, LocY2 + GameConstants.EXPAND_FIRM_DISTANCE);
 
 		if (!World.LocateSpaceRandom(ref locX1, ref locY1, locX2, locY2,
 			    firmInfo.LocWidth + GameConstants.FREE_SPACE_DISTANCE * 2,

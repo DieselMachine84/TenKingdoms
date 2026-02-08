@@ -1401,7 +1401,7 @@ public abstract partial class Unit : Sprite
 		else
 		{
 			//------------ offset location is given, move there directly ----------//
-			Misc.cal_move_around_a_point(miscNo, GameConstants.MapSize, GameConstants.MapSize, out int xShift, out int yShift);
+			Misc.cal_move_around_a_point(miscNo, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
 			resultLocX = destLocX + xShift;
 			resultLocY = destLocY + yShift;
 		}
@@ -2707,8 +2707,8 @@ public abstract partial class Unit : Sprite
 				{
 					int xLoc1 = Math.Max(0, newNextLocX - GameConstants.EXPLORE_RANGE);
 					int yLoc1 = Math.Max(0, newNextLocY - GameConstants.EXPLORE_RANGE);
-					int xLoc2 = Math.Min(GameConstants.MapSize - 1, newNextLocX + GameConstants.EXPLORE_RANGE);
-					int yLoc2 = Math.Min(GameConstants.MapSize - 1, newNextLocY + GameConstants.EXPLORE_RANGE);
+					int xLoc2 = Math.Min(Config.MapSize - 1, newNextLocX + GameConstants.EXPLORE_RANGE);
+					int yLoc2 = Math.Min(Config.MapSize - 1, newNextLocY + GameConstants.EXPLORE_RANGE);
 					int exploreWidth = MoveStepCoeff() - 1;
 
 					if (newNextLocY < curNextLocY) // if move upwards, explore upper area
@@ -4042,8 +4042,8 @@ public abstract partial class Unit : Sprite
 
 		xLoc1 = Math.Max(0, xLoc1);
 		yLoc1 = Math.Max(0, yLoc1);
-		xLoc2 = Math.Min(GameConstants.MapSize - 1, xLoc2);
-		yLoc2 = Math.Min(GameConstants.MapSize - 1, yLoc2);
+		xLoc2 = Math.Min(Config.MapSize - 1, xLoc2);
+		yLoc2 = Math.Min(Config.MapSize - 1, yLoc2);
 
 		int trueNationId = TrueNationId();
 
@@ -4446,10 +4446,10 @@ public abstract partial class Unit : Sprite
 			int locY = curLocY + yOffset;
 
 			locX = Math.Max(0, locX);
-			locX = Math.Min(GameConstants.MapSize - 1, locX);
+			locX = Math.Min(Config.MapSize - 1, locX);
 
 			locY = Math.Max(0, locY);
-			locY = Math.Min(GameConstants.MapSize - 1, locY);
+			locY = Math.Min(Config.MapSize - 1, locY);
 
 			Location location = World.GetLoc(locX, locY);
 
@@ -4609,7 +4609,7 @@ public abstract partial class Unit : Sprite
 			if (curDistance < 10) // no need to move if the unit is already close enough to the town.
 				return;
 
-			int curRating = 100 - 100 * curDistance / GameConstants.MapSize;
+			int curRating = 100 - 100 * curDistance / Config.MapSize;
 
 			curRating += town.Population;
 
@@ -5655,7 +5655,7 @@ public abstract partial class Unit : Sprite
 			int checkXLoc = curXLoc + xShift;
 			int checkYLoc = curYLoc + yShift;
 
-			if (checkXLoc < 0 || checkXLoc >= GameConstants.MapSize || checkYLoc < 0 || checkYLoc >= GameConstants.MapSize)
+			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
 				continue;
 
 			if (!location.CanMove(MobileType))
@@ -5690,9 +5690,9 @@ public abstract partial class Unit : Sprite
 		int teraMask = UnitRes.MobileTypeToMask(UnitConstants.UNIT_LAND);
 
 		// leave at least one location space around the building
-		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, GameConstants.MapSize - 1, GameConstants.MapSize - 1,
+		if (World.LocateSpaceRandom(ref xLoc, ref yLoc, Config.MapSize - 1, Config.MapSize - 1,
 			    firmInfo.LocWidth + 2, firmInfo.LocHeight + 2,
-			    GameConstants.MapSize * GameConstants.MapSize, curRegionId, true, teraMask))
+			    Config.MapSize * Config.MapSize, curRegionId, true, teraMask))
 		{
 			return ownNation.add_action(xLoc, yLoc, -1, -1,
 				Nation.ACTION_AI_BUILD_FIRM, Firm.FIRM_CAMP, 1, SpriteId) != null;

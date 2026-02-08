@@ -183,11 +183,11 @@ public partial class Renderer
     {
         if (scrollUp && _topLeftLocX > 0)
             _topLeftLocX--;
-        if (scrollDown && _topLeftLocX < GameConstants.MapSize - MainViewWidthInCells)
+        if (scrollDown && _topLeftLocX < Config.MapSize - MainViewWidthInCells)
             _topLeftLocX++;
         if (scrollLeft && _topLeftLocY > 0)
             _topLeftLocY--;
-        if (scrollRight && _topLeftLocY < GameConstants.MapSize - MainViewHeightInCells)
+        if (scrollRight && _topLeftLocY < Config.MapSize - MainViewHeightInCells)
             _topLeftLocY++;
     }
 
@@ -196,14 +196,14 @@ public partial class Renderer
         _topLeftLocX = locX - MainViewWidthInCells / 2;
         if (_topLeftLocX < 0)
             _topLeftLocX = 0;
-        if (_topLeftLocX > GameConstants.MapSize - MainViewWidthInCells)
-            _topLeftLocX = GameConstants.MapSize - MainViewWidthInCells;
+        if (_topLeftLocX > Config.MapSize - MainViewWidthInCells)
+            _topLeftLocX = Config.MapSize - MainViewWidthInCells;
 
         _topLeftLocY = locY - MainViewHeightInCells / 2;
         if (_topLeftLocY < 0)
             _topLeftLocY = 0;
-        if (_topLeftLocY > GameConstants.MapSize - MainViewHeightInCells)
-            _topLeftLocY = GameConstants.MapSize - MainViewHeightInCells;
+        if (_topLeftLocY > Config.MapSize - MainViewHeightInCells)
+            _topLeftLocY = Config.MapSize - MainViewHeightInCells;
     }
 
     private bool SelectObjects(int mouse1X, int mouse1Y, int mouse2X, int mouse2Y)
@@ -852,9 +852,9 @@ public partial class Renderer
     {
         (int pointingLocX, int pointingLocY) = GetMainViewLocation(pointingX, pointingY);
         int startLocX = Math.Max(pointingLocX - InternalConstants.DETECT_MARGIN, 0);
-        int endLocX = Math.Min(pointingLocX + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int endLocX = Math.Min(pointingLocX + InternalConstants.DETECT_MARGIN, Config.MapSize);
         int startLocY = Math.Max(pointingLocY - InternalConstants.DETECT_MARGIN, 0);
-        int endLocY = Math.Min(pointingLocY + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int endLocY = Math.Min(pointingLocY + InternalConstants.DETECT_MARGIN, Config.MapSize);
 
         for (int locY = startLocY; locY < endLocY; locY++)
         {

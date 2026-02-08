@@ -56,9 +56,9 @@ public class UnitMonster : Unit
         {
             bool found = false;
 
-            for (int nearLocY = Math.Max(locY - 1, 0); nearLocY <= Math.Min(locY + 1, GameConstants.MapSize - 1) && !found; nearLocY++)
+            for (int nearLocY = Math.Max(locY - 1, 0); nearLocY <= Math.Min(locY + 1, Config.MapSize - 1) && !found; nearLocY++)
             {
-                for (int nearLocX = Math.Max(locX - 1, 0); nearLocX <= Math.Min(locX + 1, GameConstants.MapSize - 1); nearLocX++)
+                for (int nearLocX = Math.Max(locX - 1, 0); nearLocX <= Math.Min(locX + 1, Config.MapSize - 1); nearLocX++)
                 {
                     Location nearLocation = World.GetLoc(nearLocX, nearLocY);
                     if (nearLocation.CanBuildSite())

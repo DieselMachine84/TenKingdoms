@@ -937,7 +937,7 @@ public class FirmMarket : Firm
 			NationRelation nationRelation = nation.GetRelation(firm.NationId);
 
 			int curRating = Convert.ToInt32(stockLevel) - 100 * Misc.points_distance(LocCenterX, LocCenterY,
-				firm.LocCenterX, firm.LocCenterY) /GameConstants.MapSize;
+				firm.LocCenterX, firm.LocCenterY) / Config.MapSize;
 
 			if (firm.NationId == NationId)
 				curRating += 100;
@@ -1008,7 +1008,7 @@ public class FirmMarket : Firm
 
 			// don't consider if it is too far away
 			if (Misc.RectsDistance(LocX1, LocY1, LocX2, LocY2,
-				    town.LocX1, town.LocY1, town.LocX2, town.LocY2) > GameConstants.MapSize / 4)
+				    town.LocX1, town.LocY1, town.LocX2, town.LocY2) > Config.MapSize / 4)
 				continue;
 
 			//-----------------------------------------//

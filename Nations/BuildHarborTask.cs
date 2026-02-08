@@ -98,9 +98,9 @@ public class BuildHarborTask : AITask, IUnitTask
         int bestLocY = -1;
         int bestRating = Int16.MaxValue;
 
-        for (int locY = 0; locY < GameConstants.MapSize; locY++)
+        for (int locY = 0; locY < Config.MapSize; locY++)
         {
-            for (int locX = 0; locX < GameConstants.MapSize; locX++)
+            for (int locX = 0; locX < Config.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (!location.CanBuildWholeHarbor())
@@ -111,7 +111,7 @@ public class BuildHarborTask : AITask, IUnitTask
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        if (locX + i >= GameConstants.MapSize || locY + j >= GameConstants.MapSize)
+                        if (locX + i >= Config.MapSize || locY + j >= Config.MapSize)
                             correctHarborRegion = false;
 
                         int harborRegionId = World.GetLoc(locX + i, locY + j).RegionId;

@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public class World
 {
-	private readonly Location[] _locMatrix = new Location[GameConstants.MapSize * GameConstants.MapSize];
+	private readonly Location[] _locMatrix;
 
 	private int _scanFireX; // cycle from 0 to SCAN_FIRE_DIST-1
 	private int _scanFireY;
@@ -35,6 +35,7 @@ public class World
 
 	public World()
 	{
+		_locMatrix = new Location[Config.MapSize * Config.MapSize];
 		for (int i = 0; i < _locMatrix.Length; i++)
 		{
 			_locMatrix[i] = new Location(TerrainRes, HillRes);
@@ -48,13 +49,13 @@ public class World
 
 	public int GetMatrixIndex(int locX, int locY)
 	{
-		return locY * GameConstants.MapSize + locX;
+		return locY * Config.MapSize + locX;
 	}
 
 	public void GetLocXAndLocY(int matrixIndex, out int locX, out int locY)
 	{
-		locX = matrixIndex % GameConstants.MapSize;
-		locY = matrixIndex / GameConstants.MapSize;
+		locX = matrixIndex % Config.MapSize;
+		locY = matrixIndex / Config.MapSize;
 	}
 
 	public int GetRegionId(int locX, int locY)
@@ -86,7 +87,7 @@ public class World
 
 		if (_lightningSignal == 106 && GameConstants.WEATHER_EFFECT)
 		{
-			LightningStrike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
+			LightningStrike(Misc.Random(Config.MapSize), Misc.Random(Config.MapSize), 1);
 		}
 
 		if (_lightningSignal == 100)
@@ -131,7 +132,7 @@ public class World
 
 		if (Weather.HasTornado() && GameConstants.WEATHER_EFFECT)
 		{
-			TornadoArray.AddTornado(Weather.TornadoLocX(GameConstants.MapSize), Weather.TornadoLocY(GameConstants.MapSize), 600);
+			TornadoArray.AddTornado(Weather.TornadoLocX(Config.MapSize), Weather.TornadoLocY(Config.MapSize), 600);
 		}
 
 		if (Weather.IsQuake() && Config.EarthquakeFrequency != Config.OPTION_NONE)
@@ -144,7 +145,7 @@ public class World
 	public int DistanceRating(int locX1, int locY1, int locX2, int locY2)
 	{
 		int curDistance = Misc.points_distance(locX1, locY1, locX2, locY2);
-		return 100 - 100 * curDistance / GameConstants.MapSize;
+		return 100 - 100 * curDistance / Config.MapSize;
 	}
 
 	//TODO merge Unveil and Explore
@@ -155,8 +156,8 @@ public class World
 
 		locX1 = Math.Max(0, locX1 - GameConstants.EXPLORE_RANGE);
 		locY1 = Math.Max(0, locY1 - GameConstants.EXPLORE_RANGE);
-		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + GameConstants.EXPLORE_RANGE);
-		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + GameConstants.EXPLORE_RANGE);
+		locX2 = Math.Min(Config.MapSize - 1, locX2 + GameConstants.EXPLORE_RANGE);
+		locY2 = Math.Min(Config.MapSize - 1, locY2 + GameConstants.EXPLORE_RANGE);
 		Explore(locX1, locY1, locX2, locY2);
 	}
 
@@ -229,8 +230,8 @@ public class World
 		
 		int left = Math.Max(0, locX1 - range);
 		int top = Math.Max(0, locY1 - range);
-		int right = Math.Min(GameConstants.MapSize - 1, locX2 + range);
-		int bottom = Math.Min(GameConstants.MapSize - 1, locY2 + range);
+		int right = Math.Min(Config.MapSize - 1, locX2 + range);
+		int bottom = Math.Min(Config.MapSize - 1, locY2 + range);
 
 		// ----- mark the VisitLevel of the square around the unit ------//
 		for (int locY = top; locY <= bottom; locY++)
@@ -266,8 +267,8 @@ public class World
 	{
 		int left = Math.Max(0, locX1);
 		int top = Math.Max(0, locY1);
-		int right = Math.Min(GameConstants.MapSize - 1, locX2);
-		int bottom = Math.Max(GameConstants.MapSize - 1, locY2);
+		int right = Math.Min(Config.MapSize - 1, locX2);
+		int bottom = Math.Max(Config.MapSize - 1, locY2);
 
 		// ------- left side -----------//
 		if (locX1 >= 0)
@@ -288,7 +289,7 @@ public class World
 		}
 
 		// ------- right side -----------//
-		if (locX2 < GameConstants.MapSize)
+		if (locX2 < Config.MapSize)
 		{
 			for (int y = top; y <= bottom; y++)
 			{
@@ -297,7 +298,7 @@ public class World
 		}
 
 		// ------- bottom side ---------//
-		if (locY2 < GameConstants.MapSize)
+		if (locY2 < Config.MapSize)
 		{
 			for (int x = left; x <= right; x++)
 			{
@@ -431,7 +432,7 @@ public class World
 
 		bool CheckLocation(int x, int y, ref int locX1, ref int locY1)
 		{
-			if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < GameConstants.MapSize && y + spaceLocHeight - 1 < GameConstants.MapSize)
+			if (x >= 0 && y >= 0 && x + spaceLocWidth - 1 < Config.MapSize && y + spaceLocHeight - 1 < Config.MapSize)
 			{
 				// TODO remove % 2 == 0
 				if (mobileType == UnitConstants.UNIT_LAND || (x % 2 == 0 && y % 2 == 0))
@@ -558,7 +559,7 @@ public class World
 			//-----------------------------------------------------------//
 			// re-init the parameters
 			//-----------------------------------------------------------//
-			if (locX <= 0 && locY <= 0 && locX + width >= GameConstants.MapSize && locY + height >= GameConstants.MapSize)
+			if (locX <= 0 && locY <= 0 && locX + width >= Config.MapSize && locY + height >= Config.MapSize)
 				break; // the whole map has been checked
 
 			width += 2;
@@ -578,9 +579,9 @@ public class World
 				height--;
 			}
 
-			if (locX + width > GameConstants.MapSize)
+			if (locX + width > Config.MapSize)
 				width--;
-			if (locY + height > GameConstants.MapSize)
+			if (locY + height > Config.MapSize)
 				height--;
 
 			//if(width==xLoc2-xLoc1+spaceLocWidth && height==yLoc2-yLoc1+spaceLocHeight) // terminate the checking
@@ -669,8 +670,8 @@ public class World
 
 		locX1 = Math.Max(0, locX1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
 		locY1 = Math.Max(0, locY1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
-		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locX2 = Math.Min(Config.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locY2 = Math.Min(Config.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
 
 		int centerY = (locY1 + locY2) / 2;
 
@@ -714,8 +715,8 @@ public class World
 
 		locX1 = Math.Max(0, locX1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
 		locY1 = Math.Max(0, locY1 - InternalConstants.EFFECTIVE_POWER_DISTANCE + 1);
-		locX2 = Math.Min(GameConstants.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
-		locY2 = Math.Min(GameConstants.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locX2 = Math.Min(Config.MapSize - 1, locX2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
+		locY2 = Math.Min(Config.MapSize - 1, locY2 + InternalConstants.EFFECTIVE_POWER_DISTANCE - 1);
 
 		int centerY = (locY1 + locY2) / 2;
 
@@ -752,12 +753,12 @@ public class World
 		const int PLANT_ARRAY_SIZE = 8;
 
 		PlantCount = 0;
-		double scaleFactor = (GameConstants.MapSize * GameConstants.MapSize) / (200.0 * 200.0);
+		double scaleFactor = (Config.MapSize * Config.MapSize) / (200.0 * 200.0);
 		for (int trial = (int)(50 * scaleFactor); trial > 0; trial--)
 		{
 			// ------- randomly select a place to seed plant
-			int y = 1 + Misc.Random(GameConstants.MapSize - 2);
-			int x = 1 + Misc.Random(GameConstants.MapSize - 2);
+			int y = 1 + Misc.Random(Config.MapSize - 2);
+			int x = 1 + Misc.Random(Config.MapSize - 2);
 
 			Location loc = GetLoc(x, y);
 			bool buildFlag = true;
@@ -852,11 +853,11 @@ public class World
 							PlantSpray(plantArray, strength - 1, x, y - 1);
 						break;
 					case 1: // east square
-						if (x < GameConstants.MapSize - 1)
+						if (x < Config.MapSize - 1)
 							PlantSpray(plantArray, strength - 1, x + 1, y);
 						break;
 					case 2: // south square
-						if (y < GameConstants.MapSize - 1)
+						if (y < Config.MapSize - 1)
 							PlantSpray(plantArray, strength - 1, x, y + 1);
 						break;
 					case 3: // west square
@@ -868,15 +869,15 @@ public class World
 							PlantSpray(plantArray, strength - 1, x - 1, y - 1);
 						break;
 					case 5: // north east square
-						if (y > 0 && x < GameConstants.MapSize - 1)
+						if (y > 0 && x < Config.MapSize - 1)
 							PlantSpray(plantArray, strength - 1, x + 1, y - 1);
 						break;
 					case 6: // south east square
-						if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
+						if (y < Config.MapSize - 1 && x < Config.MapSize - 1)
 							PlantSpray(plantArray, strength - 1, x + 1, y + 1);
 						break;
 					case 7: // south west square
-						if (y < GameConstants.MapSize - 1 && x > 0)
+						if (y < Config.MapSize - 1 && x > 0)
 							PlantSpray(plantArray, strength - 1, x - 1, y + 1);
 						break;
 				}
@@ -897,9 +898,9 @@ public class World
 		// scan part of the map for plant
 		int yBase = Misc.Random(scanDensity);
 		int xBase = Misc.Random(scanDensity);
-		for (int y = yBase; y < GameConstants.MapSize; y += scanDensity)
+		for (int y = yBase; y < Config.MapSize; y += scanDensity)
 		{
-			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
+			for (int x = xBase; x < Config.MapSize; x += scanDensity)
 			{
 				Location location = GetLoc(x, y);
 				int bitmapId;
@@ -931,9 +932,9 @@ public class World
 		// scan the map for plant
 		int yBase = Misc.Random(scanDensity);
 		int xBase = Misc.Random(scanDensity);
-		for (int y = yBase; y < GameConstants.MapSize; y += scanDensity)
+		for (int y = yBase; y < Config.MapSize; y += scanDensity)
 		{
-			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
+			for (int x = xBase; x < Config.MapSize; x += scanDensity)
 			{
 				Location location = GetLoc(x, y);
 				int bitmapId, basePlantId, plantGrade;
@@ -961,11 +962,11 @@ public class World
 										newLoc = GetLoc(x, y - 1);
 									break;
 								case 1: // east square
-									if (x < GameConstants.MapSize - 1)
+									if (x < Config.MapSize - 1)
 										newLoc = GetLoc(x + 1, y);
 									break;
 								case 2: // south square
-									if (y < GameConstants.MapSize - 1)
+									if (y < Config.MapSize - 1)
 										newLoc = GetLoc(x, y + 1);
 									break;
 								case 3: // west square
@@ -977,15 +978,15 @@ public class World
 										newLoc = GetLoc(x - 1, y - 1);
 									break;
 								case 5: // north east square
-									if (y > 0 && x < GameConstants.MapSize - 1)
+									if (y > 0 && x < Config.MapSize - 1)
 										newLoc = GetLoc(x + 1, y - 1);
 									break;
 								case 6: // south east square
-									if (y < GameConstants.MapSize - 1 && x < GameConstants.MapSize - 1)
+									if (y < Config.MapSize - 1 && x < Config.MapSize - 1)
 										newLoc = GetLoc(x + 1, y + 1);
 									break;
 								case 7: // south west square
-									if (y < GameConstants.MapSize - 1 && x > 0)
+									if (y < Config.MapSize - 1 && x > 0)
 										newLoc = GetLoc(x - 1, y + 1);
 									break;
 							}
@@ -1023,8 +1024,8 @@ public class World
 		int temp = Weather.Temperature();
 
 		// ------- randomly select a place to seed plant
-		int y = 1 + Misc.Random(GameConstants.MapSize - 2);
-		int x = 1 + Misc.Random(GameConstants.MapSize - 2);
+		int y = 1 + Misc.Random(Config.MapSize - 2);
+		int x = 1 + Misc.Random(Config.MapSize - 2);
 
 		Location loc = GetLoc(x, y);
 		bool buildFlag = true;
@@ -1071,9 +1072,9 @@ public class World
 	{
 		int yBase = Misc.Random(scanDensity);
 		int xBase = Misc.Random(scanDensity);
-		for (int y = yBase; y < GameConstants.MapSize; y += scanDensity)
+		for (int y = yBase; y < Config.MapSize; y += scanDensity)
 		{
-			for (int x = xBase; x < GameConstants.MapSize; x += scanDensity)
+			for (int x = xBase; x < Config.MapSize; x += scanDensity)
 			{
 				Location location = GetLoc(x, y);
 				if (location.IsPlant())
@@ -1090,7 +1091,7 @@ public class World
 					}
 
 					// east
-					if (x < GameConstants.MapSize - 1)
+					if (x < Config.MapSize - 1)
 					{
 						totalSpace++;
 						if (GetLoc(x + 1, y).IsPlant())
@@ -1115,7 +1116,7 @@ public class World
 						}
 
 						//	north east
-						if (x < GameConstants.MapSize - 1)
+						if (x < Config.MapSize - 1)
 						{
 							totalSpace++;
 							if (GetLoc(x + 1, y - 1).IsPlant())
@@ -1123,7 +1124,7 @@ public class World
 						}
 					}
 
-					if (y < GameConstants.MapSize - 1)
+					if (y < Config.MapSize - 1)
 					{
 						location = GetLoc(x, y + 1);
 
@@ -1141,7 +1142,7 @@ public class World
 						}
 
 						// south east
-						if (x < GameConstants.MapSize - 1)
+						if (x < Config.MapSize - 1)
 						{
 							totalSpace++;
 							if (GetLoc(x + 1, y + 1).IsPlant())
@@ -1214,9 +1215,9 @@ public class World
 		double flameDamage = (double)GameConstants.FIRE_DAMAGE / InternalConstants.ATTACK_SLOW_DOWN;
 
 		// -------------update fire_level-----------
-		for (int locY = _scanFireY; locY < GameConstants.MapSize; locY += InternalConstants.SCAN_FIRE_DIST)
+		for (int locY = _scanFireY; locY < Config.MapSize; locY += InternalConstants.SCAN_FIRE_DIST)
 		{
-			for (int locX = _scanFireX; locX < GameConstants.MapSize; locX += InternalConstants.SCAN_FIRE_DIST)
+			for (int locX = _scanFireX; locX < Config.MapSize; locX += InternalConstants.SCAN_FIRE_DIST)
 			{
 				Location location = GetLoc(locX, locY);
 
@@ -1283,7 +1284,7 @@ public class World
 						}
 
 						// spread of south square
-						if (locY < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX, locY + 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
+						if (locY < Config.MapSize - 1 && (nearLoc = GetLoc(locX, locY + 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
 							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE - windSin, 0));
 						}
@@ -1295,7 +1296,7 @@ public class World
 						}
 
 						// spread of east square
-						if (locX < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX + 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
+						if (locX < Config.MapSize - 1 && (nearLoc = GetLoc(locX + 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
 							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE + windCos, 0));
 						}
@@ -1385,9 +1386,9 @@ public class World
 	// ------ function related to weather ---------//
 	private void EarthQuake()
 	{
-		for (int locY = 0; locY < GameConstants.MapSize; locY++)
+		for (int locY = 0; locY < Config.MapSize; locY++)
 		{
-			for (int locX = 0; locX < GameConstants.MapSize; locX++)
+			for (int locX = 0; locX < Config.MapSize; locX++)
 			{
 				Location location = GetLoc(locX, locY);
 				if (location.IsWall())
@@ -1570,10 +1571,10 @@ public class World
 			//TODO rewrite
 			//int xLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_x_loc + zoom_matrix.disp_x_loc / 2);
 			//int yLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_y_loc + zoom_matrix.disp_y_loc / 2);
-			int locX = Misc.Random(GameConstants.MapSize);
-			int locY = Misc.Random(GameConstants.MapSize);
+			int locX = Misc.Random(Config.MapSize);
+			int locY = Misc.Random(Config.MapSize);
 			PosVolume p = new PosVolume(locX, locY);
-			RelVolume relVolume = new RelVolume(p, 200, GameConstants.MapSize);
+			RelVolume relVolume = new RelVolume(p, 200, Config.MapSize);
 			if (relVolume.rel_vol < 80)
 				relVolume.rel_vol = 80;
 

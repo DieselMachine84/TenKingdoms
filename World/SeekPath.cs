@@ -33,7 +33,11 @@ public class SeekPath
 
 	public int PathStatus { get; private set; } = PATH_WAIT;
 
-	private readonly int[] _nodeMatrix = new int[GameConstants.MapSize * GameConstants.MapSize];
+	private readonly int[] _nodeMatrix;
+	private readonly List<int> _oldChangedNodesX = new List<int>();
+	private readonly List<int> _oldChangedNodesY = new List<int>();
+	private readonly List<int> _newChangedNodesX = new List<int>();
+	private readonly List<int> _newChangedNodesY = new List<int>();
 	private readonly bool[] _nationPassable = new bool[GameConstants.MAX_NATION + 1];
 	private int _searchSubMode;
 
@@ -52,10 +56,12 @@ public class SeekPath
 	private int _finalDestX; //	in _searchMode SEARCH_MODE_REUSE, dest_x and dest_y may set to a different value.
 	private int _finalDestY; // i.e. the value used finally may not be the real dest_? given.
 
+	private static Config Config => Sys.Instance.Config;
 	private static UnitArray UnitArray => Sys.Instance.UnitArray;
 
 	public SeekPath()
 	{
+		_nodeMatrix = new int[Config.MapSize * Config.MapSize];
 	}
 
 	public void SetAttackRange(int attackRange)
@@ -345,8 +351,8 @@ public class SeekPath
 				_buildingId = miscNo;
 				_buildingX1 = Math.Max(dx - _attackRange, 0);
 				_buildingY1 = Math.Max(dy - _attackRange, 0);
-				_buildingX2 = Math.Min(dx + _attackRange, GameConstants.MapSize - 1);
-				_buildingY2 = Math.Min(dy + _attackRange, GameConstants.MapSize - 1);
+				_buildingX2 = Math.Min(dx + _attackRange, Config.MapSize - 1);
+				_buildingY2 = Math.Min(dy + _attackRange, Config.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
@@ -354,16 +360,16 @@ public class SeekPath
 				_buildingX1 = Math.Max(dx - _attackRange, 0);
 				_buildingY1 = Math.Max(dy - _attackRange, 0);
 				searchFirmInfo = Sys.Instance.FirmRes[_buildingId];
-				_buildingX2 = Math.Min(dx + searchFirmInfo.LocWidth - 1 + _attackRange, GameConstants.MapSize - 1);
-				_buildingY2 = Math.Min(dy + searchFirmInfo.LocHeight - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingX2 = Math.Min(dx + searchFirmInfo.LocWidth - 1 + _attackRange, Config.MapSize - 1);
+				_buildingY2 = Math.Min(dy + searchFirmInfo.LocHeight - 1 + _attackRange, Config.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 				_buildingId = miscNo;
 				_buildingX1 = Math.Max(dx - _attackRange, 0);
 				_buildingY1 = Math.Max(dy - _attackRange, 0);
-				_buildingX2 = Math.Min(dx + InternalConstants.TOWN_WIDTH - 1 + _attackRange, GameConstants.MapSize - 1);
-				_buildingY2 = Math.Min(dy + InternalConstants.TOWN_HEIGHT - 1 + _attackRange, GameConstants.MapSize - 1);
+				_buildingX2 = Math.Min(dx + InternalConstants.TOWN_WIDTH - 1 + _attackRange, Config.MapSize - 1);
+				_buildingY2 = Math.Min(dy + InternalConstants.TOWN_HEIGHT - 1 + _attackRange, Config.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_TO_LAND_FOR_SHIP:
@@ -402,9 +408,9 @@ public class SeekPath
 				_finalDestX += xShift;
 				_finalDestY += yShift;
 				_finalDestX = Math.Max(_finalDestX, 0);
-				_finalDestX = Math.Min(_finalDestX, GameConstants.MapSize - 1);
+				_finalDestX = Math.Min(_finalDestX, Config.MapSize - 1);
 				_finalDestY = Math.Max(_finalDestY, 0);
-				_finalDestY = Math.Min(_finalDestY, GameConstants.MapSize - 1);
+				_finalDestY = Math.Min(_finalDestY, Config.MapSize - 1);
 				break;
 
 			case SEARCH_MODE_ATTACK_UNIT_BY_RANGE:
@@ -424,28 +430,27 @@ public class SeekPath
 		if (sx == _finalDestX && sy == _finalDestY)
 			return PATH_FOUND;
 
+		int mapSize = Config.MapSize;
 		Array.Clear(_nodeMatrix);
-		_nodeMatrix[sy * GameConstants.MapSize + sx] = 1;
-		List<int> oldChangedNodesX = new List<int>(GameConstants.MapSize);
-		List<int> oldChangedNodesY = new List<int>(GameConstants.MapSize);
-		List<int> newChangedNodesX = new List<int>(GameConstants.MapSize);
-		List<int> newChangedNodesY = new List<int>(GameConstants.MapSize);
-		oldChangedNodesX.Add(sx);
-		oldChangedNodesY.Add(sy);
+		_nodeMatrix[sy * mapSize + sx] = 1;
+		_oldChangedNodesX.Clear();
+		_oldChangedNodesY.Clear();
+		_oldChangedNodesX.Add(sx);
+		_oldChangedNodesY.Add(sy);
 
 		int multiplier = (_mobileType == UnitConstants.UNIT_LAND) ? 1 : 2;
 
 		int loopCount = 0;
-		while (oldChangedNodesX.Count > 0)
+		while (_oldChangedNodesX.Count > 0)
 		{
 			loopCount++;
-			newChangedNodesX.Clear();
-			newChangedNodesY.Clear();
-			for (int changedNodesIndex = 0; changedNodesIndex < oldChangedNodesX.Count; changedNodesIndex++)
+			_newChangedNodesX.Clear();
+			_newChangedNodesY.Clear();
+			for (int changedNodesIndex = 0; changedNodesIndex < _oldChangedNodesX.Count; changedNodesIndex++)
 			{
-				int x = oldChangedNodesX[changedNodesIndex];
-				int y = oldChangedNodesY[changedNodesIndex];
-				int currentIndex = y * GameConstants.MapSize + x;
+				int x = _oldChangedNodesX[changedNodesIndex];
+				int y = _oldChangedNodesY[changedNodesIndex];
+				int currentIndex = y * mapSize + x;
 
 				for (int i = -1; i <= 1; i++)
 				{
@@ -458,7 +463,7 @@ public class SeekPath
 						if (!Misc.IsLocationValid(nearX, nearY))
 							continue;
 
-						int nearIndex = nearY * GameConstants.MapSize + nearX;
+						int nearIndex = nearY * mapSize + nearX;
 						if (_nodeMatrix[nearIndex] == -1)
 							continue;
 
@@ -477,8 +482,8 @@ public class SeekPath
 						if (_nodeMatrix[nearIndex] == 0 || _nodeMatrix[nearIndex] > newValue)
 						{
 							_nodeMatrix[nearIndex] = newValue;
-							newChangedNodesX.Add(nearX);
-							newChangedNodesY.Add(nearY);
+							_newChangedNodesX.Add(nearX);
+							_newChangedNodesY.Add(nearY);
 						}
 					}
 
@@ -496,10 +501,10 @@ public class SeekPath
 				break;
 			}
 
-			oldChangedNodesX.Clear();
-			oldChangedNodesX.AddRange(newChangedNodesX);
-			oldChangedNodesY.Clear();
-			oldChangedNodesY.AddRange(newChangedNodesY);
+			_oldChangedNodesX.Clear();
+			_oldChangedNodesX.AddRange(_newChangedNodesX);
+			_oldChangedNodesY.Clear();
+			_oldChangedNodesY.AddRange(_newChangedNodesY);
 		}
 
 		PathStatus = PATH_IMPOSSIBLE;
@@ -581,7 +586,7 @@ public class SeekPath
 		switch (PathStatus)
 		{
 			case PATH_FOUND:
-				resultIndex = _finalDestY * GameConstants.MapSize + _finalDestX;
+				resultIndex = _finalDestY * Config.MapSize + _finalDestX;
 				resultX = _finalDestX;
 				resultY = _finalDestY;
 				break;
@@ -595,7 +600,7 @@ public class SeekPath
 					if (!Misc.IsLocationValid(locX, locY))
 						return;
 
-					int currentIndex = locY * GameConstants.MapSize + locX;
+					int currentIndex = locY * Config.MapSize + locX;
 					if (_nodeMatrix[currentIndex] > 0 && _nodeMatrix[currentIndex] < minDistance)
 					{
 						minDistance = _nodeMatrix[currentIndex];
@@ -620,7 +625,7 @@ public class SeekPath
 						UpdateFunc(_finalDestX + regionSize, y);
 					}
 
-					if (resultIndex >= 0 || regionSize >= GameConstants.MapSize)
+					if (resultIndex >= 0 || regionSize >= Config.MapSize)
 						break;
 				}
 
@@ -656,7 +661,7 @@ public class SeekPath
 					if (!Misc.IsLocationValid(nearX, nearY))
 						continue;
 
-					int currentIndex = nearY * GameConstants.MapSize + nearX;
+					int currentIndex = nearY * Config.MapSize + nearX;
 					if (_nodeMatrix[currentIndex] > 0 && _nodeMatrix[currentIndex] < pathValue)
 					{
 						pathIndex = currentIndex;

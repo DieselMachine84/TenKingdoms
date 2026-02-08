@@ -24,12 +24,12 @@ public class UnitExpCart : UnitWeapon
 			y2 += GameConstants.CHAIN_TRIGGER_RANGE;
 			if (x1 < 0)
 				x1 = 0;
-			if (x2 >= GameConstants.MapSize)
-				x2 = GameConstants.MapSize - 1;
+			if (x2 >= Config.MapSize)
+				x2 = Config.MapSize - 1;
 			if (y1 < 0)
 				y1 = 0;
-			if (y2 >= GameConstants.MapSize)
-				y2 = GameConstants.MapSize - 1;
+			if (y2 >= Config.MapSize)
+				y2 = Config.MapSize - 1;
 
 			for (int y = y1; y <= y2; ++y)
 			{
@@ -59,12 +59,12 @@ public class UnitExpCart : UnitWeapon
 
 			if (x1 < 0)
 				x1 = 0;
-			if (x2 >= GameConstants.MapSize)
-				x2 = GameConstants.MapSize - 1;
+			if (x2 >= Config.MapSize)
+				x2 = Config.MapSize - 1;
 			if (y1 < 0)
 				y1 = 0;
-			if (y2 >= GameConstants.MapSize)
-				y2 = GameConstants.MapSize - 1;
+			if (y2 >= Config.MapSize)
+				y2 = Config.MapSize - 1;
 
 			if (CurFrame == 3)
 			{

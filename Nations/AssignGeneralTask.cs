@@ -151,8 +151,8 @@ public class AssignGeneralTask : AITask, IUnitTask
 
             for (int i = 0; i < otherFirm.Workers.Count; i++)
             {
-                int rating = otherFirm.Workers[i].SkillLevel * GameConstants.MapSize / 100;
-                rating += GameConstants.MapSize - Misc.FirmsDistance(firm, otherFirm);
+                int rating = otherFirm.Workers[i].SkillLevel * Config.MapSize / 100;
+                rating += Config.MapSize - Misc.FirmsDistance(firm, otherFirm);
                 //TODO take general race into account
 
                 if (rating > bestRating)
@@ -176,8 +176,8 @@ public class AssignGeneralTask : AITask, IUnitTask
             if (!town.CanTrain(raceId))
                 continue;
             
-            int rating = GameConstants.TRAIN_SKILL_LEVEL * GameConstants.MapSize / 100;
-            rating += GameConstants.MapSize - Misc.FirmTownDistance(firm, town);
+            int rating = GameConstants.TRAIN_SKILL_LEVEL * Config.MapSize / 100;
+            rating += Config.MapSize - Misc.FirmTownDistance(firm, town);
 
             if (rating > bestRating)
             {

@@ -298,10 +298,10 @@ public class UnitGod : Unit
 			if (locY > 0)
 				locY--;
 		if (dir >= 1 && dir <= 3)
-			if (locX < GameConstants.MapSize - 1)
+			if (locX < Config.MapSize - 1)
 				locX++;
 		if (dir >= 3 && dir <= 5)
-			if (locY < GameConstants.MapSize - 1)
+			if (locY < Config.MapSize - 1)
 				locY++;
 		if (dir >= 5 && dir <= 7)
 			if (locX > 0)
@@ -572,8 +572,8 @@ public class UnitGod : Unit
 
 	private void think_phoenix()
 	{
-		int xLoc = Misc.Random(GameConstants.MapSize);
-		int yLoc = Misc.Random(GameConstants.MapSize);
+		int xLoc = Misc.Random(Config.MapSize);
+		int yLoc = Misc.Random(Config.MapSize);
 
 		MoveTo(xLoc, yLoc);
 	}
@@ -770,16 +770,16 @@ public class UnitGod : Unit
 			leftLocX = 0;
 
 		int rightLocX = NextLocX + castRadius;
-		if (rightLocX >= GameConstants.MapSize)
-			rightLocX = GameConstants.MapSize - 1;
+		if (rightLocX >= Config.MapSize)
+			rightLocX = Config.MapSize - 1;
 
 		int topLocY = NextLocY - castRadius;
 		if (topLocY < 0)
 			topLocY = 0;
 
 		int bottomLocY = NextLocY + castRadius;
-		if (bottomLocY >= GameConstants.MapSize)
-			bottomLocY = GameConstants.MapSize - 1;
+		if (bottomLocY >= Config.MapSize)
+			bottomLocY = Config.MapSize - 1;
 
 		int curRating = 0;
 		int xLoc = -1;
@@ -864,13 +864,13 @@ public class UnitGod : Unit
 				xLoc = NextLocX + Misc.Random(100) - 50;
 				if (xLoc < 0)
 					xLoc = 0;
-				if (xLoc >= GameConstants.MapSize)
-					xLoc = GameConstants.MapSize - 1;
+				if (xLoc >= Config.MapSize)
+					xLoc = Config.MapSize - 1;
 				yLoc = NextLocY + Misc.Random(100) - 50;
 				if (yLoc < 0)
 					yLoc = 0;
-				if (yLoc >= GameConstants.MapSize)
-					yLoc = GameConstants.MapSize - 1;
+				if (yLoc >= Config.MapSize)
+					yLoc = Config.MapSize - 1;
 				MoveTo(xLoc, yLoc);
 			}
 		}

@@ -53,10 +53,10 @@ public class SailShipTask : AITask, IUnitTask
                 if (ship.InBeach)
                 {
                     //TODO workaround for a bug when ship cannot move to the coast
-                    int locX = Misc.Random(GameConstants.MapSize);
+                    int locX = Misc.Random(Config.MapSize);
                     if (locX % 2 != 0)
                         locX--;
-                    int locY = Misc.Random(GameConstants.MapSize);
+                    int locY = Misc.Random(Config.MapSize);
                     if (locY % 2 != 0)
                         locY--;
                     ship.MoveTo(locX, locY);

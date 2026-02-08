@@ -2,12 +2,13 @@ namespace TenKingdoms;
 
 public class WarPointArray
 {
-    public WarPoint[,] WarPoints { get; } = new WarPoint[
-        GameConstants.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1,
-        GameConstants.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1];
+    public WarPoint[,] WarPoints { get; }
+
+    private Config Config => Sys.Instance.Config;
  
     public WarPointArray()
     {
+        WarPoints = new WarPoint[Config.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1, Config.MapSize / InternalConstants.WARPOINT_ZONE_SIZE + 1];
         for (int i = 0; i < WarPoints.GetLength(0); i++)
             for (int j = 0; j < WarPoints.GetLength(1); j++)
                 WarPoints[i, j] = new WarPoint();

@@ -11,9 +11,9 @@ public partial class Renderer
             //TODO support different minimap modes
             //TODO draw fire
             Array.Clear(_miniMapImage);
-            for (int locY = 0; locY < GameConstants.MapSize; locY++)
+            for (int locY = 0; locY < Config.MapSize; locY++)
             {
-                for (int locX = 0; locX < GameConstants.MapSize; locX++)
+                for (int locX = 0; locX < Config.MapSize; locX++)
                 {
                     Location location = World.GetLoc(locX, locY);
                     byte color = Colors.UNEXPLORED_COLOR;
@@ -32,7 +32,7 @@ public partial class Renderer
                             color = Colors.VGA_GRAY + 10;
                     }
 
-                    if (GameConstants.MapSize == 100)
+                    if (Config.MapSize == 100)
                     {
                         for (int y = locY * 4; y < locY * 4 + 4; y++)
                         {
@@ -43,7 +43,7 @@ public partial class Renderer
                         }
                     }
 
-                    if (GameConstants.MapSize == 200)
+                    if (Config.MapSize == 200)
                     {
                         _miniMapImage[locY * 2 * MiniMapSize + locX * 2] = color;
                         _miniMapImage[locY * 2 * MiniMapSize + locX * 2 + 1] = color;
@@ -51,7 +51,7 @@ public partial class Renderer
                         _miniMapImage[(locY * 2 + 1) * MiniMapSize + locX * 2 + 1] = color;
                     }
 
-                    if (GameConstants.MapSize == 300)
+                    if (Config.MapSize == 300)
                     {
                         _miniMapImage[locY * 4 / 3 * MiniMapSize + locX * 4 / 3] = color;
                         if ((locX * 4 / 3) % 4 == 2)
@@ -62,7 +62,7 @@ public partial class Renderer
                             _miniMapImage[(locY * 4 / 3 + 1) * MiniMapSize + locX * 4 / 3 + 1] = color;
                     }
                     
-                    if (GameConstants.MapSize == 400)
+                    if (Config.MapSize == 400)
                     {
                         _miniMapImage[locY * MiniMapSize + locX] = color;
                     }
@@ -320,7 +320,7 @@ public partial class Renderer
 
     private void DrawLineOnMiniMap(int locX1, int locY1, int locX2, int locY2, int color)
     {
-        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
+        if (Config.MapSize == 100 || Config.MapSize == 200)
         {
             if (locX1 == locX2)
             {
@@ -351,12 +351,12 @@ public partial class Renderer
             }
         }
         
-        if (GameConstants.MapSize == 300)
+        if (Config.MapSize == 300)
         {
             Graphics.DrawLine(MiniMapX + locX1 * 4 / 3, MiniMapY + locY1 * 4 / 3, MiniMapX + locX2 * 4 / 3, MiniMapY + locY2 * 4 / 3, color);
         }
 
-        if (GameConstants.MapSize == 400)
+        if (Config.MapSize == 400)
         {
             Graphics.DrawLine(MiniMapX + locX1, MiniMapY + locY1, MiniMapX + locX2, MiniMapY + locY2, color);
         }
@@ -364,19 +364,19 @@ public partial class Renderer
     
     private void DrawRectOnMiniMap(int locX, int locY, int width, int height, int color, bool shiftUpAndLeft = false)
     {
-        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
+        if (Config.MapSize == 100 || Config.MapSize == 200)
         {
             Graphics.DrawRect(MiniMapX + (shiftUpAndLeft ? locX * MiniMapScale - MiniMapScale / 2 : locX * MiniMapScale),
                 MiniMapY + (shiftUpAndLeft ? locY * MiniMapScale - MiniMapScale / 2 : locY * MiniMapScale),
                 width * MiniMapScale, height * MiniMapScale, color);
         }
 
-        if (GameConstants.MapSize == 300)
+        if (Config.MapSize == 300)
         {
             Graphics.DrawRect(MiniMapX + locX * 4 / 3, MiniMapY + locY * 4 / 3, width * 4 / 3, height * 4 / 3, color);
         }
         
-        if (GameConstants.MapSize == 400)
+        if (Config.MapSize == 400)
         {
             Graphics.DrawRect(MiniMapX + locX, MiniMapY + locY, width, height, color);
         }
@@ -386,13 +386,13 @@ public partial class Renderer
     {
         byte shadowColor = Colors.VGA_GRAY;
         
-        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
+        if (Config.MapSize == 100 || Config.MapSize == 200)
         {
             DrawRectOnMiniMap(locX1 + 1, locY2 + 1, locX2 - locX1 + 1, 1, shadowColor);
             DrawRectOnMiniMap(locX2 + 1, locY1 + 1, 1, locY2 - locY1 + 1, shadowColor);
         }
 
-        if (GameConstants.MapSize == 300)
+        if (Config.MapSize == 300)
         {
             Graphics.DrawLine(MiniMapX + locX1 * 4 / 3 + 1, MiniMapY + locY1 * 4 / 3 + (locY2 - locY1 + 1) * 4 / 3,
                 MiniMapX + locX1 * 4 / 3 + (locX2 - locX1 + 1) * 4 / 3, MiniMapY + locY1 * 4 / 3 + (locY2 - locY1 + 1) * 4 / 3, shadowColor);
@@ -400,7 +400,7 @@ public partial class Renderer
                 MiniMapX + locX1 * 4 / 3 + (locX2 - locX1 + 1) * 4 / 3, MiniMapY + locY1 * 4 / 3 + (locY2 - locY1 + 1) * 4 / 3, shadowColor);
         }
         
-        if (GameConstants.MapSize == 400)
+        if (Config.MapSize == 400)
         {
             Graphics.DrawLine(MiniMapX + locX1 + 1, MiniMapY + locY2 + 1, MiniMapX + locX2 + 1, MiniMapY + locY2 + 1, shadowColor);
             Graphics.DrawLine(MiniMapX + locX2 + 1, MiniMapY + locY1 + 1, MiniMapX + locX2 + 1, MiniMapY + locY2 + 1, shadowColor);
@@ -409,7 +409,7 @@ public partial class Renderer
 
     private void DrawFrameOnMiniMap(int locX, int locY, int width, int height, int color)
     {
-        if (GameConstants.MapSize == 100 || GameConstants.MapSize == 200)
+        if (Config.MapSize == 100 || Config.MapSize == 200)
         {
             Graphics.DrawRect(MiniMapX + locX * MiniMapScale, MiniMapY + locY * MiniMapScale,
                 width * MiniMapScale, MiniMapScale, color);
@@ -421,7 +421,7 @@ public partial class Renderer
                 MiniMapScale, height * MiniMapScale, color);
         }
 
-        if (GameConstants.MapSize == 300)
+        if (Config.MapSize == 300)
         {
             Graphics.DrawRect(MiniMapX + locX * 4 / 3, MiniMapY + locY * 4 / 3, width * 4 / 3, 2, color);
             Graphics.DrawRect(MiniMapX + locX * 4 / 3, MiniMapY + (locY + height - 1) * 4 / 3, width * 4 / 3, 2, color);
@@ -429,7 +429,7 @@ public partial class Renderer
             Graphics.DrawRect(MiniMapX + (locX + width - 1) * 4 / 3, MiniMapY + locY * 4 / 3, 2, height * 4 / 3, color);
         }
         
-        if (GameConstants.MapSize == 400)
+        if (Config.MapSize == 400)
         {
             Graphics.DrawFrame(MiniMapX + locX, MiniMapY + locY, width, height, color);
         }

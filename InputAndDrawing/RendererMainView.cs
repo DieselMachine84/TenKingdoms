@@ -39,9 +39,9 @@ public partial class Renderer
         DrawGround();
 
         int startLocX = Math.Max(_topLeftLocX - InternalConstants.DETECT_MARGIN, 0);
-        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + InternalConstants.DETECT_MARGIN, Config.MapSize);
         int startLocY = Math.Max(_topLeftLocY - InternalConstants.DETECT_MARGIN, 0);
-        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + InternalConstants.DETECT_MARGIN, GameConstants.MapSize);
+        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + InternalConstants.DETECT_MARGIN, Config.MapSize);
 
         for (int locY = startLocY; locY < endLocY; locY++)
         {
@@ -311,9 +311,9 @@ public partial class Renderer
 
     private void DrawGround()
     {
-        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < GameConstants.MapSize; locY++)
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < Config.MapSize; locY++)
         {
-            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < GameConstants.MapSize; locX++)
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < Config.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (!location.IsExplored())

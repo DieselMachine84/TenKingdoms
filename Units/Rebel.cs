@@ -20,6 +20,7 @@ public class Rebel : IIdObject
     public int TownId  { get; set; } // the town controlled by the rebel group, one rebel group can only control one town
     private int HostileNationBits  { get; set; }
 
+    private Config Config => Sys.Instance.Config;
     private Info Info => Sys.Instance.Info;
     private World World => Sys.Instance.World;
     private NationArray NationArray => Sys.Instance.NationArray;
@@ -257,15 +258,15 @@ public class Rebel : IIdObject
         int locX2 = leaderLocX + InternalConstants.TOWN_WIDTH - 1;
         int locY2 = leaderLocY + InternalConstants.TOWN_HEIGHT - 1;
 
-        if (locX2 >= GameConstants.MapSize)
+        if (locX2 >= Config.MapSize)
         {
-            locX2 = GameConstants.MapSize - 1;
+            locX2 = Config.MapSize - 1;
             leaderLocX = locX2 - InternalConstants.TOWN_WIDTH + 1;
         }
 
-        if (locY2 >= GameConstants.MapSize)
+        if (locY2 >= Config.MapSize)
         {
-            locY2 = GameConstants.MapSize - 1;
+            locY2 = Config.MapSize - 1;
             leaderLocY = locY2 - InternalConstants.TOWN_HEIGHT + 1;
         }
 
