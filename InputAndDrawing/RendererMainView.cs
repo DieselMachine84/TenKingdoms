@@ -39,9 +39,9 @@ public partial class Renderer
         DrawGround();
 
         int startLocX = Math.Max(_topLeftLocX - InternalConstants.DETECT_MARGIN, 0);
-        int endLocX = Math.Min(_topLeftLocX + MainViewWidthInCells + InternalConstants.DETECT_MARGIN, Config.MapSize);
+        int endLocX = Math.Min(_topLeftLocX + Config.GameScreenWidth + InternalConstants.DETECT_MARGIN, Config.MapSize);
         int startLocY = Math.Max(_topLeftLocY - InternalConstants.DETECT_MARGIN, 0);
-        int endLocY = Math.Min(_topLeftLocY + MainViewHeightInCells + InternalConstants.DETECT_MARGIN, Config.MapSize);
+        int endLocY = Math.Min(_topLeftLocY + Config.GameScreenHeight + InternalConstants.DETECT_MARGIN, Config.MapSize);
 
         for (int locY = startLocY; locY < endLocY; locY++)
         {
@@ -311,9 +311,9 @@ public partial class Renderer
 
     private void DrawGround()
     {
-        for (int locY = _topLeftLocY; locY < _topLeftLocY + MainViewHeightInCells && locY < Config.MapSize; locY++)
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + Config.GameScreenHeight && locY < Config.MapSize; locY++)
         {
-            for (int locX = _topLeftLocX; locX < _topLeftLocX + MainViewWidthInCells && locX < Config.MapSize; locX++)
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + Config.GameScreenWidth && locX < Config.MapSize; locX++)
             {
                 Location location = World.GetLoc(locX, locY);
                 if (!location.IsExplored())
@@ -899,10 +899,10 @@ public partial class Renderer
                     World.GetLocXAndLocY(resultNode1, out int resultNode1LocX, out int resultNode1LocY);
                     int resultNode2 = unit.PathNodes[j];
                     World.GetLocXAndLocY(resultNode2, out int resultNode2LocX, out int resultNode2LocY);
-                    if (resultNode1LocX >= _topLeftLocX - 1 && resultNode1LocX <= _topLeftLocX + MainViewWidthInCells &&
-                        resultNode2LocX >= _topLeftLocX - 1 && resultNode2LocX <= _topLeftLocX + MainViewWidthInCells &&
-                        resultNode1LocY >= _topLeftLocY - 1 && resultNode1LocY <= _topLeftLocY + MainViewHeightInCells &&
-                        resultNode2LocY >= _topLeftLocY - 1 && resultNode2LocY <= _topLeftLocY + MainViewHeightInCells)
+                    if (resultNode1LocX >= _topLeftLocX - 1 && resultNode1LocX <= _topLeftLocX + Config.GameScreenWidth &&
+                        resultNode2LocX >= _topLeftLocX - 1 && resultNode2LocX <= _topLeftLocX + Config.GameScreenWidth &&
+                        resultNode1LocY >= _topLeftLocY - 1 && resultNode1LocY <= _topLeftLocY + Config.GameScreenHeight &&
+                        resultNode2LocY >= _topLeftLocY - 1 && resultNode2LocY <= _topLeftLocY + Config.GameScreenHeight)
                     {
                         int screenX1 = MainViewX + (resultNode1LocX - _topLeftLocX) * CellTextureWidth + CellTextureWidth / 2;
                         int screenY1 = MainViewY + (resultNode1LocY - _topLeftLocY) * CellTextureHeight + CellTextureHeight / 2;

@@ -2,13 +2,13 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-    private const int ResearchPanelX = DetailsX1 + 2;
-    private const int ResearchPanelY = DetailsY1 + 2;
-    private const int MouseOnResearchButtonX1 = DetailsX1 + 8;
-    private const int MouseOnResearchButtonX2 = DetailsX1 + 320;
-    private const int MouseOnResearchButtonY1 = DetailsY1 + 2;
-    private const int MouseOnResearchButtonY2 = DetailsY1 + 66;
-    private const int MaxResearchItems = 6;
+    private int ResearchPanelX => DetailsX1 + 2;
+    private int ResearchPanelY => DetailsY1 + 2;
+    private int MouseOnResearchButtonX1 => DetailsX1 + 8;
+    private int MouseOnResearchButtonX2 => DetailsX1 + 320;
+    private int MouseOnResearchButtonY1 => DetailsY1 + 2;
+    private int MouseOnResearchButtonY2 => DetailsY1 + 66;
+    private int MaxResearchItems = 6;
 
     public void DrawResearchDetails(FirmResearch research)
     {

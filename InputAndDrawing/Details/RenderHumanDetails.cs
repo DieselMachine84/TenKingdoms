@@ -17,10 +17,10 @@ public partial class Renderer
     // TODO disable reward button when not enough money
     // TODO enable/disable buttons dependent on group count
 
-    private const int MouseOnBuildSettleCancelButtonX1 = DetailsX1 + 8;
-    private const int MouseOnBuildSettleCancelButtonX2 = DetailsX2 - 8;
-    private const int MouseOnBuildSettleCancelButtonY1 = DetailsY1 + 120;
-    private const int MouseOnBuildSettleCancelButtonY2 = DetailsY1 + 152;
+    private int MouseOnBuildSettleCancelButtonX1 => DetailsX1 + 8;
+    private int MouseOnBuildSettleCancelButtonX2 => DetailsX2 - 8;
+    private int MouseOnBuildSettleCancelButtonY1 => DetailsY1 + 120;
+    private int MouseOnBuildSettleCancelButtonY2 => DetailsY1 + 152;
     
     private readonly int[] _buildFirmOrder =
     {

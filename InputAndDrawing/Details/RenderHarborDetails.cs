@@ -7,19 +7,19 @@ public partial class Renderer
     //TODO support batch build with shift
     //TODO draw build indicator and cancel build button
 
-    private const int BuildShipPanelX = DetailsX1 + 2;
-    private const int BuildShipPanelY = DetailsY1 + 2;
-    private const int BuildShipButtonNumberX = DetailsX1 + 351;
-    private const int BuildShipButtonNumberY = DetailsY1 + 12;
-    private const int MouseOnBuildShipButtonX1 = DetailsX1 + 8;
-    private const int MouseOnBuildShipButtonX2 = DetailsX1 + 320;
-    private const int MouseOnBuildShipButtonY1 = DetailsY1 + 2;
-    private const int MouseOnBuildShipButtonY2 = DetailsY1 + 66;
-    private const int MouseOnBuildShipNumberButtonX1 = BuildShipButtonNumberX + 4;
-    private const int MouseOnBuildShipNumberButtonX2 = BuildShipButtonNumberX + 40;
-    private const int MouseOnBuildShipNumberButtonY1 = BuildShipButtonNumberY + 4;
-    private const int MouseOnBuildShipNumberButtonY2 = BuildShipButtonNumberY + 42;
-    private const int MaxBuildShipItems = 6;
+    private int BuildShipPanelX => DetailsX1 + 2;
+    private int BuildShipPanelY => DetailsY1 + 2;
+    private int BuildShipButtonNumberX => DetailsX1 + 351;
+    private int BuildShipButtonNumberY => DetailsY1 + 12;
+    private int MouseOnBuildShipButtonX1 => DetailsX1 + 8;
+    private int MouseOnBuildShipButtonX2 => DetailsX1 + 320;
+    private int MouseOnBuildShipButtonY1 => DetailsY1 + 2;
+    private int MouseOnBuildShipButtonY2 => DetailsY1 + 66;
+    private int MouseOnBuildShipNumberButtonX1 => BuildShipButtonNumberX + 4;
+    private int MouseOnBuildShipNumberButtonX2 => BuildShipButtonNumberX + 40;
+    private int MouseOnBuildShipNumberButtonY1 => BuildShipButtonNumberY + 4;
+    private int MouseOnBuildShipNumberButtonY2 => BuildShipButtonNumberY + 42;
+    private int MaxBuildShipItems = 6;
     
     public void DrawHarborDetails(FirmHarbor harbor)
     {

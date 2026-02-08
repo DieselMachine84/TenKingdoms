@@ -8,9 +8,10 @@ namespace TenKingdoms;
 
 public class Graphics
 {
-    public const string WindowTitle = "Ten Kingdoms";
-    public const int WindowWidth = Renderer.WindowWidth;
-    public const int WindowHeight = Renderer.WindowHeight;
+    private const string WindowTitle = "Ten Kingdoms";
+    private int WindowWidth => Renderer.MainViewX + Sys.Instance.Config.GameScreenWidth * Renderer.CellTextureWidth
+                                                 + Renderer.BorderWidth + Renderer.MiniMapSize + Renderer.BorderWidth;
+    private int WindowHeight => Renderer.MainViewY + Sys.Instance.Config.GameScreenHeight * Renderer.CellTextureHeight;
     
     private const uint SDLSubSystems = SDL.SDL_INIT_VIDEO;
     private IntPtr _window = IntPtr.Zero;

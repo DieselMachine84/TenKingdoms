@@ -183,27 +183,27 @@ public partial class Renderer
     {
         if (scrollUp && _topLeftLocX > 0)
             _topLeftLocX--;
-        if (scrollDown && _topLeftLocX < Config.MapSize - MainViewWidthInCells)
+        if (scrollDown && _topLeftLocX < Config.MapSize - Config.GameScreenWidth)
             _topLeftLocX++;
         if (scrollLeft && _topLeftLocY > 0)
             _topLeftLocY--;
-        if (scrollRight && _topLeftLocY < Config.MapSize - MainViewHeightInCells)
+        if (scrollRight && _topLeftLocY < Config.MapSize - Config.GameScreenHeight)
             _topLeftLocY++;
     }
 
     public void GoToLocation(int locX, int locY)
     {
-        _topLeftLocX = locX - MainViewWidthInCells / 2;
+        _topLeftLocX = locX - Config.GameScreenWidth / 2;
         if (_topLeftLocX < 0)
             _topLeftLocX = 0;
-        if (_topLeftLocX > Config.MapSize - MainViewWidthInCells)
-            _topLeftLocX = Config.MapSize - MainViewWidthInCells;
+        if (_topLeftLocX > Config.MapSize - Config.GameScreenWidth)
+            _topLeftLocX = Config.MapSize - Config.GameScreenWidth;
 
-        _topLeftLocY = locY - MainViewHeightInCells / 2;
+        _topLeftLocY = locY - Config.GameScreenHeight / 2;
         if (_topLeftLocY < 0)
             _topLeftLocY = 0;
-        if (_topLeftLocY > Config.MapSize - MainViewHeightInCells)
-            _topLeftLocY = Config.MapSize - MainViewHeightInCells;
+        if (_topLeftLocY > Config.MapSize - Config.GameScreenHeight)
+            _topLeftLocY = Config.MapSize - Config.GameScreenHeight;
     }
 
     private bool SelectObjects(int mouse1X, int mouse1Y, int mouse2X, int mouse2Y)

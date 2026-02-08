@@ -57,6 +57,8 @@ public class Config
 	public int GoalYearLimit { get; private set; } = 20;
 	
 	// ---- Options settings ----
+	public int GameScreenWidth { get; private set; } = 30;
+	public int GameScreenHeight { get; private set; } = 19;
 	public int ShowUnitPath { get; private set; } = 3; // bit 0 show unit path on main view, bit 1 for minimap
 	public int DisplayNewsType { get; private set; } = OPTION_DISPLAY_ALL_NEWS;
 	public bool MusicFlag { get; private set; } = true;

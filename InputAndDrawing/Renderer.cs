@@ -12,16 +12,16 @@ public enum ViewMode { Normal, Kingdoms, Villages, Economy, Trade, Military, Tec
 
 public partial class Renderer : IRenderer
 {
-    public const int WindowWidth = MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
-    public const int WindowHeight = MainViewY + MainViewHeight;
+    public int WindowWidth => MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
+    public int WindowHeight => MainViewY + MainViewHeight;
 
-    public const int NormalLayer = 1;
-    public const int TopLayer = 2;
-    public const int BottomLayer = 4;
-    public const int AirLayer = 8;
+    private const int NormalLayer = 1;
+    private const int TopLayer = 2;
+    private const int BottomLayer = 4;
+    private const int AirLayer = 8;
 
     private const int GameMenuHeight = 84;
-    private const int BorderWidth = 18;
+    public const int BorderWidth = 18;
 
     public const int CellTextureWidth = 48;
     public const int CellTextureHeight = 48;
@@ -29,24 +29,22 @@ public partial class Renderer : IRenderer
     private const int ViewModeY = 0;
     private const int ViewModeWidth = 400;
     private const int ViewModeHeight = 84;
-    private const int MainViewX = 0;
-    private const int MainViewY = GameMenuHeight;
-    private const int MainViewWidthInCells = 30;
-    private const int MainViewHeightInCells = 19;
-    private const int MainViewWidth = MainViewWidthInCells * CellTextureWidth;
-    private const int MainViewHeight = MainViewHeightInCells * CellTextureHeight;
+    public const int MainViewX = 0;
+    public const int MainViewY = GameMenuHeight;
+    private int MainViewWidth => Config.GameScreenWidth * CellTextureWidth;
+    private int MainViewHeight => Config.GameScreenHeight * CellTextureHeight;
 
-    private const int MiniMapX = MainViewX + MainViewWidth + BorderWidth;
+    private int MiniMapX => MainViewX + MainViewWidth + BorderWidth;
     private const int MiniMapY = MainViewY;
-    private const int MiniMapSize = 400;
+    public const int MiniMapSize = 400;
     private int MiniMapScale => MiniMapSize / Config.MapSize;
 
-    private const int DetailsX1 = MainViewX + MainViewWidth + 12;
-    private const int DetailsX2 = DetailsX1 + DetailsWidth;
-    private const int DetailsY1 = MiniMapY + MiniMapSize + 12;
-    private const int DetailsY2 = DetailsY1 + DetailsHeight;
-    private const int DetailsWidth = MiniMapSize + 12;
-    private const int DetailsHeight = WindowHeight - DetailsY1 - 12;
+    private int DetailsX1 => MainViewX + MainViewWidth + 12;
+    private int DetailsX2 => DetailsX1 + DetailsWidth;
+    private int DetailsY1 => MiniMapY + MiniMapSize + 12;
+    private int DetailsY2 => DetailsY1 + DetailsHeight;
+    private int DetailsWidth => MiniMapSize + 12;
+    private int DetailsHeight => WindowHeight - DetailsY1 - 12;
     
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
@@ -178,7 +176,7 @@ public partial class Renderer : IRenderer
         
         Graphics.ResetClipRectangle();
         DrawMainScreen();
-        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewX + MainViewWidthInCells * CellTextureWidth, MainViewY + MainViewHeightInCells * CellTextureHeight);
+        Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewWidth, MainViewHeight);
         DrawMainView();
         DrawNews();
         Graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);

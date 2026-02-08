@@ -12,22 +12,22 @@ public partial class Renderer
     // TODO list box scroll
     // TODO train unit progress
 
-    private const int TrainSkillPanelX = DetailsX1 + 2;
-    private const int TrainSkillPanelY = DetailsY1 + 48;
-    private const int TrainButtonTextX = DetailsX1 + 52;
-    private const int TrainButtonNumberX = DetailsX1 + 351;
-    private const int TrainButtonNumberY = DetailsY1 + 55;
-    private const int MouseOnTrainButtonX1 = DetailsX1 + 8;
-    private const int MouseOnTrainButtonX2 = DetailsX1 + 320;
-    private const int MouseOnTrainButtonY1 = DetailsY1 + 54;
-    private const int MouseOnTrainButtonY2 = DetailsY1 + 102;
-    private const int MouseOnTrainNumberButtonX1 = TrainButtonNumberX + 4;
-    private const int MouseOnTrainNumberButtonX2 = TrainButtonNumberX + 40;
-    private const int MouseOnTrainNumberButtonY1 = TrainButtonNumberY + 4;
-    private const int MouseOnTrainNumberButtonY2 = TrainButtonNumberY + 42;
-    private const int TaxButtonX = DetailsX1 + 2;
-    private const int TaxButtonY = DetailsY1 + 109;
-    private const int MouseOnTaxButtonY = DetailsY1 + 112;
+    private int TrainSkillPanelX => DetailsX1 + 2;
+    private int TrainSkillPanelY => DetailsY1 + 48;
+    private int TrainButtonTextX => DetailsX1 + 52;
+    private int TrainButtonNumberX => DetailsX1 + 351;
+    private int TrainButtonNumberY => DetailsY1 + 55;
+    private int MouseOnTrainButtonX1 => DetailsX1 + 8;
+    private int MouseOnTrainButtonX2 => DetailsX1 + 320;
+    private int MouseOnTrainButtonY1 => DetailsY1 + 54;
+    private int MouseOnTrainButtonY2 => DetailsY1 + 102;
+    private int MouseOnTrainNumberButtonX1 => TrainButtonNumberX + 4;
+    private int MouseOnTrainNumberButtonX2 => TrainButtonNumberX + 40;
+    private int MouseOnTrainNumberButtonY1 => TrainButtonNumberY + 4;
+    private int MouseOnTrainNumberButtonY2 => TrainButtonNumberY + 42;
+    private int TaxButtonX => DetailsX1 + 2;
+    private int TaxButtonY => DetailsY1 + 109;
+    private int MouseOnTaxButtonY => DetailsY1 + 112;
 
     private TownDetailsMode TownDetailsMode { get; set; } = TownDetailsMode.Normal;
     

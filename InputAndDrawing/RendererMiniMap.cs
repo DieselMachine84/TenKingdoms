@@ -200,7 +200,7 @@ public partial class Renderer
             }
         }
 
-        DrawFrameOnMiniMap(_topLeftLocX - 1, _topLeftLocY - 1, MainViewWidthInCells + 2, MainViewHeightInCells + 2,
+        DrawFrameOnMiniMap(_topLeftLocX - 1, _topLeftLocY - 1, Config.GameScreenWidth + 2, Config.GameScreenHeight + 2,
             Colors.VGA_YELLOW + _screenSquareFrameCount);
 
         if (nextFrame)

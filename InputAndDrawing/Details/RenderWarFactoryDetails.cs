@@ -6,19 +6,19 @@ public partial class Renderer
 {
     //TODO support batch build with shift
     
-    private const int BuildWeaponPanelX = DetailsX1 + 2;
-    private const int BuildWeaponPanelY = DetailsY1 + 2;
-    private const int BuildWeaponButtonNumberX = DetailsX1 + 351;
-    private const int BuildWeaponButtonNumberY = DetailsY1 + 12;
-    private const int MouseOnBuildWeaponButtonX1 = DetailsX1 + 8;
-    private const int MouseOnBuildWeaponButtonX2 = DetailsX1 + 320;
-    private const int MouseOnBuildWeaponButtonY1 = DetailsY1 + 2;
-    private const int MouseOnBuildWeaponButtonY2 = DetailsY1 + 66;
-    private const int MouseOnBuildWeaponNumberButtonX1 = BuildWeaponButtonNumberX + 4;
-    private const int MouseOnBuildWeaponNumberButtonX2 = BuildWeaponButtonNumberX + 40;
-    private const int MouseOnBuildWeaponNumberButtonY1 = BuildWeaponButtonNumberY + 4;
-    private const int MouseOnBuildWeaponNumberButtonY2 = BuildWeaponButtonNumberY + 42;
-    private const int MaxBuildWeaponItems = 6;
+    private int BuildWeaponPanelX => DetailsX1 + 2;
+    private int BuildWeaponPanelY => DetailsY1 + 2;
+    private int BuildWeaponButtonNumberX => DetailsX1 + 351;
+    private int BuildWeaponButtonNumberY => DetailsY1 + 12;
+    private int MouseOnBuildWeaponButtonX1 => DetailsX1 + 8;
+    private int MouseOnBuildWeaponButtonX2 => DetailsX1 + 320;
+    private int MouseOnBuildWeaponButtonY1 => DetailsY1 + 2;
+    private int MouseOnBuildWeaponButtonY2 => DetailsY1 + 66;
+    private int MouseOnBuildWeaponNumberButtonX1 => BuildWeaponButtonNumberX + 4;
+    private int MouseOnBuildWeaponNumberButtonX2 => BuildWeaponButtonNumberX + 40;
+    private int MouseOnBuildWeaponNumberButtonY1 => BuildWeaponButtonNumberY + 4;
+    private int MouseOnBuildWeaponNumberButtonY2 => BuildWeaponButtonNumberY + 42;
+    private int MaxBuildWeaponItems = 6;
 
     public void DrawWarFactoryDetails(FirmWar warFactory)
     {
