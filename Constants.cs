@@ -20,7 +20,6 @@ public static class GameConstants
     public const int DISP_NEWS_DAYS = 60;     // how long a news should stay on the screen before it disappears
     public const int TALK_MSG_KEEP_DAYS = 3650;
     public const int TALK_MSG_VALID_DAYS = 30;
-    public const int MAX_WEATHER_FORECAST = 3;
 
     //Town
     public const int MAX_TOWN_POPULATION = 60;
@@ -117,6 +116,17 @@ public static class GameConstants
     public const int SMALLEST_RAW_REGION = 50; // only put raw on the region if its size is larger than this
     // only sites with reserve qty >= 5% of MAX_RAW_RESERVE_QTY are counted as raw sites
     public const int EXIST_RAW_RESERVE_QTY = MAX_RAW_RESERVE_QTY / 20;
+
+    //Weather
+    public const bool WEATHER_EFFECT = true;
+    public const int MAX_WEATHER_FORECAST = 3;
+    public const int LATITUDE = 45;
+    public const int FIRE_SPREAD_RATE = 0; // 0 to disable, 10 for normal
+    public const int WIND_SPREAD_FIRE_RATE = 5; // 0 to disable, 5 for normal
+    public const int FIRE_FADE_RATE = 2; // 1 for slow, 2 for fast
+    public const int FIRE_RESTORE_PROB = 80; // 0 to 100, 5 for normal (with spreading) 
+    public const int RAIN_REDUCE_FIRE_RATE = 5; // 0 to 20, 5 for normal
+    public const int FIRE_DAMAGE = 2; // 0 to disable 2 for normal
 }
 
 public static class InternalConstants

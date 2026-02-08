@@ -155,7 +155,7 @@ public partial class Nation : NationBase
 
     private void ThinkAboutNewTask()
     {
-        int shortInterval = Config.ai_aggressiveness switch
+        int shortInterval = Config.AIAggressiveness switch
         {
             Config.OPTION_LOW => 32,
             Config.OPTION_MODERATE => 16,
@@ -218,7 +218,7 @@ public partial class Nation : NationBase
 
     private void ProcessTasks()
     {
-        int shortInterval = Config.ai_aggressiveness switch
+        int shortInterval = Config.AIAggressiveness switch
         {
             Config.OPTION_LOW => 32,
             Config.OPTION_MODERATE => 16,

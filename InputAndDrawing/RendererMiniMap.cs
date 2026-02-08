@@ -217,7 +217,7 @@ public partial class Renderer
 
     private void DrawUnitPathsOnMiniMap()
     {
-        if ((Config.show_unit_path & 2) == 0)
+        if ((Config.ShowUnitPath & 2) == 0)
             return;
 
         for (int i = 0; i < _selectedUnits.Count; i++)
@@ -229,7 +229,7 @@ public partial class Renderer
             int lineColor = (unit.MobileType == UnitConstants.UNIT_SEA) ? Colors.V_WHITE : Colors.V_BLACK;
 
             //TODO check this
-            if (!Config.show_ai_info && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
+            if (!Config.ShowAIInfo && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
                 continue;
 
             if (unit.PathNodes.Count > 1)
@@ -300,7 +300,7 @@ public partial class Renderer
     
     private bool IsExplored(int locX1, int locY1, int locX2, int locY2)
     {
-        if (Config.explore_whole_map)
+        if (Config.ExploreWholeMap)
             return true;
         
         for (int locY = locY1; locY <= locY2; locY++)

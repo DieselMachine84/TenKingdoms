@@ -332,7 +332,7 @@ public class RockRes
 
     private void LoadInfo()
     {
-        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCK{Sys.Instance.Config.terrain_set}.RES");
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCK{Sys.Instance.Config.TerrainSet}.RES");
         _rockInfos = new RockInfo[dbRock.RecordCount];
 
         for (int i = 0; i < _rockInfos.Length; i++)
@@ -365,7 +365,7 @@ public class RockRes
 
     private void LoadBlockInfo()
     {
-        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBLK{Sys.Instance.Config.terrain_set}.RES");
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBLK{Sys.Instance.Config.TerrainSet}.RES");
         _rockBlockInfos = new RockBlockInfo[dbRock.RecordCount];
 
         for (int i = 0; i < _rockBlockInfos.Length; i++)
@@ -396,8 +396,8 @@ public class RockRes
 
     private void LoadBitmapInfo()
     {
-        ResourceDb rockBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_ROCK{Sys.Instance.Config.terrain_set}.RES");
-        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBMP{Sys.Instance.Config.terrain_set}.RES");
+        ResourceDb rockBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_ROCK{Sys.Instance.Config.TerrainSet}.RES");
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKBMP{Sys.Instance.Config.TerrainSet}.RES");
         _rockBitmapInfos = new RockBitmapInfo[dbRock.RecordCount];
 
         for (int i = 0; i < _rockBitmapInfos.Length; i++)
@@ -420,7 +420,7 @@ public class RockRes
 
     private void LoadAnimInfo()
     {
-        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKANI{Sys.Instance.Config.terrain_set}.RES");
+        Database dbRock = new Database($"{Sys.GameDataFolder}/Resource/ROCKANI{Sys.Instance.Config.TerrainSet}.RES");
         _rockAnimInfos = new RockAnimInfo[dbRock.RecordCount];
 
         for (int i = 0; i < _rockAnimInfos.Length; i++)

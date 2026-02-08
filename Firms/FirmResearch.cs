@@ -68,7 +68,7 @@ public class FirmResearch : Firm
         TechInfo techInfo = TechRes[TechId];
 
         double progressPoint;
-        if (Config.fast_build && NationId == NationArray.PlayerId)
+        if (Config.FastBuild && NationId == NationArray.PlayerId)
             progressPoint = Productivity / 100.0 + 0.5;
         else
             progressPoint = Productivity / 300.0;

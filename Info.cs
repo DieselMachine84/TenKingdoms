@@ -44,7 +44,7 @@ public class Info
         YearDay = GameStartDate.DayOfYear;
         YearsPassed = 0;
 
-        GoalDeadline = new DateTime(GameYear + Sys.Instance.Config.goal_year_limit, GameMonth, GameDay);
+        GoalDeadline = new DateTime(GameYear + Sys.Instance.Config.GoalYearLimit, GameMonth, GameDay);
         GoalDifficulty = 0;
         GoalScoreBonus = 0;
 
@@ -110,7 +110,7 @@ public class Info
 
         //-------- deadline approaching message -------//
 
-        if (!Sys.Instance.GameEnded && Sys.Instance.Config.goal_year_limit_flag)
+        if (!Sys.Instance.GameEnded && Sys.Instance.Config.GoalYearLimitFlag)
         {
             int dayLeft = (GoalDeadline - GameDate).Days;
             int yearLeft = dayLeft / 365;

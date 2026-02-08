@@ -597,6 +597,6 @@ public class Sprite : IIdObject
 	public virtual bool IsStealth()
 	{
 		// if the visibility of location is just explored, consider stealth
-		return Config.fog_of_war && World.GetLoc(CurLocX, CurLocY).Visibility() <= Location.EXPLORED_VISIBILITY;
+		return Config.FogOfWar && World.GetLoc(CurLocX, CurLocY).Visibility() <= Location.EXPLORED_VISIBILITY;
 	}
 }

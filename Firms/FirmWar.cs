@@ -114,7 +114,7 @@ public class FirmWar : Firm
 
         LastProcessBuildFrameNumber = Sys.Instance.FrameNumber;
 
-        if (Config.fast_build && NationId == NationArray.PlayerId)
+        if (Config.FastBuild && NationId == NationArray.PlayerId)
             BuildProgressInDays += 2.0;
 
         UnitInfo unitInfo = UnitRes[BuildUnitType];

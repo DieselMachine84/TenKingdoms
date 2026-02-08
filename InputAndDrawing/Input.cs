@@ -621,7 +621,7 @@ public partial class Renderer
                 continue;
             }
 
-            if (Config.disp_news_flag == Config.OPTION_DISPLAY_MAJOR_NEWS && !news.IsMajor())
+            if (Config.DisplayNewsType == Config.OPTION_DISPLAY_MAJOR_NEWS && !news.IsMajor())
             {
                 continue;
             }

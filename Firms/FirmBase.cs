@@ -48,7 +48,7 @@ public class FirmBase : Firm
         
         if (OverseerId != 0 && PrayPoints < GameConstants.MAX_PRAY_POINTS)
         {
-            if (Config.fast_build)
+            if (Config.FastBuild)
                 PrayPoints += Productivity / 10;
             else
                 PrayPoints += Productivity / 100;

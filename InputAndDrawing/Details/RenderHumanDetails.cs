@@ -132,7 +132,7 @@ public partial class Renderer
 
         if (unit.Rank != Unit.RANK_KING)
         {
-            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
+            if (unit.SpyId != 0 && unit.TrueNationId() == NationArray.PlayerId)
             {
                 DrawFieldPanel62(DetailsX1 + 208, screenY + 5);
                 PutText(FontSan, "Loyalty", DetailsX1 + 214, screenY + 8, -1, true);
@@ -149,14 +149,14 @@ public partial class Renderer
             }
         }
 
-        if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
+        if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.ShowAIInfo))
         {
             DrawFieldPanel62(DetailsX1 + 208, screenY + 34);
             PutText(FontSan, "Spying", DetailsX1 + 214, screenY + 37, -1, true);
             PutText(FontSan, SpyArray[unit.SpyId].SpySkill.ToString(), DetailsX1 + 307, screenY + 39, -1, true);
         }
 
-        if (Config.show_ai_info)
+        if (Config.ShowAIInfo)
         {
             DrawFieldPanel62(DetailsX1 + 208, screenY + 63);
             PutText(FontSan, "Unit ID", DetailsX1 + 214, screenY + 66, -1, true);

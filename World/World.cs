@@ -84,7 +84,7 @@ public class World
 			_lightningSignal = 110;
 		}
 
-		if (_lightningSignal == 106 && Config.weather_effect != 0)
+		if (_lightningSignal == 106 && GameConstants.WEATHER_EFFECT)
 		{
 			LightningStrike(Misc.Random(GameConstants.MapSize), Misc.Random(GameConstants.MapSize), 1);
 		}
@@ -102,7 +102,7 @@ public class World
 
 	private void ProcessVisibility()
 	{
-		if (!Config.fog_of_war)
+		if (!Config.FogOfWar)
 			return;
 
 		//TODO performance
@@ -129,12 +129,12 @@ public class World
 
 		MagicWeather.NextDay();
 
-		if (Weather.HasTornado() && Config.weather_effect != 0)
+		if (Weather.HasTornado() && GameConstants.WEATHER_EFFECT)
 		{
 			TornadoArray.AddTornado(Weather.TornadoLocX(GameConstants.MapSize), Weather.TornadoLocY(GameConstants.MapSize), 600);
 		}
 
-		if (Weather.IsQuake() && Config.random_event_frequency != Config.OPTION_NONE)
+		if (Weather.IsQuake() && Config.EarthquakeFrequency != Config.OPTION_NONE)
 		{
 			EarthQuake();
 		}
@@ -150,7 +150,7 @@ public class World
 	//TODO merge Unveil and Explore
 	public void Unveil(int locX1, int locY1, int locX2, int locY2)
 	{
-		if (Config.explore_whole_map)
+		if (Config.ExploreWholeMap)
 			return;
 
 		locX1 = Math.Max(0, locX1 - GameConstants.EXPLORE_RANGE);
@@ -162,7 +162,7 @@ public class World
 
 	public void Explore(int locX1, int locY1, int locX2, int locY2)
 	{
-		if (Config.explore_whole_map)
+		if (Config.ExploreWholeMap)
 			return;
 
 		for (int locY = locY1; locY <= locY2; locY++)
@@ -224,7 +224,7 @@ public class World
 	// always call unveil before visit //
 	public void Visit(int locX1, int locY1, int locX2, int locY2, int range, int extend = 0)
 	{
-		if (!Config.fog_of_war)
+		if (!Config.FogOfWar)
 			return;
 		
 		int left = Math.Max(0, locX1 - range);
@@ -1209,9 +1209,9 @@ public class World
 	private void FireSpread(Weather weather)
 	{
 		int rainSnowReduction = (weather.RainScale() > 0 || weather.SnowScale() > 0)
-			? Config.rain_reduce_fire_rate + (weather.RainScale() + weather.SnowScale()) / 4 : 0;
+			? GameConstants.RAIN_REDUCE_FIRE_RATE + (weather.RainScale() + weather.SnowScale()) / 4 : 0;
 
-		double flameDamage = (double)Config.fire_damage / InternalConstants.ATTACK_SLOW_DOWN;
+		double flameDamage = (double)GameConstants.FIRE_DAMAGE / InternalConstants.ATTACK_SLOW_DOWN;
 
 		// -------------update fire_level-----------
 		for (int locY = _scanFireY; locY < GameConstants.MapSize; locY += InternalConstants.SCAN_FIRE_DIST)
@@ -1266,37 +1266,38 @@ public class World
 						}
 					}
 
-					if (Config.fire_spread_rate > 0)
+					//TODO enable?
+					if (GameConstants.FIRE_SPREAD_RATE > 0)
 					{
 						// -------- normalize wind_speed between -WIND_SPREADFIRE*SPREAD_RATE to +WIND_SPREADFIRE*SPREAD_RATE -------
-						int windCos = (int)(weather.WindSpeed() * Math.Cos(weather.WindDirectionRadians()) / 100.0 * Config.fire_spread_rate *
-						                    Config.wind_spread_fire_rate);
-						int windSin = (int)(weather.WindSpeed() * Math.Sin(weather.WindDirectionRadians()) / 100.0 * Config.fire_spread_rate *
-						                    Config.wind_spread_fire_rate);
+						int windCos = (int)(weather.WindSpeed() * Math.Cos(weather.WindDirectionRadians()) / 100.0 * GameConstants.FIRE_SPREAD_RATE *
+						                    GameConstants.WIND_SPREAD_FIRE_RATE);
+						int windSin = (int)(weather.WindSpeed() * Math.Sin(weather.WindDirectionRadians()) / 100.0 * GameConstants.FIRE_SPREAD_RATE *
+						                    GameConstants.WIND_SPREAD_FIRE_RATE);
 
 						Location nearLoc;
 						// spread of north square
 						if (locY > 0 && (nearLoc = GetLoc(locX, locY - 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate + windSin, 0));
+							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE + windSin, 0));
 						}
 
 						// spread of south square
 						if (locY < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX, locY + 1)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate - windSin, 0));
+							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE - windSin, 0));
 						}
 
 						// spread of west square
 						if (locX > 0 && (nearLoc = GetLoc(locX - 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate - windCos, 0));
+							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE - windCos, 0));
 						}
 
 						// spread of east square
 						if (locX < GameConstants.MapSize - 1 && (nearLoc = GetLoc(locX + 1, locY)).Flammability() > 0 && nearLoc.FireStrength() <= 0)
 						{
-							nearLoc.AddFireStrength(Math.Max(Config.fire_spread_rate + windCos, 0));
+							nearLoc.AddFireStrength(Math.Max(GameConstants.FIRE_SPREAD_RATE + windCos, 0));
 						}
 					}
 
@@ -1306,7 +1307,7 @@ public class World
 						if (++fireValue > 100)
 							fireValue = 100;
 
-						flammability -= Config.fire_fade_rate;
+						flammability -= GameConstants.FIRE_FADE_RATE;
 						// if a plant on it then remove the plant, if flammability <= 0
 						if (location.IsPlant() && flammability <= 0)
 						{
@@ -1321,21 +1322,21 @@ public class World
 						if (flammability >= -30)
 						{
 							fireValue -= 2;
-							flammability -= Config.fire_fade_rate;
+							flammability -= GameConstants.FIRE_FADE_RATE;
 							if (flammability < -30)
 								flammability = -30;
 						}
 						else if (flammability >= -50)
 						{
 							fireValue -= 2;
-							flammability -= Config.fire_fade_rate;
+							flammability -= GameConstants.FIRE_FADE_RATE;
 							if (flammability < -50)
 								flammability = -50;
 						}
 						else
 						{
 							fireValue = -100;
-							flammability -= Config.fire_fade_rate;
+							flammability -= GameConstants.FIRE_FADE_RATE;
 							if (flammability < -100)
 								flammability = -100;
 						}
@@ -1355,7 +1356,7 @@ public class World
 						fireValue--;
 
 					// ---------- restore flammability ------------
-					if (flammability >= -30 && flammability < 50 && Misc.Random(100) < Config.fire_restore_prob)
+					if (flammability >= -30 && flammability < 50 && Misc.Random(100) < GameConstants.FIRE_RESTORE_PROB)
 						flammability++;
 				}
 

@@ -712,7 +712,7 @@ public partial class Renderer
                 Graphics.DrawBitmapScaled(skillTexture, skillIconX, skillIconY, _skillWidth, _skillHeight);
             }
 
-            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
+            if (unit.SpyId != 0 && (unit.TrueNationId() == NationArray.PlayerId || Config.ShowAIInfo))
             {
                 int spyIconX = skillIconX;
                 int spyIconY = skillTexture != IntPtr.Zero ? skillIconY + Scale(_skillHeight) + 1 : skillIconY;
@@ -867,7 +867,7 @@ public partial class Renderer
     
     private void DrawUnitPathsOnMainView(int layer)
     {
-        if ((Config.show_unit_path & 1) == 0)
+        if ((Config.ShowUnitPath & 1) == 0)
             return;
 
         for (int i = 0; i < _selectedUnits.Count; i++)
@@ -883,7 +883,7 @@ public partial class Renderer
                 continue;
 
             //TODO check this
-            if (!Config.show_ai_info && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
+            if (!Config.ShowAIInfo && NationArray.PlayerId != 0 && !unit.BelongsToNation(NationArray.PlayerId))
                 continue;
             
             if (unit.PathNodes.Count > 1)

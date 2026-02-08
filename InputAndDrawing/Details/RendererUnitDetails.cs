@@ -94,7 +94,7 @@ public partial class Renderer
                 PutText(FontSan, "Pick up", DetailsX1 + 16, DetailsY1 + 132 + dy, -1, true);
                 PutText(FontSan, ":", DetailsX1 + 79, DetailsY1 + 134 + dy, -1, true);
 
-                if (unit.IsOwn() || Config.show_ai_info)
+                if (unit.IsOwn() || Config.ShowAIInfo)
                 {
                     bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
                                                  _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
@@ -263,7 +263,7 @@ public partial class Renderer
             }
         }
 
-        if (spyId != 0 && (SpyArray[spyId].TrueNationId == NationArray.PlayerId || Config.show_ai_info))
+        if (spyId != 0 && (SpyArray[spyId].TrueNationId == NationArray.PlayerId || Config.ShowAIInfo))
         {
             int spyIconX = skillLevel != 0 ? drawX + 78 : drawX + 52;
             int spyIconY = skillLevel != 0 ? drawY + 12 : drawY + 6;
@@ -328,7 +328,7 @@ public partial class Renderer
                 Firm firm = FirmArray[firmId];
                 bool mouseOnViewStopButton = _mouseButtonX >= DetailsX1 + 170 && _mouseButtonX <= DetailsX1 + 275 &&
                                              _mouseButtonY >= DetailsY1 + 162 + dy && _mouseButtonY <= DetailsY1 + 183 + dy;
-                if (_leftMouseReleased && mouseOnViewStopButton && (isOwnTrader || Config.show_ai_info))
+                if (_leftMouseReleased && mouseOnViewStopButton && (isOwnTrader || Config.ShowAIInfo))
                 {
                     GoToLocation(firm.LocCenterX, firm.LocCenterY);
                 }

@@ -298,7 +298,7 @@ public class TerrainRes
 		LoadSubInfo();
 		LoadAnimationInfo();
 
-		ResourceIdx mapTiles = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.terrain_set}.RES");
+		ResourceIdx mapTiles = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.TerrainSet}.RES");
 		for (int i = 0; i < TOTAL_TERRAIN_TYPE; i++)
 		{
 			if (!String.IsNullOrEmpty(MapTileNames[i]))
@@ -337,7 +337,7 @@ public class TerrainRes
 		TerrainInfo terrainInfo = null;
 		int i = 0;
 
-		Database dbTerrain = new Database($"{Sys.GameDataFolder}/Resource/TERRAIN{Sys.Instance.Config.terrain_set}.RES");
+		Database dbTerrain = new Database($"{Sys.GameDataFolder}/Resource/TERRAIN{Sys.Instance.Config.TerrainSet}.RES");
 		TerrainCount = dbTerrain.RecordCount;
 		TerrainInfos = new TerrainInfo[TerrainCount];
 		for (i = 0; i < TerrainInfos.Length; i++)
@@ -351,7 +351,7 @@ public class TerrainRes
 			NWTypeMax[i] = 0;
 		}
 
-		ResourceDb terrainBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERN{Sys.Instance.Config.terrain_set}.RES");
+		ResourceDb terrainBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERN{Sys.Instance.Config.TerrainSet}.RES");
 
 		int firstNw = 0, firstNe = 0, firstSw = 0, firstSe = 0;
 		int firstNwSub = 0, firstNeSub = 0, firstSwSub = 0, firstSeSub = 0;
@@ -559,8 +559,8 @@ public class TerrainRes
 	private void LoadAnimationInfo()
 	{
 		TerrainAnimRec lastAnimRec = new TerrainAnimRec();
-		ResourceDb animationBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERA{Sys.Instance.Config.terrain_set}.RES");
-		Database dbTerAnim = new Database($"{Sys.GameDataFolder}/Resource/TERANM{Sys.Instance.Config.terrain_set}.RES");
+		ResourceDb animationBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_TERA{Sys.Instance.Config.TerrainSet}.RES");
+		Database dbTerAnim = new Database($"{Sys.GameDataFolder}/Resource/TERANM{Sys.Instance.Config.TerrainSet}.RES");
 
 		int count = dbTerAnim.RecordCount;
 

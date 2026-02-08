@@ -531,7 +531,7 @@ public abstract partial class Unit : Sprite
 			return;
 		}
 
-		if (Config.fog_of_war)
+		if (Config.FogOfWar)
 		{
 			if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 			{
@@ -2422,9 +2422,6 @@ public abstract partial class Unit : Sprite
 		if (CurPower > MaxPower)
 			CurPower = MaxPower;
 
-		if (Config.king_undie_flag && Rank == RANK_KING && NationId != 0 && !NationArray[NationId].IsAI())
-			HitPoints = MaxHitPoints;
-
 		if (NationId != 0 && IsVisible())
 			ThinkAggressiveAction();
 
@@ -2706,7 +2703,7 @@ public abstract partial class Unit : Sprite
 
 				//--------- explore land ----------//
 
-				if (!Config.explore_whole_map && IsOwn())
+				if (!Config.ExploreWholeMap && IsOwn())
 				{
 					int xLoc1 = Math.Max(0, newNextLocX - GameConstants.EXPLORE_RANGE);
 					int yLoc1 = Math.Max(0, newNextLocY - GameConstants.EXPLORE_RANGE);
@@ -2837,7 +2834,7 @@ public abstract partial class Unit : Sprite
 	
 	public override bool IsStealth()
 	{
-		return Config.fog_of_war && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[UnitType].Stealth;
+		return Config.FogOfWar && World.GetLoc(NextLocX, NextLocY).Visibility() < UnitRes[UnitType].Stealth;
 	}
 
 	public bool IsCivilian()
@@ -2888,7 +2885,7 @@ public abstract partial class Unit : Sprite
 
 	public virtual bool ShouldShowInfo()
 	{
-		if (Config.show_ai_info || IsOwn())
+		if (Config.ShowAIInfo || IsOwn())
 			return true;
         
 		if (NationArray.PlayerId != 0 && NationArray.Player.RevealedByPhoenix(NextLocX, NextLocY))
@@ -5482,7 +5479,7 @@ public abstract partial class Unit : Sprite
 
 			if (bestCamp != null)
 			{
-				if (Config.ai_aggressiveness > Config.OPTION_LOW)
+				if (Config.AIAggressiveness > Config.OPTION_LOW)
 					ForceMove = true;
 
 				Assign(bestCamp.LocX1, bestCamp.LocY1);
@@ -5557,7 +5554,7 @@ public abstract partial class Unit : Sprite
 				// if there is already an overseer there, just move close to the camp for protection
 				if (bestCamp.OverseerId != 0)
 				{
-					if (Config.ai_aggressiveness > Config.OPTION_LOW)
+					if (Config.AIAggressiveness > Config.OPTION_LOW)
 						ForceMove = true;
 
 					MoveTo(bestCamp.LocX1, bestCamp.LocY1);

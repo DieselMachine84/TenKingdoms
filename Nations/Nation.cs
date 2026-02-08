@@ -148,9 +148,6 @@ public class NationOld : NationBase
 
 	public override void ProcessAI()
 	{
-		if (Config.disable_ai_flag)
-			return;
-
 		//---- if the king has just been killed ----//
 
 		int nationRecno = NationId;
@@ -220,7 +217,7 @@ public class NationOld : NationBase
 	{
 		int[] intervalDaysArray = { 90, 30, 15, 15 };
 
-		int intervalDays = intervalDaysArray[Config.ai_aggressiveness - Config.OPTION_LOW];
+		int intervalDays = intervalDaysArray[Config.AIAggressiveness - Config.OPTION_LOW];
 
 		switch ((Info.TotalDays - NationId * 4) % intervalDays)
 		{
@@ -1153,7 +1150,7 @@ public class NationOld : NationBase
 		// to build the mine.
 		//-------------------------------------------//
 
-		if (!Config.explore_whole_map)
+		if (!Config.ExploreWholeMap)
 		{
 			int i;
 			for (i = 0; i < ai_town_array.Count; i++)
@@ -1163,7 +1160,7 @@ public class NationOld : NationBase
 				int rawDistance = Misc.points_distance(xLoc, yLoc, town.LocCenterX, town.LocCenterY);
 
 				if ((Info.GameDate - Info.GameStartDate).Days >
-				    rawDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
+				    rawDistance * (5 - Config.AIAggressiveness) / 5) // 3 to 5 / 5
 				{
 					break;
 				}
@@ -2172,7 +2169,7 @@ public class NationOld : NationBase
 		int actionRecno, rc = 0;
 		int thisSessionProcessCount = 0; // actions processed in this call session
 
-		int divider = 4 - Config.ai_aggressiveness; // the more nations there, the less process count
+		int divider = 4 - Config.AIAggressiveness; // the more nations there, the less process count
 		int nationRecno = NationId;
 		int maxSessionProcessCount = 70 / Math.Max(NationArray.NationCount, 1) / Math.Max(divider, 1);
 
@@ -3400,7 +3397,7 @@ public class NationOld : NationBase
 
 			if (!nation.IsAI()) // more aggressive towards human players
 			{
-				switch (Config.ai_aggressiveness)
+				switch (Config.AIAggressiveness)
 				{
 					case Config.OPTION_MODERATE:
 						curRating += 100;
@@ -3805,7 +3802,7 @@ public class NationOld : NationBase
 	{
 		//--- the scanning distance is determined by the AI aggressiveness setting ---//
 
-		int scanRangeX = 5 + Config.ai_aggressiveness * 2;
+		int scanRangeX = 5 + Config.AIAggressiveness * 2;
 		int scanRangeY = scanRangeX;
 
 		int xLoc1 = targetXLoc - scanRangeX;
@@ -4218,7 +4215,7 @@ public class NationOld : NationBase
 
 	public bool think_attack_monster()
 	{
-		if (Config.monster_type == Config.OPTION_MONSTER_NONE) // no monsters in the game
+		if (Config.MonsterType == Config.OPTION_MONSTER_NONE) // no monsters in the game
 			return false;
 
 		//--- if the AI has run out of money and is currently cheating, it will have a urgent need to attack monsters to get money ---//
@@ -4786,8 +4783,8 @@ public class NationOld : NationBase
 
 		//------- try to capture the town in their resistance order ----//
 
-		bool needToCheckDistance = !Config.explore_whole_map && (Info.GameDate - Info.GameStartDate).Days >
-			Math.Max(GameConstants.MapSize, GameConstants.MapSize) * (5 - Config.ai_aggressiveness) / 5; // 3 to 5 / 5
+		bool needToCheckDistance = !Config.ExploreWholeMap && (Info.GameDate - Info.GameStartDate).Days >
+			Math.Max(GameConstants.MapSize, GameConstants.MapSize) * (5 - Config.AIAggressiveness) / 5; // 3 to 5 / 5
 
 		foreach (CaptureTown captureTown in captureTownQueue.OrderByDescending(t => t.min_resistance))
 		{
@@ -4813,7 +4810,7 @@ public class NationOld : NationBase
 						ownTown.LocCenterX, ownTown.LocCenterY);
 
 					if ((Info.GameDate - Info.GameStartDate).Days >
-					    townDistance * (5 - Config.ai_aggressiveness) / 5) // 3 to 5 / 5
+					    townDistance * (5 - Config.AIAggressiveness) / 5) // 3 to 5 / 5
 					{
 						break;
 					}
@@ -5472,7 +5469,7 @@ public class NationOld : NationBase
 
 			if (!town.AITown)
 			{
-				switch (Config.ai_aggressiveness)
+				switch (Config.AIAggressiveness)
 				{
 					case Config.OPTION_MODERATE:
 						curRating += 100;
@@ -5530,7 +5527,7 @@ public class NationOld : NationBase
 	{
 		//--- the scanning distance is determined by the AI aggressiveness setting ---//
 
-		int scanRangeX = 5 + Config.ai_aggressiveness * 2;
+		int scanRangeX = 5 + Config.AIAggressiveness * 2;
 		int scanRangeY = scanRangeX;
 
 		int xLoc1 = targetXLoc - scanRangeX;
@@ -7060,7 +7057,7 @@ public class NationOld : NationBase
 	{
 		//-- only think this after the game has been running for at least one year --//
 
-		if (Config.ai_aggressiveness < Config.OPTION_HIGH) // only attack if aggressiveness >= high
+		if (Config.AIAggressiveness < Config.OPTION_HIGH) // only attack if aggressiveness >= high
 			return false;
 
 		if ((Info.GameDate - Info.GameStartDate).Days > 365)
@@ -7071,7 +7068,7 @@ public class NationOld : NationBase
 
 		//-- for high aggressiveness, it will check cash before attack, for very high aggressiveness, it won't check cash before attack ---//
 
-		if (Config.ai_aggressiveness < Config.OPTION_VERY_HIGH) // only attack if aggressiveness >= high
+		if (Config.AIAggressiveness < Config.OPTION_VERY_HIGH) // only attack if aggressiveness >= high
 		{
 			if (Cash > 2000 + 1000 * pref_cash_reserve / 100) // only attack if we run short of cash
 				return false;
@@ -7192,7 +7189,7 @@ public class NationOld : NationBase
 
 		//-- if AI aggressiveness > high, only deal against the player, but not other kingdoms ---//
 
-		if (Config.ai_aggressiveness >= Config.OPTION_HIGH)
+		if (Config.AIAggressiveness >= Config.OPTION_HIGH)
 		{
 			if (NationArray[enemyNationRecno].IsAI())
 				return 0;
@@ -7200,7 +7197,7 @@ public class NationOld : NationBase
 
 		//-- if AI aggressiveness is low, don't do this against the human player --//
 
-		else if (Config.ai_aggressiveness == Config.OPTION_LOW)
+		else if (Config.AIAggressiveness == Config.OPTION_LOW)
 		{
 			if (!NationArray[enemyNationRecno].IsAI())
 				return 0;
@@ -7267,10 +7264,10 @@ public class NationOld : NationBase
 
 		//-----------------------------------------------//
 
-		if (Config.ai_aggressiveness < Config.OPTION_HIGH)
+		if (Config.AIAggressiveness < Config.OPTION_HIGH)
 			return false;
 
-		if (Config.ai_aggressiveness == Config.OPTION_HIGH)
+		if (Config.AIAggressiveness == Config.OPTION_HIGH)
 		{
 			if (Misc.Random(10) != 0)
 				return false;
@@ -7327,7 +7324,7 @@ public class NationOld : NationBase
 
 		int compareRating;
 
-		if (Config.ai_aggressiveness == Config.OPTION_HIGH)
+		if (Config.AIAggressiveness == Config.OPTION_HIGH)
 			compareRating = 50;
 		else // OPTION_VERY_AGGRESSIVE
 			compareRating = 80;
@@ -7552,7 +7549,7 @@ public class NationOld : NationBase
 
 	public bool think_attack_enemy_firm()
 	{
-		if (Config.ai_aggressiveness < Config.OPTION_HIGH)
+		if (Config.AIAggressiveness < Config.OPTION_HIGH)
 			return false;
 
 		List<int> firmsToAttack = new List<int>();
@@ -8256,7 +8253,7 @@ public class NationOld : NationBase
 
 			if (!nation.IsAI())
 			{
-				switch (Config.ai_aggressiveness)
+				switch (Config.AIAggressiveness)
 				{
 					case Config.OPTION_LOW:
 						requestRating += 40; // don't go against the player too easily
@@ -8273,7 +8270,7 @@ public class NationOld : NationBase
 
 				//--- if the nation has plenty of cash, demand from it ----//
 
-				if (nation.Cash > Cash && Config.ai_aggressiveness >= Config.OPTION_HIGH)
+				if (nation.Cash > Cash && Config.AIAggressiveness >= Config.OPTION_HIGH)
 				{
 					requestRating -= (int)((nation.Cash - Cash) / 500.0);
 				}
@@ -8612,14 +8609,14 @@ public class NationOld : NationBase
 			{
 				//--------- declare war ---------//
 
-				if (Config.ai_aggressiveness >= Config.OPTION_HIGH || pref_peacefulness < 50)
+				if (Config.AIAggressiveness >= Config.OPTION_HIGH || pref_peacefulness < 50)
 				{
 					TalkRes.ai_send_talk_msg(talkMsg.to_nation_recno, NationId, TalkMsg.TALK_DECLARE_WAR);
 
 					//------- attack immediately --------//
 
-					if (Config.ai_aggressiveness >= Config.OPTION_VERY_HIGH ||
-					    (Config.ai_aggressiveness >= Config.OPTION_HIGH && pref_peacefulness < 50))
+					if (Config.AIAggressiveness >= Config.OPTION_VERY_HIGH ||
+					    (Config.AIAggressiveness >= Config.OPTION_HIGH && pref_peacefulness < 50))
 					{
 						int largestTownId = GetLargestTownId();
 						if (largestTownId != 0)
@@ -9040,8 +9037,7 @@ public class NationOld : NationBase
 
 		//------ if this is our biggest enemy do not cease fire -----//
 
-		if (Config.ai_aggressiveness == Config.OPTION_VERY_HIGH &&
-		    NationArray.MaxOverallNationId == withNationRecno)
+		if (Config.AIAggressiveness == Config.OPTION_VERY_HIGH && NationArray.MaxOverallNationId == withNationRecno)
 			return -1;
 
 		//------ if we're run short of money for war -----//
@@ -9348,7 +9344,7 @@ public class NationOld : NationBase
 
 		//---- don't surrender to the player if the player is already the most powerful nation ---//
 
-		if (!nation.IsAI() && Config.ai_aggressiveness >= Config.OPTION_HIGH)
+		if (!nation.IsAI() && Config.AIAggressiveness >= Config.OPTION_HIGH)
 		{
 			if (NationArray.MaxOverallNationId == nation.NationId)
 				return false;
@@ -9392,7 +9388,7 @@ public class NationOld : NationBase
 
 		//------ AI aggressiveness effects -------//
 
-		switch (Config.ai_aggressiveness)
+		switch (Config.AIAggressiveness)
 		{
 			case Config.OPTION_HIGH:
 				if (nation.IsAI()) // tend to accept AI kingdom offer easier

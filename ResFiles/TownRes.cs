@@ -381,7 +381,7 @@ public class TownRes
     {
         Database dbTownLayout = GameSet.OpenDb("TOWNLAY");
         TownLayouts = new TownLayout[dbTownLayout.RecordCount];
-        ResourceIdx groundImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.terrain_set}.RES");
+        ResourceIdx groundImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_TPICT{Sys.Instance.Config.TerrainSet}.RES");
 
         for (int i = 0; i < TownLayouts.Length; i++)
         {

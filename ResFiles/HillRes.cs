@@ -103,10 +103,10 @@ public class HillRes
     
     private void LoadHillBlockInfo()
     {
-	    Database dbHill = new Database($"{Sys.GameDataFolder}/Resource/HILL{Sys.Instance.Config.terrain_set}.RES");
+	    Database dbHill = new Database($"{Sys.GameDataFolder}/Resource/HILL{Sys.Instance.Config.TerrainSet}.RES");
 	    HillBlockInfos = new HillBlockInfo[dbHill.RecordCount];
 
-	    ResourceDb hillBlockBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_HILL{Sys.Instance.Config.terrain_set}.RES");
+	    ResourceDb hillBlockBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_HILL{Sys.Instance.Config.TerrainSet}.RES");
 	    MaxPatternId = 0;
 
 	    for (int i = 0; i < HillBlockInfos.Length; i++)

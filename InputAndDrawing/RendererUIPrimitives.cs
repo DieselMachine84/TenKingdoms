@@ -1352,7 +1352,7 @@ public partial class Renderer
 	{
 		Graphics.DrawBitmapScaled(_spyingTexture, spyIconX, spyIconY, _skillWidth, _skillHeight);
 
-		if (Config.show_ai_info)
+		if (Config.ShowAIInfo)
 		{
 			int iconWidth = Scale(_skillWidth);
 			int iconHeight = Scale(_skillHeight);

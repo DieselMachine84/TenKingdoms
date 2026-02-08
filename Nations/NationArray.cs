@@ -290,8 +290,8 @@ public class NationArray : DynArray<Nation>
 
 	public bool CanFormNewAINation()
 	{
-		return Config.new_nation_emerge &&
-		       AINationCount < Config.ai_nation_count && NationCount < GameConstants.MAX_NATION &&
+		return Config.NewNationEmerge &&
+		       AINationCount < Config.AINationCount && NationCount < GameConstants.MAX_NATION &&
 		       Info.GameDate > LastDelNationDate.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS) &&
 		       Info.GameDate > LastNewNationDate.AddDays(GameConstants.NEW_NATION_INTERVAL_DAYS);
 	}

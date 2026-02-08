@@ -6,7 +6,7 @@ public partial class Renderer
 {
     public void DrawMarketDetails(FirmMarket market)
     {
-        bool showInfo = Config.show_ai_info || market.OwnFirm() ||
+        bool showInfo = Config.ShowAIInfo || market.OwnFirm() ||
                         (NationArray.PlayerId != 0 && NationArray[market.NationId].GetRelation(NationArray.PlayerId).TradeTreaty);
         if (!showInfo)
         {
@@ -85,7 +85,7 @@ public partial class Renderer
             }
         }
 
-        if (Config.show_ai_info || market.OwnFirm())
+        if (Config.ShowAIInfo || market.OwnFirm())
         {
             string restockType = market.RestockType switch
             {

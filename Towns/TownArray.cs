@@ -115,7 +115,7 @@ public class TownArray : DynArray<Town>
 	
 	private void ThinkNewIndependentTown()
 	{
-		if (!Config.new_independent_town_emerge)
+		if (!Config.NewIndependentTownEmerge)
 			return;
 
 		if (Misc.Random(3) != 0) // 1/3 chance
@@ -225,7 +225,7 @@ public class TownArray : DynArray<Town>
 
 	public int IndependentTownResistance()
 	{
-		switch (Config.independent_town_resistance)
+		switch (Config.IndependentTownResistance)
 		{
 			case Config.OPTION_LOW:
 				return 40 + Misc.Random(20);

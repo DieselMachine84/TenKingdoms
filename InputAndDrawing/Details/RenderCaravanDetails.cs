@@ -16,7 +16,7 @@ public partial class Renderer
 
     public void HandleCaravanDetailsInput(UnitCaravan caravan)
     {
-        if (caravan.IsOwn() || Config.show_ai_info)
+        if (caravan.IsOwn() || Config.ShowAIInfo)
             HandleTradeStops(caravan, caravan.Stops, caravan.IsOwn());
     }
 }

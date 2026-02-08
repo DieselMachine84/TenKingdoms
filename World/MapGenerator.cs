@@ -44,7 +44,7 @@ public class MapGenerator
 		int minLandCount = 0;
 		int maxLandCount = 0;
 		int initHeightLimit = TerrainRes.MinHeight(TerrainTypeCode.TERRAIN_DARK_GRASS);
-		switch (Config.land_mass)
+		switch (Config.LandMass)
 		{
 			case Config.OPTION_LOW:
 				minLandCount = totalLoc * 4 / 10;
@@ -147,7 +147,7 @@ public class MapGenerator
 
 		CreatePlayerNation();
 
-		CreateAINations(Config.ai_nation_count);
+		CreateAINations(Config.AINationCount);
 		
 		CreatePregameObjects();
 	}
@@ -442,7 +442,7 @@ public class MapGenerator
 			for (int locX = 0; locX < GameConstants.MapSize; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (Config.explore_whole_map)
+				if (Config.ExploreWholeMap)
 					location.ExploredOn();
 				else
 					location.ExploredOff();
@@ -1446,17 +1446,17 @@ public class MapGenerator
 
 	private void CreatePlayerNation()
 	{
-		// if Config.race_id == 0, select a random race, but don't call Misc.Random()
-		int raceId = Config.race_id != 0 ? Config.race_id : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1;
-		Nation nation = NationArray.NewNation(NationBase.NATION_OWN, raceId, Config.player_nation_color);
-		NationArray.SetHumanName(nation.NationId, Config.player_name);
+		// if Config.RaceId == 0, select a random race, but don't call Misc.Random()
+		int raceId = Config.PlayerRaceId != 0 ? Config.PlayerRaceId : (int)(DateTime.Now.Ticks % GameConstants.MAX_RACE) + 1;
+		Nation nation = NationArray.NewNation(NationBase.NATION_OWN, raceId, Config.PlayerColor);
+		NationArray.SetHumanName(nation.NationId, Config.PlayerName);
 	}
 	
 	private void CreateAINations(int aiNationCount)
 	{
 		for (int i = 0; i < aiNationCount; i++)
 		{
-			int raceId = Config.random_start_up ? ConfigAdv.GetRandomRace() : NationArray.RandomUnusedRace();
+			int raceId = Config.RandomStartUp ? ConfigAdv.GetRandomRace() : NationArray.RandomUnusedRace();
 			NationArray.NewNation(NationBase.NATION_AI, raceId, NationArray.RandomUnusedColor());
 		}
 	}
@@ -1474,7 +1474,7 @@ public class MapGenerator
 		{
 			int initPop;
 
-			if (Config.random_start_up)
+			if (Config.RandomStartUp)
 				initPop = 25 + Misc.Random(26); // 25 to 50
 			else
 				initPop = 40;
@@ -1673,7 +1673,7 @@ public class MapGenerator
 
 			//----- create skilled units if config.random_start_up is 1 -----//
 
-			if (Config.random_start_up)
+			if (Config.RandomStartUp)
 			{
 				// the less population the villager has the more mobile units will be created
 				int createCount = (50 - town.Population) / 3;
@@ -1698,7 +1698,7 @@ public class MapGenerator
 
 			//------ create mines near towns in the beginning -----//
 
-			if (Config.start_up_has_mine_nearby && !nation.IsAI())
+			if (Config.RawResourceNearby && !nation.IsAI())
 				SiteArray.CreateRawSite(town.TownId);
 
 			//------ set ai base town -----//
@@ -1717,11 +1717,10 @@ public class MapGenerator
 
 		//------ create independent towns -------//
 
-		int startUpIndependentTown = Config.start_up_independent_town;
-		//TODO move constant to the config
-		int startUpMonsterFirm = 15;
+		int startUpIndependentTown = Config.IndependentTownCount;
+		int startUpMonsterFirm = Config.MonsterLairCount;
 
-		SiteArray.GenerateRawSite(Config.start_up_raw_site);
+		SiteArray.GenerateRawSite(Config.RawResourceCount);
 
 		int maxLoopCount = startUpIndependentTown + startUpMonsterFirm;
 
@@ -1744,7 +1743,7 @@ public class MapGenerator
 			if (startUpMonsterFirm > 0)
 			{
 				//------- create monsters --------//
-				if (Config.monster_type != Config.OPTION_MONSTER_NONE)
+				if (Config.MonsterType != Config.OPTION_MONSTER_NONE)
 				{
 					CreateMonsterLair();
 					startUpMonsterFirm--;

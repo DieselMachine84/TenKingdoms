@@ -63,7 +63,7 @@ public partial class Renderer
             if (selectedShip.UnitType == UnitConstants.UNIT_VESSEL || (unitsAndGoodsShip && FirmDetailsMode == FirmDetailsMode.ShipGoods))
                 DrawShipGoods(selectedShip);
 
-            if ((harbor.OwnFirm() || Config.show_ai_info) && unitsAndGoodsShip)
+            if ((harbor.OwnFirm() || Config.ShowAIInfo) && unitsAndGoodsShip)
             {
                 bool mouseOnUnitsButton = _mouseButtonX >= DetailsX1 + 337 && _mouseButtonX <= DetailsX1 + 406 &&
                                           _mouseButtonY >= DetailsY1 + 388 && _mouseButtonY <= DetailsY1 + 409;

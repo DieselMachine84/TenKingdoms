@@ -173,7 +173,7 @@ public class Town : IIdObject
 
 			//--- some independent towns have higher than normal combat level for its defender ---//
 
-			switch (Config.independent_town_resistance)
+			switch (Config.IndependentTownResistance)
 			{
 				case Config.OPTION_LOW:
 					TownCombatLevel = GameConstants.CITIZEN_COMBAT_LEVEL;
@@ -1689,7 +1689,7 @@ public class Town : IIdObject
 
 		long totalTrainDays;
 
-		if (Config.fast_build && NationId == NationArray.PlayerId)
+		if (Config.FastBuild && NationId == NationArray.PlayerId)
 			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS / 2;
 		else
 			totalTrainDays = GameConstants.TOTAL_TRAIN_DAYS;
@@ -4934,7 +4934,7 @@ public class Town : IIdObject
 	{
 		Nation ownNation = NationArray[NationId];
 
-		if (Config.explore_whole_map)
+		if (Config.ExploreWholeMap)
 			return false;
 
 		// only in the first half year of the game

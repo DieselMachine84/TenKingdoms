@@ -54,7 +54,7 @@ public partial class Renderer
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
         
-        string townName = town.Name + (Config.show_ai_info ? " (" + town.TownId + ")" : "");
+        string townName = town.Name + (Config.ShowAIInfo ? " (" + town.TownId + ")" : "");
         PutTextCenter(FontSan, townName, townNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         if (TownDetailsMode == TownDetailsMode.Spy)

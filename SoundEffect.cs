@@ -118,7 +118,7 @@ public class SECtrl
 
 	public void request(int soundEffect, RelVolume relVolume)
 	{
-		if (!audio_flag || !Config.sound_effect_flag)
+		if (!audio_flag || !Config.SoundEffectFlag)
 			return; // skip if audio cannot init wave device
 		if (relVolume.rel_vol >= InternalConstants.MIN_AUDIO_VOL && soundEffect != 0)
 			req_pool[soundEffect - 1].add_request(relVolume);
@@ -126,7 +126,7 @@ public class SECtrl
 
 	public void request(string soundName, RelVolume relVolume)
 	{
-		if (!audio_flag || !Config.sound_effect_flag)
+		if (!audio_flag || !Config.SoundEffectFlag)
 			return; // skip if audio cannot init wave device
 		int soundEffect = search_effect_id(soundName);
 		if (relVolume.rel_vol >= InternalConstants.MIN_AUDIO_VOL && soundEffect != 0)
@@ -136,7 +136,7 @@ public class SECtrl
 	// volume between 0 to 100; pan between -10,000=left, 10,000=right
 	public void flush() // output sound effect to volume
 	{
-		if (!audio_flag || !Config.sound_effect_flag)
+		if (!audio_flag || !Config.SoundEffectFlag)
 		{
 			clear();
 			return; // skip if audio cannot init wave device
@@ -194,7 +194,7 @@ public class SECtrl
 
 	public int immediate_sound(string soundName, RelVolume relVolume = null) // mainly for button sound, interface
 	{
-		if (!Config.sound_effect_flag)
+		if (!Config.SoundEffectFlag)
 			return 0;
 
 		//TODO audio

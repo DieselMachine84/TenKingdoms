@@ -791,7 +791,7 @@ public class FirmCamp : Firm
 
 		int[] intervalDaysArray = { 60, 30, 20, 10 };
 
-		int intervalDays = intervalDaysArray[Config.ai_aggressiveness - 1];
+		int intervalDays = intervalDaysArray[Config.AIAggressiveness - 1];
 
 		// do not call too often because when an AI action is queued, it will take a while to carry it out
 		if (Info.TotalDays % intervalDays == FirmId % intervalDays)
@@ -1658,9 +1658,9 @@ public class FirmCamp : Firm
 
 		//---- use all camps to attack the enemy if the enemy is a human player
 
-		else if (Config.ai_aggressiveness >= Config.OPTION_MODERATE && !targetNation.IsAI() && ourMilitary > enemyMilitary)
+		else if (Config.AIAggressiveness >= Config.OPTION_MODERATE && !targetNation.IsAI() && ourMilitary > enemyMilitary)
 		{
-			if (Config.ai_aggressiveness >= Config.OPTION_HIGH || ownNation.pref_peacefulness < 50)
+			if (Config.AIAggressiveness >= Config.OPTION_HIGH || ownNation.pref_peacefulness < 50)
 			{
 				useAllCamp = true;
 			}

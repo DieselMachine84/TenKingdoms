@@ -12,7 +12,7 @@ public class Sys
     public static Sys Instance { get; set; }
     public long FrameNumber { get; private set; }
     private int FrameOfDay { get; set; }
-    public int Speed { get; private set; } = 1;
+    private int Speed { get; set; } = 1;
     public bool GameEnded { get; private set; }
 
     private Graphics Graphics { get; set; }
@@ -123,12 +123,12 @@ public class Sys
         World = new World();
         
         int quakeFreq = Int16.MaxValue;
-        if (Config.random_event_frequency != 0)
+        if (Config.EarthquakeFrequency != 0)
         {
-            quakeFreq = 2000 - Config.random_event_frequency * 400 + Info.RandomSeed % 300;
+            quakeFreq = 2000 - Config.EarthquakeFrequency * 400 + Info.RandomSeed % 300;
         }
         Weather = new Weather();
-        Weather.InitDate(Info.GameYear, Info.GameMonth, Info.GameDay, Config.latitude, quakeFreq);
+        Weather.InitDate(Info.GameYear, Info.GameMonth, Info.GameDay, GameConstants.LATITUDE, quakeFreq);
         for (int i = 0; i < WeatherForecast.Length; i++)
         {
             WeatherForecast[i] = new Weather();
@@ -256,7 +256,7 @@ public class Sys
             SiteArray.NextDay();
             RebelArray.NextDay();
             SpyArray.NextDay();
-            if (Config.weather_effect != 0)
+            if (GameConstants.WEATHER_EFFECT)
                 SpriteRes.UpdateSpeed();
             TalkRes.next_day();
             RegionArray.NextDay();
@@ -382,6 +382,9 @@ public class Sys
             if (keyboardEvent.keysym.sym >= SDL.SDL_Keycode.SDLK_KP_0)
                 Speed = 0;
         }
+
+        if (Speed == 9)
+            Speed = 50;
 
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_LEFT)
             Renderer.ProcessInput(InputConstants.KeyLeftPressed, 0, 0);

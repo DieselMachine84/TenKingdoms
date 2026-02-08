@@ -213,7 +213,7 @@ public class SERes
 	public void sound(int xLoc, int yLoc, int frame, char subjectType, int subjectId,
 		string action, int objectType = 0, int objectId = 0)
 	{
-		if (!Config.sound_effect_flag)
+		if (!Config.SoundEffectFlag)
 			return;
 
 		//TODO rewrite
@@ -223,7 +223,7 @@ public class SERes
 		int relYLoc = yLoc;
 		PosVolume posVolume = new PosVolume(relXLoc, relYLoc);
 		RelVolume relVolume = new RelVolume(posVolume);
-		if (!Config.pan_control)
+		if (!Config.PanControl)
 			relVolume.ds_pan = 0;
 
 		if (relVolume.rel_vol < 5)
@@ -239,7 +239,7 @@ public class SERes
 	public void far_sound(int xLoc, int yLoc, int frame, char subjectType, int subjectId,
 		string action, int objectType = 0, int objectId = 0)
 	{
-		if (!Config.sound_effect_flag)
+		if (!Config.SoundEffectFlag)
 			return;
 
 		//TODO rewrite
@@ -250,7 +250,7 @@ public class SERes
 
 		PosVolume posVolume = new PosVolume(relXLoc, relYLoc);
 		RelVolume relVolume = new RelVolume(posVolume, 200, GameConstants.MapSize);
-		if (!Config.pan_control)
+		if (!Config.PanControl)
 			relVolume.ds_pan = 0;
 
 		if (relVolume.rel_vol < 80)

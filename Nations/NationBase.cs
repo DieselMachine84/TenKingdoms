@@ -196,11 +196,23 @@ public class NationBase : IIdObject
         double[] startUpCash = { 4000.0, 7000.0, 12000.0, 20000.0 };
 
         if (IsAI())
-            Cash = startUpCash[Config.ai_start_up_cash - 1];
+        {
+            Cash = startUpCash[Config.AIStartUpCash - 1];
+            if (Config.CustomAIStartUpCash > 0.0)
+                Cash = Config.CustomAIStartUpCash;
+        }
         else
-            Cash = startUpCash[Config.start_up_cash - 1];
+        {
+            Cash = startUpCash[Config.StartUpCash - 1];
+            if (Config.CustomStartUpCash > 0.0)
+                Cash = Config.CustomStartUpCash;
+        }
 
         Food = 5000.0; // startup food is 5000 for all nations in all settings
+        if (IsAI() && Config.CustomAIStartUpFood > 0.0)
+            Food = Config.CustomAIStartUpFood;
+        if (!IsAI() && Config.CustomStartUpFood > 0.0)
+            Food = Config.CustomStartUpFood;
 
         //---- initialize this nation's relation on other nations ----//
 
@@ -231,7 +243,7 @@ public class NationBase : IIdObject
         if (IsAI() && NationArray[otherNationId].IsAI())
             nationRelation.HasContact = true;
         else
-            nationRelation.HasContact = otherNationId == NationId || Config.explore_whole_map;
+            nationRelation.HasContact = otherNationId == NationId || Config.ExploreWholeMap;
 
         nationRelation.TradeTreaty = otherNationId == NationId;
 
@@ -1290,10 +1302,10 @@ public class NationBase : IIdObject
 
     private bool GoalDestroyMonsterAchieved()
     {
-        if (!Config.goal_destroy_monster) // this is not one of the required goals.
+        if (!Config.GoalDestroyMonsterFlag) // this is not one of the required goals.
             return false;
 
-        if (Config.monster_type == Config.OPTION_MONSTER_NONE)
+        if (Config.MonsterType == Config.OPTION_MONSTER_NONE)
             return false;
 
         int monsterFirmCount = 0;
@@ -1334,30 +1346,30 @@ public class NationBase : IIdObject
 
     private bool GoalPopulationAchieved()
     {
-        if (!Config.goal_population_flag) // this is not one of the required goals.
+        if (!Config.GoalPopulationFlag) // this is not one of the required goals.
             return false;
 
-        return AllPopulation() >= Config.goal_population;
+        return AllPopulation() >= Config.GoalPopulation;
     }
 
     private bool GoalEconomicScoreAchieved()
     {
-        if (!Config.goal_economic_score_flag)
+        if (!Config.GoalEconomicScoreFlag)
             return false;
 
         Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.GetRankScore(3, NationId) >= Config.goal_economic_score;
+        return Info.GetRankScore(3, NationId) >= Config.GoalEconomicScore;
     }
 
     private bool GoalTotalScoreAchieved()
     {
-        if (!Config.goal_total_score_flag)
+        if (!Config.GoalTotalScoreFlag)
             return false;
 
         Info.SetRankData(false); // 0-set all nations, not just those that have contact with us
 
-        return Info.GetTotalScore(NationId) >= Config.goal_total_score;
+        return Info.GetTotalScore(NationId) >= Config.GoalTotalScore;
     }
     
     private void CheckLose()
@@ -1717,7 +1729,7 @@ public class NationBase : IIdObject
 
     public int KillMonsterRankRating()
     {
-        if (Config.monster_type == Config.OPTION_MONSTER_NONE)
+        if (Config.MonsterType == Config.OPTION_MONSTER_NONE)
             return 0;
 
         if (NationArray.MaxKillMonsterScore == 0)

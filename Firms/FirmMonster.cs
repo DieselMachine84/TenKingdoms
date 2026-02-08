@@ -128,7 +128,7 @@ public class FirmMonster : Firm
 
 		//------ monster thinks about expansion -------//
 
-		if (Config.monster_type == Config.OPTION_MONSTER_OFFENSIVE)
+		if (Config.MonsterType == Config.OPTION_MONSTER_OFFENSIVE)
 		{
 			if (Info.TotalDays % 30 == FirmId % 30 && Misc.Random(3) == 0)
 				RecruitGeneral();

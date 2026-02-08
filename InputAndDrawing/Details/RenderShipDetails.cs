@@ -9,7 +9,7 @@ public partial class Renderer
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
         PutTextCenter(FontSan, ship.GetUnitName(), DetailsX1 + 2, DetailsY1 + 68, DetailsX2 - 4, DetailsY1 + 68);
 
-        if (!Config.show_ai_info && !ship.IsOwn())
+        if (!Config.ShowAIInfo && !ship.IsOwn())
             return;
 
         UnitInfo unitInfo = UnitRes[ship.UnitType];
@@ -100,7 +100,7 @@ public partial class Renderer
                 Graphics.DrawBitmapScaled(skillTexture, unitX + combatLevelWidth + 52, unitY + 8, _skillWidth, _skillHeight);
             }
 
-            if (unit.SpyId != 0 && (SpyArray[unit.SpyId].TrueNationId == NationArray.PlayerId || Config.show_ai_info))
+            if (unit.SpyId != 0 && (SpyArray[unit.SpyId].TrueNationId == NationArray.PlayerId || Config.ShowAIInfo))
             {
                 int spyIconX = unitX + combatLevelWidth + 52;
                 int spyIconY = unitY + 8;
@@ -158,7 +158,7 @@ public partial class Renderer
 
     public void HandleShipDetailsInput(UnitMarine ship)
     {
-        if (!ship.IsOwn() && !Config.show_ai_info)
+        if (!ship.IsOwn() && !Config.ShowAIInfo)
             return;
         
         UnitInfo unitInfo = UnitRes[ship.UnitType];
@@ -166,7 +166,7 @@ public partial class Renderer
         {
             bool mouseOnUnitsGoodsButton = _mouseButtonX >= DetailsX1 + 12 && _mouseButtonX <= DetailsX1 + 39 &&
                                            _mouseButtonY >= DetailsY1 + 56 && _mouseButtonY <= DetailsY1 + 83;
-            if (_leftMouseReleased && mouseOnUnitsGoodsButton && (ship.IsOwn() || Config.show_ai_info))
+            if (_leftMouseReleased && mouseOnUnitsGoodsButton && (ship.IsOwn() || Config.ShowAIInfo))
             {
                 UnitDetailsMode = UnitDetailsMode switch
                 {
@@ -218,7 +218,7 @@ public partial class Renderer
 
     private void HandleShipUnits(UnitMarine ship)
     {
-        if (!ship.IsOwn() && !Config.show_ai_info)
+        if (!ship.IsOwn() && !Config.ShowAIInfo)
             return;
         
         int mouseShipUnitId = GetMouseShipUnitId(ship);

@@ -23,7 +23,7 @@ public partial class Renderer
             Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         }
 
-        string firmName = firm.FirmName() + (Config.show_ai_info ? " (" + firm.FirmId + ")" : "");
+        string firmName = firm.FirmName() + (Config.ShowAIInfo ? " (" + firm.FirmId + ")" : "");
         PutTextCenter(FontSan, firmName, DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);
 
         if (FirmDetailsMode == FirmDetailsMode.Spy)
@@ -118,7 +118,7 @@ public partial class Renderer
                 PutText(FontSan, loyaltyText, DetailsX1 + 111, DetailsY1 + 156);
                 DrawLoyalty(DetailsX1 + 219, DetailsY1 + 156, overseer.Loyalty, overseer.TargetLoyalty, false);
                 
-                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.PlayerId || Config.show_ai_info))
+                if (overseer.SpyId != 0 && (overseer.TrueNationId() == NationArray.PlayerId || Config.ShowAIInfo))
                     DrawSpyIcon(DetailsX1 + 111 + FontSan.TextWidth(leadershipText) + 2, DetailsY1 + 132, overseer.TrueNationId());
             }
         }

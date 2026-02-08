@@ -189,7 +189,7 @@ public class PlantRes
 
     private void LoadPlantInfo()
     {
-        Database dbPlant = new Database($"{Sys.GameDataFolder}/Resource/PLANT{Sys.Instance.Config.terrain_set}.RES");
+        Database dbPlant = new Database($"{Sys.GameDataFolder}/Resource/PLANT{Sys.Instance.Config.TerrainSet}.RES");
         PlantInfos = new PlantInfo[dbPlant.RecordCount];
 
         for (int i = 0; i < PlantInfos.Length; i++)
@@ -234,8 +234,8 @@ public class PlantRes
 
     private void LoadPlantBitmap()
     {
-        ResourceDb plantBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_PLANT{Sys.Instance.Config.terrain_set}.RES");
-        Database dbPlantBitmap = new Database($"{Sys.GameDataFolder}/Resource/PLANTBM{Sys.Instance.Config.terrain_set}.RES");
+        ResourceDb plantBitmaps = new ResourceDb($"{Sys.GameDataFolder}/Resource/I_PLANT{Sys.Instance.Config.TerrainSet}.RES");
+        Database dbPlantBitmap = new Database($"{Sys.GameDataFolder}/Resource/PLANTBM{Sys.Instance.Config.TerrainSet}.RES");
         PlantBitmaps = new PlantBitmap[dbPlantBitmap.RecordCount];
         _scanIdArray = new int[PlantBitmaps.Length];
 

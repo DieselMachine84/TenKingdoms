@@ -495,7 +495,7 @@ public abstract class Firm : IIdObject
 		else
 			HitPoints++;
 
-		if (Config.fast_build && NationId == NationArray.PlayerId)
+		if (Config.FastBuild && NationId == NationArray.PlayerId)
 			HitPoints += 10;
 
 		//----- increase skill level of the builder unit -----//
@@ -692,7 +692,7 @@ public abstract class Firm : IIdObject
 
 	public virtual bool ShouldShowInfo()
 	{
-		if (Config.show_ai_info || OwnFirm() || PlayerSpyCount > 0)
+		if (Config.ShowAIInfo || OwnFirm() || PlayerSpyCount > 0)
 			return true;
 
 		//------ if the builder is a spy of the player ------//
