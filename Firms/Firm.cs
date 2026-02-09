@@ -672,7 +672,7 @@ public abstract class Firm : IIdObject
 
 		foreach (Town town in TownArray)
 		{
-			int townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, LocCenterX, LocCenterY);
+			int townDistance = Misc.PointsDistance(town.LocCenterX, town.LocCenterY, LocCenterX, LocCenterY);
 
 			if (townDistance < minTownDistance)
 			{
@@ -2449,7 +2449,7 @@ public abstract class Firm : IIdObject
 				continue;
 			}
 
-			int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, LocCenterX, LocCenterY);
+			int curDist = Misc.PointsDistance(unit.NextLocX, unit.NextLocY, LocCenterX, LocCenterY);
 			if (curDist < minDist)
 			{
 				builderId = unit.SpriteId;
@@ -3191,7 +3191,7 @@ public abstract class Firm : IIdObject
 			if (firm.NationId != NationId || firm.FirmType != FIRM_CAMP)
 				continue;
 
-			int curDistance = Misc.points_distance(LocCenterX, LocCenterY, firm.LocCenterX, firm.LocCenterY);
+			int curDistance = Misc.PointsDistance(LocCenterX, LocCenterY, firm.LocCenterX, firm.LocCenterY);
 
 			//--- only attack camps within 15 location distance to this firm ---//
 

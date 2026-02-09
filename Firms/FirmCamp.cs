@@ -1004,7 +1004,7 @@ public class FirmCamp : Firm
 
 				if (firmCamp.ShouldCloseFlag && (firmCamp.OverseerId != 0 || firmCamp.Workers.Count > 0))
 				{
-					int curRating = 100 - Misc.points_distance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
+					int curRating = 100 - Misc.PointsDistance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 
 					if (curRating > bestRating)
 					{
@@ -1898,7 +1898,7 @@ public class FirmCamp : Firm
 			{
 				if (firmCamp.Workers[j].RaceId == overseer.RaceId)
 				{
-					int distance = Misc.points_distance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
+					int distance = Misc.PointsDistance(LocCenterX, LocCenterY, firmCamp.LocCenterX, firmCamp.LocCenterY);
 					if (distance < bestDistance)
 					{
 						bestDistance = distance;

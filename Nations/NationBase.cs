@@ -1142,7 +1142,7 @@ public class NationBase : IIdObject
         {
             if (unit.UnitType == UnitConstants.UNIT_PHOENIX && unit.NationId == NationId)
             {
-                if (Misc.points_distance(locX, locY, unit.NextLocX, unit.NextLocY) <= effectiveRange)
+                if (Misc.PointsDistance(locX, locY, unit.NextLocX, unit.NextLocY) <= effectiveRange)
                 {
                     return true;
                 }

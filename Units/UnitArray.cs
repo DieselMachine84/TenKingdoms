@@ -1240,7 +1240,7 @@ public class UnitArray : SpriteArray
 			    bool found = false;
 			    for (int j = 1; j <= CHECK_SEA_SIZE; j++, totalCheck++)
 			    {
-				    Misc.cal_move_around_a_point(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION, out int xShift, out int yShift);
+				    Misc.MoveAroundAPoint(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION, out int xShift, out int yShift);
 
 				    if (j >= CHECK_SEA_SIZE)
 					    j = 1;
@@ -1270,7 +1270,7 @@ public class UnitArray : SpriteArray
 				    //--------------------------------------------------------------------//
 				    for (int k = 2; k <= 9; k++)
 				    {
-					    Misc.cal_move_around_a_point(k, 3, 3, out xShift, out yShift);
+					    Misc.MoveAroundAPoint(k, 3, 3, out xShift, out yShift);
 					    int checkLocX = seaLocX + xShift;
 					    int checkLocY = seaLocY + yShift;
 					    if (!Misc.IsLocationValid(checkLocX, checkLocY))
@@ -1581,7 +1581,7 @@ public class UnitArray : SpriteArray
 					    if (++k > countLimit)
 						    k = 1;
 
-					    Misc.cal_move_around_a_point(k, TRY_SIZE, TRY_SIZE, out int xShift, out int yShift);
+					    Misc.MoveAroundAPoint(k, TRY_SIZE, TRY_SIZE, out int xShift, out int yShift);
 					    int checkLocX = landX + xShift;
 					    int checkLocY = landY + yShift;
 					    if (!Misc.IsLocationValid(checkLocX, checkLocY))

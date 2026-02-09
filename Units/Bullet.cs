@@ -311,7 +311,7 @@ public class Bullet : Sprite
 
 	private double AttenuatedDamage(int curX, int curY)
 	{
-		int distance = Misc.points_distance(curX, curY, TargetLocX * InternalConstants.CellWidth, TargetLocY * InternalConstants.CellHeight);
+		int distance = Misc.PointsDistance(curX, curY, TargetLocX * InternalConstants.CellWidth, TargetLocY * InternalConstants.CellHeight);
 		// damage drops from AttackDamage to AttackDamage / 2, as range drops from 0 to DamageRadius
 		if (distance > DamageRadius)
 			return 0.0;

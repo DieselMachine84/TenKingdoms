@@ -42,7 +42,7 @@ public class FirmFactory : Firm
 		{
 			Firm firm = FirmArray[LinkedFirms[i]];
 
-			int firmDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, LocCenterX, LocCenterY);
+			int firmDistance = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, LocCenterX, LocCenterY);
 
 			if (firm.FirmType == FIRM_MINE)
 			{

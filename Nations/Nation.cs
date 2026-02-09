@@ -1157,7 +1157,7 @@ public class NationOld : NationBase
 			{
 				Town town = TownArray[ai_town_array[i]];
 
-				int rawDistance = Misc.points_distance(xLoc, yLoc, town.LocCenterX, town.LocCenterY);
+				int rawDistance = Misc.PointsDistance(xLoc, yLoc, town.LocCenterX, town.LocCenterY);
 
 				if ((Info.GameDate - Info.GameStartDate).Days >
 				    rawDistance * (5 - Config.AIAggressiveness) / 5) // 3 to 5 / 5
@@ -2152,7 +2152,7 @@ public class NationOld : NationBase
 
 			if (actionNode.action_mode == ACTION_AI_BUILD_FIRM && actionNode.action_para == firmId)
 			{
-				if (Misc.points_distance(actionNode.action_x_loc, actionNode.action_y_loc,
+				if (Misc.PointsDistance(actionNode.action_x_loc, actionNode.action_y_loc,
 					    xLoc, yLoc) <= InternalConstants.EFFECTIVE_FIRM_TOWN_DISTANCE)
 				{
 					return true;
@@ -2661,7 +2661,7 @@ public class NationOld : NationBase
 
 				if (unit.Skill.SkillId == skillId && unit.CurAction != Sprite.SPRITE_ATTACK && unit.AIActionId == 0)
 				{
-					int curDist = Misc.points_distance(unit.NextLocX, unit.NextLocY, destX, destY);
+					int curDist = Misc.PointsDistance(unit.NextLocX, unit.NextLocY, destX, destY);
 
 					if (curDist < minDist)
 					{
@@ -2764,7 +2764,7 @@ public class NationOld : NationBase
 				continue;
 
 
-			int curFirmDist = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, destX, destY);
+			int curFirmDist = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, destX, destY);
 
 			//------- check units in the inn ---------//
 
@@ -2839,7 +2839,7 @@ public class NationOld : NationBase
 
 			//--------------------------------------//
 
-			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destX, destY);
+			int curDist = Misc.PointsDistance(town.LocCenterX, town.LocCenterY, destX, destY);
 
 			int curRating = 100 - 100 * curDist / Config.MapSize;
 
@@ -2931,7 +2931,7 @@ public class NationOld : NationBase
 
 			//--- get the distance beteween town & the destination firm ---//
 
-			int curDist = Misc.points_distance(town.LocCenterX, town.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
+			int curDist = Misc.PointsDistance(town.LocCenterX, town.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
 
 			int curRating = 100 - 100 * curDist / Config.MapSize;
 
@@ -3024,7 +3024,7 @@ public class NationOld : NationBase
 
 			//-----------------------------------//
 
-			int curDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
+			int curDistance = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, destFirm.LocCenterX, destFirm.LocCenterY);
 
 			int curRating = 100 - 100 * curDistance / Config.MapSize;
 
@@ -3252,7 +3252,7 @@ public class NationOld : NationBase
 			if (firm.FirmType != firmId || firm.NationId == NationId)
 				continue;
 
-			int curDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, xLoc, yLoc);
+			int curDistance = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, xLoc, yLoc);
 
 			if (curDistance < minDistance)
 				minDistance = curDistance;
@@ -3475,7 +3475,7 @@ public class NationOld : NationBase
 			AttackCamp attackCamp = new AttackCamp();
 			attackCamp.firm_recno = leadAttackCampRecno;
 			attackCamp.combat_level = firmCamp.TotalCombatLevel();
-			attackCamp.distance = Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
+			attackCamp.distance = Misc.PointsDistance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
 			attack_camps.Add(attackCamp);
 		}
 
@@ -3526,7 +3526,7 @@ public class NationOld : NationBase
 			AttackCamp attackCamp = new AttackCamp();
 			attackCamp.firm_recno = firmRecno;
 			attackCamp.combat_level = firmCamp.TotalCombatLevel();
-			attackCamp.distance = Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
+			attackCamp.distance = Misc.PointsDistance(firmCamp.LocCenterX, firmCamp.LocCenterY, targetXLoc, targetYLoc);
 			attack_camps.Add(attackCamp);
 		}
 
@@ -3734,7 +3734,7 @@ public class NationOld : NationBase
 
 		for (int i = 2; i < scanRange * scanRange; i++)
 		{
-			Misc.cal_move_around_a_point(i, scanRange, scanRange, out xOffset, out yOffset);
+			Misc.MoveAroundAPoint(i, scanRange, scanRange, out xOffset, out yOffset);
 
 			int xLoc = targetXLoc + xOffset;
 			int yLoc = targetYLoc + yOffset;
@@ -4122,7 +4122,7 @@ public class NationOld : NationBase
 				continue;
 
 			int distanceFromAttacker =
-				Misc.points_distance(firmCamp.LocCenterX, firmCamp.LocCenterY, attackerXLoc, attackerYLoc);
+				Misc.PointsDistance(firmCamp.LocCenterX, firmCamp.LocCenterY, attackerXLoc, attackerYLoc);
 			if (distanceFromAttacker > Config.MapSize / 2)
 				continue;
 
@@ -4290,7 +4290,7 @@ public class NationOld : NationBase
 
 			int mobileCombatLevel = ai_evaluate_target_combat_level(firm.LocCenterX, firm.LocCenterY, firm.NationId);
 
-			int curRating = 3 * Misc.points_distance(largestTown.LocCenterX, largestTown.LocCenterY,
+			int curRating = 3 * Misc.PointsDistance(largestTown.LocCenterX, largestTown.LocCenterY,
 				firm.LocCenterX, firm.LocCenterY);
 
 			int combatLevel = mobileCombatLevel + ((FirmMonster)firm).TotalCombatLevel();
@@ -4806,7 +4806,7 @@ public class NationOld : NationBase
 				{
 					Town ownTown = TownArray[ai_town_array[j]];
 
-					int townDistance = Misc.points_distance(targetTown.LocCenterX, targetTown.LocCenterY,
+					int townDistance = Misc.PointsDistance(targetTown.LocCenterX, targetTown.LocCenterY,
 						ownTown.LocCenterX, ownTown.LocCenterY);
 
 					if ((Info.GameDate - Info.GameStartDate).Days >
@@ -6224,7 +6224,7 @@ public class NationOld : NationBase
 
 		for (int i = 2; i < Config.MapSize * Config.MapSize; i++)
 		{
-			Misc.cal_move_around_a_point(i, Config.MapSize, Config.MapSize, out int xOffset, out int yOffset);
+			Misc.MoveAroundAPoint(i, Config.MapSize, Config.MapSize, out int xOffset, out int yOffset);
 
 			xLoc = homeXLoc + xOffset;
 			yLoc = homeYLoc + yOffset;
@@ -6717,7 +6717,7 @@ public class NationOld : NationBase
 					continue;
 
 				int curRating = overseerUnit.Loyalty * 2 +
-				                Misc.points_distance(firm.LocCenterX, firm.LocCenterY, loc_x1, loc_y1);
+				                Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, loc_x1, loc_y1);
 
 				if (curRating < bestRating)
 				{
@@ -6756,7 +6756,7 @@ public class NationOld : NationBase
 				continue;
 
 			int curRating = overseerUnit.Loyalty * 2 +
-			                Misc.points_distance(firm.LocCenterX, firm.LocCenterY, loc_x1, loc_y1);
+			                Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, loc_x1, loc_y1);
 
 			if (curRating < bestRating)
 			{

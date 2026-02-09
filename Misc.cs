@@ -4,13 +4,14 @@ using System.Text;
 
 namespace TenKingdoms;
 
-public class Misc
+public static class Misc
 {
-    public const int MOVE_AROUND_TABLE_SIZE = 900;
+    private const int MOVE_AROUND_TABLE_SIZE = 900;
 
-    private static int[] move_around_table_x = new int[MOVE_AROUND_TABLE_SIZE];
-    private static int[] move_around_table_y = new int[MOVE_AROUND_TABLE_SIZE];
-    private static int move_around_table_size;
+    private static readonly int[] MoveAroundTableX = new int[MOVE_AROUND_TABLE_SIZE];
+    private static readonly int[] MoveAroundTableY = new int[MOVE_AROUND_TABLE_SIZE];
+    private static int moveAroundTableSize;
+    private static string[] RomanNumbers = new string[] { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
 
     public static bool freeze_seed;
     private static int random_seed;
@@ -23,7 +24,7 @@ public class Misc
     static Misc()
     {
         StartTicks = DateTime.Now.Ticks;
-        construct_move_around_table();
+        ConstructMoveAroundTable();
     }
 
     public static void set_random_seed(int randomSeed)
@@ -111,12 +112,9 @@ public class Misc
         }
     }
 
-    public static int points_distance(int x1, int y1, int x2, int y2)
+    public static int PointsDistance(int x1, int y1, int x2, int y2)
     {
-        int x = Math.Abs(x1 - x2);
-        int y = Math.Abs(y1 - y2);
-
-        return Math.Max(x, y);
+        return Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
     }
 
     public static int RectsDistance(int obj1LocX1, int obj1LocY1, int obj1LocX2, int obj1LocY2,
@@ -154,7 +152,8 @@ public class Misc
     
     public static bool AreTownAndFirmLinked(Town town, Firm firm)
     {
-        return AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2, firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
+        return AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+            firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2);
     }
 
     public static bool AreTownAndFirmLinked(int townLocX1, int townLocY1, int townLocX2, int townLocY2,
@@ -189,7 +188,8 @@ public class Misc
 
     public static bool AreTownsLinked(Town town1, Town town2)
     {
-        return AreTownsLinked(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2, town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2);
+        return AreTownsLinked(town1.LocX1, town1.LocY1, town1.LocX2, town1.LocY2,
+            town2.LocX1, town2.LocY1, town2.LocX2, town2.LocY2);
     }
 
     public static bool AreTownsLinked(int town1LocX1, int town1LocY1, int town1LocX2, int town1LocY2,
@@ -204,7 +204,8 @@ public class Misc
             town2LocX1, town2LocY1, town2LocX2, town2LocY2) <= InternalConstants.EFFECTIVE_TOWN_TOWN_DISTANCE;
     }
 
-    public static void cal_move_around_a_point(int num, int width, int height, out int xShift, out int yShift)
+    //TODO rewrite
+    public static void MoveAroundAPoint(int num, int width, int height, out int xShift, out int yShift)
     {
         int maxSqtSize = (width > height) ? height + 1 : width + 1;
         //short num2 = num%(maxSqtSize*maxSqtSize) + 1;
@@ -218,16 +219,16 @@ public class Misc
 
         if (num2 <= MOVE_AROUND_TABLE_SIZE)
         {
-            xShift = move_around_table_x[num2 - 1];
-            yShift = move_around_table_y[num2 - 1];
+            xShift = MoveAroundTableX[num2 - 1];
+            yShift = MoveAroundTableY[num2 - 1];
         }
         else
         {
-            cal_move_around_a_point_v2(num, width, height, out xShift, out yShift);
+            MoveAroundAPointV2(num, width, height, out xShift, out yShift);
         }
     }
 
-    public static void cal_move_around_a_point_v2(int num, int width, int height, out int xShift, out int yShift)
+    private static void MoveAroundAPointV2(int num, int width, int height, out int xShift, out int yShift)
     {
         int maxSqtSize = (width > height) ? height + 1 : width + 1;
         //short num2 = num%(maxSqtSize*maxSqtSize) + 1;
@@ -241,7 +242,6 @@ public class Misc
 
         int sqtCount = 1;
 
-        //TODO Strange constant
         while (sqtCount < Config.MapSize + 10) // the MAX. size of the map is 200x200
         {
             if (num2 <= sqtCount * sqtCount)
@@ -295,44 +295,40 @@ public class Misc
             yShift = (yMag > filter) ? filter : yMag;
     }
 
-    private static void construct_move_around_table()
+    private static void ConstructMoveAroundTable()
     {
-        if (move_around_table_size == MOVE_AROUND_TABLE_SIZE)
+        if (moveAroundTableSize == MOVE_AROUND_TABLE_SIZE)
             return; // table already created
 
         for (int i = 0; i < MOVE_AROUND_TABLE_SIZE; ++i)
         {
-            int xShift, yShift;
-            cal_move_around_a_point_v2(i, MOVE_AROUND_TABLE_SIZE, MOVE_AROUND_TABLE_SIZE,
-                out xShift, out yShift);
-            move_around_table_x[i] = xShift;
-            move_around_table_y[i] = yShift;
+            MoveAroundAPointV2(i, MOVE_AROUND_TABLE_SIZE, MOVE_AROUND_TABLE_SIZE, out int xShift, out int yShift);
+            MoveAroundTableX[i] = xShift;
+            MoveAroundTableY[i] = yShift;
         }
 
-        move_around_table_size = MOVE_AROUND_TABLE_SIZE;
+        moveAroundTableSize = MOVE_AROUND_TABLE_SIZE;
     }
 
-    public static string roman_number(int inNum)
+    public static string RomanNumber(int inNum)
     {
-        string[] roman_number_array = new string[] { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
-
-        string str = string.Empty;
+        string result = string.Empty;
 
         if (inNum > 100)
         {
-            str += roman_number_array[inNum / 100 - 1];
+            result += RomanNumbers[inNum / 100 - 1];
             inNum = inNum - inNum / 100 * 100;
         }
 
         if (inNum > 10)
         {
-            str += roman_number_array[(inNum - 1) / 10 - 1];
+            result += RomanNumbers[(inNum - 1) / 10 - 1];
             inNum = inNum - (inNum - 1) / 10 * 10;
         }
 
-        str += roman_number_array[inNum - 1];
+        result += RomanNumbers[inNum - 1];
 
-        return str;
+        return result;
     }
 
     public static int ToInt32(char[] chars)

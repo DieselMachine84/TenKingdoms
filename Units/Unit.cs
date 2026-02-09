@@ -1061,7 +1061,7 @@ public abstract partial class Unit : Sprite
 			//----------------------------------------------------------------------------------------//
 			// Checking condition to do casting power or resume action
 			//----------------------------------------------------------------------------------------//
-			if (Misc.points_distance(CurLocX, CurLocY, ActionLocX2, ActionLocY2) <= UnitConstants.DO_CAST_POWER_RANGE)
+			if (Misc.PointsDistance(CurLocX, CurLocY, ActionLocX2, ActionLocY2) <= UnitConstants.DO_CAST_POWER_RANGE)
 			{
 				if (NextLocX != ActionLocX2 || NextLocY != ActionLocY2)
 				{
@@ -1377,7 +1377,7 @@ public abstract partial class Unit : Sprite
 				int regionId = World.GetLoc(NextLocX, NextLocY).RegionId;
 				for (int i = 2; i <= 9; i++)
 				{
-					Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+					Misc.MoveAroundAPoint(i, 3, 3, out int xShift, out int yShift);
 					int checkLocX = shipLocX + xShift;
 					int checkLocY = shipLocY + yShift;
 					if (!Misc.IsLocationValid(checkLocX, checkLocY))
@@ -1400,7 +1400,7 @@ public abstract partial class Unit : Sprite
 		else
 		{
 			//------------ offset location is given, move there directly ----------//
-			Misc.cal_move_around_a_point(miscNo, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(miscNo, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
 			resultLocX = destLocX + xShift;
 			resultLocY = destLocY + yShift;
 		}
@@ -1815,7 +1815,7 @@ public abstract partial class Unit : Sprite
 		Stop(); // new order
 
 		//------------- do searching if necessary -------------//
-		if (Misc.points_distance(NextLocX, NextLocY, castLocX, castLocY) > UnitConstants.DO_CAST_POWER_RANGE)
+		if (Misc.PointsDistance(NextLocX, NextLocY, castLocX, castLocY) > UnitConstants.DO_CAST_POWER_RANGE)
 			Search(castLocX, castLocY, 1);
 
 		//----------- set action to build the firm -----------//
@@ -2935,7 +2935,7 @@ public abstract partial class Unit : Sprite
 
 			if (unitInfo.UnitClass == UnitConstants.UNIT_CLASS_WEAPON && WeaponVersion > 1)
 			{
-				result += " " + Misc.roman_number(WeaponVersion);
+				result += " " + Misc.RomanNumber(WeaponVersion);
 			}
 
 			if (unitInfo.UnitClass != UnitConstants.UNIT_CLASS_GOD) // God doesn't have any series no.
@@ -3125,7 +3125,7 @@ public abstract partial class Unit : Sprite
 		GetCurLoc(out int locX, out int locY);
 		leaderUnit.GetCurLoc(out int leaderLocX, out int leaderLocY);
 
-		if (leaderLocX >= 0 && Misc.points_distance(locX, locY, leaderLocX, leaderLocY) <= GameConstants.EFFECTIVE_LEADING_DISTANCE)
+		if (leaderLocX >= 0 && Misc.PointsDistance(locX, locY, leaderLocX, leaderLocY) <= GameConstants.EFFECTIVE_LEADING_DISTANCE)
 			return true;
 
 		return false;
@@ -4269,7 +4269,7 @@ public abstract partial class Unit : Sprite
 
 		Unit targetUnit = UnitArray[ActionPara2];
 
-		int curDistance = Misc.points_distance(targetUnit.NextLocX, targetUnit.NextLocY, OriginalTargetLocX, OriginalTargetLocY);
+		int curDistance = Misc.PointsDistance(targetUnit.NextLocX, targetUnit.NextLocY, OriginalTargetLocX, OriginalTargetLocY);
 
 		if (curDistance > UnitConstants.AUTO_GUARD_CHASE_ATTACK_DISTANCE)
 		{
@@ -4438,7 +4438,7 @@ public abstract partial class Unit : Sprite
 
 		for (int i = 2; i < attackScanRange * attackScanRange; i++)
 		{
-			Misc.cal_move_around_a_point(i, attackScanRange, attackScanRange, out int xOffset, out int yOffset);
+			Misc.MoveAroundAPoint(i, attackScanRange, attackScanRange, out int xOffset, out int yOffset);
 
 			int locX = curLocX + xOffset;
 			int locY = curLocY + yOffset;
@@ -4602,7 +4602,7 @@ public abstract partial class Unit : Sprite
 			if (town.RegionId != regionId)
 				continue;
 
-			int curDistance = Misc.points_distance(curLocX, curLocY, town.LocCenterX, town.LocCenterY);
+			int curDistance = Misc.PointsDistance(curLocX, curLocY, town.LocCenterX, town.LocCenterY);
 
 			if (curDistance < 10) // no need to move if the unit is already close enough to the town.
 				return;
@@ -5085,7 +5085,7 @@ public abstract partial class Unit : Sprite
 			if (bestFirm != null)
 			{
 				if (bestFirm.FirmType == Firm.FIRM_CAMP && bestFirm.Workers.Count == Firm.MAX_WORKER &&
-				    Misc.points_distance(curXLoc, curYLoc, bestFirm.LocX1, bestFirm.LocY1) < 5)
+				    Misc.PointsDistance(curXLoc, curYLoc, bestFirm.LocX1, bestFirm.LocY1) < 5)
 				{
 					int minMaxHitPointsOtherRace = 1000;
 					int bestWorkerId = -1;
@@ -5599,7 +5599,7 @@ public abstract partial class Unit : Sprite
 
 		int aiChaseDistance = 10 + NationArray[NationId].pref_military_courage / 20; // chase distance: 10 to 15
 
-		int curDistance = Misc.points_distance(targetUnit.NextLocX, targetUnit.NextLocY, AIOriginalTargetLocX, AIOriginalTargetLocY);
+		int curDistance = Misc.PointsDistance(targetUnit.NextLocX, targetUnit.NextLocY, AIOriginalTargetLocX, AIOriginalTargetLocY);
 
 		if (curDistance <= aiChaseDistance)
 			return false;
@@ -5648,7 +5648,7 @@ public abstract partial class Unit : Sprite
 
 		for (int i = 2; i < checkLimit; i++)
 		{
-			Misc.cal_move_around_a_point(i, 20, 20, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, 20, 20, out int xShift, out int yShift);
 
 			int checkXLoc = curXLoc + xShift;
 			int checkYLoc = curYLoc + yShift;

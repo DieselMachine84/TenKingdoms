@@ -99,7 +99,7 @@ public class Site : IIdObject
 
         for (int i = 2; i < InternalConstants.GET_SITE_RANGE * InternalConstants.GET_SITE_RANGE; i++)
         {
-            Misc.cal_move_around_a_point(i, InternalConstants.GET_SITE_RANGE, InternalConstants.GET_SITE_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, InternalConstants.GET_SITE_RANGE, InternalConstants.GET_SITE_RANGE, out int xOffset, out int yOffset);
 
             int locX = LocX + xOffset;
             int locY = LocY + yOffset;

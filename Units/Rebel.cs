@@ -374,7 +374,7 @@ public class Rebel : IIdObject
             if (firm.RegionId != curRegionId)
                 continue;
 
-            int firmDistance = Misc.points_distance(leaderLocX, leaderLocY, firm.LocCenterX, firm.LocCenterY);
+            int firmDistance = Misc.PointsDistance(leaderLocX, leaderLocY, firm.LocCenterX, firm.LocCenterY);
 
             if (firmDistance < closestFirmDistance)
             {

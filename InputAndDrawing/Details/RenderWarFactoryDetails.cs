@@ -40,7 +40,7 @@ public partial class Renderer
             string description = unitInfo.Name;
             int techLevel = warFactoryNation.GetTechLevelByUnitType(warFactory.BuildUnitType);
             if (techLevel > 1)
-                description += " " + Misc.roman_number(techLevel);
+                description += " " + Misc.RomanNumber(techLevel);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
             PutText(FontSan, (warFactory.BuildProgressInDays / unitInfo.BuildDays).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
@@ -138,7 +138,7 @@ public partial class Renderer
                 string description = unitInfo.Name;
                 int techLevel = warFactoryNation.GetTechLevelByUnitType(unitType);
                 if (techLevel > 1)
-                    description += " " + Misc.roman_number(techLevel);
+                    description += " " + Misc.RomanNumber(techLevel);
                 PutText(FontBible, description, BuildWeaponPanelX + 96, BuildWeaponPanelY + dy + 10);
 
                 mouseOnButton = _mouseButtonX >= MouseOnBuildWeaponNumberButtonX1 && _mouseButtonX <= MouseOnBuildWeaponNumberButtonX2 &&

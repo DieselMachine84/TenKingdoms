@@ -51,7 +51,7 @@ public class IdleUnitTask : AITask, IUnitTask
                 //TODO replace less skilled builder or settle builder
                 if (firm.BuilderId == 0)
                 {
-                    int firmDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, unit.NextLocX, unit.NextLocY);
+                    int firmDistance = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, unit.NextLocX, unit.NextLocY);
                     if (firmDistance < minFirmDistance)
                     {
                         minFirmDistance = firmDistance;

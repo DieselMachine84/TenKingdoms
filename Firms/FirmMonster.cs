@@ -636,7 +636,7 @@ public class FirmMonster : Firm
 
 		for (int i = firmInfo.LocWidth * firmInfo.LocHeight + 1; i <= scanLimit; i++)
 		{
-			Misc.cal_move_around_a_point(i, scanLocWidth, scanLocHeight, out int xOffset, out int yOffset);
+			Misc.MoveAroundAPoint(i, scanLocWidth, scanLocHeight, out int xOffset, out int yOffset);
 
 			locX = LocCenterX + xOffset;
 			locY = LocCenterY + yOffset;

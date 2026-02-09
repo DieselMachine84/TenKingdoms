@@ -841,7 +841,7 @@ public class UnitGod : Unit
 				    (unit.Loyalty >= 20 && unit.Loyalty <= 60 || unit.Loyalty <= 80 && unit.TargetLoyalty < 30) &&
 				    ownNation.GetRelation(unit.NationId).Status == NationBase.NATION_HOSTILE)
 				{
-					int cost = Misc.points_distance(NextLocX, NextLocY, unit.NextLocX, unit.NextLocY);
+					int cost = Misc.PointsDistance(NextLocX, NextLocY, unit.NextLocX, unit.NextLocY);
 					if (cost < bestUnitCost)
 					{
 						bestUnitCost = cost;
@@ -853,7 +853,7 @@ public class UnitGod : Unit
 
 			if (bestUnitCost < 100)
 			{
-				if (Misc.points_distance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[GodId].CastPowerRange)
+				if (Misc.PointsDistance(NextLocX, NextLocY, xLoc, yLoc) <= GodRes[GodId].CastPowerRange)
 					GoCastPower(xLoc, yLoc, 1, InternalConstants.COMMAND_AI);
 				else
 					MoveTo(xLoc, yLoc);

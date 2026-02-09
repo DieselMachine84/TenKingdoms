@@ -401,9 +401,9 @@ public class SeekPath
 
 				int xShift, yShift;
 				if (_searchMode == SEARCH_MODE_TO_TOWN)
-					Misc.cal_move_around_a_point(pathNum, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, out xShift, out yShift);
+					Misc.MoveAroundAPoint(pathNum, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, out xShift, out yShift);
 				else
-					Misc.cal_move_around_a_point(pathNum, searchFirmInfo.LocWidth, searchFirmInfo.LocHeight, out xShift, out yShift);
+					Misc.MoveAroundAPoint(pathNum, searchFirmInfo.LocWidth, searchFirmInfo.LocHeight, out xShift, out yShift);
 
 				_finalDestX += xShift;
 				_finalDestY += yShift;
@@ -495,7 +495,7 @@ public class SeekPath
 				}
 			}
 
-			if (_mobileType == UnitConstants.UNIT_LAND && loopCount == Misc.points_distance(sx, sy, _finalDestX, _finalDestY) * 2 &&
+			if (_mobileType == UnitConstants.UNIT_LAND && loopCount == Misc.PointsDistance(sx, sy, _finalDestX, _finalDestY) * 2 &&
 			    CheckTargetInaccessible(loopCount / 2))
 			{
 				break;

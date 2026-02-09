@@ -129,7 +129,7 @@ public class UnitMonster : Unit
 
         for (int i = 2; i < ATTACK_SCAN_RANGE * ATTACK_SCAN_RANGE; i++)
         {
-            Misc.cal_move_around_a_point(i, ATTACK_SCAN_RANGE, ATTACK_SCAN_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, ATTACK_SCAN_RANGE, ATTACK_SCAN_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;
@@ -228,7 +228,7 @@ public class UnitMonster : Unit
 
         for (int i = 1; i < GROUP_ACTION_RANGE * GROUP_ACTION_RANGE; i++)
         {
-            Misc.cal_move_around_a_point(i, GROUP_ACTION_RANGE, GROUP_ACTION_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, GROUP_ACTION_RANGE, GROUP_ACTION_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;
@@ -281,7 +281,7 @@ public class UnitMonster : Unit
 
         for (int i = 2; i < SCROLL_SCAN_RANGE * SCROLL_SCAN_RANGE; i++)
         {
-            Misc.cal_move_around_a_point(i, SCROLL_SCAN_RANGE, SCROLL_SCAN_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, SCROLL_SCAN_RANGE, SCROLL_SCAN_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;

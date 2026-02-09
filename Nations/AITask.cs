@@ -114,7 +114,7 @@ public abstract class AITask
             // TODO use pref
             if (firm.BuilderId != 0 && firm.HitPoints > firm.MaxHitPoints / 2.0 && !Nation.IsUnitOnTask(firm.BuilderId))
             {
-                int firmDistance = Misc.points_distance(firm.LocCenterX, firm.LocCenterY, targetLocX, targetLocY);
+                int firmDistance = Misc.PointsDistance(firm.LocCenterX, firm.LocCenterY, targetLocX, targetLocY);
                 if (firmDistance < minFirmDistance)
                 {
                     minFirmDistance = firmDistance;
@@ -143,7 +143,7 @@ public abstract class AITask
             if (race == 0 || !town.CanTrain(race))
                 continue;
 
-            int townDistance = Misc.points_distance(town.LocCenterX, town.LocCenterY, targetLocX, targetLocY);
+            int townDistance = Misc.PointsDistance(town.LocCenterX, town.LocCenterY, targetLocX, targetLocY);
             if (townDistance < minTownDistance)
             {
                 minTownDistance = townDistance;

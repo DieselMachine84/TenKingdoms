@@ -30,7 +30,7 @@ public partial class Renderer
             string description = techInfo.Description();
             int researchVersion = firmNation.GetTechLevel(research.TechId) + 1;
             if (researchVersion > 1)
-                description += " " + Misc.roman_number(researchVersion);
+                description += " " + Misc.RomanNumber(researchVersion);
             PutText(FontSan, description, DetailsX1 + 120, DetailsY1 + 107);
             //TODO draw indicator
             PutText(FontSan, firmNation.GetResearchProgress(research.TechId).ToString("0.00"), DetailsX1 + 120, DetailsY1 + 137);
@@ -108,7 +108,7 @@ public partial class Renderer
                 string description = techInfo.Description();
                 int researchVersion = firmNation.GetTechLevel(techId) + 1;
                 if (researchVersion > 1)
-                    description += " " + Misc.roman_number(researchVersion);
+                    description += " " + Misc.RomanNumber(researchVersion);
                 PutText(FontBible, description, ResearchPanelX + 96, ResearchPanelY + dy + 10);
                 shownItems++;
             }

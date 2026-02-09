@@ -2547,7 +2547,7 @@ public partial class Unit
 
 		for (int i = 2; i <= CHECK_SIZE; ++i)
 		{
-			Misc.cal_move_around_a_point(i, DIMENSION, DIMENSION, out xShift, out yShift);
+			Misc.MoveAroundAPoint(i, DIMENSION, DIMENSION, out xShift, out yShift);
 			checkXLoc = curXLoc + xShift;
 			checkYLoc = curYLoc + yShift;
 			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
@@ -3124,7 +3124,7 @@ public partial class Unit
 	{
 		for (int i = 2; i < 9; i++)
 		{
-			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, 3, 3, out int xShift, out int yShift);
 			int checkXLoc = targetXLoc + xShift;
 			int checkYLoc = targetYLoc + yShift;
 
@@ -4307,8 +4307,7 @@ public partial class Unit
 		//-----------------------------------------------------------------------------------------------//
 		for (; i <= countLimit; i += incAmount) // 1 is the self location
 		{
-			int xOffset, yOffset;
-			Misc.cal_move_around_a_point(i, dimension, dimension, out xOffset, out yOffset);
+			Misc.MoveAroundAPoint(i, dimension, dimension, out int xOffset, out int yOffset);
 			int checkXLoc = MoveToLocX + xOffset;
 			int checkYLoc = MoveToLocY + yOffset;
 			if (checkXLoc < 0 || checkXLoc >= Config.MapSize || checkYLoc < 0 || checkYLoc >= Config.MapSize)
@@ -4568,7 +4567,7 @@ public partial class Unit
 			if (!targetUnit.IsVisible())
 				return;
 
-			if (Misc.points_distance(NextLocX, NextLocY, targetUnit.NextLocX, targetUnit.NextLocY) < HELP_DISTANCE)
+			if (Misc.PointsDistance(NextLocX, NextLocY, targetUnit.NextLocX, targetUnit.NextLocY) < HELP_DISTANCE)
 			{
 				if (IdleDetectUnitChecking(actionPara))
 				{

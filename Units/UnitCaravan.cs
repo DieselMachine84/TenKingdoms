@@ -833,7 +833,7 @@ public class UnitCaravan : Unit, ITrader
 			else
 			{
 				Firm firm = FirmArray[stop.FirmId];
-				int dist = Misc.points_distance(locX, locY, firm.LocCenterX, firm.LocCenterY);
+				int dist = Misc.PointsDistance(locX, locY, firm.LocCenterX, firm.LocCenterY);
 
 				if (dist < minDist)
 				{

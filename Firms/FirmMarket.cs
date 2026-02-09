@@ -936,7 +936,7 @@ public class FirmMarket : Firm
 
 			NationRelation nationRelation = nation.GetRelation(firm.NationId);
 
-			int curRating = Convert.ToInt32(stockLevel) - 100 * Misc.points_distance(LocCenterX, LocCenterY,
+			int curRating = Convert.ToInt32(stockLevel) - 100 * Misc.PointsDistance(LocCenterX, LocCenterY,
 				firm.LocCenterX, firm.LocCenterY) / Config.MapSize;
 
 			if (firm.NationId == NationId)

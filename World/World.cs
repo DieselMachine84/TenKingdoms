@@ -144,7 +144,7 @@ public class World
 	// TODO remove
 	public int DistanceRating(int locX1, int locY1, int locX2, int locY2)
 	{
-		int curDistance = Misc.points_distance(locX1, locY1, locX2, locY2);
+		int curDistance = Misc.PointsDistance(locX1, locY1, locX2, locY2);
 		return 100 - 100 * curDistance / Config.MapSize;
 	}
 

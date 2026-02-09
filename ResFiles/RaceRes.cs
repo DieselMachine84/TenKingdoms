@@ -123,7 +123,7 @@ public class RaceInfo
 				if (result.Length > 0)
 					result += " ";
 
-				result += Misc.roman_number(lastNameId);
+				result += Misc.RomanNumber(lastNameId);
 			}
 		}
 		else

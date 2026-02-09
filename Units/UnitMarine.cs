@@ -263,7 +263,7 @@ public class UnitMarine : Unit, ITrader
 		//-----------------------------------------------------------------//
 		for (int i = 0; i < countLimit; i++)
 		{
-			Misc.cal_move_around_a_point(count, firmWidth, firmHeight, out int xOffset, out int yOffset);
+			Misc.MoveAroundAPoint(count, firmWidth, firmHeight, out int xOffset, out int yOffset);
 			checkLocX = firm.LocX1 + xOffset;
 			checkLocY = firm.LocY1 + yOffset;
 
@@ -788,7 +788,7 @@ public class UnitMarine : Unit, ITrader
 			else
 			{
 				Firm firm = FirmArray[stop.FirmId];
-				int dist = Misc.points_distance(locX, locY, firm.LocCenterX, firm.LocCenterY);
+				int dist = Misc.PointsDistance(locX, locY, firm.LocCenterX, firm.LocCenterY);
 
 				if (dist < minDist)
 				{
@@ -1480,7 +1480,7 @@ public class UnitMarine : Unit, ITrader
 
 		while (unprocessed > 0) // using the calculated 'i' to reduce useless calculation
 		{
-			Misc.cal_move_around_a_point(i, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, Config.MapSize, Config.MapSize, out int xShift, out int yShift);
 			int checkLocX = curLocX + xShift;
 			int checkLocY = curLocY + yShift;
 			if (!Misc.IsLocationValid(checkLocX, checkLocY))
@@ -1555,7 +1555,7 @@ public class UnitMarine : Unit, ITrader
 
 		for (int i = 2; i <= 9; i++) // checking for the surrounding location
 		{
-			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, 3, 3, out int xShift, out int yShift);
 
 			int checkLocX = curLocX + xShift;
 			int checkLocY = curLocY + yShift;

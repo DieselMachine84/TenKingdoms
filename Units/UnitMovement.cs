@@ -762,8 +762,8 @@ public partial class Unit
 			}
 			else if (PathNodes.Count == 2)
 			{
-				int magnCG = Misc.points_distance(CurX, CurY, GoX, GoY);
-				int magnNG = Misc.points_distance(NextX, NextY, GoX, GoY);
+				int magnCG = Misc.PointsDistance(CurX, CurY, GoX, GoY);
+				int magnNG = Misc.PointsDistance(NextX, NextY, GoX, GoY);
 
 				if (magnCG != 0 && magnNG != 0)
 				{
@@ -1231,7 +1231,7 @@ public partial class Unit
 
 		for (int i = 2; i <= TEST_LIMIT; i++)
 		{
-			Misc.cal_move_around_a_point(i, TEST_DIMENSION, TEST_DIMENSION, out xShift, out yShift);
+			Misc.MoveAroundAPoint(i, TEST_DIMENSION, TEST_DIMENSION, out xShift, out yShift);
 			xShift *= xSign;
 			yShift *= ySign;
 
@@ -1653,7 +1653,7 @@ public partial class Unit
 		{
 			GeneralDefendModeDetectTarget();
 		}
-		else if (Misc.points_distance(NextLocX, NextLocY, ActionLocX, ActionLocY) < UnitConstants.ATTACK_DETECT_DISTANCE)
+		else if (Misc.PointsDistance(NextLocX, NextLocY, ActionLocX, ActionLocY) < UnitConstants.ATTACK_DETECT_DISTANCE)
 		{
 			//------------------------------------------------------------------------//
 			// if the target is within the detect range, stop the unit's action to detect
@@ -1824,7 +1824,7 @@ public partial class Unit
 			//------------- scan for the surrounding for a land location -----------//
 			for (int i = 2; i <= 9; ++i)
 			{
-				Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+				Misc.MoveAroundAPoint(i, 3, 3, out int xShift, out int yShift);
 				int checkLocX = curLocX + xShift;
 				int checkLocY = curLocY + yShift;
 				if (!Misc.IsLocationValid(checkLocX, checkLocY))
@@ -1861,7 +1861,7 @@ public partial class Unit
 		//------------- find a location to leave the beach ------------//
 		for (int i = 2; i <= 9; i++)
 		{
-			Misc.cal_move_around_a_point(i, 3, 3, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, 3, 3, out int xShift, out int yShift);
 			checkLocX = curLocX + xShift;
 			checkLocY = curLocY + yShift;
 
@@ -2175,7 +2175,7 @@ public partial class Unit
 				hasFree = false;
 			}
 
-			Misc.cal_move_around_a_point(i, DIMENSION, DIMENSION, out int xShift, out int yShift);
+			Misc.MoveAroundAPoint(i, DIMENSION, DIMENSION, out int xShift, out int yShift);
 			int checkLocX = curLocX + xShift;
 			int checkLocY = curLocY + yShift;
 			if (!Misc.IsLocationValid(checkLocX, checkLocY))
