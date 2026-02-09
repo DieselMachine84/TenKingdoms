@@ -26,7 +26,6 @@ public class NationArray : DynArray<Nation>
 	public int MaxOverallNationId { get; private set; }
 
 	private Config Config => Sys.Instance.Config;
-	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -209,17 +208,7 @@ public class NationArray : DynArray<Nation>
 		//----- figure out which race has been used, which has not -----//
 
 		bool[] usedRaces = new bool[GameConstants.MAX_RACE];
-		int usedCount = GameConstants.MAX_RACE;
-
-		// need to make sure disable races aren't included, work backwards
-		for (int i = 0; i < usedRaces.Length; i++)
-			usedRaces[i] = true;
-
-		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
-		{
-			usedRaces[ConfigAdv.race_random_list[i] - 1] = false; // reset on
-			usedCount--;
-		}
+		int usedCount = 0;
 
 		foreach (Nation nation in this)
 		{
@@ -251,18 +240,8 @@ public class NationArray : DynArray<Nation>
 		//----- figure out which color has been used, which has not -----//
 
 		bool[] usedColors = new bool[InternalConstants.MAX_COLOR_SCHEME];
-		int usedCount = InternalConstants.MAX_COLOR_SCHEME;
+		int usedCount = 0;
 
-		// need to make sure disable colors aren't included, work backwards
-		for (int i = 0; i < usedColors.Length; i++)
-			usedColors[i] = true;
-		
-		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
-		{
-			usedColors[ConfigAdv.race_random_list[i] - 1] = false; // reset on
-			usedCount--;
-		}
-		
 		foreach (Nation nation in this)
 		{
 			usedColors[nation.ColorSchemeId - 1] = true;

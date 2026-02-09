@@ -152,8 +152,8 @@ public class FirmMine : Firm
         produceQty = Math.Min(produceQty, MaxStockQty - StockQty);
 
         ReserveQty -= produceQty;
-        if (ConfigAdv.mine_unlimited_reserve && ReserveQty < 1500.0)
-            ReserveQty = 1500.0;
+        if (Config.UnlimitedRawResource && ReserveQty < 2000.0)
+            ReserveQty = 2000.0;
 
         StockQty += produceQty;
         CurMonthProduction += produceQty;

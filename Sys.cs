@@ -41,7 +41,6 @@ public class Sys
     public SECtrl SECtrl { get; private set; }
 
     public Config Config { get; private set; }
-    public ConfigAdv ConfigAdv { get; private set; }
     public Info Info { get; private set; }
     public World World { get; private set; }
     public Weather Weather { get; set; }
@@ -213,7 +212,6 @@ public class Sys
     public void Run()
     {
         Config = new Config();
-        ConfigAdv = new ConfigAdv();
         ColorRemap.InitRemapTable();
         InitGraphics();
         LoadResources();

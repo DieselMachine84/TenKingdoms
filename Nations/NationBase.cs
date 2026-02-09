@@ -154,7 +154,6 @@ public class NationBase : IIdObject
     protected TechRes TechRes => Sys.Instance.TechRes;
 
     protected Config Config => Sys.Instance.Config;
-    protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
     protected Info Info => Sys.Instance.Info;
     protected TalkRes TalkRes => Sys.Instance.TalkRes;
 

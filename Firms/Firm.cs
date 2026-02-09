@@ -103,7 +103,6 @@ public abstract class Firm : IIdObject
 	protected UnitRes UnitRes => Sys.Instance.UnitRes;
 	protected SERes SERes => Sys.Instance.SERes;
 	protected Config Config => Sys.Instance.Config;
-	protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	protected Info Info => Sys.Instance.Info;
 	protected World World => Sys.Instance.World;
 	protected NationArray NationArray => Sys.Instance.NationArray;
@@ -1732,7 +1731,7 @@ public abstract class Firm : IIdObject
 		unit.Stop2(); // clear all previously defined action
 
 		//--- set builder to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && !unit.AIUnit)
+		if (!unit.AIUnit)
 			unit.AggressiveMode = false;
 	}
 
@@ -1820,7 +1819,7 @@ public abstract class Firm : IIdObject
 		unit.InitFromWorker(worker);
 
 		//--- set non-military units to non-aggressive, except ai ---//
-		if (!ConfigAdv.firm_mobilize_civilian_aggressive && unit.RaceId != 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
+		if (unit.RaceId != 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
 			unit.AggressiveMode = false;
 
 		return unitId;
@@ -1994,7 +1993,7 @@ public abstract class Firm : IIdObject
 
 				//-- do not migrate if the target town might not be a place this worker will stay --//
 
-				if (ConfigAdv.firm_migrate_stricter_rules && town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
+				if (town.RacesLoyalty[raceId - 1] < 40) // < 40 is considered as negative force
 					continue;
 
 				//------ calc the current and target attractiveness level ------//
@@ -2010,9 +2009,7 @@ public abstract class Firm : IIdObject
 				// loyalty > 40 is considered as positive force, < 40 is considered as negative force
 				int curAttractLevel = curBaseAttractLevel + workerTown.RaceHarmony(raceId) + (worker.Loyalty() - 40);
 
-				bool shouldMigrate = ConfigAdv.firm_migrate_stricter_rules
-					? targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2
-					: targetAttractLevel > curAttractLevel;
+				bool shouldMigrate = targetAttractLevel - curAttractLevel > GameConstants.MIN_MIGRATE_ATTRACT_LEVEL / 2;
 				if (shouldMigrate)
 				{
 					int newLoyalty = Math.Max(GameConstants.REBEL_LOYALTY + 1, targetAttractLevel / 2);
@@ -2104,7 +2101,7 @@ public abstract class Firm : IIdObject
 
 				if (forcePull) // right-click to force pulling a worker from the village
 				{
-					if (town.RacesLoyalty[raceId - 1] < GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false))
+					if (town.RacesLoyalty[raceId - 1] < GameConstants.MIN_RECRUIT_LOYALTY + 3 + town.RecruitDecLoyalty(raceId, false))
 						return false;
 
 					town.RecruitDecLoyalty(raceId);

@@ -68,6 +68,7 @@ public class Config
 	public bool PanControl { get; private set; } = true; // mono speaker should disable PanControl
 	
 	// ---- Custom settings ----
+	public bool UnlimitedRawResource { get; private set; }
 	public bool FastBuild { get; private set; }
 	public bool ShowAIInfo { get; private set; }
 }

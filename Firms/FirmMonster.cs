@@ -145,7 +145,7 @@ public class FirmMonster : Firm
 						monsterFirmCount++;
 				}
 				
-				if (monsterFirmCount > 0 && Misc.Random(monsterFirmCount * ConfigAdv.monster_attack_divisor) == 0)
+				if (monsterFirmCount > 0 && Misc.Random(monsterFirmCount * 4) == 0)
 					ThinkAttackHuman();
 			}
 

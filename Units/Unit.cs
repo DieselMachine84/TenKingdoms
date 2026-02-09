@@ -119,7 +119,6 @@ public abstract partial class Unit : Sprite
 	private static int HelpAttackTargetId { get; set; }
 
 	
-	protected ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	protected Info Info => Sys.Instance.Info;
 	private SeekPath SeekPath => Sys.Instance.SeekPath;
 	protected TerrainRes TerrainRes => Sys.Instance.TerrainRes;
@@ -3595,8 +3594,7 @@ public abstract partial class Unit : Sprite
 
 		if (Rank == RANK_SOLDIER)
 		{
-			bool leaderBonus = ConfigAdv.unit_loyalty_require_local_leader ? IsLeaderInRange() : LeaderId != 0;
-			if (leaderBonus)
+			if (IsLeaderInRange())
 			{
 				//----------------------------------------//
 				//

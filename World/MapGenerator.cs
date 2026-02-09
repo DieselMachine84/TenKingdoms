@@ -15,7 +15,6 @@ public class MapGenerator
 	private MonsterRes MonsterRes => Sys.Instance.MonsterRes;
 
 	private Config Config => Sys.Instance.Config;
-	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private World World => Sys.Instance.World;
 
 	private RockArray RockArray => Sys.Instance.RockArray;
@@ -1456,7 +1455,7 @@ public class MapGenerator
 	{
 		for (int i = 0; i < aiNationCount; i++)
 		{
-			int raceId = Config.RandomStartUp ? ConfigAdv.GetRandomRace() : NationArray.RandomUnusedRace();
+			int raceId = Config.RandomStartUp ? Misc.Random(GameConstants.MAX_RACE) + 1 : NationArray.RandomUnusedRace();
 			NationArray.NewNation(NationBase.NATION_AI, raceId, NationArray.RandomUnusedColor());
 		}
 	}
@@ -1510,7 +1509,7 @@ public class MapGenerator
 					if (curPop >= GameConstants.MAX_TOWN_POPULATION - totalPop)
 						curPop = GameConstants.MAX_TOWN_POPULATION - totalPop;
 
-					town.InitPopulation(ConfigAdv.GetRandomRace(), curPop, townResistance, false, true);
+					town.InitPopulation(Misc.Random(GameConstants.MAX_RACE) + 1, curPop, townResistance, false, true);
 					totalPop += curPop;
 				}
 			}
@@ -1683,7 +1682,7 @@ public class MapGenerator
 					if (Misc.Random(2) == 0)
 						unitType = RaceRes[nation.RaceId].BasicUnitType;
 					else
-						unitType = RaceRes[ConfigAdv.GetRandomRace()].BasicUnitType;
+						unitType = RaceRes[Misc.Random(GameConstants.MAX_RACE) + 1].BasicUnitType;
 
 					int rankId;
 					if (Misc.Random(3) == 0)
@@ -1724,13 +1723,12 @@ public class MapGenerator
 
 		int maxLoopCount = startUpIndependentTown + startUpMonsterFirm;
 
-		for (int j = 0, k = 1; j < maxLoopCount; j++, k++)
+		for (int j = 0; j < maxLoopCount; j++)
 		{
 			if (startUpIndependentTown > 0)
 			{
 				//------ create independent towns -------//
-				int raceId = ConfigAdv.race_random_list[k % ConfigAdv.race_random_list_max];
-				if (CreateTown(0, raceId) != null)
+				if (CreateTown(0, Misc.Random(GameConstants.MAX_RACE) + 1) != null)
 				{
 					startUpIndependentTown--;
 				}

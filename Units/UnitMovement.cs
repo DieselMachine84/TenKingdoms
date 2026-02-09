@@ -1095,10 +1095,7 @@ public partial class Unit
 						}
 						else if ((unit.NextLocX != MoveToLocX || unit.NextLocY != MoveToLocY) &&
 						         (unit.CurAction == SPRITE_IDLE && unit.ActionMode2 == UnitConstants.ACTION_STOP))
-							if (ConfigAdv.fix_path_blocked_by_team)
-								HandleBlockedByIdleUnit(unit);
-							else
-								MoveToMyLoc(unit); // push the blocking unit and exchange their destination
+							HandleBlockedByIdleUnit(unit);
 						else if (unit.ActionMode == UnitConstants.ACTION_SETTLE)
 							SetWait(); // wait for the settler
 						else if (WaitingTerm > UnitConstants.MAX_WAITING_TERM_SAME)
@@ -1956,7 +1953,7 @@ public partial class Unit
 
 	public void SelectSearchSubMode(int sx, int sy, int dx, int dy, int nationId)
 	{
-		if (!ConfigAdv.unit_allow_path_power_mode)
+		if (true)
 		{
 			// cancel the selection
 			SeekPath.SetSubMode();

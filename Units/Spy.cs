@@ -42,7 +42,6 @@ public class Spy : IIdObject
 	private RaceRes RaceRes => Sys.Instance.RaceRes;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
-	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 	private SECtrl SECtrl => Sys.Instance.SECtrl;

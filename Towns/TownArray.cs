@@ -5,10 +5,9 @@ namespace TenKingdoms;
 public class TownArray : DynArray<Town>
 {
 	// no. of wandering people of each race. They are people for setting up independent towns later
-	private int[] _raceWandereres = new int[GameConstants.MAX_RACE];
+	private readonly int[] _raceWanderers = new int[GameConstants.MAX_RACE];
 
 	private Config Config => Sys.Instance.Config;
-	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
@@ -139,22 +138,19 @@ public class TownArray : DynArray<Town>
 
 		//--- if the total population of all nations combined > 1000, then no new independent town will emerge ---//
 		//TODO this constant should depend on the map size
-		if (allTotalPop > ConfigAdv.town_ai_emerge_town_pop_limit)
+		if (allTotalPop > 1000)
 			return;
 
 		//--- add 1 to 2 wanderer per month per race ---//
 
-		int raceId;
-
-		for (int i = 0; i < ConfigAdv.race_random_list_max; i++)
+		for (int i = 1; i <= GameConstants.MAX_RACE; i++)
 		{
-			raceId = ConfigAdv.race_random_list[i];
-			_raceWandereres[raceId - 1] += 2 + Misc.Random(5);
+			_raceWanderers[i - 1] += 2 + Misc.Random(5);
 		}
 
 		//----- check if there are enough wanderers to set up a new town ---//
 
-		raceId = ConfigAdv.GetRandomRace();
+		int raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
 
 		bool hasWanderers = false;
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
@@ -162,7 +158,7 @@ public class TownArray : DynArray<Town>
 			if (++raceId > GameConstants.MAX_RACE)
 				raceId = 1;
 
-			if (_raceWandereres[raceId - 1] >= 10) // one of the race must have at least 10 people
+			if (_raceWanderers[raceId - 1] >= 10) // one of the race must have at least 10 people
 			{
 				hasWanderers = true;
 				break;
@@ -185,21 +181,21 @@ public class TownArray : DynArray<Town>
 
 		while (true)
 		{
-			int addPop = _raceWandereres[raceId - 1];
+			int addPop = _raceWanderers[raceId - 1];
 			addPop = Math.Min(maxTownPop - newTown.Population, addPop);
 
 			int townResistance = IndependentTownResistance();
 
 			newTown.InitPopulation(raceId, addPop, townResistance, false, true);
 
-			_raceWandereres[raceId - 1] -= addPop;
+			_raceWanderers[raceId - 1] -= addPop;
 
 			if (newTown.Population >= maxTownPop)
 				break;
 
 			//---- next race to be added to the independent town ----//
 
-			raceId = ConfigAdv.GetRandomRace();
+			raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
 
 			hasWanderers = false;
 			for (int i = 0; i < GameConstants.MAX_RACE; i++)
@@ -207,7 +203,7 @@ public class TownArray : DynArray<Town>
 				if (++raceId > GameConstants.MAX_RACE)
 					raceId = 1;
 
-				if (_raceWandereres[raceId - 1] >= 5)
+				if (_raceWanderers[raceId - 1] >= 5)
 				{
 					hasWanderers = true;
 					break;
@@ -239,27 +235,27 @@ public class TownArray : DynArray<Town>
 		}
 	}
 	
-	public bool ThinkTownLoc(int maxTries, out int xLoc, out int yLoc)
+	public bool ThinkTownLoc(int maxTries, out int locX, out int locY)
 	{
 		const int BUILD_TOWN_LOC_WIDTH = 16;
 		const int BUILD_TOWN_LOC_HEIGHT = 16;
 
-		xLoc = -1;
-		yLoc = -1;
+		locX = -1;
+		locY = -1;
 
 		for (int i = 0; i < maxTries; i++)
 		{
 			// do not build on the upper most location as the flag will go beyond the view area
-			xLoc = Misc.Random(Config.MapSize - BUILD_TOWN_LOC_WIDTH);
-			yLoc = 2 + Misc.Random(Config.MapSize - BUILD_TOWN_LOC_HEIGHT - 2);
+			locX = Misc.Random(Config.MapSize - BUILD_TOWN_LOC_WIDTH);
+			locY = 2 + Misc.Random(Config.MapSize - BUILD_TOWN_LOC_HEIGHT - 2);
 
 			bool canBuildFlag = true;
 
 			//---------- check if the area is all free ----------//
 
-			for (int y = yLoc; y < yLoc + BUILD_TOWN_LOC_HEIGHT; y++)
+			for (int y = locY; y < locY + BUILD_TOWN_LOC_HEIGHT; y++)
 			{
-				for (int x = xLoc; x < xLoc + BUILD_TOWN_LOC_WIDTH; x++)
+				for (int x = locX; x < locX + BUILD_TOWN_LOC_WIDTH; x++)
 				{
 					Location location = World.GetLoc(x, y);
 					if (!location.CanBuildTown())
@@ -277,7 +273,7 @@ public class TownArray : DynArray<Town>
 
 			foreach (Town town in this)
 			{
-				if (Misc.RectsDistance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
+				if (Misc.RectsDistance(locX, locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
 					    town.LocX1, town.LocY1, town.LocX2, town.LocY2) < InternalConstants.MIN_INTER_TOWN_DISTANCE)
 				{
 					canBuildFlag = false;
@@ -293,7 +289,7 @@ public class TownArray : DynArray<Town>
 
 			foreach (Firm firm in FirmArray)
 			{
-				if (Misc.RectsDistance(xLoc, yLoc, xLoc + InternalConstants.TOWN_WIDTH - 1, yLoc + InternalConstants.TOWN_HEIGHT - 1,
+				if (Misc.RectsDistance(locX, locY, locX + InternalConstants.TOWN_WIDTH - 1, locY + InternalConstants.TOWN_HEIGHT - 1,
 					    firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2) < GameConstants.MONSTER_ATTACK_NEIGHBOR_RANGE)
 				{
 					canBuildFlag = false;

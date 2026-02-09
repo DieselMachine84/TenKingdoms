@@ -4,7 +4,6 @@ namespace TenKingdoms;
 
 public class SpyArray : DynArray<Spy>
 {
-    private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
     private Info Info => Sys.Instance.Info;
     private NationArray NationArray => Sys.Instance.NationArray;
     private FirmArray FirmArray => Sys.Instance.FirmArray;

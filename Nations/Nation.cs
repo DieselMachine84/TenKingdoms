@@ -665,7 +665,7 @@ public class NationOld : NationBase
 				return 0;
 
 			//DieselMachine TODO use can_recruit instead
-			int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + town.RecruitDecLoyalty(raceId, false);
+			int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + 3 + town.RecruitDecLoyalty(raceId, false);
 
 			//--- if cannot recruit because of low loyalty, reward the town people now ---//
 
@@ -6371,10 +6371,6 @@ public class NationOld : NationBase
 
 		unitMarine.UnloadAllUnits(InternalConstants.COMMAND_AI); // unload all units now
 
-		if (!ConfigAdv.fix_sea_travel_final_move)
-			return 1; // finish the action.
-
-
 		//---------- 5. Validate all units ----------//
 
 		for (int i = unitRecnoArray.Count - 1; i >= 0; i--)
@@ -7311,7 +7307,7 @@ public class NationOld : NationBase
 		//------- don't surrender to hostile nation -------//
 
 		// defaults to NATION_NEUTRAL
-		if (GetRelationStatus(secondBestNationRecno) < ConfigAdv.nation_ai_unite_min_relation_level)
+		if (GetRelationStatus(secondBestNationRecno) < NATION_NEUTRAL)
 			return false;
 
 		//--- if all AI kingdoms are way behind the human players, unite to against the human player ---//

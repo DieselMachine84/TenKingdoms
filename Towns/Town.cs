@@ -112,7 +112,6 @@ public class Town : IIdObject
 	private SECtrl SECtrl => Sys.Instance.SECtrl;
 
 	private Config Config => Sys.Instance.Config;
-	private ConfigAdv ConfigAdv => Sys.Instance.ConfigAdv;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 
@@ -273,7 +272,7 @@ public class Town : IIdObject
 			}
 		}
 
-		if (ConfigAdv.town_migration && Info.TotalDays % 15 == TownId % 15)
+		if (Info.TotalDays % 90 == TownId % 90)
 		{
 			// TODO migration is too often
 			ThinkMigrate();
@@ -488,7 +487,7 @@ public class Town : IIdObject
 			TownSlot townSlot = TownRes.GetSlot(townLayout.FirstSlotId + i);
 			if (townSlot.BuildType == TownSlot.TOWN_OBJECT_HOUSE)
 			{
-				int raceId = ConfigAdv.GetRandomRace();
+				int raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
 				for (int j = 1; j <= GameConstants.MAX_RACE; j++)
 				{
 					raceId++;
@@ -552,7 +551,7 @@ public class Town : IIdObject
 
 				case TownSlot.TOWN_OBJECT_HOUSE:
 					if (SlotObjectIds[i] == 0)
-						SlotObjectIds[i] = TownRes.ScanBuild(townLayout.FirstSlotId + i, ConfigAdv.GetRandomRace());
+						SlotObjectIds[i] = TownRes.ScanBuild(townLayout.FirstSlotId + i, Misc.Random(GameConstants.MAX_RACE) + 1);
 					break;
 			}
 		}
@@ -1159,8 +1158,7 @@ public class Town : IIdObject
 
 		//------- apply quality of life -------//
 
-		// -17 to +17 or 0
-		int qolContribution = ConfigAdv.town_loyalty_qol ? (_qualityOfLife - 50) / 3 : 0;
+		int qolContribution = (_qualityOfLife - 50) / 3; // -17 to +17
 		for (int i = 0; i < GameConstants.MAX_RACE; i++)
 		{
 			if (RacesPopulation[i] == 0)
@@ -1897,7 +1895,7 @@ public class Town : IIdObject
 
 			//---- scan all jobless population, see if any of them want to migrate ----//
 
-			int raceId = ConfigAdv.GetRandomRace();
+			int raceId = Misc.Random(GameConstants.MAX_RACE) + 1;
 
 			for (int j = 0; j < GameConstants.MAX_RACE; j++)
 			{
@@ -2151,12 +2149,12 @@ public class Town : IIdObject
 		if (RecruitableRacePopulation(raceId, true) == 0)
 			return false;
 
-		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY;
+		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + 3;
 
 		//--- for the AI, only recruit if the loyalty still stay at 30 after recruiting the unit ---//
 
 		if (AITown && NationId != 0)
-			minRecruitLoyalty += 3 + RecruitDecLoyalty(raceId, false);
+			minRecruitLoyalty += RecruitDecLoyalty(raceId, false);
 
 		return RacesLoyalty[raceId - 1] >= minRecruitLoyalty;
 	}
@@ -2309,34 +2307,19 @@ public class Town : IIdObject
 	{
 		double loyaltyDec = Math.Min(5.0, Convert.ToDouble(GameConstants.MAX_TOWN_POPULATION) / RacesPopulation[raceId - 1]);
 
-		if (ConfigAdv.fix_recruit_dec_loyalty)
-		{
-			loyaltyDec += AccumulatedRecruitPenalty / 5.0;
-			loyaltyDec = Math.Min(loyaltyDec, 10.0);
-		}
+		loyaltyDec += AccumulatedRecruitPenalty / 5.0;
+		loyaltyDec = Math.Min(loyaltyDec, 10.0);
 
 		//------ recruitment without training decreases loyalty --------//
 
 		if (decNow)
 		{
-			if (!ConfigAdv.fix_recruit_dec_loyalty)
-			{
-				loyaltyDec += AccumulatedRecruitPenalty / 5.0;
-				loyaltyDec = Math.Min(loyaltyDec, 10.0);
-			}
-
 			AccumulatedRecruitPenalty += 5;
 
 			RacesLoyalty[raceId - 1] -= loyaltyDec;
 
 			if (RacesLoyalty[raceId - 1] < 0.0)
 				RacesLoyalty[raceId - 1] = 0.0;
-		}
-
-		if (ConfigAdv.fix_recruit_dec_loyalty)
-		{
-			// for ai estimating, round integer conversion up, do not truncate
-			return (int)Math.Ceiling(loyaltyDec);
 		}
 
 		return (int)loyaltyDec;
@@ -2386,15 +2369,14 @@ public class Town : IIdObject
 			for (int j = firm.Workers.Count - 1; j >= 0; j--)
 			{
 				Worker worker = firm.Workers[j];
-				if (ConfigAdv.fix_town_unjob_worker && !unjobSpy && worker.SpyId != 0)
+				if (!unjobSpy && worker.SpyId != 0)
 					continue;
 
 				//--- if the worker lives in this town ----//
 
 				if (worker.RaceId == raceId && worker.TownId == TownId)
 				{
-					if (firm.ResignWorker(worker) == 0 && !ConfigAdv.fix_town_unjob_worker)
-						return false;
+					firm.ResignWorker(worker);
 
 					return RacesJoblessPopulation[raceId - 1] == racesJoblessPop + 1;
 				}
@@ -3737,7 +3719,8 @@ public class Town : IIdObject
 
 		//---- don't form if the world is already densely populated ----//
 
-		if (NationArray.AllNationPopulation > ConfigAdv.town_ai_emerge_nation_pop_limit)
+		//TODO should depend on map size
+		if (NationArray.AllNationPopulation > 60 * GameConstants.MAX_NATION)
 			return;
 
 		//----------------------------------------------//

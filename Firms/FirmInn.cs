@@ -73,7 +73,7 @@ public class FirmInn : Firm
 		{
 			if (ShouldAddInnUnit())
 			{
-				int unitType = RaceRes[ConfigAdv.GetRandomRace()].BasicUnitType;
+				int unitType = RaceRes[Misc.Random(GameConstants.MAX_RACE) + 1].BasicUnitType;
 				if (unitType != 0)
 					AddInnUnit(unitType);
 			}

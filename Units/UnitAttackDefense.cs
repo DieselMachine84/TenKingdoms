@@ -24,7 +24,7 @@ public partial class Unit
 
 		if (UnitArray.IsDeleted(ActionParam) || ActionParam == SpriteId)
 		{
-			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
+			if (CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -150,7 +150,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (FirmArray.IsDeleted(ActionParam))
 		{
-			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
+			if (CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -373,7 +373,7 @@ public partial class Unit
 		//------------------------------------------------------------//
 		if (TownArray.IsDeleted(ActionParam))
 		{
-			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
+			if (CurAction == SPRITE_ATTACK)
 				clearOrder++;
 			else
 			{
@@ -574,7 +574,7 @@ public partial class Unit
 		Location loc = World.GetLoc(ActionLocX, ActionLocY);
 		if (!loc.IsWall())
 		{
-			if (!ConfigAdv.unit_finish_attack_move || CurAction == SPRITE_ATTACK)
+			if (CurAction == SPRITE_ATTACK)
 			{
 				Stop2(UnitConstants.KEEP_DEFENSE_MODE);
 			}
@@ -1883,8 +1883,7 @@ public partial class Unit
 				return;
 			}
 
-			if (ConfigAdv.unit_ai_team_help && (unit.AIUnit || NationId == 0) &&
-			    unit.IsVisible() && unit.HitPoints > 15.0 &&
+			if ((unit.AIUnit || NationId == 0) && unit.IsVisible() && unit.HitPoints > 15.0 &&
 			    (unit.ActionMode == UnitConstants.ACTION_STOP ||
 			     unit.ActionMode == UnitConstants.ACTION_ASSIGN_TO_FIRM ||
 			     unit.ActionMode == UnitConstants.ACTION_ASSIGN_TO_TOWN ||
@@ -2300,12 +2299,13 @@ public partial class Unit
 					SetCur(NextX, NextY);
 
 					SetAttackDir(curXLoc, curYLoc, RangeAttackLocX, RangeAttackLocY);
-					if (ConfigAdv.unit_target_move_range_cycle)
+					//TODO check
+					/*if (ConfigAdv.unit_target_move_range_cycle)
 					{
 						CycleEqvAttack();
 						attackInfo = AttackInfos[CurAttack]; // cur_attack may change
 						CurFrame = 1;
-					}
+					}*/
 
 					if (IsDirCorrect())
 						SetAttack();
