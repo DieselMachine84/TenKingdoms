@@ -212,6 +212,14 @@ public class Sys
     public void Run()
     {
         Config = new Config();
+        string error = Config.Load();
+        if (!String.IsNullOrEmpty(error))
+        {
+            SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "Ten Kingdoms", 
+                "Error when loading Config.txt: " + error, IntPtr.Zero);
+            return;
+        }
+        
         ColorRemap.InitRemapTable();
         InitGraphics();
         LoadResources();

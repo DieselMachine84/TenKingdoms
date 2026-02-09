@@ -1,0 +1,49 @@
+// ---- New game settings ----
+PlayerRaceId = 1                                // 1..10	
+PlayerColor = 1                                 // 1..10
+PlayerName = New Player
+MapSize = 200                                   // 100, 200, 300 or 400
+LandMass = 2                                    // 1 - Small, 2 - Medium, 3 - Large
+TerrainSet = 1                                  // 1 - Standard, 2 - Snow, 3 - Badlands
+AINationCount = 9                               // 1..9
+AIAggressiveness = 2                            // 1 - Low, 2 - Medium, 3 - High, 4 - Very High
+StartUpCash = 2                                 // 1 - 4000, 2 - 7000, 3 - 12000, 4 - 20000
+AIStartUpCash = 2                               // 1 - 4000, 2 - 7000, 3 - 12000, 4 - 20000
+CustomStartUpCash = 0                           // If not zero use this value in gold for cash instead of StartUpCash
+CustomAIStartUpCash = 0                         // If not zero use this value in gold for cash instead of AIStartUpCash
+CustomStartUpFood = 0                           // If not zero use this value for food
+CustomAIStartUpFood = 0                         // If not zero use this value for food
+RawResourceCount = 5                            // 0..100
+RawResourceNearby = false                       // true or false
+MonsterType = 1                                 // 0 - no monsters, 1 - Defensive, 2 - Offensive
+MonsterLairCount = 15                           // 0..1000
+IndependentTownCount = 15                       // 0..1000
+IndependentTownResistance = 2                   // 1 - Low, 2 - Medium, 3 - High
+NewIndependentTownEmerge = true
+NewNationEmerge = false
+RandomStartUp = false
+ExploreWholeMap = true
+FogOfWar = false
+EarthquakeFrequency = 0                         // 0 - Never, 1 - Seldom, 2 - Occasional, 3 - Frequent
+	
+// ---- Goal settings ----
+GoalDestroyMonsterFlag = false
+GoalPopulationFlag = false
+GoalEconomicScoreFlag = false
+GoalTotalScoreFlag = false
+GoalYearLimitFlag = false
+GoalPopulation = 300
+GoalEconomicScore = 300
+GoalTotalScore = 600
+GoalYearLimit = 20
+	
+// ---- Options settings ----
+GameScreenWidth = 30                            // width in tiles
+GameScreenHeight = 19                           // height in tiles
+ShowUnitPath = 3                                // 0 - not shown, 1 - world map, 2 - main map, 3 - both
+DisplayNewsType = 1                             // 0 - major news, 1 - all news
+	
+// ---- Custom settings ----
+UnlimitedRawResource = false
+FastBuild = false
+ShowAIInfo = false
