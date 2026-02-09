@@ -285,28 +285,28 @@ public class Config
 					GoalYearLimitFlag = ParseBoolParameter(line, "GoalYearLimitFlag");
 				}
 				
-				if (line.StartsWith("GoalPopulation"))
+				if (line.StartsWith("GoalPopulation") && !line.StartsWith("GoalPopulationFlag"))
 				{
 					GoalPopulation = ParseIntParameter(line, "GoalPopulation");
 					GoalPopulation = Math.Max(GoalPopulation, 100);
 					GoalPopulation = Math.Min(GoalPopulation, 10000);
 				}
 				
-				if (line.StartsWith("GoalEconomicScore"))
+				if (line.StartsWith("GoalEconomicScore") && !line.StartsWith("GoalEconomicScoreFlag"))
 				{
 					GoalEconomicScore = ParseIntParameter(line, "GoalEconomicScore");
 					GoalEconomicScore = Math.Max(GoalEconomicScore, 100);
 					GoalEconomicScore = Math.Min(GoalEconomicScore, 100000);
 				}
 				
-				if (line.StartsWith("GoalTotalScore"))
+				if (line.StartsWith("GoalTotalScore") && !line.StartsWith("GoalTotalScoreFlag"))
 				{
 					GoalTotalScore = ParseIntParameter(line, "GoalTotalScore");
 					GoalTotalScore = Math.Max(GoalTotalScore, 100);
 					GoalTotalScore = Math.Min(GoalTotalScore, 100000);
 				}
 				
-				if (line.StartsWith("GoalYearLimit"))
+				if (line.StartsWith("GoalYearLimit") && !line.StartsWith("GoalYearLimitFlag"))
 				{
 					GoalYearLimit = ParseIntParameter(line, "GoalYearLimit");
 					GoalYearLimit = Math.Max(GoalYearLimit, 1);
@@ -388,7 +388,15 @@ public class Config
 		string parameterValue = ParseParameter(line, parameter);
 		if (String.IsNullOrEmpty(parameterValue))
 			throw new Exception("Cannot parse value of " + parameter);
-		return Int32.Parse(parameterValue);
+		
+		try
+		{
+			return Int32.Parse(parameterValue);
+		}
+		catch (Exception e)
+		{
+			throw new Exception(e.Message + " when parsing parameter " + parameter);
+		}
 	}
 	
 	private string ParseStringParameter(string line, string parameter)
@@ -404,6 +412,14 @@ public class Config
 		string parameterValue = ParseParameter(line, parameter);
 		if (String.IsNullOrEmpty(parameterValue))
 			throw new Exception("Cannot parse value of " + parameter);
-		return Boolean.Parse(parameterValue);
+		
+		try
+		{
+			return Boolean.Parse(parameterValue);
+		}
+		catch (Exception e)
+		{
+			throw new Exception(e.Message + " when parsing parameter " + parameter);
+		}
 	}
 }
