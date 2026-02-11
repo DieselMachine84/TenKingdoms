@@ -21,7 +21,7 @@ namespace TenKingdoms;
 
 public class ManageCaravansTask : AITask
 {
-    public ManageCaravansTask(Nation nation) : base(nation)
+    public ManageCaravansTask(NationNew nation) : base(nation)
     {
     }
 

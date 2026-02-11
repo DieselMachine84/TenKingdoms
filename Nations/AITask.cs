@@ -5,7 +5,7 @@ namespace TenKingdoms;
 
 public abstract class AITask
 {
-    protected Nation Nation { get; }
+    protected NationNew Nation { get; }
     protected int NationId => Nation.NationId;
 
     protected FirmRes FirmRes => Sys.Instance.FirmRes;
@@ -19,7 +19,7 @@ public abstract class AITask
     protected SiteArray SiteArray => Sys.Instance.SiteArray;
     protected RegionArray RegionArray => Sys.Instance.RegionArray;
 
-    protected AITask(Nation nation)
+    protected AITask(NationNew nation)
     {
         Nation = nation;
     }

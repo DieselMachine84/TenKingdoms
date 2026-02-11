@@ -9,7 +9,7 @@ namespace TenKingdoms;
 
 public class ManageTradeShipsTask : AITask
 {
-    public ManageTradeShipsTask(Nation nation) : base(nation)
+    public ManageTradeShipsTask(NationNew nation) : base(nation)
     {
     }
 

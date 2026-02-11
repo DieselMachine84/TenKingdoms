@@ -17,7 +17,7 @@ public class IdleUnitTask : AITask, IUnitTask
     private bool _shouldCancel;
     public int UnitId { get; }
     
-    public IdleUnitTask(Nation nation, int unitId) : base(nation)
+    public IdleUnitTask(NationNew nation, int unitId) : base(nation)
     {
         UnitId = unitId;
     }

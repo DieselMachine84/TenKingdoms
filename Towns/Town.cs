@@ -90,7 +90,7 @@ public class Town : IIdObject
 	private bool _aiTown;
 	public bool AITown
 	{
-		get => false;
+		get => _aiTown;
 		private set => _aiTown = value;
 	}
 

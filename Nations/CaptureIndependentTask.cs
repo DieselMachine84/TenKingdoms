@@ -45,7 +45,7 @@ public class CaptureIndependentTask : AITask
     
     public int TownId { get; }
 
-    public CaptureIndependentTask(Nation nation, int townId) : base(nation)
+    public CaptureIndependentTask(NationNew nation, int townId) : base(nation)
     {
         TownId = townId;
     }

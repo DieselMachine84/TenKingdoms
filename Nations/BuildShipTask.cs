@@ -8,7 +8,7 @@ public class BuildShipTask : AITask
     public int HarborId { get; }
     private int ShipType { get; }
     
-    public BuildShipTask(Nation nation, int harborId, int shipType) : base(nation)
+    public BuildShipTask(NationNew nation, int harborId, int shipType) : base(nation)
     {
         HarborId = harborId;
         ShipType = shipType;

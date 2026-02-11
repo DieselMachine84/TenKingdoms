@@ -6,7 +6,7 @@ public class ChangeMarketRestockTask : AITask
     private int MarketId { get; }
     private int RestockType { get; }
     
-    public ChangeMarketRestockTask(Nation nation, int marketId, int restockType) : base(nation)
+    public ChangeMarketRestockTask(NationNew nation, int marketId, int restockType) : base(nation)
     {
         MarketId = marketId;
         RestockType = restockType;

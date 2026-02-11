@@ -18,7 +18,7 @@ public class BuildHarborTask : AITask, IUnitTask
     private int SeaRegionId { get; }
     public int UnitId => _builderId;
     
-    public BuildHarborTask(Nation nation, int townId, int seaRegionId) : base(nation)
+    public BuildHarborTask(NationNew nation, int townId, int seaRegionId) : base(nation)
     {
         TownId = townId;
         SeaRegionId = seaRegionId;

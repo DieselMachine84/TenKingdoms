@@ -6,7 +6,7 @@ namespace TenKingdoms;
 
 public class ReduceConstructionWorkersTask : AITask
 {
-    public ReduceConstructionWorkersTask(Nation nation) : base(nation)
+    public ReduceConstructionWorkersTask(NationNew nation) : base(nation)
     {
     }
 

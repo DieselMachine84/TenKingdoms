@@ -42,8 +42,8 @@ public class SpyArray : DynArray<Spy>
                 continue;
 
             //TODO AI
-            //if (NationArray[spy.TrueNationId].is_ai())
-                //spy.ProcessAI();
+            if (NationArray[spy.TrueNationId].IsAI())
+                spy.ProcessAI();
         }
 
         if (Info.TotalDays % 15 == 0)

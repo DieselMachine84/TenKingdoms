@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public class CollectTaxTask : AITask
 {
-    public CollectTaxTask(Nation nation) : base(nation)
+    public CollectTaxTask(NationNew nation) : base(nation)
     {
     }
 

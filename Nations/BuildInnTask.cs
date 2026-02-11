@@ -20,7 +20,7 @@ public class BuildInnTask : AITask, IUnitTask
     public int TownId { get; }
     public int UnitId => _builderId;
     
-    public BuildInnTask(Nation nation, int townId) : base(nation)
+    public BuildInnTask(NationNew nation, int townId) : base(nation)
     {
         TownId = townId;
     }

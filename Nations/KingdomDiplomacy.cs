@@ -1,6 +1,6 @@
 namespace TenKingdoms;
 
-public partial class Nation
+public partial class NationNew
 {
     private void ThinkDiplomacy()
     {

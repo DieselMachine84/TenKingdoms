@@ -26,7 +26,7 @@ public class BuildFactoryTask : AITask, IUnitTask
     private int ProductId { get; }
     public int UnitId => _builderId;
 
-    public BuildFactoryTask(Nation nation, int firmId, int productId) : base(nation)
+    public BuildFactoryTask(NationNew nation, int firmId, int productId) : base(nation)
     {
         FirmId = firmId;
         ProductId = productId;

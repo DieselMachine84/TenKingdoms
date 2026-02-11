@@ -11,7 +11,7 @@ public class SailShipTask : AITask, IUnitTask
     private int TargetLocY { get; }
     public int UnitId => ShipId;
     
-    public SailShipTask(Nation nation, int shipId, int targetLocX, int targetLocY) : base(nation)
+    public SailShipTask(NationNew nation, int shipId, int targetLocX, int targetLocY) : base(nation)
     {
         ShipId = shipId;
         TargetLocX = targetLocX;

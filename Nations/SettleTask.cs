@@ -16,7 +16,7 @@ public class SettleTask : AITask, IUnitTask
     public int FirmId { get; }
     public int UnitId => _settlerId;
     
-    public SettleTask(Nation nation, int firmId) : base(nation)
+    public SettleTask(NationNew nation, int firmId) : base(nation)
     {
         FirmId = firmId;
     }

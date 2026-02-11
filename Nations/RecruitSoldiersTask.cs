@@ -2,7 +2,7 @@ namespace TenKingdoms;
 
 public class RecruitSoldiersTask : AITask
 {
-    public RecruitSoldiersTask(Nation nation) : base(nation)
+    public RecruitSoldiersTask(NationNew nation) : base(nation)
     {
     }
 

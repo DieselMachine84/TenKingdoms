@@ -10,7 +10,7 @@ public class ChangeFactoryProductionTask : AITask
     private int FactoryId { get; }
     private int ProductId { get; }
     
-    public ChangeFactoryProductionTask(Nation nation, int factoryId, int productId) : base(nation)
+    public ChangeFactoryProductionTask(NationNew nation, int factoryId, int productId) : base(nation)
     {
         FactoryId = factoryId;
         ProductId = productId;

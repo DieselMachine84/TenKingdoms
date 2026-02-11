@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace TenKingdoms;
 
-public partial class Nation : NationBase
+public partial class NationNew : NationBase
 {
     private const int MoneyHire = 0;
     private readonly int[] SpendMoneyLevels = new int[1];
@@ -58,7 +58,7 @@ public partial class Nation : NationBase
     public int PrefAcceptableIndependentVillageResistance { get; }
     public int PrefHireUnits { get; }
 
-    public Nation()
+    public NationNew()
     {
         PrefMineFactoryDistance = 20 + Misc.Random(20);
         PrefMinFactoryRawResource = 250 + Misc.Random(200);

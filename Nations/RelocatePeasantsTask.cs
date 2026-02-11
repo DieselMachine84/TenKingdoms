@@ -16,7 +16,7 @@ public class RelocatePeasantsTask : AITask, IUnitTask
     public int TownId { get; }
     public int UnitId => _settlerId;
 
-    public RelocatePeasantsTask(Nation nation, int townId) : base(nation)
+    public RelocatePeasantsTask(NationNew nation, int townId) : base(nation)
     {
         TownId = townId;
     }

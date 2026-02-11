@@ -75,7 +75,7 @@ public abstract class Firm : IIdObject
 	private bool _aiFirm;
 	public bool AIFirm
 	{
-		get => false;
+		get => _aiFirm;
 		private set => _aiFirm = value;
 	} // whether Computer AI control this firm or not
 
