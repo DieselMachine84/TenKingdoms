@@ -150,7 +150,7 @@ public class Sys
             //flame[i].init(Flame::default_width(i), Flame::default_height(i), Flame::base_width(i), FLAME_WIDE);
     }
 
-    private void InitGraphics()
+    private bool InitGraphics()
     {
         using FileStream stream = new FileStream($"{Sys.GameDataFolder}/Resource/PAL_STD.RES", FileMode.Open, FileAccess.Read);
         using BinaryReader reader = new BinaryReader(stream);
@@ -167,19 +167,19 @@ public class Sys
             Graphics = new Graphics();
             if (!Graphics.Init(PaletteColors))
             {
-                DeinitGraphics();
+                Graphics.DeInit();
+                return false;
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            DeinitGraphics();
+            SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "Ten Kingdoms", 
+                "Error when initializing SDL: " + e.Message, IntPtr.Zero);
+            Graphics.DeInit();
+            return false;
         }
-    }
 
-    private void DeinitGraphics()
-    {
-        Graphics.DeInit();
+        return true;
     }
 
     private void Reset()
@@ -221,8 +221,11 @@ public class Sys
         }
         
         ColorRemap.InitRemapTable();
-        InitGraphics();
+        if (!InitGraphics())
+            return;
+        
         LoadResources();
+        
         Renderer = new Renderer(Graphics);
         Reset();
 
@@ -236,7 +239,7 @@ public class Sys
         }*/
         MainLoop();
 
-        DeinitGraphics();
+        Graphics.DeInit();
     }
     
     private void Process()
@@ -408,9 +411,6 @@ public class Sys
 
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_UP)
             Renderer.ProcessInput(InputConstants.KeyUpPressed, 0, 0);
-        
-        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g)
-            Reset();
     }
 
     private void ProcessMouseButtonEvent(SDL.SDL_MouseButtonEvent mouseButtonEvent)
@@ -442,15 +442,12 @@ public class Sys
         Renderer.ProcessInput(InputConstants.MouseMotion, mouseMotionEvent.x, mouseMotionEvent.y);
     }
 
-    public void EndGame(int winNationRecno, int playerDestroyed = 0, int surrenderToNationRecno = 0, int retireFlag = 0)
+    public void EndGame(int winNationId, bool playerDestroyed, int surrenderToNationId = 0, bool retire = false)
     {
     }
 
     public void set_view_mode(int viewMode, int viewingNationRecno = 0, int viewingSpyRecno = 0)
     {
-    }
-
-    public void disp_view_mode(int observeMode = 0)
-    {
+        //TODO move to Renderer and use events
     }
 }

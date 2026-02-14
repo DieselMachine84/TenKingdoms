@@ -327,12 +327,6 @@ public class NationBase : IIdObject
 
         else if (Info.ViewingNationId == NationId)
             Sys.Instance.set_view_mode(InternalConstants.MODE_NORMAL);
-
-        // if deleting own nation, darken view mode buttons
-        if (NationId == NationArray.PlayerId)
-        {
-            Sys.Instance.disp_view_mode(1);
-        }
     }
 
     private void CloseAllFirms()
@@ -1291,7 +1285,7 @@ public class NationBase : IIdObject
             return;
 
         // if the player achieves the goal, the player wins, if one of the other kingdoms achieves the goal, it wins.
-        Sys.Instance.EndGame(NationId, 0);
+        Sys.Instance.EndGame(NationId, false);
     }
 
     private bool GoalDestroyNationAchieved()
@@ -1385,7 +1379,7 @@ public class NationBase : IIdObject
 
         if (NationId == NationArray.PlayerId)
         {
-            Sys.Instance.EndGame(0, 1); // the player lost the game 
+            Sys.Instance.EndGame(0, true); // the player lost the game 
         }
         else // AI and remote players 
         {
@@ -1413,7 +1407,7 @@ public class NationBase : IIdObject
         //------- if the player surrenders --------//
 
         if (NationId == NationArray.PlayerId)
-            Sys.Instance.EndGame(0, 1, toNationId);
+            Sys.Instance.EndGame(0, true, toNationId);
 
         //--- hand over the entire nation to another nation ---//
 

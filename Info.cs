@@ -119,7 +119,7 @@ public class Info
                 Sys.Instance.NewsArray.GoalDeadline(yearLeft, 0);
 
             if (dayLeft == 0) // deadline arrives, everybody loses the game
-                Sys.Instance.EndGame(0, 0);
+                Sys.Instance.EndGame(0, false);
         }
     }
 
