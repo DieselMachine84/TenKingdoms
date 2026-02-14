@@ -707,7 +707,7 @@ public partial class Renderer
             int skillIconX = unitX - Scale(spriteFrame.OffsetX) + 32;
             int skillIconY = unitY - Scale(spriteFrame.OffsetY) - 37;
             IntPtr skillTexture = GetSkillTexture(unit.Rank, unit.Skill.SkillId);
-            if (skillTexture != IntPtr.Zero)
+            if (skillTexture != IntPtr.Zero && (unit.IsOwn() || Config.ShowAIInfo || unit.Skill.SkillId == Skill.SKILL_LEADING))
             {
                 Graphics.DrawBitmapScaled(skillTexture, skillIconX, skillIconY, _skillWidth, _skillHeight);
             }
