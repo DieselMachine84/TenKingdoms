@@ -128,6 +128,11 @@ public partial class Renderer
             SelectMouseCursor();
         }
 
+        if (eventType == InputConstants.KeyXPressed)
+        {
+            NewsArray.ClearDisplayedNews();
+        }
+
         if (eventType == InputConstants.KeyLeftPressed)
         {
             if (_selectedTownId != 0)

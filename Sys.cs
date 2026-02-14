@@ -391,6 +391,12 @@ public class Sys
         if (Speed == 9)
             Speed = 50;
 
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g && Info.GameYear == 1000 && Info.GameMonth == 1)
+            Reset();
+        
+        if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_x)
+            Renderer.ProcessInput(InputConstants.KeyXPressed, 0, 0);
+        
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_LEFT)
             Renderer.ProcessInput(InputConstants.KeyLeftPressed, 0, 0);
 
