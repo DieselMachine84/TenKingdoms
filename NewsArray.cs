@@ -138,12 +138,12 @@ public class NewsArray
 
 	public void Diplomacy(TalkMsg talkMsg)
 	{
-		News news = AddNews(News.NEWS_DIPLOMACY, News.NEWS_NORMAL, talkMsg.from_nation_recno, talkMsg.to_nation_recno);
+		News news = AddNews(News.NEWS_DIPLOMACY, News.NEWS_NORMAL, talkMsg.FromNationId, talkMsg.ToNationId);
 
 		if (news == null) // only news of nations that have contact with the player are added
 			return;
 
-		news.Param1 = talkMsg.RecNo;
+		news.Param1 = talkMsg.Id;
 	}
 
 	public void TownRebel(Town town, int rebelCount)

@@ -264,7 +264,7 @@ public class Sys
             SpyArray.NextDay();
             if (GameConstants.WEATHER_EFFECT)
                 SpriteRes.UpdateSpeed();
-            TalkRes.next_day();
+            TalkRes.NextDay();
             RegionArray.NextDay();
 
             FrameOfDay = 0;
@@ -285,14 +285,13 @@ public class Sys
         {
             bool needRedraw = false;
             bool nextFrameReady = false;
-            SDL.SDL_Event sdlEvent = default;
             if (Speed > 0)
             {
                 long nextFrameTime = lastFrameTime + 1000 / (Speed * 3);
                 long currentMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
                 if (currentMilliseconds < nextFrameTime)
                 {
-                    if (SDL.SDL_WaitEventTimeout(out sdlEvent, Math.Min((int)(nextFrameTime - currentMilliseconds), InternalConstants.SCROLL_INTERVAL)) == 1)
+                    if (SDL.SDL_WaitEventTimeout(out SDL.SDL_Event sdlEvent, Math.Min((int)(nextFrameTime - currentMilliseconds), InternalConstants.SCROLL_INTERVAL)) == 1)
                     {
                         if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                             return;
@@ -305,7 +304,7 @@ public class Sys
                     lastFrameTime = currentMilliseconds;
                     FrameNumber++;
                     nextFrameReady = true;
-                    int hasEvent = SDL.SDL_PollEvent(out sdlEvent);
+                    int hasEvent = SDL.SDL_PollEvent(out SDL.SDL_Event sdlEvent);
                     if (hasEvent == 1)
                     {
                         if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
@@ -317,7 +316,7 @@ public class Sys
             }
             else
             {
-                if (SDL.SDL_WaitEventTimeout(out sdlEvent, InternalConstants.SCROLL_INTERVAL) == 1)
+                if (SDL.SDL_WaitEventTimeout(out SDL.SDL_Event sdlEvent, InternalConstants.SCROLL_INTERVAL) == 1)
                 {
                     if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                         return;

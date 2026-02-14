@@ -76,15 +76,16 @@ public class News
 	public string Param6 { get; set; }
 	public string Param7 { get; set; }
 
+	public int LocX { get; private set; }
+	public int LocY { get; private set; }
 	public int LocType { get; set; }
-	public int LocTypeParam { get; set; }
-	public int LocTypeParam2 { get; set; } 
-	public int LocX { get; set; }
-	public int LocY { get; set; }
+	private int LocTypeParam { get; set; }
+	private int LocTypeParam2 { get; set; } 
 
 	private RaceRes RaceRes => Sys.Instance.RaceRes;
-	private TownRes TownRes => Sys.Instance.TownRes;
+	private TechRes TechRes => Sys.Instance.TechRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
+	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private TalkRes TalkRes => Sys.Instance.TalkRes;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
@@ -96,38 +97,6 @@ public class News
 	public int NewsType()
 	{
 		return Type % NEWS_TYPE_NUM;
-	}
-
-	private string NationName1()
-	{
-		string str = String.Empty;
-
-		if (NationNameId1 < 0) // human player - custom name
-			str += NationArray.GetHumanName(NationNameId1, true) + "'s Kingdom";
-		else
-			str += RaceRes[NationRaceId1].GetSingleName(NationNameId1) + "'s Kingdom";
-
-		//------ add color bar -------//
-
-		str += NationColorStr1();
-
-		return str;
-	}
-
-	private string NationName2()
-	{
-		string str = String.Empty;
-
-		if (NationNameId2 < 0) // human player - custom name
-			str += NationArray.GetHumanName(NationNameId2, true) + "'s Kingdom";
-		else
-			str += RaceRes[NationRaceId2].GetSingleName(NationNameId2) + "'s Kingdom";
-
-		//------ add color bar -------//
-
-		str += NationColorStr2();
-
-		return str;
 	}
 
 	private string KingName1(bool addColor = false)
@@ -166,15 +135,15 @@ public class News
 
 	private string NationColorStr1()
 	{
-		return " @COL" + Convert.ToChar(30 + NationColor1);
+		return " @COL" + Convert.ToChar(48 + NationColor1);
 	}
 
 	private string NationColorStr2()
 	{
-		return " @COL" + Convert.ToChar(30 + NationColor2);
+		return " @COL" + Convert.ToChar(48 + NationColor2);
 	}
 
-	public string RaceName(int raceId)
+	private string RaceName(int raceId)
 	{
 		return raceId switch
 		{
@@ -185,9 +154,43 @@ public class News
 			RaceRes.RACE_PERSIAN => "Persian",
 			RaceRes.RACE_CHINESE => "Chinese",
 			RaceRes.RACE_JAPANESE => "Japanese",
-			RaceRes.RACE_EGYPTIAN => "Eqyptian",
-			RaceRes.RACE_INDIAN => "Mughul",
+			RaceRes.RACE_EGYPTIAN => "Egyptian",
+			RaceRes.RACE_INDIAN => "Mughal",
 			RaceRes.RACE_ZULU => "Zulu",
+			_ => "Unknown"
+		};
+	}
+	
+	private string TechName(int techId)
+	{
+		return techId switch
+		{
+			1 => "Catapult",
+			2 => "Porcupine",
+			3 => "Ballista",
+			4 => "Cannon",
+			5 => "Spitfire",
+			6 => "Caravel",
+			7 => "Galleon",
+			8 => "Unicorn",
+			_ => "Unknown"
+		};
+	}
+
+	private string WarMachineName(int unitId)
+	{
+		return unitId switch
+		{
+			UnitConstants.UNIT_CATAPULT => "Catapult",
+			UnitConstants.UNIT_BALLISTA => "Ballista",
+			UnitConstants.UNIT_FLAMETHROWER => "Spitfire",
+			UnitConstants.UNIT_CANNON => "Cannon",
+			UnitConstants.UNIT_EXPLOSIVE_CART => "Porcupine",
+			UnitConstants.UNIT_VESSEL => "Trader",
+			UnitConstants.UNIT_TRANSPORT => "Transport",
+			UnitConstants.UNIT_CARAVEL => "Caravel",
+			UnitConstants.UNIT_GALLEON => "Galleon",
+			UnitConstants.UNIT_F_BALLISTA => "Unicorn",
 			_ => "Unknown"
 		};
 	}
@@ -207,6 +210,17 @@ public class News
 			Firm.FIRM_HARBOR => "Harbor",
 			Firm.FIRM_MONSTER => "Fryhtan Lair",
 			_ => "Firm"
+		};
+	}
+
+	private string RawName(int rawType)
+	{
+		return rawType switch
+		{
+			1 => "Clay",
+			2 => "Copper",
+			3 => "Iron",
+			_ => "Raw Resource"
 		};
 	}
 
@@ -312,6 +326,7 @@ public class News
 
 		bool rc = false;
 
+		//TODO town and firm location should always be valid
 		if (LocType == NEWS_LOC_TOWN)
 		{
 			if (!TownArray.IsDeleted(LocTypeParam))
@@ -368,20 +383,16 @@ public class News
 
 	private string Diplomacy()
 	{
-		TalkMsg talkMsg = TalkRes.get_talk_msg(Param1);
-		return talkMsg.msg_str(NationArray.PlayerId);
+		TalkMsg talkMsg = TalkRes.GetTalkMsg(Param1);
+		return talkMsg.Message(NationArray.PlayerId);
 	}
 
 	private string TownRebel()
 	{
 		if (Param2 == 1)
-		{
-			return $"{Param2} peasant in {Param6} in {KingName1()}'s Kingdom {NationColorStr1()} is rebelling.";
-		}
+			return $"{Param2} peasant in {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} is rebelling.";
 		else
-		{
-			return $"{Param2} peasants in {Param6} in {KingName1()}'s Kingdom {NationColorStr1()} are rebelling.";
-		}
+			return $"{Param2} peasants in {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} are rebelling.";
 	}
 
 	private string Migrate()
@@ -393,24 +404,16 @@ public class News
 				if (Param5 != 0)
 				{
 					if (Param4 == 1)
-					{
-						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 					else
-					{
-						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 				}
 				else
 				{
 					if (Param4 == 1)
-					{
-						return $"{Param4} {RaceRes[Param3].Name} peasant has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} peasant has emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 					else
-					{
-						return $"{Param4} {RaceRes[Param3].Name} peasants have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom {NationColor2}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} peasants have emigrated from your village of {Param6} to {Param7} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 				}
 			}
 			else
@@ -418,24 +421,16 @@ public class News
 				if (Param5 != 0)
 				{
 					if (Param4 == 1)
-					{
 						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has emigrated from your village of {Param6} to {Param7}.";
-					}
 					else
-					{
 						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have emigrated from your village of {Param6} to {Param7}.";
-					}
 				}
 				else
 				{
 					if (Param4 == 1)
-					{
 						return $"{Param4} {RaceRes[Param3].Name} peasant has emigrated from your village of {Param6} to {Param7}.";
-					}
 					else
-					{
 						return $"{Param4} {RaceRes[Param3].Name} peasants have emigrated from your village of {Param6} to {Param7}.";
-					}
 				}
 			}
 		}
@@ -446,24 +441,16 @@ public class News
 				if (Param5 != 0)
 				{
 					if (Param4 == 1)
-					{
-						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} to your village of {Param7}.";
 					else
-					{
-						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} to your village of {Param7}.";
 				}
 				else
 				{
 					if (Param4 == 1)
-					{
-						return $"{Param4} {RaceRes[Param3].Name} peasant has immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} peasant has immigrated from {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} to your village of {Param7}.";
 					else
-					{
-						return $"{Param4} {RaceRes[Param3].Name} peasants have immigrated from {Param6} in {KingName1()}'s Kingdom {NationColor1} to your village of {Param7}.";
-					}
+						return $"{Param4} {RaceRes[Param3].Name} peasants have immigrated from {Param6} in {KingName1()}'s Kingdom{NationColorStr1()} to your village of {Param7}.";
 				}
 			}
 			else
@@ -471,24 +458,16 @@ public class News
 				if (Param5 != 0)
 				{
 					if (Param4 == 1)
-					{
 						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle} has immigrated from {Param6} to your village of {Param7}.";
-					}
 					else
-					{
 						return $"{Param4} {RaceRes[Param3].Name} {FirmRes[Param5].WorkerTitle}s have immigrated from {Param6} to your village of {Param7}.";
-					}
 				}
 				else
 				{
 					if (Param4 == 1)
-					{
 						return $"{Param4} {RaceRes[Param3].Name} peasant has immigrated from {Param6} to your village of {Param7}.";
-					}
 					else
-					{
 						return $"{Param4} {RaceRes[Param3].Name} peasants have immigrated from {Param6} to your village of {Param7}.";
-					}
 				}
 			}
 		}
@@ -501,50 +480,38 @@ public class News
 
 	private string NationDestroyed()
 	{
-		return $"{KingName1()}'s Kingdom {NationColorStr1()} has been destroyed.";
+		return $"{KingName1()}'s Kingdom{NationColorStr1()} has been destroyed.";
 	}
 
 	private string NationSurrender()
 	{
 		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
-		{
-			return $"{KingName1()}'s Kingdom {NationColorStr1()} has surrendered to you.";
-		}
+			return $"{KingName1()}'s Kingdom{NationColorStr1()} has surrendered to you.";
 		else
-		{
-			return $"{KingName1()}'s Kingdom {NationColorStr1()} has surrendered to {KingName2()}'s Kingdom {NationColorStr2()}.";
-		}
+			return $"{KingName1()}'s Kingdom{NationColorStr1()} has surrendered to {KingName2()}'s Kingdom.{NationColorStr2()}";
 	}
 
 	private string KingDie()
 	{
 		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
-		{
 			return $"Your King, {KingName1()}, has been slain.";
-		}
 		else
-		{
-			return $"King {KingName1()} of {KingName1()}'s Kingdom {NationColorStr1()} has been slain.";
-		}
+			return $"King {KingName1()} of {KingName1()}'s Kingdom{NationColorStr1()} has been slain.";
 	}
 
 	private string NewKing()
 	{
 		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
-		{
 			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as your new King.";
-		}
 		else
-		{
-			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom {NationColorStr1()}.";
-		}
+			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom.{NationColorStr1()}";
 	}
 
 	private string FirmDestroyed()
 	{
 		return Param3 switch
 		{
-			DESTROYER_NATION => $"Your {FirmName(Param1)} near {Param6} has been destroyed by {KingName2()}'s Kingdom {NationColorStr2()}.",
+			DESTROYER_NATION => $"Your {FirmName(Param1)} near {Param6} has been destroyed by {KingName2()}'s Kingdom.{NationColorStr2()}",
 			DESTROYER_REBEL => $"Your {FirmName(Param1)} near {Param6} has been destroyed by Rebels.",
 			DESTROYER_MONSTER => $"Your {FirmName(Param1)} near {Param6} has been destroyed by Fryhtans.",
 			_ => $"Your {FirmName(Param1)} near {Param6} has been destroyed."
@@ -554,20 +521,16 @@ public class News
 	private string FirmCaptured()
 	{
 		if (Param3 != 0)
-		{
-			return $"Your {FirmName(Param1)} near {Param6} has been captured by a spy from {KingName2()}'s Kingdom {NationColorStr2()}.";
-		}
+			return $"Your {FirmName(Param1)} near {Param6} has been captured by a spy from {KingName2()}'s Kingdom.{NationColorStr2()}";
 		else
-		{
-			return $"Your {FirmName(Param1)} near {Param6} has been captured by {KingName2()}'s Kingdom {NationColorStr2()}.";
-		}
+			return $"Your {FirmName(Param1)} near {Param6} has been captured by {KingName2()}'s Kingdom.{NationColorStr2()}";
 	}
 
 	private string TownDestroyed()
 	{
 		return Param2 switch
 		{
-			DESTROYER_NATION => $"Your village of {Param6} has been destroyed by {KingName2()}'s Kingdom {NationColorStr2()}.",
+			DESTROYER_NATION => $"Your village of {Param6} has been destroyed by {KingName2()}'s Kingdom.{NationColorStr2()}",
 			DESTROYER_REBEL => $"Your village of {Param6} has been destroyed by Rebels.",
 			DESTROYER_MONSTER => $"Your village of {Param6} has been destroyed by Fryhtans.",
 			_ => $"Your village of {Param6} has been destroyed."
@@ -582,14 +545,10 @@ public class News
 	private string TownSurrendered()
 	{
 		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
-		{
-			return $"Your village of {Param6} has surrendered to {KingName1()}'s Kingdom {NationColorStr1()}.";
-		}
+			return $"Your village of {Param6} has surrendered to {KingName1()}'s Kingdom.{NationColorStr1()}";
 		
 		if (NationNameId2 != 0)
-		{
-			return $"The village of {Param6} in {KingName2()}'s Kingdom {NationColorStr2()} has surrendered to you.";
-		}
+			return $"The village of {Param6} in {KingName2()}'s Kingdom{NationColorStr2()} has surrendered to you.";
 
 		return $"The independent village of {Param6} has surrendered to you.";
 	}
@@ -607,13 +566,9 @@ public class News
 	private string ScrollAcquired()
 	{
 		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
-		{
 			return $"You have acquired the {RaceName(Param1)} Scroll of Power.";
-		}
 		else
-		{
-			return $"{KingName1()}'s Kingdom {NationColorStr1()} has acquired the {RaceName(Param1)} Scroll of Power.";
-		}
+			return $"{KingName1()}'s Kingdom{NationColorStr1()} has acquired the {RaceName(Param1)} Scroll of Power.";
 	}
 
 	private string MonsterGoldAcquired()
@@ -626,37 +581,25 @@ public class News
 		if (Param3 == Spy.SPY_FIRM)
 		{
 			if (NationNameId2 != 0)
-			{
-				return $"Your spy has been exposed and executed on his mission to a {FirmName(Param1)} near {Param6} in {KingName2()}'s Kingdom {NationColorStr2()}.";
-			}
+				return $"Your spy has been exposed and executed on his mission to a {FirmName(Param1)} near {Param6} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 			else
-			{
 				return $"Your spy has been exposed and executed on his mission to a {FirmName(Param1)} near {Param6}.";
-			}
 		}
 		
 		if (Param3 == Spy.SPY_TOWN)
 		{
 			if (NationNameId2 != 0)
-			{
-				return $"Your spy has been exposed and executed on his mission to {Param6} in {KingName2()}'s Kingdom {NationColorStr2()}.";
-			}
+				return $"Your spy has been exposed and executed on his mission to {Param6} in {KingName2()}'s Kingdom.{NationColorStr2()}";
 			else
-			{
 				return $"Your spy has been exposed and executed on his mission to {Param6}.";
-			}
 		}
 		
 		if (Param3 == Spy.SPY_MOBILE)
 		{
 			if (NationNameId2 != 0)
-			{
-				return $"Your spy {RaceRes[Param1].GetName(Param2)} has been exposed and executed on his mission to {KingName2()}'s Kingdom {NationColorStr2()}.";
-			}
+				return $"Your spy {RaceRes[Param1].GetName(Param2)} has been exposed and executed on his mission to {KingName2()}'s Kingdom.{NationColorStr2()}";
 			else
-			{
 				return $"Your spy {RaceRes[Param1].GetName(Param2)} has been exposed and executed on his mission.";
-			}
 		}
 
 		return String.Empty;
@@ -665,76 +608,242 @@ public class News
 	private string EnemySpyKilled()
 	{
 		if (Param3 == Spy.SPY_FIRM)
-		{
-			return $"A spy from {KingName2()}'s Kingdom {NationColorStr2()} has been uncovered and executed in your {FirmName(Param1)} near {Param6}.";
-		}
+			return $"A spy from {KingName2()}'s Kingdom{NationColorStr2()} has been uncovered and executed in your {FirmName(Param1)} near {Param6}.";
 
 		if (Param3 == Spy.SPY_TOWN)
-		{
-			return $"A spy from {KingName2()}'s Kingdom {NationColorStr2()} has been uncovered and executed in your village of {Param6}.";
-		}
+			return $"A spy from {KingName2()}'s Kingdom{NationColorStr2()} has been uncovered and executed in your village of {Param6}.";
 
 		if (Param3 == Spy.SPY_MOBILE)
-		{
-			return $"Spy {RaceRes[Param1].GetName(Param2)} from {KingName2()}'s Kingdom {NationColorStr2()} has been uncovered and executed.";
-		}
+			return $"Spy {RaceRes[Param1].GetName(Param2)} from {KingName2()}'s Kingdom{NationColorStr2()} has been uncovered and executed.";
 		
 		return String.Empty;
 	}
 
 	private string UnitBetray()
 	{
-		return String.Empty;
+		if (NationNameId1 == 0) // independent unit joining your force
+			return $"Independent unit {RaceRes[Param1].GetName(Param2)} has joined your force.";
+
+		if (NationNameId2 == 0) // became an independent unit
+		{
+			if (Param3 == Unit.RANK_GENERAL)
+				return $"General {RaceRes[Param1].GetName(Param2)} has renounced you and become independent.";
+			else
+				return $"{RaceRes[Param1].GetName(Param2)} has renounced you and become independent.";
+		}
+		else
+		{
+			if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+			{
+				if (Param3 == Unit.RANK_GENERAL)
+					return $"General {RaceRes[Param1].GetName(Param2)} has betrayed you and turned towards {KingName2()}'s Kingdom.{NationColorStr2()}";
+				else
+					return $"{RaceRes[Param1].GetName(Param2)} has betrayed you and turned towards {KingName2()}'s Kingdom.{NationColorStr2()}";
+			}
+			else
+			{
+				if (Param3 == Unit.RANK_GENERAL)
+					return $"General {RaceRes[Param1].GetName(Param2)} of {KingName1()}'s Kingdom{NationColorStr1()} has defected to your forces.";
+				else
+					return $"{RaceRes[Param1].GetName(Param2)} of {KingName1()}'s Kingdom{NationColorStr1()} has defected to your forces.";
+			}
+		}
 	}
 
 	private string UnitAssassinated()
 	{
-		return String.Empty;
+		string result;
+
+		if (Param3 == Unit.RANK_KING)
+			result = $"Your King, {RaceRes[Param1].GetSingleName(Param2)}, has been assassinated by an enemy spy.";
+		else
+			result = $"Your general, {RaceRes[Param1].GetSingleName(Param2)}, has been assassinated by an enemy spy.";
+
+		if (Param4 != 0)
+			result += " The enemy spy has been killed.";
+
+		return result;
 	}
 
 	private string AssassinatorCaught()
 	{
-		return String.Empty;
+		if (Param1 == Unit.RANK_KING)
+			return $"An enemy spy has been killed while attempting to assassinate your King.";
+		else
+			return $"An enemy spy has been killed while attempting to assassinate your General.";
 	}
 
 	private string GeneralDie()
 	{
-		return String.Empty;
+		return $"Your general, {RaceRes[Param1].GetSingleName(Param2)}, has been slain.";
 	}
 
 	private string RawExhaust()
 	{
-		return String.Empty;
+		return $"Your {RawName(Param1)} Mine has exhausted its {RawName(Param1)} deposit.";
 	}
 
 	private string TechResearched()
 	{
-		return String.Empty;
+		if (TechRes[Param1].MaxTechLevel > 1) // if the tech has more than one level
+			return $"Your scientists have finished their {TechName(Param1)} Mark {Misc.RomanNumber(Param2)} research.";
+		else
+			return $"Your scientists have finished their {TechName(Param1)} research.";
 	}
 
 	private string LightningDamage()
 	{
-		return String.Empty;
+		switch (Param1)
+		{
+			case NEWS_LOC_UNIT:
+				string unitName = Param2 > 0 ? RaceRes[Param2].GetName(Param3) : UnitRes[Param3].Name;
+
+				if (Param4 == Unit.RANK_GENERAL)
+				{
+					if (Param5 != 0)
+						return $"Your General {unitName} has been struck and killed by lightning.";
+					else
+						return $"Your General {unitName} has been struck and injured by lightning.";
+				}
+				else if (Param4 == Unit.RANK_KING)
+				{
+					if (Param5 != 0)
+						return "Your King has been struck and killed by lightning.";
+					else
+						return "Your King has been struck and injured by lightning.";
+				}
+				else
+				{
+					if (Param5 != 0)
+						return $"Your unit {unitName} has been struck and killed by lightning.";
+					else
+						return $"Your unit {unitName} has been struck and injured by lightning.";
+				}
+
+			case NEWS_LOC_FIRM:
+				if (!String.IsNullOrEmpty(Param6))
+				{
+					if (Param5 != 0)
+						return $"Your {FirmName(Param2)} near {Param6} has been destroyed by lightning.";
+					else
+						return $"Your {FirmName(Param2)} near {Param6} has been struck by lightning.";
+				}
+				else
+				{
+					if (Param5 != 0)
+						return $"Your {FirmName(Param2)} has been destroyed by lightning.";
+					else
+						return $"Your {FirmName(Param2)} has been struck by lightning.";
+				}
+
+			case NEWS_LOC_TOWN:
+				if (Param5 != 0)
+					return $"Your village {Param6} has been destroyed by lightning.";
+				else
+					return $"Your village {Param6} has been struck by lightning.";
+
+			default:
+				return "Something has been struck by lightning.";
+		}
 	}
 
 	private string EarthquakeDamage()
 	{
-		return String.Empty;
+		if (Param1 == 1)
+		{
+			if (Param3 > 0)
+			{
+				if (Param2 == 1)
+					return $"{Param2} of your units has been injured and {Param3} killed in an earthquake.";
+				else
+					return $"{Param2} of your units have been injured and {Param3} killed in an earthquake.";
+			}
+			else
+			{
+				if (Param2 == 1)
+					return $"{Param2} of your units has been injured in an earthquake.";
+				else
+					return $"{Param2} of your units have been injured in an earthquake.";
+			}
+		}
+
+		if (Param1 == 2)
+		{
+			if (Param2 == 1)
+				return $"{Param2} of your villagers has been killed in an earthquake.";
+			else
+				return $"{Param2} of your villagers have been killed in an earthquake.";
+		}
+
+		if (Param1 == 3)
+		{
+			if (Param3 > 0)
+			{
+				if (Param2 == 1)
+					return $"{Param2} of your buildings has been damaged and {Param3} destroyed in an earthquake.";
+				else
+					return $"{Param2} of your buildings have been damaged and {Param3} destroyed in an earthquake.";
+			}
+			else
+			{
+				if (Param2 == 1)
+					return $"{Param2} of your buildings has been damaged in an earthquake.";
+				else
+					return $"{Param2} of your buildings have been damaged in an earthquake.";
+			}
+		}
+
+		return "Something has been damaged in an earthquake.";
 	}
 
 	private string GoalDeadline()
 	{
-		return String.Empty;
+		string result = "Make haste! ";
+
+		if (Param1 != 0 && Param2 == 0)
+		{
+			if (Param1 == 1)
+				result += $"You have only {Param1} year left to achieve your goal.";
+			else
+				result += $"You have only {Param1} years left to achieve your goal.";
+
+			return result;
+		}
+
+		if (Param1 == 0 && Param2 != 0)
+		{
+			if (Param2 == 1)
+				result += $"You have only {Param2} month left to achieve your goal.";
+			else
+				result += $"You have only {Param2} months left to achieve your goal.";
+
+			return result;
+		}
+
+		if (Param1 == 1)
+			result += $"You have only {Param1} year";
+		else
+			result += $"You have only {Param1} years";
+
+		if (Param2 == 1)
+			result += $" and {Param2} month left to achieve your goal.";
+		else
+			result += $" and {Param2} months left to achieve your goal.";
+
+		return result;
 	}
 
 	private string WeaponShipWornOut()
 	{
-		return String.Empty;
+		if( Param2 != 0 )
+			return $"A {WarMachineName(Param1)} {Misc.RomanNumber(Param2)} of yours has broken down due to the lack of maintenance funds.";
+		else
+			return $"A {WarMachineName(Param1)} of yours has broken down due to the lack of maintenance funds.";
 	}
 
 	private string FirmWornOut()
 	{
-		return String.Empty;
+		return $"Your {FirmName(Param1)} near {Param6} has fallen into disrepair due to the lack of maintenance funds.";
 	}
 
 	private string ChatMsg()
@@ -744,12 +853,12 @@ public class News
 
 	private string MultiRetire()
 	{
-		return String.Empty;
+		return $"{KingName1()}'s Kingdom{NationColorStr1()} has retired and quit the game.";
 	}
 
 	private string MultiQuitGame()
 	{
-		return String.Empty;
+		return $"{KingName1()}'s Kingdom{NationColorStr1()} has quit the game.";
 	}
 
 	private string MultiSaveGame()
@@ -759,6 +868,6 @@ public class News
 
 	private string MultiConnectionLost()
 	{
-		return String.Empty;
+		return $"The connection with {KingName1()}'s Kingdom{NationColorStr1()} has been lost.";
 	}
 }

@@ -58,8 +58,11 @@ public partial class Renderer
             if (!SelectObjects(oldMouseButtonX, oldMouseButtonY, mouseEventX, mouseEventY))
             {
                 if (clickOnMainView)
+                {
+                    HandleSelectedView();
                     HandleNewsButtons();
-                
+                }
+
                 if (clickOnMiniMap)
                     HandleMiniMap();
 
@@ -611,7 +614,7 @@ public partial class Renderer
     private void HandleNewsButtons()
     {
         bool hasNews = false;
-        int dy = 40;
+        int dy = 38;
         for (int i = NewsArray.LastClearId + 1; i < NewsArray.Count(); i++)
         {
             News news = NewsArray[i];
@@ -628,17 +631,25 @@ public partial class Renderer
 
             if (news.Id == News.NEWS_DIPLOMACY)
             {
-                TalkMsg talkMsg = TalkRes.get_talk_msg(news.Param1);
-                if (talkMsg.reply_type == TalkRes.REPLY_WAITING && !talkMsg.is_valid_to_reply())
+                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
+                if (talkMsg.ReplyType == TalkRes.REPLY_WAITING)
                 {
-                    continue;
+                    bool clickOnReply = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + NATION_COLOR_BAR_WIDTH &&
+                                        _mouseButtonY >= MainViewY + MainViewHeight + 2 - dy && _mouseButtonY < MainViewY + MainViewHeight + 2 - dy + NATION_COLOR_BAR_HEIGHT;
+                    if (clickOnReply)
+                    {
+                        HandlePlayerReply(news.Param1);
+                    }
                 }
             }
-
+            else if (news.Id == News.NEWS_CHAT_MSG)
+            {
+                //TODO reply chat
+            }
             if (news.IsLocValid())
             {
                 bool clickOnNewsLoc = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + _newsLocWidth * 2 &&
-                                      _mouseButtonY >= MainViewY + MainViewHeight - dy + 3 && _mouseButtonY < MainViewY + MainViewHeight + _newsLocHeight * 2;
+                                      _mouseButtonY >= MainViewY + MainViewHeight + 2 - dy && _mouseButtonY < MainViewY + MainViewHeight + _newsLocHeight * 2;
                 if (clickOnNewsLoc)
                 {
                     GoToLocation(news.LocX, news.LocY);
@@ -646,7 +657,7 @@ public partial class Renderer
             }
 
             hasNews = true;
-            dy += 40;
+            dy += 38;
         }
 
         if (hasNews)

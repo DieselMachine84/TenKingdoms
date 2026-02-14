@@ -3223,7 +3223,7 @@ public abstract class Firm : IIdObject
 		if (ownNation.GetRelation(capturerNationRecno).Status >= NationBase.NATION_FRIENDLY)
 			ownNation.ai_end_treaty(capturerNationRecno);
 
-		TalkRes.ai_send_talk_msg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
+		TalkRes.AISendTalkMsg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
 	}
 
 	#endregion

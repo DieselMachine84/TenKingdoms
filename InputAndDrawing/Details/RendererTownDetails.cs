@@ -97,9 +97,6 @@ public partial class Renderer
             if (town.RacesPopulation[i] == 0)
                 continue;
 
-            if (_selectedRaceId == 0)
-                _selectedRaceId = i + 1;
-
             RaceInfo raceInfo = RaceRes[i + 1];
             Graphics.DrawBitmap(raceInfo.GetIconTexture(Graphics), DetailsX1 + 14, raceY, raceInfo.IconBitmapWidth * 2, raceInfo.IconBitmapHeight * 2);
 
@@ -143,6 +140,9 @@ public partial class Renderer
                 PutText(FontMid, loyaltyString, DetailsX1 + (needScroll ? 330 : 364) - loyaltyWidth / 2, textY);
             }
 
+            if (_selectedRaceId == 0)
+                _selectedRaceId = i + 1;
+            
             if (_selectedRaceId == i + 1)
                 DrawSelectedBorder(DetailsX1 + 8, raceY - 7, DetailsX1 + 405, raceY + 47);
 

@@ -262,7 +262,7 @@ public class NationBase : IIdObject
     {
         //---- delete all talk messages to/from this nation ----//
 
-        TalkRes.del_all_nation_msg(NationId);
+        TalkRes.DeleteAllNationMessages(NationId);
 
         //------- close down all firms --------//
 
@@ -1594,8 +1594,9 @@ public class NationBase : IIdObject
     }
     
     
-    private double TotalYearTrade(int nationId)
+    public double TotalYearTrade(int nationId)
     {
+        //TODO use CurYearImport also
         return GetRelation(nationId).LastYearImport[IMPORT_TOTAL] +
                NationArray[nationId].GetRelation(NationId).LastYearImport[IMPORT_TOTAL];
     }

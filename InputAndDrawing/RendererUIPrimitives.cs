@@ -8,6 +8,9 @@ public partial class Renderer
 {
 	private const int ButtonWidth = 66;
 	private const int ButtonHeight = 56;
+	public const int NATION_COLOR_BAR_WIDTH = 24;
+	public const int NATION_COLOR_BAR_HEIGHT = 24;
+	
 	private int Button1X => DetailsX1 + 2;
 	private int Button2X => DetailsX1 + 85;
 	private int Button3X => DetailsX1 + 168;
@@ -393,6 +396,28 @@ public partial class Renderer
 	private IntPtr _indicatorTexture;
 	private int _indicatorWidth;
 	private int _indicatorHeight;
+
+	private readonly IntPtr[] _scrollMenuTextures = new IntPtr[8];
+	private readonly int[] _scrollMenuWidths = new int[8];
+	private readonly int[] _scrollMenuHeights = new int[8];
+	private IntPtr _kingdomsHeaderTexture;
+	private int _kingdomsHeaderWidth;
+	private int _kingdomsHeaderHeight;
+	private IntPtr _kingdomsTexture;
+	private int _kingdomsWidth;
+	private int _kingdomsHeight;
+	private IntPtr _talkTexture;
+	private int _talkWidth;
+	private int _talkHeight;
+	private IntPtr _kingdomsButtonDownTexture;
+	private int _kingdomsButtonDownWidth;
+	private int _kingdomsButtonDownHeight;
+	private IntPtr _kingdomsButtonUpTexture;
+	private int _kingdomsButtonUpWidth;
+	private int _kingdomsButtonUpHeight;
+	private IntPtr _newsTexture;
+	private int _newsWidth;
+	private int _newsHeight;
 	
 	private void CreateUITextures()
 	{
@@ -501,6 +526,8 @@ public partial class Renderer
         CreateListBoxPanels(detailsBitmap1, detailsBitmap2);
         
         CreateListBoxScrollPanel(detailsBitmap1, detailsBitmap2);
+        
+        CreateMenuTextures();
 	}
 
 	private void CreatePanels(byte[] detailsBitmap1, byte[] detailsBitmap2)
@@ -655,6 +682,42 @@ public partial class Renderer
 		_listBoxScrollPanelHeight = _listBoxPanelWithScrollHeight;
 		byte[] listBoxScrollPanelBitmap = CreatePanelDownBitmap(detailsBitmap1, detailsBitmap2, _listBoxScrollPanelWidth, _listBoxScrollPanelHeight);
 		_listBoxScrollPanelTexture = Graphics.Create32BitTextureFromBmp(listBoxScrollPanelBitmap, _listBoxScrollPanelWidth, _listBoxScrollPanelHeight);
+	}
+
+	private void CreateMenuTextures()
+	{
+		ResourceIdx scrollImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_BUTTON.RES");
+		for (int i = 1; i <= 8; i++)
+		{
+			byte[] scrollData = scrollImages.Read("SCROLL-" + i.ToString());
+			_scrollMenuWidths[i - 1] = BitConverter.ToInt16(scrollData, 0);
+			_scrollMenuHeights[i - 1] = BitConverter.ToInt16(scrollData, 2);
+			_scrollMenuTextures[i - 1] = Graphics.CreateTextureFromBmp(scrollData, _scrollMenuWidths[i - 1], _scrollMenuHeights[i - 1]);
+		}
+		_kingdomsHeaderWidth = MainViewWidth - 12;
+		_kingdomsHeaderHeight = 40;
+		byte[] kingdomsHeaderBitmap = CreatePanelUpBitmap(_kingdomsHeaderWidth, _kingdomsHeaderHeight, Colors.NEWS_COLOR);
+		_kingdomsHeaderTexture = Graphics.Create32BitTextureFromBmp(kingdomsHeaderBitmap, _kingdomsHeaderWidth, _kingdomsHeaderHeight);
+		_kingdomsWidth = MainViewWidth - 12;
+		_kingdomsHeight = 380;
+		byte[] kingdomsBitmap = CreatePanelDownBitmap(_kingdomsWidth, _kingdomsHeight, Colors.NEWS_COLOR, true);
+		_kingdomsTexture = Graphics.Create32BitTextureFromBmp(kingdomsBitmap, _kingdomsWidth, _kingdomsHeight);
+		_talkWidth = MainViewWidth - 12;
+		_talkHeight = 274;
+		byte[] talkBitmap = CreatePanelDownBitmap(_talkWidth, _talkHeight, Colors.NEWS_COLOR, true);
+		_talkTexture = Graphics.Create32BitTextureFromBmp(talkBitmap, _talkWidth, _talkHeight);
+		_kingdomsButtonDownWidth = 300;
+		_kingdomsButtonDownHeight = 40;
+		byte[] kingdomsButtonDownBitmap = CreatePanelDownBitmap(_kingdomsButtonDownWidth, _kingdomsButtonDownHeight, Colors.NEWS_COLOR);
+		_kingdomsButtonDownTexture = Graphics.Create32BitTextureFromBmp(kingdomsButtonDownBitmap, _kingdomsButtonDownWidth, _kingdomsButtonDownHeight);
+		_kingdomsButtonUpWidth = 300;
+		_kingdomsButtonUpHeight = 40;
+		byte[] kingdomsButtonUpBitmap = CreatePanelUpBitmap(_kingdomsButtonUpWidth, _kingdomsButtonUpHeight, Colors.NEWS_COLOR);
+		_kingdomsButtonUpTexture = Graphics.Create32BitTextureFromBmp(kingdomsButtonUpBitmap, _kingdomsButtonUpWidth, _kingdomsButtonUpHeight);
+		_newsWidth = MainViewWidth - 38;
+		_newsHeight = 38;
+		byte[] newsBitmap = CreatePanelBitmap(_newsWidth, _newsHeight, Colors.NEWS_COLOR, true);
+		_newsTexture = Graphics.Create32BitTextureFromBmp(newsBitmap, _newsWidth, _newsHeight);
 	}
 	
 	private void CreateIconTextures()
@@ -1145,6 +1208,124 @@ public partial class Renderer
         return panelDownBitmap;
 	}
 
+	private byte[] CreatePanelUpBitmap(int width, int height, byte paletteColor)
+	{
+        byte[] panelUpBitmap = new byte[width * height * 4];
+        int index = 0;
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                System.Drawing.Color color = Sys.Instance.PaletteColors[paletteColor];
+                panelUpBitmap[index] = color.B;
+                panelUpBitmap[index + 1] = color.G;
+                panelUpBitmap[index + 2] = color.R;
+                panelUpBitmap[index + 3] = 255;
+                index += 4;
+            }
+        }
+        for (int w = 0; w < width; w++)
+        {
+            index = w * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 255;
+            index = width * 4 + w * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 255;
+            index = (height - 2) * width * 4 + w * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 0;
+            index = (height - 1) * width * 4 + w * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 0;
+        }
+        for (int h = 2; h < height; h++)
+        {
+            index = h * width * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 255;
+            index = h * width * 4 + 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 255;
+            index = h * width * 4 + (width - 2) * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 0;
+            index = h * width * 4 + (width - 1) * 4;
+            panelUpBitmap[index] = panelUpBitmap[index + 1] = panelUpBitmap[index + 2] = 0;
+        }
+
+        return panelUpBitmap;
+	}
+	
+	private byte[] CreatePanelDownBitmap(int width, int height, byte paletteColor, bool transparent = false)
+	{
+		byte[] panelDownBitmap = new byte[width * height * 4];
+        int index = 0;
+        byte alpha = 255;
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                System.Drawing.Color color = Sys.Instance.PaletteColors[paletteColor];
+                panelDownBitmap[index] = color.B;
+                panelDownBitmap[index + 1] = color.G;
+                panelDownBitmap[index + 2] = color.R;
+                panelDownBitmap[index + 3] = alpha;
+                index += 4;
+                if (transparent)
+	                alpha = (alpha == 0) ? (byte)255 : (byte)0;
+            }
+            if (transparent)
+	            alpha = (alpha == 0) ? (byte)255 : (byte)0;
+        }
+        for (int w = 0; w < width; w++)
+        {
+            index = w * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = 0;
+            panelDownBitmap[index + 3] = 255;
+            index = width * 4 + w * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = 0;
+            panelDownBitmap[index + 3] = 255;
+            index = (height - 2) * width * 4 + w * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = panelDownBitmap[index + 3] = 255;
+            index = (height - 1) * width * 4 + w * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = panelDownBitmap[index + 3] = 255;
+        }
+        for (int h = 2; h < height; h++)
+        {
+            index = h * width * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = 0;
+            panelDownBitmap[index + 3] = 255;
+            index = h * width * 4 + 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = 0;
+            panelDownBitmap[index + 3] = 255;
+            index = h * width * 4 + (width - 2) * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = panelDownBitmap[index + 3] = 255;
+            index = h * width * 4 + (width - 1) * 4;
+            panelDownBitmap[index] = panelDownBitmap[index + 1] = panelDownBitmap[index + 2] = panelDownBitmap[index + 3] = 255;
+        }
+
+        return panelDownBitmap;
+	}
+	
+	private byte[] CreatePanelBitmap(int width, int height, byte paletteColor, bool transparent = false)
+	{
+		byte[] panelBitmap = new byte[width * height * 4];
+        int index = 0;
+        byte alpha = 255;
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                System.Drawing.Color color = Sys.Instance.PaletteColors[paletteColor];
+                panelBitmap[index] = color.B;
+                panelBitmap[index + 1] = color.G;
+                panelBitmap[index + 2] = color.R;
+                panelBitmap[index + 3] = alpha;
+                index += 4;
+                if (transparent)
+	                alpha = (alpha == 0) ? (byte)255 : (byte)0;
+            }
+            if (transparent)
+	            alpha = (alpha == 0) ? (byte)255 : (byte)0;
+        }
+
+        return panelBitmap;
+	}
+	
 	private void DrawSmallPanel(int x, int y)
 	{
 		Graphics.DrawBitmap(_smallPanelTexture, x, y, Scale(_smallPanelWidth), Scale(_smallPanelHeight));
@@ -1409,27 +1590,19 @@ public partial class Renderer
 				x += font.SpaceWidth;
 			}
 
-			// --------- control word: @COL# (nation color) -----------//
-
 			else
 			{
+				// --------- control word: @COL# (nation color) -----------//
 				int colLength = "@COL".Length;
 				bool hasColorCode = (textChar == '@') && (i + colLength <= text.Length && text.Substring(i, colLength) == "@COL");
 				if (hasColorCode) // display nation color bar in text
 				{
-					if (x2 >= 0 && x + Font.NATION_COLOR_BAR_WIDTH - 1 > x2) // exceed right border x2
-						break;
-
 					// get nation color and skip over the word
 					i += colLength;
 					textChar = text[i];
 
-					//byte colorCode = ColorRemap.ColorRemaps[textChar - '0'].MainColor;
-
-					//TODO
-					//NationArray.disp_nation_color(x, y + 2, colorCode);
-
-					x += Font.NATION_COLOR_BAR_WIDTH;
+					DrawNationColor(textChar - '0', x, y + 4);
+					x += NATION_COLOR_BAR_WIDTH;
 				}
 
 				//------------- normal character ----------------//
@@ -1470,6 +1643,18 @@ public partial class Renderer
 
 			x += smallSize ? font.InterCharSpace * 2 / 3 : font.InterCharSpace;
 		}
+	}
+
+	private void DrawNationColor(int colorScheme, int x, int y)
+	{
+		ColorRemap colorRemap = ColorRemap.GetColorRemap(colorScheme, false);
+		int color = colorRemap.MainColor;
+		int borderColor = colorRemap.BorderColor;
+		Graphics.DrawRect(x, y, NATION_COLOR_BAR_WIDTH, NATION_COLOR_BAR_HEIGHT, color);
+		Graphics.DrawRect(x, y, NATION_COLOR_BAR_WIDTH, 2, borderColor);
+		Graphics.DrawRect(x, y + NATION_COLOR_BAR_HEIGHT - 2, NATION_COLOR_BAR_WIDTH, 2, borderColor);
+		Graphics.DrawRect(x, y, 2, NATION_COLOR_BAR_HEIGHT, borderColor);
+		Graphics.DrawRect(x + NATION_COLOR_BAR_WIDTH - 2, y, 2, NATION_COLOR_BAR_HEIGHT, borderColor);
 	}
 
 	private IntPtr GetSkillTexture(int rank, int skillId)

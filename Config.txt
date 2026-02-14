@@ -1,5 +1,5 @@
 // ---- New game settings ----
-PlayerRaceId = 1                                // 1..10	
+PlayerRaceId = 1                                // 1..10
 PlayerColor = 1                                 // 1..10
 PlayerName = New Player
 MapSize = 200                                   // 100, 200, 300 or 400

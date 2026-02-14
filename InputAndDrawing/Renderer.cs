@@ -67,10 +67,18 @@ public partial class Renderer : IRenderer
     private int _selectedSiteId;
     private int _selectedRaceId;
     private int _selectedShipId;
+    private int _selectedKingdomId;
     private InnUnit _selectedInnUnit;
     private Spy _selectedSpy;
     
     private int _setStopId;
+
+    private TalkMsg _curTalkMsg;
+    private readonly TalkChoice[] _talkChoices = new TalkChoice[TalkMsg.MAX_TALK_CHOICE];
+    private int _talkChoiceIndex;
+    private string _choiceQuestion;
+    private string _choiceQuestionSecondLine;
+    private int _replyTalkMsgId;
 
     private Graphics Graphics { get; }
 
@@ -133,6 +141,9 @@ public partial class Renderer : IRenderer
         CreateAnimatedSegments();
         CreateIconTextures();
         CreateButtonTextures();
+        
+        for (int i = 0; i < _talkChoices.Length; i++)
+            _talkChoices[i] = new TalkChoice();
     }
 
     private int Scale(int size)
@@ -179,6 +190,7 @@ public partial class Renderer : IRenderer
         Graphics.SetClipRectangle(MainViewX, MainViewY, MainViewWidth, MainViewHeight);
         DrawMainView();
         DrawNews();
+        DrawSelectedView();
         Graphics.SetClipRectangle(MiniMapX, MiniMapY, MiniMapSize, MiniMapSize);
         DrawMiniMap(nextFrame);
         Graphics.ResetClipRectangle();
@@ -249,6 +261,23 @@ public partial class Renderer : IRenderer
             _bottomBorder1TextureWidth, _bottomBorder1TextureHeight);
         Graphics.DrawBitmapScaled(_bottomBorder2Texture, WindowWidth - Scale(_miniMapBorder2TextureWidth), WindowHeight - Scale(_bottomBorder1TextureHeight),
             _bottomBorder2TextureWidth, _bottomBorder2TextureHeight);
+        
+        if (_viewMode == ViewMode.Kingdoms)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[0], -6, 0, _scrollMenuWidths[0], _scrollMenuHeights[0]);
+        if (_viewMode == ViewMode.Villages)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[1], 87, 0, _scrollMenuWidths[1], _scrollMenuHeights[1]);
+        if (_viewMode == ViewMode.Economy)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[2], 180, 0, _scrollMenuWidths[2], _scrollMenuHeights[2]);
+        if (_viewMode == ViewMode.Trade)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[3], 273, 0, _scrollMenuWidths[3], _scrollMenuHeights[3]);
+        if (_viewMode == ViewMode.Military)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[4], 4, 29, _scrollMenuWidths[4], _scrollMenuHeights[4]);
+        if (_viewMode == ViewMode.Technology)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[5], 96, 29, _scrollMenuWidths[5], _scrollMenuHeights[5]);
+        if (_viewMode == ViewMode.Espionage)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[6], 187, 29, _scrollMenuWidths[6], _scrollMenuHeights[6]);
+        if (_viewMode == ViewMode.Ranking)
+            Graphics.DrawBitmapScaled(_scrollMenuTextures[7], 282, 29, _scrollMenuWidths[7], _scrollMenuHeights[7]);
 
         if (NationArray.PlayerId != 0)
         {
@@ -272,7 +301,7 @@ public partial class Renderer : IRenderer
     private void DrawNews()
     {
         bool hasNews = false;
-        int dy = 40;
+        int dy = 38;
         for (int i = NewsArray.LastClearId + 1; i < NewsArray.Count(); i++)
         {
             News news = NewsArray[i];
@@ -289,21 +318,44 @@ public partial class Renderer : IRenderer
 
             if (news.Id == News.NEWS_DIPLOMACY)
             {
-                TalkMsg talkMsg = TalkRes.get_talk_msg(news.Param1);
-                if (talkMsg.reply_type == TalkRes.REPLY_WAITING && !talkMsg.is_valid_to_reply())
+                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
+                if (talkMsg.ReplyType == TalkRes.REPLY_WAITING && !talkMsg.IsValidToReply())
                 {
                     continue;
                 }
             }
 
-            Graphics.DrawRect(MainViewX + 6, MainViewY + MainViewHeight - dy - 6, MainViewWidth - 40, 40, Colors.NEWS_COLOR);
-            if (news.IsLocValid())
-                Graphics.DrawBitmap(_newsLocTexture, MainViewX + 12, MainViewY + MainViewHeight - dy + 3, _newsLocWidth * 2, _newsLocHeight * 2);
+            Graphics.DrawBitmap(_newsTexture, MainViewX + 6, MainViewY + MainViewHeight - dy - 6, _newsWidth, _newsHeight);
+
+            if (news.Id == News.NEWS_DIPLOMACY)
+            {
+                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
+                
+                int nationId;
+                if( talkMsg.ReplyType == TalkRes.REPLY_WAITING || talkMsg.ReplyType == TalkRes.REPLY_NOT_NEEDED )
+                    nationId = talkMsg.FromNationId;
+                else
+                    nationId = talkMsg.ToNationId;
+                
+                DrawNationColor(ColorRemap.ColorSchemes[nationId], MainViewX + 12, MainViewY + MainViewHeight + 2 - dy);
+            }
+            else if (news.Id == News.NEWS_CHAT_MSG)
+            {
+                DrawNationColor(news.NationColor1, MainViewX + 12, MainViewY + MainViewHeight + 2 - dy);
+            }
+            else
+            {
+                if (news.IsLocValid())
+                    Graphics.DrawBitmap(_newsLocTexture, MainViewX + 12, MainViewY + MainViewHeight + 2 - dy, _newsLocWidth * 2, _newsLocHeight * 2);
+            }
+
+            TalkRes.AddNationColor = true;
             string newsText = news.NewsDate.ToString("MMM d, yyyy") + " " + news.Message();
-            PutText(FontSan, newsText, MainViewX + 47, MainViewY + MainViewHeight - dy);
+            PutText(FontSan, newsText, MainViewX + 46, MainViewY + MainViewHeight - 2 - dy);
+            TalkRes.AddNationColor = false;
             
             hasNews = true;
-            dy += 40;
+            dy += 38;
         }
 
         if (hasNews)
@@ -342,6 +394,13 @@ public partial class Renderer : IRenderer
     
     public void Reset()
     {
+        _selectedKingdomId = 0;
+        _curTalkMsg = new TalkMsg();
+        _talkChoiceIndex = 0;
+        _choiceQuestion = String.Empty;
+        _choiceQuestionSecondLine = String.Empty;
+        _replyTalkMsgId = 0;
+        
         _screenSquareFrameCount = 0;
         _screenSquareFrameStep = 1;
         ResetSelection();

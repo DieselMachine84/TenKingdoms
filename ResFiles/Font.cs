@@ -41,9 +41,6 @@ public class FontInfo // info for each character
 
 public class Font
 {
-	public const int NATION_COLOR_BAR_WIDTH = 13;
-	public const int NATION_COLOR_BAR_HEIGHT = 13;
-
 	private int _stdFontHeight;
 	public int FontHeight { get; } // height of a character
 	public int MaxFontWidth { get; } // width of the widest character in the font
@@ -149,7 +146,7 @@ public class Font
 			    {
 				    // skip over the word
 				    i += colLength;
-				    x += NATION_COLOR_BAR_WIDTH;
+				    x += Renderer.NATION_COLOR_BAR_WIDTH;
 			    }
 
 			    //--- add the width of the character to the total line width ---//

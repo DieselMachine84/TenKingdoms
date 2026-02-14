@@ -78,8 +78,6 @@ public class Graphics
             return false;
         }
 
-        //SDL_image.IMG_Init(SDL_image.IMG_InitFlags.IMG_INIT_JPG | SDL_image.IMG_InitFlags.IMG_INIT_PNG);
-
         _colors = new SDL.SDL_Color[paletteColors.Length];
         for (int i = 0; i < _colors.Length; i++)
         {
@@ -100,7 +98,6 @@ public class Graphics
         if (!_initialized)
             return;
         
-        //SDL_image.IMG_Quit();
         SDL.SDL_FreePalette(_palette);
 
         foreach (var texture in _textures)
@@ -133,33 +130,6 @@ public class Graphics
 
         _initialized = false;
     }
-
-    /*public void SaveImageToDisc()
-    {
-        IntPtr sdlPalette = SDL.SDL_AllocPalette(256);
-        SDL.SDL_SetPaletteColors(sdlPalette, colors, 0, 256);
-       
-        List<Resource> interfaceResources = ResourceReader.Read($"{Sys.GameDataFolder}/Resource/I_IF.RES");
-        
-        foreach (var interfaceResource in interfaceResources)
-        {
-            if (String.IsNullOrEmpty(interfaceResource.Name))
-                continue;
-
-            int width = interfaceResource.Data[1] * 256 + interfaceResource.Data[0];
-            int height = interfaceResource.Data[3] * 256 + interfaceResource.Data[2];
-            var pixels = interfaceResource.Data.Skip(4).Take(interfaceResource.Data.Length - 4).ToArray();
-            GCHandle pinnedArray = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-            IntPtr imageSurface = SDL.SDL_CreateRGBSurfaceFrom(pinnedArray.AddrOfPinnedObject(),
-                width, height, 8, width, 0, 0, 0, 0);
-            SDL.SDL_SetSurfacePalette(imageSurface, sdlPalette);
-            IntPtr imageTexture = SDL.SDL_CreateTextureFromSurface(renderer, imageSurface);
-            SDL.SDL_RenderCopy(renderer, imageTexture, IntPtr.Zero, IntPtr.Zero);
-            SDL_image.IMG_SavePNG(imageSurface, $"{Sys.GameDataFolder}/Images/{interfaceResource.Name}.png");
-            SDL_image.IMG_SaveJPG(imageSurface, $"{Sys.GameDataFolder}/Images/{interfaceResource.Name}.jpg", 100);
-            pinnedArray.Free();
-        }
-    }*/
 
     public byte[] CopyBitmapRect(byte[] bitmap, int bitmapWidth, int bitmapHeight, int x, int y, int width, int height)
     {

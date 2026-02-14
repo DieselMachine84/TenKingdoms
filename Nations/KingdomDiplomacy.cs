@@ -21,11 +21,11 @@ public partial class NationNew
                 continue;
 
             bool exists = false;
-            for (int i = 0; i < TalkRes.talk_msg_array.Count; i++)
+            for (int i = 0; i < TalkRes.TalkMessages.Count; i++)
             {
-                TalkMsg message = TalkRes.talk_msg_array[i];
-                if (message.from_nation_recno == NationId && message.to_nation_recno == otherNation.NationId &&
-                    message.talk_id == TalkMsg.TALK_PROPOSE_TRADE_TREATY)
+                TalkMsg message = TalkRes.TalkMessages[i];
+                if (message.FromNationId == NationId && message.ToNationId == otherNation.NationId &&
+                    message.TalkId == TalkMsg.TALK_PROPOSE_TRADE_TREATY)
                 {
                     exists = true;
                 }
@@ -33,23 +33,23 @@ public partial class NationNew
 
             if (!ourRelation.TradeTreaty && !exists)
             {
-                TalkRes.ai_send_talk_msg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
+                TalkRes.AISendTalkMsg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
             }
         }
     }
 
     private void ProcessTalkMessages()
     {
-        for (int i = TalkRes.talk_msg_array.Count - 1; i >= 0; i--)
+        for (int i = TalkRes.TalkMessages.Count - 1; i >= 0; i--)
         {
-            TalkMsg message = TalkRes.talk_msg_array[i];
-            if (message.to_nation_recno != NationId)
+            TalkMsg message = TalkRes.TalkMessages[i];
+            if (message.ToNationId != NationId)
                 continue;
 
-            if (message.reply_type == TalkRes.REPLY_WAITING)
+            if (message.ReplyType == TalkRes.REPLY_WAITING)
             {
-                TalkRes.reply_talk_msg(message.RecNo, TalkRes.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
-                TalkRes.del_talk_msg(message.RecNo);
+                TalkRes.ReplyTalkMsg(message.Id, TalkRes.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
+                TalkRes.DelTalkMsg(message.Id);
             }
         }
     }

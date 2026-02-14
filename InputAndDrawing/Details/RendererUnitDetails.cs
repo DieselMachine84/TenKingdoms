@@ -81,15 +81,7 @@ public partial class Renderer
             if (firmId != 0 && !FirmArray.IsDeleted(firmId))
             {
                 Firm firm = FirmArray[firmId];
-                int colorScheme = ColorRemap.ColorSchemes[firm.NationId];
-                ColorRemap colorRemap = ColorRemap.GetColorRemap(colorScheme, false);
-                int color = colorRemap.MainColor;
-                int borderColor = colorRemap.BorderColor;
-                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 24, 24, color);
-                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 24, 2, borderColor);
-                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy + 24 - 2, 24, 2, borderColor);
-                Graphics.DrawRect(DetailsX1 + 16, DetailsY1 + 102 + dy, 2, 24, borderColor);
-                Graphics.DrawRect(DetailsX1 + 16 + 24 - 2, DetailsY1 + 102 + dy, 2, 24, borderColor);
+                DrawNationColor(ColorRemap.ColorSchemes[firm.NationId], DetailsX1 + 16, DetailsY1 + 102 + dy);
                 PutText(FontSan, firm.FirmName(), DetailsX1 + 46, DetailsY1 + 99 + dy);
                 PutText(FontSan, "Pick up", DetailsX1 + 16, DetailsY1 + 132 + dy, -1, true);
                 PutText(FontSan, ":", DetailsX1 + 79, DetailsY1 + 134 + dy, -1, true);

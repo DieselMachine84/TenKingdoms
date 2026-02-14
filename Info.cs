@@ -204,16 +204,6 @@ public class Info
         return totalScore;
     }
     
-    public void InitPlayerReply(int talkToNationId)
-    {
-        //TODO
-    }
-
-    public void PlayerReplyChat(int withNationId)
-    {
-        //TODO
-    }
-
     public void ProcessViewingSpy()
     {
         //TODO
