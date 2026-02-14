@@ -51,6 +51,7 @@ public partial class Renderer : IRenderer
 
     private int _topLeftLocX;
     private int _topLeftLocY;
+    private ViewMode _prevViewMode = ViewMode.Normal;
     private ViewMode _viewMode = ViewMode.Normal;
     public bool NeedFullRedraw { get; set; }
     private int _screenSquareFrameCount = 0;
@@ -67,12 +68,12 @@ public partial class Renderer : IRenderer
     private int _selectedSiteId;
     private int _selectedRaceId;
     private int _selectedShipId;
-    private int _selectedKingdomId;
     private InnUnit _selectedInnUnit;
     private Spy _selectedSpy;
     
     private int _setStopId;
 
+    private int _selectedKingdomId;
     private TalkMsg _curTalkMsg;
     private readonly TalkChoice[] _talkChoices = new TalkChoice[TalkMsg.MAX_TALK_CHOICE];
     private int _talkChoiceIndex;
@@ -394,6 +395,8 @@ public partial class Renderer : IRenderer
     
     public void Reset()
     {
+        _prevViewMode = ViewMode.Normal;
+        _viewMode = ViewMode.Normal;
         _selectedKingdomId = 0;
         _curTalkMsg = new TalkMsg();
         _talkChoiceIndex = 0;

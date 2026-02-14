@@ -38,38 +38,45 @@ public partial class Renderer
             _leftMousePressed = true;
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
-            if (clickOnMainView)
+            
+            if (clickOnMainView && _viewMode == ViewMode.Normal)
                 ProcessLeftMouseAction();
             
             if (clickOnDetails)
                 HandleDetails();
         }
-        
+
         if (eventType == InputConstants.LeftMouseUp)
         {
             int oldMouseButtonX = _mouseButtonX;
             int oldMouseButtonY = _mouseButtonY;
-            
+
             _leftMousePressed = false;
             _leftMouseReleased = true;
             _mouseButtonX = mouseEventX;
             _mouseButtonY = mouseEventY;
+            bool handled = false;
 
-            if (!SelectObjects(oldMouseButtonX, oldMouseButtonY, mouseEventX, mouseEventY))
+            if (clickOnMainView && _viewMode != ViewMode.Normal)
             {
-                if (clickOnMainView)
-                {
-                    HandleSelectedView();
-                    HandleNewsButtons();
-                }
-
-                if (clickOnMiniMap)
-                    HandleMiniMap();
-
-                if (clickOnDetails)
-                    HandleDetails();
+                HandleSelectedView();
             }
-            
+
+            if (clickOnMainView)
+            {
+                handled = HandleNewsButtons();
+            }
+
+            bool objectsSelected = false;
+            if (!handled && _viewMode == ViewMode.Normal)
+                objectsSelected = SelectObjects(oldMouseButtonX, oldMouseButtonY, mouseEventX, mouseEventY);
+
+            if (clickOnMiniMap && !objectsSelected)
+                HandleMiniMap();
+
+            if (clickOnDetails && !objectsSelected)
+                HandleDetails();
+
             _leftMouseReleased = false;
         }
 
@@ -611,8 +618,10 @@ public partial class Renderer
         }
     }
 
-    private void HandleNewsButtons()
+    private bool HandleNewsButtons()
     {
+        bool handled = false;
+        
         bool hasNews = false;
         int dy = 38;
         for (int i = NewsArray.LastClearId + 1; i < NewsArray.Count(); i++)
@@ -639,6 +648,7 @@ public partial class Renderer
                     if (clickOnReply)
                     {
                         HandlePlayerReply(news.Param1);
+                        handled = true;
                     }
                 }
             }
@@ -653,6 +663,7 @@ public partial class Renderer
                 if (clickOnNewsLoc)
                 {
                     GoToLocation(news.LocX, news.LocY);
+                    handled = true;
                 }
             }
 
@@ -667,6 +678,7 @@ public partial class Renderer
             if (clickOnClearNews)
             {
                 NewsArray.ClearDisplayedNews();
+                handled = true;
             }
         }
 
@@ -675,7 +687,10 @@ public partial class Renderer
         if (clickOnNewsLog)
         {
             _viewMode = _viewMode == ViewMode.News ? ViewMode.Normal : ViewMode.News;
+            handled = true;
         }
+
+        return handled;
     }
 
     private void HandleMiniMap()
