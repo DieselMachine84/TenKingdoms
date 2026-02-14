@@ -195,6 +195,7 @@ public partial class Renderer
                             TalkRes.ReplyTalkMsg(_replyTalkMsgId, TalkRes.REPLY_REJECT, InternalConstants.COMMAND_PLAYER);
                     }
 
+                    _viewMode = _prevViewMode;
                     _replyTalkMsgId = 0;
                     ResetCurTalkMsg();
                     return;
@@ -253,6 +254,7 @@ public partial class Renderer
 
         AddTalkChoice("Reject.", 0);
 
+        _prevViewMode = _viewMode;
         _viewMode = ViewMode.Kingdoms;
         _selectedKingdomId = talkMsg.FromNationId;
         _replyTalkMsgId = talkMsgId;
