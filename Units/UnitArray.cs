@@ -897,7 +897,7 @@ public class UnitArray : SpriteArray
 		//------ sorting the distance and store in sortedDistance Array -------//
 		for (j = 0; j < selectedCount; j++)
 		{
-			min = Int16.MaxValue;
+			min = Int32.MaxValue;
 			for (i = 0; i < selectedCount; i++)
 			{
 				if (doneFlag[i] == 0 && (dist = distance[i]) < min)
@@ -951,7 +951,7 @@ public class UnitArray : SpriteArray
 		//---------- sorting -------------//
 		for (j = 0; j < selectedCount; j++)
 		{
-			min = Int16.MaxValue;
+			min = Int32.MaxValue;
 			for (i = 0; i < selectedCount; i++)
 			{
 				if ((dist = distance[i]) < min)
@@ -962,7 +962,7 @@ public class UnitArray : SpriteArray
 			}
 
 			sortedMember[j] = k;
-			distance[k] = Int16.MaxValue;
+			distance[k] = Int32.MaxValue;
 		}
 	}
 
