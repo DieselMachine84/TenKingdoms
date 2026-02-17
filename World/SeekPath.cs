@@ -13,7 +13,9 @@ public class SeekPath
 
 	public const int SEARCH_MODE_IN_A_GROUP = 1;
 	public const int SEARCH_MODE_A_UNIT_IN_GROUP = 2;
+
 	public const int SEARCH_MODE_TO_ATTACK = 3;
+
 	//public const int SEARCH_MODE_REUSE = 4;
 	//public const int SEARCH_MODE_BLOCKING = 5;
 	public const int SEARCH_MODE_TO_VEHICLE = 6;
@@ -57,6 +59,7 @@ public class SeekPath
 	private int _finalDestY; // i.e. the value used finally may not be the real dest_? given.
 
 	private static Config Config => Sys.Instance.Config;
+	private static World World => Sys.Instance.World;
 	private static UnitArray UnitArray => Sys.Instance.UnitArray;
 
 	public SeekPath()
@@ -92,9 +95,10 @@ public class SeekPath
 		_searchSubMode = subMode;
 	}
 
+	//TODO use index instead of locX and locY
 	private bool CanMoveTo(int locX, int locY)
 	{
-		Location location = Sys.Instance.World.GetLoc(locX, locY);
+		Location location = World.GetLoc(locX, locY);
 		Unit unit;
 		int cargoId;
 		int powerNationId = location.PowerNationId;
@@ -294,11 +298,10 @@ public class SeekPath
 		return false;
 	}
 
-	public int Seek(int sx, int sy, int dx, int dy, int groupId, int mobileType, int searchMode = SEARCH_MODE_IN_A_GROUP,
-		int miscNo = 0, int numOfPath = 1)
+	public int Seek(int sx, int sy, int dx, int dy, int groupId, int mobileType, int searchMode = SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
 		PathStatus = PATH_WAIT;
-		
+
 		//-------- initialize vars --------------//
 		_searchMode = searchMode;
 		_groupId = groupId;
@@ -333,7 +336,7 @@ public class SeekPath
 				_buildingY1 = dy;
 				if (miscNo != -1)
 				{
-					Location location = Sys.Instance.World.GetLoc(dx, dy);
+					Location location = World.GetLoc(dx, dy);
 					Town targetTown = Sys.Instance.TownArray[location.TownId()];
 					_buildingX2 = targetTown.LocX2;
 					_buildingY2 = targetTown.LocY2;
@@ -470,6 +473,12 @@ public class SeekPath
 						if (_nodeMatrix[nearIndex] == 0 && !CanMoveTo(nearX, nearY))
 						{
 							_nodeMatrix[nearIndex] = -1;
+							if (nearX == _finalDestX && nearY == _finalDestY)
+							{
+								PathStatus = PATH_IMPOSSIBLE;
+								return PathStatus;
+							}
+
 							continue;
 						}
 
@@ -482,15 +491,15 @@ public class SeekPath
 						if (_nodeMatrix[nearIndex] == 0 || _nodeMatrix[nearIndex] > newValue)
 						{
 							_nodeMatrix[nearIndex] = newValue;
+							if (nearX == _finalDestX && nearY == _finalDestY)
+							{
+								PathStatus = PATH_FOUND;
+								return PathStatus;
+							}
+
 							_newChangedNodesX.Add(nearX);
 							_newChangedNodesY.Add(nearY);
 						}
-					}
-
-					if (x == _finalDestX && y == _finalDestY && _nodeMatrix[currentIndex] > 0)
-					{
-						PathStatus = PATH_FOUND;
-						return PathStatus;
 					}
 				}
 			}
@@ -677,7 +686,7 @@ public class SeekPath
 
 		if (reversedPath.Count == 1)
 			reversedPath.Clear();
-		
+
 		reversedPath.Reverse();
 		pathDist = reversedPath.Count - 1;
 		return reversedPath;
