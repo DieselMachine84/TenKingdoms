@@ -9,10 +9,6 @@ namespace TenKingdoms;
 public class Graphics
 {
     private const string WindowTitle = "Ten Kingdoms";
-    private int WindowWidth => Renderer.MainViewX + Sys.Instance.Config.GameScreenWidth * Renderer.CellTextureWidth
-                                                 + Renderer.BorderWidth + Renderer.MiniMapSize + Renderer.BorderWidth;
-    private int WindowHeight => Renderer.MainViewY + Sys.Instance.Config.GameScreenHeight * Renderer.CellTextureHeight;
-    
     private const uint SDLSubSystems = SDL.SDL_INIT_VIDEO;
     private IntPtr _window = IntPtr.Zero;
     private IntPtr _renderer = IntPtr.Zero;
@@ -44,7 +40,7 @@ public class Graphics
         }
 
         _window = SDL.SDL_CreateWindow(WindowTitle, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED,
-            WindowWidth, WindowHeight, SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED);
+            Renderer.StartMenuWidth, Renderer.StartMenuHeight, SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED);
         if (_window == IntPtr.Zero)
         {
             LogError("There was an error when creating a window.");
@@ -129,6 +125,12 @@ public class Graphics
         SDL.SDL_Quit();
 
         _initialized = false;
+    }
+
+    public void SetWindowSize(int width, int height)
+    {
+        SDL.SDL_SetWindowSize(_window, width, height);
+        SDL.SDL_SetWindowPosition(_window, SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED);
     }
 
     public byte[] CopyBitmapRect(byte[] bitmap, int bitmapWidth, int bitmapHeight, int x, int y, int width, int height)

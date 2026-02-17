@@ -18,6 +18,31 @@ public partial class Renderer
 
     public void ProcessInput(int eventType, int mouseEventX, int mouseEventY)
     {
+        if (GameMode != GameMode.Game)
+        {
+            if (eventType == InputConstants.LeftMouseUp)
+            {
+                _leftMouseReleased = true;
+                _mouseButtonX = mouseEventX;
+                _mouseButtonY = mouseEventY;
+                
+                if (GameMode == GameMode.StartMenu)
+                    HandleStartMenu();
+                if (GameMode == GameMode.SinglePlayerMenu)
+                    HandleSinglePlayerMenu();
+                
+                _leftMouseReleased = false;
+            }
+
+            if (eventType == InputConstants.MouseMotion)
+            {
+                _mouseMotionX = mouseEventX;
+                _mouseMotionY = mouseEventY;
+            }
+            
+            return;
+        }
+        
         bool clickOnViewModeButton = mouseEventX >= ViewModeX && mouseEventX < ViewModeX + ViewModeWidth &&
                                      mouseEventY >= ViewModeY && mouseEventY < ViewModeY + ViewModeHeight;
 
@@ -1173,5 +1198,53 @@ public partial class Renderer
         }
 
         return true;
+    }
+
+    private void HandleStartMenu()
+    {
+        int dy = 0;
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 && _mouseButtonY <= 330 + _swordSinglePlayerHeight)
+        {
+            if (_leftMouseReleased)
+            {
+                GameMode = GameMode.SinglePlayerMenu;
+            }
+        }
+        dy += _swordSinglePlayerHeight;
+        dy += _swordMultiPlayerHeight;
+        dy += _swordEncyclopediaHeight;
+        dy += _swordHallOfFameHeight;
+        dy += _swordCreditsHeight;
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordSinglePlayerHeight)
+        {
+            if (_leftMouseReleased)
+            {
+                Sys.Instance.ExitFlag = true;
+            }
+        }
+    }
+
+    private void HandleSinglePlayerMenu()
+    {
+        int dy = 0;
+        dy += _swordTrainingHeight;
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword2Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordNewGameHeight)
+        {
+            if (_leftMouseReleased)
+            {
+                Sys.Instance.StartNewGame();
+            }
+        }
+
+        dy += _swordNewGameHeight;
+        dy += _swordLoadGameHeight;
+        dy += _swordScenarioHeight;
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordCancelHeight)
+        {
+            if (_leftMouseReleased)
+            {
+                GameMode = GameMode.StartMenu;
+            }
+        }
     }
 }

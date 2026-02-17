@@ -14,6 +14,7 @@ public class Sys
     private int FrameOfDay { get; set; }
     private int Speed { get; set; } = 1;
     public bool GameEnded { get; private set; }
+    public bool ExitFlag { get; set; }
 
     private Graphics Graphics { get; set; }
     private Renderer Renderer { get; set; }
@@ -182,9 +183,17 @@ public class Sys
         return true;
     }
 
-    private void Reset()
+    private void ShowMainMenu()
+    {
+        Renderer.GameMode = GameMode.StartMenu;
+        Graphics.SetWindowSize(Renderer.StartMenuWidth, Renderer.StartMenuHeight);
+        Graphics.SetCursor(CursorRes[CursorType.NORMAL].GetCursor(Graphics));
+    }
+
+    public void StartNewGame()
     {
         //TODO reset all static variables
+        Renderer.GameMode = GameMode.Game;
         FrameNumber = 0;
         FrameOfDay = 0;
         GameEnded = false;
@@ -193,6 +202,7 @@ public class Sys
         mapGenerator.Generate();
         Renderer.Reset();
         GoToPlayerTown();
+        Graphics.SetWindowSize(Renderer.WindowWidth, Renderer.WindowHeight);
     }
 
     private void GoToPlayerTown()
@@ -227,7 +237,7 @@ public class Sys
         LoadResources();
         
         Renderer = new Renderer(Graphics);
-        Reset();
+        ShowMainMenu();
 
         /*try
         {
@@ -282,10 +292,31 @@ public class Sys
 
     private void MainLoop()
     {
+        Renderer.DrawFrame(false);
+        Graphics.Render();
+        
         long lastFrameTime = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
         long lastScrollTime = DateTime.Now.Ticks;
         while (true)
         {
+            if (ExitFlag)
+                return;
+
+            if (Renderer.GameMode != GameMode.Game)
+            {
+                if (SDL.SDL_WaitEventTimeout(out SDL.SDL_Event sdlEvent, InternalConstants.SCROLL_INTERVAL) == 1)
+                {
+                    if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                        return;
+                
+                    ProcessEvent(sdlEvent);
+                    Renderer.DrawFrame(false);
+                    Graphics.Render();
+                }
+                
+                continue;
+            }
+            
             bool needRedraw = false;
             bool nextFrameReady = false;
             if (Speed > 0)
@@ -395,7 +426,7 @@ public class Sys
             Speed = 50;
 
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_g && Info.GameYear == 1000 && Info.GameMonth == 1)
-            Reset();
+            StartNewGame();
         
         if (keyboardEvent.keysym.sym == SDL.SDL_Keycode.SDLK_x)
             Renderer.ProcessInput(InputConstants.KeyXPressed, 0, 0);

@@ -8,17 +8,21 @@ public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
 
 public enum ScreenObjectType { None, FriendTown, EnemyTown, FriendFirm, EnemyFirm, FriendUnit, EnemyUnit, SpyUnit, UnitGroup, Site }
 
+public enum GameMode { StartMenu, SinglePlayerMenu, Game, InGameMenu }
+
 public enum ViewMode { Normal, Kingdoms, Villages, Economy, Trade, Military, Technology, Espionage, Ranking, News }
 
 public partial class Renderer : IRenderer
 {
-    public int WindowWidth => MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
-    public int WindowHeight => MainViewY + MainViewHeight;
-
     private const int NormalLayer = 1;
     private const int TopLayer = 2;
     private const int BottomLayer = 4;
     private const int AirLayer = 8;
+    
+    public static int StartMenuWidth = 1280;
+    public static int StartMenuHeight = 853;
+    public int WindowWidth => MainViewX + MainViewWidth + BorderWidth + MiniMapSize + BorderWidth;
+    public int WindowHeight => MainViewY + MainViewHeight;
 
     private const int GameMenuHeight = 84;
     public const int BorderWidth = 18;
@@ -49,6 +53,7 @@ public partial class Renderer : IRenderer
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
 
+    public GameMode GameMode { get; set; } = GameMode.StartMenu;
     private int _topLeftLocX;
     private int _topLeftLocY;
     private ViewMode _prevViewMode = ViewMode.Normal;
@@ -88,6 +93,7 @@ public partial class Renderer : IRenderer
     private Font FontMid { get; }
     private Font FontSmall { get; }
     private Font FontBible { get; }
+    private Font FontNews { get; }
 
     private static TerrainRes TerrainRes => Sys.Instance.TerrainRes;
     private static HillRes HillRes => Sys.Instance.HillRes;
@@ -137,6 +143,7 @@ public partial class Renderer : IRenderer
         FontMid = new Font("MID", 1, 0);
         FontSmall = new Font("SMAL", 1, 0);
         FontBible = new Font("CASA", 1, 1);
+        FontNews = new Font("NEWS", 0, 0);
         
         CreateUITextures();
         CreateAnimatedSegments();
@@ -181,9 +188,74 @@ public partial class Renderer : IRenderer
 
         return (locX, locY);
     }
+
+    private void DrawStartMenu()
+    {
+        Graphics.DrawBitmap(_mainMenuTexture, 0, 0, _mainMenuWidth, _mainMenuHeight, FlipMode.Vertical);
+
+        int dy = 0;
+        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 && _mouseMotionY <= 330 + _swordSinglePlayerHeight)
+            Graphics.DrawBitmap(_swordSinglePlayerSelectedTexture, 478, 330, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        else
+            Graphics.DrawBitmap(_swordSinglePlayerTexture, 478, 330, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        dy += _swordSinglePlayerHeight;
+        Graphics.DrawBitmap(_swordMultiPlayerDisabledTexture, 478, 330 + dy, _swordMultiPlayerWidth, _swordMultiPlayerHeight);
+        dy += _swordMultiPlayerHeight;
+        Graphics.DrawBitmap(_swordEncyclopediaDisabledTexture, 478, 330 + dy, _swordEncyclopediaWidth, _swordEncyclopediaHeight);
+        dy += _swordEncyclopediaHeight;
+        Graphics.DrawBitmap(_swordHallOfFameDisabledTexture, 478, 330 + dy, _swordHallOfFameWidth, _swordHallOfFameHeight);
+        dy += _swordHallOfFameHeight;
+        Graphics.DrawBitmap(_swordCreditsDisabledTexture, 478, 330 + dy, _swordCreditsWidth, _swordCreditsHeight);
+        dy += _swordCreditsHeight;
+        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordSinglePlayerHeight)
+            Graphics.DrawBitmap(_swordQuitSelectedTexture, 478, 330 + dy, _swordQuitWidth, _swordQuitHeight);
+        else
+            Graphics.DrawBitmap(_swordQuitTexture, 478, 330 + dy, _swordQuitWidth, _swordQuitHeight);
+        
+        PutText(FontNews, "Version 1", _mainMenuWidth - 150, _mainMenuHeight - 50);
+    }
+
+    private void DrawSinglePlayerMenu()
+    {
+        Graphics.DrawBitmap(_mainMenuTexture, 0, 0, _mainMenuWidth, _mainMenuHeight, FlipMode.Vertical);
+        
+        int dy = 0;
+        Graphics.DrawBitmap(_swordTrainingDisabledTexture, 478, 330, _swordTrainingWidth, _swordTrainingHeight);
+        dy += _swordTrainingHeight;
+        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordNewGameHeight)
+            Graphics.DrawBitmap(_swordNewGameSelectedTexture, 478, 330 + dy, _swordNewGameWidth, _swordNewGameHeight);
+        else
+            Graphics.DrawBitmap(_swordNewGameTexture, 478, 330 + dy, _swordNewGameWidth, _swordNewGameHeight);
+        dy += _swordNewGameHeight;
+        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordLoadGameHeight)
+            Graphics.DrawBitmap(_swordLoadGameSelectedTexture, 478, 330 + dy, _swordLoadGameWidth, _swordLoadGameHeight);
+        else
+            Graphics.DrawBitmap(_swordLoadGameTexture, 478, 330 + dy, _swordLoadGameWidth, _swordLoadGameHeight);
+        dy += _swordLoadGameHeight;
+        Graphics.DrawBitmap(_swordScenarioDisabledTexture, 478, 330 + dy, _swordScenarioWidth, _swordScenarioHeight);
+        dy += _swordScenarioHeight;
+        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordCancelHeight)
+            Graphics.DrawBitmap(_swordCancelSelectedTexture, 478, 330 + dy, _swordCancelWidth, _swordCancelHeight);
+        else
+            Graphics.DrawBitmap(_swordCancelTexture, 478, 330 + dy, _swordCancelWidth, _swordCancelHeight);
+        
+        PutText(FontNews, "Version 1", _mainMenuWidth - 150, _mainMenuHeight - 50);
+    }
     
     public void DrawFrame(bool nextFrame)
     {
+        if (GameMode == GameMode.StartMenu)
+        {
+            DrawStartMenu();
+            return;
+        }
+
+        if (GameMode == GameMode.SinglePlayerMenu)
+        {
+            DrawSinglePlayerMenu();
+            return;
+        }
+        
         ResetDeletedSelectedObjects();
         
         Graphics.ResetClipRectangle();

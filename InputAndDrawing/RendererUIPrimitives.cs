@@ -38,6 +38,69 @@ public partial class Renderer
 	private readonly Dictionary<string, IntPtr> _buildButtonTextures = new Dictionary<string, nint>();
 	private int _buildButtonWidth;
 	private int _buildButtonHeight;
+	private IntPtr _mainMenuTexture;
+	private int _mainMenuWidth;
+	private int _mainMenuHeight;
+	private int _sword1Width;
+	private int _sword1Height;
+	private IntPtr _swordSinglePlayerTexture;
+	private IntPtr _swordSinglePlayerSelectedTexture;
+	private IntPtr _swordSinglePlayerDisabledTexture;
+	private int _swordSinglePlayerWidth;
+	private int _swordSinglePlayerHeight;
+	private IntPtr _swordMultiPlayerTexture;
+	private IntPtr _swordMultiPlayerSelectedTexture;
+	private IntPtr _swordMultiPlayerDisabledTexture;
+	private int _swordMultiPlayerWidth;
+	private int _swordMultiPlayerHeight;
+	private IntPtr _swordEncyclopediaTexture;
+	private IntPtr _swordEncyclopediaSelectedTexture;
+	private IntPtr _swordEncyclopediaDisabledTexture;
+	private int _swordEncyclopediaWidth;
+	private int _swordEncyclopediaHeight;
+	private IntPtr _swordHallOfFameTexture;
+	private IntPtr _swordHallOfFameSelectedTexture;
+	private IntPtr _swordHallOfFameDisabledTexture;
+	private int _swordHallOfFameWidth;
+	private int _swordHallOfFameHeight;
+	private IntPtr _swordCreditsTexture;
+	private IntPtr _swordCreditsSelectedTexture;
+	private IntPtr _swordCreditsDisabledTexture;
+	private int _swordCreditsWidth;
+	private int _swordCreditsHeight;
+	private IntPtr _swordQuitTexture;
+	private IntPtr _swordQuitSelectedTexture;
+	private IntPtr _swordQuitDisabledTexture;
+	private int _swordQuitWidth;
+	private int _swordQuitHeight;
+	private int _sword2Width;
+	private int _sword2Height;
+	private IntPtr _swordTrainingTexture;
+	private IntPtr _swordTrainingSelectedTexture;
+	private IntPtr _swordTrainingDisabledTexture;
+	private int _swordTrainingWidth;
+	private int _swordTrainingHeight;
+	private IntPtr _swordNewGameTexture;
+	private IntPtr _swordNewGameSelectedTexture;
+	private IntPtr _swordNewGameDisabledTexture;
+	private int _swordNewGameWidth;
+	private int _swordNewGameHeight;
+	private IntPtr _swordLoadGameTexture;
+	private IntPtr _swordLoadGameSelectedTexture;
+	private IntPtr _swordLoadGameDisabledTexture;
+	private int _swordLoadGameWidth;
+	private int _swordLoadGameHeight;
+	private IntPtr _swordScenarioTexture;
+	private IntPtr _swordScenarioSelectedTexture;
+	private IntPtr _swordScenarioDisabledTexture;
+	private int _swordScenarioWidth;
+	private int _swordScenarioHeight;
+	private IntPtr _swordCancelTexture;
+	private IntPtr _swordCancelSelectedTexture;
+	private IntPtr _swordCancelDisabledTexture;
+	private int _swordCancelWidth;
+	private int _swordCancelHeight;
+
 	private IntPtr _gameMenuTexture1;
 	private int _gameMenuTexture1Width;
 	private int _gameMenuTexture1Height;
@@ -421,7 +484,13 @@ public partial class Renderer
 	
 	private void CreateUITextures()
 	{
-        ResourceIdx buttonImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_BUTTON.RES");
+		ResourceDb mainMenuImageFile = new ResourceDb($"{Sys.GameDataFolder}/Resource/MainMenu.bmp");
+		_mainMenuWidth = StartMenuWidth;
+		_mainMenuHeight = StartMenuHeight;
+		byte[] mainMenuBitmap = CreateMainMenuBitmap(mainMenuImageFile.ReadFull(), _mainMenuWidth, _mainMenuHeight);
+		_mainMenuTexture = Graphics.Create32BitTextureFromBmp(mainMenuBitmap, StartMenuWidth, StartMenuHeight);
+        
+		ResourceIdx buttonImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_BUTTON.RES");
         byte[] colorSquare = buttonImages.Read("V_COLCOD");
         _colorSquareWidth = BitConverter.ToInt16(colorSquare, 0);
         _colorSquareHeight = BitConverter.ToInt16(colorSquare, 2);
@@ -435,6 +504,86 @@ public partial class Renderer
         }
 
         ResourceIdx interfaceImages = new ResourceIdx($"{Sys.GameDataFolder}/Resource/I_IF.RES");
+        byte[] sword1Bitmap = interfaceImages.Read("SWRD-1");
+        _sword1Width = BitConverter.ToInt16(sword1Bitmap, 0);
+        _sword1Height = BitConverter.ToInt16(sword1Bitmap, 2);
+        sword1Bitmap = sword1Bitmap.Skip(4).ToArray();
+        byte[] sword1SelectedBitmap = interfaceImages.Read("SWRD-1B").Skip(4).ToArray();;
+        byte[] sword1DisabledBitmap = interfaceImages.Read("SWRD-1C").Skip(4).ToArray();;
+        int skip = 0;
+        _swordSinglePlayerWidth = _sword1Width;
+        _swordSinglePlayerHeight = 67;
+        _swordSinglePlayerTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordSinglePlayerWidth * _swordSinglePlayerHeight).ToArray(), _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        _swordSinglePlayerSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordSinglePlayerWidth * _swordSinglePlayerHeight).ToArray(), _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        _swordSinglePlayerDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordSinglePlayerWidth * _swordSinglePlayerHeight).ToArray(), _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        skip += _swordSinglePlayerWidth * _swordSinglePlayerHeight;
+        _swordMultiPlayerWidth = _sword1Width;
+        _swordMultiPlayerHeight = 47;
+        _swordMultiPlayerTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordMultiPlayerWidth * _swordMultiPlayerHeight).ToArray(), _swordMultiPlayerWidth, _swordMultiPlayerHeight);
+        _swordMultiPlayerSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordMultiPlayerWidth * _swordMultiPlayerHeight).ToArray(), _swordMultiPlayerWidth, _swordMultiPlayerHeight);
+        _swordMultiPlayerDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordMultiPlayerWidth * _swordMultiPlayerHeight).ToArray(), _swordMultiPlayerWidth, _swordMultiPlayerHeight);
+        skip += _swordMultiPlayerWidth * _swordMultiPlayerHeight;
+        _swordEncyclopediaWidth = _sword1Width;
+        _swordEncyclopediaHeight = 69;
+        _swordEncyclopediaTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordEncyclopediaWidth * _swordEncyclopediaHeight).ToArray(), _swordEncyclopediaWidth, _swordEncyclopediaHeight);
+        _swordEncyclopediaSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordEncyclopediaWidth * _swordEncyclopediaHeight).ToArray(), _swordEncyclopediaWidth, _swordEncyclopediaHeight);
+        _swordEncyclopediaDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordEncyclopediaWidth * _swordEncyclopediaHeight).ToArray(), _swordEncyclopediaWidth, _swordEncyclopediaHeight);
+        skip += _swordEncyclopediaWidth * _swordEncyclopediaHeight;
+        _swordHallOfFameWidth = _sword1Width;
+        _swordHallOfFameHeight = 40;
+        _swordHallOfFameTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordHallOfFameWidth * _swordHallOfFameHeight).ToArray(), _swordHallOfFameWidth, _swordHallOfFameHeight);
+        _swordHallOfFameSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordHallOfFameWidth * _swordHallOfFameHeight).ToArray(), _swordHallOfFameWidth, _swordHallOfFameHeight);
+        _swordHallOfFameDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordHallOfFameWidth * _swordHallOfFameHeight).ToArray(), _swordHallOfFameWidth, _swordHallOfFameHeight);
+        skip += _swordHallOfFameWidth * _swordHallOfFameHeight;
+        _swordCreditsWidth = _sword1Width;
+        _swordCreditsHeight = 70;
+        _swordCreditsTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordCreditsWidth * _swordCreditsHeight).ToArray(), _swordCreditsWidth, _swordCreditsHeight);
+        _swordCreditsSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordCreditsWidth * _swordCreditsHeight).ToArray(), _swordCreditsWidth, _swordCreditsHeight);
+        _swordCreditsDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordCreditsWidth * _swordCreditsHeight).ToArray(), _swordCreditsWidth, _swordCreditsHeight);
+        skip += _swordCreditsWidth * _swordCreditsHeight;
+        _swordQuitWidth = _sword1Width;
+        _swordQuitHeight = _sword1Height - _swordSinglePlayerHeight - _swordMultiPlayerHeight - _swordEncyclopediaHeight - _swordHallOfFameHeight - _swordCreditsHeight;
+        _swordQuitTexture = Graphics.CreateTextureFromBmp(sword1Bitmap.Skip(skip).Take(_swordQuitWidth * _swordQuitHeight).ToArray(), _swordQuitWidth, _swordQuitHeight);
+        _swordQuitSelectedTexture = Graphics.CreateTextureFromBmp(sword1SelectedBitmap.Skip(skip).Take(_swordQuitWidth * _swordQuitHeight).ToArray(), _swordQuitWidth, _swordQuitHeight);
+        _swordQuitDisabledTexture = Graphics.CreateTextureFromBmp(sword1DisabledBitmap.Skip(skip).Take(_swordQuitWidth * _swordQuitHeight).ToArray(), _swordQuitWidth, _swordQuitHeight);
+
+        byte[] sword2Bitmap = interfaceImages.Read("SWRD-2");
+        _sword2Width = BitConverter.ToInt16(sword2Bitmap, 0);
+        _sword2Height = BitConverter.ToInt16(sword2Bitmap, 2);
+        sword2Bitmap = sword2Bitmap.Skip(4).ToArray();
+        byte[] sword2SelectedBitmap = interfaceImages.Read("SWRD-2B").Skip(4).ToArray();;
+        byte[] sword2DisabledBitmap = interfaceImages.Read("SWRD-2C").Skip(4).ToArray();;
+        skip = 0;
+        _swordTrainingWidth = _sword2Width;
+        _swordTrainingHeight = 66;
+        _swordTrainingTexture = Graphics.CreateTextureFromBmp(sword2Bitmap.Skip(skip).Take(_swordTrainingWidth * _swordTrainingHeight).ToArray(), _swordTrainingWidth, _swordTrainingHeight);
+        _swordTrainingSelectedTexture = Graphics.CreateTextureFromBmp(sword2SelectedBitmap.Skip(skip).Take(_swordTrainingWidth * _swordTrainingHeight).ToArray(), _swordTrainingWidth, _swordTrainingHeight);
+        _swordTrainingDisabledTexture = Graphics.CreateTextureFromBmp(sword2DisabledBitmap.Skip(skip).Take(_swordTrainingWidth * _swordTrainingHeight).ToArray(), _swordTrainingWidth, _swordTrainingHeight);
+        skip += _swordTrainingWidth * _swordTrainingHeight;
+        _swordNewGameWidth = _sword2Width;
+        _swordNewGameHeight = 50;
+        _swordNewGameTexture = Graphics.CreateTextureFromBmp(sword2Bitmap.Skip(skip).Take(_swordNewGameWidth * _swordNewGameHeight).ToArray(), _swordNewGameWidth, _swordNewGameHeight);
+        _swordNewGameSelectedTexture = Graphics.CreateTextureFromBmp(sword2SelectedBitmap.Skip(skip).Take(_swordNewGameWidth * _swordNewGameHeight).ToArray(), _swordNewGameWidth, _swordNewGameHeight);
+        _swordNewGameDisabledTexture = Graphics.CreateTextureFromBmp(sword2DisabledBitmap.Skip(skip).Take(_swordNewGameWidth * _swordNewGameHeight).ToArray(), _swordNewGameWidth, _swordNewGameHeight);
+        skip += _swordNewGameWidth * _swordNewGameHeight;
+        _swordLoadGameWidth = _sword2Width;
+        _swordLoadGameHeight = 64;
+        _swordLoadGameTexture = Graphics.CreateTextureFromBmp(sword2Bitmap.Skip(skip).Take(_swordLoadGameWidth * _swordLoadGameHeight).ToArray(), _swordLoadGameWidth, _swordLoadGameHeight);
+        _swordLoadGameSelectedTexture = Graphics.CreateTextureFromBmp(sword2SelectedBitmap.Skip(skip).Take(_swordLoadGameWidth * _swordLoadGameHeight).ToArray(), _swordLoadGameWidth, _swordLoadGameHeight);
+        _swordLoadGameDisabledTexture = Graphics.CreateTextureFromBmp(sword2DisabledBitmap.Skip(skip).Take(_swordLoadGameWidth * _swordLoadGameHeight).ToArray(), _swordLoadGameWidth, _swordLoadGameHeight);
+        skip += _swordLoadGameWidth * _swordLoadGameHeight;
+        _swordScenarioWidth = _sword2Width;
+        _swordScenarioHeight = 48;
+        _swordScenarioTexture = Graphics.CreateTextureFromBmp(sword2Bitmap.Skip(skip).Take(_swordScenarioWidth * _swordScenarioHeight).ToArray(), _swordScenarioWidth, _swordScenarioHeight);
+        _swordScenarioSelectedTexture = Graphics.CreateTextureFromBmp(sword2SelectedBitmap.Skip(skip).Take(_swordScenarioWidth * _swordScenarioHeight).ToArray(), _swordScenarioWidth, _swordScenarioHeight);
+        _swordScenarioDisabledTexture = Graphics.CreateTextureFromBmp(sword2DisabledBitmap.Skip(skip).Take(_swordScenarioWidth * _swordScenarioHeight).ToArray(), _swordScenarioWidth, _swordScenarioHeight);
+        skip += _swordScenarioWidth * _swordScenarioHeight;
+        _swordCancelWidth = _sword2Width;
+        _swordCancelHeight = 66;
+        _swordCancelTexture = Graphics.CreateTextureFromBmp(sword2Bitmap.Skip(skip).Take(_swordCancelWidth * _swordCancelHeight).ToArray(), _swordCancelWidth, _swordCancelHeight);
+        _swordCancelSelectedTexture = Graphics.CreateTextureFromBmp(sword2SelectedBitmap.Skip(skip).Take(_swordCancelWidth * _swordCancelHeight).ToArray(), _swordCancelWidth, _swordCancelHeight);
+        _swordCancelDisabledTexture = Graphics.CreateTextureFromBmp(sword2DisabledBitmap.Skip(skip).Take(_swordCancelWidth * _swordCancelHeight).ToArray(), _swordCancelWidth, _swordCancelHeight);
+        
         byte[] mainScreenBitmap = interfaceImages.Read("MAINSCR");
         int mainScreenWidth = BitConverter.ToInt16(mainScreenBitmap, 0);
         int mainScreenHeight = BitConverter.ToInt16(mainScreenBitmap, 2);
@@ -1120,6 +1269,27 @@ public partial class Renderer
 		}
 
 		return disabledButtonBitmap;
+	}
+
+	private byte[] CreateMainMenuBitmap(byte[] data, int width, int height)
+	{
+		byte[] mainMenuBitmap = new byte[width * height * 4];
+		int srcIndex = 0;
+		int dstIndex = 0;
+		for (int h = 0; h < height; h++)
+		{
+			for (int w = 0; w < width; w++)
+			{
+				mainMenuBitmap[dstIndex] = data[srcIndex];
+				mainMenuBitmap[dstIndex + 1] = data[srcIndex + 1];
+				mainMenuBitmap[dstIndex + 2] = data[srcIndex + 2];
+				mainMenuBitmap[dstIndex + 3] = 255;
+				srcIndex += 3;
+				dstIndex += 4;
+			}
+		}
+
+		return mainMenuBitmap;
 	}
 
 	private byte[] CreatePanelUpBitmap(byte[] detailsBitmap1, byte[] detailsBitmap2, int width, int height)
