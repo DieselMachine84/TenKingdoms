@@ -1424,7 +1424,6 @@ public partial class Renderer
 	{
 		byte[] panelDownBitmap = new byte[width * height * 4];
         int index = 0;
-        byte alpha = 255;
         for (int h = 0; h < height; h++)
         {
             for (int w = 0; w < width; w++)
@@ -1433,13 +1432,9 @@ public partial class Renderer
                 panelDownBitmap[index] = color.B;
                 panelDownBitmap[index + 1] = color.G;
                 panelDownBitmap[index + 2] = color.R;
-                panelDownBitmap[index + 3] = alpha;
+                panelDownBitmap[index + 3] = transparent ? (byte)128 : (byte)255;
                 index += 4;
-                if (transparent)
-	                alpha = (alpha == 0) ? (byte)255 : (byte)0;
             }
-            if (transparent)
-	            alpha = (alpha == 0) ? (byte)255 : (byte)0;
         }
         for (int w = 0; w < width; w++)
         {
@@ -1475,7 +1470,6 @@ public partial class Renderer
 	{
 		byte[] panelBitmap = new byte[width * height * 4];
         int index = 0;
-        byte alpha = 255;
         for (int h = 0; h < height; h++)
         {
             for (int w = 0; w < width; w++)
@@ -1484,13 +1478,9 @@ public partial class Renderer
                 panelBitmap[index] = color.B;
                 panelBitmap[index + 1] = color.G;
                 panelBitmap[index + 2] = color.R;
-                panelBitmap[index + 3] = alpha;
+                panelBitmap[index + 3] = transparent ? (byte)128 : (byte)255;
                 index += 4;
-                if (transparent)
-	                alpha = (alpha == 0) ? (byte)255 : (byte)0;
             }
-            if (transparent)
-	            alpha = (alpha == 0) ? (byte)255 : (byte)0;
         }
 
         return panelBitmap;
