@@ -135,8 +135,8 @@ public class Config
 				if (line.StartsWith("AINationCount"))
 				{
 					AINationCount = ParseIntParameter(line, "AINationCount");
-					AINationCount = Math.Max(AINationCount, 1);
-					AINationCount = Math.Min(AINationCount, 9);
+					AINationCount = Math.Max(AINationCount, 0);
+					AINationCount = Math.Min(AINationCount, 10);
 				}
 				
 				if (line.StartsWith("AIAggressiveness"))

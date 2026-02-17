@@ -144,7 +144,8 @@ public class MapGenerator
 
 		World.FireInit();
 
-		CreatePlayerNation();
+		if (Config.AINationCount < 10)
+			CreatePlayerNation();
 
 		CreateAINations(Config.AINationCount);
 		
