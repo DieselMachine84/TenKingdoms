@@ -60,6 +60,7 @@ public partial class Renderer
                         displayableObject.DrawY2 = GetScreenXAndY(town.LocX2, town.LocY2 + 1).Item2 - 1;
                         _objectsToDrawBottom.Add(displayableObject);
                         _objectsToDraw.Add(displayableObject);
+                        _objectsToDrawTop.Add(displayableObject);
                         _townsToDraw.Add(town);
                     }
                 }
@@ -283,7 +284,6 @@ public partial class Renderer
         //TODO draw god cast power
         //TODO blacken fog of war
         //TODO blacken unexplored
-        //TODO draw text
         //TODO draw link lines
         //TODO add fire sound
         
@@ -453,6 +453,16 @@ public partial class Renderer
                     }
                 }
                 break;
+            
+            case TopLayer:
+                if (town.LocX1 >= _topLeftLocX)
+                {
+                    PutTextCenter(FontNews, town.Name, townX, townY + 2 * CellTextureHeight - 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight - 15);
+                    if (town.HasPlayerSpy())
+                        PutTextCenter(FontNews, "(Spy)", townX, townY + 2 * CellTextureHeight + 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight + 15);
+                }
+
+                break;
         }
     }
 
@@ -565,6 +575,10 @@ public partial class Renderer
                 }
             }
         }
+        
+        if (layer == NormalLayer && firm.PlayerSpyCount > 0 && firm.LocX1 >= _topLeftLocX)
+            PutTextCenter(FontNews, "(Spy)", firmX, firmY + firmBuild.LocHeight * CellTextureHeight / 2 - 30,
+                firmX + firmBuild.LocWidth * CellTextureWidth, firmY + firmBuild.LocHeight * CellTextureHeight - 30);
     }
 
     private void DrawFirmFullSize(Firm firm, int firmX, int firmY, int displayLayer)
