@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -366,4 +367,35 @@ public class TownArray : DynArray<Town>
 
 		return currentTownId;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		for (int i = 0; i < _raceWanderers.Length; i++)
+			writer.Write(_raceWanderers[i]);
+		int count = Count();
+		writer.Write(count);
+		foreach (Town town in EnumerateWithDeleted())
+		{
+			town.SaveTo(writer);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		for (int i = 0; i < _raceWanderers.Length; i++)
+			_raceWanderers[i] = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			Town town = CreateNewObject(0);
+			town.LoadFrom(reader);
+			Load(town);
+		}
+	}
+	
+	#endregion
 }

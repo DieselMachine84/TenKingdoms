@@ -56,6 +56,8 @@ public class Spy : IIdObject
 	{
 	}
 
+	int IIdObject.GetId() => SpyId;
+	
 	void IIdObject.SetId(int id)
 	{
 		SpyId = id;

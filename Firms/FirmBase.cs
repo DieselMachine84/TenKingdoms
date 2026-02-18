@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -251,5 +252,25 @@ public class FirmBase : Firm
         InvokeGod();
     }
     
+    #endregion
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(GodId);
+        writer.Write(GodUnitId);
+        writer.Write(PrayPoints);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        GodId = reader.ReadInt32();
+        GodUnitId = reader.ReadInt32();
+        PrayPoints = reader.ReadDouble();
+    }
+	
     #endregion
 }

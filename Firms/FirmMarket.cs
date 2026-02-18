@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1316,5 +1317,33 @@ public class FirmMarket : Firm
 		return false;
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(RestockType);
+		writer.Write(NextOutputLinkId);
+		writer.Write(NextOutputFirmId);
+		writer.Write(NoLinkedTownSinceDate.ToBinary());
+		writer.Write(LastImportNewGoodsDate.ToBinary());
+		for (int i = 0; i < MarketGoods.Length; i++)
+			MarketGoods[i].SaveTo(writer);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		RestockType = reader.ReadInt32();
+		NextOutputLinkId = reader.ReadInt32();
+		NextOutputFirmId = reader.ReadInt32();
+		NoLinkedTownSinceDate = DateTime.FromBinary(reader.ReadInt64());
+		LastImportNewGoodsDate = DateTime.FromBinary(reader.ReadInt64());
+		for (int i = 0; i < MarketGoods.Length; i++)
+			MarketGoods[i].LoadFrom(reader);
+	}
+	
 	#endregion
 }

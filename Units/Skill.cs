@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class Skill
@@ -36,4 +38,28 @@ public class Skill
     {
         return SkillId == skillId ? SkillLevel : 0;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(SkillId);
+        writer.Write(SkillLevel);
+        writer.Write(SkillLevelMinor);
+        writer.Write(CombatLevel);
+        writer.Write(CombatLevelMinor);
+        writer.Write(SkillPotential);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        SkillId = reader.ReadInt32();
+        SkillLevel = reader.ReadInt32();
+        SkillLevelMinor = reader.ReadInt32();
+        CombatLevel = reader.ReadInt32();
+        CombatLevelMinor = reader.ReadInt32();
+        SkillPotential = reader.ReadInt32();
+    }
+	
+    #endregion
 }

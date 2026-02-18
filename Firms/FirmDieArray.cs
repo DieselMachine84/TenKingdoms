@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -29,4 +29,31 @@ public class FirmDieArray : DynArray<FirmDie>
             }
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NextId);
+        int count = Count();
+        writer.Write(count);
+        foreach (FirmDie firmDie in EnumerateWithDeleted())
+        {
+            firmDie.SaveTo(writer);
+        }
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        NextId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            FirmDie firmDie = CreateNewObject(0);
+            firmDie.LoadFrom(reader);
+            Load(firmDie);
+        }
+    }
+	
+    #endregion
 }

@@ -6,12 +6,13 @@ namespace TenKingdoms;
 
 public interface IIdObject
 {
+    int GetId();
     void SetId(int id);
 }
 
 public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
 {
-    private int _nextId = 1;
+    protected int NextId = 1;
     private readonly List<T> _list = new List<T>();
     private readonly Dictionary<int, int> _idIndexes = new Dictionary<int, int>();
     private readonly List<int> _keysForEnumeration = new List<int>();
@@ -21,7 +22,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
     protected T CreateNew(int objectType = 0)
     {
         T result = CreateNewObject(objectType);
-        result.SetId(_nextId);
+        result.SetId(NextId);
 
         int unusedIndex = -1;
         for (int i = 0; i < _list.Count; i++)
@@ -45,15 +46,21 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
             resultIndex = _list.Count - 1;
         }
         
-        _idIndexes.Add(_nextId, resultIndex);
-        _nextId = GetNextId();
+        _idIndexes.Add(NextId, resultIndex);
+        NextId = GetNextId();
         
         return result;
     }
 
+    protected void Load(T item)
+    {
+        _list.Add(item);
+        _idIndexes.Add(item.GetId(), _list.Count - 1);
+    }
+
     protected virtual int GetNextId()
     {
-        return _nextId + 1;
+        return NextId + 1;
     }
 
     protected void Delete(int id)
@@ -73,8 +80,14 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         return !_idIndexes.ContainsKey(id);
     }
 
+    protected int Count()
+    {
+        return _idIndexes.Keys.Count;
+    }
+
     public IEnumerator<T> GetEnumerator()
     {
+        //TODO use _keysForEnumeration
         List<int> keys = _idIndexes.Keys.ToList();
         for (int i = 0; i < keys.Count; i++)
         {
@@ -97,10 +110,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         
         for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            if (_idIndexes.ContainsKey(_keysForEnumeration[i]))
-            {
-                yield return _list[_idIndexes[_keysForEnumeration[i]]];
-            }
+            yield return _list[_idIndexes[_keysForEnumeration[i]]];
         }
     }
 

@@ -176,6 +176,8 @@ public class NationBase : IIdObject
         _researchProgress = new double[TechRes.TechInfos.Length];
     }
 
+    int IIdObject.GetId() => NationId;
+    
     void IIdObject.SetId(int id)
     {
         NationId = id;

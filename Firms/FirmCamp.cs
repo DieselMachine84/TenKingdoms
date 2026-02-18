@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1955,6 +1956,58 @@ public class FirmCamp : Firm
 			return true;
 
 		return false;
+	}
+	
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(DefenseUnits.Count);
+		for (int i = 0; i < DefenseUnits.Count; i++)
+		{
+			writer.Write(DefenseUnits[i].UnitId);
+			writer.Write(DefenseUnits[i].Status);
+		}
+		writer.Write(EmployNewWorker);
+		writer.Write(DefendTargetId);
+		writer.Write(DefenseFlag);
+		writer.Write(PatrolUnits.Count);
+		for (int i = 0; i < PatrolUnits.Count; i++)
+			writer.Write(PatrolUnits[i]);
+		writer.Write(ComingUnits.Count);
+		for (int i = 0; i < ComingUnits.Count; i++)
+			writer.Write(ComingUnits[i]);
+		writer.Write(AICaptureTownId);
+		writer.Write(AIRecruitingSoldier);
+		writer.Write(IsAttackCamp);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		int defenseUnitsCount = reader.ReadInt32();
+		for (int i = 0; i < defenseUnitsCount; i++)
+		{
+			DefenseUnit defenseUnit = new DefenseUnit();
+			defenseUnit.UnitId = reader.ReadInt32();
+			defenseUnit.Status = reader.ReadInt32();
+			DefenseUnits.Add(defenseUnit);
+		}
+		EmployNewWorker = reader.ReadBoolean();
+		DefendTargetId = reader.ReadInt32();
+		DefenseFlag = reader.ReadBoolean();
+		int patrolUnitsCount = reader.ReadInt32();
+		for (int i = 0; i < patrolUnitsCount; i++)
+			PatrolUnits.Add(reader.ReadInt32());
+		int comingUnitsCount = reader.ReadInt32();
+		for (int i = 0; i < comingUnitsCount; i++)
+			ComingUnits.Add(reader.ReadInt32());
+		AICaptureTownId = reader.ReadInt32();
+		AIRecruitingSoldier = reader.ReadBoolean();
+		IsAttackCamp = reader.ReadBoolean();
 	}
 	
 	#endregion

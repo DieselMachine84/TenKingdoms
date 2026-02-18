@@ -29,6 +29,8 @@ public class Site : IIdObject
     {
     }
 
+    int IIdObject.GetId() => SiteId;
+    
     void IIdObject.SetId(int id)
     {
         SiteId = id;

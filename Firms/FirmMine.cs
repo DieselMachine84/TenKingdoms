@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -339,5 +340,37 @@ public class FirmMine : Firm
         return false;
     }
     
+    #endregion
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(RawId);
+        writer.Write(SiteId);
+        writer.Write(ReserveQty);
+        writer.Write(StockQty);
+        writer.Write(MaxStockQty);
+        writer.Write(NextOutputLinkId);
+        writer.Write(NextOutputFirmId);
+        writer.Write(LastMonthProduction);
+        writer.Write(CurMonthProduction);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        RawId = reader.ReadInt32();
+        SiteId = reader.ReadInt32();
+        ReserveQty = reader.ReadDouble();
+        StockQty = reader.ReadDouble();
+        MaxStockQty = reader.ReadDouble();
+        NextOutputLinkId = reader.ReadInt32();
+        NextOutputFirmId = reader.ReadInt32();
+        LastMonthProduction = reader.ReadDouble();
+        CurMonthProduction = reader.ReadDouble();
+    }
+	
     #endregion
 }

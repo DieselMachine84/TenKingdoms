@@ -100,6 +100,8 @@ public class Sprite : IIdObject
 	{
 	}
 
+	int IIdObject.GetId() => SpriteId;
+	
 	void IIdObject.SetId(int id)
 	{
 		SpriteId = id;

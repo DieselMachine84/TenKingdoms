@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -28,6 +29,32 @@ public class MonsterInFirm
 
 		MaxHitPoints = unitInfo.HitPoints * combatLevel / 100;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(MonsterId);
+		writer.Write(MobileUnitId);
+		writer.Write(CombatLevel);
+		writer.Write(HitPoints);
+		writer.Write(MaxHitPoints);
+		writer.Write(SoldierMonsterId);
+		writer.Write(SoldierCount);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		MonsterId = reader.ReadInt32();
+		MobileUnitId = reader.ReadInt32();
+		CombatLevel = reader.ReadInt32();
+		HitPoints = reader.ReadInt32();
+		MaxHitPoints = reader.ReadInt32();
+		SoldierMonsterId = reader.ReadInt32();
+		SoldierCount = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class FirmMonster : Firm
@@ -815,6 +842,60 @@ public class FirmMonster : Firm
 		MonsterGenerals.RemoveAt(MonsterGenerals.Count - 1);
 
 		return FirmArray.BuildMonsterLair(locX1 + GameConstants.FREE_SPACE_DISTANCE, locY1 + GameConstants.FREE_SPACE_DISTANCE, MonsterKing.MonsterId);
+	}
+	
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(MonsterId);
+		writer.Write(MonsterAggressiveness);
+		writer.Write(MonsterNationRelation);
+		writer.Write(CurrentMonsterActionMode);
+		writer.Write(DefendingKingCount);
+		writer.Write(DefendingGeneralCount);
+		writer.Write(DefendingSoldierCount);
+		writer.Write(DefendTargetId);
+		MonsterKing.SaveTo(writer);
+		writer.Write(MonsterGenerals.Count);
+		for (int i = 0; i < MonsterGenerals.Count; i++)
+			MonsterGenerals[i].SaveTo(writer);
+		writer.Write(WaitingSoldiers.Count);
+		for (int i = 0; i < WaitingSoldiers.Count; i++)
+			writer.Write(WaitingSoldiers[i]);
+		writer.Write(PatrolUnits.Count);
+		for (int i = 0; i < PatrolUnits.Count; i++)
+			writer.Write(PatrolUnits[i]);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		MonsterId = reader.ReadInt32();
+		MonsterAggressiveness = reader.ReadInt32();
+		MonsterNationRelation = reader.ReadInt32();
+		CurrentMonsterActionMode = reader.ReadInt32();
+		DefendingKingCount = reader.ReadInt32();
+		DefendingGeneralCount = reader.ReadInt32();
+		DefendingSoldierCount = reader.ReadInt32();
+		DefendTargetId = reader.ReadInt32();
+		MonsterKing.LoadFrom(reader);
+		int monsterGeneralsCount = reader.ReadInt32();
+		for (int i = 0; i < monsterGeneralsCount; i++)
+		{
+			MonsterInFirm monsterInFirm = new MonsterInFirm();
+			monsterInFirm.LoadFrom(reader);
+			MonsterGenerals.Add(monsterInFirm);
+		}
+		int waitingSoldiersCount = reader.ReadInt32();
+		for (int i = 0; i < waitingSoldiersCount; i++)
+			WaitingSoldiers.Add(reader.ReadInt32());
+		int patrolUnitsCount = reader.ReadInt32();
+		for (int i = 0; i < patrolUnitsCount; i++)
+			PatrolUnits.Add(reader.ReadInt32());
 	}
 	
 	#endregion

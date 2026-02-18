@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -534,5 +535,39 @@ public class FirmFactory : Firm
 		return false;
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(ProductId);
+		writer.Write(RawStockQty);
+		writer.Write(MaxRawStockQty);
+		writer.Write(StockQty);
+		writer.Write(MaxStockQty);
+		writer.Write(IsManufacturing);
+		writer.Write(NextOutputLinkId);
+		writer.Write(NextOutputFirmId);
+		writer.Write(LastMonthProduction);
+		writer.Write(CurMonthProduction);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		ProductId = reader.ReadInt32();
+		RawStockQty = reader.ReadDouble();
+		MaxRawStockQty = reader.ReadDouble();
+		StockQty = reader.ReadDouble();
+		MaxStockQty = reader.ReadDouble();
+		IsManufacturing = reader.ReadBoolean();
+		NextOutputLinkId = reader.ReadInt32();
+		NextOutputFirmId = reader.ReadInt32();
+		LastMonthProduction = reader.ReadDouble();
+		CurMonthProduction = reader.ReadDouble();
+	}
+	
 	#endregion
 }

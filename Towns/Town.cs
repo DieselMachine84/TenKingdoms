@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -130,6 +131,8 @@ public class Town : IIdObject
 	{
 	}
 
+	int IIdObject.GetId() => TownId;
+	
 	void IIdObject.SetId(int id)
 	{
 		TownId = id;
@@ -5478,5 +5481,179 @@ public class Town : IIdObject
 			}
 		}
 	}
+	#endregion
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(TownId);
+		writer.Write(NationId);
+		writer.Write(_setupDate.ToBinary());
+		writer.Write(LocX1);
+		writer.Write(LocY1);
+		writer.Write(LocX2);
+		writer.Write(LocY2);
+		writer.Write(LocCenterX);
+		writer.Write(LocCenterY);
+		writer.Write(RegionId);
+		writer.Write(TownNameId);
+		writer.Write(LayoutId);
+		for (int i = 0; i < SlotObjectIds.Length; i++)
+			writer.Write(SlotObjectIds[i]);
+		writer.Write(Population);
+		writer.Write(JoblessPopulation);
+		for (int i = 0; i < RacesPopulation.Length; i++)
+			writer.Write(RacesPopulation[i]);
+		for (int i = 0; i < RacesJoblessPopulation.Length; i++)
+			writer.Write(RacesJoblessPopulation[i]);
+		for (int i = 0; i < RacesPopulationGrowth.Length; i++)
+			writer.Write(RacesPopulationGrowth[i]);
+		for (int i = 0; i < RacesMaxPopulation.Length; i++)
+			writer.Write(RacesMaxPopulation[i]);
+		for (int i = 0; i < RacesLoyalty.Length; i++)
+			writer.Write(RacesLoyalty[i]);
+		for (int i = 0; i < RacesTargetLoyalty.Length; i++)
+			writer.Write(RacesTargetLoyalty[i]);
+		for (int i = 0; i < RacesResistance.GetLength(0); i++)
+			for (int j = 0; j < RacesResistance.GetLength(1); j++)
+				writer.Write(RacesResistance[i, j]);
+		for (int i = 0; i < RacesTargetResistance.GetLength(0); i++)
+			for (int j = 0; j < RacesTargetResistance.GetLength(1); j++)
+				writer.Write(RacesTargetResistance[i, j]);
+		for (int i = 0; i < RacesSpyCount.Length; i++)
+			writer.Write(RacesSpyCount[i]);
+		writer.Write(AccumulatedCollectTaxPenalty);
+		writer.Write(AccumulatedRewardPenalty);
+		writer.Write(AccumulatedRecruitPenalty);
+		writer.Write(AccumulatedEnemyGrantPenalty);
+		writer.Write(AutoCollectTaxLoyalty);
+		writer.Write(AutoGrantLoyalty);
+		writer.Write(LinkedFirms.Count);
+		for (int i = 0; i < LinkedFirms.Count; i++)
+			writer.Write(LinkedFirms[i]);
+		writer.Write(LinkedTowns.Count);
+		for (int i = 0; i < LinkedTowns.Count; i++)
+			writer.Write(LinkedTowns[i]);
+		writer.Write(LinkedFirmsEnable.Count);
+		for (int i = 0; i < LinkedFirmsEnable.Count; i++)
+			writer.Write(LinkedFirmsEnable[i]);
+		writer.Write(LinkedTownsEnable.Count);
+		for (int i = 0; i < LinkedTownsEnable.Count; i++)
+			writer.Write(LinkedTownsEnable[i]);
+		writer.Write(HasLinkedOwnCamp);
+		writer.Write(HasLinkedEnemyCamp);
+		writer.Write(_independentTownNationRelation);
+		writer.Write(_independentUnitJoinNationMinRating);
+		writer.Write(RebelId);
+		writer.Write(_lastRebelDate.ToBinary());
+		writer.Write(DefendersCount);
+		writer.Write(DefendTargetId);
+		writer.Write(_receivedHitCount);
+		writer.Write(LastBeingAttackedDate.ToBinary());
+		writer.Write(TrainSkillQueue.Count);
+		for (int i = 0; i < TrainSkillQueue.Count; i++)
+			writer.Write(TrainSkillQueue[i]);
+		writer.Write(_trainRaceQueue.Count);
+		for (int i = 0; i < _trainRaceQueue.Count; i++)
+			writer.Write(_trainRaceQueue[i]);
+		writer.Write(TrainUnitId);
+		writer.Write(TrainUnitActionId);
+		writer.Write(_startTrainFrameNumber);
+		writer.Write(_qualityOfLife);
+		for (int i = 0; i < HasProductSupply.Length; i++)
+			writer.Write(HasProductSupply[i]);
+		writer.Write(NoNeighborSpace);
+		writer.Write(AITown);
+		writer.Write(AILinkChecked);
+		writer.Write(IsBaseTown);
+		writer.Write(TownCombatLevel);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		TownId = reader.ReadInt32();
+		NationId = reader.ReadInt32();
+		_setupDate = DateTime.FromBinary(reader.ReadInt64());
+		LocX1 = reader.ReadInt32();
+		LocY1 = reader.ReadInt32();
+		LocX2 = reader.ReadInt32();
+		LocY2 = reader.ReadInt32();
+		LocCenterX = reader.ReadInt32();
+		LocCenterY = reader.ReadInt32();
+		RegionId = reader.ReadInt32();
+		TownNameId = reader.ReadInt32();
+		LayoutId = reader.ReadInt32();
+		for (int i = 0; i < SlotObjectIds.Length; i++)
+			SlotObjectIds[i] = reader.ReadInt32();
+		Population = reader.ReadInt32();
+		JoblessPopulation = reader.ReadInt32();
+		for (int i = 0; i < RacesPopulation.Length; i++)
+			RacesPopulation[i] = reader.ReadInt32();
+		for (int i = 0; i < RacesJoblessPopulation.Length; i++)
+			RacesJoblessPopulation[i] = reader.ReadInt32();
+		for (int i = 0; i < RacesPopulationGrowth.Length; i++)
+			RacesPopulationGrowth[i] = reader.ReadInt32();
+		for (int i = 0; i < RacesMaxPopulation.Length; i++)
+			RacesMaxPopulation[i] = reader.ReadInt32();
+		for (int i = 0; i < RacesLoyalty.Length; i++)
+			RacesLoyalty[i] = reader.ReadDouble();
+		for (int i = 0; i < RacesTargetLoyalty.Length; i++)
+			RacesTargetLoyalty[i] = reader.ReadInt32();
+		for (int i = 0; i < RacesResistance.GetLength(0); i++)
+			for (int j = 0; j < RacesResistance.GetLength(1); j++)
+				RacesResistance[i, j] = reader.ReadDouble();
+		for (int i = 0; i < RacesTargetResistance.GetLength(0); i++)
+			for (int j = 0; j < RacesTargetResistance.GetLength(1); j++)
+				RacesTargetResistance[i, j] = reader.ReadInt32();
+		for (int i = 0; i < RacesSpyCount.Length; i++)
+			RacesSpyCount[i] = reader.ReadInt32();
+		AccumulatedCollectTaxPenalty = reader.ReadInt32();
+		AccumulatedRewardPenalty = reader.ReadInt32();
+		AccumulatedRecruitPenalty = reader.ReadInt32();
+		AccumulatedEnemyGrantPenalty = reader.ReadInt32();
+		AutoCollectTaxLoyalty = reader.ReadInt32();
+		AutoGrantLoyalty = reader.ReadInt32();
+		int linkedFirmsCount = reader.ReadInt32();
+		for (int i = 0; i < linkedFirmsCount; i++)
+			LinkedFirms.Add(reader.ReadInt32());
+		int linkedTownsCount = reader.ReadInt32();
+		for (int i = 0; i < linkedTownsCount; i++)
+			LinkedTowns.Add(reader.ReadInt32());
+		int linkedFirmsEnableCount = reader.ReadInt32();
+		for (int i = 0; i < linkedFirmsEnableCount; i++)
+			LinkedFirmsEnable.Add(reader.ReadInt32());
+		int linkedTownsEnableCount = reader.ReadInt32();
+		for (int i = 0; i < linkedTownsEnableCount; i++)
+			LinkedTownsEnable.Add(reader.ReadInt32());
+		HasLinkedOwnCamp = reader.ReadBoolean();
+		HasLinkedEnemyCamp = reader.ReadBoolean();
+		_independentTownNationRelation = reader.ReadInt32();
+		_independentUnitJoinNationMinRating = reader.ReadInt32();
+		RebelId = reader.ReadInt32();
+		_lastRebelDate = DateTime.FromBinary(reader.ReadInt64());
+		DefendersCount = reader.ReadInt32();
+		DefendTargetId = reader.ReadInt32();
+		_receivedHitCount = reader.ReadDouble();
+		LastBeingAttackedDate = DateTime.FromBinary(reader.ReadInt64());
+		int trainSkillQueueCount = reader.ReadInt32();
+		for (int i = 0; i < trainSkillQueueCount; i++)
+			TrainSkillQueue.Add(reader.ReadInt32());
+		int trainRaceQueueCount = reader.ReadInt32();
+		for (int i = 0; i < trainRaceQueueCount; i++)
+			_trainRaceQueue.Add(reader.ReadInt32());
+		TrainUnitId = reader.ReadInt32();
+		TrainUnitActionId = reader.ReadInt32();
+		_startTrainFrameNumber = reader.ReadInt64();
+		_qualityOfLife = reader.ReadInt32();
+		for (int i = 0; i < HasProductSupply.Length; i++)
+			HasProductSupply[i] = reader.ReadBoolean();
+		NoNeighborSpace = reader.ReadBoolean();
+		AITown = reader.ReadBoolean();
+		AILinkChecked = reader.ReadBoolean();
+		IsBaseTown = reader.ReadBoolean();
+		TownCombatLevel = reader.ReadInt32();
+	}
+	
 	#endregion
 }

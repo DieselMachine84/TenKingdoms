@@ -33,6 +33,8 @@ public class Rebel : IIdObject
     {
     }
     
+    int IIdObject.GetId() => RebelId;
+    
     void IIdObject.SetId(int id)
     {
         RebelId = id;

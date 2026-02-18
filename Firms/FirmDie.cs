@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class FirmDie : IIdObject
@@ -15,6 +17,8 @@ public class FirmDie : IIdObject
 
     private FirmDieRes FirmDieRes => Sys.Instance.FirmDieRes;
 
+    int IIdObject.GetId() => FirmDieId;
+    
     void IIdObject.SetId(int id)
     {
         FirmDieId = id;
@@ -46,4 +50,36 @@ public class FirmDie : IIdObject
 
         return false;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(FirmDieId);
+        writer.Write(NationId);
+        writer.Write(FirmType);
+        writer.Write(FirmBuildId);
+        writer.Write(Frame);
+        writer.Write(FrameDelayCount);
+        writer.Write(LocX1);
+        writer.Write(LocY1);
+        writer.Write(LocX2);
+        writer.Write(LocY2);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        FirmDieId = reader.ReadInt32();
+        NationId = reader.ReadInt32();
+        FirmType = reader.ReadInt32();
+        FirmBuildId = reader.ReadInt32();
+        Frame = reader.ReadInt32();
+        FrameDelayCount = reader.ReadInt32();
+        LocX1 = reader.ReadInt32();
+        LocY1 = reader.ReadInt32();
+        LocX2 = reader.ReadInt32();
+        LocY2 = reader.ReadInt32();
+    }
+	
+    #endregion
 }

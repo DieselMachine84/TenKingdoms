@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -51,7 +52,7 @@ public abstract class Firm : IIdObject
 	public double HitPoints { get; set; }
 	public double MaxHitPoints { get; private set; }
 	public double Productivity { get; private set; }
-	public bool UnderConstruction { get; set; }
+	public bool UnderConstruction { get; private set; }
 	public double LastYearIncome { get; set; }
 	public double CurYearIncome { get; set; }
 	public bool NoNeighborSpace { get; protected set; }
@@ -95,7 +96,6 @@ public abstract class Firm : IIdObject
 	public static int AssassinateResult { get; set; }
 	
 
-	protected TownRes TownRes => Sys.Instance.TownRes;
 	protected FirmRes FirmRes => Sys.Instance.FirmRes;
 	protected RaceRes RaceRes => Sys.Instance.RaceRes;
 	protected SpriteRes SpriteRes => Sys.Instance.SpriteRes;
@@ -118,6 +118,8 @@ public abstract class Firm : IIdObject
 	{
 	}
 
+	int IIdObject.GetId() => FirmId;
+	
 	void IIdObject.SetId(int id)
 	{
 		FirmId = id;
@@ -2590,7 +2592,7 @@ public abstract class Firm : IIdObject
 
 		if (succeedChance > 0 && Misc.Random(100) < succeedChance)
 		{
-			// TODO crash NameId == 0
+			// TODO crash NameId == 0, first parameter is 0
 			Spy newSpy = SpyArray.AddSpy(0, 10); // add a new Spy record
 
 			newSpy.ActionMode = Spy.SPY_IDLE;
@@ -3226,5 +3228,131 @@ public abstract class Firm : IIdObject
 		TalkRes.AISendTalkMsg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public virtual void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(FirmType);
+		writer.Write(FirmBuildId);
+		writer.Write(FirmId);
+		writer.Write(NationId);
+		writer.Write(RaceId);
+		writer.Write(SetupDate.ToBinary());
+		writer.Write(LocX1);
+		writer.Write(LocY1);
+		writer.Write(LocX2);
+		writer.Write(LocY2);
+		writer.Write(LocCenterX);
+		writer.Write(LocCenterY);
+		writer.Write(RegionId);
+		writer.Write(ClosestTownName);
+		writer.Write(FirmNameInstanceId);
+		writer.Write(OverseerId);
+		writer.Write(OverseerTownId);
+		writer.Write(BuilderId);
+		writer.Write(BuilderRegionId);
+		writer.Write(HitPoints);
+		writer.Write(MaxHitPoints);
+		writer.Write(Productivity);
+		writer.Write(UnderConstruction);
+		writer.Write(LastYearIncome);
+		writer.Write(CurYearIncome);
+		writer.Write(NoNeighborSpace);
+		writer.Write(LastAttackedDate.ToBinary());
+		writer.Write(Workers.Count);
+		for (int i = 0; i < Workers.Count; i++)
+			Workers[i].SaveTo(writer);
+		writer.Write(SelectedWorkerId);
+		writer.Write(ShouldSetPower);
+		writer.Write(PlayerSpyCount);
+		writer.Write(SabotageLevel);
+		writer.Write(IsDeleting);
+		writer.Write(CurFrame);
+		writer.Write(RemainFrameDelay);
+		writer.Write(LinkedFirms.Count);
+		for (int i = 0; i < LinkedFirms.Count; i++)
+			writer.Write(LinkedFirms[i]);
+		writer.Write(LinkedTowns.Count);
+		for (int i = 0; i < LinkedTowns.Count; i++)
+			writer.Write(LinkedTowns[i]);
+		writer.Write(LinkedFirmsEnable.Count);
+		for (int i = 0; i < LinkedFirmsEnable.Count; i++)
+			writer.Write(LinkedFirmsEnable[i]);
+		writer.Write(LinkedTownsEnable.Count);
+		for (int i = 0; i < LinkedTownsEnable.Count; i++)
+			writer.Write(LinkedTownsEnable[i]);
+		writer.Write(AIFirm);
+		writer.Write(AIProcessed);
+		writer.Write(AIStatus);
+		writer.Write(AILinkChecked);
+		writer.Write(ShouldCloseFlag);
+		writer.Write(AIShouldBuildFactoryCount);
+	}
+
+	public virtual void LoadFrom(BinaryReader reader)
+	{
+		FirmType = reader.ReadInt32();
+		FirmBuildId = reader.ReadInt32();
+		FirmId = reader.ReadInt32();
+		NationId = reader.ReadInt32();
+		RaceId = reader.ReadInt32();
+		SetupDate = DateTime.FromBinary(reader.ReadInt64());
+		LocX1 = reader.ReadInt32();
+		LocY1 = reader.ReadInt32();
+		LocX2 = reader.ReadInt32();
+		LocY2 = reader.ReadInt32();
+		LocCenterX = reader.ReadInt32();
+		LocCenterY = reader.ReadInt32();
+		RegionId = reader.ReadInt32();
+		ClosestTownName = reader.ReadString();
+		FirmNameInstanceId = reader.ReadInt32();
+		OverseerId = reader.ReadInt32();
+		OverseerTownId = reader.ReadInt32();
+		BuilderId = reader.ReadInt32();
+		BuilderRegionId = reader.ReadInt32();
+		HitPoints = reader.ReadDouble();
+		MaxHitPoints = reader.ReadDouble();
+		Productivity = reader.ReadDouble();
+		UnderConstruction = reader.ReadBoolean();
+		LastYearIncome = reader.ReadDouble();
+		CurYearIncome = reader.ReadDouble();
+		NoNeighborSpace = reader.ReadBoolean();
+		LastAttackedDate = DateTime.FromBinary(reader.ReadInt64());
+		int workersCount = reader.ReadInt32();
+		for (int i = 0; i < workersCount; i++)
+		{
+			Worker worker = new Worker();
+			worker.LoadFrom(reader);
+			Workers.Add(worker);
+		}
+		SelectedWorkerId = reader.ReadInt32();
+		ShouldSetPower = reader.ReadBoolean();
+		PlayerSpyCount = reader.ReadInt32();
+		SabotageLevel = reader.ReadInt32();
+		IsDeleting = reader.ReadBoolean();
+		CurFrame = reader.ReadInt32();
+		RemainFrameDelay = reader.ReadInt32();
+		int linkedFirmsCount = reader.ReadInt32();
+		for (int i = 0; i < linkedFirmsCount; i++)
+			LinkedFirms.Add(reader.ReadInt32());
+		int linkedTownsCount = reader.ReadInt32();
+		for (int i = 0; i < linkedTownsCount; i++)
+			LinkedTowns.Add(reader.ReadInt32());
+		int linkedFirmsEnableCount = reader.ReadInt32();
+		for (int i = 0; i < linkedFirmsEnableCount; i++)
+			LinkedFirmsEnable.Add(reader.ReadInt32());
+		int linkedTownsEnableCount = reader.ReadInt32();
+		for (int i = 0; i < linkedTownsEnableCount; i++)
+			LinkedTownsEnable.Add(reader.ReadInt32());
+		AIFirm = reader.ReadBoolean();
+		AIProcessed = reader.ReadBoolean();
+		AIStatus = reader.ReadInt32();
+		AILinkChecked = reader.ReadBoolean();
+		ShouldCloseFlag = reader.ReadBoolean();
+		AIShouldBuildFactoryCount = reader.ReadInt32();
+	}
+	
 	#endregion
 }

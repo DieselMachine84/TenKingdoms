@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -544,6 +545,40 @@ public class FirmHarbor : Firm
 	public int total_linked_trade_firm()
 	{
 		return 0;
+	}
+	
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(LandRegionId);
+		writer.Write(SeaRegionId);
+		writer.Write(Ships.Count);
+		for (int i = 0; i < Ships.Count; i++)
+			writer.Write(Ships[i]);
+		writer.Write(BuildUnitType);
+		writer.Write(BuildQueue.Count);
+		for (int i = 0; i < BuildQueue.Count; i++)
+			writer.Write(BuildQueue[i]);
+		writer.Write(_startBuildFrameNumber);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		LandRegionId = reader.ReadInt32();
+		SeaRegionId = reader.ReadInt32();
+		int shipsCount = reader.ReadInt32();
+		for (int i = 0; i < shipsCount; i++)
+			Ships.Add(reader.ReadInt32());
+		BuildUnitType = reader.ReadInt32();
+		int buildQueueCount = reader.ReadInt32();
+		for (int i = 0; i < buildQueueCount; i++)
+			BuildQueue.Add(reader.ReadInt32());
+		_startBuildFrameNumber = reader.ReadInt64();
 	}
 	
 	#endregion

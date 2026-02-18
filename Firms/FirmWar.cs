@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -316,5 +317,31 @@ public class FirmWar : Firm
         return true;
     }
     
+    #endregion
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(BuildUnitType);
+        writer.Write(LastProcessBuildFrameNumber);
+        writer.Write(BuildProgressInDays);
+        writer.Write(BuildQueue.Count);
+        for (int i = 0; i < BuildQueue.Count; i++)
+            writer.Write(BuildQueue[i]);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        BuildUnitType = reader.ReadInt32();
+        LastProcessBuildFrameNumber = reader.ReadInt64();
+        BuildProgressInDays = reader.ReadDouble();
+        int buildQueueCount = reader.ReadInt32();
+        for (int i = 0; i < buildQueueCount; i++)
+            BuildQueue.Add(reader.ReadInt32());
+    }
+	
     #endregion
 }

@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class FirmResearch : Firm
@@ -198,5 +200,21 @@ public class FirmResearch : Firm
         return true;
     }
     
+    #endregion
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(TechId);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        TechId = reader.ReadInt32();
+    }
+	
     #endregion
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -23,7 +24,6 @@ public class Worker
     public int WorkerLoyalty { get; set; } // only for firms with LiveInTown being false
     public int ExtraPara { get; set; } // weapon version for weapons and power attack points for human units
 
-    private RaceRes RaceRes => Sys.Instance.RaceRes;
     private UnitRes UnitRes => Sys.Instance.UnitRes;
     private FirmArray FirmArray => Sys.Instance.FirmArray;
     private TownArray TownArray => Sys.Instance.TownArray;
@@ -147,4 +147,46 @@ public class Worker
         
         return FirmArray[firmId].NationId == nationId;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RaceId);
+        writer.Write(UnitType);
+        writer.Write(NameId);
+        writer.Write(RankId);
+        writer.Write(SkillId);
+        writer.Write(SkillLevel);
+        writer.Write(SkillLevelMinor);
+        writer.Write(SkillPotential);
+        writer.Write(HitPoints);
+        writer.Write(CombatLevel);
+        writer.Write(CombatLevelMinor);
+        writer.Write(SpyId);
+        writer.Write(TownId);
+        writer.Write(WorkerLoyalty);
+        writer.Write(ExtraPara);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        RaceId = reader.ReadInt32();
+        UnitType = reader.ReadInt32();
+        NameId = reader.ReadInt32();
+        RankId = reader.ReadInt32();
+        SkillId = reader.ReadInt32();
+        SkillLevel = reader.ReadInt32();
+        SkillLevelMinor = reader.ReadInt32();
+        SkillPotential = reader.ReadInt32();
+        HitPoints = reader.ReadInt32();
+        CombatLevel = reader.ReadInt32();
+        CombatLevelMinor = reader.ReadInt32();
+        SpyId = reader.ReadInt32();
+        TownId = reader.ReadInt32();
+        WorkerLoyalty = reader.ReadInt32();
+        ExtraPara = reader.ReadInt32();
+    }
+	
+    #endregion
 }

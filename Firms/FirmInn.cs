@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -33,6 +34,28 @@ public class InnUnit
 
 		HireCost *= 2;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(UnitType);
+		Skill.SaveTo(writer);
+		writer.Write(HireCost);
+		writer.Write(StayCount);
+		writer.Write(SpyId);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		UnitType = reader.ReadInt32();
+		Skill.LoadFrom(reader);
+		HireCost = reader.ReadInt32();
+		StayCount = reader.ReadInt32();
+		SpyId = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class FirmInn : Firm
@@ -417,5 +440,31 @@ public class FirmInn : Firm
 		return true;
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(NextSkillId);
+		writer.Write(InnUnits.Count);
+		for (int i = 0; i < InnUnits.Count; i++)
+			InnUnits[i].SaveTo(writer);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		NextSkillId = reader.ReadInt32();
+		int innUnitsCount = reader.ReadInt32();
+		for (int i = 0; i < innUnitsCount; i++)
+		{
+			InnUnit innUnit = new InnUnit();
+			innUnit.LoadFrom(reader);
+			InnUnits.Add(innUnit);
+		}
+	}
+	
 	#endregion
 }

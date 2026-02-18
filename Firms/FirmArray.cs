@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -227,4 +228,39 @@ public class FirmArray : DynArray<Firm>
 			firmMonster.ResetHostileNation(nationId);
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		int count = Count();
+		writer.Write(count);
+		foreach (Firm firm in EnumerateWithDeleted())
+		{
+			writer.Write(firm.FirmType);
+			firm.SaveTo(writer);
+		}
+		writer.Write(Firm.ActionSpyId);
+		writer.Write(Firm.BribeResult);
+		writer.Write(Firm.AssassinateResult);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			int firmType = reader.ReadInt32();
+			Firm firm = CreateNewObject(firmType);
+			firm.LoadFrom(reader);
+			Load(firm);
+		}
+		Firm.ActionSpyId = reader.ReadInt32();
+		Firm.BribeResult = reader.ReadInt32();
+		Firm.AssassinateResult = reader.ReadInt32();
+	}
+	
+	#endregion
 }

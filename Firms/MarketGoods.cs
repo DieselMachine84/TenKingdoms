@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class MarketGoods
@@ -34,4 +36,36 @@ public class MarketGoods
     {
         return LastYearSales * (365 - Info.YearDay) / 365 + CurYearSales;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RawId);
+        writer.Write(ProductId);
+        writer.Write(StockQty);
+        writer.Write(MonthDemand);
+        writer.Write(CurMonthSupply);
+        writer.Write(LastMonthSupply);
+        writer.Write(CurMonthSaleQty);
+        writer.Write(LastMonthSaleQty);
+        writer.Write(CurYearSales);
+        writer.Write(LastYearSales);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        RawId = reader.ReadInt32();
+        ProductId = reader.ReadInt32();
+        StockQty = reader.ReadDouble();
+        MonthDemand = reader.ReadDouble();
+        CurMonthSupply = reader.ReadDouble();
+        LastMonthSupply = reader.ReadDouble();
+        CurMonthSaleQty = reader.ReadDouble();
+        LastMonthSaleQty = reader.ReadDouble();
+        CurYearSales = reader.ReadDouble();
+        LastYearSales = reader.ReadDouble();
+    }
+	
+    #endregion
 }
