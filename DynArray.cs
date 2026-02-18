@@ -87,13 +87,14 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
 
     public IEnumerator<T> GetEnumerator()
     {
-        //TODO use _keysForEnumeration
-        List<int> keys = _idIndexes.Keys.ToList();
-        for (int i = 0; i < keys.Count; i++)
+        _keysForEnumeration.Clear();
+        _keysForEnumeration.AddRange(_idIndexes.Keys);
+        
+        for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            if (!IsDeleted(keys[i]))
+            if (!IsDeleted(_keysForEnumeration[i]))
             {
-                yield return _list[_idIndexes[keys[i]]];
+                yield return _list[_idIndexes[_keysForEnumeration[i]]];
             }
         }
     }
