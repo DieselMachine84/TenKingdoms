@@ -149,6 +149,25 @@ public partial class Renderer
 	private int _bottomBorder2TextureWidth;
 	private int _bottomBorder2TextureHeight;
 
+	private IntPtr _map1Texture;
+	private int _map1Width;
+	private int _map1Height;
+	private IntPtr _map2ATexture;
+	private int _map2AWidth;
+	private int _map2AHeight;
+	private IntPtr _map2BTexture;
+	private int _map2BWidth;
+	private int _map2BHeight;
+	private IntPtr _map3Texture;
+	private int _map3Width;
+	private int _map3Height;
+	private IntPtr _inGameMenuTexture;
+	private int _inGameMenuWidth;
+	private int _inGameMenuHeight;
+	private IntPtr _inGameMenuPressedTexture;
+	private int _inGameMenuPressedWidth;
+	private int _inGameMenuPressedHeight;
+	
 	private IntPtr _smallPanelTexture;
 	private int _smallPanelWidth;
 	private int _smallPanelHeight;
@@ -460,6 +479,13 @@ public partial class Renderer
 	private int _indicatorWidth;
 	private int _indicatorHeight;
 
+	private IntPtr _menuUpTexture;
+	private int _menuUpWidth;
+	private int _menuUpHeight;
+	private IntPtr _menuDownTexture;
+	private int _menuDownWidth;
+	private int _menuDownHeight;
+	
 	private readonly IntPtr[] _scrollMenuTextures = new IntPtr[8];
 	private readonly int[] _scrollMenuWidths = new int[8];
 	private readonly int[] _scrollMenuHeights = new int[8];
@@ -669,6 +695,32 @@ public partial class Renderer
         byte[] detailsBitmap4 = Graphics.CopyBitmapRect(mainScreenBitmap, mainScreenWidth, mainScreenHeight,
             584 + _detailsTexture1Width - _detailsTexture2Width, 264 + _detailsTexture2Height, _detailsTexture4Width, _detailsTexture4Height);
         _detailsTexture4 = Graphics.CreateTextureFromBmp(detailsBitmap4, _detailsTexture4Width, _detailsTexture4Height);
+
+        byte[] map1Bitmap = buttonImages.Read("MAP-1");
+        _map1Width = BitConverter.ToInt16(map1Bitmap, 0);
+        _map1Height = BitConverter.ToInt16(map1Bitmap, 2);
+        _map1Texture = Graphics.CreateTextureFromBmp(map1Bitmap.Skip(4).ToArray(), _map1Width, _map1Height);
+        byte[] map2ABitmap = buttonImages.Read("MAP-2A");
+        _map2AWidth = BitConverter.ToInt16(map2ABitmap, 0);
+        _map2AHeight = BitConverter.ToInt16(map2ABitmap, 2);
+        _map2ATexture = Graphics.CreateTextureFromBmp(map2ABitmap.Skip(4).ToArray(), _map2AWidth, _map2AHeight);
+        byte[] map2BBitmap = buttonImages.Read("MAP-2B");
+        _map2BWidth = BitConverter.ToInt16(map2BBitmap, 0);
+        _map2BHeight = BitConverter.ToInt16(map2BBitmap, 2);
+        _map2BTexture = Graphics.CreateTextureFromBmp(map2BBitmap.Skip(4).ToArray(), _map2BWidth, _map2BHeight);
+        byte[] map3Bitmap = buttonImages.Read("MAP-3");
+        _map3Width = BitConverter.ToInt16(map3Bitmap, 0);
+        _map3Height = BitConverter.ToInt16(map3Bitmap, 2);
+        _map3Texture = Graphics.CreateTextureFromBmp(map3Bitmap.Skip(4).ToArray(), _map3Width, _map3Height);
+
+        byte[] inGameMenuBitmap = interfaceImages.Read("GAMEMENU");
+        _inGameMenuWidth = BitConverter.ToInt16(inGameMenuBitmap, 0);
+        _inGameMenuHeight = BitConverter.ToInt16(inGameMenuBitmap, 2);
+        _inGameMenuTexture = Graphics.CreateTextureFromBmp(inGameMenuBitmap.Skip(4).ToArray(), _inGameMenuWidth, _inGameMenuHeight);
+        byte[] inGameMenuPressedBitmap = interfaceImages.Read("MENU-DWN");
+        _inGameMenuPressedWidth = BitConverter.ToInt16(inGameMenuPressedBitmap, 0);
+        _inGameMenuPressedHeight = BitConverter.ToInt16(inGameMenuPressedBitmap, 2);
+        _inGameMenuPressedTexture = Graphics.CreateTextureFromBmp(inGameMenuPressedBitmap.Skip(4).ToArray(), _inGameMenuPressedWidth, _inGameMenuPressedHeight);
         
         CreatePanels(detailsBitmap1, detailsBitmap2);
 
@@ -1215,6 +1267,17 @@ public partial class Renderer
 		_indicatorHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _indicatorWidth, _indicatorHeight);
 		_indicatorTexture = Graphics.CreateTextureFromBmp(buttonData, _indicatorWidth, _indicatorHeight);
+		
+		buttonData = buttonImages.Read("MENU-U");
+		_menuUpWidth = BitConverter.ToInt16(buttonData, 0);
+		_menuUpHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _menuUpWidth, _menuUpHeight);
+		_menuUpTexture = Graphics.CreateTextureFromBmp(buttonData, _menuUpWidth, _menuUpHeight);
+		buttonData = buttonImages.Read("MENU-D");
+		_menuDownWidth = BitConverter.ToInt16(buttonData, 0);
+		_menuDownHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _menuDownWidth, _menuDownHeight);
+		_menuDownTexture = Graphics.CreateTextureFromBmp(buttonData, _menuDownWidth, _menuDownHeight);
 	}
 
 	private void CreateBuildButtonTextures(int colorScheme)

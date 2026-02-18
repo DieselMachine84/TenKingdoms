@@ -193,24 +193,24 @@ public partial class Renderer : IRenderer
     {
         Graphics.DrawBitmap(_mainMenuTexture, 0, 0, _mainMenuWidth, _mainMenuHeight, FlipMode.Vertical);
 
+        int x = 397;
+        int y = 300;
         int dy = 0;
-        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 && _mouseMotionY <= 330 + _swordSinglePlayerHeight)
-            Graphics.DrawBitmap(_swordSinglePlayerSelectedTexture, 478, 330, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y && _mouseMotionY <= y + Scale(_swordSinglePlayerHeight))
+            Graphics.DrawBitmapScaled(_swordSinglePlayerSelectedTexture, x, y, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
         else
-            Graphics.DrawBitmap(_swordSinglePlayerTexture, 478, 330, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
-        dy += _swordSinglePlayerHeight;
-        Graphics.DrawBitmap(_swordMultiPlayerDisabledTexture, 478, 330 + dy, _swordMultiPlayerWidth, _swordMultiPlayerHeight);
-        dy += _swordMultiPlayerHeight;
-        Graphics.DrawBitmap(_swordEncyclopediaDisabledTexture, 478, 330 + dy, _swordEncyclopediaWidth, _swordEncyclopediaHeight);
-        dy += _swordEncyclopediaHeight;
-        Graphics.DrawBitmap(_swordHallOfFameDisabledTexture, 478, 330 + dy, _swordHallOfFameWidth, _swordHallOfFameHeight);
-        dy += _swordHallOfFameHeight;
-        Graphics.DrawBitmap(_swordCreditsDisabledTexture, 478, 330 + dy, _swordCreditsWidth, _swordCreditsHeight);
-        dy += _swordCreditsHeight;
-        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordSinglePlayerHeight)
-            Graphics.DrawBitmap(_swordQuitSelectedTexture, 478, 330 + dy, _swordQuitWidth, _swordQuitHeight);
+            Graphics.DrawBitmapScaled(_swordSinglePlayerTexture, x, y, _swordSinglePlayerWidth, _swordSinglePlayerHeight);
+        dy += Scale(_swordSinglePlayerHeight);
+        Graphics.DrawBitmapScaled(_swordMultiPlayerDisabledTexture, x, y + dy, _swordMultiPlayerWidth, _swordMultiPlayerHeight);
+        dy += Scale(_swordMultiPlayerHeight);
+        Graphics.DrawBitmapScaled(_swordHallOfFameDisabledTexture, x, y + dy, _swordHallOfFameWidth, _swordHallOfFameHeight);
+        dy += Scale(_swordHallOfFameHeight);
+        Graphics.DrawBitmapScaled(_swordCreditsDisabledTexture, x, y + dy, _swordCreditsWidth, _swordCreditsHeight);
+        dy += Scale(_swordCreditsHeight);
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordQuitHeight))
+            Graphics.DrawBitmapScaled(_swordQuitSelectedTexture, x, y + dy, _swordQuitWidth, _swordQuitHeight);
         else
-            Graphics.DrawBitmap(_swordQuitTexture, 478, 330 + dy, _swordQuitWidth, _swordQuitHeight);
+            Graphics.DrawBitmapScaled(_swordQuitTexture, x, y + dy, _swordQuitWidth, _swordQuitHeight);
         
         PutText(FontNews, "Version 1", _mainMenuWidth - 150, _mainMenuHeight - 50);
     }
@@ -219,27 +219,45 @@ public partial class Renderer : IRenderer
     {
         Graphics.DrawBitmap(_mainMenuTexture, 0, 0, _mainMenuWidth, _mainMenuHeight, FlipMode.Vertical);
         
+        int x = 397;
+        int y = 300;
         int dy = 0;
-        Graphics.DrawBitmap(_swordTrainingDisabledTexture, 478, 330, _swordTrainingWidth, _swordTrainingHeight);
-        dy += _swordTrainingHeight;
-        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordNewGameHeight)
-            Graphics.DrawBitmap(_swordNewGameSelectedTexture, 478, 330 + dy, _swordNewGameWidth, _swordNewGameHeight);
+        Graphics.DrawBitmapScaled(_swordTrainingDisabledTexture, x, y, _swordTrainingWidth, _swordTrainingHeight);
+        dy += Scale(_swordTrainingHeight);
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordNewGameHeight))
+            Graphics.DrawBitmapScaled(_swordNewGameSelectedTexture, x, y + dy, _swordNewGameWidth, _swordNewGameHeight);
         else
-            Graphics.DrawBitmap(_swordNewGameTexture, 478, 330 + dy, _swordNewGameWidth, _swordNewGameHeight);
-        dy += _swordNewGameHeight;
-        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordLoadGameHeight)
-            Graphics.DrawBitmap(_swordLoadGameSelectedTexture, 478, 330 + dy, _swordLoadGameWidth, _swordLoadGameHeight);
+            Graphics.DrawBitmapScaled(_swordNewGameTexture, x, y + dy, _swordNewGameWidth, _swordNewGameHeight);
+        dy += Scale(_swordNewGameHeight);
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordLoadGameHeight))
+            Graphics.DrawBitmapScaled(_swordLoadGameSelectedTexture, x, y + dy, _swordLoadGameWidth, _swordLoadGameHeight);
         else
-            Graphics.DrawBitmap(_swordLoadGameTexture, 478, 330 + dy, _swordLoadGameWidth, _swordLoadGameHeight);
-        dy += _swordLoadGameHeight;
-        Graphics.DrawBitmap(_swordScenarioDisabledTexture, 478, 330 + dy, _swordScenarioWidth, _swordScenarioHeight);
-        dy += _swordScenarioHeight;
-        if (_mouseMotionX >= 478 && _mouseMotionX <= 478 + _sword1Width && _mouseMotionY >= 330 + dy && _mouseMotionY <= 330 + dy + _swordCancelHeight)
-            Graphics.DrawBitmap(_swordCancelSelectedTexture, 478, 330 + dy, _swordCancelWidth, _swordCancelHeight);
+            Graphics.DrawBitmapScaled(_swordLoadGameTexture, x, y + dy, _swordLoadGameWidth, _swordLoadGameHeight);
+        dy += Scale(_swordLoadGameHeight);
+        Graphics.DrawBitmapScaled(_swordScenarioDisabledTexture, x, y + dy, _swordScenarioWidth, _swordScenarioHeight);
+        dy += Scale(_swordScenarioHeight);
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordCancelHeight))
+            Graphics.DrawBitmapScaled(_swordCancelSelectedTexture, x, y + dy, _swordCancelWidth, _swordCancelHeight);
         else
-            Graphics.DrawBitmap(_swordCancelTexture, 478, 330 + dy, _swordCancelWidth, _swordCancelHeight);
+            Graphics.DrawBitmapScaled(_swordCancelTexture, x, y + dy, _swordCancelWidth, _swordCancelHeight);
         
         PutText(FontNews, "Version 1", _mainMenuWidth - 150, _mainMenuHeight - 50);
+    }
+
+    private void DrawInGameMenu()
+    {
+        int x = (WindowWidth - Scale(_inGameMenuWidth)) / 2;
+        int y = (WindowHeight - Scale(_inGameMenuHeight)) / 2;
+        Graphics.DrawBitmapScaled(_inGameMenuTexture, x, y, _inGameMenuWidth, _inGameMenuHeight);
+
+        int dy = 51;
+        for (int i = 0; i < 8; i++)
+        {
+            bool mouseOnButton = _mouseButtonX > x + 135 && _mouseButtonX < x + 135 + 255 &&
+                                 _mouseButtonY > y + 139 + i * dy && _mouseButtonY < y + 139 + (i + 1) * dy;
+            if (_leftMousePressed && mouseOnButton)
+                Graphics.DrawBitmapScaled(_inGameMenuPressedTexture, x + 134, y + 139 + i * dy, _inGameMenuPressedWidth, _inGameMenuPressedHeight);
+        }
     }
     
     public void DrawFrame(bool nextFrame)
@@ -253,6 +271,12 @@ public partial class Renderer : IRenderer
         if (GameMode == GameMode.SinglePlayerMenu)
         {
             DrawSinglePlayerMenu();
+            return;
+        }
+
+        if (GameMode == GameMode.InGameMenu)
+        {
+            DrawInGameMenu();
             return;
         }
         
@@ -369,6 +393,15 @@ public partial class Renderer : IRenderer
             PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
             Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);
         }
+        
+        Graphics.DrawBitmapScaled(_map3Texture, DetailsX1 - 8, 3, _map3Width, _map3Height);
+
+        bool mouseOnMenuButton = _mouseButtonX >= DetailsX1 + 312 && _mouseButtonX <= DetailsX1 + 404 &&
+                                 _mouseButtonY >= 17 && _mouseButtonY <= 63;
+        if (_leftMousePressed && mouseOnMenuButton)
+            Graphics.DrawBitmapScaled(_menuDownTexture, DetailsX1 + 304, 9, _menuDownWidth, _menuDownHeight);
+        else
+            Graphics.DrawBitmapScaled(_menuUpTexture, DetailsX1 + 304, 9, _menuUpWidth, _menuUpHeight);
     }
 
     private void DrawNews()

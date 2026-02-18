@@ -375,4 +375,23 @@ public class Graphics
     {
         SDL.SDL_RenderPresent(_renderer);
     }
+
+    public void ShowSimpleMessageBox(string message)
+    {
+        SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "Ten Kingdoms", message, IntPtr.Zero);
+    }
+
+    public int ShowMessageBox(string message)
+    {
+        SDL.SDL_MessageBoxButtonData[] buttons = new SDL.SDL_MessageBoxButtonData[2];
+        buttons[0].buttonid = 1;
+        buttons[0].text = "Yes";
+        buttons[1].buttonid = 2;
+        buttons[1].text = "No";
+        SDL.SDL_MessageBoxData messageBoxData = new SDL.SDL_MessageBoxData();
+        messageBoxData.message = message;
+        messageBoxData.buttons = buttons;
+        SDL.SDL_ShowMessageBox(ref messageBoxData, out int pressedButton);
+        return pressedButton;
+    }
 }

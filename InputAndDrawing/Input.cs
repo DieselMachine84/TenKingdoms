@@ -20,8 +20,16 @@ public partial class Renderer
     {
         if (GameMode != GameMode.Game)
         {
+            if (eventType == InputConstants.LeftMouseDown)
+            {
+                _leftMousePressed = true;
+                _mouseButtonX = mouseEventX;
+                _mouseButtonY = mouseEventY;
+            }
+            
             if (eventType == InputConstants.LeftMouseUp)
             {
+                _leftMousePressed = false;
                 _leftMouseReleased = true;
                 _mouseButtonX = mouseEventX;
                 _mouseButtonY = mouseEventY;
@@ -30,6 +38,8 @@ public partial class Renderer
                     HandleStartMenu();
                 if (GameMode == GameMode.SinglePlayerMenu)
                     HandleSinglePlayerMenu();
+                if (GameMode == GameMode.InGameMenu)
+                    HandleInGameMenu();
                 
                 _leftMouseReleased = false;
             }
@@ -45,9 +55,13 @@ public partial class Renderer
         
         bool clickOnViewModeButton = mouseEventX >= ViewModeX && mouseEventX < ViewModeX + ViewModeWidth &&
                                      mouseEventY >= ViewModeY && mouseEventY < ViewModeY + ViewModeHeight;
-
         if (clickOnViewModeButton && eventType == InputConstants.LeftMouseUp)
             SelectViewMode(mouseEventX, mouseEventY);
+        
+        bool clickOnMenuButton = mouseEventX >= DetailsX1 + 312 && mouseEventX <= DetailsX1 + 404 &&
+                                 mouseEventY >= 17 && mouseEventY < 63;
+        if (clickOnMenuButton && eventType == InputConstants.LeftMouseUp)
+            GameMode = GameMode.InGameMenu;
         
         bool clickOnMainView = mouseEventX >= MainViewX && mouseEventX < MainViewX + MainViewWidth &&
                                mouseEventY >= MainViewY && mouseEventY < MainViewY + MainViewHeight;
@@ -1203,19 +1217,19 @@ public partial class Renderer
     private void HandleStartMenu()
     {
         int dy = 0;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 && _mouseButtonY <= 330 + _swordSinglePlayerHeight)
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 && _mouseButtonY <= 330 + Scale(_swordSinglePlayerHeight))
         {
             if (_leftMouseReleased)
             {
                 GameMode = GameMode.SinglePlayerMenu;
             }
         }
-        dy += _swordSinglePlayerHeight;
-        dy += _swordMultiPlayerHeight;
-        dy += _swordEncyclopediaHeight;
-        dy += _swordHallOfFameHeight;
-        dy += _swordCreditsHeight;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordSinglePlayerHeight)
+        dy += Scale(_swordSinglePlayerHeight);
+        dy += Scale(_swordMultiPlayerHeight);
+        dy += Scale(_swordEncyclopediaHeight);
+        dy += Scale(_swordHallOfFameHeight);
+        dy += Scale(_swordCreditsHeight);
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordQuitHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1228,7 +1242,7 @@ public partial class Renderer
     {
         int dy = 0;
         dy += _swordTrainingHeight;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword2Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordNewGameHeight)
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword2Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordNewGameHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1236,14 +1250,83 @@ public partial class Renderer
             }
         }
 
-        dy += _swordNewGameHeight;
-        dy += _swordLoadGameHeight;
-        dy += _swordScenarioHeight;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + _swordCancelHeight)
+        dy += Scale(_swordNewGameHeight);
+        dy += Scale(_swordLoadGameHeight);
+        dy += Scale(_swordScenarioHeight);
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordCancelHeight))
         {
             if (_leftMouseReleased)
             {
                 GameMode = GameMode.StartMenu;
+            }
+        }
+    }
+
+    private void HandleInGameMenu()
+    {
+        int x = (WindowWidth - Scale(_inGameMenuWidth)) / 2 + 135;
+        int y = (WindowHeight - Scale(_inGameMenuHeight)) / 2 + 139;
+
+        int dy = 51;
+        if (_leftMouseReleased)
+        {
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y && _mouseButtonY < y + dy)
+            {
+                //Options
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + dy && _mouseButtonY < y + 2 * dy)
+            {
+                //Save
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 2 * dy && _mouseButtonY < y + 3 * dy)
+            {
+                //Load
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 3 * dy && _mouseButtonY < y + 4 * dy)
+            {
+                //Training
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 4 * dy && _mouseButtonY < y + 5 * dy)
+            {
+                //Retire
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 5 * dy && _mouseButtonY < y + 6 * dy)
+            {
+                //if (Graphics.ShowMessageBox("Do you really want to quit to the Main Menu?") == 1)
+                GameMode = GameMode.StartMenu;
+                Graphics.SetWindowSize(StartMenuWidth, StartMenuHeight);
+                
+                /*if (remote.is_enable() && nation_array.player_recno)
+                {
+                    // BUGHERE : message will not be sent out
+                    short *shortPtr = (short *)remote.new_send_queue_msg( MSG_PLAYER_QUIT, 2*sizeof(short));
+                    shortPtr[0] = nation_array.player_recno;
+                    shortPtr[1] = 0;     // not retire
+                }*/
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 6 * dy && _mouseButtonY < y + 7 * dy)
+            {
+                //if (Graphics.ShowMessageBox("Do you really want to quit Seven Kingdoms?") == 1)
+                Sys.Instance.ExitFlag = true;
+                
+                /*if (remote.is_enable() && nation_array.player_recno)
+                {
+                    // BUGHERE : message will not be sent out
+                    short *shortPtr = (short *)remote.new_send_queue_msg( MSG_PLAYER_QUIT, 2*sizeof(short));
+                    shortPtr[0] = nation_array.player_recno;
+                    shortPtr[1] = 0;     // not retire
+                }*/
+            }
+            
+            if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 7 * dy && _mouseButtonY < y + 8 * dy)
+            {
+                GameMode = GameMode.Game;
             }
         }
     }

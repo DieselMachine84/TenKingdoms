@@ -174,8 +174,7 @@ public class Sys
         }
         catch (Exception e)
         {
-            SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "Ten Kingdoms", 
-                "Error when initializing SDL: " + e.Message, IntPtr.Zero);
+            Graphics.ShowSimpleMessageBox("Error when initializing SDL: " + e.Message);
             Graphics.DeInit();
             return false;
         }
@@ -225,8 +224,7 @@ public class Sys
         string error = Config.Load();
         if (!String.IsNullOrEmpty(error))
         {
-            SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "Ten Kingdoms", 
-                "Error when loading Config.txt: " + error, IntPtr.Zero);
+            Graphics.ShowSimpleMessageBox("Error when loading Config.txt: " + error);
             return;
         }
         
