@@ -1226,10 +1226,9 @@ public partial class Renderer
         }
         dy += Scale(_swordSinglePlayerHeight);
         dy += Scale(_swordMultiPlayerHeight);
-        dy += Scale(_swordEncyclopediaHeight);
         dy += Scale(_swordHallOfFameHeight);
         dy += Scale(_swordCreditsHeight);
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + _sword1Width && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordQuitHeight))
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordQuitHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1253,7 +1252,7 @@ public partial class Renderer
         dy += Scale(_swordNewGameHeight);
         dy += Scale(_swordLoadGameHeight);
         dy += Scale(_swordScenarioHeight);
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordCancelHeight))
+        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword2Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordCancelHeight))
         {
             if (_leftMouseReleased)
             {
