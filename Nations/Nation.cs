@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace TenKingdoms;
@@ -9496,6 +9497,226 @@ public class Nation : NationBase
 
 		return 0;
 	}
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(action_array.Count);
+		for (int i = 0; i < action_array.Count; i++)
+			action_array[i].SaveTo(writer);
+		writer.Write(last_action_id);
+		writer.Write(ai_town_array.Count);
+		for (int i = 0; i < ai_town_array.Count; i++)
+			writer.Write(ai_town_array[i]);
+		writer.Write(ai_base_array.Count);
+		for (int i = 0; i < ai_base_array.Count; i++)
+			writer.Write(ai_base_array[i]);
+		writer.Write(ai_mine_array.Count);
+		for (int i = 0; i < ai_mine_array.Count; i++)
+			writer.Write(ai_mine_array[i]);
+		writer.Write(ai_factory_array.Count);
+		for (int i = 0; i < ai_factory_array.Count; i++)
+			writer.Write(ai_factory_array[i]);
+		writer.Write(ai_camp_array.Count);
+		for (int i = 0; i < ai_camp_array.Count; i++)
+			writer.Write(ai_camp_array[i]);
+		writer.Write(ai_research_array.Count);
+		for (int i = 0; i < ai_research_array.Count; i++)
+			writer.Write(ai_research_array[i]);
+		writer.Write(ai_war_array.Count);
+		for (int i = 0; i < ai_war_array.Count; i++)
+			writer.Write(ai_war_array[i]);
+		writer.Write(ai_harbor_array.Count);
+		for (int i = 0; i < ai_harbor_array.Count; i++)
+			writer.Write(ai_harbor_array[i]);
+		writer.Write(ai_market_array.Count);
+		for (int i = 0; i < ai_market_array.Count; i++)
+			writer.Write(ai_market_array[i]);
+		writer.Write(ai_inn_array.Count);
+		for (int i = 0; i < ai_inn_array.Count; i++)
+			writer.Write(ai_inn_array[i]);
+		writer.Write(ai_general_array.Count);
+		for (int i = 0; i < ai_general_array.Count; i++)
+			writer.Write(ai_general_array[i]);
+		writer.Write(ai_caravan_array.Count);
+		for (int i = 0; i < ai_caravan_array.Count; i++)
+			writer.Write(ai_caravan_array[i]);
+		writer.Write(ai_ship_array.Count);
+		for (int i = 0; i < ai_ship_array.Count; i++)
+			writer.Write(ai_ship_array[i]);
+		writer.Write(ai_region_array.Count);
+		for (int i = 0; i < ai_region_array.Count; i++)
+		{
+			writer.Write(ai_region_array[i].region_id);
+			writer.Write(ai_region_array[i].town_count);
+			writer.Write(ai_region_array[i].base_town_count);
+		}
+		writer.Write(ai_base_town_count);
+		for (int i = 0; i < firm_should_close_array.Length; i++)
+			writer.Write(firm_should_close_array[i]);
+		writer.Write(pref_force_projection);
+		writer.Write(pref_military_development);
+		writer.Write(pref_economic_development);
+		writer.Write(pref_inc_pop_by_capture);
+		writer.Write(pref_inc_pop_by_growth);
+		writer.Write(pref_peacefulness);
+		writer.Write(pref_military_courage);
+		writer.Write(pref_territorial_cohesiveness);
+		writer.Write(pref_trading_tendency);
+		writer.Write(pref_allying_tendency);
+		writer.Write(pref_honesty);
+		writer.Write(pref_town_harmony);
+		writer.Write(pref_loyalty_concern);
+		writer.Write(pref_forgiveness);
+		writer.Write(pref_collect_tax);
+		writer.Write(pref_hire_unit);
+		writer.Write(pref_use_weapon);
+		writer.Write(pref_keep_general);
+		writer.Write(pref_keep_skilled_unit);
+		writer.Write(pref_diplomacy_retry);
+		writer.Write(pref_attack_monster);
+		writer.Write(pref_spy);
+		writer.Write(pref_counter_spy);
+		writer.Write(pref_food_reserve);
+		writer.Write(pref_cash_reserve);
+		writer.Write(pref_use_marine);
+		writer.Write(pref_unit_chase_distance);
+		writer.Write(pref_repair_concern);
+		writer.Write(pref_scout);
+		writer.Write(ai_capture_enemy_town_recno);
+		writer.Write(ai_capture_enemy_town_plan_date.ToBinary());
+		writer.Write(ai_capture_enemy_town_start_attack_date.ToBinary());
+		writer.Write(ai_capture_enemy_town_use_all_camp);
+		writer.Write(ai_last_defend_action_date.ToBinary());
+		writer.Write(ai_attack_target_x_loc);
+		writer.Write(ai_attack_target_y_loc);
+		writer.Write(ai_attack_target_nation_recno);
+		writer.Write(attack_camps.Count);
+		for (int i = 0; i < attack_camps.Count; i++)
+		{
+			writer.Write(attack_camps[i].firm_recno);
+			writer.Write(attack_camps[i].combat_level);
+			writer.Write(attack_camps[i].distance);
+			writer.Write(attack_camps[i].patrol_date.ToBinary());
+		}
+		writer.Write(lead_attack_camp_recno);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		int action_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < action_arrayCount; i++)
+		{
+			ActionNode actionNode = new ActionNode();
+			actionNode.LoadFrom(reader);
+			action_array.Add(actionNode);
+		}
+		last_action_id = reader.ReadInt32();
+		int ai_town_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_town_arrayCount; i++)
+			ai_town_array.Add(reader.ReadInt32());
+		int ai_base_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_base_arrayCount; i++)
+			ai_base_array.Add(reader.ReadInt32());
+		int ai_mine_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_mine_arrayCount; i++)
+			ai_mine_array.Add(reader.ReadInt32());
+		int ai_factory_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_factory_arrayCount; i++)
+			ai_factory_array.Add(reader.ReadInt32());
+		int ai_camp_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_camp_arrayCount; i++)
+			ai_camp_array.Add(reader.ReadInt32());
+		int ai_research_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_research_arrayCount; i++)
+			ai_research_array.Add(reader.ReadInt32());
+		int ai_war_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_war_arrayCount; i++)
+			ai_war_array.Add(reader.ReadInt32());
+		int ai_harbor_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_harbor_arrayCount; i++)
+			ai_harbor_array.Add(reader.ReadInt32());
+		int ai_market_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_market_arrayCount; i++)
+			ai_market_array.Add(reader.ReadInt32());
+		int ai_inn_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_inn_arrayCount; i++)
+			ai_inn_array.Add(reader.ReadInt32());
+		int ai_general_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_general_arrayCount; i++)
+			ai_general_array.Add(reader.ReadInt32());
+		int ai_caravan_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_caravan_arrayCount; i++)
+			ai_caravan_array.Add(reader.ReadInt32());
+		int ai_ship_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_ship_arrayCount; i++)
+			ai_ship_array.Add(reader.ReadInt32());
+		int ai_region_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < ai_region_arrayCount; i++)
+		{
+			AIRegion region = new AIRegion();
+			region.region_id = reader.ReadInt32();
+			region.town_count = reader.ReadInt32();
+			region.base_town_count = reader.ReadInt32();
+			ai_region_array.Add(region);
+		}
+		ai_base_town_count = reader.ReadInt32();
+		for (int i = 0; i < firm_should_close_array.Length; i++)
+			firm_should_close_array[i] = reader.ReadInt32();
+		pref_force_projection = reader.ReadInt32();
+		pref_military_development = reader.ReadInt32();
+		pref_economic_development = reader.ReadInt32();
+		pref_inc_pop_by_capture = reader.ReadInt32();
+		pref_inc_pop_by_growth = reader.ReadInt32();
+		pref_peacefulness = reader.ReadInt32();
+		pref_military_courage = reader.ReadInt32();
+		pref_territorial_cohesiveness = reader.ReadInt32();
+		pref_trading_tendency = reader.ReadInt32();
+		pref_allying_tendency = reader.ReadInt32();
+		pref_honesty = reader.ReadInt32();
+		pref_town_harmony = reader.ReadInt32();
+		pref_loyalty_concern = reader.ReadInt32();
+		pref_forgiveness = reader.ReadInt32();
+		pref_collect_tax = reader.ReadInt32();
+		pref_hire_unit = reader.ReadInt32();
+		pref_use_weapon = reader.ReadInt32();
+		pref_keep_general = reader.ReadInt32();
+		pref_keep_skilled_unit = reader.ReadInt32();
+		pref_diplomacy_retry = reader.ReadInt32();
+		pref_attack_monster = reader.ReadInt32();
+		pref_spy = reader.ReadInt32();
+		pref_counter_spy = reader.ReadInt32();
+		pref_food_reserve = reader.ReadInt32();
+		pref_cash_reserve = reader.ReadInt32();
+		pref_use_marine = reader.ReadInt32();
+		pref_unit_chase_distance = reader.ReadInt32();
+		pref_repair_concern = reader.ReadInt32();
+		pref_scout = reader.ReadInt32();
+		ai_capture_enemy_town_recno = reader.ReadInt32();
+		ai_capture_enemy_town_plan_date = DateTime.FromBinary(reader.ReadInt64());
+		ai_capture_enemy_town_start_attack_date = DateTime.FromBinary(reader.ReadInt64());
+		ai_capture_enemy_town_use_all_camp = reader.ReadBoolean();
+		ai_last_defend_action_date = DateTime.FromBinary(reader.ReadInt64());
+		ai_attack_target_x_loc = reader.ReadInt32();
+		ai_attack_target_y_loc = reader.ReadInt32();
+		ai_attack_target_nation_recno = reader.ReadInt32();
+		int attack_campsCount = reader.ReadInt32();
+		for (int i = 0; i < attack_campsCount; i++)
+		{
+			AttackCamp attackCamp = new AttackCamp();
+			attackCamp.firm_recno = reader.ReadInt32();
+			attackCamp.combat_level = reader.ReadInt32();
+			attackCamp.distance = reader.ReadInt32();
+			attackCamp.patrol_date = DateTime.FromBinary(reader.ReadInt64());
+			attack_camps.Add(attackCamp);
+		}
+		lead_attack_camp_recno = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class ActionNode
@@ -9532,6 +9753,56 @@ public class ActionNode
 
 	// continue processing this action after this date, this is used when training a unit for construction}
 	public DateTime next_retry_date;
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(action_mode);
+		writer.Write(action_type);
+		writer.Write(action_para);
+		writer.Write(action_para2);
+		writer.Write(action_id);
+		writer.Write(add_date.ToBinary());
+		writer.Write(unit_recno);
+		writer.Write(action_x_loc);
+		writer.Write(action_y_loc);
+		writer.Write(ref_x_loc);
+		writer.Write(ref_y_loc);
+		writer.Write(retry_count);
+		writer.Write(instance_count);
+		writer.Write(group_unit_array.Count);
+		for (int i = 0; i < group_unit_array.Count; i++)
+			writer.Write(group_unit_array[i]);
+		writer.Write(processing_instance_count);
+		writer.Write(processed_instance_count);
+		writer.Write(next_retry_date.ToBinary());
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		action_mode = reader.ReadInt32();
+		action_type = reader.ReadInt32();
+		action_para = reader.ReadInt32();
+		action_para2 = reader.ReadInt32();
+		action_id = reader.ReadInt32();
+		add_date = DateTime.FromBinary(reader.ReadInt64());
+		unit_recno = reader.ReadInt32();
+		action_x_loc = reader.ReadInt32();
+		action_y_loc = reader.ReadInt32();
+		ref_x_loc = reader.ReadInt32();
+		ref_y_loc = reader.ReadInt32();
+		retry_count = reader.ReadInt32();
+		instance_count = reader.ReadInt32();
+		int group_unit_arrayCount = reader.ReadInt32();
+		for (int i = 0; i < group_unit_arrayCount; i++)
+			group_unit_array.Add(reader.ReadInt32());
+		processing_instance_count = reader.ReadInt32();
+		processed_instance_count = reader.ReadInt32();
+		next_retry_date = DateTime.FromBinary(reader.ReadInt64());
+	}
+	
+	#endregion
 }
 
 public class AIRegion

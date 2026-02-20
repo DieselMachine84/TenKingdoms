@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -401,4 +402,31 @@ public class NationArray : DynArray<Nation>
 			nation.MilitaryRating = nationCombatLevels[nation.NationId - 1] / 50;
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		int count = Count();
+		writer.Write(count);
+		foreach (Nation nation in EnumerateWithDeleted())
+		{
+			nation.SaveTo(writer);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			Nation nation = CreateNewObject(0);
+			nation.LoadFrom(reader);
+			Load(nation);
+		}
+	}
+	
+	#endregion
 }

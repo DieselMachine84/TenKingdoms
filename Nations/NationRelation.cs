@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -83,4 +84,56 @@ public class NationRelation
             str += "s";
         return str;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(HasContact);
+        writer.Write(ShouldAttack);
+        writer.Write(TradeTreaty);
+        writer.Write(Status);
+        writer.Write(LastChangeStatusDate.ToBinary());
+        writer.Write(GoodRelationDurationRating);
+        writer.Write(StartedWarOnUsCount);
+        for (int i = 0; i < CurYearImport.Length; i++)
+            writer.Write(CurYearImport[i]);
+        for (int i = 0; i < LastYearImport.Length; i++)
+            writer.Write(LastYearImport[i]);
+        for (int i = 0; i < LastTalkRejectDates.Length; i++)
+            writer.Write(LastTalkRejectDates[i].ToBinary());
+        writer.Write(LastMilitaryAidDate.ToBinary());
+        writer.Write(LastGiveGiftDate.ToBinary());
+        writer.Write(TotalGivenGiftAmount);
+        writer.Write(AIRelationLevel);
+        writer.Write(AISecretAttack);
+        writer.Write(AIDemandTradeTreaty);
+        writer.Write(ContactMsgFlag);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        HasContact = reader.ReadBoolean();
+        ShouldAttack = reader.ReadBoolean();
+        TradeTreaty = reader.ReadBoolean();
+        Status = reader.ReadInt32();
+        LastChangeStatusDate = DateTime.FromBinary(reader.ReadInt64());
+        GoodRelationDurationRating = reader.ReadDouble();
+        StartedWarOnUsCount = reader.ReadInt32();
+        for (int i = 0; i < CurYearImport.Length; i++)
+            CurYearImport[i] = reader.ReadDouble();
+        for (int i = 0; i < LastYearImport.Length; i++)
+            LastYearImport[i] = reader.ReadDouble();
+        for (int i = 0; i < LastTalkRejectDates.Length; i++)
+            LastTalkRejectDates[i] = DateTime.FromBinary(reader.ReadInt64());
+        LastMilitaryAidDate = DateTime.FromBinary(reader.ReadInt64());
+        LastGiveGiftDate = DateTime.FromBinary(reader.ReadInt64());
+        TotalGivenGiftAmount = reader.ReadInt32();
+        AIRelationLevel = reader.ReadInt32();
+        AISecretAttack = reader.ReadBoolean();
+        AIDemandTradeTreaty = reader.ReadInt32();
+        ContactMsgFlag = reader.ReadBoolean();
+    }
+	
+    #endregion
 }

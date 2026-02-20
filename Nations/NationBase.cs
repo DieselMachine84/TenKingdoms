@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -150,7 +150,6 @@ public class NationBase : IIdObject
     protected SpriteRes SpriteRes => Sys.Instance.SpriteRes;
     protected UnitRes UnitRes => Sys.Instance.UnitRes;
     protected MonsterRes MonsterRes => Sys.Instance.MonsterRes;
-    protected GodRes GodRes => Sys.Instance.GodRes;
     protected TechRes TechRes => Sys.Instance.TechRes;
 
     protected Config Config => Sys.Instance.Config;
@@ -1777,4 +1776,186 @@ public class NationBase : IIdObject
 
         return str;
     }
+    
+    #region SaveAndLoad
+
+    public virtual void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NationId);
+        writer.Write(NationType);
+        writer.Write(RaceId);
+        writer.Write(NationColor);
+        writer.Write(ColorSchemeId);
+        writer.Write(KingUnitId);
+        writer.Write(KingLeadership);
+        writer.Write(NationNameId);
+        writer.Write(Cash);
+        writer.Write(Food);
+        writer.Write(Reputation);
+        writer.Write(KillMonsterScore);
+        writer.Write(IsAtWarToday);
+        writer.Write(IsAtWarYesterday);
+        writer.Write(LastWarDate.ToBinary());
+        writer.Write(LastAttackerUnitId);
+        writer.Write(LastIndependentUnitJoinDate.ToBinary());
+        writer.Write(AutoCollectTaxLoyalty);
+        writer.Write(AutoGrantLoyalty);
+        writer.Write(CurYearProfit);
+        writer.Write(LastYearProfit);
+        for (int i = 0; i < CurYearIncomes.Length; i++)
+            writer.Write(CurYearIncomes[i]);
+        for (int i = 0; i < LastYearIncomes.Length; i++)
+            writer.Write(LastYearIncomes[i]);
+        writer.Write(CurYearIncome);
+        writer.Write(LastYearIncome);
+        writer.Write(CurYearFixedIncome);
+        writer.Write(LastYearFixedIncome);
+        for (int i = 0; i < CurYearExpenses.Length; i++)
+            writer.Write(CurYearExpenses[i]);
+        for (int i = 0; i < LastYearExpenses.Length; i++)
+            writer.Write(LastYearExpenses[i]);
+        writer.Write(CurYearExpense);
+        writer.Write(LastYearExpense);
+        writer.Write(CurYearFixedExpense);
+        writer.Write(LastYearFixedExpense);
+        writer.Write(CurYearCheat);
+        writer.Write(LastYearCheat);
+        writer.Write(CurYearFoodIn);
+        writer.Write(LastYearFoodIn);
+        writer.Write(CurYearFoodOut);
+        writer.Write(LastYearFoodOut);
+        writer.Write(CurYearFoodChange);
+        writer.Write(LastYearFoodChange);
+        writer.Write(CurYearReputationChange);
+        writer.Write(LastYearReputationChange);
+        for (int i = 0; i < _techLevels.Length; i++)
+            writer.Write(_techLevels[i]);
+        for (int i = 0; i < _researchProgress.Length; i++)
+            writer.Write(_researchProgress[i]);
+        for (int i = 0; i < KnownBases.Length; i++)
+            writer.Write(KnownBases[i]);
+        for (int i = 0; i < BaseCounts.Length; i++)
+            writer.Write(BaseCounts[i]);
+        writer.Write(TotalPopulation);
+        writer.Write(TotalJoblessPopulation);
+        writer.Write(TotalShipCombatLevel);
+        for (int i = 0; i < RawCounts.Length; i++)
+            writer.Write(RawCounts[i]);
+        for (int i = 0; i < LastUnitNameIds.Length; i++)
+            writer.Write(LastUnitNameIds[i]);
+        writer.Write(PopulationRating);
+        writer.Write(MilitaryRating);
+        writer.Write(EconomicRating);
+        writer.Write(OverallRating);
+        writer.Write(EnemySoldierKilled);
+        writer.Write(OwnSoldierKilled);
+        writer.Write(EnemyCivilianKilled);
+        writer.Write(OwnCivilianKilled);
+        writer.Write(EnemyWeaponDestroyed);
+        writer.Write(OwnWeaponDestroyed);
+        writer.Write(EnemyShipDestroyed);
+        writer.Write(OwnShipDestroyed);
+        writer.Write(EnemyFirmDestroyed);
+        writer.Write(OwnFirmDestroyed);
+        for (int i = 0; i < NationRelations.Length; i++)
+            NationRelations[i].SaveTo(writer);
+        for (int i = 0; i < RelationStatuses.Length; i++)
+            writer.Write(RelationStatuses[i]);
+        for (int i = 0; i < RelationPassable.Length; i++)
+            writer.Write(RelationPassable[i]);
+        for (int i = 0; i < RelationShouldAttack.Length; i++)
+            writer.Write(RelationShouldAttack[i]);
+        writer.Write(IsAlliedWithPlayer);
+    }
+
+    public virtual void LoadFrom(BinaryReader reader)
+    {
+        NationId = reader.ReadInt32();
+        NationType = reader.ReadInt32();
+        RaceId = reader.ReadInt32();
+        NationColor = reader.ReadByte();
+        ColorSchemeId = reader.ReadInt32();
+        KingUnitId = reader.ReadInt32();
+        KingLeadership = reader.ReadInt32();
+        NationNameId = reader.ReadInt32();
+        Cash = reader.ReadDouble();
+        Food = reader.ReadDouble();
+        Reputation = reader.ReadDouble();
+        KillMonsterScore = reader.ReadDouble();
+        IsAtWarToday = reader.ReadBoolean();
+        IsAtWarYesterday = reader.ReadBoolean();
+        LastWarDate = DateTime.FromBinary(reader.ReadInt64());
+        LastAttackerUnitId = reader.ReadInt32();
+        LastIndependentUnitJoinDate = DateTime.FromBinary(reader.ReadInt64());
+        AutoCollectTaxLoyalty = reader.ReadInt32();
+        AutoGrantLoyalty = reader.ReadInt32();
+        CurYearProfit = reader.ReadDouble();
+        LastYearProfit = reader.ReadDouble();
+        for (int i = 0; i < CurYearIncomes.Length; i++)
+            CurYearIncomes[i] = reader.ReadDouble();
+        for (int i = 0; i < LastYearIncomes.Length; i++)
+            LastYearIncomes[i] = reader.ReadDouble();
+        CurYearIncome = reader.ReadDouble();
+        LastYearIncome = reader.ReadDouble();
+        CurYearFixedIncome = reader.ReadDouble();
+        LastYearFixedIncome = reader.ReadDouble();
+        for (int i = 0; i < CurYearExpenses.Length; i++)
+            CurYearExpenses[i] = reader.ReadDouble();
+        for (int i = 0; i < LastYearExpenses.Length; i++)
+            LastYearExpenses[i] = reader.ReadDouble();
+        CurYearExpense = reader.ReadDouble();
+        LastYearExpense = reader.ReadDouble();
+        CurYearFixedExpense = reader.ReadDouble();
+        LastYearFixedExpense = reader.ReadDouble();
+        CurYearCheat = reader.ReadDouble();
+        LastYearCheat = reader.ReadDouble();
+        CurYearFoodIn = reader.ReadDouble();
+        LastYearFoodIn = reader.ReadDouble();
+        CurYearFoodOut = reader.ReadDouble();
+        LastYearFoodOut = reader.ReadDouble();
+        CurYearFoodChange = reader.ReadDouble();
+        LastYearFoodChange = reader.ReadDouble();
+        CurYearReputationChange = reader.ReadDouble();
+        LastYearReputationChange = reader.ReadDouble();
+        for (int i = 0; i < _techLevels.Length; i++)
+            _techLevels[i] = reader.ReadInt32();
+        for (int i = 0; i < _researchProgress.Length; i++)
+            _researchProgress[i] = reader.ReadDouble();
+        for (int i = 0; i < KnownBases.Length; i++)
+            KnownBases[i] = reader.ReadInt32();
+        for (int i = 0; i < BaseCounts.Length; i++)
+            BaseCounts[i] = reader.ReadInt32();
+        TotalPopulation = reader.ReadInt32();
+        TotalJoblessPopulation = reader.ReadInt32();
+        TotalShipCombatLevel = reader.ReadInt32();
+        for (int i = 0; i < RawCounts.Length; i++)
+            RawCounts[i] = reader.ReadInt32();
+        for (int i = 0; i < LastUnitNameIds.Length; i++)
+            LastUnitNameIds[i] = reader.ReadInt32();
+        PopulationRating = reader.ReadInt32();
+        MilitaryRating = reader.ReadInt32();
+        EconomicRating = reader.ReadInt32();
+        OverallRating = reader.ReadInt32();
+        EnemySoldierKilled = reader.ReadInt32();
+        OwnSoldierKilled = reader.ReadInt32();
+        EnemyCivilianKilled = reader.ReadInt32();
+        OwnCivilianKilled = reader.ReadInt32();
+        EnemyWeaponDestroyed = reader.ReadInt32();
+        OwnWeaponDestroyed = reader.ReadInt32();
+        EnemyShipDestroyed = reader.ReadInt32();
+        OwnShipDestroyed = reader.ReadInt32();
+        EnemyFirmDestroyed = reader.ReadInt32();
+        OwnFirmDestroyed = reader.ReadInt32();
+        for (int i = 0; i < NationRelations.Length; i++)
+            NationRelations[i].LoadFrom(reader);
+        for (int i = 0; i < RelationStatuses.Length; i++)
+            RelationStatuses[i] = reader.ReadInt32();
+        for (int i = 0; i < RelationPassable.Length; i++)
+            RelationPassable[i] = reader.ReadBoolean();
+        for (int i = 0; i < RelationShouldAttack.Length; i++)
+            RelationShouldAttack[i] = reader.ReadBoolean();
+        IsAlliedWithPlayer = reader.ReadBoolean();
+    }
+	
+    #endregion
 }
