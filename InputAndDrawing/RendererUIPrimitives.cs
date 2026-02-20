@@ -1782,9 +1782,6 @@ public partial class Renderer
 		int textX = x1 + ((x2 - x1 + 1) - font.TextWidth(text, smallSize)) / 2;
 		int textY = y1 + ((y2 - y1 + 1) - font.FontHeight) / 2;
 
-		if (textX < 0)
-			textX = 0;
-
 		PutText(font, text, textX, textY, x2, smallSize);
 	}
 
