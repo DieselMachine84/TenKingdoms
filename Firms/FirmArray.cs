@@ -95,7 +95,7 @@ public class FirmArray : DynArray<Firm>
 
 			if (firm.NationId == NationArray.PlayerId || (firm.NationId != 0 && NationArray[firm.NationId].IsAlliedWithPlayer))
 			{
-				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
+				World.Unveil(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.UNVEIL_RANGE - 1);
 			}
 
 			//--------- process and process AI firms ----------//

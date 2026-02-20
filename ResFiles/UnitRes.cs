@@ -319,6 +319,7 @@ public class UnitInfo
 
 	public int MobileType { get; set; }
 
+	//TODO Fix VisualRange, VisualExtend and Stealth
 	public int VisualRange { get; set; }
 	public int VisualExtend { get; set; }
 	public int Stealth { get; set; }

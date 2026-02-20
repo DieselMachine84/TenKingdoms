@@ -187,12 +187,13 @@ public class Location
 
 	public void SetVisited()
 	{
-		VisitLevel = MAX_VISIT_LEVEL * 2;
+		if (IsExplored())
+			VisitLevel = MAX_VISIT_LEVEL * 2;
 	}
 
 	public void SetVisited(int level)
 	{
-		if (VisitLevel < level * 2)
+		if (IsExplored() && VisitLevel < level * 2)
 			VisitLevel = level * 2;
 	}
 

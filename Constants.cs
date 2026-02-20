@@ -13,7 +13,8 @@ public static class GameConstants
     public const int RAW_PRICE = 1;           // Cost per raw material
     public const int PRODUCT_PRICE = 2;       // Cost per product
     public const int CONSUMER_PRICE = 4;      // Cost per product for consumers
-    public const int EXPLORE_RANGE = 10;
+    public const int EXPLORE_RANGE = 4;
+    public const int UNVEIL_RANGE = 10;
     public const int MIN_FOOD_PURCHASE_PRICE = 5;
     public const int MAX_BRIBE_AMOUNT = 4000;
     public const int DISP_NEWS_DAYS = 60;     // how long a news should stay on the screen before it disappears

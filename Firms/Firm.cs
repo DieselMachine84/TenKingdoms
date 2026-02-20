@@ -277,8 +277,8 @@ public abstract class Firm : IIdObject
 
 		if (NationId == NationArray.PlayerId || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
 		{
-			World.Unveil(LocX1, LocY1, LocX2, LocY2);
-			World.Visit(LocX1, LocY1, LocX2, LocY2, GameConstants.EXPLORE_RANGE - 1);
+			World.Explore(LocX1, LocY1, LocX2, LocY2);
+			World.Unveil(LocX1, LocY1, LocX2, LocY2, GameConstants.UNVEIL_RANGE - 1);
 		}
 	}
 

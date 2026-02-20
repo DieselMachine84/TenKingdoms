@@ -277,15 +277,16 @@ public partial class Renderer
         
         //TODO draw way points
         //TODO draw weather effects
+        //TODO add fire sound
 
         if (UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle)
             DrawBuildMarker();
 
         //TODO draw god cast power
-        //TODO blacken fog of war
-        //TODO blacken unexplored
         //TODO draw link lines
-        //TODO add fire sound
+        
+        BlackenFogOfWar();
+        BlackenUnexplored();
         
         if (_leftMousePressed)
             DrawSelectionRectangle();
@@ -455,12 +456,9 @@ public partial class Renderer
                 break;
             
             case TopLayer:
-                if (town.LocX1 >= _topLeftLocX)
-                {
-                    PutTextCenter(FontNews, town.Name, townX, townY + 2 * CellTextureHeight - 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight - 15);
-                    if (town.HasPlayerSpy())
-                        PutTextCenter(FontNews, "(Spy)", townX, townY + 2 * CellTextureHeight + 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight + 15);
-                }
+                PutTextCenter(FontNews, town.Name, townX, townY + 2 * CellTextureHeight - 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight - 15);
+                if (town.HasPlayerSpy())
+                    PutTextCenter(FontNews, "(Spy)", townX, townY + 2 * CellTextureHeight + 15, townX + 4 * CellTextureWidth, townY + 2 * CellTextureHeight + 15);
 
                 break;
         }
@@ -709,6 +707,8 @@ public partial class Renderer
 
     public void DrawUnit(Unit unit, int layer)
     {
+        unit.Unveil();
+        
         (int unitX, int unitY) = GetSpriteScreenXAndY(unit);
         SpriteFrame spriteFrame = unit.CurSpriteFrame(out bool needMirror);
         SpriteInfo spriteInfo = SpriteRes[unit.SpriteResId];
@@ -1059,6 +1059,46 @@ public partial class Renderer
             Graphics.DrawRect(screenX, screenY, width * CellTextureWidth, thickness, color);
             thickness = j == height - 1 ? 4 : 2;
             Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, width * CellTextureWidth, thickness, color);
+        }
+    }
+
+    private void BlackenFogOfWar()
+    {
+        if (!Config.FogOfWar)
+            return;
+        
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + Config.GameScreenHeight; locY++)
+        {
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + Config.GameScreenWidth; locX++)
+            {
+                Location location = World.GetLoc(locX, locY);
+                (int x, int y) = GetScreenXAndY(locX, locY);
+                int visibility = location.Visibility();
+                byte alpha = 0;
+                if (visibility < Location.FULL_VISIBILITY - 5)
+                    alpha = (byte)(96 * (Location.FULL_VISIBILITY - location.Visibility()) / (Location.FULL_VISIBILITY - Location.EXPLORED_VISIBILITY));
+                Graphics.DrawRect(x, y, CellTextureWidth, CellTextureHeight, 0, 0, 0, alpha);
+            }
+        }
+    }
+
+    //TODO not explored objects should not be clickable
+    private void BlackenUnexplored()
+    {
+        if (Config.ExploreWholeMap)
+            return;
+        
+        for (int locY = _topLeftLocY; locY < _topLeftLocY + Config.GameScreenHeight; locY++)
+        {
+            for (int locX = _topLeftLocX; locX < _topLeftLocX + Config.GameScreenWidth; locX++)
+            {
+                Location location = World.GetLoc(locX, locY);
+                if (!location.IsExplored())
+                {
+                    (int x, int y) = GetScreenXAndY(locX, locY);
+                    Graphics.DrawRect(x, y, CellTextureWidth, CellTextureHeight, Colors.UNEXPLORED_COLOR);
+                }
+            }
         }
     }
 

@@ -148,23 +148,18 @@ public class World
 		return 100 - 100 * curDistance / Config.MapSize;
 	}
 
-	//TODO merge Unveil and Explore
-	public void Unveil(int locX1, int locY1, int locX2, int locY2)
+	public void Explore(int locX1, int locY1, int locX2, int locY2, bool useExploreRange = true)
 	{
 		if (Config.ExploreWholeMap)
 			return;
 
-		locX1 = Math.Max(0, locX1 - GameConstants.EXPLORE_RANGE);
-		locY1 = Math.Max(0, locY1 - GameConstants.EXPLORE_RANGE);
-		locX2 = Math.Min(Config.MapSize - 1, locX2 + GameConstants.EXPLORE_RANGE);
-		locY2 = Math.Min(Config.MapSize - 1, locY2 + GameConstants.EXPLORE_RANGE);
-		Explore(locX1, locY1, locX2, locY2);
-	}
-
-	public void Explore(int locX1, int locY1, int locX2, int locY2)
-	{
-		if (Config.ExploreWholeMap)
-			return;
+		if (useExploreRange)
+		{
+			locX1 = Math.Max(0, locX1 - GameConstants.EXPLORE_RANGE);
+			locY1 = Math.Max(0, locY1 - GameConstants.EXPLORE_RANGE);
+			locX2 = Math.Min(Config.MapSize - 1, locX2 + GameConstants.EXPLORE_RANGE);
+			locY2 = Math.Min(Config.MapSize - 1, locY2 + GameConstants.EXPLORE_RANGE);
+		}
 
 		for (int locY = locY1; locY <= locY2; locY++)
 		{
@@ -222,8 +217,7 @@ public class World
 		}
 	}
 
-	// always call unveil before visit //
-	public void Visit(int locX1, int locY1, int locX2, int locY2, int range, int extend = 0)
+	public void Unveil(int locX1, int locY1, int locX2, int locY2, int range, int extend = 0)
 	{
 		if (!Config.FogOfWar)
 			return;
@@ -258,17 +252,17 @@ public class World
 				locX2++;
 				locY2++;
 				visitLevel -= levelDrop;
-				VisitShell(locX1, locY1, locX2, locY2, visitLevel);
+				UnveilShell(locX1, locY1, locX2, locY2, visitLevel);
 			}
 		}
 	}
 
-	private void VisitShell(int locX1, int locY1, int locX2, int locY2, int visitLevel)
+	private void UnveilShell(int locX1, int locY1, int locX2, int locY2, int visitLevel)
 	{
 		int left = Math.Max(0, locX1);
 		int top = Math.Max(0, locY1);
 		int right = Math.Min(Config.MapSize - 1, locX2);
-		int bottom = Math.Max(Config.MapSize - 1, locY2);
+		int bottom = Math.Min(Config.MapSize - 1, locY2);
 
 		// ------- left side -----------//
 		if (locX1 >= 0)

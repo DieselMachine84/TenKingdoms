@@ -54,8 +54,7 @@ public class Graphics
             return false;
         }
 
-        //SDL.SDL_SetRenderDrawBlendMode(renderer, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
-        
+        SDL.SDL_SetRenderDrawBlendMode(_renderer, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
         //TODO set SDL hints
         //SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
         //SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
@@ -257,9 +256,9 @@ public class Graphics
         DrawRect(x, y, width, height, color.r, color.g, color.b);
     }
 
-    public void DrawRect(int x, int y, int width, int height, byte r, byte g, byte b)
+    public void DrawRect(int x, int y, int width, int height, byte r, byte g, byte b, byte a = 255)
     {
-        SDL.SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
+        SDL.SDL_SetRenderDrawColor(_renderer, r, g, b, a);
         SDL.SDL_Rect dstRect = new SDL.SDL_Rect();
         dstRect.x = x;
         dstRect.y = y;

@@ -364,13 +364,11 @@ public abstract partial class Unit : Sprite
 				World.GetLoc(x, y).SetUnit(MobileType, SpriteId);
 			}
 		}
+		
+		if (IsOwn())
+			World.Explore(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1);
 
-		if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
-		{
-			World.Unveil(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1);
-			World.Visit(startLocX, startLocY, startLocX + SpriteInfo.LocWidth - 1, startLocY + SpriteInfo.LocHeight - 1,
-				UnitRes[UnitType].VisualRange, UnitRes[UnitType].VisualExtend);
-		}
+		Unveil();
 	}
 
 	public void DeinitSprite(bool keepSelected = false)
@@ -527,15 +525,6 @@ public abstract partial class Unit : Sprite
 				NationArray[NationId].action_failure(AIActionId, SpriteId);
 
 			return;
-		}
-
-		if (Config.FogOfWar)
-		{
-			if (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer))
-			{
-				World.Visit(NextLocX, NextLocY, NextLocX + SpriteInfo.LocWidth - 1, NextLocY + SpriteInfo.LocHeight - 1,
-					UnitRes[UnitType].VisualRange, UnitRes[UnitType].VisualExtend);
-			}
 		}
 
 		//--------- process action corresponding to ActionMode ----------//
@@ -2394,6 +2383,8 @@ public abstract partial class Unit : Sprite
 		if (UnitArray.IsDeleted(SpriteId)) // if its hit points go down to 0, IsDeleted() will return 1.
 			return;
 
+		Unveil();
+		
 		if (NationId != 0)
 		{
 			PayExpense();
@@ -2710,16 +2701,16 @@ public abstract partial class Unit : Sprite
 					int exploreWidth = MoveStepCoeff() - 1;
 
 					if (newNextLocY < curNextLocY) // if move upwards, explore upper area
-						World.Explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth);
+						World.Explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth, false);
 
 					else if (newNextLocY > curNextLocY) // if move downwards, explore lower area
-						World.Explore(xLoc1, yLoc2 - exploreWidth, xLoc2, yLoc2);
+						World.Explore(xLoc1, yLoc2 - exploreWidth, xLoc2, yLoc2, false);
 
 					if (newNextLocX < curNextLocX) // if move towards left, explore left area
-						World.Explore(xLoc1, yLoc1, xLoc1 + exploreWidth, yLoc2);
+						World.Explore(xLoc1, yLoc1, xLoc1 + exploreWidth, yLoc2, false);
 
 					else if (newNextLocX > curNextLocX) // if move towards right, explore right area
-						World.Explore(xLoc2 - exploreWidth, yLoc1, xLoc2, yLoc2);
+						World.Explore(xLoc2 - exploreWidth, yLoc1, xLoc2, yLoc2, false);
 				}
 			}
 		}
@@ -2879,6 +2870,16 @@ public abstract partial class Unit : Sprite
 		}
 
 		return 0;
+	}
+
+	public void Unveil()
+	{
+		if (Config.FogOfWar && (IsOwn() || (NationId != 0 && NationArray[NationId].IsAlliedWithPlayer)))
+		{
+			UnitInfo unitInfo = UnitRes[UnitType];
+			World.Unveil(NextLocX, NextLocY, NextLocX + SpriteInfo.LocWidth - 1, NextLocY + SpriteInfo.LocHeight - 1,
+				unitInfo.VisualRange, unitInfo.VisualExtend);
+		}
 	}
 
 	public virtual bool ShouldShowInfo()

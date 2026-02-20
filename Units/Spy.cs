@@ -152,12 +152,12 @@ public class Spy : IIdObject
 			if (SpyPlace == SPY_TOWN)
 			{
 				Town town = TownArray[SpyPlaceId];
-				World.Visit(town.LocX1, town.LocY1, town.LocX2, town.LocY2, GameConstants.EXPLORE_RANGE - 1);
+				World.Unveil(town.LocX1, town.LocY1, town.LocX2, town.LocY2, GameConstants.UNVEIL_RANGE - 1);
 			}
 			else if (SpyPlace == SPY_FIRM)
 			{
 				Firm firm = FirmArray[SpyPlaceId];
-				World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
+				World.Unveil(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.UNVEIL_RANGE - 1);
 			}
 			else if (SpyPlace == SPY_MOBILE)
 			{
@@ -165,7 +165,7 @@ public class Spy : IIdObject
 				if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 				{
 					Firm firm = FirmArray[unit.UnitModeParam];
-					World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
+					World.Unveil(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.UNVEIL_RANGE - 1);
 				}
 				else if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 				{
@@ -173,7 +173,7 @@ public class Spy : IIdObject
 					if (ship.UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
 					{
 						Firm firm = FirmArray[ship.UnitModeParam];
-						World.Visit(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.EXPLORE_RANGE - 1);
+						World.Unveil(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.UNVEIL_RANGE - 1);
 					}
 					else
 					{
@@ -181,10 +181,9 @@ public class Spy : IIdObject
 						int locY1 = ship.NextLocY;
 						int locX2 = locX1 + ship.SpriteInfo.LocWidth - 1;
 						int locY2 = locY1 + ship.SpriteInfo.LocHeight - 1;
-						int range = UnitRes[ship.UnitType].VisualRange;
 
-						World.Unveil(locX1, locY1, locX2, locY2);
-						World.Visit(locX1, locY1, locX2, locY2, range);
+						World.Explore(locX1, locY1, locX2, locY2);
+						World.Unveil(locX1, locY1, locX2, locY2, UnitRes[ship.UnitType].VisualRange);
 					}
 				}
 			}
