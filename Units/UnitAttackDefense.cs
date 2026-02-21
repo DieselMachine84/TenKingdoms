@@ -2398,7 +2398,7 @@ public partial class Unit
 			if (CurFrame == CurSpriteAttack().FrameCount)
 			{
 				if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART && targetUnit.BelongsToNation(NationId))
-					((UnitExpCart)targetUnit).trigger_explode();
+					((UnitExpCart)targetUnit).TriggerExplode();
 				else
 					HitTarget(this, targetUnit, ActualDamage(), NationId);
 

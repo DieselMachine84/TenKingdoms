@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -96,7 +97,7 @@ public class Sprite : IIdObject
 	protected FirmArray FirmArray => Sys.Instance.FirmArray;
 	protected UnitArray UnitArray => Sys.Instance.UnitArray;
 
-	public Sprite()
+	protected Sprite()
 	{
 	}
 
@@ -107,7 +108,7 @@ public class Sprite : IIdObject
 		SpriteId = id;
 	}
 
-	public void Init(int spriteResId, int locX, int locY)
+	protected void Init(int spriteResId, int locX, int locY)
 	{
 		SpriteResId = spriteResId;
 
@@ -601,4 +602,52 @@ public class Sprite : IIdObject
 		// if the visibility of location is just explored, consider stealth
 		return Config.FogOfWar && World.GetLoc(CurLocX, CurLocY).Visibility() <= Location.EXPLORED_VISIBILITY;
 	}
+	
+	#region SaveAndLoad
+
+	public virtual void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(SpriteId);
+		writer.Write(SpriteResId);
+		writer.Write(MobileType);
+		writer.Write(CurAction);
+		writer.Write(CurDir);
+		writer.Write(FinalDir);
+		writer.Write(CurFrame);
+		writer.Write(CurAttack);
+		writer.Write(TurnDelay);
+		writer.Write(GuardCount);
+		writer.Write(RemainAttackDelay);
+		writer.Write(RemainFramesPerStep);
+		writer.Write(CurX);
+		writer.Write(CurY);
+		writer.Write(NextX);
+		writer.Write(NextY);
+		writer.Write(GoX);
+		writer.Write(GoY);
+	}
+
+	public virtual void LoadFrom(BinaryReader reader)
+	{
+		SpriteId = reader.ReadInt32();
+		SpriteResId = reader.ReadInt32();
+		MobileType = reader.ReadInt32();
+		CurAction = reader.ReadInt32();
+		CurDir = reader.ReadInt32();
+		FinalDir = reader.ReadInt32();
+		CurFrame = reader.ReadInt32();
+		CurAttack = reader.ReadInt32();
+		TurnDelay = reader.ReadInt32();
+		GuardCount = reader.ReadInt32();
+		RemainAttackDelay = reader.ReadInt32();
+		RemainFramesPerStep = reader.ReadInt32();
+		CurX = reader.ReadInt32();
+		CurY = reader.ReadInt32();
+		NextX = reader.ReadInt32();
+		NextY = reader.ReadInt32();
+		GoX = reader.ReadInt32();
+		GoY = reader.ReadInt32();
+	}
+	
+	#endregion
 }

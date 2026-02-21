@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -976,6 +977,26 @@ public class UnitGod : Unit
 		//---------------------------------------------------//
 
 		return false;
+	}
+	
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(GodId);
+		writer.Write(BaseFirmId);
+		writer.Write(CastPowerType);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		GodId = reader.ReadInt32();
+		BaseFirmId = reader.ReadInt32();
+		CastPowerType = reader.ReadInt32();
 	}
 	
 	#endregion

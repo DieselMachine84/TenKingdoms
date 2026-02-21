@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1948,5 +1949,63 @@ public class UnitMarine : Unit, ITrader
 		}
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(ExtraMoveInBeach);
+		writer.Write(InBeach);
+		writer.Write(UnitsOnBoard.Count);
+		for (int i = 0; i < UnitsOnBoard.Count; i++)
+			writer.Write(UnitsOnBoard[i]);
+		writer.Write(SelectedUnitId);
+		writer.Write(LastLoadGoodsDate.ToBinary());
+		writer.Write(JourneyStatus);
+		writer.Write(DestStopId);
+		writer.Write(StopDefinedNum);
+		writer.Write(WaitCount);
+		writer.Write(StopLocX);
+		writer.Write(StopLocY);
+		writer.Write(AutoMode);
+		writer.Write(CurFirmId);
+		writer.Write(CarryGoodsCapacity);
+		for (int i = 0; i < Stops.Length; i++)
+			Stops[i].SaveTo(writer);
+		for (int i = 0; i < RawQty.Length; i++)
+			writer.Write(RawQty[i]);
+		for (int i = 0; i < ProductQty.Length; i++)
+			writer.Write(ProductQty[i]);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		ExtraMoveInBeach = reader.ReadInt32();
+		InBeach = reader.ReadBoolean();
+		int unitsOnBoardCount = reader.ReadInt32();
+		for (int i = 0; i < unitsOnBoardCount; i++)
+			UnitsOnBoard.Add(reader.ReadInt32());
+		SelectedUnitId = reader.ReadInt32();
+		LastLoadGoodsDate = DateTime.FromBinary(reader.ReadInt64());
+		JourneyStatus = reader.ReadInt32();
+		DestStopId = reader.ReadInt32();
+		StopDefinedNum = reader.ReadInt32();
+		WaitCount = reader.ReadInt32();
+		StopLocX = reader.ReadInt32();
+		StopLocY = reader.ReadInt32();
+		AutoMode = reader.ReadBoolean();
+		CurFirmId = reader.ReadInt32();
+		CarryGoodsCapacity = reader.ReadInt32();
+		for (int i = 0; i < Stops.Length; i++)
+			Stops[i].LoadFrom(reader);
+		for (int i = 0; i < RawQty.Length; i++)
+			RawQty[i] = reader.ReadInt32();
+		for (int i = 0; i < ProductQty.Length; i++)
+			ProductQty[i] = reader.ReadInt32();
+	}
+	
 	#endregion
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -37,7 +38,7 @@ public class UnitArray : SpriteArray
 	    CurTeamId  = 1;
     }
 
-    protected override Sprite CreateNewObject(int objectType)
+    protected override Unit CreateNewObject(int objectType)
     {
 	    UnitInfo unitInfo = UnitRes[objectType];
 	    switch (unitInfo.UnitClass)
@@ -3227,4 +3228,39 @@ public class UnitArray : SpriteArray
 
 		return currentUnitId;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		writer.Write(CurGroupId);
+		writer.Write(CurTeamId);
+		writer.Write(IdleBlockedUnitResetCount);
+		int count = Count();
+		writer.Write(count);
+		foreach (Unit unit in EnumerateWithDeleted())
+		{
+			writer.Write(unit.UnitType);
+			unit.SaveTo(writer);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		CurGroupId = reader.ReadInt32();
+		CurTeamId = reader.ReadInt32();
+		IdleBlockedUnitResetCount = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			int unitType = reader.ReadInt32();
+			Unit unit = CreateNewObject(unitType);
+			unit.LoadFrom(reader);
+			Load(unit);
+		}
+	}
+	
+	#endregion
 }

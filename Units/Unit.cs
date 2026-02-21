@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -5742,5 +5743,149 @@ public abstract partial class Unit : Sprite
 		return false;
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(UnitType);
+		writer.Write(Rank);
+		writer.Write(RaceId);
+		writer.Write(NationId);
+		writer.Write(NameId);
+		writer.Write(HitPoints);
+		writer.Write(MaxHitPoints);
+		writer.Write(Loyalty);
+		writer.Write(TargetLoyalty);
+		Skill.SaveTo(writer);
+		writer.Write(UnitMode);
+		writer.Write(UnitModeParam);
+		writer.Write(SpyId);
+		writer.Write(NationContribution);
+		writer.Write(TotalReward);
+		writer.Write(WeaponVersion);
+		writer.Write(AggressiveMode);
+		writer.Write(HomeCampId);
+		TeamInfo.SaveTo(writer);
+		writer.Write(TeamId);
+		writer.Write(LeaderId);
+		writer.Write(GroupId);
+		writer.Write(AIUnit);
+		writer.Write(ActionMode);
+		writer.Write(ActionParam);
+		writer.Write(ActionLocX);
+		writer.Write(ActionLocY);
+		writer.Write(ActionMisc);
+		writer.Write(ActionMiscParam);
+		writer.Write(ActionMode2);
+		writer.Write(ActionPara2);
+		writer.Write(ActionLocX2);
+		writer.Write(ActionLocY2);
+		writer.Write(OriginalActionMode);
+		writer.Write(OriginalActionParam);
+		writer.Write(OriginalActionLocX);
+		writer.Write(OriginalActionLocY);
+		writer.Write(OriginalTargetLocX);
+		writer.Write(OriginalTargetLocY);
+		writer.Write(ForceMove);
+		writer.Write(IgnorePowerNation);
+		writer.Write(MoveToLocX);
+		writer.Write(MoveToLocY);
+		writer.Write(RangeAttackLocX);
+		writer.Write(RangeAttackLocY);
+		writer.Write(PathNodes.Count);
+		for (int i = 0; i < PathNodes.Count; i++)
+			writer.Write(PathNodes[i]);
+		writer.Write(PathNodeIndex);
+		writer.Write(_pathNodeDistance);
+		writer.Write(WayPoints.Count);
+		for (int i = 0; i < WayPoints.Count; i++)
+			writer.Write(WayPoints[i]);
+		writer.Write(AttackCount);
+		writer.Write(AttackRange);
+		writer.Write(AttackDirection);
+		writer.Write(CurPower);
+		writer.Write(MaxPower);
+		writer.Write(_canAttack);
+		writer.Write(CanGuard);
+		writer.Write(WaitingTerm);
+		for (int i = 0; i < BlockedEdges.Length; i++)
+			writer.Write(BlockedEdges[i]);
+		writer.Write(BlockedByMember);
+		writer.Write(Swapping);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		UnitType = reader.ReadInt32();
+		Rank = reader.ReadInt32();
+		RaceId = reader.ReadInt32();
+		NationId = reader.ReadInt32();
+		NameId = reader.ReadInt32();
+		HitPoints = reader.ReadDouble();
+		MaxHitPoints = reader.ReadInt32();
+		Loyalty = reader.ReadInt32();
+		TargetLoyalty = reader.ReadInt32();
+		Skill.LoadFrom(reader);
+		UnitMode = reader.ReadInt32();
+		UnitModeParam = reader.ReadInt32();
+		SpyId = reader.ReadInt32();
+		NationContribution = reader.ReadInt32();
+		TotalReward = reader.ReadInt32();
+		WeaponVersion = reader.ReadInt32();
+		AggressiveMode = reader.ReadBoolean();
+		HomeCampId = reader.ReadInt32();
+		TeamInfo.LoadFrom(reader);
+		TeamId = reader.ReadInt32();
+		LeaderId = reader.ReadInt32();
+		GroupId = reader.ReadInt32();
+		AIUnit = reader.ReadBoolean();
+		ActionMode = reader.ReadInt32();
+		ActionParam = reader.ReadInt32();
+		ActionLocX = reader.ReadInt32();
+		ActionLocY = reader.ReadInt32();
+		ActionMisc = reader.ReadInt32();
+		ActionMiscParam = reader.ReadInt32();
+		ActionMode2 = reader.ReadInt32();
+		ActionPara2 = reader.ReadInt32();
+		ActionLocX2 = reader.ReadInt32();
+		ActionLocY2 = reader.ReadInt32();
+		OriginalActionMode = reader.ReadInt32();
+		OriginalActionParam = reader.ReadInt32();
+		OriginalActionLocX = reader.ReadInt32();
+		OriginalActionLocY = reader.ReadInt32();
+		OriginalTargetLocX = reader.ReadInt32();
+		OriginalTargetLocY = reader.ReadInt32();
+		ForceMove = reader.ReadBoolean();
+		IgnorePowerNation = reader.ReadInt32();
+		MoveToLocX = reader.ReadInt32();
+		MoveToLocY = reader.ReadInt32();
+		RangeAttackLocX = reader.ReadInt32();
+		RangeAttackLocY = reader.ReadInt32();
+		int pathNodesCount = reader.ReadInt32();
+		for (int i = 0; i < pathNodesCount; i++)
+			PathNodes.Add(reader.ReadInt32());
+		PathNodeIndex = reader.ReadInt32();
+		_pathNodeDistance = reader.ReadInt32();
+		int wayPointsCount = reader.ReadInt32();
+		for (int i = 0; i < wayPointsCount; i++)
+			WayPoints.Add(reader.ReadInt32());
+		AttackCount = reader.ReadInt32();
+		AttackRange = reader.ReadInt32();
+		AttackDirection = reader.ReadInt32();
+		CurPower = reader.ReadInt32();
+		MaxPower = reader.ReadInt32();
+		_canAttack = reader.ReadBoolean();
+		CanGuard = reader.ReadInt32();
+		WaitingTerm = reader.ReadInt32();
+		for (int i = 0; i < BlockedEdges.Length; i++)
+			BlockedEdges[i] = reader.ReadByte();
+		BlockedByMember = reader.ReadInt32();
+		Swapping = reader.ReadBoolean();
+	}
+	
 	#endregion
 }

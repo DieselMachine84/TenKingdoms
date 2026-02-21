@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class Projectile : Bullet
@@ -15,9 +17,9 @@ public class Projectile : Bullet
     {
     }
 
-    public override void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
+    public override void Init(int parentType, int bulletType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
     {
-        base.Init(parentType, parentId, targetLocX, targetLocY, targetMobileType);
+        base.Init(parentType, bulletType, parentId, targetLocX, targetLocY, targetMobileType);
         int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
         Bullet.Init(spriteId, CurLocX, CurLocY);
         int shadowSpriteId = SpriteInfo.GetSubSpriteInfo(2).SpriteId;
@@ -44,4 +46,22 @@ public class Projectile : Bullet
         Bullet.CurAction = Sprite.SPRITE_MOVE;
         Bullet.SetCur(CurX, CurY - (int)z);
     }
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        Bullet.SaveTo(writer);
+        Shadow.SaveTo(writer);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        Bullet.LoadFrom(reader);
+        Shadow.LoadFrom(reader);
+    }
+	
+    #endregion
 }

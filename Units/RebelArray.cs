@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -127,4 +128,31 @@ public class RebelArray : DynArray<Rebel>
             rebel.ResetHostileNation(nationId);
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NextId);
+        int count = Count();
+        writer.Write(count);
+        foreach (Rebel rebel in EnumerateWithDeleted())
+        {
+            rebel.SaveTo(writer);
+        }
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        NextId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            Rebel rebel = CreateNewObject(0);
+            rebel.LoadFrom(reader);
+            Load(rebel);
+        }
+    }
+	
+    #endregion
 }

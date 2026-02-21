@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -15,6 +16,7 @@ public class Bullet : Sprite
 
 	private static int[] SpiralY { get; } = { 0, -1, 0, 1, 0, -1, 1, 1, -1, -2, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, 2, 2, -2 };
 	
+	public int BulletType { get; private set; }
 	private int ParentType { get; set; }
 	private int ParentId { get; set; }
 	private int NationId { get; set; }
@@ -37,9 +39,10 @@ public class Bullet : Sprite
 		SpriteResId = 0;
 	}
 
-	public virtual void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
+	public virtual void Init(int parentType, int bulletType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
 	{
 		ParentType = parentType;
+		BulletType = bulletType;
 		ParentId = parentId;
 		TargetMobileType = targetMobileType;
 
@@ -203,7 +206,7 @@ public class Bullet : Sprite
 		if (targetUnit.NationId == NationId)
 		{
 			if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
-				((UnitExpCart)targetUnit).trigger_explode();
+				((UnitExpCart)targetUnit).TriggerExplode();
 			return;
 		}
 
@@ -470,4 +473,44 @@ public class Bullet : Sprite
 		else
 			return 1;
 	}
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(ParentType);
+		writer.Write(ParentId);
+		writer.Write(NationId);
+		writer.Write(TargetMobileType);
+		writer.Write(AttackDamage);
+		writer.Write(DamageRadius);
+		writer.Write(FireRadius);
+		writer.Write(OriginX);
+		writer.Write(OriginY);
+		writer.Write(TargetLocX);
+		writer.Write(TargetLocY);
+		writer.Write(CurStep);
+		writer.Write(TotalStep);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		ParentType = reader.ReadInt32();
+		ParentId = reader.ReadInt32();
+		NationId = reader.ReadInt32();
+		TargetMobileType = reader.ReadInt32();
+		AttackDamage = reader.ReadDouble();
+		DamageRadius = reader.ReadInt32();
+		FireRadius = reader.ReadInt32();
+		OriginX = reader.ReadInt32();
+		OriginY = reader.ReadInt32();
+		TargetLocX = reader.ReadInt32();
+		TargetLocY = reader.ReadInt32();
+		CurStep = reader.ReadInt32();
+		TotalStep = reader.ReadInt32();
+	}
+	
+	#endregion
 }

@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class EffectArray : SpriteArray
@@ -20,4 +22,31 @@ public class EffectArray : SpriteArray
     {
         Delete(effect.SpriteId);
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NextId);
+        int count = Count();
+        writer.Write(count);
+        foreach (Effect effect in EnumerateWithDeleted())
+        {
+            effect.SaveTo(writer);
+        }
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        NextId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            Effect effect = CreateNewObject(0);
+            effect.LoadFrom(reader);
+            Load(effect);
+        }
+    }
+	
+    #endregion
 }

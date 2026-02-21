@@ -1,10 +1,11 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
 public class UnitExpCart : UnitWeapon
 {
-	public bool triggered;
+	private bool _triggered;
 
 	public UnitExpCart()
 	{
@@ -12,7 +13,7 @@ public class UnitExpCart : UnitWeapon
 
 	public override bool ProcessDie()
 	{
-		if (triggered && CurFrame == 3)
+		if (_triggered && CurFrame == 3)
 		{
 			int x1 = NextLocX;
 			int x2 = x1;
@@ -40,13 +41,13 @@ public class UnitExpCart : UnitWeapon
 					{
 						Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
 						if (unit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
-							((UnitExpCart)unit).trigger_explode();
+							((UnitExpCart)unit).TriggerExplode();
 					}
 				}
 			}
 		}
 
-		if (triggered && (CurFrame == 3 || CurFrame == 7))
+		if (_triggered && (CurFrame == 3 || CurFrame == 7))
 		{
 			int x1 = NextLocX;
 			int x2 = x1;
@@ -119,12 +120,28 @@ public class UnitExpCart : UnitWeapon
 		return base.ProcessDie();
 	}
 
-	public void trigger_explode()
+	public void TriggerExplode()
 	{
-		if (HitPoints > 0) // so dying cart cannot be triggered
+		if (HitPoints > 0.0) // so dying cart cannot be triggered
 		{
-			triggered = true;
-			HitPoints = 0;
+			_triggered = true;
+			HitPoints = 0.0;
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(_triggered);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		_triggered = reader.ReadBoolean();
+	}
+	
+	#endregion
 }

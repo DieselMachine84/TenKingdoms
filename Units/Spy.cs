@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1565,6 +1566,42 @@ public class Spy : IIdObject
 		}
 
 		return 0;
+	}
+	
+	#endregion
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(SpyId);
+		writer.Write(SpyPlace);
+		writer.Write(SpyPlaceId);
+		writer.Write(SpySkill);
+		writer.Write(SpyLoyalty);
+		writer.Write(TrueNationId);
+		writer.Write(CloakedNationId);
+		writer.Write(NotifyCloakedNation);
+		writer.Write(Exposed);
+		writer.Write(RaceId);
+		writer.Write(NameId);
+		writer.Write(ActionMode);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		SpyId = reader.ReadInt32();
+		SpyPlace = reader.ReadInt32();
+		SpyPlaceId = reader.ReadInt32();
+		SpySkill = reader.ReadInt32();
+		SpyLoyalty = reader.ReadInt32();
+		TrueNationId = reader.ReadInt32();
+		CloakedNationId = reader.ReadInt32();
+		NotifyCloakedNation = reader.ReadBoolean();
+		Exposed = reader.ReadBoolean();
+		RaceId = reader.ReadInt32();
+		NameId = reader.ReadInt32();
+		ActionMode = reader.ReadInt32();
 	}
 	
 	#endregion

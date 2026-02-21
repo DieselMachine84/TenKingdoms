@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -277,4 +278,31 @@ public class SpyArray : DynArray<Spy>
             }
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NextId);
+        int count = Count();
+        writer.Write(count);
+        foreach (Spy spy in EnumerateWithDeleted())
+        {
+            spy.SaveTo(writer);
+        }
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        NextId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            Spy spy = CreateNewObject(0);
+            spy.LoadFrom(reader);
+            Load(spy);
+        }
+    }
+	
+    #endregion
 }

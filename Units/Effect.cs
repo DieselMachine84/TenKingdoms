@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class Effect : Sprite
@@ -75,4 +77,22 @@ public class Effect : Sprite
             CurFrame = 1;
         return false;
     }
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(DisplayLayer);
+        writer.Write(Life);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        DisplayLayer = reader.ReadInt32();
+        Life = reader.ReadInt32();
+    }
+	
+    #endregion
 }

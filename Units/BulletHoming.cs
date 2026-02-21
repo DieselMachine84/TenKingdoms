@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -23,9 +24,9 @@ public class BulletHoming : Bullet
 		TargetId = 0;
 	}
 
-	public override void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
+	public override void Init(int parentType, int bulletType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
 	{
-		base.Init(parentType, parentId, targetLocX, targetLocY, targetMobileType);
+		base.Init(parentType, bulletType, parentId, targetLocX, targetLocY, targetMobileType);
 
 		Unit parentUnit = UnitArray[parentId];
 		AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
@@ -175,4 +176,30 @@ public class BulletHoming : Bullet
 			WarnTarget();
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(TargetType);
+		writer.Write(TargetId);
+		writer.Write(Speed);
+		writer.Write(MaxStep);
+		writer.Write(OriginX2);
+		writer.Write(OriginY2);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		TargetType = reader.ReadInt32();
+		TargetId = reader.ReadInt32();
+		Speed = reader.ReadInt32();
+		MaxStep = reader.ReadInt32();
+		OriginX2 = reader.ReadInt32();
+		OriginY2 = reader.ReadInt32();
+	}
+	
+	#endregion
 }

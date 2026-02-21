@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class TradeStop
@@ -70,6 +72,30 @@ public class TradeStop
 			PickUpType = pos; // that means selective
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public virtual void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(FirmId);
+		writer.Write(FirmLocX1);
+		writer.Write(FirmLocY1);
+		writer.Write(PickUpType);
+		for (int i = 0; i < PickUpEnabled.Length; i++)
+			writer.Write(PickUpEnabled[i]);
+	}
+
+	public virtual void LoadFrom(BinaryReader reader)
+	{
+		FirmId = reader.ReadInt32();
+		FirmLocX1 = reader.ReadInt32();
+		FirmLocY1 = reader.ReadInt32();
+		PickUpType = reader.ReadInt32();
+		for (int i = 0; i < PickUpEnabled.Length; i++)
+			PickUpEnabled[i] = reader.ReadBoolean();
+	}
+	
+	#endregion
 }
 
 public class CaravanStop : TradeStop
@@ -156,6 +182,22 @@ public class CaravanStop : TradeStop
 			PickUpEnabled[PickUpType - 1] = true;
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(FirmType);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		FirmType = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class ShipStop : TradeStop

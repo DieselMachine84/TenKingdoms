@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -13,4 +14,24 @@ public class TeamInfo
     public TeamInfo()
     {
     }
+    
+	#region SaveAndLoad
+
+	public virtual void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(Members.Count);
+		for (int i = 0; i < Members.Count; i++)
+			writer.Write(Members[i]);
+		writer.Write(AILastRequestDefenseDate.ToBinary());
+	}
+
+	public virtual void LoadFrom(BinaryReader reader)
+	{
+		int membersCount = reader.ReadInt32();
+		for (int i = 0; i < membersCount; i++)
+			Members.Add(reader.ReadInt32());
+		AILastRequestDefenseDate = DateTime.FromBinary(reader.ReadInt64());
+	}
+	
+	#endregion
 }

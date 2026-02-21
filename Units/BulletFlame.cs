@@ -6,10 +6,10 @@ public class BulletFlame : Bullet
     {
     }
 
-    public override void Init(int parentType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
+    public override void Init(int parentType, int bulletType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
     {
         // note : BulletFlame should have at least one dummy moving frame for each direction
-        base.Init(parentType, parentId, targetLocX, targetLocY, targetMobileType);
+        base.Init(parentType, bulletType, parentId, targetLocX, targetLocY, targetMobileType);
 
         CurAction = SPRITE_IDLE;
     }

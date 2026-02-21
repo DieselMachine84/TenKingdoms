@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -327,4 +328,24 @@ public class UnitMonster : Unit
     {
         renderer.HandleMonsterDetailsInput(this);
     }
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(MonsterActionMode);
+        writer.Write(MonsterId);
+        writer.Write(SoldierMonsterId);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        MonsterActionMode = reader.ReadInt32();
+        MonsterId = reader.ReadInt32();
+        SoldierMonsterId = reader.ReadInt32();
+    }
+	
+    #endregion
 }

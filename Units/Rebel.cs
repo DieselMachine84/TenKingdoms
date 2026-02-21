@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -541,4 +542,32 @@ public class Rebel : IIdObject
             }
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RebelId);
+        writer.Write(LeaderUnitId);
+        writer.Write(ActionMode);
+        writer.Write(ActionParam);
+        writer.Write(ActionParam2);
+        writer.Write(MobileRebelCount);
+        writer.Write(TownId);
+        writer.Write(HostileNationBits);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        RebelId = reader.ReadInt32();
+        LeaderUnitId = reader.ReadInt32();
+        ActionMode = reader.ReadInt32();
+        ActionParam = reader.ReadInt32();
+        ActionParam2 = reader.ReadInt32();
+        MobileRebelCount = reader.ReadInt32();
+        TownId = reader.ReadInt32();
+        HostileNationBits = reader.ReadInt32();
+    }
+	
+    #endregion
 }

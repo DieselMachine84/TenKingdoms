@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1609,5 +1610,53 @@ public class UnitCaravan : Unit, ITrader
 		return Stops[stopId - 1].PickUpEnabled[pickUpType - 1];
 	}
 
+	#endregion
+	
+	#region SaveAndLoad
+
+	public override void SaveTo(BinaryWriter writer)
+	{
+		base.SaveTo(writer);
+		writer.Write(JourneyStatus);
+		writer.Write(DestStopId);
+		writer.Write(StopDefinedNum);
+		writer.Write(WaitCount);
+		writer.Write(StopLocX);
+		writer.Write(StopLocY);
+		for (int i = 0; i < Stops.Length; i++)
+			Stops[i].SaveTo(writer);
+		writer.Write(LastLoadGoodsDate.ToBinary());
+		for (int i = 0; i < RawQty.Length; i++)
+			writer.Write(RawQty[i]);
+		for (int i = 0; i < ProductQty.Length; i++)
+			writer.Write(ProductQty[i]);
+		for (int i = 0; i < ProcessedRawQty.Length; i++)
+			writer.Write(ProcessedRawQty[i]);
+		for (int i = 0; i < ProcessedProductQty.Length; i++)
+			writer.Write(ProcessedProductQty[i]);
+	}
+
+	public override void LoadFrom(BinaryReader reader)
+	{
+		base.LoadFrom(reader);
+		JourneyStatus = reader.ReadInt32();
+		DestStopId = reader.ReadInt32();
+		StopDefinedNum = reader.ReadInt32();
+		WaitCount = reader.ReadInt32();
+		StopLocX = reader.ReadInt32();
+		StopLocY = reader.ReadInt32();
+		for (int i = 0; i < Stops.Length; i++)
+			Stops[i].LoadFrom(reader);
+		LastLoadGoodsDate = DateTime.FromBinary(reader.ReadInt64());
+		for (int i = 0; i < RawQty.Length; i++)
+			RawQty[i] = reader.ReadInt32();
+		for (int i = 0; i < ProductQty.Length; i++)
+			ProductQty[i] = reader.ReadInt32();
+		for (int i = 0; i < ProcessedRawQty.Length; i++)
+			ProcessedRawQty[i] = reader.ReadInt32();
+		for (int i = 0; i < ProcessedProductQty.Length; i++)
+			ProcessedProductQty[i] = reader.ReadInt32();
+	}
+	
 	#endregion
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -16,7 +17,7 @@ public class BulletArray : SpriteArray
 	{
 	}
 
-	protected override Sprite CreateNewObject(int objectType)
+	protected override Bullet CreateNewObject(int objectType)
 	{
 		SpriteInfo spriteInfo = SpriteRes[objectType];
 
@@ -57,7 +58,7 @@ public class BulletArray : SpriteArray
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.BulletSpriteId;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, targetUnit.MobileType);
+			bullet.Init(Bullet.BULLET_BY_UNIT, bulletId, parentUnit.SpriteId, attackLocX, attackLocY, targetUnit.MobileType);
 			return bullet;
 		}
 
@@ -102,7 +103,7 @@ public class BulletArray : SpriteArray
 			AttackInfo attackInfo = parentUnit.AttackInfos[parentUnit.CurAttack];
 			int bulletId = attackInfo.BulletSpriteId;
 			Bullet bullet = (Bullet)AddSprite(bulletId);
-			bullet.Init(Bullet.BULLET_BY_UNIT, parentUnit.SpriteId, attackLocX, attackLocY, UnitConstants.UNIT_LAND);
+			bullet.Init(Bullet.BULLET_BY_UNIT, bulletId, parentUnit.SpriteId, attackLocX, attackLocY, UnitConstants.UNIT_LAND);
 			return bullet;
 		}
 
@@ -309,4 +310,33 @@ public class BulletArray : SpriteArray
 
 		return true;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		int count = Count();
+		writer.Write(count);
+		foreach (Bullet bullet in EnumerateWithDeleted())
+		{
+			writer.Write(bullet.BulletType);
+			bullet.SaveTo(writer);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			int bulletType = reader.ReadInt32();
+			Bullet bullet = CreateNewObject(bulletType);
+			bullet.LoadFrom(reader);
+			Load(bullet);
+		}
+	}
+	
+	#endregion
 }
