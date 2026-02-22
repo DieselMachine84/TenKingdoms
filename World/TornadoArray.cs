@@ -16,6 +16,15 @@ public class TornadoArray : SpriteArray
         return tornado;
     }
 
+    public override bool IsDeleted(int id)
+    {
+        if (base.IsDeleted(id))
+            return true;
+
+        Tornado tornado = this[id];
+        return tornado.CurAction == Sprite.SPRITE_DIE;
+    }
+    
     public override void Process()
     {
         foreach (Tornado tornado in this)

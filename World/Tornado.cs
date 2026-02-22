@@ -44,6 +44,12 @@ public class Tornado : Sprite
         double windDir = Sys.Instance.Weather.WindDirectionRadians() + (Misc.Random(31) - 15) * Math.PI / 180.0;
         CurX += (int)(speed * Math.Cos(windDir));
         CurY -= (int)(speed * Math.Sin(windDir));
+        if (!Misc.IsLocationValid(CurLocX, CurLocY))
+        {
+            CurAction = SPRITE_DIE;
+            return;
+        }
+        
         if (++CurFrame > CurSpriteMove().FrameCount)
             CurFrame = 1;
 

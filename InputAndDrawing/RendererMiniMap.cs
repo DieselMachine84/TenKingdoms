@@ -180,6 +180,9 @@ public partial class Renderer
 
         foreach (Tornado tornado in TornadoArray)
         {
+            if (tornado.IsStealth())
+                continue;
+            
             if (IsExplored(tornado.CurLocX, tornado.CurLocY, tornado.CurLocX, tornado.CurLocY))
                 DrawRectOnMiniMap(tornado.CurLocX - 1, tornado.CurLocY - 1, 3, 3, Colors.TORNADO_COLOR);
         }
