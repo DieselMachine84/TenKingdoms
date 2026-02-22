@@ -21,8 +21,6 @@ public class Info
     public int YearDay { get; private set; } // the nth day in a year
     public int YearsPassed { get; private set; } // no. of years passed since the game begins
 
-    public int RandomSeed { get; private set; }
-
     public int StartPlayTime { get; } // the time player start playing the game today
     public int TotalPlayTime { get; } // total time the player has played in all saved games
 
@@ -50,24 +48,6 @@ public class Info
 
         StartPlayTime = Misc.GetTime(); // the time player start playing the game
         TotalPlayTime = 0; // total time the player has played in all saved games
-    }
-
-    public void InitRandomSeed(int randomSeed)
-    {
-        if (randomSeed != 0)
-            RandomSeed = randomSeed;
-        else
-        {
-            randomSeed = (int)(DateTime.Now - new DateTime(1970, 1, 1)).TotalSeconds;
-            randomSeed = randomSeed << 4 | randomSeed >> (32 - 4); // _rotr( randomSeed, 4 )
-            if (randomSeed < 0)
-                randomSeed = ~randomSeed;
-            if (randomSeed == 0)
-                randomSeed = 1;
-            RandomSeed = randomSeed;
-        }
-
-        Misc.set_random_seed(RandomSeed);
     }
 
     public void NextDay()

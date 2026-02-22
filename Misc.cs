@@ -11,11 +11,11 @@ public static class Misc
     private static readonly int[] MoveAroundTableX = new int[MOVE_AROUND_TABLE_SIZE];
     private static readonly int[] MoveAroundTableY = new int[MOVE_AROUND_TABLE_SIZE];
     private static int moveAroundTableSize;
-    private static string[] RomanNumbers = new string[] { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
+    private static readonly string[] RomanNumbers = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
 
-    public static bool freeze_seed;
-    private static int random_seed;
-    private static Random InternalRandom = new Random();
+    private const int MULTIPLIER = 0x015a4e35;
+    private const int INCREMENT = 1;
+    public static uint RandomSeed { get; set; }
     private static long StartTicks;
 
     private static Config Config => Sys.Instance.Config;
@@ -27,52 +27,10 @@ public static class Misc
         ConstructMoveAroundTable();
     }
 
-    public static void set_random_seed(int randomSeed)
-    {
-        random_seed = randomSeed;
-    }
-
-    public static int get_random_seed()
-    {
-        return random_seed;
-    }
-
-    /*public int rand()
-    {
-        const int MULTIPLIER = 0x015a4e35;
-        const int INCREMENT = 1;
-        const int RANDOM_MAX = 0x7FFF;
-
-        random_seed = MULTIPLIER * random_seed + INCREMENT;
-
-        return (random_seed >> 16) & RANDOM_MAX;
-    }*/
-
-    /*public int random(int maxNum)
-    {
-        //err_if( maxNum < 0 || maxNum > 0x7FFF )
-        //err_now( "Misc::random()" );
-
-        // ###### begin Gilbert 19/6 ######//
-        //err_when( is_seed_locked() );
-        // ###### end Gilbert 19/6 ######//
-        const int MULTIPLIER = 0x015a4e35;
-        const int INCREMENT = 1;
-        const int RANDOM_MAX = 0x7FFF;
-
-        random_seed = MULTIPLIER * random_seed + INCREMENT;
-
-        return maxNum * ((random_seed >> 16) & RANDOM_MAX) / (RANDOM_MAX + 1);
-    }*/
-
-    public static int Random()
-    {
-        return InternalRandom.Next(0x7FFF);
-    }
-
     public static int Random(int maxNum)
     {
-        return InternalRandom.Next(maxNum);
+        RandomSeed = unchecked(MULTIPLIER * RandomSeed + INCREMENT);
+        return (int)(RandomSeed % maxNum);
     }
 
     public static int GetTime()

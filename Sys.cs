@@ -125,7 +125,8 @@ public class Sys
         int quakeFreq = Int16.MaxValue;
         if (Config.EarthquakeFrequency != 0)
         {
-            quakeFreq = 2000 - Config.EarthquakeFrequency * 400 + Info.RandomSeed % 300;
+            Random random = new Random();
+            quakeFreq = 2000 - Config.EarthquakeFrequency * 400 + random.Next(300);
         }
         Weather = new Weather();
         Weather.InitDate(Info.GameYear, Info.GameMonth, Info.GameDay, GameConstants.LATITUDE, quakeFreq);
@@ -197,6 +198,7 @@ public class Sys
         FrameOfDay = 0;
         GameEnded = false;
         CreateObjects();
+        Misc.RandomSeed = (uint)(new Random()).Next();
         MapGenerator mapGenerator = new MapGenerator();
         mapGenerator.Generate();
         Renderer.Reset();

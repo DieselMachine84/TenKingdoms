@@ -164,7 +164,7 @@ public class Plasma
 
     private int Adjust(int xa, int ya, int x, int y, int xb, int yb)
     {
-        int pseudoRandom = _grainFactor * (Misc.Random() - 16383);
+        int pseudoRandom = _grainFactor * (Misc.Random(0x7FFF) - 16383);
 
         pseudoRandom = pseudoRandom * _recurFactor;
         pseudoRandom = pseudoRandom >> SHIFT_VALUE;
@@ -187,7 +187,7 @@ public class Plasma
         _grainFactor = grainFactor * 8;
 
         for (int n = 0; n < 4; n++)
-            rnd[n] = 1 + ((Misc.Random() / MAX_COLOR * (MAX_COLOR - 1)) >> (SHIFT_VALUE - 11));
+            rnd[n] = 1 + ((Misc.Random(0x7FFF) / MAX_COLOR * (MAX_COLOR - 1)) >> (SHIFT_VALUE - 11));
 
         SetPoint(0, 0, rnd[0]);
         SetPoint(MaxX, 0, rnd[1]);
