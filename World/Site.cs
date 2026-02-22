@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -139,4 +140,32 @@ public class Site : IIdObject
 
         return false;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(SiteId);
+        writer.Write(SiteType);
+        writer.Write(ObjectId);
+        writer.Write(LocX);
+        writer.Write(LocY);
+        writer.Write(RegionId);
+        writer.Write(ReserveQty);
+        writer.Write(HasMine);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        SiteId = reader.ReadInt32();
+        SiteType = reader.ReadInt32();
+        ObjectId = reader.ReadInt32();
+        LocX = reader.ReadInt32();
+        LocY = reader.ReadInt32();
+        RegionId = reader.ReadInt32();
+        ReserveQty = reader.ReadInt32();
+        HasMine = reader.ReadBoolean();
+    }
+	
+    #endregion
 }

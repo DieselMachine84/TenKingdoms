@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -123,4 +124,26 @@ public class Tornado : Sprite
             location.SetFireStrength(1);
         }
     }
+    
+    #region SaveAndLoad
+
+    public override void SaveTo(BinaryWriter writer)
+    {
+        base.SaveTo(writer);
+        writer.Write(AttackDamage);
+        writer.Write(LifeTime);
+        writer.Write(DamageOffsetX);
+        writer.Write(DamageOffsetY);
+    }
+
+    public override void LoadFrom(BinaryReader reader)
+    {
+        base.LoadFrom(reader);
+        AttackDamage = reader.ReadInt32();
+        LifeTime = reader.ReadInt32();
+        DamageOffsetX = reader.ReadInt32();
+        DamageOffsetY = reader.ReadInt32();
+    }
+	
+    #endregion
 }

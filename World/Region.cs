@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -14,6 +15,28 @@ public class RegionInfo
     public RegionType RegionType { get; set; }
     public int RegionSize { get; set; }
     public int AdjOffsetBit { get; set; }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+	    writer.Write(RegionId);
+	    writer.Write(RegionStatId);
+	    writer.Write((int)RegionType);
+	    writer.Write(RegionSize);
+	    writer.Write(AdjOffsetBit);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+	    RegionId = reader.ReadInt32();
+	    RegionStatId = reader.ReadInt32();
+	    RegionType = (RegionType)reader.ReadInt32();
+	    RegionSize = reader.ReadInt32();
+	    AdjOffsetBit = reader.ReadInt32();
+    }
+	
+    #endregion
 }
 
 public class RegionPath
@@ -31,7 +54,7 @@ public class RegionPath
 //TODO rewrite region code
 public class RegionStat
 {
-	public int RegionId { get; } // sorted by region size
+	public int RegionId { get; private set; } // sorted by region size
 
 	public int NationPresenceCount { get; private set; }
 
@@ -59,6 +82,10 @@ public class RegionStat
 	private TownArray TownArray => Sys.Instance.TownArray;
 	private RegionArray RegionArray => Sys.Instance.RegionArray;
 	private SiteArray SiteArray => Sys.Instance.SiteArray;
+
+	public RegionStat()
+	{
+	}
 
 	public RegionStat(int regionId)
 	{
@@ -197,4 +224,69 @@ public class RegionStat
 			}
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(RegionId);
+		writer.Write(NationPresenceCount);
+		for (int i = 0; i < _firmNationCounts.Length; i++)
+			writer.Write(_firmNationCounts[i]);
+		for (int i = 0; i < CampNationCounts.Length; i++)
+			writer.Write(CampNationCounts[i]);
+		for (int i = 0; i < MineNationCounts.Length; i++)
+			writer.Write(MineNationCounts[i]);
+		for (int i = 0; i < HarborNationCounts.Length; i++)
+			writer.Write(HarborNationCounts[i]);
+		for (int i = 0; i < TownNationCounts.Length; i++)
+			writer.Write(TownNationCounts[i]);
+		for (int i = 0; i < BaseTownNationCounts.Length; i++)
+			writer.Write(BaseTownNationCounts[i]);
+		writer.Write(IndependentTownCounts);
+		for (int i = 0; i < NationPopulation.Length; i++)
+			writer.Write(NationPopulation[i]);
+		for (int i = 0; i < NationJoblessPopulation.Length; i++)
+			writer.Write(NationJoblessPopulation[i]);
+		for (int i = 0; i < _unitNationCounts.Length; i++)
+			writer.Write(_unitNationCounts[i]);
+		writer.Write(RawResourceCount);
+		writer.Write(ReachableRegions.Count);
+		for (int i = 0; i < ReachableRegions.Count; i++)
+		{
+			writer.Write(ReachableRegions[i].LandRegionStatId);
+			writer.Write(ReachableRegions[i].SeaRegionId);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		RegionId = reader.ReadInt32();
+		NationPresenceCount = reader.ReadInt32();
+		for (int i = 0; i < _firmNationCounts.Length; i++)
+			_firmNationCounts[i] = reader.ReadInt32();
+		for (int i = 0; i < CampNationCounts.Length; i++)
+			CampNationCounts[i] = reader.ReadInt32();
+		for (int i = 0; i < MineNationCounts.Length; i++)
+			MineNationCounts[i] = reader.ReadInt32();
+		for (int i = 0; i < HarborNationCounts.Length; i++)
+			HarborNationCounts[i] = reader.ReadInt32();
+		for (int i = 0; i < TownNationCounts.Length; i++)
+			TownNationCounts[i] = reader.ReadInt32();
+		for (int i = 0; i < BaseTownNationCounts.Length; i++)
+			BaseTownNationCounts[i] = reader.ReadInt32();
+		IndependentTownCounts = reader.ReadInt32();
+		for (int i = 0; i < NationPopulation.Length; i++)
+			NationPopulation[i] = reader.ReadInt32();
+		for (int i = 0; i < NationJoblessPopulation.Length; i++)
+			NationJoblessPopulation[i] = reader.ReadInt32();
+		for (int i = 0; i < _unitNationCounts.Length; i++)
+			_unitNationCounts[i] = reader.ReadInt32();
+		RawResourceCount = reader.ReadInt32();
+		int reachableRegionsCount = reader.ReadInt32();
+		for (int i = 0; i < reachableRegionsCount; i++)
+			ReachableRegions.Add(new RegionPath(reader.ReadInt32(), reader.ReadInt32()));
+	}
+	
+	#endregion
 }

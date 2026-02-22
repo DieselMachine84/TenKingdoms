@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class TornadoArray : SpriteArray
@@ -60,4 +62,31 @@ public class TornadoArray : SpriteArray
             }
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(NextId);
+        int count = Count();
+        writer.Write(count);
+        foreach (Tornado tornado in EnumerateWithDeleted())
+        {
+            tornado.SaveTo(writer);
+        }
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        NextId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        for (int i = 0; i < count; i++)
+        {
+            Tornado tornado = CreateNewObject(0);
+            tornado.LoadFrom(reader);
+            Load(tornado);
+        }
+    }
+	
+    #endregion
 }

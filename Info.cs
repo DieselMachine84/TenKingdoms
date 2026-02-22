@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -7,22 +8,22 @@ public class Info
     private const int MAX_RANK_TYPE = 5;
     
     // set to Game.GameStartDate in Info.Init(), the actual date the game begins, not the scenario begins
-    public DateTime GameStartDate { get; }
+    public DateTime GameStartDate { get; private set; }
     public DateTime GameDate { get; private set; }
     public int GameDay { get; private set; }
     public int GameMonth { get; private set; }
     public int GameYear { get; private set; }
     public int TotalDays { get; private set; }
 
-    public DateTime GoalDeadline { get; }
-    public int GoalDifficulty { get; }
-    public int GoalScoreBonus { get; }
+    public DateTime GoalDeadline { get; private set; }
+    public int GoalDifficulty { get; private set; }
+    public int GoalScoreBonus { get; private set; }
 
     public int YearDay { get; private set; } // the nth day in a year
     public int YearsPassed { get; private set; } // no. of years passed since the game begins
 
-    public int StartPlayTime { get; } // the time player start playing the game today
-    public int TotalPlayTime { get; } // total time the player has played in all saved games
+    public int StartPlayTime { get; private set; } // the time player start playing the game today
+    public int TotalPlayTime { get; private set; } // total time the player has played in all saved games
 
     public int DefaultViewingNationId { get; set; }
     public int ViewingNationId { get; set; } // which nation the player is viewing at with the reports.
@@ -188,4 +189,54 @@ public class Info
     {
         //TODO
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(GameStartDate.ToBinary());
+        writer.Write(GameDate.ToBinary());
+        writer.Write(GameDay);
+        writer.Write(GameMonth);
+        writer.Write(GameYear);
+        writer.Write(TotalDays);
+        writer.Write(GoalDeadline.ToBinary());
+        writer.Write(GoalDifficulty);
+        writer.Write(GoalScoreBonus);
+        writer.Write(YearDay);
+        writer.Write(YearsPassed);
+        writer.Write(StartPlayTime);
+        writer.Write(TotalPlayTime);
+        writer.Write(DefaultViewingNationId);
+        writer.Write(ViewingNationId);
+        writer.Write(ViewingSpyId);
+        for (int i = 0; i < NationRanks.GetLength(0); i++)
+            for (int j = 0; j < NationRanks.GetLength(1); j++)
+                writer.Write(NationRanks[i, j]);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        GameStartDate = DateTime.FromBinary(reader.ReadInt64());
+        GameDate = DateTime.FromBinary(reader.ReadInt64());
+        GameDay = reader.ReadInt32();
+        GameMonth = reader.ReadInt32();
+        GameYear = reader.ReadInt32();
+        TotalDays = reader.ReadInt32();
+        GoalDeadline = DateTime.FromBinary(reader.ReadInt64());
+        GoalDifficulty = reader.ReadInt32();
+        GoalScoreBonus = reader.ReadInt32();
+        YearDay = reader.ReadInt32();
+        YearsPassed = reader.ReadInt32();
+        StartPlayTime = reader.ReadInt32();
+        TotalPlayTime = reader.ReadInt32();
+        DefaultViewingNationId = reader.ReadInt32();
+        ViewingNationId = reader.ReadInt32();
+        ViewingSpyId = reader.ReadInt32();
+        for (int i = 0; i < NationRanks.GetLength(0); i++)
+            for (int j = 0; j < NationRanks.GetLength(1); j++)
+                NationRanks[i, j] = reader.ReadInt32();
+    }
+	
+    #endregion
 }

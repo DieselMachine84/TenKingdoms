@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -24,4 +25,26 @@ public class RockArray
             _rocks[i].Process();
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(_rocks.Count);
+        for (int i = 0; i < _rocks.Count; i++)
+            _rocks[i].SaveTo(writer);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        int rocksCount = reader.ReadInt32();
+        for (int i = 0; i < rocksCount; i++)
+        {
+            Rock rock = new Rock();
+            rock.LoadFrom(reader);
+            _rocks.Add(rock);
+        }
+    }
+	
+    #endregion
 }

@@ -422,4 +422,72 @@ public class Config
 			throw new Exception(e.Message + " when parsing parameter " + parameter);
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(MapSize);
+		writer.Write(TerrainSet);
+		writer.Write(AINationCount);
+		writer.Write(AIAggressiveness);
+		writer.Write(StartUpCash);
+		writer.Write(AIStartUpCash);
+		writer.Write(CustomStartUpCash);
+		writer.Write(CustomAIStartUpCash);
+		writer.Write(CustomStartUpFood);
+		writer.Write(CustomAIStartUpFood);
+		writer.Write(MonsterType);
+		writer.Write(IndependentTownResistance);
+		writer.Write(NewIndependentTownEmerge);
+		writer.Write(NewNationEmerge);
+		writer.Write(ExploreWholeMap);
+		writer.Write(FogOfWar);
+		writer.Write(EarthquakeFrequency);
+		writer.Write(GoalDestroyMonsterFlag);
+		writer.Write(GoalPopulationFlag);
+		writer.Write(GoalEconomicScoreFlag);
+		writer.Write(GoalTotalScoreFlag);
+		writer.Write(GoalYearLimitFlag);
+		writer.Write(GoalPopulation);
+		writer.Write(GoalEconomicScore);
+		writer.Write(GoalTotalScore);
+		writer.Write(GoalYearLimit);
+		writer.Write(UnlimitedRawResource);
+		writer.Write(FastBuild);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		MapSize = reader.ReadInt32();
+		TerrainSet = reader.ReadInt32();
+		AINationCount = reader.ReadInt32();
+		AIAggressiveness = reader.ReadInt32();
+		StartUpCash = reader.ReadInt32();
+		AIStartUpCash = reader.ReadInt32();
+		CustomStartUpCash = reader.ReadDouble();
+		CustomAIStartUpCash = reader.ReadDouble();
+		CustomStartUpFood = reader.ReadDouble();
+		CustomAIStartUpFood = reader.ReadDouble();
+		MonsterType = reader.ReadInt32();
+		IndependentTownResistance = reader.ReadInt32();
+		NewIndependentTownEmerge = reader.ReadBoolean();
+		NewNationEmerge = reader.ReadBoolean();
+		ExploreWholeMap = reader.ReadBoolean();
+		FogOfWar = reader.ReadBoolean();
+		EarthquakeFrequency = reader.ReadInt32();
+		GoalDestroyMonsterFlag = reader.ReadBoolean();
+		GoalPopulationFlag = reader.ReadBoolean();
+		GoalEconomicScoreFlag = reader.ReadBoolean();
+		GoalTotalScoreFlag = reader.ReadBoolean();
+		GoalYearLimitFlag = reader.ReadBoolean();
+		GoalPopulation = reader.ReadInt32();
+		GoalEconomicScore = reader.ReadInt32();
+		GoalTotalScore = reader.ReadInt32();
+		GoalYearLimit = reader.ReadInt32();
+		UnlimitedRawResource = reader.ReadBoolean();
+		FastBuild = reader.ReadBoolean();
+	}
+	
+	#endregion
 }

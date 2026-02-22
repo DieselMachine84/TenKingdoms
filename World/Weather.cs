@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -25,6 +26,7 @@ public class Weather
 	private const int HOT_WAVE = 8;
 	private const int COLD_WAVE = 0x10;
 
+	//TODO initialize by random number
 	private uint Seed { get; set; }
 	private int SeasonPhase { get; set; } // 0 = early spring, 364 = end of winter
 	private int AvgTemp { get; set; }
@@ -411,4 +413,48 @@ public class Weather
 		Seed = MULTIPLIER * Seed + INCREMENT;
 		return (int)(Seed % max);
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(Seed);
+		writer.Write(SeasonPhase);
+		writer.Write(AvgTemp);
+		writer.Write(TempAmp);
+		writer.Write(WindSpd);
+		writer.Write(HighWindDay);
+		writer.Write(WindDir);
+		writer.Write(WindySpeed);
+		writer.Write(TornadoCount);
+		writer.Write(CurCloudStrength);
+		writer.Write(CurCloudLen);
+		writer.Write(CurCloudType);
+		writer.Write(QuakeFrequency);
+		writer.Write(DayToQuake);
+		writer.Write(QuakeX);
+		writer.Write(QuakeY);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		Seed = reader.ReadUInt32();
+		SeasonPhase = reader.ReadInt32();
+		AvgTemp = reader.ReadInt32();
+		TempAmp = reader.ReadInt32();
+		WindSpd = reader.ReadInt32();
+		HighWindDay = reader.ReadInt32();
+		WindDir = reader.ReadInt32();
+		WindySpeed = reader.ReadInt32();
+		TornadoCount = reader.ReadInt32();
+		CurCloudStrength = reader.ReadInt32();
+		CurCloudLen = reader.ReadInt32();
+		CurCloudType = reader.ReadInt32();
+		QuakeFrequency = reader.ReadInt32();
+		DayToQuake = reader.ReadInt32();
+		QuakeX = reader.ReadInt32();
+		QuakeY = reader.ReadInt32();
+	}
+	
+	#endregion
 }

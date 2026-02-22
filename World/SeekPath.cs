@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -691,4 +692,50 @@ public class SeekPath
 		pathDist = reversedPath.Count - 1;
 		return reversedPath;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		for (int i = 0; i < _nationPassable.Length; i++)
+			writer.Write(_nationPassable[i]);
+		writer.Write(_searchSubMode);
+		writer.Write(_groupId);
+		writer.Write(_searchMode);
+		writer.Write(_mobileType);
+		writer.Write(_seekNationId);
+		writer.Write(_attackRange);
+		writer.Write(_targetId);
+		writer.Write(_regionId);
+		writer.Write(_buildingId);
+		writer.Write(_buildingX1);
+		writer.Write(_buildingY1);
+		writer.Write(_buildingX2);
+		writer.Write(_buildingY2);
+		writer.Write(_finalDestX);
+		writer.Write(_finalDestY);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		for (int i = 0; i < _nationPassable.Length; i++)
+			_nationPassable[i] = reader.ReadBoolean();
+		_searchSubMode = reader.ReadInt32();
+		_groupId = reader.ReadInt32();
+		_searchMode = reader.ReadInt32();
+		_mobileType = reader.ReadInt32();
+		_seekNationId = reader.ReadInt32();
+		_attackRange = reader.ReadInt32();
+		_targetId = reader.ReadInt32();
+		_regionId = reader.ReadInt32();
+		_buildingId = reader.ReadInt32();
+		_buildingX1 = reader.ReadInt32();
+		_buildingY1 = reader.ReadInt32();
+		_buildingX2 = reader.ReadInt32();
+		_buildingY2 = reader.ReadInt32();
+		_finalDestX = reader.ReadInt32();
+		_finalDestY = reader.ReadInt32();
+	}
+	
+	#endregion
 }

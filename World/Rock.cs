@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class Rock
@@ -6,9 +8,9 @@ public class Rock
 
 	private int _remainDelay;
 
-	public int RockId { get; }
-	public int LocX { get; }
-	public int LocY { get; }
+	public int RockId { get; private set; }
+	public int LocX { get; private set; }
+	public int LocY { get; private set; }
 	public int CurFrame { get; private set; }
 	
 	private RockRes RockRes => Sys.Instance.RockRes;
@@ -39,4 +41,26 @@ public class Rock
 			_remainDelay = RockRes.GetAnimInfo(RockRes.GetAnimId(RockId, CurFrame)).Delay;
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(_remainDelay);
+		writer.Write(RockId);
+		writer.Write(LocX);
+		writer.Write(LocY);
+		writer.Write(CurFrame);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		_remainDelay = reader.ReadInt32();
+		RockId = reader.ReadInt32();
+		LocX = reader.ReadInt32();
+		LocY = reader.ReadInt32();
+		CurFrame = reader.ReadInt32();
+	}
+	
+	#endregion
 }

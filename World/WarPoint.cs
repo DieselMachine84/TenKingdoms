@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class WarPoint
@@ -18,4 +20,18 @@ public class WarPoint
     {
         Strength >>= 1;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(Strength);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        Strength = reader.ReadInt32();
+    }
+	
+    #endregion
 }

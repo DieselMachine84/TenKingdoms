@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -495,6 +496,7 @@ public partial class Renderer : IRenderer
         TownDetailsMode = TownDetailsMode.Normal;
         FirmDetailsMode = FirmDetailsMode.Normal;
         UnitDetailsMode = UnitDetailsMode.Normal;
+        _buildFirmType = 0;
         _setStopId = 0;
     }
     
@@ -514,4 +516,20 @@ public partial class Renderer : IRenderer
         ResetSelection();
         NeedFullRedraw = true;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(_topLeftLocX);
+        writer.Write(_topLeftLocY);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        _topLeftLocX = reader.ReadInt32();
+        _topLeftLocY = reader.ReadInt32();
+    }
+	
+    #endregion
 }

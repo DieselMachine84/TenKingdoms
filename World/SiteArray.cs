@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -252,4 +253,39 @@ public class SiteArray : DynArray<Site>
 
 		return currentSiteId;
 	}
+
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(NextId);
+		writer.Write(UntappedRawCount);
+		writer.Write(_scrollCount);
+		writer.Write(_goldCoinCount);
+		writer.Write(_stdRawSiteCount);
+		int count = Count();
+		writer.Write(count);
+		foreach (Site site in EnumerateWithDeleted())
+		{
+			site.SaveTo(writer);
+		}
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		NextId = reader.ReadInt32();
+		UntappedRawCount = reader.ReadInt32();
+		_scrollCount = reader.ReadInt32();
+		_goldCoinCount = reader.ReadInt32();
+		_stdRawSiteCount = reader.ReadInt32();
+		int count = reader.ReadInt32();
+		for (int i = 0; i < count; i++)
+		{
+			Site site = CreateNewObject(0);
+			site.LoadFrom(reader);
+			Load(site);
+		}
+	}
+	
+	#endregion
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -190,4 +191,49 @@ public class RegionArray
     {
         return GetRegionInfo(_sortedRegions[index]);
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RegionInfos.Count);
+        for (int i = 0; i < RegionInfos.Count; i++)
+            RegionInfos[i].SaveTo(writer);
+        writer.Write(RegionStats.Count);
+        for (int i = 0; i < RegionStats.Count; i++)
+            RegionStats[i].SaveTo(writer);
+        writer.Write(_connectBits.Length);
+        for (int i = 0; i < _connectBits.Length; i++)
+            writer.Write(_connectBits[i]);
+        writer.Write(_sortedRegions.Count);
+        for (int i = 0; i < _sortedRegions.Count; i++)
+            writer.Write(_sortedRegions[i]);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        int regionInfosCount = reader.ReadInt32();
+        for (int i = 0; i < regionInfosCount; i++)
+        {
+            RegionInfo regionInfo = new RegionInfo();
+            regionInfo.LoadFrom(reader);
+            RegionInfos.Add(regionInfo);
+        }
+        int regionStatsCount = reader.ReadInt32();
+        for (int i = 0; i < regionStatsCount; i++)
+        {
+            RegionStat regionStat = new RegionStat();
+            regionStat.LoadFrom(reader);
+            RegionStats.Add(regionStat);
+        }
+        int connectBitsLength = reader.ReadInt32();
+        _connectBits = new int[connectBitsLength];
+        for (int i = 0; i < connectBitsLength; i++)
+            _connectBits[i] = reader.ReadInt32();
+        int sortedRegionsCount = reader.ReadInt32();
+        for (int i = 0; i < sortedRegionsCount; i++)
+            _sortedRegions.Add(reader.ReadInt32());
+    }
+	
+    #endregion
 }

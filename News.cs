@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -870,4 +871,58 @@ public class News
 	{
 		return $"The connection with {KingName1()}'s Kingdom{NationColorStr1()} has been lost.";
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(Id);
+		writer.Write(Type);
+		writer.Write(NewsDate.ToBinary());
+		writer.Write(NationColor1);
+		writer.Write(NationColor2);
+		writer.Write(NationRaceId1);
+		writer.Write(NationRaceId2);
+		writer.Write(NationNameId1);
+		writer.Write(NationNameId2);
+		writer.Write(Param1);
+		writer.Write(Param2);
+		writer.Write(Param3);
+		writer.Write(Param4);
+		writer.Write(Param5);
+		writer.Write(Param6);
+		writer.Write(Param7);
+		writer.Write(LocX);
+		writer.Write(LocY);
+		writer.Write(LocType);
+		writer.Write(LocTypeParam);
+		writer.Write(LocTypeParam2);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		Id = reader.ReadInt32();
+		Type = reader.ReadInt32();
+		NewsDate = DateTime.FromBinary(reader.ReadInt64());
+		NationColor1 = reader.ReadInt32();
+		NationColor2 = reader.ReadInt32();
+		NationRaceId1 = reader.ReadInt32();
+		NationRaceId2 = reader.ReadInt32();
+		NationNameId1 = reader.ReadInt32();
+		NationNameId2 = reader.ReadInt32();
+		Param1 = reader.ReadInt32();
+		Param2 = reader.ReadInt32();
+		Param3 = reader.ReadInt32();
+		Param4 = reader.ReadInt32();
+		Param5 = reader.ReadInt32();
+		Param6 = reader.ReadString();
+		Param7 = reader.ReadString();
+		LocX = reader.ReadInt32();
+		LocY = reader.ReadInt32();
+		LocType = reader.ReadInt32();
+		LocTypeParam = reader.ReadInt32();
+		LocTypeParam2 = reader.ReadInt32();
+	}
+	
+	#endregion
 }

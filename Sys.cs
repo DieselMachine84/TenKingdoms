@@ -481,4 +481,22 @@ public class Sys
     {
         //TODO move to Renderer and use events
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(FrameNumber);
+        writer.Write(FrameOfDay);
+        writer.Write(GameEnded);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        FrameNumber = reader.ReadInt64();
+        FrameOfDay = reader.ReadInt32();
+        GameEnded = reader.ReadBoolean();
+    }
+	
+    #endregion
 }

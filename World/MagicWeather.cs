@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -40,4 +41,28 @@ public class MagicWeather
     {
         LightningDay = duration;
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RainStrength);
+        writer.Write(WindSpeed);
+        writer.Write(WindDirection);
+        writer.Write(RainDay);
+        writer.Write(WindDay);
+        writer.Write(LightningDay);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        RainStrength = reader.ReadInt32();
+        WindSpeed = reader.ReadInt32();
+        WindDirection = reader.ReadInt32();
+        RainDay = reader.ReadInt32();
+        WindDay = reader.ReadInt32();
+        LightningDay = reader.ReadInt32();
+    }
+	
+    #endregion
 }

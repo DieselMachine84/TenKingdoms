@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -659,4 +660,30 @@ public class NewsArray
 		// add player id as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
 		AddNews(News.NEWS_MULTI_CONNECTION_LOST, News.NEWS_NORMAL, nationId, NationArray.PlayerId, true);
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(_newsList.Count);
+		for (int i = 0; i < _newsList.Count; i++)
+			_newsList[i].SaveTo(writer);
+		writer.Write(NewsEnabled);
+		writer.Write(LastClearId);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		int newsListCount = reader.ReadInt32();
+		for (int i = 0; i < newsListCount; i++)
+		{
+			News news = new News();
+			news.LoadFrom(reader);
+			_newsList.Add(news);
+		}
+		NewsEnabled = reader.ReadBoolean();
+		LastClearId = reader.ReadInt32();
+	}
+	
+	#endregion
 }

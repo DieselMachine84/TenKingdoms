@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public class WarPointArray
@@ -26,4 +28,22 @@ public class WarPointArray
     {
         WarPoints[locX / InternalConstants.WARPOINT_ZONE_SIZE, locY / InternalConstants.WARPOINT_ZONE_SIZE].Inc();
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        for (int i = 0; i < WarPoints.GetLength(0); i++)
+            for (int j = 0; j < WarPoints.GetLength(1); j++)
+                WarPoints[i, j].SaveTo(writer);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        for (int i = 0; i < WarPoints.GetLength(0); i++)
+            for (int j = 0; j < WarPoints.GetLength(1); j++)
+                WarPoints[i, j].LoadFrom(reader);
+    }
+	
+    #endregion
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -1575,4 +1576,30 @@ public class World
 			SECtrl.request(sndFile, relVolume);
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		for (int i = 0; i < _locMatrix.Length; i++)
+			_locMatrix[i].SaveTo(writer);
+		writer.Write(_scanFireX);
+		writer.Write(_scanFireY);
+		writer.Write(_lightningSignal);
+		writer.Write(_plantLimit);
+		writer.Write(PlantCount);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		for (int i = 0; i < _locMatrix.Length; i++)
+			_locMatrix[i].LoadFrom(reader);
+		_scanFireX = reader.ReadInt32();
+		_scanFireY = reader.ReadInt32();
+		_lightningSignal = reader.ReadInt32();
+		_plantLimit = reader.ReadInt32();
+		PlantCount = reader.ReadInt32();
+	}
+	
+	#endregion
 }

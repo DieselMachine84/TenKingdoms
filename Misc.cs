@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace TenKingdoms;
@@ -310,4 +311,20 @@ public static class Misc
         
         return result.ToString().TrimEnd();
     }
+    
+    #region SaveAndLoad
+
+    public static void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(RandomSeed);
+        writer.Write(StartTicks);
+    }
+
+    public static void LoadFrom(BinaryReader reader)
+    {
+        RandomSeed = reader.ReadUInt32();
+        StartTicks = reader.ReadInt64();
+    }
+	
+    #endregion
 }

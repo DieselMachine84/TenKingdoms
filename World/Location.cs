@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -824,4 +825,36 @@ public class Location
 	{
 		return (_locFlag & LOCATE_HARBOR_BIT) != 0;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(_locFlag);
+		writer.Write(TerrainId);
+		writer.Write(RegionId);
+		writer.Write(CargoId);
+		writer.Write(AirCargoId);
+		writer.Write(_extraPara);
+		writer.Write(_fireLevel);
+		writer.Write(_flammability);
+		writer.Write(PowerNationId);
+		writer.Write(VisitLevel);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		_locFlag = reader.ReadInt32();
+		TerrainId = reader.ReadInt32();
+		RegionId = reader.ReadInt32();
+		CargoId = reader.ReadInt32();
+		AirCargoId = reader.ReadInt32();
+		_extraPara = reader.ReadInt32();
+		_fireLevel = reader.ReadInt32();
+		_flammability = reader.ReadInt32();
+		PowerNationId = reader.ReadInt32();
+		VisitLevel = reader.ReadInt32();
+	}
+	
+	#endregion
 }
