@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -823,4 +824,36 @@ public class TalkMsg
 		else
 			return $"{FromNationName()}'s Kingdom{NationColorStr2(FromNationId)} has surrendered to you.";
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(Id);
+		writer.Write(TalkId);
+		writer.Write(FromNationId);
+		writer.Write(ToNationId);
+		writer.Write(TalkParam1);
+		writer.Write(TalkParam2);
+		writer.Write(Date.ToBinary());
+		writer.Write(ReplyType);
+		writer.Write(ReplyDate.ToBinary());
+		writer.Write(RelationStatus);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		Id = reader.ReadInt32();
+		TalkId = reader.ReadInt32();
+		FromNationId = reader.ReadInt32();
+		ToNationId = reader.ReadInt32();
+		TalkParam1 = reader.ReadInt32();
+		TalkParam2 = reader.ReadInt32();
+		Date = DateTime.FromBinary(reader.ReadInt64());
+		ReplyType = reader.ReadInt32();
+		ReplyDate = DateTime.FromBinary(reader.ReadInt64());
+		RelationStatus = reader.ReadInt32();
+	}
+	
+	#endregion
 }

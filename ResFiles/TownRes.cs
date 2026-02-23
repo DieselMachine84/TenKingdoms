@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace TenKingdoms;
@@ -245,7 +246,7 @@ public class TownRes
     private TownBuildType[] _townBuildTypes;
     private TownBuild[] _townBuilds;
     private TownName[] _townNames;
-    private byte[] _townNamesUsed; // store the used_count separately from _townNames to facilitate file saving
+    private int[] _townNamesUsed; // store the used_count separately from _townNames to facilitate file saving
 
     private readonly List<byte[]> _farmBitmaps = new List<byte[]>();
     public List<int> FarmWidths { get; } = new List<int>();
@@ -472,7 +473,7 @@ public class TownRes
     {
         Database dbTownName = GameSet.OpenDb("TOWNNAME");
         _townNames = new TownName[dbTownName.RecordCount];
-        _townNamesUsed = new byte[_townNames.Length];
+        _townNamesUsed = new int[_townNames.Length];
 
         int raceId = 0;
 
@@ -529,4 +530,28 @@ public class TownRes
             _flagTextures.Add(new Dictionary<int, nint>());
         }
     }
+
+    public void Reset()
+    {
+        for (int i = 0; i < _townNamesUsed.Length; i++)
+            _townNamesUsed[i] = 0;
+    }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(_townNamesUsed.Length);
+        for (int i = 0; i < _townNamesUsed.Length; i++)
+            writer.Write(_townNamesUsed[i]);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        int namesUsedLength = reader.ReadInt32();
+        for (int i = 0; i < namesUsedLength; i++)
+            _townNamesUsed[i] = reader.ReadInt32();
+    }
+	
+    #endregion
 }

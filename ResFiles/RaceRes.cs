@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -232,6 +233,20 @@ public class RaceInfo
 			RaceRes.NamesUsed[FirstLastNameId + lastNameId - 2]--;
 		}
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(TownNameUsedCount);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		TownNameUsedCount = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class RaceNameRec
@@ -267,7 +282,7 @@ public class RaceRes
 	
 	public RaceInfo[] RaceInfos { get; private set; }
 	public RaceName[] Names { get; private set; }
-	public byte[] NamesUsed { get; private set; }
+	public int[] NamesUsed { get; private set; }
 
 	public GameSet GameSet { get; }
 	public UnitRes UnitRes { get; }
@@ -329,7 +344,7 @@ public class RaceRes
 		Database dbRaceName = GameSet.OpenDb("RACENAME");
 
 		Names = new RaceName[dbRaceName.RecordCount];
-		NamesUsed = new byte[Names.Length];
+		NamesUsed = new int[Names.Length];
 
 		int raceId = 0;
 		bool isFirstName = false;
@@ -389,4 +404,34 @@ public class RaceRes
 				this[raceId].LastNameCount = i - this[raceId].FirstLastNameId;
 		}
 	}
+
+	public void Reset()
+	{
+		for (int i = 0; i < RaceInfos.Length; i++)
+			RaceInfos[i].TownNameUsedCount = 0;
+		for (int i = 0; i < NamesUsed.Length; i++)
+			NamesUsed[i] = 0;
+	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		for (int i = 0; i < RaceInfos.Length; i++)
+			RaceInfos[i].SaveTo(writer);
+		writer.Write(NamesUsed.Length);
+		for (int i = 0; i < NamesUsed.Length; i++)
+			writer.Write(NamesUsed[i]);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		for (int i = 0; i < RaceInfos.Length; i++)
+			RaceInfos[i].LoadFrom(reader);
+		int namesUsedLength = reader.ReadInt32();
+		for (int i = 0; i < namesUsedLength; i++)
+			NamesUsed[i] = reader.ReadInt32();
+	}
+	
+	#endregion
 }

@@ -192,11 +192,13 @@ public class Sys
 
     public void StartNewGame()
     {
-        //TODO reset all static variables
         Renderer.GameMode = GameMode.Game;
         FrameNumber = 0;
         FrameOfDay = 0;
         GameEnded = false;
+        RaceRes.Reset();
+        SpriteRes.Reset();
+        TownRes.Reset();
         CreateObjects();
         Misc.RandomSeed = (uint)(new Random()).Next();
         MapGenerator mapGenerator = new MapGenerator();

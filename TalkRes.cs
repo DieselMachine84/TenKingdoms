@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -701,4 +702,24 @@ public class TalkRes
                 break;
         }
     }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+        writer.Write(_nextTalkMsgId);
+        writer.Write(TalkMessages.Count);
+        for (int i = 0; i < TalkMessages.Count; i++)
+            TalkMessages[i].SaveTo(writer);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+        _nextTalkMsgId = reader.ReadInt32();
+        int talkMessagesCount = reader.ReadInt32();
+        for (int i = 0; i < talkMessagesCount; i++)
+            TalkMessages[i].LoadFrom(reader);
+    }
+	
+    #endregion
 }

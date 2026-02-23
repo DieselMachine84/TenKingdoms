@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace TenKingdoms;
 
@@ -171,7 +172,6 @@ public class SpriteInfo
 	public int LocWidth { get; set; } // no. of locations it takes horizontally and vertically
 	public int LocHeight { get; set; }
 
-	//TODO save and load
 	public int Speed { get; set; } // based on UnitRes, can be upgraded during the game.
 	public int FramesPerStep { get; set; }
 	public int MaxRainSlowdown { get; set; }
@@ -227,6 +227,20 @@ public class SpriteInfo
 	{
 		return CanGuard & 2;
 	}
+	
+	#region SaveAndLoad
+
+	public void SaveTo(BinaryWriter writer)
+	{
+		writer.Write(Speed);
+	}
+
+	public void LoadFrom(BinaryReader reader)
+	{
+		Speed = reader.ReadInt32();
+	}
+	
+	#endregion
 }
 
 public class SubSpriteRec
@@ -280,8 +294,8 @@ public class SubSpriteInfo
 
 public class SpriteRes
 {
-    private SpriteInfo[] _spriteInfos;
-    private SubSpriteInfo[] _subSpriteInfos;
+	private SpriteInfo[] _spriteInfos;
+	private SubSpriteInfo[] _subSpriteInfos;
 
     public GameSet GameSet { get; }
 
@@ -491,4 +505,26 @@ public class SpriteRes
 		    parentSprite.SubSpriteInfo[^1] = subSpriteInfo;
 	    }
     }
+
+    public void Reset()
+    {
+	    for (int i = 0; i < _spriteInfos.Length; i++)
+		    _spriteInfos[i].Speed = _spriteInfos[i].MaxSpeed;
+    }
+    
+    #region SaveAndLoad
+
+    public void SaveTo(BinaryWriter writer)
+    {
+	    for (int i = 0; i < _spriteInfos.Length; i++)
+		    _spriteInfos[i].SaveTo(writer);
+    }
+
+    public void LoadFrom(BinaryReader reader)
+    {
+	    for (int i = 0; i < _spriteInfos.Length; i++)
+		    _spriteInfos[i].LoadFrom(reader);
+    }
+	
+    #endregion
 }
