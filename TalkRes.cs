@@ -18,6 +18,7 @@ public class TalkRes
     public const int REPLY_ACCEPT = 2;
     public const int REPLY_REJECT = 3;
 
+    private int _nextTalkMsgId = 1;
     public List<TalkMsg> TalkMessages { get; } = new List<TalkMsg>();
     
     public bool AddNationColor { get; set; }
@@ -149,6 +150,8 @@ public class TalkRes
 
         Nation toNation = NationArray[talkMsg.ToNationId];
 
+        talkMsg.Id = _nextTalkMsgId;
+        _nextTalkMsgId++;
         talkMsg.Date = Info.GameDate;
         talkMsg.RelationStatus = toNation.GetRelationStatus(talkMsg.FromNationId);
 

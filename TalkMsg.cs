@@ -27,8 +27,7 @@ public class TalkMsg
 	public const int MAX_TALK_TYPE = 20;
 	public const int MAX_TALK_CHOICE = MAX_TALK_TYPE;
 
-	private static int lastId;
-	public int Id { get; }
+	public int Id { get; set; }
 
 	public int TalkId { get; set; }
 	public int FromNationId { get; set; }
@@ -54,8 +53,6 @@ public class TalkMsg
 
 	public TalkMsg()
 	{
-		lastId++;
-		Id = lastId;
 	}
 
 	public TalkMsg(TalkMsg other) : this()
