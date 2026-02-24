@@ -46,6 +46,9 @@ public class NationArray : DynArray<Nation>
 		NationPowerColors[0] = Colors.VGA_GRAY + 10;
 		// this means there are more than one nation have influence over this location.
 		NationPowerColors[GameConstants.MAX_NATION + 1] = Colors.VGA_GRAY + 10;
+
+		for (int i = 0; i < HumanNames.Length; i++)
+			HumanNames[i] = String.Empty;
 	}
 
 	protected override Nation CreateNewObject(int objectType)
@@ -408,6 +411,25 @@ public class NationArray : DynArray<Nation>
 	public void SaveTo(BinaryWriter writer)
 	{
 		writer.Write(NextId);
+		writer.Write(PlayerId);
+		for (int i = 0; i < NationColors.Length; i++)
+			writer.Write(NationColors[i]);
+		for (int i = 0; i < NationPowerColors.Length; i++)
+			writer.Write(NationPowerColors[i]);
+		for (int i = 0; i < HumanNames.Length; i++)
+			writer.Write(HumanNames[i]);
+		writer.Write(NationCount);
+		writer.Write(AINationCount);
+		writer.Write(LastNewNationDate.ToBinary());
+		writer.Write(LastDelNationDate.ToBinary());
+		writer.Write(AllNationPopulation);
+		writer.Write(MaxPopulationRating);
+		writer.Write(MaxMilitaryRating);
+		writer.Write(MaxEconomicRating);
+		writer.Write(MaxReputation);
+		writer.Write(MaxKillMonsterScore);
+		writer.Write(MaxOverallRating);
+		writer.Write(MaxOverallNationId);
 		int count = Count();
 		writer.Write(count);
 		foreach (Nation nation in EnumerateWithDeleted())
@@ -419,6 +441,25 @@ public class NationArray : DynArray<Nation>
 	public void LoadFrom(BinaryReader reader)
 	{
 		NextId = reader.ReadInt32();
+		PlayerId = reader.ReadInt32();
+		for (int i = 0; i < NationColors.Length; i++)
+			NationColors[i] = reader.ReadByte();
+		for (int i = 0; i < NationPowerColors.Length; i++)
+			NationPowerColors[i] = reader.ReadByte();
+		for (int i = 0; i < HumanNames.Length; i++)
+			HumanNames[i] = reader.ReadString();
+		NationCount = reader.ReadInt32();
+		AINationCount = reader.ReadInt32();
+		LastNewNationDate = DateTime.FromBinary(reader.ReadInt64());
+		LastDelNationDate = DateTime.FromBinary(reader.ReadInt64());
+		AllNationPopulation = reader.ReadInt32();
+		MaxPopulationRating = reader.ReadInt32();
+		MaxMilitaryRating = reader.ReadInt32();
+		MaxEconomicRating = reader.ReadInt32();
+		MaxReputation = reader.ReadInt32();
+		MaxKillMonsterScore = reader.ReadInt32();
+		MaxOverallRating = reader.ReadInt32();
+		MaxOverallNationId = reader.ReadInt32();
 		int count = reader.ReadInt32();
 		for (int i = 0; i < count; i++)
 		{
@@ -426,6 +467,9 @@ public class NationArray : DynArray<Nation>
 			nation.LoadFrom(reader);
 			Load(nation);
 		}
+
+		if (PlayerId != 0)
+			Player = this[PlayerId];
 	}
 	
 	#endregion

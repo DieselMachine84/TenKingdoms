@@ -631,6 +631,7 @@ public class Sprite : IIdObject
 	{
 		SpriteId = reader.ReadInt32();
 		SpriteResId = reader.ReadInt32();
+		SpriteInfo = SpriteRes[SpriteResId];
 		MobileType = reader.ReadInt32();
 		CurAction = reader.ReadInt32();
 		CurDir = reader.ReadInt32();

@@ -882,6 +882,7 @@ public class FirmMonster : Firm
 		DefendingGeneralCount = reader.ReadInt32();
 		DefendingSoldierCount = reader.ReadInt32();
 		DefendTargetId = reader.ReadInt32();
+		MonsterKing = new MonsterInFirm();
 		MonsterKing.LoadFrom(reader);
 		int monsterGeneralsCount = reader.ReadInt32();
 		for (int i = 0; i < monsterGeneralsCount; i++)

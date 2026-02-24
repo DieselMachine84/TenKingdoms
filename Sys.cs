@@ -42,6 +42,7 @@ public class Sys
     public SECtrl SECtrl { get; private set; }
 
     public Config Config { get; private set; }
+    public SaveGameProvider SaveGameProvider { get; private set; }
     public Info Info { get; private set; }
     public World World { get; private set; }
     public Weather Weather { get; set; }
@@ -192,7 +193,6 @@ public class Sys
 
     public void StartNewGame()
     {
-        Renderer.GameMode = GameMode.Game;
         FrameNumber = 0;
         FrameOfDay = 0;
         GameEnded = false;
@@ -205,6 +205,7 @@ public class Sys
         mapGenerator.Generate();
         Renderer.Reset();
         GoToPlayerTown();
+        Renderer.GameMode = GameMode.Game;
         Graphics.SetWindowSize(Renderer.WindowWidth, Renderer.WindowHeight);
     }
 
@@ -231,6 +232,8 @@ public class Sys
             Graphics.ShowSimpleMessageBox("Error when loading Config.txt: " + error);
             return;
         }
+
+        SaveGameProvider = new SaveGameProvider();
         
         ColorRemap.InitRemapTable();
         if (!InitGraphics())
@@ -483,17 +486,139 @@ public class Sys
     {
         //TODO move to Renderer and use events
     }
+
+    private void Save(Stream stream, SavedGame savedGame)
+    {
+        BinaryWriter writer = new BinaryWriter(stream);
+        savedGame.SaveTo(writer);
+        SaveTo(writer);
+        Config.SaveTo(writer);
+        SpriteRes.SaveTo(writer);
+        RaceRes.SaveTo(writer);
+        TownRes.SaveTo(writer);
+        TalkRes.SaveTo(writer);
+        Renderer.SaveTo(writer);
+        Misc.SaveTo(writer);
+        Info.SaveTo(writer);
+        SeekPath.SaveTo(writer);
+        RegionArray.SaveTo(writer);
+        SiteArray.SaveTo(writer);
+        RockArray.SaveTo(writer);
+        DirtArray.SaveTo(writer);
+        NationArray.SaveTo(writer);
+        TownArray.SaveTo(writer);
+        FirmArray.SaveTo(writer);
+        FirmDieArray.SaveTo(writer);
+        UnitArray.SaveTo(writer);
+        RebelArray.SaveTo(writer);
+        SpyArray.SaveTo(writer);
+        NewsArray.SaveTo(writer);
+        BulletArray.SaveTo(writer);
+        WarPointArray.SaveTo(writer);
+        EffectArray.SaveTo(writer);
+        TornadoArray.SaveTo(writer);
+        World.SaveTo(writer);
+        Weather.SaveTo(writer);
+        for (int i = 0; i < WeatherForecast.Length; i++)
+            WeatherForecast[i].SaveTo(writer);
+        MagicWeather.SaveTo(writer);
+    }
+
+    private void Load(Stream stream, SavedGame savedGame)
+    {
+        BinaryReader reader = new BinaryReader(stream);
+        savedGame.LoadFrom(reader);
+        LoadFrom(reader);
+        Config.LoadFrom(reader);
+        SpriteRes.LoadFrom(reader);
+        RaceRes.LoadFrom(reader);
+        TownRes.LoadFrom(reader);
+        TalkRes.LoadFrom(reader);
+        Renderer.LoadFrom(reader);
+        Misc.LoadFrom(reader);
+        Info.LoadFrom(reader);
+        SeekPath.LoadFrom(reader);
+        RegionArray.LoadFrom(reader);
+        SiteArray.LoadFrom(reader);
+        RockArray.LoadFrom(reader);
+        DirtArray.LoadFrom(reader);
+        NationArray.LoadFrom(reader);
+        TownArray.LoadFrom(reader);
+        FirmArray.LoadFrom(reader);
+        FirmDieArray.LoadFrom(reader);
+        UnitArray.LoadFrom(reader);
+        RebelArray.LoadFrom(reader);
+        SpyArray.LoadFrom(reader);
+        NewsArray.LoadFrom(reader);
+        BulletArray.LoadFrom(reader);
+        WarPointArray.LoadFrom(reader);
+        EffectArray.LoadFrom(reader);
+        TornadoArray.LoadFrom(reader);
+        World.LoadFrom(reader);
+        Weather.LoadFrom(reader);
+        for (int i = 0; i < WeatherForecast.Length; i++)
+            WeatherForecast[i].LoadFrom(reader);
+        MagicWeather.LoadFrom(reader);
+    }
+
+    public void SaveGame(SavedGame savedGame)
+    {
+        bool createNew = savedGame == null;
+        savedGame ??= new SavedGame();
+        savedGame.RaceId = (NationArray.Player != null ? NationArray.Player.RaceId : 0);
+        savedGame.ColorSchemeId = (NationArray.Player != null ? NationArray.Player.ColorSchemeId : 0);
+        savedGame.PlayerName = (NationArray.Player != null ? NationArray.GetHumanName(NationArray.Player.NationNameId) : "Unknown");
+        savedGame.GameDate = Info.GameDate;
+        
+        MemoryStream stream = new MemoryStream();
+        Save(stream, savedGame);
+        SaveGameProvider.SaveGame(savedGame, stream, createNew);
+        Graphics.ShowSimpleMessageBox("Game saved to " + savedGame.FileName);
+    }
+
+    public bool LoadGame(SavedGame savedGame)
+    {
+        if (savedGame == null)
+            return true;
+        
+        try
+        {
+            MemoryStream stream = SaveGameProvider.LoadGame(savedGame);
+            if (stream != null)
+            {
+                CreateObjects();
+                Renderer.Reset();
+                Load(stream, savedGame);
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            Graphics.ShowSimpleMessageBox("Something went wrong while loading " + savedGame.FileName + Environment.NewLine + e.Message);
+            return false;
+        }
+
+        return false;
+    }
+
+    public void DeleteGame(SavedGame savedGame)
+    {
+        if (SaveGameProvider.DeleteGame(savedGame))
+        {
+            Graphics.ShowSimpleMessageBox("Game " + savedGame.FileName + " is deleted");
+        }
+    }
     
     #region SaveAndLoad
 
-    public void SaveTo(BinaryWriter writer)
+    private void SaveTo(BinaryWriter writer)
     {
         writer.Write(FrameNumber);
         writer.Write(FrameOfDay);
         writer.Write(GameEnded);
     }
 
-    public void LoadFrom(BinaryReader reader)
+    private void LoadFrom(BinaryReader reader)
     {
         FrameNumber = reader.ReadInt64();
         FrameOfDay = reader.ReadInt32();

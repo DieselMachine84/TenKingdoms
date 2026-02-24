@@ -74,8 +74,8 @@ public class News
 	public int Param3 { get; set; }
 	public int Param4 { get; set; }
 	public int Param5 { get; set; }
-	public string Param6 { get; set; }
-	public string Param7 { get; set; }
+	public string Param6 { get; set; } = String.Empty;
+	public string Param7 { get; set; } = String.Empty;
 
 	public int LocX { get; private set; }
 	public int LocY { get; private set; }

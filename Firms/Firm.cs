@@ -41,8 +41,8 @@ public abstract class Firm : IIdObject
 	public int LocCenterX { get; private set; }
 	public int LocCenterY { get; private set; }
 	public int RegionId { get; protected set; }
-	
-	public string ClosestTownName { get; private set; }
+
+	public string ClosestTownName { get; private set; } = String.Empty;
 	private int FirmNameInstanceId { get; set; }
 	public int FirmSkillId { get; protected init; }
 	public int OverseerId { get; protected set; }

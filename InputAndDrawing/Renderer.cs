@@ -9,7 +9,7 @@ public enum FlipMode { None = 0, Horizontal = 1, Vertical = 2 }
 
 public enum ScreenObjectType { None, FriendTown, EnemyTown, FriendFirm, EnemyFirm, FriendUnit, EnemyUnit, SpyUnit, UnitGroup, Site }
 
-public enum GameMode { StartMenu, SinglePlayerMenu, Game, InGameMenu }
+public enum GameMode { StartMenu, SinglePlayerMenu, Game, InGameMenu, Save, Load }
 
 public enum ViewMode { Normal, Kingdoms, Villages, Economy, Trade, Military, Technology, Espionage, Ranking, News }
 
@@ -114,6 +114,7 @@ public partial class Renderer : IRenderer
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
 
     private static Config Config => Sys.Instance.Config;
+    private static SaveGameProvider SaveGameProvider => Sys.Instance.SaveGameProvider;
     private static Info Info => Sys.Instance.Info;
     private static World World => Sys.Instance.World;
     private static SECtrl SECtrl => Sys.Instance.SECtrl;
@@ -278,6 +279,18 @@ public partial class Renderer : IRenderer
         if (GameMode == GameMode.InGameMenu)
         {
             DrawInGameMenu();
+            return;
+        }
+        
+        if (GameMode == GameMode.Save)
+        {
+            DrawSaveMenu();
+            return;
+        }
+        
+        if (GameMode == GameMode.Load)
+        {
+            DrawLoadMenu();
             return;
         }
         
@@ -523,12 +536,34 @@ public partial class Renderer : IRenderer
     {
         writer.Write(_topLeftLocX);
         writer.Write(_topLeftLocY);
+        writer.Write(_screenSquareFrameCount);
+        writer.Write(_screenSquareFrameStep);
+        writer.Write(_selectedTownId);
+        writer.Write(_selectedFirmId);
+        writer.Write(_selectedUnitId);
+        writer.Write(_selectedUnits.Count);
+        for (int i = 0; i < _selectedUnits.Count; i++)
+            writer.Write(_selectedUnits[i]);
+        writer.Write(_selectedSiteId);
+        writer.Write(_selectedRaceId);
+        writer.Write(_selectedShipId);
     }
 
     public void LoadFrom(BinaryReader reader)
     {
         _topLeftLocX = reader.ReadInt32();
         _topLeftLocY = reader.ReadInt32();
+        _screenSquareFrameCount = reader.ReadInt32();
+        _screenSquareFrameStep = reader.ReadInt32();
+        _selectedTownId = reader.ReadInt32();
+        _selectedFirmId = reader.ReadInt32();
+        _selectedUnitId = reader.ReadInt32();
+        int selectedUnitsCount = reader.ReadInt32();
+        for (int i = 0; i < selectedUnitsCount; i++)
+            _selectedUnits.Add(reader.ReadInt32());
+        _selectedSiteId = reader.ReadInt32();
+        _selectedRaceId = reader.ReadInt32();
+        _selectedShipId = reader.ReadInt32();
     }
 	
     #endregion

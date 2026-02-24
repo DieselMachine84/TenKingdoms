@@ -1284,12 +1284,12 @@ public partial class Renderer
             
             if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + dy && _mouseButtonY < y + 2 * dy)
             {
-                //Save
+                GameMode = GameMode.Save;
             }
             
             if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 2 * dy && _mouseButtonY < y + 3 * dy)
             {
-                //Load
+                GameMode = GameMode.Load;
             }
             
             if (_mouseButtonX > x && _mouseButtonX < x + 255 && _mouseButtonY > y + 3 * dy && _mouseButtonY < y + 4 * dy)
