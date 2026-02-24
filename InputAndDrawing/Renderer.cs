@@ -225,19 +225,19 @@ public partial class Renderer : IRenderer
         int dy = 0;
         Graphics.DrawBitmapScaled(_swordTrainingDisabledTexture, x, y, _swordTrainingWidth, _swordTrainingHeight);
         dy += Scale(_swordTrainingHeight);
-        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordNewGameHeight))
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword2Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordNewGameHeight))
             Graphics.DrawBitmapScaled(_swordNewGameSelectedTexture, x, y + dy, _swordNewGameWidth, _swordNewGameHeight);
         else
             Graphics.DrawBitmapScaled(_swordNewGameTexture, x, y + dy, _swordNewGameWidth, _swordNewGameHeight);
         dy += Scale(_swordNewGameHeight);
-        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordLoadGameHeight))
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword2Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordLoadGameHeight))
             Graphics.DrawBitmapScaled(_swordLoadGameSelectedTexture, x, y + dy, _swordLoadGameWidth, _swordLoadGameHeight);
         else
             Graphics.DrawBitmapScaled(_swordLoadGameTexture, x, y + dy, _swordLoadGameWidth, _swordLoadGameHeight);
         dy += Scale(_swordLoadGameHeight);
         Graphics.DrawBitmapScaled(_swordScenarioDisabledTexture, x, y + dy, _swordScenarioWidth, _swordScenarioHeight);
         dy += Scale(_swordScenarioHeight);
-        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword1Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordCancelHeight))
+        if (_mouseMotionX >= x && _mouseMotionX <= x + Scale(_sword2Width) && _mouseMotionY >= y + dy && _mouseMotionY <= y + dy + Scale(_swordCancelHeight))
             Graphics.DrawBitmapScaled(_swordCancelSelectedTexture, x, y + dy, _swordCancelWidth, _swordCancelHeight);
         else
             Graphics.DrawBitmapScaled(_swordCancelTexture, x, y + dy, _swordCancelWidth, _swordCancelHeight);

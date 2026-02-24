@@ -36,10 +36,14 @@ public partial class Renderer
                 
                 if (GameMode == GameMode.StartMenu)
                     HandleStartMenu();
-                if (GameMode == GameMode.SinglePlayerMenu)
+                else if (GameMode == GameMode.SinglePlayerMenu)
                     HandleSinglePlayerMenu();
-                if (GameMode == GameMode.InGameMenu)
+                else if (GameMode == GameMode.InGameMenu)
                     HandleInGameMenu();
+                else if (GameMode == GameMode.Save)
+                    HandleSaveMenu();
+                else if (GameMode == GameMode.Load)
+                    HandleLoadMenu();
                 
                 _leftMouseReleased = false;
             }
@@ -1216,8 +1220,10 @@ public partial class Renderer
 
     private void HandleStartMenu()
     {
+        int x = 397;
+        int y = 300;
         int dy = 0;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 && _mouseButtonY <= 330 + Scale(_swordSinglePlayerHeight))
+        if (_mouseButtonX >= x && _mouseButtonX <= x + Scale(_sword1Width) && _mouseButtonY >= y && _mouseButtonY <= y + Scale(_swordSinglePlayerHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1228,7 +1234,7 @@ public partial class Renderer
         dy += Scale(_swordMultiPlayerHeight);
         dy += Scale(_swordHallOfFameHeight);
         dy += Scale(_swordCreditsHeight);
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword1Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordQuitHeight))
+        if (_mouseButtonX >= x && _mouseButtonX <= x + Scale(_sword1Width) && _mouseButtonY >= y + dy && _mouseButtonY <= y + dy + Scale(_swordQuitHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1239,9 +1245,11 @@ public partial class Renderer
 
     private void HandleSinglePlayerMenu()
     {
+        int x = 397;
+        int y = 300;
         int dy = 0;
-        dy += _swordTrainingHeight;
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword2Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordNewGameHeight))
+        dy += Scale(_swordTrainingHeight);
+        if (_mouseButtonX >= x && _mouseButtonX <= x + Scale(_sword2Width) && _mouseButtonY >= y + dy && _mouseButtonY <= y + dy + Scale(_swordNewGameHeight))
         {
             if (_leftMouseReleased)
             {
@@ -1252,7 +1260,7 @@ public partial class Renderer
         dy += Scale(_swordNewGameHeight);
         dy += Scale(_swordLoadGameHeight);
         dy += Scale(_swordScenarioHeight);
-        if (_mouseButtonX >= 478 && _mouseButtonX <= 478 + Scale(_sword2Width) && _mouseButtonY >= 330 + dy && _mouseButtonY <= 330 + dy + Scale(_swordCancelHeight))
+        if (_mouseButtonX >= x && _mouseButtonX <= x + Scale(_sword2Width) && _mouseButtonY >= y + dy && _mouseButtonY <= y + dy + Scale(_swordCancelHeight))
         {
             if (_leftMouseReleased)
             {
