@@ -71,7 +71,8 @@ public class SaveGameProvider
 
                 if (!fileExists)
                 {
-                    SaveToFile(memoryStream, Path.Combine(directoryInfo.FullName, savedGame.FileName));
+                    savedGame.FileName = newSaveFileName;
+                    SaveToFile(memoryStream, Path.Combine(directoryInfo.FullName, newSaveFileName));
                     return;
                 }
             }

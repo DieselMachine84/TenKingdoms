@@ -139,7 +139,7 @@ public class Tornado : Sprite
     public override void LoadFrom(BinaryReader reader)
     {
         base.LoadFrom(reader);
-        AttackDamage = reader.ReadInt32();
+        AttackDamage = reader.ReadDouble();
         LifeTime = reader.ReadInt32();
         DamageOffsetX = reader.ReadInt32();
         DamageOffsetY = reader.ReadInt32();

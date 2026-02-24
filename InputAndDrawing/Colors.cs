@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace TenKingdoms;
 
 public static class Colors
@@ -74,7 +76,7 @@ public class ColorRemap
 
     public static int[] ColorSchemes { get; } = new int[InternalConstants.MAX_COLOR_SCHEME + 1];
     
-    public static ColorRemap[] ColorRemaps { get; } = new ColorRemap[InternalConstants.MAX_COLOR_SCHEME + 1];
+    private static ColorRemap[] ColorRemaps { get; } = new ColorRemap[InternalConstants.MAX_COLOR_SCHEME + 1];
 
     public static void InitRemapTable()
     {
@@ -195,4 +197,20 @@ public class ColorRemap
     {
         return nationColor + (isSelected ? GameConstants.MAX_NATION + 1 : 0);
     }
+    
+    #region SaveAndLoad
+
+    public static void SaveTo(BinaryWriter writer)
+    {
+        for (int i = 0; i < ColorSchemes.Length; i++)
+            writer.Write(ColorSchemes[i]);
+    }
+
+    public static void LoadFrom(BinaryReader reader)
+    {
+        for (int i = 0; i < ColorSchemes.Length; i++)
+            ColorSchemes[i] = reader.ReadInt32();
+    }
+	
+    #endregion
 }

@@ -718,7 +718,11 @@ public class TalkRes
         _nextTalkMsgId = reader.ReadInt32();
         int talkMessagesCount = reader.ReadInt32();
         for (int i = 0; i < talkMessagesCount; i++)
-            TalkMessages[i].LoadFrom(reader);
+        {
+            TalkMsg talkMsg = new TalkMsg();
+            talkMsg.LoadFrom(reader);
+            TalkMessages.Add(talkMsg);
+        }
     }
 	
     #endregion

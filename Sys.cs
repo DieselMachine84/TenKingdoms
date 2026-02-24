@@ -15,6 +15,8 @@ public class Sys
     private int Speed { get; set; } = 1;
     public bool GameEnded { get; private set; }
     public bool ExitFlag { get; set; }
+    private SavedGame _errorSavedGame;
+    private MemoryStream _errorSaveStream;
 
     private Graphics Graphics { get; set; }
     private Renderer Renderer { get; set; }
@@ -244,15 +246,18 @@ public class Sys
         Renderer = new Renderer(Graphics);
         ShowMainMenu();
 
-        /*try
+        try
         {
             MainLoop();
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            Console.WriteLine(e);
-        }*/
-        MainLoop();
+            if (_errorSaveStream != null && _errorSavedGame != null)
+            {
+                SaveGameProvider.SaveGame(_errorSavedGame, _errorSaveStream, true);
+                Graphics.ShowSimpleMessageBox("Something went wrong. Game saved to " + _errorSavedGame.FileName);
+            }
+        }
 
         Graphics.DeInit();
     }
@@ -286,6 +291,7 @@ public class Sys
             RegionArray.NextDay();
 
             FrameOfDay = 0;
+            SaveNextDay();
         }
 
         if (FrameNumber % (InternalConstants.FRAMES_PER_DAY * 30) == 0)
@@ -498,6 +504,7 @@ public class Sys
         TownRes.SaveTo(writer);
         TalkRes.SaveTo(writer);
         Renderer.SaveTo(writer);
+        ColorRemap.SaveTo(writer);
         Misc.SaveTo(writer);
         Info.SaveTo(writer);
         SeekPath.SaveTo(writer);
@@ -535,6 +542,7 @@ public class Sys
         TownRes.LoadFrom(reader);
         TalkRes.LoadFrom(reader);
         Renderer.LoadFrom(reader);
+        ColorRemap.LoadFrom(reader);
         Misc.LoadFrom(reader);
         Info.LoadFrom(reader);
         SeekPath.LoadFrom(reader);
@@ -607,6 +615,19 @@ public class Sys
         {
             Graphics.ShowSimpleMessageBox("Game " + savedGame.FileName + " is deleted");
         }
+    }
+
+    private void SaveNextDay()
+    {
+        _errorSaveStream = new MemoryStream();
+        _errorSavedGame = new SavedGame();
+        _errorSavedGame.RaceId = (NationArray.Player != null ? NationArray.Player.RaceId : 0);
+        _errorSavedGame.ColorSchemeId = (NationArray.Player != null ? NationArray.Player.ColorSchemeId : 0);
+        _errorSavedGame.PlayerName = "Error";
+        _errorSavedGame.GameDate = Info.GameDate;
+        Save(_errorSaveStream, _errorSavedGame);
+        _errorSaveStream = null;
+        _errorSavedGame = null;
     }
     
     #region SaveAndLoad
