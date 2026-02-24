@@ -73,6 +73,7 @@ public class Config
 	// ---- Custom settings ----
 	public bool UnlimitedRawResource { get; private set; }
 	public bool FastBuild { get; private set; }
+	public bool SaveOnError { get; private set; }
 	public bool ShowAIInfo { get; private set; }
 
 	public string Load()
@@ -349,6 +350,11 @@ public class Config
 				if (line.StartsWith("FastBuild"))
 				{
 					FastBuild = ParseBoolParameter(line, "FastBuild");
+				}
+				
+				if (line.StartsWith("SaveOnError"))
+				{
+					SaveOnError = ParseBoolParameter(line, "SaveOnError");
 				}
 				
 				if (line.StartsWith("ShowAIInfo"))

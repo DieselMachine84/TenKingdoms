@@ -291,7 +291,6 @@ public class Sys
             RegionArray.NextDay();
 
             FrameOfDay = 0;
-            SaveNextDay();
         }
 
         if (FrameNumber % (InternalConstants.FRAMES_PER_DAY * 30) == 0)
@@ -299,6 +298,9 @@ public class Sys
             // recreate mini-map texture every month to display growing and dying plants
             Renderer.NeedFullRedraw = true;
         }
+        
+        if (Config.SaveOnError && FrameNumber % 100 == 0)
+            SaveCurrentGame();
     }
 
     private void MainLoop()
@@ -617,7 +619,7 @@ public class Sys
         }
     }
 
-    private void SaveNextDay()
+    private void SaveCurrentGame()
     {
         _errorSaveStream = new MemoryStream();
         _errorSavedGame = new SavedGame();

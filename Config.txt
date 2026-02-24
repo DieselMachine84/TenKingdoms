@@ -46,4 +46,5 @@ DisplayNewsType = 1                             // 0 - major news, 1 - all news
 // ---- Custom settings ----
 UnlimitedRawResource = false
 FastBuild = false
+SaveOnError = true
 ShowAIInfo = false
