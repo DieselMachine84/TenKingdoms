@@ -52,15 +52,19 @@ public class Projectile : Bullet
     public override void SaveTo(BinaryWriter writer)
     {
         base.SaveTo(writer);
-        Bullet.SaveTo(writer);
-        Shadow.SaveTo(writer);
+        if (Bullet != null)
+            Bullet.SaveTo(writer);
+        if (Shadow != null)
+            Shadow.SaveTo(writer);
     }
 
     public override void LoadFrom(BinaryReader reader)
     {
         base.LoadFrom(reader);
-        Bullet.LoadFrom(reader);
-        Shadow.LoadFrom(reader);
+        if (Bullet != null)
+            Bullet.LoadFrom(reader);
+        if (Shadow != null)
+            Shadow.LoadFrom(reader);
     }
 	
     #endregion

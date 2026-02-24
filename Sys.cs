@@ -250,7 +250,7 @@ public class Sys
         {
             MainLoop();
         }
-        catch (Exception)
+        catch (Exception e)
         {
             if (_errorSaveStream != null && _errorSavedGame != null)
             {
@@ -626,8 +626,6 @@ public class Sys
         _errorSavedGame.PlayerName = "Error";
         _errorSavedGame.GameDate = Info.GameDate;
         Save(_errorSaveStream, _errorSavedGame);
-        _errorSaveStream = null;
-        _errorSavedGame = null;
     }
     
     #region SaveAndLoad

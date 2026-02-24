@@ -78,13 +78,12 @@ public class Spy : IIdObject
 			NameId = unit.NameId;
 			TrueNationId = unit.NationId;
 			CloakedNationId = unit.NationId;
+			//--- spies hold a use right of the name id even though the unit itself will register the usage right of the name already ---//
+
+			// the spy will free it up in deinit(). Keep an additional right because when a spy is assigned to a town,
+			// the normal program will free up the name id., so we have to keep an additional copy
+			RaceRes[RaceId].UseNameId(NameId);
 		}
-
-		//--- spies hold a use right of the name id even though the unit itself will register the usage right of the name already ---//
-
-		// the spy will free it up in deinit(). Keep an additional right because when a spy is assigned to a town,
-		// the normal program will free up the name id., so we have to keep an additional copy
-		RaceRes[RaceId].UseNameId(NameId);
 	}
 
 	public void Deinit()

@@ -30,6 +30,9 @@ public static class Misc
 
     public static int Random(int maxNum)
     {
+        if (maxNum == 0)
+            return 0;
+        
         RandomSeed = unchecked(MULTIPLIER * RandomSeed + INCREMENT);
         return (int)(RandomSeed % maxNum);
     }

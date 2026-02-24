@@ -2592,7 +2592,6 @@ public abstract class Firm : IIdObject
 
 		if (succeedChance > 0 && Misc.Random(100) < succeedChance)
 		{
-			// TODO crash NameId == 0, first parameter is 0
 			Spy newSpy = SpyArray.AddSpy(0, 10); // add a new Spy record
 
 			newSpy.ActionMode = Spy.SPY_IDLE;

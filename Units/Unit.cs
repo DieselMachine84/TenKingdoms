@@ -5885,6 +5885,7 @@ public abstract partial class Unit : Sprite
 			BlockedEdges[i] = reader.ReadByte();
 		BlockedByMember = reader.ReadInt32();
 		Swapping = reader.ReadBoolean();
+		FixAttackInfo();
 	}
 	
 	#endregion
