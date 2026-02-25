@@ -54,6 +54,7 @@ public partial class Renderer : IRenderer
     private const int TownFlagShiftX = -9;
     private const int TownFlagShiftY = -97;
 
+    private GameMode _oldGameMode;
     public GameMode GameMode { get; set; } = GameMode.StartMenu;
     private int _topLeftLocX;
     private int _topLeftLocY;

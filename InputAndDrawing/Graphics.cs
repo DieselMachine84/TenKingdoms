@@ -126,6 +126,11 @@ public class Graphics
         _initialized = false;
     }
 
+    public void GetWindowSize(out int width, out int height)
+    {
+        SDL.SDL_GetWindowSize(_window, out width, out height);
+    }
+
     public void SetWindowSize(int width, int height)
     {
         SDL.SDL_SetWindowSize(_window, width, height);

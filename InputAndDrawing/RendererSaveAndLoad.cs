@@ -8,8 +8,9 @@ public partial class Renderer
     
     private void DrawSaveMenu()
     {
-        int x = (WindowWidth - Scale(_saveMenuWidth)) / 2;
-        int y = (WindowHeight - Scale(_saveMenuHeight)) / 2;
+        Graphics.GetWindowSize(out int width, out int height);
+        int x = (width - Scale(_saveMenuWidth)) / 2;
+        int y = (height - Scale(_saveMenuHeight)) / 2;
         Graphics.DrawBitmapScaled(_saveMenuTexture, x, y, _saveMenuWidth, _saveMenuHeight);
         DrawSavedGameItems(x, y);
 
@@ -32,8 +33,9 @@ public partial class Renderer
 
     private void DrawLoadMenu()
     {
-        int x = (WindowWidth - Scale(_loadMenuWidth)) / 2;
-        int y = (WindowHeight - Scale(_loadMenuHeight)) / 2;
+        Graphics.GetWindowSize(out int width, out int height);
+        int x = (width - Scale(_loadMenuWidth)) / 2;
+        int y = (height - Scale(_loadMenuHeight)) / 2;
         Graphics.DrawBitmapScaled(_loadMenuTexture, x, y, _loadMenuWidth, _loadMenuHeight);
         DrawSavedGameItems(x, y);
 
@@ -125,8 +127,9 @@ public partial class Renderer
     
     private void HandleSaveMenu()
     {
-        int x = (WindowWidth - Scale(_saveMenuWidth)) / 2;
-        int y = (WindowHeight - Scale(_saveMenuHeight)) / 2;
+        Graphics.GetWindowSize(out int width, out int height);
+        int x = (width - Scale(_saveMenuWidth)) / 2;
+        int y = (height - Scale(_saveMenuHeight)) / 2;
         bool mouseOnItem1 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 49 && _mouseButtonY <= y + 136;
         bool mouseOnItem2 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 141 && _mouseButtonY <= y + 228;
         bool mouseOnItem3 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 234 && _mouseButtonY <= y + 321;
@@ -193,8 +196,9 @@ public partial class Renderer
 
     private void HandleLoadMenu()
     {
-        int x = (WindowWidth - Scale(_loadMenuWidth)) / 2;
-        int y = (WindowHeight - Scale(_loadMenuHeight)) / 2;
+        Graphics.GetWindowSize(out int width, out int height);
+        int x = (width - Scale(_loadMenuWidth)) / 2;
+        int y = (height - Scale(_loadMenuHeight)) / 2;
         bool mouseOnItem1 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 49 && _mouseButtonY <= y + 136;
         bool mouseOnItem2 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 141 && _mouseButtonY <= y + 228;
         bool mouseOnItem3 = _mouseButtonX >= x + 53 && _mouseButtonX <= x + 856 && _mouseButtonY >= y + 234 && _mouseButtonY <= y + 321;
@@ -231,6 +235,7 @@ public partial class Renderer
                 if (Sys.Instance.LoadGame(selectedSavedGame))
                 {
                     GameMode = GameMode.Game;
+                    Graphics.SetWindowSize(WindowWidth, WindowHeight);
                 }
                 else
                 {
@@ -240,7 +245,7 @@ public partial class Renderer
             }
 
             if (mouseOnCancelButton)
-                GameMode = GameMode.Game;
+                GameMode = _oldGameMode;
         }
     }
 }
