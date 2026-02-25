@@ -547,6 +547,7 @@ public class Sys
         ColorRemap.LoadFrom(reader);
         Misc.LoadFrom(reader);
         Info.LoadFrom(reader);
+        SeekPath = new SeekPath();
         SeekPath.LoadFrom(reader);
         RegionArray.LoadFrom(reader);
         SiteArray.LoadFrom(reader);
@@ -564,6 +565,7 @@ public class Sys
         WarPointArray.LoadFrom(reader);
         EffectArray.LoadFrom(reader);
         TornadoArray.LoadFrom(reader);
+        World = new World();
         World.LoadFrom(reader);
         Weather.LoadFrom(reader);
         for (int i = 0; i < WeatherForecast.Length; i++)

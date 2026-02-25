@@ -4,7 +4,7 @@ namespace TenKingdoms;
 
 public class WarPointArray
 {
-    public WarPoint[,] WarPoints { get; }
+    public WarPoint[,] WarPoints { get; private set; }
 
     private Config Config => Sys.Instance.Config;
  
@@ -33,6 +33,8 @@ public class WarPointArray
 
     public void SaveTo(BinaryWriter writer)
     {
+        writer.Write(WarPoints.GetLength(0));
+        writer.Write(WarPoints.GetLength(1));
         for (int i = 0; i < WarPoints.GetLength(0); i++)
             for (int j = 0; j < WarPoints.GetLength(1); j++)
                 WarPoints[i, j].SaveTo(writer);
@@ -40,9 +42,17 @@ public class WarPointArray
 
     public void LoadFrom(BinaryReader reader)
     {
-        for (int i = 0; i < WarPoints.GetLength(0); i++)
-            for (int j = 0; j < WarPoints.GetLength(1); j++)
+        int length0 = reader.ReadInt32();
+        int length1 = reader.ReadInt32();
+        WarPoints = new WarPoint[length0, length1];
+        for (int i = 0; i < length0; i++)
+        {
+            for (int j = 0; j < length1; j++)
+            {
+                WarPoints[i, j] = new WarPoint();
                 WarPoints[i, j].LoadFrom(reader);
+            }
+        }
     }
 	
     #endregion

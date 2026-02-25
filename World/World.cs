@@ -38,9 +38,7 @@ public class World
 	{
 		_locMatrix = new Location[Config.MapSize * Config.MapSize];
 		for (int i = 0; i < _locMatrix.Length; i++)
-		{
 			_locMatrix[i] = new Location(TerrainRes, HillRes);
-		}
 	}
 	
 	public Location GetLoc(int locX, int locY)
