@@ -1785,7 +1785,7 @@ public class Nation : NationBase
 
 			for (xLoc = refX1; xLoc <= refX2; xLoc++)
 			{
-				location = World.GetLoc(refX1, yLoc);
+				location = World.GetLoc(xLoc, yLoc);
 				if (location.RegionId != buildRegionId || location.IsPlateau() != buildIsPlateau ||
 				    location.IsPowerOff())
 				{
