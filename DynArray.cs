@@ -93,9 +93,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
             if (!IsDeleted(_keysForEnumeration[i]))
-            {
                 yield return _list[_idIndexes[_keysForEnumeration[i]]];
-            }
         }
     }
 
@@ -111,7 +109,8 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         
         for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            yield return _list[_idIndexes[_keysForEnumeration[i]]];
+            if (_idIndexes.ContainsKey(_keysForEnumeration[i]))
+                yield return _list[_idIndexes[_keysForEnumeration[i]]];
         }
     }
 
@@ -123,7 +122,8 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
         int keyIndex = Misc.Random(_keysForEnumeration.Count);
         for (int i = 0; i < _keysForEnumeration.Count; i++)
         {
-            yield return _list[_idIndexes[_keysForEnumeration[keyIndex]]];
+            if (!IsDeleted(_keysForEnumeration[i]))
+                yield return _list[_idIndexes[_keysForEnumeration[keyIndex]]];
 
             keyIndex++;
             if (keyIndex == _keysForEnumeration.Count)
