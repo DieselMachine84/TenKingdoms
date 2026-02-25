@@ -75,7 +75,6 @@ public class Worker
     
     public int Loyalty()
     {
-        // TODO: town may be deleted if last worker is out
         return TownId != 0 ? (int)TownArray[TownId].RacesLoyalty[RaceId - 1] : WorkerLoyalty;
     }
 

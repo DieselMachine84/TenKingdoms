@@ -1811,6 +1811,7 @@ public abstract class Firm : IIdObject
 
 	private int CreateUnitFromWorker(Worker worker)
 	{
+		int unitLoyalty = worker.Loyalty();
 		// this worker no longer has a job as it has been resigned
 		int unitId = CreateUnit(worker.UnitType, worker.TownId, false);
 
@@ -1818,7 +1819,7 @@ public abstract class Firm : IIdObject
 			return 0;
 
 		Unit unit = UnitArray[unitId];
-		unit.InitFromWorker(worker);
+		unit.InitFromWorker(worker, unitLoyalty);
 
 		//--- set non-military units to non-aggressive, except ai ---//
 		if (unit.RaceId != 0 && unit.Skill.SkillId != Skill.SKILL_LEADING && !unit.AIUnit)
@@ -2212,7 +2213,6 @@ public abstract class Firm : IIdObject
 		if (worker.IsNation(FirmId, NationId) && town.NationId == NationId)
 		{
 			int workerLoyalty = worker.Loyalty();
-
 			TownArray[worker.TownId].DecPopulation(worker.RaceId, true);
 			town.IncPopulation(worker.RaceId, true, workerLoyalty);
 			worker.TownId = townId;

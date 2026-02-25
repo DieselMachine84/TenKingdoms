@@ -471,7 +471,7 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	public void InitFromWorker(Worker worker)
+	public void InitFromWorker(Worker worker, int workerLoyalty)
 	{
 		Skill.SkillId = worker.SkillId;
 		Skill.SkillLevel = worker.SkillLevel;
@@ -479,7 +479,7 @@ public abstract partial class Unit : Sprite
 		SetCombatLevel(worker.CombatLevel);
 		Skill.CombatLevelMinor = worker.CombatLevelMinor;
 		HitPoints = worker.HitPoints;
-		Loyalty = worker.Loyalty();
+		Loyalty = workerLoyalty;
 		Rank = worker.RankId;
 
 		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_WEAPON)
