@@ -505,10 +505,20 @@ public class SeekPath
 				}
 			}
 
-			if (_mobileType == UnitConstants.UNIT_LAND && loopCount == Misc.PointsDistance(sx, sy, _finalDestX, _finalDestY) * 2 &&
-			    CheckTargetInaccessible(loopCount / 2))
+			if (_mobileType == UnitConstants.UNIT_LAND)
 			{
-				break;
+				int distance = Misc.PointsDistance(sx, sy, _finalDestX, _finalDestY);
+				for (int i = 2; ; i++)
+				{
+					if (loopCount < distance * i)
+						break;
+					
+					if (loopCount == distance * i && CheckTargetInaccessible(distance))
+					{
+						PathStatus = PATH_IMPOSSIBLE;
+						return PathStatus;
+					}
+				}
 			}
 
 			_oldChangedNodesX.Clear();
