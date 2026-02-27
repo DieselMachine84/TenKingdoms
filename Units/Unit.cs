@@ -5815,6 +5815,10 @@ public abstract partial class Unit : Sprite
 			writer.Write(BlockedEdges[i]);
 		writer.Write(BlockedByMember);
 		writer.Write(Swapping);
+		writer.Write(AIActionId);
+		writer.Write(AIOriginalTargetLocX);
+		writer.Write(AIOriginalTargetLocY);
+		writer.Write(AINoSuitableAction);
 	}
 
 	public override void LoadFrom(BinaryReader reader)
@@ -5885,6 +5889,10 @@ public abstract partial class Unit : Sprite
 			BlockedEdges[i] = reader.ReadByte();
 		BlockedByMember = reader.ReadInt32();
 		Swapping = reader.ReadBoolean();
+		AIActionId = reader.ReadInt32();
+		AIOriginalTargetLocX = reader.ReadInt32();
+		AIOriginalTargetLocY = reader.ReadInt32();
+		AINoSuitableAction = reader.ReadBoolean();
 		FixAttackInfo();
 	}
 	
