@@ -2834,7 +2834,7 @@ public abstract partial class Unit : Sprite
 
 	public bool IsOwn()
 	{
-		return BelongsToNation(NationArray.PlayerId);
+		return NationArray.PlayerId != 0 && BelongsToNation(NationArray.PlayerId);
 	}
 
 	public bool IsOwnSpy()
