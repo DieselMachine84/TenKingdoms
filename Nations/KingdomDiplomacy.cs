@@ -21,9 +21,9 @@ public partial class NationNew
                 continue;
 
             bool exists = false;
-            for (int i = 0; i < TalkRes.TalkMessages.Count; i++)
+            for (int i = 0; i < TalkMsgArray.TalkMessages.Count; i++)
             {
-                TalkMsg message = TalkRes.TalkMessages[i];
+                TalkMsg message = TalkMsgArray.TalkMessages[i];
                 if (message.FromNationId == NationId && message.ToNationId == otherNation.NationId &&
                     message.TalkId == TalkMsg.TALK_PROPOSE_TRADE_TREATY)
                 {
@@ -33,23 +33,23 @@ public partial class NationNew
 
             if (!ourRelation.TradeTreaty && !exists)
             {
-                TalkRes.AISendTalkMsg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
+                TalkMsgArray.AISendTalkMsg(otherNation.NationId, NationId, TalkMsg.TALK_PROPOSE_TRADE_TREATY, 0, 0, true);
             }
         }
     }
 
     private void ProcessTalkMessages()
     {
-        for (int i = TalkRes.TalkMessages.Count - 1; i >= 0; i--)
+        for (int i = TalkMsgArray.TalkMessages.Count - 1; i >= 0; i--)
         {
-            TalkMsg message = TalkRes.TalkMessages[i];
+            TalkMsg message = TalkMsgArray.TalkMessages[i];
             if (message.ToNationId != NationId)
                 continue;
 
-            if (message.ReplyType == TalkRes.REPLY_WAITING)
+            if (message.ReplyType == TalkMsgArray.REPLY_WAITING)
             {
-                TalkRes.ReplyTalkMsg(message.Id, TalkRes.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
-                TalkRes.DelTalkMsg(message.Id);
+                TalkMsgArray.ReplyTalkMsg(message.Id, TalkMsgArray.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
+                TalkMsgArray.DelTalkMsg(message.Id);
             }
         }
     }

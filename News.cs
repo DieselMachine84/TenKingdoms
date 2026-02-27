@@ -87,13 +87,13 @@ public class News
 	private TechRes TechRes => Sys.Instance.TechRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
-	private TalkRes TalkRes => Sys.Instance.TalkRes;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private TownArray TownArray => Sys.Instance.TownArray;
 	private FirmArray FirmArray => Sys.Instance.FirmArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
+	private TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
 
 	public int NewsType()
 	{
@@ -384,7 +384,7 @@ public class News
 
 	private string Diplomacy()
 	{
-		TalkMsg talkMsg = TalkRes.GetTalkMsg(Param1);
+		TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(Param1);
 		return talkMsg.Message(NationArray.PlayerId);
 	}
 

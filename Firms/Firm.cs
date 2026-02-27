@@ -99,7 +99,6 @@ public abstract class Firm : IIdObject
 	protected FirmRes FirmRes => Sys.Instance.FirmRes;
 	protected RaceRes RaceRes => Sys.Instance.RaceRes;
 	protected SpriteRes SpriteRes => Sys.Instance.SpriteRes;
-	protected TalkRes TalkRes => Sys.Instance.TalkRes;
 	protected UnitRes UnitRes => Sys.Instance.UnitRes;
 	protected SERes SERes => Sys.Instance.SERes;
 	protected Config Config => Sys.Instance.Config;
@@ -112,6 +111,7 @@ public abstract class Firm : IIdObject
 	protected UnitArray UnitArray => Sys.Instance.UnitArray;
 	protected RebelArray RebelArray => Sys.Instance.RebelArray;
 	protected SpyArray SpyArray => Sys.Instance.SpyArray;
+	protected TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
 	protected NewsArray NewsArray => Sys.Instance.NewsArray;
 
 	protected Firm()
@@ -3224,7 +3224,7 @@ public abstract class Firm : IIdObject
 		if (ownNation.GetRelation(capturerNationRecno).Status >= NationBase.NATION_FRIENDLY)
 			ownNation.ai_end_treaty(capturerNationRecno);
 
-		TalkRes.AISendTalkMsg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
+		TalkMsgArray.AISendTalkMsg(capturerNationRecno, NationId, TalkMsg.TALK_DECLARE_WAR);
 	}
 
 	#endregion

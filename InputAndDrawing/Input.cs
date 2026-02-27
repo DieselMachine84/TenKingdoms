@@ -688,8 +688,8 @@ public partial class Renderer
 
             if (news.Id == News.NEWS_DIPLOMACY)
             {
-                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
-                if (talkMsg.ReplyType == TalkRes.REPLY_WAITING)
+                TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(news.Param1);
+                if (talkMsg.ReplyType == TalkMsgArray.REPLY_WAITING)
                 {
                     bool clickOnReply = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + NATION_COLOR_BAR_WIDTH &&
                                         _mouseButtonY >= MainViewY + MainViewHeight + 2 - dy && _mouseButtonY < MainViewY + MainViewHeight + 2 - dy + NATION_COLOR_BAR_HEIGHT;

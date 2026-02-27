@@ -76,7 +76,7 @@ public partial class Renderer
         {
             if (_replyTalkMsgId == 0 && _curTalkMsg.TalkId == 0)
             {
-                if (TalkRes.CanSendAnyMsg(_selectedKingdomId, NationArray.PlayerId))
+                if (TalkMsgArray.CanSendAnyMsg(_selectedKingdomId, NationArray.PlayerId))
                 {
                     _curTalkMsg.FromNationId = NationArray.PlayerId;
                     _curTalkMsg.ToNationId = _selectedKingdomId;
@@ -187,12 +187,12 @@ public partial class Renderer
             {
                 if (_replyTalkMsgId != 0)
                 {
-                    if (!TalkRes.IsTalkMsgDeleted(_replyTalkMsgId))
+                    if (!TalkMsgArray.IsTalkMsgDeleted(_replyTalkMsgId))
                     {
                         if (talkChoice.Param == 1)
-                            TalkRes.ReplyTalkMsg(_replyTalkMsgId, TalkRes.REPLY_ACCEPT, InternalConstants.COMMAND_PLAYER);
+                            TalkMsgArray.ReplyTalkMsg(_replyTalkMsgId, TalkMsgArray.REPLY_ACCEPT, InternalConstants.COMMAND_PLAYER);
                         else
-                            TalkRes.ReplyTalkMsg(_replyTalkMsgId, TalkRes.REPLY_REJECT, InternalConstants.COMMAND_PLAYER);
+                            TalkMsgArray.ReplyTalkMsg(_replyTalkMsgId, TalkMsgArray.REPLY_REJECT, InternalConstants.COMMAND_PLAYER);
                     }
 
                     _viewMode = _prevViewMode;
@@ -216,7 +216,7 @@ public partial class Renderer
 
                 if (!SetTalkChoices())
                 {
-                    TalkRes.SendTalkMsg(new TalkMsg(_curTalkMsg), InternalConstants.COMMAND_PLAYER);
+                    TalkMsgArray.SendTalkMsg(new TalkMsg(_curTalkMsg), InternalConstants.COMMAND_PLAYER);
                     _choiceQuestion = "The message has been sent.";
                     _talkChoiceIndex = 0;
                     AddTalkChoice("Continue.", -1);
@@ -229,7 +229,7 @@ public partial class Renderer
     
     private void HandlePlayerReply(int talkMsgId)
     {
-        TalkMsg talkMsg = TalkRes.GetTalkMsg(talkMsgId);
+        TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(talkMsgId);
 
         if (NationArray.IsDeleted(talkMsg.FromNationId))
             return;
@@ -371,7 +371,7 @@ public partial class Renderer
         
         for (int i = 1; i <= TalkMsg.MAX_TALK_TYPE; i++)
         {
-            if (!TalkRes.CanSendMsg(_curTalkMsg.ToNationId, NationArray.PlayerId, i))
+            if (!TalkMsgArray.CanSendMsg(_curTalkMsg.ToNationId, NationArray.PlayerId, i))
                 continue;
 
             AddTalkChoice(_mainTalkChoices[i - 1], i);

@@ -3570,7 +3570,7 @@ public class Nation : NationBase
 		//------- declare war with the target nation -------//
 
 		if (ai_attack_target_nation_recno != 0)
-			TalkRes.AISendTalkMsg(ai_attack_target_nation_recno, NationId, TalkMsg.TALK_DECLARE_WAR);
+			TalkMsgArray.AISendTalkMsg(ai_attack_target_nation_recno, NationId, TalkMsg.TALK_DECLARE_WAR);
 
 		//------- synchronize the attack date for different camps ----//
 		ai_attack_target_sync();
@@ -4191,7 +4191,7 @@ public class Nation : NationBase
 
 			if (should_diplomacy_retry(TalkMsg.TALK_REQUEST_MILITARY_AID, nation.NationId))
 			{
-				TalkRes.AISendTalkMsg(nation.NationId, NationId,
+				TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 					TalkMsg.TALK_REQUEST_MILITARY_AID);
 				return true;
 			}
@@ -7139,7 +7139,7 @@ public class Nation : NationBase
 
 				int aidAmount = aidAmountArray[Misc.Random(3)];
 
-				TalkRes.AISendTalkMsg(targetNationRecno, NationId, talkId, aidAmount);
+				TalkMsgArray.AISendTalkMsg(targetNationRecno, NationId, talkId, aidAmount);
 			}
 
 			return false;
@@ -7238,7 +7238,7 @@ public class Nation : NationBase
 
 				int aidAmount = aidAmountArray[Misc.Random(3)];
 
-				TalkRes.AISendTalkMsg(enemyNationRecno, NationId, talkId, aidAmount);
+				TalkMsgArray.AISendTalkMsg(enemyNationRecno, NationId, talkId, aidAmount);
 			}
 
 			return 0;
@@ -7389,7 +7389,7 @@ public class Nation : NationBase
 			{
 				if (should_diplomacy_retry(TalkMsg.TALK_REQUEST_DECLARE_WAR, nation.NationId))
 				{
-					TalkRes.AISendTalkMsg(nation.NationId, NationId,
+					TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 						TalkMsg.TALK_REQUEST_DECLARE_WAR, enemyNationRecno);
 					continue;
 				}
@@ -7407,7 +7407,7 @@ public class Nation : NationBase
 					//--- ask it to join a trade embargo on the enemy ---//
 
 					if (should_diplomacy_retry(TalkMsg.TALK_REQUEST_TRADE_EMBARGO, nation.NationId))
-						TalkRes.AISendTalkMsg(nation.NationId, NationId,
+						TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 							TalkMsg.TALK_REQUEST_TRADE_EMBARGO, enemyNationRecno);
 				}
 			}
@@ -7423,7 +7423,7 @@ public class Nation : NationBase
 					{
 						if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_TRADE_TREATY, nation.NationId) &&
 						    consider_trade_treaty(nation.NationId) > 0)
-							TalkRes.AISendTalkMsg(nation.NationId, NationId,
+							TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 								TalkMsg.TALK_PROPOSE_TRADE_TREATY);
 					}
 					else //--- if we already have a trade treaty with this nation ---//
@@ -7434,7 +7434,7 @@ public class Nation : NationBase
 						{
 							if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY, nation.NationId) &&
 							    consider_alliance_treaty(nation.NationId) > 0)
-								TalkRes.AISendTalkMsg(nation.NationId, NationId,
+								TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 									TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY);
 						}
 
@@ -7446,7 +7446,7 @@ public class Nation : NationBase
 						{
 							if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY, nation.NationId) &&
 							    consider_friendly_treaty(nation.NationId) > 0)
-								TalkRes.AISendTalkMsg(nation.NationId, NationId,
+								TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 									TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY);
 						}
 					}
@@ -7746,7 +7746,7 @@ public class Nation : NationBase
 				{
 					if (should_diplomacy_retry(TalkMsg.TALK_PROPOSE_TRADE_TREATY, nation.NationId))
 					{
-						TalkRes.AISendTalkMsg(nation.NationId, NationId,
+						TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 							TalkMsg.TALK_PROPOSE_TRADE_TREATY);
 						ourRelation.AIDemandTradeTreaty = 0;
 						return true;
@@ -7788,7 +7788,7 @@ public class Nation : NationBase
 
 		if (bestNationRecno != 0)
 		{
-			TalkRes.AISendTalkMsg(bestNationRecno, NationId, TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY);
+			TalkMsgArray.AISendTalkMsg(bestNationRecno, NationId, TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY);
 			return true;
 		}
 
@@ -7825,7 +7825,7 @@ public class Nation : NationBase
 
 		if (bestNationRecno != 0)
 		{
-			TalkRes.AISendTalkMsg(bestNationRecno, NationId, TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY);
+			TalkMsgArray.AISendTalkMsg(bestNationRecno, NationId, TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY);
 			return true;
 		}
 
@@ -7858,7 +7858,7 @@ public class Nation : NationBase
 
 				//----------------------------------------//
 
-				if (!TalkRes.CanSendMsg(nation.NationId, NationId,
+				if (!TalkMsgArray.CanSendMsg(nation.NationId, NationId,
 					    nationRelation.Status == NATION_FRIENDLY
 						    ? TalkMsg.TALK_END_FRIENDLY_TREATY
 						    : TalkMsg.TALK_END_ALLIANCE_TREATY))
@@ -7882,10 +7882,10 @@ public class Nation : NationBase
 				if (pref_honesty - 50 > nation.OverallRating - OverallRating)
 				{
 					if (nationRelation.Status == NATION_FRIENDLY)
-						TalkRes.AISendTalkMsg(nation.NationId, NationId,
+						TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 							TalkMsg.TALK_END_FRIENDLY_TREATY);
 					else
-						TalkRes.AISendTalkMsg(nation.NationId, NationId,
+						TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 							TalkMsg.TALK_END_ALLIANCE_TREATY);
 
 					return true;
@@ -7915,7 +7915,7 @@ public class Nation : NationBase
 
 			if (consider_cease_war(nation.NationId) > 0)
 			{
-				TalkRes.AISendTalkMsg(nation.NationId, NationId, TalkMsg.TALK_REQUEST_CEASE_WAR);
+				TalkMsgArray.AISendTalkMsg(nation.NationId, NationId, TalkMsg.TALK_REQUEST_CEASE_WAR);
 			}
 
 			//--------------------------------------------//
@@ -8036,7 +8036,7 @@ public class Nation : NationBase
 			}
 		}
 
-		TalkRes.AISendTalkMsg(bestNation.NationId, NationId,
+		TalkMsgArray.AISendTalkMsg(bestNation.NationId, NationId,
 			TalkMsg.TALK_REQUEST_BUY_FOOD, buyQty, buyPrice);
 		return 1;
 	}
@@ -8097,7 +8097,7 @@ public class Nation : NationBase
 		{
 			if (should_diplomacy_retry(TalkMsg.TALK_DECLARE_WAR, bestTargetNation))
 			{
-				TalkRes.AISendTalkMsg(bestTargetNation, NationId, TalkMsg.TALK_DECLARE_WAR);
+				TalkMsgArray.AISendTalkMsg(bestTargetNation, NationId, TalkMsg.TALK_DECLARE_WAR);
 				return true;
 			}
 		}
@@ -8148,7 +8148,7 @@ public class Nation : NationBase
 
 			//-------- send the message now ---------//
 
-			TalkRes.AISendTalkMsg(nation.NationId, NationId,
+			TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 				TalkMsg.TALK_DEMAND_TECH, techId);
 			return true;
 		}
@@ -8288,7 +8288,7 @@ public class Nation : NationBase
 				else
 					tributeAmount = 500;
 
-				TalkRes.AISendTalkMsg(nation.NationId, NationId, talkId, tributeAmount);
+				TalkMsgArray.AISendTalkMsg(nation.NationId, NationId, talkId, tributeAmount);
 
 				return true;
 			}
@@ -8357,7 +8357,7 @@ public class Nation : NationBase
 		{
 			//------ give tribute --------//
 
-			TalkRes.AISendTalkMsg(talkNationRecno, NationId, talkId, tributeAmount);
+			TalkMsgArray.AISendTalkMsg(talkNationRecno, NationId, talkId, tributeAmount);
 
 			nationRelation.LastTalkRejectDates[talkId - 1] = Info.GameDate;
 
@@ -8365,7 +8365,7 @@ public class Nation : NationBase
 
 			nationRelation.LastTalkRejectDates[rejectedTalkId - 1] = default; // reset the rejected talk id.
 
-			TalkRes.AISendTalkMsg(talkNationRecno, NationId,
+			TalkMsgArray.AISendTalkMsg(talkNationRecno, NationId,
 				rejectedTalkId, rejectedMsgPara1, rejectedMsgPara2);
 		}
 
@@ -8432,7 +8432,7 @@ public class Nation : NationBase
 			//-------------------------------------------//
 
 			// divide by 10 to cope with <short>'s upper limit
-			TalkRes.AISendTalkMsg(nation.NationId, NationId,
+			TalkMsgArray.AISendTalkMsg(nation.NationId, NationId,
 				TalkMsg.TALK_REQUEST_SURRENDER, offerAmount / 10);
 
 			return true;
@@ -8443,25 +8443,25 @@ public class Nation : NationBase
 
 	public int ai_process_talk_msg(ActionNode actionNode)
 	{
-		if (TalkRes.IsTalkMsgDeleted(actionNode.action_para)) // if the talk message has been deleted
+		if (TalkMsgArray.IsTalkMsgDeleted(actionNode.action_para)) // if the talk message has been deleted
 			return -1;
 
-		TalkMsg talkMsg = TalkRes.GetTalkMsg(actionNode.action_para);
+		TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(actionNode.action_para);
 
 		if (!talkMsg.IsValidToReply()) // if it is no longer valid
 			return -1;
 
 		//----- call the consider function -------//
 
-		if (talkMsg.ReplyType == TalkRes.REPLY_WAITING)
+		if (talkMsg.ReplyType == TalkMsgArray.REPLY_WAITING)
 		{
 			bool rc = consider_talk_msg(talkMsg);
 
 			if (rc) // if rc is not 1 or 0, than the consider function have processed itself, no need to call reply_talk_msg() here
-				TalkRes.ReplyTalkMsg(actionNode.action_para, TalkRes.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
+				TalkMsgArray.ReplyTalkMsg(actionNode.action_para, TalkMsgArray.REPLY_ACCEPT, InternalConstants.COMMAND_AI);
 
 			else
-				TalkRes.ReplyTalkMsg(actionNode.action_para, TalkRes.REPLY_REJECT, InternalConstants.COMMAND_AI);
+				TalkMsgArray.ReplyTalkMsg(actionNode.action_para, TalkMsgArray.REPLY_REJECT, InternalConstants.COMMAND_AI);
 
 			//TODO check it
 			// don't reply if rc is neither 0 or 1
@@ -8472,11 +8472,11 @@ public class Nation : NationBase
 
 	public void ai_notify_reply(int talkMsgRecno)
 	{
-		TalkMsg talkMsg = TalkRes.GetTalkMsg(talkMsgRecno);
+		TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(talkMsgRecno);
 		int relationChange = 0;
 		NationRelation nationRelation = GetRelation(talkMsg.ToNationId);
 
-		if (talkMsg.ReplyType == TalkRes.REPLY_REJECT)
+		if (talkMsg.ReplyType == TalkMsgArray.REPLY_REJECT)
 			nationRelation.LastTalkRejectDates[talkMsg.TalkId - 1] = Info.GameDate;
 		else
 			nationRelation.LastTalkRejectDates[talkMsg.TalkId - 1] = default;
@@ -8484,7 +8484,7 @@ public class Nation : NationBase
 		switch (talkMsg.TalkId)
 		{
 			case TalkMsg.TALK_PROPOSE_TRADE_TREATY:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = pref_trading_tendency / 10;
 				else
 					relationChange = -pref_trading_tendency / 10;
@@ -8492,38 +8492,38 @@ public class Nation : NationBase
 
 			case TalkMsg.TALK_PROPOSE_FRIENDLY_TREATY:
 			case TalkMsg.TALK_PROPOSE_ALLIANCE_TREATY:
-				if (talkMsg.ReplyType == TalkRes.REPLY_REJECT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_REJECT)
 					relationChange = -5;
 				break;
 
 			case TalkMsg.TALK_REQUEST_MILITARY_AID:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = 0; // the AI never knows whether the player has really aided him in the war
 				else
 					relationChange = -(20 - pref_military_courage / 10); // -10 to -20
 				break;
 
 			case TalkMsg.TALK_REQUEST_TRADE_EMBARGO:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = (10 + pref_trading_tendency / 10); // +10 to +20
 				else
 					relationChange = -(10 + pref_trading_tendency / 20); // -10 to -15
 				break;
 
 			case TalkMsg.TALK_REQUEST_CEASE_WAR:
-				if (talkMsg.ReplyType == TalkRes.REPLY_REJECT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_REJECT)
 					relationChange = -5;
 				break;
 
 			case TalkMsg.TALK_REQUEST_DECLARE_WAR:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = pref_allying_tendency / 10;
 				else
 					relationChange = -30;
 				break;
 
 			case TalkMsg.TALK_REQUEST_BUY_FOOD:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = pref_food_reserve / 10;
 				else
 					relationChange = -pref_food_reserve / 10;
@@ -8531,7 +8531,7 @@ public class Nation : NationBase
 
 			case TalkMsg.TALK_DEMAND_TRIBUTE:
 			case TalkMsg.TALK_DEMAND_AID:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					//-- the less cash the nation, the more it will appreciate the tribute --//
 					relationChange = 100 * talkMsg.TalkParam1 / Math.Max(1000, (int)Cash);
@@ -8545,7 +8545,7 @@ public class Nation : NationBase
 				break;
 
 			case TalkMsg.TALK_DEMAND_TECH:
-				if (talkMsg.ReplyType == TalkRes.REPLY_ACCEPT)
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					relationChange = 10 + pref_use_weapon / 5; // +10 to +30
 				else
 					relationChange = -(10 + pref_use_weapon / 10); // -10 to -20
@@ -8554,7 +8554,7 @@ public class Nation : NationBase
 			case TalkMsg.TALK_GIVE_TRIBUTE:
 			case TalkMsg.TALK_GIVE_AID:
 			case TalkMsg.TALK_GIVE_TECH:
-				if (talkMsg.ReplyType == TalkRes.REPLY_REJECT) // reject your gift
+				if (talkMsg.ReplyType == TalkMsgArray.REPLY_REJECT) // reject your gift
 					relationChange = -5;
 				break;
 
@@ -8572,7 +8572,7 @@ public class Nation : NationBase
 
 		//---- think about giving tribute to become more friendly with the nation so it will accept our request next time ---//
 
-		if (talkMsg.ReplyType == TalkRes.REPLY_REJECT)
+		if (talkMsg.ReplyType == TalkMsgArray.REPLY_REJECT)
 		{
 			if (think_give_tribute_aid(talkMsg))
 				return;
@@ -8591,7 +8591,7 @@ public class Nation : NationBase
 				else
 					talkId = TalkMsg.TALK_END_ALLIANCE_TREATY;
 
-				TalkRes.AISendTalkMsg(talkMsg.ToNationId, NationId, talkId);
+				TalkMsgArray.AISendTalkMsg(talkMsg.ToNationId, NationId, talkId);
 			}
 
 			//----- declare war if ai_relation_level==0 -----//
@@ -8602,7 +8602,7 @@ public class Nation : NationBase
 
 				if (Config.AIAggressiveness >= Config.OPTION_HIGH || pref_peacefulness < 50)
 				{
-					TalkRes.AISendTalkMsg(talkMsg.ToNationId, NationId, TalkMsg.TALK_DECLARE_WAR);
+					TalkMsgArray.AISendTalkMsg(talkMsg.ToNationId, NationId, TalkMsg.TALK_DECLARE_WAR);
 
 					//------- attack immediately --------//
 
@@ -8623,7 +8623,7 @@ public class Nation : NationBase
 
 	public bool should_diplomacy_retry(int talkId, int nationRecno)
 	{
-		if (!TalkRes.CanSendMsg(nationRecno, NationId, talkId))
+		if (!TalkMsgArray.CanSendMsg(nationRecno, NationId, talkId))
 			return false;
 
 		int retryInterval;
@@ -8649,12 +8649,12 @@ public class Nation : NationBase
 
 		if (nationRelation.Status == NATION_FRIENDLY)
 		{
-			TalkRes.AISendTalkMsg(nationRecno, NationId,
+			TalkMsgArray.AISendTalkMsg(nationRecno, NationId,
 				TalkMsg.TALK_END_FRIENDLY_TREATY, 0, 0, true);
 		}
 		else if (nationRelation.Status == NATION_ALLIANCE)
 		{
-			TalkRes.AISendTalkMsg(nationRecno, NationId,
+			TalkMsgArray.AISendTalkMsg(nationRecno, NationId,
 				TalkMsg.TALK_END_ALLIANCE_TREATY, 0, 0, true);
 		}
 	}
@@ -8672,7 +8672,7 @@ public class Nation : NationBase
 		tempMsg.ReplyType = talkMsg.ReplyType;
 		tempMsg.ReplyDate = talkMsg.ReplyDate;
 
-		return TalkRes.IsTalkMsgExist(tempMsg, true) != 0; // 1-check talk_para1 & talk_para2
+		return TalkMsgArray.IsTalkMsgExist(tempMsg, true) != 0; // 1-check talk_para1 & talk_para2
 	}
 
 	public bool consider_talk_msg(TalkMsg talkMsg)

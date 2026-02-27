@@ -154,7 +154,6 @@ public class NationBase : IIdObject
 
     protected Config Config => Sys.Instance.Config;
     protected Info Info => Sys.Instance.Info;
-    protected TalkRes TalkRes => Sys.Instance.TalkRes;
 
     protected NationArray NationArray => Sys.Instance.NationArray;
     protected FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -164,6 +163,7 @@ public class NationBase : IIdObject
     protected SpyArray SpyArray => Sys.Instance.SpyArray;
     protected RegionArray RegionArray => Sys.Instance.RegionArray;
     protected SiteArray SiteArray => Sys.Instance.SiteArray;
+    protected TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
     protected NewsArray NewsArray => Sys.Instance.NewsArray;
 
     protected NationBase()
@@ -263,7 +263,7 @@ public class NationBase : IIdObject
     {
         //---- delete all talk messages to/from this nation ----//
 
-        TalkRes.DeleteAllNationMessages(NationId);
+        TalkMsgArray.DeleteAllNationMessages(NationId);
 
         //------- close down all firms --------//
 

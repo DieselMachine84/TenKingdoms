@@ -48,7 +48,7 @@ public class TalkMsg
 		true, false, true, true, true, true, true, true, true, false
 	};
 
-	private TalkRes TalkRes => Sys.Instance.TalkRes;
+	private TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private Info Info => Sys.Instance.Info;
 
@@ -84,7 +84,7 @@ public class TalkMsg
 	{
 		string str = NationArray[FromNationId].KingName();
 
-		if (TalkRes.AddNationColor)
+		if (TalkMsgArray.AddNationColor)
 			str += " @COL" + Convert.ToChar(48 + NationArray[FromNationId].ColorSchemeId);
 
 		return str;
@@ -94,7 +94,7 @@ public class TalkMsg
 	{
 		string str = NationArray[ToNationId].KingName();
 
-		if (TalkRes.AddNationColor)
+		if (TalkMsgArray.AddNationColor)
 			str += " @COL" + Convert.ToChar(48 + NationArray[ToNationId].ColorSchemeId);
 
 		return str;
@@ -107,7 +107,7 @@ public class TalkMsg
 
 	private string NationColorStr2(int nationId)
 	{
-		return TalkRes.AddNationColor ? " @COL" + Convert.ToChar(48 + NationArray[nationId].ColorSchemeId) : String.Empty;
+		return TalkMsgArray.AddNationColor ? " @COL" + Convert.ToChar(48 + NationArray[nationId].ColorSchemeId) : String.Empty;
 	}
 
 	private string TechName(int techId)
@@ -204,7 +204,7 @@ public class TalkMsg
 
 		//--------------------------------------//
 
-		if (!TalkRes.CanSendMsg(ToNationId, FromNationId, TalkId))
+		if (!TalkMsgArray.CanSendMsg(ToNationId, FromNationId, TalkId))
 			return false;
 
 		//--------------------------------------//
@@ -287,7 +287,7 @@ public class TalkMsg
 
 	private string ProposeTreaty(int treatyType, int viewingNationId, bool shouldDisplayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !shouldDisplayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !shouldDisplayReply)
 		{
 			if (viewingNationId == FromNationId)
 			{
@@ -328,7 +328,7 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (treatyType == TALK_PROPOSE_TRADE_TREATY)
 					{
@@ -365,7 +365,7 @@ public class TalkMsg
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (treatyType == TALK_PROPOSE_TRADE_TREATY)
 					{
@@ -447,7 +447,7 @@ public class TalkMsg
 
 	private string RequestMilitaryAid(int viewingNationId, bool shouldDisplayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !shouldDisplayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !shouldDisplayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You request immediate military aid from {ToNationName()}'s Kingdom.{NationColorStr2(ToNationId)}";
@@ -458,14 +458,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to immediately send your requested military aid.";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} denies you your requested military aid.";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to immediately send military aid to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You refuse to send military aid to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -475,7 +475,7 @@ public class TalkMsg
 
 	private string RequestTradeEmbargo(int viewingNationId, bool shouldDisplayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !shouldDisplayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !shouldDisplayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You request {ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} to join an embargo on trade with {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
@@ -486,14 +486,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to join an embargo on trade with {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} refuses to join an embargo on trade with {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to join an embargo on trade with {Param1NationName()}'s Kingdom{NationColorStr1(TalkParam1)} as requested by {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You refuse to join an embargo on trade with {Param1NationName()}'s Kingdom{NationColorStr1(TalkParam1)} as requested by {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -503,7 +503,7 @@ public class TalkMsg
 
 	private string RequestCeaseWar(int viewingNationId, bool shouldDisplayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !shouldDisplayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !shouldDisplayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You request a cease-fire with {ToNationName()}'s Kingdom.{NationColorStr2(ToNationId)}";
@@ -514,14 +514,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to a cease-fire.";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} refuses a cease-fire.";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to a cease-fire with {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You refuse a cease-fire with {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -531,7 +531,7 @@ public class TalkMsg
 
 	private string RequestDeclareWar(int viewingNationId, bool shouldDisplayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !shouldDisplayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !shouldDisplayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You request {ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} to declare war on {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
@@ -542,7 +542,7 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return
 						$"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to declare war on {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
 				else
@@ -551,7 +551,7 @@ public class TalkMsg
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to declare war on {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
 				else
 					return $"You refuse to declare war on {Param1NationName()}'s Kingdom.{NationColorStr1(TalkParam1)}";
@@ -566,7 +566,7 @@ public class TalkMsg
 			return $"{FromNationName()}'s Kingdom{NationColorStr2(FromNationId)} offers ${TalkParam2} for 10 units of food.";
 		}
 
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You request to purchase {TalkParam1} units of food from {ToNationName()}'s Kingdom.{NationColorStr2(ToNationId)}";
@@ -577,14 +577,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to sell {TalkParam1} units of food to you.";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} refuses to sell {TalkParam1} units of food to you.";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to sell {TalkParam1} units of food to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You refuse to sell {TalkParam1} units of food to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -602,7 +602,7 @@ public class TalkMsg
 
 	private string GiveTribute(int viewingNationId, bool displayReply, bool isAid)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 			{
@@ -623,7 +623,7 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (isAid)
 						return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} accepts your aid of ${TalkParam1}.";
@@ -640,7 +640,7 @@ public class TalkMsg
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (isAid)
 						return $"You accept the {FromNationName()}'s Kingdom{NationColorStr2(FromNationId)} aid of ${TalkParam1}.";
@@ -660,7 +660,7 @@ public class TalkMsg
 
 	private string DemandTribute(int viewingNationId, bool displayReply, bool isAid)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 			{
@@ -681,7 +681,7 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (isAid)
 						return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to give you ${TalkParam1} in aid.";
@@ -698,7 +698,7 @@ public class TalkMsg
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 				{
 					if (isAid)
 						return $"You agree to give {FromNationName()}'s Kingdom{NationColorStr2(FromNationId)} ${TalkParam1} in aid.";
@@ -722,7 +722,7 @@ public class TalkMsg
 		if (TalkParam2 != 0) // Ships do not have different versions
 			version += " " + Misc.RomanNumber(TalkParam2);
 
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You offer {TechName(TalkParam1)}{version} technology to {ToNationName()}'s Kingdom.{NationColorStr2(ToNationId)}";
@@ -733,14 +733,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} accepts your gift of {TechName(TalkParam1)}{version} technology.";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} rejects your gift of {TechName(TalkParam1)}{version} technology.";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You accept the gift of {TechName(TalkParam1)}{version} technology from {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You reject the gift of {TechName(TalkParam1)}{version} technology from {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -753,7 +753,7 @@ public class TalkMsg
 		bool friendlyRequest = !NationArray.IsDeleted(FromNationId) &&
 		                       NationArray[FromNationId].GetRelationStatus(ToNationId) >= NationBase.NATION_FRIENDLY;
 
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 			{
@@ -774,14 +774,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} agrees to transfer its latest {TechName(TalkParam1)} technology to you.";
 				else
 					return $"{ToNationName()}'s Kingdom{NationColorStr2(ToNationId)} refuses to transfer its latest {TechName(TalkParam1)} technology to you.";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"You agree to transfer your latest {TechName(TalkParam1)} technology to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
 				else
 					return $"You refuse to transfer your latest {TechName(TalkParam1)} technology to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";
@@ -791,7 +791,7 @@ public class TalkMsg
 
 	private string RequestSurrender(int viewingNationId, bool displayReply)
 	{
-		if (ReplyType == TalkRes.REPLY_WAITING || !displayReply)
+		if (ReplyType == TalkMsgArray.REPLY_WAITING || !displayReply)
 		{
 			if (viewingNationId == FromNationId)
 				return $"You offer ${TalkParam1 * 10} for the throne of {ToNationName()}'s Kingdom.{NationColorStr2(ToNationId)}";
@@ -802,14 +802,14 @@ public class TalkMsg
 		{
 			if (viewingNationId == FromNationId)
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return $"King {ToKingName()} agrees to take your money in exchange for his throne.";
 				else
 					return $"King {ToKingName()} refuses to dishonor himself by selling his throne!";
 			}
 			else
 			{
-				if (ReplyType == TalkRes.REPLY_ACCEPT)
+				if (ReplyType == TalkMsgArray.REPLY_ACCEPT)
 					return "You agree to take the money in exchange for your throne.";
 				else
 					return $"You refuse to dishonor yourself by selling your throne to {FromNationName()}'s Kingdom.{NationColorStr2(FromNationId)}";

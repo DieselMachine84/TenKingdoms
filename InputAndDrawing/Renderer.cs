@@ -111,7 +111,6 @@ public partial class Renderer : IRenderer
     private static MonsterRes MonsterRes => Sys.Instance.MonsterRes;
     private static GodRes GodRes => Sys.Instance.GodRes;
     private static TechRes TechRes => Sys.Instance.TechRes;
-    private static TalkRes TalkRes => Sys.Instance.TalkRes;
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
 
     private static Config Config => Sys.Instance.Config;
@@ -135,6 +134,7 @@ public partial class Renderer : IRenderer
     private static EffectArray EffectArray => Sys.Instance.EffectArray;
     private static TornadoArray TornadoArray => Sys.Instance.TornadoArray;
     private static WarPointArray WarPointArray => Sys.Instance.WarPointArray;
+    private static TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
     private static NewsArray NewsArray => Sys.Instance.NewsArray;
 
     public Renderer(Graphics graphics)
@@ -439,8 +439,8 @@ public partial class Renderer : IRenderer
 
             if (news.Id == News.NEWS_DIPLOMACY)
             {
-                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
-                if (talkMsg.ReplyType == TalkRes.REPLY_WAITING && !talkMsg.IsValidToReply())
+                TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(news.Param1);
+                if (talkMsg.ReplyType == TalkMsgArray.REPLY_WAITING && !talkMsg.IsValidToReply())
                 {
                     continue;
                 }
@@ -450,10 +450,10 @@ public partial class Renderer : IRenderer
 
             if (news.Id == News.NEWS_DIPLOMACY)
             {
-                TalkMsg talkMsg = TalkRes.GetTalkMsg(news.Param1);
+                TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(news.Param1);
                 
                 int nationId;
-                if( talkMsg.ReplyType == TalkRes.REPLY_WAITING || talkMsg.ReplyType == TalkRes.REPLY_NOT_NEEDED )
+                if( talkMsg.ReplyType == TalkMsgArray.REPLY_WAITING || talkMsg.ReplyType == TalkMsgArray.REPLY_NOT_NEEDED )
                     nationId = talkMsg.FromNationId;
                 else
                     nationId = talkMsg.ToNationId;
@@ -470,10 +470,10 @@ public partial class Renderer : IRenderer
                     Graphics.DrawBitmap(_newsLocTexture, MainViewX + 12, MainViewY + MainViewHeight + 2 - dy, _newsLocWidth * 2, _newsLocHeight * 2);
             }
 
-            TalkRes.AddNationColor = true;
+            TalkMsgArray.AddNationColor = true;
             string newsText = news.NewsDate.ToString("MMM d, yyyy") + " " + news.Message();
             PutText(FontSan, newsText, MainViewX + 46, MainViewY + MainViewHeight - 2 - dy);
-            TalkRes.AddNationColor = false;
+            TalkMsgArray.AddNationColor = false;
             
             hasNews = true;
             dy += 38;

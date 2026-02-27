@@ -10,7 +10,7 @@ public class TalkChoice
     public int Param { get; set; }
 }
 
-public class TalkRes
+public class TalkMsgArray
 {
     private const int MAX_WAIT_MSG_PER_NATION = 3;
 
@@ -31,7 +31,7 @@ public class TalkRes
     private NewsArray NewsArray => Sys.Instance.NewsArray;
 
 
-    public TalkRes()
+    public TalkMsgArray()
     {
     }
 

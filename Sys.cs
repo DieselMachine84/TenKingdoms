@@ -38,7 +38,6 @@ public class Sys
     public MonsterRes MonsterRes { get; private set; }
     public GodRes GodRes { get; private set; }
     public TechRes TechRes { get; private set; }
-    public TalkRes TalkRes { get; private set; }
     public CursorRes CursorRes { get; private set; }
     public SERes SERes { get; private set; }
     public SECtrl SECtrl { get; private set; }
@@ -63,6 +62,7 @@ public class Sys
     public UnitArray UnitArray { get; private set; }
     public RebelArray RebelArray { get; private set; }
     public SpyArray SpyArray { get; private set; }
+    public TalkMsgArray TalkMsgArray { get; private set; }
     public NewsArray NewsArray { get; private set; }
     public BulletArray BulletArray { get; private set; }
     public WarPointArray WarPointArray { get; private set; }
@@ -96,7 +96,6 @@ public class Sys
         TownRes = new TownRes(GameSet, RaceRes);
 
         TechRes = new TechRes(GameSet);
-        TalkRes = new TalkRes();
         CursorRes = new CursorRes();
         SERes = new SERes(GameSet);
         SECtrl = new SECtrl();
@@ -118,6 +117,7 @@ public class Sys
         UnitArray = new UnitArray();
         RebelArray = new RebelArray();
         SpyArray = new SpyArray();
+        TalkMsgArray = new TalkMsgArray();
         NewsArray = new NewsArray();
         BulletArray = new BulletArray();
         WarPointArray = new WarPointArray();
@@ -287,7 +287,7 @@ public class Sys
             SpyArray.NextDay();
             if (GameConstants.WEATHER_EFFECT)
                 SpriteRes.UpdateSpeed();
-            TalkRes.NextDay();
+            TalkMsgArray.NextDay();
             RegionArray.NextDay();
 
             FrameOfDay = 0;
@@ -500,14 +500,13 @@ public class Sys
         BinaryWriter writer = new BinaryWriter(stream);
         savedGame.SaveTo(writer);
         SaveTo(writer);
+        ColorRemap.SaveTo(writer);
+        Misc.SaveTo(writer);
         Config.SaveTo(writer);
         SpriteRes.SaveTo(writer);
         RaceRes.SaveTo(writer);
         TownRes.SaveTo(writer);
-        TalkRes.SaveTo(writer);
         Renderer.SaveTo(writer);
-        ColorRemap.SaveTo(writer);
-        Misc.SaveTo(writer);
         Info.SaveTo(writer);
         SeekPath.SaveTo(writer);
         RegionArray.SaveTo(writer);
@@ -521,6 +520,7 @@ public class Sys
         UnitArray.SaveTo(writer);
         RebelArray.SaveTo(writer);
         SpyArray.SaveTo(writer);
+        TalkMsgArray.SaveTo(writer);
         NewsArray.SaveTo(writer);
         BulletArray.SaveTo(writer);
         WarPointArray.SaveTo(writer);
@@ -538,14 +538,13 @@ public class Sys
         BinaryReader reader = new BinaryReader(stream);
         savedGame.LoadFrom(reader);
         LoadFrom(reader);
+        ColorRemap.LoadFrom(reader);
+        Misc.LoadFrom(reader);
         Config.LoadFrom(reader);
         SpriteRes.LoadFrom(reader);
         RaceRes.LoadFrom(reader);
         TownRes.LoadFrom(reader);
-        TalkRes.LoadFrom(reader);
         Renderer.LoadFrom(reader);
-        ColorRemap.LoadFrom(reader);
-        Misc.LoadFrom(reader);
         Info.LoadFrom(reader);
         SeekPath = new SeekPath();
         SeekPath.LoadFrom(reader);
@@ -560,6 +559,7 @@ public class Sys
         UnitArray.LoadFrom(reader);
         RebelArray.LoadFrom(reader);
         SpyArray.LoadFrom(reader);
+        TalkMsgArray.LoadFrom(reader);
         NewsArray.LoadFrom(reader);
         BulletArray.LoadFrom(reader);
         WarPointArray.LoadFrom(reader);
