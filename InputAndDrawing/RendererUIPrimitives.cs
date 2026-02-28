@@ -29,6 +29,7 @@ public partial class Renderer
 	private int ButtonsSpyY => DetailsY1 + 337;
 	private int ButtonsUnitHuman1Y => DetailsY1 + 245;
 	private int ButtonsUnitHuman2Y => DetailsY1 + 315;
+	private int ButtonsWeaponY => DetailsY1 + 148;
 	private int ButtonsUnitShipY => DetailsY1 + 358;
 	private const int ListItemHeight = 56;
 

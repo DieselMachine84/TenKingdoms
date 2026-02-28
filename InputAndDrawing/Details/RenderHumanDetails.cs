@@ -383,81 +383,12 @@ public partial class Renderer
                     return;
                 }
 
-                bool newAggressiveMode = !unit.AggressiveMode;
-                //if (remote.is_enable())
-                //{
-                    //// packet structure : <unit no> <new aggressive mode>
-                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
-                    //*shortPtr = i;
-                    //shortPtr[1] = newAggressiveMode;
-                //}
-                //else
-                //{
-                    unit.AggressiveMode = newAggressiveMode;
-                //}
-
-                SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
-
-                foreach (int selectedUnitId in _selectedUnits)
-                {
-                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
-                        continue;
-
-                    Unit selectedUnit = UnitArray[selectedUnitId];
-                    if (!selectedUnit.IsOwn() || selectedUnit.AggressiveMode == newAggressiveMode)
-                        continue;
-                    
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <unit no> <new aggressive mode>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
-                        //*shortPtr = i;
-                        //shortPtr[1] = newAggressiveMode;
-                    //}
-                    //else
-                    //{
-                        selectedUnit.AggressiveMode = newAggressiveMode;
-                    //}
-                }
+                GroupChangeAggressiveMode(unit);
             }
 
             if (button2Pressed && IsRewardEnabled(unit))
             {
-                //if (remote.is_enable())
-                //{
-                    //// packet structure : <unit no> + <rewarding nation recno>
-                    //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
-                    //*shortPtr = i;
-                    //shortPtr[1] = nation_array.player_recno;
-                //}
-                //else
-                //{
-                    unit.Reward(NationArray.PlayerId);
-                //}
-
-                SECtrl.immediate_sound("TURN_ON");
-                
-                foreach (int selectedUnitId in _selectedUnits)
-                {
-                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
-                        continue;
-
-                    Unit selectedUnit = UnitArray[selectedUnitId];
-                    if (!IsRewardEnabled(selectedUnit))
-                        continue;
-                    
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <unit no> + <rewarding nation recno>
-                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
-                        //*shortPtr = i;
-                        //shortPtr[1] = nation_array.player_recno;
-                    //}
-                    //else
-                    //{
-                        selectedUnit.Reward(NationArray.PlayerId);
-                    //}
-                }
+                GroupReward(unit);
             }
 
             if (button3Pressed && IsSettleEnabled(unit))
@@ -490,42 +421,7 @@ public partial class Renderer
 
             if (button6Pressed && IsReturnToCampEnabled(unit))
             {
-                //if (remote.is_enable())
-                //{
-                    //// packet structure : <no. of units> <unit recno>...
-                    //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
-                    //*shortPtr = selectedCount;
-                    //shortPtr++;
-                    //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
-                //}
-                //else
-                //{
-                    unit.ReturnCamp();
-                //}
-                SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
-                
-                foreach (int selectedUnitId in _selectedUnits)
-                {
-                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
-                        continue;
-
-                    Unit selectedUnit = UnitArray[selectedUnitId];
-                    if (!IsReturnToCampEnabled(selectedUnit))
-                        continue;
-                    
-                    //if (remote.is_enable())
-                    //{
-                        //// packet structure : <no. of units> <unit recno>...
-                        //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
-                        //*shortPtr = selectedCount;
-                        //shortPtr++;
-                        //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
-                    //}
-                    //else
-                    //{
-                        selectedUnit.ReturnCamp();
-                    //}
-                }
+                GroupReturnCamp(unit);
             }
 
             if (button7Pressed && IsSpyButtonsEnabled(unit))
@@ -674,6 +570,126 @@ public partial class Renderer
     private bool IsSpyCloakPanelVisible(Unit unit, bool canChangeToOtherNation)
     {
         return canChangeToOtherNation || unit.NationId != unit.TrueNationId();
+    }
+
+    private void GroupChangeAggressiveMode(Unit unit)
+    {
+        bool newAggressiveMode = !unit.AggressiveMode;
+        //if (remote.is_enable())
+        //{
+            //// packet structure : <unit no> <new aggressive mode>
+            //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
+            //*shortPtr = i;
+            //shortPtr[1] = newAggressiveMode;
+        //}
+        //else
+        //{
+            unit.AggressiveMode = newAggressiveMode;
+        //}
+
+        foreach (int selectedUnitId in _selectedUnits)
+        {
+            if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                continue;
+
+            Unit selectedUnit = UnitArray[selectedUnitId];
+            if (!selectedUnit.IsOwn() || selectedUnit.AggressiveMode == newAggressiveMode)
+                continue;
+                    
+            //if (remote.is_enable())
+            //{
+                //// packet structure : <unit no> <new aggressive mode>
+                //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
+                //*shortPtr = i;
+                //shortPtr[1] = newAggressiveMode;
+            //}
+            //else
+            //{
+                selectedUnit.AggressiveMode = newAggressiveMode;
+            //}
+        }
+        
+        SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
+    }
+    
+    private void GroupReward(Unit unit)
+    {
+        //if (remote.is_enable())
+        //{
+            //// packet structure : <unit no> + <rewarding nation recno>
+            //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
+            //*shortPtr = i;
+            //shortPtr[1] = nation_array.player_recno;
+        //}
+        //else
+        //{
+            unit.Reward(NationArray.PlayerId);
+        //}
+
+        foreach (int selectedUnitId in _selectedUnits)
+        {
+            if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                continue;
+
+            Unit selectedUnit = UnitArray[selectedUnitId];
+            if (!IsRewardEnabled(selectedUnit))
+                continue;
+                    
+            //if (remote.is_enable())
+            //{
+                //// packet structure : <unit no> + <rewarding nation recno>
+                //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
+                //*shortPtr = i;
+                //shortPtr[1] = nation_array.player_recno;
+            //}
+            //else
+            //{
+                selectedUnit.Reward(NationArray.PlayerId);
+            //}
+        }
+        
+        SECtrl.immediate_sound("TURN_ON");
+    }
+    
+    private void GroupReturnCamp(Unit unit)
+    {
+        //if (remote.is_enable())
+        //{
+            //// packet structure : <no. of units> <unit recno>...
+            //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
+            //*shortPtr = selectedCount;
+            //shortPtr++;
+            //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
+        //}
+        //else
+        //{
+            unit.ReturnCamp();
+        //}
+                
+        foreach (int selectedUnitId in _selectedUnits)
+        {
+            if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                continue;
+
+            Unit selectedUnit = UnitArray[selectedUnitId];
+            if (!IsReturnToCampEnabled(selectedUnit))
+                continue;
+                    
+            //if (remote.is_enable())
+            //{
+                //// packet structure : <no. of units> <unit recno>...
+                //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
+                //*shortPtr = selectedCount;
+                //shortPtr++;
+                //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
+            //}
+            //else
+            //{
+                selectedUnit.ReturnCamp();
+            //}
+        }
+        
+        SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
     }
 
     private void DrawSettlePanel()
