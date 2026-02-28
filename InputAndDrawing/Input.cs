@@ -697,6 +697,7 @@ public partial class Renderer
                     {
                         HandlePlayerReply(news.Param1);
                         handled = true;
+                        break;
                     }
                 }
             }
@@ -712,6 +713,7 @@ public partial class Renderer
                 {
                     GoToLocation(news.LocX, news.LocY);
                     handled = true;
+                    break;
                 }
             }
 
