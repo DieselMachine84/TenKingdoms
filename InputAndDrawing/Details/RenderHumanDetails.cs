@@ -4,18 +4,7 @@ namespace TenKingdoms;
 
 public partial class Renderer
 {
-    // TODO main menu
-    // TODO draw fields
-    // TODO draw and handle buttons
-    // TODO draw and handle spy panel
     // TODO draw spy loyalty or loyalty?
-    // TODO group change aggressive mode
-    // TODO group reward
-    // TODO group settle
-    // TODO group return to camp
-    // TODO check succeed king
-    // TODO disable reward button when not enough money
-    // TODO enable/disable buttons dependent on group count
 
     private int MouseOnBuildSettleCancelButtonX1 => DetailsX1 + 8;
     private int MouseOnBuildSettleCancelButtonX2 => DetailsX2 - 8;
@@ -97,6 +86,9 @@ public partial class Renderer
             DetailsX2 - 4, DetailsY1 + 56 + unitInfo.SoldierIconHeight);
         PutTextCenter(FontSan, unit.GetUnitName(false), DetailsX1 + 10 + unitInfo.SoldierIconWidth * 2, DetailsY1 + 56 + unitInfo.SoldierIconHeight,
             DetailsX2 - 4, DetailsY1 + 56 + unitInfo.SoldierIconHeight * 2);
+
+        if (!unit.ShouldShowInfo())
+            return;
         
         DrawPanelWithThreeFields(DetailsX1 + 2, DetailsY1 + 144);
         DrawUnitFields(unit, DetailsY1 + 144);
@@ -169,30 +161,35 @@ public partial class Renderer
         bool mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                              _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
         if (_leftMousePressed && mouseOnButton)
-            Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+            Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
         else
-            Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+            Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
 
         if (IsSucceedKingEnabled(unit))
         {
-            Graphics.DrawBitmap(_buttonSucceedKingTexture, Button1X + 2, ButtonsUnitHuman1Y + 8, Scale(_buttonSucceedKingWidth), Scale(_buttonSucceedKingHeight));
+            Graphics.DrawBitmapScaled(_buttonSucceedKingTexture, Button1X + 10, ButtonsUnitHuman1Y + 8, _buttonSucceedKingWidth, _buttonSucceedKingHeight);
             return;
         }
         
         if (unit.AggressiveMode)
-            Graphics.DrawBitmap(_buttonAggressionOnTexture, Button1X + 10, ButtonsUnitHuman1Y + 6, Scale(_buttonAggressionOnWidth), Scale(_buttonAggressionOnHeight));
+            Graphics.DrawBitmapScaled(_buttonAggressionOnTexture, Button1X + 10, ButtonsUnitHuman1Y + 6, _buttonAggressionOnWidth, _buttonAggressionOnHeight);
         else
-            Graphics.DrawBitmap(_buttonAggressionOffTexture, Button1X + 10, ButtonsUnitHuman1Y + 6, Scale(_buttonAggressionOffWidth), Scale(_buttonAggressionOffHeight));
+            Graphics.DrawBitmapScaled(_buttonAggressionOffTexture, Button1X + 10, ButtonsUnitHuman1Y + 6, _buttonAggressionOffWidth, _buttonAggressionOffHeight);
 
         if (IsRewardEnabled(unit))
         {
             mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button2X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonRewardTexture, Button2X + 12, ButtonsUnitHuman1Y + 4, Scale(_buttonRewardWidth), Scale(_buttonRewardHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button2X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonRewardTexture, Button2X + 12, ButtonsUnitHuman1Y + 4, _buttonRewardWidth, _buttonRewardHeight);
+        }
+        else
+        {
+            Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button2X, ButtonsUnitHuman1Y, _buttonDisabledWidth, _buttonDisabledHeight);
+            Graphics.DrawBitmapScaled(_buttonRewardDisabledTexture, Button2X + 12, ButtonsUnitHuman1Y + 4, _buttonRewardWidth, _buttonRewardHeight);
         }
 
         if (IsSettleEnabled(unit))
@@ -200,10 +197,10 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button3X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button3X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonSettleTexture, Button3X + 12, ButtonsUnitHuman1Y + 4, Scale(_buttonSettleWidth), Scale(_buttonSettleHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonSettleTexture, Button3X + 12, ButtonsUnitHuman1Y + 4, _buttonSettleWidth, _buttonSettleHeight);
         }
 
         if (IsBuildEnabled(unit))
@@ -211,10 +208,10 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button4X + 2 && _mouseButtonX <= Button4X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button4X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button4X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button4X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonBuildTexture, Button4X + 12, ButtonsUnitHuman1Y + 8, Scale(_buttonBuildWidth), Scale(_buttonBuildHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button4X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonBuildTexture, Button4X + 12, ButtonsUnitHuman1Y + 8, _buttonBuildWidth, _buttonBuildHeight);
         }
 
         if (IsPromoteEnabled(unit))
@@ -222,10 +219,10 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button5X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button5X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button5X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonPromoteTexture, Button5X + 5, ButtonsUnitHuman1Y + 4, Scale(_buttonPromoteWidth), Scale(_buttonPromoteHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button5X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonPromoteTexture, Button5X + 5, ButtonsUnitHuman1Y + 4, _buttonPromoteWidth, _buttonPromoteHeight);
         }
 
         if (IsDemoteEnabled(unit))
@@ -233,10 +230,10 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button5X + 2 && _mouseButtonX <= Button5X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman1Y + 2 && _mouseButtonY <= ButtonsUnitHuman1Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button5X, ButtonsUnitHuman1Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button5X, ButtonsUnitHuman1Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button5X, ButtonsUnitHuman1Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonDemoteTexture, Button5X + 12, ButtonsUnitHuman1Y + 8, Scale(_buttonDemoteWidth), Scale(_buttonDemoteHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button5X, ButtonsUnitHuman1Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonDemoteTexture, Button5X + 12, ButtonsUnitHuman1Y + 8, _buttonDemoteWidth, _buttonDemoteHeight);
         }
 
         if (IsReturnToCampEnabled(unit))
@@ -244,10 +241,10 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button1X + 2 && _mouseButtonX <= Button1X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman2Y + 2 && _mouseButtonY <= ButtonsUnitHuman2Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button1X, ButtonsUnitHuman2Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsUnitHuman2Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button1X, ButtonsUnitHuman2Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonReturnToCampTexture, Button1X + 4, ButtonsUnitHuman2Y + 8, Scale(_buttonReturnToCampWidth), Scale(_buttonReturnToCampHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsUnitHuman2Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonReturnToCampTexture, Button1X + 2, ButtonsUnitHuman2Y, _buttonReturnToCampWidth, _buttonReturnToCampHeight);
         }
 
         if (IsSpyButtonsEnabled(unit))
@@ -255,22 +252,22 @@ public partial class Renderer
             mouseOnButton = _mouseButtonX >= Button2X + 2 && _mouseButtonX <= Button2X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman2Y + 2 && _mouseButtonY <= ButtonsUnitHuman2Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button2X, ButtonsUnitHuman2Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button2X, ButtonsUnitHuman2Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button2X, ButtonsUnitHuman2Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button2X, ButtonsUnitHuman2Y, _buttonUpWidth, _buttonUpHeight);
             
             if (SpyArray[unit.SpyId].NotifyCloakedNation)
-                Graphics.DrawBitmap(_buttonSpyNotifyOnTexture, Button2X + 22, ButtonsUnitHuman2Y + 4, Scale(_buttonSpyNotifyOnWidth), Scale(_buttonSpyNotifyOnHeight));
+                Graphics.DrawBitmapScaled(_buttonSpyNotifyOnTexture, Button2X + 22, ButtonsUnitHuman2Y + 4, _buttonSpyNotifyOnWidth, _buttonSpyNotifyOnHeight);
             else
-                Graphics.DrawBitmap(_buttonSpyNotifyOffTexture, Button2X + 16, ButtonsUnitHuman2Y + 6, Scale(_buttonSpyNotifyOffWidth), Scale(_buttonSpyNotifyOffHeight));
+                Graphics.DrawBitmapScaled(_buttonSpyNotifyOffTexture, Button2X + 16, ButtonsUnitHuman2Y + 6, _buttonSpyNotifyOffWidth, _buttonSpyNotifyOffHeight);
             
             mouseOnButton = _mouseButtonX >= Button3X + 2 && _mouseButtonX <= Button3X + ButtonWidth &&
                             _mouseButtonY >= ButtonsUnitHuman2Y + 2 && _mouseButtonY <= ButtonsUnitHuman2Y + ButtonHeight;
             if (_leftMousePressed && mouseOnButton)
-                Graphics.DrawBitmap(_buttonDownTexture, Button3X, ButtonsUnitHuman2Y, Scale(_buttonDownWidth), Scale(_buttonDownHeight));
+                Graphics.DrawBitmapScaled(_buttonDownTexture, Button3X, ButtonsUnitHuman2Y, _buttonDownWidth, _buttonDownHeight);
             else
-                Graphics.DrawBitmap(_buttonUpTexture, Button3X, ButtonsUnitHuman2Y, Scale(_buttonUpWidth), Scale(_buttonUpHeight));
-            Graphics.DrawBitmap(_buttonDropSpyIdentityTexture, Button3X + 4, ButtonsUnitHuman2Y + 6, Scale(_buttonDropSpyIdentityWidth), Scale(_buttonDropSpyIdentityHeight));
+                Graphics.DrawBitmapScaled(_buttonUpTexture, Button3X, ButtonsUnitHuman2Y, _buttonUpWidth, _buttonUpHeight);
+            Graphics.DrawBitmapScaled(_buttonDropSpyIdentityTexture, Button3X + 4, ButtonsUnitHuman2Y + 6, _buttonDropSpyIdentityWidth, _buttonDropSpyIdentityHeight);
         }
     }
 
@@ -400,6 +397,28 @@ public partial class Renderer
                 //}
 
                 SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
+
+                foreach (int selectedUnitId in _selectedUnits)
+                {
+                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                        continue;
+
+                    Unit selectedUnit = UnitArray[selectedUnitId];
+                    if (!selectedUnit.IsOwn() || selectedUnit.AggressiveMode == newAggressiveMode)
+                        continue;
+                    
+                    //if (remote.is_enable())
+                    //{
+                        //// packet structure : <unit no> <new aggressive mode>
+                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_CHANGE_AGGRESSIVE_MODE, sizeof(short)*2);
+                        //*shortPtr = i;
+                        //shortPtr[1] = newAggressiveMode;
+                    //}
+                    //else
+                    //{
+                        selectedUnit.AggressiveMode = newAggressiveMode;
+                    //}
+                }
             }
 
             if (button2Pressed && IsRewardEnabled(unit))
@@ -417,6 +436,28 @@ public partial class Renderer
                 //}
 
                 SECtrl.immediate_sound("TURN_ON");
+                
+                foreach (int selectedUnitId in _selectedUnits)
+                {
+                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                        continue;
+
+                    Unit selectedUnit = UnitArray[selectedUnitId];
+                    if (!IsRewardEnabled(selectedUnit))
+                        continue;
+                    
+                    //if (remote.is_enable())
+                    //{
+                        //// packet structure : <unit no> + <rewarding nation recno>
+                        //short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_REWARD,sizeof(short)*2);
+                        //*shortPtr = i;
+                        //shortPtr[1] = nation_array.player_recno;
+                    //}
+                    //else
+                    //{
+                        selectedUnit.Reward(NationArray.PlayerId);
+                    //}
+                }
             }
 
             if (button3Pressed && IsSettleEnabled(unit))
@@ -462,6 +503,29 @@ public partial class Renderer
                     unit.ReturnCamp();
                 //}
                 SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
+                
+                foreach (int selectedUnitId in _selectedUnits)
+                {
+                    if (selectedUnitId == unit.SpriteId || UnitArray.IsDeleted(selectedUnitId))
+                        continue;
+
+                    Unit selectedUnit = UnitArray[selectedUnitId];
+                    if (!IsReturnToCampEnabled(selectedUnit))
+                        continue;
+                    
+                    //if (remote.is_enable())
+                    //{
+                        //// packet structure : <no. of units> <unit recno>...
+                        //short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_RETURN_CAMP, (1 + selectedCount) * sizeof(short));
+                        //*shortPtr = selectedCount;
+                        //shortPtr++;
+                        //memcpy(shortPtr, selectedUnitArray, sizeof(short) * selectedCount);
+                    //}
+                    //else
+                    //{
+                        selectedUnit.ReturnCamp();
+                    //}
+                }
             }
 
             if (button7Pressed && IsSpyButtonsEnabled(unit))
@@ -551,7 +615,8 @@ public partial class Renderer
 
     private bool IsRewardEnabled(Unit unit)
     {
-        return unit.IsOwn() && unit.Rank != Unit.RANK_KING && NationArray.Player != null && NationArray.Player.Cash > 0.0;
+        return unit.IsOwn() && UnitRes[unit.UnitType].UnitClass == UnitConstants.UNIT_CLASS_HUMAN && unit.Rank != Unit.RANK_KING &&
+               NationArray.Player != null && NationArray.Player.Cash > GameConstants.REWARD_COST * _selectedUnits.Count;
     }
 
     private bool IsSettleEnabled(Unit unit)
@@ -561,6 +626,9 @@ public partial class Renderer
 
     private bool IsBuildEnabled(Unit unit)
     {
+        if (_selectedUnits.Count > 1)
+            return false;
+        
         bool canBuildSomething = false;
         for (int i = 1; i < Firm.MAX_FIRM_TYPE; i++)
         {
@@ -576,11 +644,17 @@ public partial class Renderer
 
     private bool IsPromoteEnabled(Unit unit)
     {
+        if (_selectedUnits.Count > 1)
+            return false;
+        
         return unit.NationId == NationArray.PlayerId && unit.Rank == Unit.RANK_SOLDIER && unit.Skill.SkillId == Skill.SKILL_LEADING;
     }
 
     private bool IsDemoteEnabled(Unit unit)
     {
+        if (_selectedUnits.Count > 1)
+            return false;
+        
         return unit.NationId == NationArray.PlayerId && unit.Rank == Unit.RANK_GENERAL;
     }
 
@@ -591,6 +665,9 @@ public partial class Renderer
 
     private bool IsSpyButtonsEnabled(Unit unit)
     {
+        if (_selectedUnits.Count > 1)
+            return false;
+        
         return unit.SpyId != 0 && unit.TrueNationId() == NationArray.PlayerId;
     }
 
