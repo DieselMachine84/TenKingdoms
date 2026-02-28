@@ -48,11 +48,10 @@ public partial class Renderer
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
         int townNameX1 = DetailsX1 + 2;
         if (town.NationId != 0)
-        {
             townNameX1 += 8 + _colorSquareWidth * 2;
-            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[town.NationId], false);
-            Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
-        }
+        
+        int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[town.NationId], false);
+        Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
         
         string townName = town.Name + (Config.ShowAIInfo ? " (" + town.TownId + ")" : "");
         PutTextCenter(FontSan, townName, townNameX1, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);

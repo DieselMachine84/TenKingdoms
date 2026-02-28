@@ -13,13 +13,20 @@ public partial class Renderer
         if (UnitDetailsMode != UnitDetailsMode.BuildMenu)
         {
             DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-            if (unit.NationId != 0)
-            {
-                int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.NationId], false);
-                Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
-            }
-            // TODO draw hit points bar and X button
+            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[unit.NationId], false);
+            Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
+            
+            // TODO draw hit points bar
             PutTextCenter(FontSan, (int)unit.HitPoints + "/" + unit.MaxHitPoints, DetailsX1 + 2, DetailsY1 + 21, DetailsX2 - 4, DetailsY1 + 21);
+            if (CanResign(unit))
+            {
+                bool mouseOnResignButton = _mouseButtonX >= DetailsX1 + 369 && _mouseButtonX <= DetailsX1 + 401 &&
+                                           _mouseButtonY >= DetailsY1 + 3 && _mouseButtonY <= DetailsY1 + 38;
+                if (_leftMousePressed && mouseOnResignButton)
+                    Graphics.DrawBitmapScaled(_buttonResignDownTexture, DetailsX1 + 369, DetailsY1 + 3, _buttonResignDownWidth, _buttonResignDownHeight);
+                else
+                    Graphics.DrawBitmapScaled(_buttonResignUpTexture, DetailsX1 + 369, DetailsY1 + 3, _buttonResignUpWidth, _buttonResignUpHeight);
+            }
         }
 
         unit.DrawDetails(this);
@@ -291,11 +298,16 @@ public partial class Renderer
 
     private void HandleUnitDetailsInput(Unit unit)
     {
-        bool colorSquareButtonPressed = _leftMouseReleased && _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
+        bool mouseOnColorSquareButton = _mouseButtonX >= DetailsX1 + 18 && _mouseButtonX <= DetailsX1 + 48 &&
                                         _mouseButtonY >= DetailsY1 + 9 && _mouseButtonY <= DetailsY1 + 32;
-        if (colorSquareButtonPressed)
+        if (_leftMouseReleased && mouseOnColorSquareButton)
             GoToLocation(unit.CurLocX, unit.CurLocY);
 
+        bool mouseOnResignButton = _mouseButtonX >= DetailsX1 + 369 && _mouseButtonX <= DetailsX1 + 401 &&
+                                   _mouseButtonY >= DetailsY1 + 3 && _mouseButtonY <= DetailsY1 + 38;
+        if (_leftMouseReleased && mouseOnResignButton && CanResign(unit))
+            unit.Resign(InternalConstants.COMMAND_PLAYER);
+        
         unit.HandleDetailsInput(this);
     }
 
@@ -398,5 +410,10 @@ public partial class Renderer
             UnitDetailsMode = UnitDetailsMode.Normal;
             _setStopId = 0;
         }
+    }
+
+    private bool CanResign(Unit unit)
+    {
+        return NationArray.PlayerId != 0 && unit.NationId == NationArray.PlayerId && unit.Rank != Unit.RANK_KING;
     }
 }

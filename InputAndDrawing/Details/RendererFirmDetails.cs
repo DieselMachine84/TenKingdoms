@@ -17,11 +17,8 @@ public partial class Renderer
         }
         
         DrawSmallPanel(DetailsX1 + 2, DetailsY1);
-        if (firm.NationId != 0)
-        {
-            int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.NationId], false);
-            Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
-        }
+        int textureKey = ColorRemap.GetTextureKey(ColorRemap.ColorSchemes[firm.NationId], false);
+        Graphics.DrawBitmap(_colorSquareTextures[textureKey], DetailsX1 + 10, DetailsY1 + 3, _colorSquareWidth * 2, _colorSquareHeight * 2);
 
         string firmName = firm.FirmName() + (Config.ShowAIInfo ? " (" + firm.FirmId + ")" : "");
         PutTextCenter(FontSan, firmName, DetailsX1 + 2, DetailsY1, DetailsX2 - 4, DetailsY1 + 42);

@@ -431,6 +431,12 @@ public partial class Renderer
 	private IntPtr _buttonDropSpyIdentityTexture;
 	private int _buttonDropSpyIdentityWidth;
 	private int _buttonDropSpyIdentityHeight;
+	private IntPtr _buttonResignUpTexture;
+	private int _buttonResignUpWidth;
+	private int _buttonResignUpHeight;
+	private IntPtr _buttonResignDownTexture;
+	private int _buttonResignDownWidth;
+	private int _buttonResignDownHeight;
 	
 	private IntPtr _buttonSpyMenuTexture;
 	private int _buttonSpyMenuWidth;
@@ -1213,6 +1219,16 @@ public partial class Renderer
 		_buttonDropSpyIdentityHeight = BitConverter.ToInt16(buttonData, 2);
 		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonDropSpyIdentityWidth, _buttonDropSpyIdentityHeight);
 		_buttonDropSpyIdentityTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonDropSpyIdentityWidth, _buttonDropSpyIdentityHeight);
+		buttonData = buttonImages.Read("V_X-U");
+		_buttonResignUpWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonResignUpHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonResignUpWidth, _buttonResignUpHeight);
+		_buttonResignUpTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonResignUpWidth, _buttonResignUpHeight);
+		buttonData = buttonImages.Read("V_X-D");
+		_buttonResignDownWidth = BitConverter.ToInt16(buttonData, 0);
+		_buttonResignDownHeight = BitConverter.ToInt16(buttonData, 2);
+		buttonData = Graphics.DecompressTransparentBitmap(buttonData.Skip(4).ToArray(), _buttonResignDownWidth, _buttonResignDownHeight);
+		_buttonResignDownTexture = Graphics.CreateTextureFromBmp(buttonData, _buttonResignDownWidth, _buttonResignDownHeight);
 		
 		buttonData = buttonImages.Read("SPYMENU");
 		_buttonSpyMenuWidth = BitConverter.ToInt16(buttonData, 0);
