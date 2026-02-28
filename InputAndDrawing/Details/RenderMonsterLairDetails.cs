@@ -8,7 +8,7 @@ public partial class Renderer
             return;
         
         DrawOverseerPanel(DetailsX1 + 2, DetailsY1 + 96);
-        if (monsterLair.MonsterKing != null)
+        if (monsterLair.MonsterKing != null && monsterLair.MonsterKing.MonsterId != 0)
         {
             MonsterInfo monsterInfo = MonsterRes[monsterLair.MonsterKing.MonsterId];
             UnitInfo unitInfo = UnitRes[monsterInfo.UnitType];

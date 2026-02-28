@@ -456,17 +456,16 @@ public abstract partial class Unit : Sprite
 
 		//----- this is a monster unit defending its town ------//
 
-		else if (UnitMode == UnitConstants.UNIT_MODE_MONSTER && UnitModeParam != 0)
+		if (UnitMode == UnitConstants.UNIT_MODE_MONSTER && UnitModeParam != 0)
 		{
-			// TODO is this condition correct? Check
-			if (((UnitMonster)this).MonsterActionMode != UnitConstants.MONSTER_ACTION_DEFENSE)
+			// TODO move to UnitMonster 
+			if (((UnitMonster)this).MonsterActionMode == UnitConstants.MONSTER_ACTION_DEFENSE)
 			{
 				if (!FirmArray.IsDeleted(UnitModeParam))
 				{
 					FirmMonster firmMonster = (FirmMonster)FirmArray[UnitModeParam];
 					firmMonster.ReduceDefenderCount(Rank);
 				}
-				SetMode(0); // reset mode
 			}
 		}
 	}
