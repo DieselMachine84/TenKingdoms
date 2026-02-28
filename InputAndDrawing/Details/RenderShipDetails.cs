@@ -9,7 +9,7 @@ public partial class Renderer
         DrawSmallPanel(DetailsX1 + 2, DetailsY1 + 48);
         PutTextCenter(FontSan, ship.GetUnitName(), DetailsX1 + 2, DetailsY1 + 68, DetailsX2 - 4, DetailsY1 + 68);
 
-        if (!Config.ShowAIInfo && !ship.IsOwn())
+        if (!ship.ShouldShowInfo())
             return;
 
         UnitInfo unitInfo = UnitRes[ship.UnitType];

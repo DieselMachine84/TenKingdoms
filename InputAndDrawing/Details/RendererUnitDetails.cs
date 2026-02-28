@@ -22,8 +22,7 @@ public partial class Renderer
             PutTextCenter(FontSan, (int)unit.HitPoints + "/" + unit.MaxHitPoints, DetailsX1 + 2, DetailsY1 + 21, DetailsX2 - 4, DetailsY1 + 21);
         }
 
-        if (unit.ShouldShowInfo())
-            unit.DrawDetails(this);
+        unit.DrawDetails(this);
     }
 
     private void DrawTradeStops(Unit unit, TradeStop[] stops)
