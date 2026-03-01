@@ -238,7 +238,7 @@ public partial class Renderer
                         //{
                             warFactory.AddQueue(unitType);
                         //}
-                        SECtrl.immediate_sound("TURN_ON");
+                        Audio.SelectionSound("TURN_ON");
                     }
 
                     if (_rightMouseReleased)
@@ -255,7 +255,7 @@ public partial class Renderer
                         //{
                             warFactory.RemoveQueue(unitType);
                         //}
-                        SECtrl.immediate_sound("TURN_OFF");
+                        Audio.SelectionSound("TURN_OFF");
                     }
 
                     if (mouseOnBuildButton)
@@ -265,7 +265,7 @@ public partial class Renderer
                 {
                     if (_leftMouseReleased)
                     {
-                        SECtrl.immediate_sound("TURN_OFF");
+                        Audio.SelectionSound("TURN_OFF");
                         FirmDetailsMode = FirmDetailsMode.Normal;
                     }
                 }

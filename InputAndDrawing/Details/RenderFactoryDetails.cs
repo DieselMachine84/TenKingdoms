@@ -95,7 +95,7 @@ public partial class Renderer
         if (_leftMouseReleased && mouseOnButton1)
         {
             factory.ChangeProduction();
-            SECtrl.immediate_sound("TURN_ON");
+            Audio.SelectionSound("TURN_ON");
         }
 
         if (_leftMouseReleased && mouseOnButton2 && factory.HaveOwnWorkers())

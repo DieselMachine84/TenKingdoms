@@ -120,7 +120,7 @@ public class Bullet : Sprite
 
 	public override bool ProcessDie()
 	{
-		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
+		Sys.Instance.Audio.BattleSound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
 		//TODO check double if conditions
 		//--------- next frame ---------//
@@ -230,7 +230,7 @@ public class Bullet : Sprite
 						attackDamage = (attackDamage > 10.0 / InternalConstants.ATTACK_SLOW_DOWN)
 							? attackDamage - 10.0 / InternalConstants.ATTACK_SLOW_DOWN
 							: 0.0;
-						SERes.sound(targetUnit.CurLocX, targetUnit.CurLocY, 1, 'S',
+						Sys.Instance.Audio.BattleSound(targetUnit.CurLocX, targetUnit.CurLocY, 1, 'S',
 							targetUnit.SpriteResId, "DEF", 'S', SpriteResId);
 					}
 

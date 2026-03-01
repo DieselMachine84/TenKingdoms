@@ -416,7 +416,7 @@ public partial class Renderer
                     unit.SetRank(promote ? Unit.RANK_GENERAL : Unit.RANK_SOLDIER);
                 //}
 
-                SECtrl.immediate_sound(promote ? "TURN_ON" : "TURN_OFF");
+                Audio.SelectionSound(promote ? "TURN_ON" : "TURN_OFF");
             }
 
             if (button6Pressed && IsReturnToCampEnabled(unit))
@@ -440,7 +440,7 @@ public partial class Renderer
                     spy.NotifyCloakedNation = newNotifyFlag;
                 //}
 
-                SECtrl.immediate_sound(newNotifyFlag ? "TURN_ON" : "TURN_OFF");
+                Audio.SelectionSound(newNotifyFlag ? "TURN_ON" : "TURN_OFF");
             }
 
             if (button8Pressed && IsSpyButtonsEnabled(unit))
@@ -457,7 +457,7 @@ public partial class Renderer
                     spy.DropSpyIdentity();
                 //}
 
-                SECtrl.immediate_sound("TURN_OFF");
+                Audio.SelectionSound("TURN_OFF");
             }
         }
 
@@ -609,7 +609,7 @@ public partial class Renderer
             //}
         }
         
-        SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
+        Audio.SelectionSound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
     }
     
     private void GroupReward(Unit unit)
@@ -648,7 +648,7 @@ public partial class Renderer
             //}
         }
         
-        SECtrl.immediate_sound("TURN_ON");
+        Audio.SelectionSound("TURN_ON");
     }
     
     private void GroupReturnCamp(Unit unit)
@@ -689,7 +689,7 @@ public partial class Renderer
             //}
         }
         
-        SERes.far_sound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
+        Audio.OtherSound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
     }
 
     private void DrawSettlePanel()

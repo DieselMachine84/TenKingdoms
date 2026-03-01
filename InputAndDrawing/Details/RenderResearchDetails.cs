@@ -196,14 +196,14 @@ public partial class Renderer
                         }
                     }
 
-                    SECtrl.immediate_sound("TURN_ON");
+                    Audio.SelectionSound("TURN_ON");
                     FirmDetailsMode = FirmDetailsMode.Normal;
                 }
                 else
                 {
                     if (_leftMouseReleased)
                     {
-                        SECtrl.immediate_sound("TURN_OFF");
+                        Audio.SelectionSound("TURN_OFF");
                         FirmDetailsMode = FirmDetailsMode.Normal;
                     }
                 }

@@ -110,7 +110,6 @@ public class Town : IIdObject
 	private GodRes GodRes => Sys.Instance.GodRes;
 	private TechRes TechRes => Sys.Instance.TechRes;
 	private SERes SERes => Sys.Instance.SERes;
-	private SECtrl SECtrl => Sys.Instance.SECtrl;
 
 	private Config Config => Sys.Instance.Config;
 	private Info Info => Sys.Instance.Info;
@@ -1713,7 +1712,7 @@ public class Town : IIdObject
 		unit.InitSprite(locX, locY);
 
 		if (unit.IsOwn())
-			SERes.far_sound(locX, locY, 1, 'S', unit.SpriteResId, "RDY");
+			Sys.Instance.Audio.ReadySound(locX, locY, 1, 'S', unit.SpriteResId, "RDY");
 
 		unit.SetMode(0); // reset it to 0 from UNIT_MODE_UNDER_TRAINING
 		TrainUnitId = 0;
@@ -2297,7 +2296,7 @@ public class Town : IIdObject
 
 			if (unit.IsOwn())
 			{
-				SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "RDY");
+				Sys.Instance.Audio.ReadySound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "RDY");
 			}
 		}
 
@@ -2453,7 +2452,7 @@ public class Town : IIdObject
 		if (attackerNationId != 0) // the attacker's people's loyalty decreases because of the killing actions.
 			NationArray[attackerNationId].CivilianKilled(raceId, true, 2); // the nation is the attacking one
 
-		SERes.sound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
+		Sys.Instance.Audio.DieSound(LocCenterX, LocCenterY, 1, 'R', raceId, "DIE");
 
 		DecPopulation(raceId, false);
 	}
@@ -3364,7 +3363,7 @@ public class Town : IIdObject
 			NewsArray.TownSurrendered(this, toNationId);
 			if (toNationId == NationArray.PlayerId)
 			{
-				SECtrl.immediate_sound("GET_TOWN");
+				Sys.Instance.Audio.OtherSound("GET_TOWN");
 			}
 		}
 

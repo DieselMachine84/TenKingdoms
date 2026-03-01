@@ -1,245 +1,129 @@
+using System;
+using System.Runtime.InteropServices;
+using SDL2;
+
 namespace TenKingdoms;
 
-public class SERequest
+public class Audio
 {
-	public const int MAX_SE_STORE = 4;
-
-	public byte[] wave_ptr;
-	public int resx_id;
-
-	public int req_used;
-	public RelVolume[] play_vol = new RelVolume[MAX_SE_STORE];
-
-	public void add_request(RelVolume relVolume)
-	{
-		if (req_used < MAX_SE_STORE)
-		{
-			play_vol[req_used] = relVolume;
-			req_used++;
-		}
-		else
-		{
-			// not enough space, remove the MIN volume one.
-			RelVolume minVolume = relVolume;
-			for (int i = 0; i < MAX_SE_STORE; ++i)
-			{
-				if (play_vol[i].rel_vol < minVolume.rel_vol)
-				{
-					// swap volume[i] and minVolume
-					(play_vol[i], minVolume) = (minVolume, play_vol[i]);
-				}
-			}
-		}
-	}
-
-	public int max_entry()
-	{
-		int maxEntry = 0;
-		RelVolume maxVolume = play_vol[maxEntry];
-		for (int i = 1; i < req_used; ++i)
-		{
-			if (maxVolume.rel_vol < play_vol[i].rel_vol)
-			{
-				maxVolume = play_vol[i];
-				maxEntry = i;
-			}
-		}
-
-		return maxEntry;
-	}
-
-	public void remove_request(int slot)
-	{
-		if (slot >= req_used || slot < 0)
-			return;
-
-		// ---- move element after slot -----/
-		for (int i = slot + 1; i < req_used; ++i)
-		{
-			play_vol[i - 1] = play_vol[i];
-		}
-
-		req_used--;
-	}
-
-	public void clear_request()
-	{
-		req_used = 0;
-	}
-}
-
-public class SECtrl
-{
-	public const int MAX_SE_CACHED = 32;
-
-	private int biased_se;
-	private SERequest[] req_pool;
-	private int[] last_cycle;
-
-	private int cached_size;
-	private int[] cached_index = new int[MAX_SE_CACHED];
-
-	public bool audio_flag; // set if audio.wav_init_flag is set during init
-	public int max_sound_effect;
-	public int max_supp_effect;
-
-	public int total_effect;
-
-	//TODO audio
-	//public Audio* audio_ptr;
-	public ResourceIdx res_wave;
-	public ResourceIdx res_supp;
+	private bool _initialized;
+	private GCHandle[] _pinnedWaves;
+	private IntPtr[] _chunks;
 
 	private Config Config => Sys.Instance.Config;
-
-	public SECtrl( /*Audio**/)
+	private SERes SERes => Sys.Instance.SERes;
+	
+	//AUDIO_S16LSB
+	public bool Init()
 	{
+		_initialized = SDL.SDL_InitSubSystem(SDL.SDL_INIT_AUDIO) == 0;
+		if (_initialized)
+			_initialized = (SDL_mixer.Mix_OpenAudio(22050, SDL.AUDIO_S16SYS, 2, 4096) == 0);
+
+		if (_initialized)
+		{
+			_pinnedWaves = new GCHandle[SERes.Sounds.Count];
+			_chunks = new IntPtr[SERes.Sounds.Count];
+			for (int i = 0; i < SERes.Sounds.Count; i++)
+			{
+				_pinnedWaves[i] = GCHandle.Alloc(SERes.Sounds[i], GCHandleType.Pinned);
+				_chunks[i] = SDL_mixer.Mix_LoadWAV_RW(SDL.SDL_RWFromMem(_pinnedWaves[i].AddrOfPinnedObject(), SERes.Sounds[i].Length), 0);
+			}
+			
+			SDL_mixer.Mix_AllocateChannels(10);
+		}
+
+		return _initialized;
 	}
 
-	public void init()
+	public void Deinit()
 	{
-		//TODO audio
-		//audio_flag = audio_ptr.wav_init_flag;
-		audio_flag = false;
-		if (!audio_flag)
+		if (_initialized)
+		{
+			for (int i = 0; i < _chunks.Length; i++)
+			{
+				SDL_mixer.Mix_FreeChunk(_chunks[i]);
+				_pinnedWaves[i].Free();
+			}
+			
+			SDL_mixer.Mix_CloseAudio();
+			SDL_mixer.Mix_Quit();
+			SDL.SDL_QuitSubSystem(SDL.SDL_INIT_AUDIO);
+		}
+	}
+
+	private void PlaySound(int channel, string soundName)
+	{
+		if (!_initialized)
 			return;
-
-		//----- open wave resource file -------//
-
-		res_wave = new ResourceIdx($"{Sys.GameDataFolder}/Resource/A_WAVE1.RES");
-
-		//------- load database information --------//
-
-		LoadInfo();
-
-		// ----- clear last_cycle array and wave_ptr --------//
-		clear();
-	}
-
-	public void request(int soundEffect, RelVolume relVolume)
-	{
-		if (!audio_flag || !Config.SoundEffectFlag)
-			return; // skip if audio cannot init wave device
-		if (relVolume.rel_vol >= InternalConstants.MIN_AUDIO_VOL && soundEffect != 0)
-			req_pool[soundEffect - 1].add_request(relVolume);
-	}
-
-	public void request(string soundName, RelVolume relVolume)
-	{
-		if (!audio_flag || !Config.SoundEffectFlag)
-			return; // skip if audio cannot init wave device
-		int soundEffect = search_effect_id(soundName);
-		if (relVolume.rel_vol >= InternalConstants.MIN_AUDIO_VOL && soundEffect != 0)
-			req_pool[soundEffect - 1].add_request(relVolume);
-	}
-
-	// volume between 0 to 100; pan between -10,000=left, 10,000=right
-	public void flush() // output sound effect to volume
-	{
-		if (!audio_flag || !Config.SoundEffectFlag)
-		{
-			clear();
-			return; // skip if audio cannot init wave device
-		}
-		//TODO audio
-	}
-
-	public void clear()
-	{
-		for (int j = 0; j < total_effect; ++j)
-		{
-			req_pool[j].clear_request();
-		}
-	}
-
-	public string get_effect_name(int j)
-	{
-		if (j > max_sound_effect)
-			return res_supp.GetDataName(j - max_sound_effect);
-		else
-			return res_wave.GetDataName(j);
-	}
-
-	public int search_effect_id(string effectName)
-	{
-		if (!audio_flag)
-			return 0; // skip if audio cannot init wave device
-
-		int idx = res_wave.GetIndex(effectName);
-		if (idx != 0)
-			return idx;
-
-		idx = res_supp.GetIndex(effectName);
-		if (idx != 0)
-			return idx + max_sound_effect;
-
-		return 0;
-	}
-
-	public int search_effect_id(string effectName, int len)
-	{
-		if (!audio_flag)
-			return 0; // skip if audio cannot init wave device
-
-		int idx = res_wave.GetIndex(effectName);
-		if (idx != 0)
-			return idx;
-
-		idx = res_supp.GetIndex(effectName);
-		if (idx != 0)
-			return idx + max_sound_effect;
-
-		return 0;
-	}
-
-	public int immediate_sound(string soundName, RelVolume relVolume = null) // mainly for button sound, interface
-	{
-		if (!Config.SoundEffectFlag)
-			return 0;
-
-		//TODO audio
-		/*int effectId = search_effect_id(soundName);
+		
+		int effectId = SERes.SearchEffectId(soundName);
 		if (effectId != 0)
-		{
-			if (relVolume == null)
-				relVolume = DEF_REL_VOLUME;
-			SERequest seRequest = req_pool[effectId - 1];
-			if (seRequest.wave_ptr != null)
-				return audio_ptr->play_resided_wav(seRequest.wave_ptr, relVolume);
-			else
-				return audio_ptr->play_wav(seRequest.resx_id, relVolume);
-		}*/
-
-		return 0;
+			SDL_mixer.Mix_PlayChannel(channel, _chunks[effectId - 1], 0);
 	}
 
-	//	static long sound_volume(short locX, short locY);
-	//	static long sound_volume(short locX, short locY, short limit, short drop);
-	//	static long sound_pan(short locX, short locY);
-	//	static long sound_pan(short locX, short locY, short drop);
-
-	private void LoadInfo()
+	private void PlaySound(int channel, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
 	{
-		int count = max_sound_effect = res_wave.RecordCount;
-		int suppCount = max_supp_effect = res_supp.RecordCount;
-		total_effect = max_sound_effect + max_supp_effect;
-
-		req_pool = new SERequest[total_effect];
-		last_cycle = new int[total_effect];
-
-		int j = 0;
-		for (j = 0; j < count; j++)
+		SEInfo seInfo = Sys.Instance.SERes.Scan(subjectType, subjectId, action, objectType, objectId);
+		if (seInfo != null && frame == seInfo.OutFrame)
 		{
-			req_pool[j].resx_id = j + 1;
-			req_pool[j].wave_ptr = res_wave.GetData(j + 1); // wave data pointer
-			last_cycle[j] = 0;
+			SDL_mixer.Mix_PlayChannel(channel, _chunks[seInfo.EffectId - 1], 0);
 		}
+	}
 
-		for (int k = 0; k < suppCount; k++, j++)
+	public void SelectionSound(string soundName)
+	{
+		PlaySound(1, soundName);
+	}
+	
+	public void NewsSound(string soundName)
+	{
+		PlaySound(2, soundName);
+	}
+
+	public void OtherSound(string soundName)
+	{
+		PlaySound(3, soundName);
+	}
+
+	public void BirdsSound(string soundName)
+	{
+		if (SDL_mixer.Mix_Playing(3) == 0)
+			PlaySound(3, soundName);
+	}
+	
+	public void SelectionSound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
+	{
+		PlaySound(1, frame, subjectType, subjectId, action, objectType, objectId);
+	}
+	
+	public void OtherSound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
+	{
+		if (SDL_mixer.Mix_Playing(3) == 0)
+			PlaySound(3, frame, subjectType, subjectId, action, objectType, objectId);
+	}
+	
+	public void DieSound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
+	{
+		if (Sys.Instance.IsLocationOnScreen(locX, locY) && SDL_mixer.Mix_Playing(4) == 0)
+			PlaySound(4, frame, subjectType, subjectId, action, objectType, objectId);
+	}
+
+	public void ReadySound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
+	{
+		if (SDL_mixer.Mix_Playing(5) == 0)
+			PlaySound(5, frame, subjectType, subjectId, action, objectType, objectId);
+	}
+	
+	public void BattleSound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
+	{
+		for (int i = 6; i < 9; i++)
 		{
-			req_pool[j].resx_id = k + 1;
-			req_pool[j].wave_ptr = null;
-			last_cycle[j] = 0;
+			if (Sys.Instance.IsLocationOnScreen(locX, locY) && SDL_mixer.Mix_Playing(i) == 0)
+			{
+				PlaySound(i, frame, subjectType, subjectId, action, objectType, objectId);
+				return;
+			}
 		}
 	}
 }

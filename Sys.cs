@@ -19,6 +19,7 @@ public class Sys
     private MemoryStream _errorSaveStream;
 
     private Graphics Graphics { get; set; }
+    public Audio Audio { get; private set; }
     private Renderer Renderer { get; set; }
     public Color[] PaletteColors { get; } = new Color[256];
 
@@ -40,7 +41,6 @@ public class Sys
     public TechRes TechRes { get; private set; }
     public CursorRes CursorRes { get; private set; }
     public SERes SERes { get; private set; }
-    public SECtrl SECtrl { get; private set; }
 
     public Config Config { get; private set; }
     public SaveGameProvider SaveGameProvider { get; private set; }
@@ -98,7 +98,6 @@ public class Sys
         TechRes = new TechRes(GameSet);
         CursorRes = new CursorRes();
         SERes = new SERes(GameSet);
-        SECtrl = new SECtrl();
     }
 
     private void CreateObjects()
@@ -146,9 +145,6 @@ public class Sys
         }
 
         MagicWeather = new MagicWeather();
-
-        SERes.init1();
-        SERes.init2(SECtrl);
         
         //TODO
         //for(int i = 0; i < FLAME_GROW_STEP; ++i)
@@ -178,8 +174,29 @@ public class Sys
         }
         catch (Exception e)
         {
-            Graphics.ShowSimpleMessageBox("Error when initializing SDL: " + e.Message);
+            Graphics.ShowSimpleMessageBox("Error when initializing SDL: " + Environment.NewLine + e.Message);
             Graphics.DeInit();
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool InitAudio()
+    {
+        try
+        {
+            Audio = new Audio();
+            if (!Audio.Init())
+            {
+                Audio.Deinit();
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            Graphics.ShowSimpleMessageBox("Error when initializing audio subsystem: " + Environment.NewLine + e.Message);
+            Audio.Deinit();
             return false;
         }
 
@@ -242,8 +259,9 @@ public class Sys
             return;
         
         LoadResources();
+        InitAudio();
         
-        Renderer = new Renderer(Graphics);
+        Renderer = new Renderer(Graphics, Audio);
         ShowMainMenu();
 
         try
@@ -257,8 +275,13 @@ public class Sys
                 SaveGameProvider.SaveGame(_errorSavedGame, _errorSaveStream, true);
                 Graphics.ShowSimpleMessageBox("Something went wrong. Game saved to " + _errorSavedGame.FileName);
             }
+            else
+            {
+                Graphics.ShowSimpleMessageBox("Something went wrong" + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace);
+            }
         }
 
+        Audio.Deinit();
         Graphics.DeInit();
     }
     
@@ -630,6 +653,11 @@ public class Sys
         _errorSavedGame.PlayerName = "Error";
         _errorSavedGame.GameDate = Info.GameDate;
         Save(_errorSaveStream, _errorSavedGame);
+    }
+
+    public bool IsLocationOnScreen(int locX, int locY)
+    {
+        return Renderer.IsLocationOnScreen(locX, locY);
     }
     
     #region SaveAndLoad

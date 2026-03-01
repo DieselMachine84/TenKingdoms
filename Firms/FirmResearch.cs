@@ -92,8 +92,7 @@ public class FirmResearch : Firm
             {
                 NewsArray.TechResearched(techIdCopy, nation.GetTechLevel(techIdCopy));
 
-                SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S',
-                    UnitRes[TechRes[techIdCopy].UnitId].SpriteId);
+                Sys.Instance.Audio.ReadySound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[TechRes[techIdCopy].UnitId].SpriteId);
             }
         }
     }

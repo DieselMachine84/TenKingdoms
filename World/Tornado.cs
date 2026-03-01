@@ -99,9 +99,7 @@ public class Tornado : Sprite
             if (firm.HitPoints <= 0.0)
             {
                 firm.HitPoints = 0.0;
-
-                SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
-
+                Sys.Instance.Audio.DieSound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
                 FirmArray.DeleteFirm(firm.FirmId);
             }
         }

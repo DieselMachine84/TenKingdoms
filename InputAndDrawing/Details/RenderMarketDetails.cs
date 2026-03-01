@@ -141,7 +141,7 @@ public partial class Renderer
                 //{
                     market.SwitchRestock();
                 //}
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
 
             int dy = 0;
@@ -168,7 +168,7 @@ public partial class Renderer
                                 market.ClearMarketGoods(i + 1);
                             //}
 
-                            SECtrl.immediate_sound("TURN_OFF");
+                            Audio.SelectionSound("TURN_OFF");
                         }
                     }
                 }

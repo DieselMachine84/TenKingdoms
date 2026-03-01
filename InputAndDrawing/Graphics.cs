@@ -9,7 +9,6 @@ namespace TenKingdoms;
 public class Graphics
 {
     private const string WindowTitle = "Ten Kingdoms";
-    private const uint SDLSubSystems = SDL.SDL_INIT_VIDEO;
     private IntPtr _window = IntPtr.Zero;
     private IntPtr _renderer = IntPtr.Zero;
     private IntPtr _surface = IntPtr.Zero;
@@ -32,7 +31,7 @@ public class Graphics
 
     public bool Init(Color[] paletteColors)
     {
-        int errorCode = SDL.SDL_InitSubSystem(SDLSubSystems);
+        int errorCode = SDL.SDL_InitSubSystem(SDL.SDL_INIT_VIDEO);
         if (errorCode != 0)
         {
             LogError("There was an error initializing SDL.");
@@ -120,7 +119,7 @@ public class Graphics
         if (_window != IntPtr.Zero)
             SDL.SDL_DestroyWindow(_window);
 
-        SDL.SDL_QuitSubSystem(SDLSubSystems);
+        SDL.SDL_QuitSubSystem(SDL.SDL_INIT_VIDEO);
         SDL.SDL_Quit();
 
         _initialized = false;

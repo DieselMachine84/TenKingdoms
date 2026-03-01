@@ -361,7 +361,7 @@ public class Sprite : IIdObject
 		if (RemainAttackDelay != 0 && CurFrame == 1)
 			return 0;
 
-		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "A" + (CurAttack + 1));
+		Sys.Instance.Audio.BattleSound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "A" + (CurAttack + 1));
 
 		//------- next attack frame --------//
 		SpriteAttack spriteAttack = CurSpriteAttack();
@@ -381,7 +381,7 @@ public class Sprite : IIdObject
 
 		if (Sys.Instance.FrameNumber % 3 == 0)
 		{
-			SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
+			Sys.Instance.Audio.DieSound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 			if (++CurFrame > SpriteInfo.Die.FrameCount)
 				return true;
 		}

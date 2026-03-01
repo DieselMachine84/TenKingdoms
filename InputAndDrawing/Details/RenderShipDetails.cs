@@ -253,13 +253,13 @@ public partial class Renderer
                 ship.AggressiveMode = newAggressiveMode;
                 //}
 
-                SECtrl.immediate_sound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
+                Audio.SelectionSound(newAggressiveMode ? "TURN_ON" : "TURN_OFF");
             }
 
             if (_leftMouseReleased && mouseOnButton2 && ship.CanUnloadUnit())
             {
                 ship.UnloadAllUnits(InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
         }
     }

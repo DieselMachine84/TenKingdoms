@@ -523,7 +523,7 @@ public abstract class Firm : IIdObject
 			bool needAssignUnit = false;
 
 			if (NationId == NationArray.PlayerId)
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'S', unit.SpriteResId, "FINS", 'F', FirmType);
+				Sys.Instance.Audio.ReadySound(LocCenterX, LocCenterY, 1, 'S', unit.SpriteResId, "FINS", 'F', FirmType);
 
 			FirmInfo firmInfo = FirmRes[FirmType];
 
@@ -2513,7 +2513,7 @@ public abstract class Firm : IIdObject
 
 		nation.AddIncome(NationBase.INCOME_SELL_FIRM, sellIncome);
 
-		SERes.sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "SELL");
+		Sys.Instance.Audio.OtherSound(LocCenterX, LocCenterY, 1, 'F', FirmType, "SELL");
 
 		FirmArray.DeleteFirm(this);
 	}
@@ -2528,7 +2528,7 @@ public abstract class Firm : IIdObject
 			//return;
 		//}
 
-		SERes.sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "DEST");
+		Sys.Instance.Audio.DieSound(LocCenterX, LocCenterY, 1, 'F', FirmType, "DEST");
 
 		FirmArray.DeleteFirm(this);
 	}

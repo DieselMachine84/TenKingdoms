@@ -116,7 +116,7 @@ public partial class Renderer
                 //}
             }
 
-            SERes.far_sound(inn.LocCenterX, inn.LocCenterY, 1, 'S', UnitRes[_selectedInnUnit.UnitType].SpriteId, "RDY");
+            Audio.ReadySound(inn.LocCenterX, inn.LocCenterY, 1, 'S', UnitRes[_selectedInnUnit.UnitType].SpriteId, "RDY");
         }
     }
 }

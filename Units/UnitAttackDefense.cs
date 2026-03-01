@@ -2109,7 +2109,7 @@ public partial class Unit
 		{
 			targetFirm.HitPoints = 0.0;
 
-			SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
+			Sys.Instance.Audio.DieSound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 
 			if (targetFirm.NationId == NationArray.PlayerId)
 				NewsArray.FirmDestroyed(targetFirm, attackUnit, attackNationRecno);

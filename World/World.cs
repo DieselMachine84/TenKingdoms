@@ -19,8 +19,6 @@ public class World
 	private HillRes HillRes => Sys.Instance.HillRes;
 	private PlantRes PlantRes => Sys.Instance.PlantRes;
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
-	private SERes SERes => Sys.Instance.SERes;
-	private SECtrl SECtrl => Sys.Instance.SECtrl;
 
 	private Config Config => Sys.Instance.Config;
 	private Weather Weather => Sys.Instance.Weather;
@@ -1255,7 +1253,7 @@ public class World
 						if (targetFirm.HitPoints <= 0.0)
 						{
 							targetFirm.HitPoints = 0.0;
-							SERes.sound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
+							Sys.Instance.Audio.DieSound(targetFirm.LocCenterX, targetFirm.LocCenterY, 1, 'F', targetFirm.FirmType, "DIE");
 							FirmArray.DeleteFirm(targetFirm);
 						}
 					}
@@ -1409,7 +1407,7 @@ public class World
 				firm.HitPoints = 0.0;
 				if (firm.OwnFirm())
 					firmDie++;
-				SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
+				Sys.Instance.Audio.DieSound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 				FirmArray.DeleteFirm(firm);
 			}
 		}
@@ -1521,7 +1519,7 @@ public class World
 				if (firm.HitPoints <= 0.0)
 				{
 					firm.HitPoints = 0.0;
-					SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
+					Sys.Instance.Audio.DieSound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DIE");
 					firmsToDelete.Add(firm);
 				}
 			}
@@ -1557,21 +1555,8 @@ public class World
 		if (Weather.RainScale() == 0 && temp >= 15 && Misc.Random(temp) >= 12)
 		{
 			int bird = Misc.Random(InternalConstants.MAX_BIRD) + 1;
-			string sndFile = "BIRDS";
-			sndFile += (bird / 10) + '0';
-			sndFile += (bird % 10) + '0';
-
-			//TODO rewrite
-			//int xLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_x_loc + zoom_matrix.disp_x_loc / 2);
-			//int yLoc = Misc.Random(GameConstants.MapSize) - (zoom_matrix.top_y_loc + zoom_matrix.disp_y_loc / 2);
-			int locX = Misc.Random(Config.MapSize);
-			int locY = Misc.Random(Config.MapSize);
-			PosVolume p = new PosVolume(locX, locY);
-			RelVolume relVolume = new RelVolume(p, 200, Config.MapSize);
-			if (relVolume.rel_vol < 80)
-				relVolume.rel_vol = 80;
-
-			SECtrl.request(sndFile, relVolume);
+			string sndFile = "BIRDS" + bird.ToString("00");
+			Sys.Instance.Audio.BirdsSound(sndFile);
 		}
 	}
 	

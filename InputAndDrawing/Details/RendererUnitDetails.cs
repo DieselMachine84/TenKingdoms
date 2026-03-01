@@ -341,7 +341,7 @@ public partial class Renderer
                 if (_leftMouseReleased && mouseOnClearButton && isOwnTrader)
                 {
                     trader.DelStop(i + 1, InternalConstants.COMMAND_PLAYER);
-                    SECtrl.immediate_sound("TURN_OFF");
+                    Audio.SelectionSound("TURN_OFF");
                 }
 
                 int dx = 0;

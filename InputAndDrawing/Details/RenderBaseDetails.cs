@@ -180,7 +180,7 @@ public partial class Renderer
             if (button2Pressed && IsFirmBaseRewardEnabled(firmBase, overseer))
             {
                 firmBase.Reward(firmBase.SelectedWorkerId, InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
 
             if (button4Pressed && firmBase.HaveOwnWorkers())

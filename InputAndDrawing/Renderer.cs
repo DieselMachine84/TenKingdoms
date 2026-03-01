@@ -89,6 +89,7 @@ public partial class Renderer : IRenderer
     private int _replyTalkMsgId;
 
     private Graphics Graphics { get; }
+    private Audio Audio { get; }
 
     private Font FontSan { get; }
     private Font FontStd { get; }
@@ -112,15 +113,13 @@ public partial class Renderer : IRenderer
     private static GodRes GodRes => Sys.Instance.GodRes;
     private static TechRes TechRes => Sys.Instance.TechRes;
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
+    private static SERes SERes => Sys.Instance.SERes;
 
     private static Config Config => Sys.Instance.Config;
     private static SaveGameProvider SaveGameProvider => Sys.Instance.SaveGameProvider;
     private static Info Info => Sys.Instance.Info;
     private static World World => Sys.Instance.World;
-    private static SECtrl SECtrl => Sys.Instance.SECtrl;
-    private static SERes SERes => Sys.Instance.SERes;
 
-    
     private static RockArray RockArray => Sys.Instance.RockArray;
     private static RockArray DirtArray => Sys.Instance.DirtArray;
     private static NationArray NationArray => Sys.Instance.NationArray;
@@ -137,9 +136,10 @@ public partial class Renderer : IRenderer
     private static TalkMsgArray TalkMsgArray => Sys.Instance.TalkMsgArray;
     private static NewsArray NewsArray => Sys.Instance.NewsArray;
 
-    public Renderer(Graphics graphics)
+    public Renderer(Graphics graphics, Audio audio)
     {
         Graphics = graphics;
+        Audio = audio;
 
         FontSan = new Font("SAN", 0, 0);
         FontStd = new Font("STD", 2, 0);
@@ -190,6 +190,12 @@ public partial class Renderer : IRenderer
         }
 
         return (locX, locY);
+    }
+
+    public bool IsLocationOnScreen(int locX, int locY)
+    {
+        return locX >= _topLeftLocX && locX <= _topLeftLocX + Config.GameScreenWidth - 1 &&
+               locY >= _topLeftLocY && locY <= _topLeftLocY + Config.GameScreenHeight - 1;
     }
 
     private void DrawStartMenu()

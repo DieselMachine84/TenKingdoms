@@ -170,7 +170,7 @@ public partial class Renderer
             if (button2Pressed && IsCampRewardEnabled(camp, overseer))
             {
                 camp.Reward(camp.SelectedWorkerId, InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
 
             if (button4Pressed)
@@ -186,7 +186,7 @@ public partial class Renderer
                 {*/
                     camp.DefenseFlag = !camp.DefenseFlag;
                 //}
-                SECtrl.immediate_sound(camp.DefenseFlag ? "TURN_OFF" : "TURN_ON");
+                Audio.SelectionSound(camp.DefenseFlag ? "TURN_OFF" : "TURN_ON");
             }
         }
         

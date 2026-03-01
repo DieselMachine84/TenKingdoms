@@ -269,7 +269,6 @@ public partial class Renderer
     {
         // TODO recallGroup
         // TODO shiftSelect
-        // TODO selection sound
 
         if (_inUnitCommandMode)
         {
@@ -299,6 +298,9 @@ public partial class Renderer
                 ResetSelection();
                 _selectedUnitId = pointingLocation.UnitId(mobileType);
                 _selectedUnits.Add(_selectedUnitId);
+                Unit selectedUnit = UnitArray[_selectedUnitId];
+                if (NationArray.PlayerId != 0 && selectedUnit.IsOwn())
+                    Audio.SelectionSound(selectedUnit.CurLocX, selectedUnit.CurLocY, 1, 'S', selectedUnit.SpriteResId, "SEL");
             }
             else
             {
@@ -306,12 +308,19 @@ public partial class Renderer
                 {
                     ResetSelection();
                     _selectedTownId = pointingLocation.TownId();
+                    Town selectedTown = TownArray[_selectedTownId];
+                    if (NationArray.PlayerId != 0 && selectedTown.NationId == NationArray.PlayerId)
+                        Audio.SelectionSound(selectedTown.LocCenterX, selectedTown.LocCenterY, 1, 'T', 0, "SEL");
                 }
                 
                 if (pointingLocation.IsFirm())
                 {
                     ResetSelection();
                     _selectedFirmId = pointingLocation.FirmId();
+                    Firm selectedFirm = FirmArray[_selectedFirmId];
+                    if (NationArray.PlayerId != 0 && selectedFirm.OwnFirm())
+                        Audio.SelectionSound(selectedFirm.LocCenterX, selectedFirm.LocCenterY, 1, 'F', selectedFirm.FirmType,
+                            selectedFirm.UnderConstruction ? "SELU" : "SEL");
                 }
 
                 if (pointingLocation.HasSite())
@@ -406,6 +415,13 @@ public partial class Renderer
                     _selectedUnitId = unitToSelect.SpriteId;
             }
 
+            if (_selectedUnitId != 0)
+            {
+                Unit selectedUnit = UnitArray[_selectedUnitId];
+                if (NationArray.PlayerId != 0 && selectedUnit.IsOwn())
+                    Audio.SelectionSound(selectedUnit.CurLocX, selectedUnit.CurLocY, 1, 'S', selectedUnit.SpriteResId, "SEL");
+            }
+
             return true;
         }
     }
@@ -429,8 +445,7 @@ public partial class Renderer
                 if (unit.IsVisible())
                 {
                     unit.BuildFirm(locX, locY, _buildFirmType, InternalConstants.COMMAND_PLAYER);
-                    if (SERes.mark_command_time() != 0)
-                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
             
@@ -457,8 +472,7 @@ public partial class Renderer
                         UnitArray.Settle(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     
-                    if (SERes.mark_command_time() != 0)
-                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
             
@@ -473,9 +487,7 @@ public partial class Renderer
                 if (unit.IsVisible())
                 {
                     unit.GoCastPower(locX, locY, 1, InternalConstants.COMMAND_PLAYER);
-                    
-                    if (SERes.mark_command_time() != 0)
-                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
             
@@ -491,8 +503,7 @@ public partial class Renderer
                 if (location.IsFirm() && trader.CanSetStop(location.FirmId()))
                 {
                     trader.SetStop(_setStopId, locX, locY, InternalConstants.COMMAND_PLAYER);
-                    if (SERes.mark_command_time() != 0)
-                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
                 }
             }
 

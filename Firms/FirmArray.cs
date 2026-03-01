@@ -115,7 +115,7 @@ public class FirmArray : DynArray<Firm>
 
 					if (firm.HitPoints <= 0.0)
 					{
-						SERes.sound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DEST");
+						Sys.Instance.Audio.DieSound(firm.LocCenterX, firm.LocCenterY, 1, 'F', firm.FirmType, "DEST");
 						DeleteFirm(firm);
 						continue;
 					}

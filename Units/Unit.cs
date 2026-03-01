@@ -2356,7 +2356,7 @@ public abstract partial class Unit : Sprite
 
 	public override bool ProcessDie()
 	{
-		SERes.sound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
+		Sys.Instance.Audio.DieSound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "DIE");
 
 		//------------- add die effect on first frame --------- //
 		if (CurFrame == 1 && UnitRes[UnitType].DieEffectId != 0)

@@ -211,7 +211,7 @@ public class FirmHarbor : Firm
 			AddHostedShip(unit.SpriteId);
 
 			if (OwnFirm())
-				SERes.far_sound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].SpriteId);
+				Sys.Instance.Audio.ReadySound(LocCenterX, LocCenterY, 1, 'F', FirmType, "FINS", 'S', UnitRes[BuildUnitType].SpriteId);
 
 			BuildUnitType = 0;
 		}

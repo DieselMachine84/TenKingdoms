@@ -45,7 +45,6 @@ public class Spy : IIdObject
 	private FirmRes FirmRes => Sys.Instance.FirmRes;
 	private Info Info => Sys.Instance.Info;
 	private World World => Sys.Instance.World;
-	private SECtrl SECtrl => Sys.Instance.SECtrl;
 	private NationArray NationArray => Sys.Instance.NationArray;
 	private UnitArray UnitArray => Sys.Instance.UnitArray;
 	private SpyArray SpyArray => Sys.Instance.SpyArray;
@@ -1131,7 +1130,7 @@ public class Spy : IIdObject
 		if (TrueNationId == NationArray.PlayerId || CloakedNationId == NationArray.PlayerId)
 		{
 			NewsArray.SpyKilled(SpyId);
-			SECtrl.immediate_sound("SPY_DIE");
+			Sys.Instance.Audio.OtherSound("SPY_DIE");
 		}
 
 		//--- If a spy is caught, the spy's nation's reputation wil decrease ---//

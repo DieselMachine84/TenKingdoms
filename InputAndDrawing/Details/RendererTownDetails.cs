@@ -374,7 +374,7 @@ public partial class Renderer
             if (_leftMouseReleased && mouseOnButton4 && IsCollectTaxEnabled(town))
             {
                 town.CollectTax(InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
 
             if (_rightMouseReleased && mouseOnButton4)
@@ -385,7 +385,7 @@ public partial class Renderer
             if (_leftMouseReleased && mouseOnButton5 && IsGrantEnabled(town))
             {
                 town.Reward(InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
             
             if (_rightMouseReleased && mouseOnButton5)
@@ -398,7 +398,7 @@ public partial class Renderer
             if (_leftMouseReleased && mouseOnButton1 && IsGrantToNonOwnTownEnabled(town))
             {
                 town.GrantToNonOwnTown(NationArray.PlayerId, InternalConstants.COMMAND_PLAYER);
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             }
             
             bool mouseOnSpyListButton = (ShowGrantToNonOwnTownButton(town) ? mouseOnButton2 : mouseOnButton1);
@@ -562,9 +562,9 @@ public partial class Renderer
             //}
             
             if (_leftMouseReleased)
-                SECtrl.immediate_sound("TURN_ON");
+                Audio.SelectionSound("TURN_ON");
             if (_rightMouseReleased)
-                SECtrl.immediate_sound("TURN_OFF");
+                Audio.SelectionSound("TURN_OFF");
         }
     }
     
@@ -650,7 +650,7 @@ public partial class Renderer
                             //}
                         }
                         
-                        SECtrl.immediate_sound("TURN_ON");
+                        Audio.SelectionSound("TURN_ON");
                         TownDetailsMode = TownDetailsMode.Normal;
                     }
 
@@ -696,7 +696,7 @@ public partial class Renderer
                             //}
                         }
                         
-                        SECtrl.immediate_sound("TURN_ON");
+                        Audio.SelectionSound("TURN_ON");
                         TownDetailsMode = TownDetailsMode.Normal;
                     }
                 }
@@ -705,7 +705,7 @@ public partial class Renderer
                 {
                     if (_leftMouseReleased || _rightMouseReleased)
                     {
-                        SECtrl.immediate_sound("TURN_OFF");
+                        Audio.SelectionSound("TURN_OFF");
                         TownDetailsMode = TownDetailsMode.Normal;
                     }
                 }

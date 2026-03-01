@@ -384,7 +384,7 @@ public class FirmCamp : Firm
 
 			if (overseerUnit.IsOwn())
 			{
-				SERes.sound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
+				Sys.Instance.Audio.SelectionSound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
 			}
 
 			PatrolUnits.Add(overseerId);

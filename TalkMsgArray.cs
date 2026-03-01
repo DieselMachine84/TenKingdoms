@@ -25,7 +25,6 @@ public class TalkMsgArray
     public bool AddNationColor { get; set; }
 
     private Info Info => Sys.Instance.Info;
-    private SECtrl SECtrl => Sys.Instance.SECtrl;
     private NationArray NationArray => Sys.Instance.NationArray;
     private UnitArray UnitArray => Sys.Instance.UnitArray;
     private NewsArray NewsArray => Sys.Instance.NewsArray;
@@ -165,8 +164,13 @@ public class TalkMsgArray
             case NationBase.NATION_OWN: // can be from both AI or a remote player
                 NewsArray.Diplomacy(talkMsg);
                 if (toNation.GetRelation(talkMsg.FromNationId).HasContact)
-                    SECtrl.immediate_sound(talkMsg.TalkId == TalkMsg.TALK_DECLARE_WAR ? "DECL_WAR" : "GONG");
-                
+                {
+                    if (talkMsg.TalkId == TalkMsg.TALK_DECLARE_WAR)
+                        Sys.Instance.Audio.OtherSound("DECL_WAR");
+                    else
+                        Sys.Instance.Audio.NewsSound("GONG");
+                }
+
                 break;
 
             case NationBase.NATION_AI:
@@ -216,7 +220,7 @@ public class TalkMsgArray
         {
             case NationBase.NATION_OWN:
                 NewsArray.Diplomacy(talkMsg);
-                SECtrl.immediate_sound("GONG");
+                Sys.Instance.Audio.NewsSound("GONG");
                 break;
 
             case NationBase.NATION_AI:
