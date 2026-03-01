@@ -445,7 +445,7 @@ public partial class Renderer
                 if (unit.IsVisible())
                 {
                     unit.BuildFirm(locX, locY, _buildFirmType, InternalConstants.COMMAND_PLAYER);
-                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.SelectionSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "ACK");
                 }
             }
             
@@ -472,7 +472,7 @@ public partial class Renderer
                         UnitArray.Settle(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     
-                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.SelectionSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "ACK");
                 }
             }
             
@@ -487,7 +487,7 @@ public partial class Renderer
                 if (unit.IsVisible())
                 {
                     unit.GoCastPower(locX, locY, 1, InternalConstants.COMMAND_PLAYER);
-                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.SelectionSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "ACK");
                 }
             }
             
@@ -503,7 +503,7 @@ public partial class Renderer
                 if (location.IsFirm() && trader.CanSetStop(location.FirmId()))
                 {
                     trader.SetStop(_setStopId, locX, locY, InternalConstants.COMMAND_PLAYER);
-                    Audio.OtherSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                    Audio.SelectionSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "ACK");
                 }
             }
 
@@ -534,6 +534,11 @@ public partial class Renderer
         {
             UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
             UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
+            if (_selectedUnitId != 0)
+            {
+                Unit selectedUnit = UnitArray[_selectedUnitId];
+                Audio.SelectionSound(selectedUnit.CurLocX, selectedUnit.CurLocY, 1, 'S', selectedUnit.SpriteResId, "ACK");
+            }
             return;
         }
 
@@ -692,6 +697,12 @@ public partial class Renderer
                 UnitArray.MoveTo(locX, locY, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
                 UnitArray.MoveTo(locX, locY, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
             }
+        }
+        
+        if (_selectedUnitId != 0)
+        {
+            Unit selectedUnit = UnitArray[_selectedUnitId];
+            Audio.SelectionSound(selectedUnit.CurLocX, selectedUnit.CurLocY, 1, 'S', selectedUnit.SpriteResId, "ACK");
         }
     }
 

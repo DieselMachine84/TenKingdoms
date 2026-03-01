@@ -689,7 +689,7 @@ public partial class Renderer
             //}
         }
         
-        Audio.OtherSound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteId, "ACK");
+        Audio.SelectionSound(unit.NextLocX, unit.NextLocY, 1, 'S', unit.SpriteResId, "ACK");
     }
 
     private void DrawSettlePanel()
