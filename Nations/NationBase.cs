@@ -224,12 +224,6 @@ public class NationBase : IIdObject
             InitRelation(nation);
             nation.InitRelation(this);
         }
-
-        for (int i = 0; i < TechRes.TechInfos.Length; i++)
-        {
-            if (TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_TRANSPORT || TechRes.TechInfos[i].UnitId == UnitConstants.UNIT_VESSEL)
-                _techLevels[i] = 1;
-        }
     }
 
     private void InitRelation(NationBase otherNation)
@@ -888,6 +882,9 @@ public class NationBase : IIdObject
 
     public int GetTechLevelByUnitType(int unitType)
     {
+        if (unitType == UnitConstants.UNIT_TRANSPORT || unitType == UnitConstants.UNIT_VESSEL)
+            return 1;
+        
         for (int techId = 1; techId <= TechRes.TechInfos.Length; techId++)
         {
             TechInfo techInfo = TechRes[techId];
