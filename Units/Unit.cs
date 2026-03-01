@@ -1760,7 +1760,7 @@ public abstract partial class Unit : Sprite
 		ActionLocY = burnLocY;
 	}
 
-	protected void GoCastPower(int castLocX, int castLocY, int castPowerType, int remoteAction)
+	public void GoCastPower(int castLocX, int castLocY, int castPowerType, int remoteAction)
 	{
 		if (IsUnitDead())
 			return;

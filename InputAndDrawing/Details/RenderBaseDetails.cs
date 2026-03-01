@@ -70,12 +70,12 @@ public partial class Renderer
                     Graphics.DrawBitmapScaled(_buttonDownTexture, Button1X, ButtonsBaseY, _buttonDownWidth, _buttonDownHeight);
                 else
                     Graphics.DrawBitmapScaled(_buttonUpTexture, Button1X, ButtonsBaseY, _buttonUpWidth, _buttonUpHeight);
-                Graphics.DrawBitmapScaled(_buttonInvokeTexture, Button1X + 8, ButtonsBaseY + 3, _buttonInvokeWidth, _buttonInvokeHeight);
+                Graphics.DrawBitmapScaled(_buttonInvokeTexture, Button1X + 10, ButtonsBaseY + 3, _buttonInvokeWidth, _buttonInvokeHeight);
             }
             else
             {
                 Graphics.DrawBitmapScaled(_buttonDisabledTexture, Button1X, ButtonsBaseY, _buttonDisabledWidth, _buttonDisabledHeight);
-                Graphics.DrawBitmapScaled(_buttonInvokeDisabledTexture, Button1X + 8, ButtonsBaseY + 3, _buttonInvokeWidth, _buttonInvokeHeight);
+                Graphics.DrawBitmapScaled(_buttonInvokeDisabledTexture, Button1X + 10, ButtonsBaseY + 3, _buttonInvokeWidth, _buttonInvokeHeight);
             }
             
             if (IsFirmBaseRewardEnabled(firmBase, overseer))

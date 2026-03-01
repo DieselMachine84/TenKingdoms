@@ -157,6 +157,7 @@ public partial class Renderer
             }
 
             CancelSettleAndBuild();
+            CancelGodCastPower();
             CancelSetStop();
             SelectMouseCursor();
             // TODO cancel ship stop and cast power
@@ -418,7 +419,7 @@ public partial class Renderer
         Location location = World.GetLoc(locX, locY);
 
         _inUnitCommandMode = UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle ||
-                             UnitDetailsMode == UnitDetailsMode.SetStop;
+                             UnitDetailsMode == UnitDetailsMode.GodCastPower || UnitDetailsMode == UnitDetailsMode.SetStop;
 
         if (UnitDetailsMode == UnitDetailsMode.Build)
         {
@@ -462,6 +463,23 @@ public partial class Renderer
             }
             
             CancelSettleAndBuild();
+        }
+
+        if (UnitDetailsMode == UnitDetailsMode.GodCastPower)
+        {
+            if (!UnitArray.IsDeleted(_selectedUnitId))
+            {
+                Unit unit = UnitArray[_selectedUnitId];
+                if (unit.IsVisible())
+                {
+                    unit.GoCastPower(locX, locY, 1, InternalConstants.COMMAND_PLAYER);
+                    
+                    if (SERes.mark_command_time() != 0)
+                        SERes.far_sound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteId, "ACK");
+                }
+            }
+            
+            CancelGodCastPower();
         }
 
         if (UnitDetailsMode == UnitDetailsMode.SetStop)

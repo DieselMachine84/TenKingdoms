@@ -91,9 +91,9 @@ public class UnitGod : Unit
 		if (GodId == GodRes.GOD_VIKING)
 		{
 			if (CastPowerType == 1)
-				VikingSummonRain();
-			else
 				VikingSummonTornado();
+			else
+				VikingSummonRain();
 			return;
 		}
 
@@ -585,7 +585,7 @@ public class UnitGod : Unit
 
 		if (think_god_attack_target(out targetXLoc, out targetYLoc))
 		{
-			GoCastPower(targetXLoc + 1, targetYLoc + 1, 2, InternalConstants.COMMAND_AI);
+			GoCastPower(targetXLoc + 1, targetYLoc + 1, 1, InternalConstants.COMMAND_AI);
 		}
 	}
 

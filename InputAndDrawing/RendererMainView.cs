@@ -282,7 +282,9 @@ public partial class Renderer
         if (UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle)
             DrawBuildMarker();
 
-        //TODO draw god cast power
+        if (UnitDetailsMode == UnitDetailsMode.GodCastPower)
+            DrawGodCastPower();
+
         //TODO draw link lines
         
         BlackenFogOfWar();
@@ -1059,6 +1061,38 @@ public partial class Renderer
             Graphics.DrawRect(screenX, screenY, width * CellTextureWidth, thickness, color);
             thickness = j == height - 1 ? 4 : 2;
             Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, width * CellTextureWidth, thickness, color);
+        }
+    }
+
+    private void DrawGodCastPower()
+    {
+        Unit unit = UnitArray[_selectedUnitId];
+        GodInfo godInfo = GodRes[((UnitGod)unit).GodId];
+
+        (int locX, int locY) = GetMainViewLocation(_mouseMotionX, _mouseMotionY);
+        int locX1 = locX - godInfo.CastPowerRange + 1;
+        int locY1 = locY - godInfo.CastPowerRange + 1;
+        int locX2 = locX + godInfo.CastPowerRange - 1;
+        int locY2 = locY + godInfo.CastPowerRange - 1;
+
+        int centerY = (locY1 + locY2) / 2;
+
+        for (locY = locY1; locY <= locY2; locY++)
+        {
+            int edgeX = Math.Abs(locY - centerY) / 2;
+
+            for (locX = locX1 + edgeX; locX <= locX2 - edgeX; locX++)
+            {
+                if (Misc.IsLocationValid(locX, locY))
+                {
+                    int thickness = 4;
+                    (int screenX, int screenY) = GetScreenXAndY(locX, locY);
+                    Graphics.DrawRect(screenX - 2, screenY - 2, CellTextureWidth + 4, thickness, Colors.V_DARK_GREEN);
+                    Graphics.DrawRect(screenX - 2, screenY - 2, thickness, CellTextureHeight + 4, Colors.V_DARK_GREEN);
+                    Graphics.DrawRect(screenX - 2, screenY - 2 + CellTextureHeight, CellTextureWidth + 4, thickness, Colors.V_DARK_GREEN);
+                    Graphics.DrawRect(screenX - 2 + CellTextureWidth, screenY - 2, thickness, CellTextureHeight + 4, Colors.V_DARK_GREEN);
+                }
+            }
         }
     }
 

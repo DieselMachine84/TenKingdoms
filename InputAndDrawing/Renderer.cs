@@ -488,12 +488,19 @@ public partial class Renderer : IRenderer
     {
         if (_selectedTownId != 0 && TownArray.IsDeleted(_selectedTownId))
             _selectedTownId = 0;
+        
         if (_selectedFirmId != 0 && FirmArray.IsDeleted(_selectedFirmId))
             _selectedFirmId = 0;
+        
         if (_selectedUnitId != 0 && UnitArray.IsDeleted(_selectedUnitId))
+        {
             _selectedUnitId = 0;
+            UnitDetailsMode = UnitDetailsMode.Normal;
+        }
+
         if (_selectedSiteId != 0 && SiteArray.IsDeleted(_selectedSiteId))
             _selectedSiteId = 0;
+        
         for (int i = _selectedUnits.Count - 1; i >= 0; i--)
         {
             if (UnitArray.IsDeleted(_selectedUnits[i]))
