@@ -34,6 +34,16 @@ public class Audio
 			}
 			
 			SDL_mixer.Mix_AllocateChannels(10);
+			SDL_mixer.Mix_Volume(0, Config.MusicVolume);
+			SDL_mixer.Mix_Volume(1, Config.SoundEffectsVolume);
+			SDL_mixer.Mix_Volume(2, Config.SoundEffectsVolume);
+			SDL_mixer.Mix_Volume(3, Config.SoundEffectsVolume);
+			SDL_mixer.Mix_Volume(4, Config.SoundEffectsVolume);
+			SDL_mixer.Mix_Volume(5, Config.SoundEffectsVolume);
+			SDL_mixer.Mix_Volume(6, Config.BattleVolume);
+			SDL_mixer.Mix_Volume(7, Config.BattleVolume);
+			SDL_mixer.Mix_Volume(8, Config.BattleVolume);
+			SDL_mixer.Mix_Volume(9, Config.BattleVolume);
 			LoadMusic();
 		}
 
@@ -207,7 +217,7 @@ public class Audio
 	
 	public void BattleSound(int locX, int locY, int frame, char subjectType, int subjectId, string action, int objectType = 0, int objectId = 0)
 	{
-		for (int i = 6; i < 9; i++)
+		for (int i = 6; i <= 9; i++)
 		{
 			if (Sys.Instance.IsLocationOnScreen(locX, locY) && SDL_mixer.Mix_Playing(i) == 0)
 			{

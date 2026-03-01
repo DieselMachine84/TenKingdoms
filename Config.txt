@@ -42,6 +42,9 @@ GameScreenWidth = 30                            // width in tiles
 GameScreenHeight = 19                           // height in tiles
 ShowUnitPath = 3                                // 0 - not shown, 1 - world map, 2 - main map, 3 - both
 DisplayNewsType = 1                             // 0 - major news, 1 - all news
+MusicVolume = 64                                // 0..128
+SoundEffectsVolume = 64                         // 0..128
+BattleVolume = 64                               // 0..128
 	
 // ---- Custom settings ----
 UnlimitedRawResource = false

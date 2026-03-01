@@ -64,11 +64,9 @@ public class Config
 	public int GameScreenHeight { get; private set; } = 19;
 	public int ShowUnitPath { get; private set; } = 3; // bit 0 show unit path on main view, bit 1 for minimap
 	public int DisplayNewsType { get; private set; } = OPTION_DISPLAY_ALL_NEWS;
-	public bool MusicFlag { get; private set; } = true;
-	public int MusicVolume { get; private set; } = 70; // a value from 0 to 100
-	public bool SoundEffectFlag { get; private set; } = true;
-	public int SoundEffectVolume { get; private set; } = 70; // a value from 0 to 100
-	public bool PanControl { get; private set; } = true; // mono speaker should disable PanControl
+	public int MusicVolume { get; private set; } = 64;
+	public int SoundEffectsVolume { get; private set; } = 64;
+	public int BattleVolume { get; private set; } = 64;
 	
 	// ---- Custom settings ----
 	public bool UnlimitedRawResource { get; private set; }
@@ -340,6 +338,27 @@ public class Config
 					DisplayNewsType = ParseIntParameter(line, "DisplayNewsType");
 					if (DisplayNewsType != 0 && DisplayNewsType != 1)
 						return "Incorrect DisplayNewsType value";
+				}
+
+				if (line.StartsWith("MusicVolume"))
+				{
+					MusicVolume = ParseIntParameter(line, "MusicVolume");
+					MusicVolume = Math.Max(MusicVolume, 0);
+					MusicVolume = Math.Min(MusicVolume, 128);
+				}
+				
+				if (line.StartsWith("SoundEffectsVolume"))
+				{
+					SoundEffectsVolume = ParseIntParameter(line, "SoundEffectsVolume");
+					SoundEffectsVolume = Math.Max(SoundEffectsVolume, 0);
+					SoundEffectsVolume = Math.Min(SoundEffectsVolume, 128);
+				}
+				
+				if (line.StartsWith("BattleVolume"))
+				{
+					BattleVolume = ParseIntParameter(line, "BattleVolume");
+					BattleVolume = Math.Max(BattleVolume, 0);
+					BattleVolume = Math.Min(BattleVolume, 128);
 				}
 				
 				if (line.StartsWith("UnlimitedRawResource"))
