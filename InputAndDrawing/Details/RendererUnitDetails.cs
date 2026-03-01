@@ -2,7 +2,7 @@ using System;
 
 namespace TenKingdoms;
 
-enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop, ShipGoods }
+enum UnitDetailsMode { Normal, Settle, BuildMenu, Build, SetStop, ShipGoods, GodCastPower }
 
 public partial class Renderer
 {
