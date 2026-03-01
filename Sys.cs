@@ -225,6 +225,8 @@ public class Sys
         Renderer.Reset();
         GoToPlayerTown();
         Renderer.GameMode = GameMode.Game;
+        Audio.StopMusicTheme();
+        Audio.PlayGameTheme(NationArray.Player != null ? NationArray.Player.RaceId : 0);
         Graphics.SetWindowSize(Renderer.WindowWidth, Renderer.WindowHeight);
     }
 
@@ -350,6 +352,7 @@ public class Sys
                     Graphics.Render();
                 }
                 
+                Audio.Play7KTheme();
                 continue;
             }
             
@@ -419,6 +422,8 @@ public class Sys
                 Renderer.DrawFrame(nextFrameReady);
                 Graphics.Render();
             }
+            
+            Audio.PlayGameTheme();
         }
     }
 

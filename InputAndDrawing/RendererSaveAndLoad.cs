@@ -235,6 +235,8 @@ public partial class Renderer
                 if (Sys.Instance.LoadGame(selectedSavedGame))
                 {
                     GameMode = GameMode.Game;
+                    Audio.StopMusicTheme();
+                    Audio.PlayGameTheme(NationArray.Player != null ? NationArray.Player.RaceId : 0);
                     Graphics.SetWindowSize(WindowWidth, WindowHeight);
                 }
                 else
