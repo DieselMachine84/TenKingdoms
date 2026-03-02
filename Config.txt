@@ -49,5 +49,5 @@ BattleVolume = 64                               // 0..128
 // ---- Custom settings ----
 UnlimitedRawResource = false
 FastBuild = false
-SaveOnError = true
+SaveOnError = false                             // Affects performance
 ShowAIInfo = false
