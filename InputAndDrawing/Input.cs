@@ -790,8 +790,7 @@ public partial class Renderer
                 switch (targetUnit.MobileType)
                 {
                     case UnitConstants.UNIT_LAND:
-                        //TODO only when shift is pressed
-                        if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
+                        if (targetUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART && Sys.Instance.IsShiftPressed())
                         {
                             UnitArray.Attack(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
                                 InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
@@ -1381,7 +1380,13 @@ public partial class Renderer
                         return CursorType.NORMAL_OWN;
                     
                     case ScreenObjectType.FriendUnit:
-                        //TODO assign to ship or trigger explode
+                        Unit pointingUnit = UnitArray[pointingId];
+                        if (UnitRes[pointingUnit.UnitType].CarryUnitCapacity > 0)
+                            return CursorType.ASSIGN;
+
+                        if (pointingUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART && unit.MaxAttackRange() > 1)
+                            return CursorType.TRIGGER_EXPLODE;
+                        
                         return CursorType.NORMAL_OWN;
                     
                     case ScreenObjectType.EnemyTown:
@@ -1458,7 +1463,20 @@ public partial class Renderer
                         return CursorType.NORMAL_OWN;
                     
                     case ScreenObjectType.FriendUnit:
-                        //TODO assign to ship or trigger explode
+                        Unit pointingUnit = UnitArray[pointingId];
+                        if (UnitRes[pointingUnit.UnitType].CarryUnitCapacity > 0)
+                            return CursorType.ASSIGN;
+
+                        if (pointingUnit.UnitType == UnitConstants.UNIT_EXPLOSIVE_CART)
+                        {
+                            foreach (int selectedUnitId in _selectedUnits)
+                            {
+                                Unit selectedUnit = UnitArray[selectedUnitId];
+                                if (selectedUnit.IsOwn() && selectedUnit.MaxAttackRange() > 1)
+                                    return CursorType.TRIGGER_EXPLODE;
+                            }
+                        }
+
                         return CursorType.NORMAL_OWN;
 
                     case ScreenObjectType.EnemyTown:

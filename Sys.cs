@@ -514,6 +514,14 @@ public class Sys
         Renderer.ProcessInput(InputConstants.MouseMotion, mouseMotionEvent.x, mouseMotionEvent.y);
     }
 
+    public bool IsShiftPressed()
+    {
+        IntPtr state = SDL.SDL_GetKeyboardState(out int length);
+        byte[] managedState = new byte[length];
+        System.Runtime.InteropServices.Marshal.Copy(state, managedState, 0, length);
+        return managedState[(int)SDL.SDL_Scancode.SDL_SCANCODE_LSHIFT] == 1 || managedState[(int)SDL.SDL_Scancode.SDL_SCANCODE_RSHIFT] == 1;
+    }
+
     public void EndGame(int winNationId, bool playerDestroyed, int surrenderToNationId = 0, bool retire = false)
     {
     }

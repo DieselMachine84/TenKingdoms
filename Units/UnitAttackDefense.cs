@@ -3402,7 +3402,7 @@ public partial class Unit
 		}
 	}
 	
-	private int MaxAttackRange()
+	public int MaxAttackRange()
 	{
 		int maxRange = 0;
 
