@@ -14,24 +14,24 @@ CustomAIStartUpCash = 0                         // If not zero use this value in
 CustomStartUpFood = 0                           // If not zero use this value for food
 CustomAIStartUpFood = 0                         // If not zero use this value for food
 RawResourceCount = 5                            // 0..100
-RawResourceNearby = false                       // true or false
+RawResourceNearby = no
 MonsterType = 1                                 // 0 - no monsters, 1 - Defensive, 2 - Offensive
 MonsterLairCount = 15                           // 0..1000
 IndependentTownCount = 15                       // 0..1000
 IndependentTownResistance = 2                   // 1 - Low, 2 - Medium, 3 - High
-NewIndependentTownEmerge = true
-NewNationEmerge = false
-RandomStartUp = false
-ExploreWholeMap = true
-FogOfWar = false
+NewIndependentTownEmerge = yes
+NewNationEmerge = no
+RandomStartUp = no
+ExploreWholeMap = yes
+FogOfWar = no
 EarthquakeFrequency = 0                         // 0 - Never, 1 - Seldom, 2 - Occasional, 3 - Frequent
 	
 // ---- Goal settings ----
-GoalDestroyMonsterFlag = false
-GoalPopulationFlag = false
-GoalEconomicScoreFlag = false
-GoalTotalScoreFlag = false
-GoalYearLimitFlag = false
+GoalDestroyMonsterFlag = no
+GoalPopulationFlag = no
+GoalEconomicScoreFlag = no
+GoalTotalScoreFlag = no
+GoalYearLimitFlag = no
 GoalPopulation = 300
 GoalEconomicScore = 300
 GoalTotalScore = 600
@@ -47,7 +47,7 @@ SoundEffectsVolume = 64                         // 0..128
 BattleVolume = 64                               // 0..128
 	
 // ---- Custom settings ----
-UnlimitedRawResource = false
-FastBuild = false
-SaveOnError = false                             // Affects performance
-ShowAIInfo = false
+UnlimitedRawResource = no
+FastBuild = no
+SaveOnError = no                                // Affects performance
+ShowAIInfo = no

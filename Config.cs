@@ -437,6 +437,12 @@ public class Config
 		string parameterValue = ParseParameter(line, parameter);
 		if (String.IsNullOrEmpty(parameterValue))
 			throw new Exception("Cannot parse value of " + parameter);
+
+		if (parameterValue.ToLower() == "yes")
+			return true;
+		
+		if (parameterValue.ToLower() == "no")
+			return false;
 		
 		try
 		{
