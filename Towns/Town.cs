@@ -2153,7 +2153,7 @@ public class Town : IIdObject
 		if (RecruitableRacePopulation(raceId, true) == 0)
 			return false;
 
-		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY + 3;
+		int minRecruitLoyalty = GameConstants.MIN_RECRUIT_LOYALTY;
 
 		//--- for the AI, only recruit if the loyalty still stay at 30 after recruiting the unit ---//
 
