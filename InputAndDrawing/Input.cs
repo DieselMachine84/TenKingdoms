@@ -952,7 +952,7 @@ public partial class Renderer
                 TalkMsg talkMsg = TalkMsgArray.GetTalkMsg(news.Param1);
                 if (talkMsg.ReplyType == TalkMsgArray.REPLY_WAITING)
                 {
-                    bool clickOnReply = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + NATION_COLOR_BAR_WIDTH &&
+                    bool clickOnReply = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + 12 + NATION_COLOR_BAR_WIDTH &&
                                         _mouseButtonY >= MainViewY + MainViewHeight + 2 - dy && _mouseButtonY < MainViewY + MainViewHeight + 2 - dy + NATION_COLOR_BAR_HEIGHT;
                     if (clickOnReply)
                     {
@@ -968,7 +968,7 @@ public partial class Renderer
             }
             if (news.IsLocValid())
             {
-                bool clickOnNewsLoc = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + MainViewWidth + _newsLocWidth * 2 &&
+                bool clickOnNewsLoc = _mouseButtonX >= MainViewX + 12 && _mouseButtonX < MainViewX + 12 + _newsLocWidth * 2 &&
                                       _mouseButtonY >= MainViewY + MainViewHeight + 2 - dy && _mouseButtonY < MainViewY + MainViewHeight + _newsLocHeight * 2;
                 if (clickOnNewsLoc)
                 {
