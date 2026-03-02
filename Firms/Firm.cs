@@ -1106,7 +1106,7 @@ public abstract class Firm : IIdObject
 		return enabled ? InternalConstants.LINK_EE : InternalConstants.LINK_DD;
 	}
 	
-	private bool IsLinkableToFirm(int linkFirmType)
+	public bool IsLinkableToFirm(int linkFirmType)
 	{
 		switch (FirmType)
 		{

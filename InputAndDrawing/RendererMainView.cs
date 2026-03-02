@@ -278,6 +278,8 @@ public partial class Renderer
         //TODO draw way points
         //TODO draw weather effects
         //TODO add fire sound
+        
+        DrawLinkLines();
 
         if (UnitDetailsMode == UnitDetailsMode.Build || UnitDetailsMode == UnitDetailsMode.Settle)
             DrawBuildMarker();
@@ -285,8 +287,6 @@ public partial class Renderer
         if (UnitDetailsMode == UnitDetailsMode.GodCastPower)
             DrawGodCastPower();
 
-        //TODO draw link lines
-        
         BlackenFogOfWar();
         BlackenUnexplored();
         
@@ -1011,6 +1011,169 @@ public partial class Renderer
             (screenX1 < screenX2) ? screenX1 : screenX2, (screenY1 < screenY2) ? screenY1 : screenY2, CellTextureWidth, CellTextureHeight, diagonalFlip);
     }
 
+    private void DrawLinkLines()
+    {
+        if (_selectedFirmId != 0)
+        {
+            Firm selectedFirm = FirmArray[_selectedFirmId];
+            if (IsLocationOnScreen(selectedFirm.LocX1, selectedFirm.LocY1) ||
+                IsLocationOnScreen(selectedFirm.LocX1, selectedFirm.LocY2) ||
+                IsLocationOnScreen(selectedFirm.LocX2, selectedFirm.LocY1) ||
+                IsLocationOnScreen(selectedFirm.LocX2, selectedFirm.LocY2))
+            {
+                DrawFirmLinkLines(selectedFirm);
+            }
+        }
+        
+        if (_selectedTownId != 0)
+        {
+            Town selectedTown = TownArray[_selectedTownId];
+            if (IsLocationOnScreen(selectedTown.LocX1, selectedTown.LocY1) ||
+                IsLocationOnScreen(selectedTown.LocX1, selectedTown.LocY2) ||
+                IsLocationOnScreen(selectedTown.LocX2, selectedTown.LocY1) ||
+                IsLocationOnScreen(selectedTown.LocX2, selectedTown.LocY2))
+            {
+                DrawTownLinkLines(selectedTown);
+            }
+        }
+    }
+
+    private void DrawFirmLinkLines(Firm firm)
+    {
+        (int firmScreenX1, int firmScreenY1) = GetScreenXAndY(firm.LocX1, firm.LocY1);
+        int firmCenterX = firmScreenX1 + (firm.LocX2 - firm.LocX1 + 1) * CellTextureWidth / 2;
+        int firmCenterY = firmScreenY1 + (firm.LocY2 - firm.LocY1 + 1) * CellTextureHeight / 2;
+
+        for (int index = 0; index < firm.LinkedFirms.Count; index++)
+        {
+            int linkedFirmId = firm.LinkedFirms[index];
+            Firm linkedFirm = FirmArray[linkedFirmId];
+            (int linkedFirmScreenX1, int linkedFirmScreenY1) = GetScreenXAndY(linkedFirm.LocX1, linkedFirm.LocY1);
+            int linkedFirmCenterX = linkedFirmScreenX1 + (linkedFirm.LocX2 - linkedFirm.LocX1 + 1) * CellTextureWidth / 2;
+            int linkedFirmCenterY = linkedFirmScreenY1 + (linkedFirm.LocY2 - linkedFirm.LocY1 + 1) * CellTextureHeight / 2;
+
+            int color = firm.LinkedFirmsEnable[index] == InternalConstants.LINK_EE ? Colors.V_DARK_GREEN : Colors.V_RED;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Graphics.DrawLine(firmCenterX + i, firmCenterY + j, linkedFirmCenterX + i, linkedFirmCenterY + j, color);
+                }
+            }
+
+            if (firm.OwnFirm() && firm.CanToggleFirmLink(linkedFirmId))
+            {
+                (IntPtr texture, int width, int height) = GetLinkTexture(firm.LinkedFirmsEnable[index], firm.NationId == linkedFirm.NationId);
+                Graphics.DrawBitmapScaled(texture, linkedFirmCenterX - Scale(width) / 2, linkedFirmCenterY - Scale(height) / 2, width, height);
+            }
+        }
+
+        for (int index = 0; index < firm.LinkedTowns.Count; index++)
+        {
+            int linkedTownId = firm.LinkedTowns[index];
+            Town linkedTown = TownArray[linkedTownId];
+            (int linkedTownScreenX1, int linkedTownScreenY1) = GetScreenXAndY(linkedTown.LocX1, linkedTown.LocY1);
+            int linkedTownCenterX = linkedTownScreenX1 + (linkedTown.LocX2 - linkedTown.LocX1 + 1) * CellTextureWidth / 2;
+            int linkedTownCenterY = linkedTownScreenY1 + (linkedTown.LocY2 - linkedTown.LocY1 + 1) * CellTextureHeight / 2;
+
+            int color;
+            if (firm.SelectedWorkerId != 0 && firm.Workers[firm.SelectedWorkerId - 1].TownId == linkedTownId)
+            {
+                color = firm.LinkedTownsEnable[index] == InternalConstants.LINK_EE ? Colors.V_LIGHT_GREEN : Colors.V_LIGHT_RED;
+            }
+            else
+            {
+                color = firm.LinkedTownsEnable[index] == InternalConstants.LINK_EE ? Colors.V_DARK_GREEN : Colors.V_RED;
+            }
+            
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Graphics.DrawLine(firmCenterX + i, firmCenterY + j, linkedTownCenterX + i, linkedTownCenterY + j, color);
+                }
+            }
+
+            if (firm.OwnFirm() && firm.CanToggleTownLink())
+            {
+                (IntPtr texture, int width, int height) = GetLinkTexture(firm.LinkedTownsEnable[index], firm.NationId == linkedTown.NationId);
+                Graphics.DrawBitmapScaled(texture, linkedTownCenterX - Scale(width) / 2, linkedTownCenterY - Scale(height) / 2, width, height);
+            }
+        }
+    }
+
+    private void DrawTownLinkLines(Town town)
+    {
+        (int townScreenX1, int townScreenY1) = GetScreenXAndY(town.LocX1, town.LocY1);
+        int townCenterX = townScreenX1 + (town.LocX2 - town.LocX1 + 1) * CellTextureWidth / 2;
+        int townCenterY = townScreenY1 + (town.LocY2 - town.LocY1 + 1) * CellTextureHeight / 2;
+
+        for (int index = 0; index < town.LinkedFirms.Count; index++)
+        {
+            int linkedFirmId = town.LinkedFirms[index];
+            Firm linkedFirm = FirmArray[linkedFirmId];
+            (int linkedFirmScreenX1, int linkedFirmScreenY1) = GetScreenXAndY(linkedFirm.LocX1, linkedFirm.LocY1);
+            int linkedFirmCenterX = linkedFirmScreenX1 + (linkedFirm.LocX2 - linkedFirm.LocX1 + 1) * CellTextureWidth / 2;
+            int linkedFirmCenterY = linkedFirmScreenY1 + (linkedFirm.LocY2 - linkedFirm.LocY1 + 1) * CellTextureHeight / 2;
+
+            int color = town.LinkedFirmsEnable[index] == InternalConstants.LINK_EE ? Colors.V_DARK_GREEN : Colors.V_RED;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Graphics.DrawLine(townCenterX + i, townCenterY + j, linkedFirmCenterX + i, linkedFirmCenterY + j, color);
+                }
+            }
+
+            if (town.IsOwn() && town.CanToggleFirmLink(linkedFirmId))
+            {
+                (IntPtr texture, int width, int height) = GetLinkTexture(town.LinkedFirmsEnable[index], town.NationId == linkedFirm.NationId);
+                Graphics.DrawBitmapScaled(texture, linkedFirmCenterX - Scale(width) / 2, linkedFirmCenterY - Scale(height) / 2, width, height);
+            }
+        }
+        
+        for (int index = 0; index < town.LinkedTowns.Count; index++)
+        {
+            int linkedTownId = town.LinkedTowns[index];
+            Town linkedTown = TownArray[linkedTownId];
+            (int linkedTownScreenX1, int linkedTownScreenY1) = GetScreenXAndY(linkedTown.LocX1, linkedTown.LocY1);
+            int linkedTownCenterX = linkedTownScreenX1 + (linkedTown.LocX2 - linkedTown.LocX1 + 1) * CellTextureWidth / 2;
+            int linkedTownCenterY = linkedTownScreenY1 + (linkedTown.LocY2 - linkedTown.LocY1 + 1) * CellTextureHeight / 2;
+
+            int color = town.LinkedTownsEnable[index] == InternalConstants.LINK_EE ? Colors.V_DARK_GREEN : Colors.V_RED;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Graphics.DrawLine(townCenterX + i, townCenterY + j, linkedTownCenterX + i, linkedTownCenterY + j, color);
+                }
+            }
+
+            if (town.IsOwn() && linkedTown.NationId == NationArray.PlayerId && town.CanMigrate(linkedTownId, false, _selectedRaceId))
+            {
+                Graphics.DrawBitmapScaled(_migrateTexture, linkedTownCenterX - Scale(_migrateWidth) / 2, linkedTownCenterY - Scale(_migrateHeight) / 2, _migrateWidth, _migrateHeight);
+            }
+        }
+    }
+
+    private (IntPtr, int, int) GetLinkTexture(int linkType, bool sameNation)
+    {
+        return linkType switch
+        {
+            InternalConstants.LINK_EE => ((Sys.Instance.FrameNumber / 2) % 3) switch
+            {
+                0 => (_linkEE1Texture, _linkEE1Width, _linkEE1Height),
+                1 => (_linkEE2Texture, _linkEE2Width, _linkEE2Height),
+                2 => (_linkEE3Texture, _linkEE3Width, _linkEE3Height),
+                _ => (IntPtr.Zero, 0, 0)
+            },
+            InternalConstants.LINK_ED => (_linkEDTexture, _linkEDWidth, _linkEDHeight),
+            InternalConstants.LINK_DE => (_linkDETexture, _linkDEWidth, _linkDEHeight),
+            InternalConstants.LINK_DD => sameNation ? (_linkDETexture, _linkDEWidth, _linkDEHeight) : (_linkDDTexture, _linkDDWidth, _linkDDHeight),
+            _ => (IntPtr.Zero, 0, 0)
+        };
+    }
+    
     private void DrawBuildMarker()
     {
         int width = 0;
@@ -1061,6 +1224,91 @@ public partial class Renderer
             Graphics.DrawRect(screenX, screenY, width * CellTextureWidth, thickness, color);
             thickness = j == height - 1 ? 4 : 2;
             Graphics.DrawRect(screenX, screenY + CellTextureHeight - thickness, width * CellTextureWidth, thickness, color);
+        }
+
+        bool drawLinkToTown = UnitDetailsMode == UnitDetailsMode.Settle;
+        if (UnitDetailsMode == UnitDetailsMode.Build)
+        {
+            FirmInfo firmInfo = FirmRes[_buildFirmType];
+            drawLinkToTown = firmInfo.IsLinkableToTown;
+        }
+
+        if (drawLinkToTown)
+        {
+            foreach (Town town in TownArray)
+            {
+                if (UnitDetailsMode == UnitDetailsMode.Build)
+                {
+                    if (!Misc.AreTownAndFirmLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                            locX, locY, locX + width - 1, locY + height - 1))
+                        continue;
+                }
+
+                if (UnitDetailsMode == UnitDetailsMode.Settle)
+                {
+                    if (!Misc.AreTownsLinked(town.LocX1, town.LocY1, town.LocX2, town.LocY2,
+                            locX, locY, locX + width - 1, locY + height - 1))
+                        continue;
+                }
+                
+                (int screenX1, int screenY1) = GetScreenXAndY(locX, locY);
+                int centerX = screenX1 + width * CellTextureWidth / 2;
+                int centerY = screenY1 + height * CellTextureHeight / 2;
+                (int townScreenX1, int townScreenY1) = GetScreenXAndY(town.LocX1, town.LocY1);
+                int townCenterX = townScreenX1 + (town.LocX2 - town.LocX1 + 1) * CellTextureWidth / 2;
+                int townCenterY = townScreenY1 + (town.LocY2 - town.LocY1 + 1) * CellTextureHeight / 2;
+                
+                for (int i = -1; i <= 1; i++)
+                {
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        Graphics.DrawLine(centerX + i, centerY + j, townCenterX + i, townCenterY + j, Colors.V_DARK_GREEN);
+                    }
+                }
+            }
+        }
+
+        foreach (Firm firm in FirmArray)
+        {
+            bool drawLinkToFirm = false;
+            if (UnitDetailsMode == UnitDetailsMode.Build)
+                drawLinkToFirm = firm.IsLinkableToFirm(_buildFirmType);
+            
+            if (UnitDetailsMode == UnitDetailsMode.Settle)
+                drawLinkToFirm = FirmRes[firm.FirmType].IsLinkableToTown;
+
+            if (!drawLinkToFirm)
+                continue;
+            
+            if (UnitDetailsMode == UnitDetailsMode.Build)
+            {
+                // Ignore different regions because of harbors
+                if (!Misc.AreFirmsLinked(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, firm.RegionId,
+                        locX, locY, locX + width - 1, locY + height - 1, firm.RegionId))
+                    continue;
+            }
+
+            if (UnitDetailsMode == UnitDetailsMode.Settle)
+            {
+                if (!Misc.AreTownAndFirmLinked(locX, locY, locX + width - 1, locY + height - 1,
+                        firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2))
+                    continue;
+            }
+                
+            (int screenX1, int screenY1) = GetScreenXAndY(locX, locY);
+            int centerX = screenX1 + width * CellTextureWidth / 2;
+            int centerY = screenY1 + height * CellTextureHeight / 2;
+            (int firmScreenX1, int firmScreenY1) = GetScreenXAndY(firm.LocX1, firm.LocY1);
+            int firmCenterX = firmScreenX1 + (firm.LocX2 - firm.LocX1 + 1) * CellTextureWidth / 2;
+            int firmCenterY = firmScreenY1 + (firm.LocY2 - firm.LocY1 + 1) * CellTextureHeight / 2;
+    
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Graphics.DrawLine(centerX + i, centerY + j, firmCenterX + i, firmCenterY + j, Colors.V_DARK_GREEN);
+                }
+            }
         }
     }
 

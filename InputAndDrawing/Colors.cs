@@ -17,6 +17,7 @@ public static class Colors
 
     public const byte V_BLACK = 0x00; // single color only
     public const byte V_WHITE = 0x9F;
+    public const byte V_LIGHT_RED = VGA_RED;
     public const byte V_RED = VGA_RED + 1;
     public const byte V_LIGHT_BLUE = VGA_LIGHT_BLUE + 1;
     public const byte V_DARK_BLUE = VGA_DARK_BLUE + 1;

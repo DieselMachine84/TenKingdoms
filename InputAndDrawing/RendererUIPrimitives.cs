@@ -333,6 +333,27 @@ public partial class Renderer
 	private IntPtr _newsLocTexture;
 	private int _newsLocWidth;
 	private int _newsLocHeight;
+	private IntPtr _linkEE1Texture;
+	private int _linkEE1Width;
+	private int _linkEE1Height;
+	private IntPtr _linkEE2Texture;
+	private int _linkEE2Width;
+	private int _linkEE2Height;
+	private IntPtr _linkEE3Texture;
+	private int _linkEE3Width;
+	private int _linkEE3Height;
+	private IntPtr _linkEDTexture;
+	private int _linkEDWidth;
+	private int _linkEDHeight;
+	private IntPtr _linkDETexture;
+	private int _linkDEWidth;
+	private int _linkDEHeight;
+	private IntPtr _linkDDTexture;
+	private int _linkDDWidth;
+	private int _linkDDHeight;
+	private IntPtr _migrateTexture;
+	private int _migrateWidth;
+	private int _migrateHeight;
 
 	private IntPtr _buttonUpTexture;
 	private int _buttonUpWidth;
@@ -1077,10 +1098,34 @@ public partial class Renderer
 		_clearNewsWidth = BitConverter.ToInt16(clearNewsData, 0);
 		_clearNewsHeight = BitConverter.ToInt16(clearNewsData, 2);
 		_clearNewsTexture = Graphics.CreateTextureFromBmp(clearNewsData.Skip(4).ToArray(), _clearNewsWidth, _clearNewsHeight);
-		byte[] newsLocData = iconResource.Read("NEWS_GO");
-		_newsLocWidth = BitConverter.ToInt16(newsLocData, 0);
-		_newsLocHeight = BitConverter.ToInt16(newsLocData, 2);
-		_newsLocTexture = Graphics.CreateTextureFromBmp(newsLocData.Skip(4).ToArray(), _newsLocWidth, _newsLocHeight);
+		byte[] linkEE1Data = iconResource.Read("LINK_EE1");
+		_linkEE1Width = BitConverter.ToInt16(linkEE1Data, 0);
+		_linkEE1Height = BitConverter.ToInt16(linkEE1Data, 2);
+		_linkEE1Texture = Graphics.CreateTextureFromBmp(linkEE1Data.Skip(4).ToArray(), _linkEE1Width, _linkEE1Height);
+		byte[] linkEE2Data = iconResource.Read("LINK_EE2");
+		_linkEE2Width = BitConverter.ToInt16(linkEE2Data, 0);
+		_linkEE2Height = BitConverter.ToInt16(linkEE2Data, 2);
+		_linkEE2Texture = Graphics.CreateTextureFromBmp(linkEE2Data.Skip(4).ToArray(), _linkEE2Width, _linkEE2Height);
+		byte[] linkEE3Data = iconResource.Read("LINK_EE3");
+		_linkEE3Width = BitConverter.ToInt16(linkEE3Data, 0);
+		_linkEE3Height = BitConverter.ToInt16(linkEE3Data, 2);
+		_linkEE3Texture = Graphics.CreateTextureFromBmp(linkEE3Data.Skip(4).ToArray(), _linkEE3Width, _linkEE3Height);
+		byte[] linkEDData = iconResource.Read("LINK_ED");
+		_linkEDWidth = BitConverter.ToInt16(linkEDData, 0);
+		_linkEDHeight = BitConverter.ToInt16(linkEDData, 2);
+		_linkEDTexture = Graphics.CreateTextureFromBmp(linkEDData.Skip(4).ToArray(), _linkEDWidth, _linkEDHeight);
+		byte[] linkDEData = iconResource.Read("LINK_DE");
+		_linkDEWidth = BitConverter.ToInt16(linkDEData, 0);
+		_linkDEHeight = BitConverter.ToInt16(linkDEData, 2);
+		_linkDETexture = Graphics.CreateTextureFromBmp(linkDEData.Skip(4).ToArray(), _linkDEWidth, _linkDEHeight);
+		byte[] linkDDData = iconResource.Read("LINK_DD");
+		_linkDDWidth = BitConverter.ToInt16(linkDDData, 0);
+		_linkDDHeight = BitConverter.ToInt16(linkDDData, 2);
+		_linkDDTexture = Graphics.CreateTextureFromBmp(linkDDData.Skip(4).ToArray(), _linkDDWidth, _linkDDHeight);
+		byte[] migrateData = iconResource.Read("MIGRATE");
+		_migrateWidth = BitConverter.ToInt16(migrateData, 0);
+		_migrateHeight = BitConverter.ToInt16(migrateData, 2);
+		_migrateTexture = Graphics.CreateTextureFromBmp(migrateData.Skip(4).ToArray(), _migrateWidth, _migrateHeight);
 	}
 
 	private void CreateButtonTextures()

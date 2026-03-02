@@ -142,6 +142,14 @@ public partial class Renderer
             if (clickOnMainView)
             {
                 (int locX, int locY) = GetMainViewLocation(_mouseButtonX, _mouseButtonY);
+                Location location = World.GetLoc(locX, locY);
+                
+                if (location.IsTown())
+                    HandlePointingTownClick(TownArray[location.TownId()], _mouseButtonX, _mouseButtonY);
+
+                if (location.IsFirm())
+                    HandlePointingFirmClick(FirmArray[location.FirmId()], _mouseButtonX, _mouseButtonY);
+                
                 ProcessRightMouseAction(locX, locY, false);
             }
 
@@ -306,21 +314,27 @@ public partial class Renderer
             {
                 if (pointingLocation.IsTown())
                 {
-                    ResetSelection();
-                    _selectedTownId = pointingLocation.TownId();
-                    Town selectedTown = TownArray[_selectedTownId];
-                    if (NationArray.PlayerId != 0 && selectedTown.NationId == NationArray.PlayerId)
-                        Audio.SelectionSound(selectedTown.LocCenterX, selectedTown.LocCenterY, 1, 'T', 0, "SEL");
+                    if (!HandlePointingTownClick(TownArray[pointingLocation.TownId()], mouse2X, mouse2Y))
+                    {
+                        ResetSelection();
+                        _selectedTownId = pointingLocation.TownId();
+                        Town selectedTown = TownArray[_selectedTownId];
+                        if (NationArray.PlayerId != 0 && selectedTown.IsOwn())
+                            Audio.SelectionSound(selectedTown.LocCenterX, selectedTown.LocCenterY, 1, 'T', 0, "SEL");
+                    }
                 }
                 
                 if (pointingLocation.IsFirm())
                 {
-                    ResetSelection();
-                    _selectedFirmId = pointingLocation.FirmId();
-                    Firm selectedFirm = FirmArray[_selectedFirmId];
-                    if (NationArray.PlayerId != 0 && selectedFirm.OwnFirm())
-                        Audio.SelectionSound(selectedFirm.LocCenterX, selectedFirm.LocCenterY, 1, 'F', selectedFirm.FirmType,
-                            selectedFirm.UnderConstruction ? "SELU" : "SEL");
+                    if (!HandlePointingFirmClick(FirmArray[pointingLocation.FirmId()], mouse2X, mouse2Y))
+                    {
+                        ResetSelection();
+                        _selectedFirmId = pointingLocation.FirmId();
+                        Firm selectedFirm = FirmArray[_selectedFirmId];
+                        if (NationArray.PlayerId != 0 && selectedFirm.OwnFirm())
+                            Audio.SelectionSound(selectedFirm.LocCenterX, selectedFirm.LocCenterY, 1, 'F', selectedFirm.FirmType,
+                                selectedFirm.UnderConstruction ? "SELU" : "SEL");
+                    }
                 }
 
                 if (pointingLocation.HasSite())
@@ -424,6 +438,203 @@ public partial class Renderer
 
             return true;
         }
+    }
+
+    private bool HandlePointingTownClick(Town pointingTown, int mouseX, int mouseY)
+    {
+        bool handled = false;
+        
+        if (_selectedTownId != 0)
+        {
+            if (pointingTown.IsOwn())
+            {
+                for (int i = 0; i < pointingTown.LinkedTowns.Count; i++)
+                {
+                    int linkedTownId = pointingTown.LinkedTowns[i];
+                    if (linkedTownId == _selectedTownId)
+                    {
+                        (int pointingTownScreenX1, int pointingTownScreenY1) = GetScreenXAndY(pointingTown.LocX1, pointingTown.LocY1);
+                        int pointingTownCenterX = pointingTownScreenX1 + (pointingTown.LocX2 - pointingTown.LocX1 + 1) * CellTextureWidth / 2;
+                        int pointingTownCenterY = pointingTownScreenY1 + (pointingTown.LocY2 - pointingTown.LocY1 + 1) * CellTextureHeight / 2;
+                        if (mouseX >= pointingTownCenterX - Scale(_migrateWidth) / 2 && mouseX <= pointingTownCenterX + Scale(_migrateWidth) / 2 &&
+                            mouseY >= pointingTownCenterY - Scale(_migrateHeight) / 2 && mouseY <= pointingTownCenterY + Scale(_migrateHeight) / 2)
+                        {
+                            Town selectedTown = TownArray[_selectedTownId];
+                            if (selectedTown.IsOwn() && selectedTown.CanMigrate(pointingTown.TownId, false, _selectedRaceId))
+                            {
+                                int count = 0;
+                                if (_leftMouseReleased)
+                                    count = 1;
+                                if (_rightMouseReleased)
+                                    count = 10;
+                                
+                                selectedTown.MigrateTo(pointingTown.TownId, InternalConstants.COMMAND_PLAYER, _selectedRaceId, count);
+                                Audio.SelectionSound("PULL_MAN");
+                                handled = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (_selectedFirmId != 0)
+        {
+            if (pointingTown.IsOwn())
+            {
+                for (int i = 0; i < pointingTown.LinkedFirms.Count; i++)
+                {
+                    int linkedFirmId = pointingTown.LinkedFirms[i];
+                    if (linkedFirmId == _selectedFirmId)
+                    {
+                        (int pointingTownScreenX1, int pointingTownScreenY1) = GetScreenXAndY(pointingTown.LocX1, pointingTown.LocY1);
+                        int pointingTownCenterX = pointingTownScreenX1 + (pointingTown.LocX2 - pointingTown.LocX1 + 1) * CellTextureWidth / 2;
+                        int pointingTownCenterY = pointingTownScreenY1 + (pointingTown.LocY2 - pointingTown.LocY1 + 1) * CellTextureHeight / 2;
+                        if (mouseX >= pointingTownCenterX - Scale(_migrateWidth) / 2 && mouseX <= pointingTownCenterX + Scale(_migrateWidth) / 2 &&
+                            mouseY >= pointingTownCenterY - Scale(_migrateHeight) / 2 && mouseY <= pointingTownCenterY + Scale(_migrateHeight) / 2)
+                        {
+                            if (_leftMouseReleased)
+                            {
+                                if ((pointingTown.LinkedFirmsEnable[i] & InternalConstants.LINK_ED) != 0)
+                                {
+                                    pointingTown.ToggleFirmLink(i + 1, false, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_OFF");
+                                }
+                                else
+                                {
+                                    pointingTown.ToggleFirmLink(i + 1, true, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_ON");
+                                }
+
+                                Firm selectedFirm = FirmArray[_selectedFirmId];
+                                //TODO remote
+                                if (selectedFirm.FirmType == Firm.FIRM_CAMP /* && !remote.is_enable()*/)
+                                {
+                                    if (pointingTown.NationId != 0)
+                                        pointingTown.UpdateTargetLoyalty();
+                                    else
+                                        pointingTown.UpdateTargetResistance();
+                                    pointingTown.UpdateCampLink();
+                                }
+                            }
+
+                            if (_rightMouseReleased)
+                            {
+                                Firm selectedFirm = FirmArray[_selectedFirmId];
+                                if (selectedFirm.OwnFirm() && FirmRes[selectedFirm.FirmType].LiveInTown && selectedFirm.SelectedWorkerId != 0)
+                                {
+                                    selectedFirm.SetWorkerHomeTown(pointingTown.TownId, InternalConstants.COMMAND_PLAYER, selectedFirm.SelectedWorkerId);
+                                    Audio.SelectionSound("PULL_MAN");
+                                }
+                            }
+
+                            handled = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return handled;
+    }
+
+    private bool HandlePointingFirmClick(Firm pointingFirm, int mouseX, int mouseY)
+    {
+        bool handled = false;
+        if (_selectedTownId != 0)
+        {
+            if (pointingFirm.OwnFirm())
+            {
+                for (int i = 0; i < pointingFirm.LinkedTowns.Count; i++)
+                {
+                    int linkedTownId = pointingFirm.LinkedTowns[i];
+                    if (linkedTownId == _selectedTownId)
+                    {
+                        (int pointingFirmScreenX1, int pointingFirmScreenY1) = GetScreenXAndY(pointingFirm.LocX1, pointingFirm.LocY1);
+                        int pointingFirmCenterX = pointingFirmScreenX1 + (pointingFirm.LocX2 - pointingFirm.LocX1 + 1) * CellTextureWidth / 2;
+                        int pointingFirmCenterY = pointingFirmScreenY1 + (pointingFirm.LocY2 - pointingFirm.LocY1 + 1) * CellTextureHeight / 2;
+                        if (mouseX >= pointingFirmCenterX - Scale(_linkEE1Width) / 2 && mouseX <= pointingFirmCenterX + Scale(_linkEE1Width) / 2 &&
+                            mouseY >= pointingFirmCenterY - Scale(_linkEE1Height) / 2 && mouseY <= pointingFirmCenterY + Scale(_linkEE1Height) / 2)
+                        {
+                            if (_leftMouseReleased)
+                            {
+                                if ((pointingFirm.LinkedTownsEnable[i] & InternalConstants.LINK_ED) != 0)
+                                {
+                                    pointingFirm.ToggleTownLink(i + 1, false, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_OFF");
+                                }
+                                else
+                                {
+                                    pointingFirm.ToggleTownLink(i + 1, true, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_ON");
+                                }
+
+                                //TODO remote
+                                if (pointingFirm.FirmType == Firm.FIRM_CAMP /* && !remote.is_enable()*/)
+                                {
+                                    Town selectedTown = TownArray[_selectedTownId];
+                                    if (selectedTown.NationId != 0)
+                                        selectedTown.UpdateTargetLoyalty();
+                                    else
+                                        selectedTown.UpdateTargetResistance();
+                                    selectedTown.UpdateCampLink();
+                                }
+                            }
+
+                            if (_rightMouseReleased)
+                            {
+                                Town selectedTown = TownArray[_selectedTownId];
+                                if (selectedTown.IsOwn() && !pointingFirm.UnderConstruction && pointingFirm.Workers.Count < Firm.MAX_WORKER)
+                                {
+                                    pointingFirm.PullTownPeople(selectedTown.TownId, InternalConstants.COMMAND_PLAYER, _selectedRaceId, true);
+                                    Audio.SelectionSound("PULL_MAN");
+                                }
+                            }
+
+                            handled = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (_selectedFirmId != 0)
+        {
+            if (pointingFirm.OwnFirm())
+            {
+                for (int i = 0; i < pointingFirm.LinkedFirms.Count; i++)
+                {
+                    int linkedFirmId = pointingFirm.LinkedFirms[i];
+                    if (linkedFirmId == _selectedFirmId)
+                    {
+                        (int pointingFirmScreenX1, int pointingFirmScreenY1) = GetScreenXAndY(pointingFirm.LocX1, pointingFirm.LocY1);
+                        int pointingFirmCenterX = pointingFirmScreenX1 + (pointingFirm.LocX2 - pointingFirm.LocX1 + 1) * CellTextureWidth / 2;
+                        int pointingFirmCenterY = pointingFirmScreenY1 + (pointingFirm.LocY2 - pointingFirm.LocY1 + 1) * CellTextureHeight / 2;
+                        if (mouseX >= pointingFirmCenterX - Scale(_linkEE1Width) / 2 && mouseX <= pointingFirmCenterX + Scale(_linkEE1Width) / 2 &&
+                            mouseY >= pointingFirmCenterY - Scale(_linkEE1Height) / 2 && mouseY <= pointingFirmCenterY + Scale(_linkEE1Height) / 2)
+                        {
+                            if (_leftMouseReleased)
+                            {
+                                if ((pointingFirm.LinkedFirmsEnable[i] & InternalConstants.LINK_ED) != 0)
+                                {
+                                    pointingFirm.ToggleFirmLink(i + 1, false, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_OFF");
+                                }
+                                else
+                                {
+                                    pointingFirm.ToggleFirmLink(i + 1, true, InternalConstants.COMMAND_PLAYER);
+                                    Audio.SelectionSound("TURN_ON");
+                                }
+                            }
+
+                            handled = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return handled;
     }
 
     private void ProcessLeftMouseAction()

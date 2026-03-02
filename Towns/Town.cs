@@ -109,7 +109,6 @@ public class Town : IIdObject
 	private UnitRes UnitRes => Sys.Instance.UnitRes;
 	private GodRes GodRes => Sys.Instance.GodRes;
 	private TechRes TechRes => Sys.Instance.TechRes;
-	private SERes SERes => Sys.Instance.SERes;
 
 	private Config Config => Sys.Instance.Config;
 	private Info Info => Sys.Instance.Info;
@@ -1814,8 +1813,11 @@ public class Town : IIdObject
 	}
 
 	
-	private bool CanMigrate(int destTownId, bool migrateNow, int raceId)
+	public bool CanMigrate(int destTownId, bool migrateNow, int raceId)
 	{
+		if (raceId == 0)
+			return false;
+		
 		Town destTown = TownArray[destTownId];
 
 		if (destTown.Population >= GameConstants.MAX_TOWN_POPULATION)
@@ -2011,7 +2013,7 @@ public class Town : IIdObject
 		destTown.IncPopulation(raceId, false, newLoyalty);
 	}
 
-	private bool MigrateTo(int destTownId, int remoteAction, int raceId, int count = 1)
+	public bool MigrateTo(int destTownId, int remoteAction, int raceId, int count = 1)
 	{
 		if (count <= 0 || count > GameConstants.MAX_TOWN_POPULATION)
 		{
@@ -2623,7 +2625,7 @@ public class Town : IIdObject
 		return false;
 	}
 
-	private void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
+	public void ToggleFirmLink(int linkId, bool toggleFlag, int remoteAction, bool setBoth = false)
 	{
 		//if (!remoteAction && remote.is_enable())
 		//{
@@ -2718,7 +2720,7 @@ public class Town : IIdObject
 		return linkedCount;
 	}
 
-	private void UpdateCampLink()
+	public void UpdateCampLink()
 	{
 		//--- enable the link of the town's side to all linked camps ---//
 
@@ -2845,6 +2847,11 @@ public class Town : IIdObject
 		return result;
 	}
 	
+	
+	public bool IsOwn()
+	{
+		return NationArray.PlayerId != 0 && NationId == NationArray.PlayerId;
+	}
 	
 	public void ChangeNation(int newNationId)
 	{
