@@ -193,7 +193,7 @@ public partial class Renderer
 
         if (_leftMouseReleased && mouseOnButton2 && warFactory.HaveOwnWorkers())
         {
-            warFactory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+            SelectUnits(warFactory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER));
         }
         
         if (_leftMouseReleased && mouseOnButton3)

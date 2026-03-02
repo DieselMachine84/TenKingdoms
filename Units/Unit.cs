@@ -726,12 +726,6 @@ public abstract partial class Unit : Sprite
 
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters();
-					//TODO selection
-					/*if (SelectedFlag)
-					{
-						SelectedFlag = false;
-						UnitArray.SelectedCount--;
-					}*/
 				}
 				else if (loc.IsTown() && loc.TownId() == ActionParam)
 				{
@@ -750,12 +744,6 @@ public abstract partial class Unit : Sprite
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters2();
 					ResetActionParameters();
-					//TODO selection
-					/*if (SelectedFlag)
-					{
-						SelectedFlag = false;
-						UnitArray.SelectedCount--;
-					}*/
 
 					//-------------- assign the unit to the town -----------------//
 					TownArray[actionParam].AssignUnit(this);
@@ -768,12 +756,6 @@ public abstract partial class Unit : Sprite
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters2();
 					ResetActionParameters();
-					//TODO selection
-					/*if (SelectedFlag)
-					{
-						SelectedFlag = false;
-						UnitArray.SelectedCount--;
-					}*/
 
 					//----------------- load the unit to the marine -----------------//
 					((UnitMarine)UnitArray[ActionParam]).LoadUnit(SpriteId);

@@ -300,7 +300,12 @@ public partial class Renderer
 
         if (_leftMouseReleased && mouseOnButton2 && _selectedShipId != 0)
         {
-            harbor.SailShip(_selectedShipId, InternalConstants.COMMAND_PLAYER);
+            if (harbor.SailShip(_selectedShipId, InternalConstants.COMMAND_PLAYER))
+            {
+                List<int> selectedShips = new List<int>();
+                selectedShips.Add(_selectedShipId);
+                SelectUnits(selectedShips);
+            }
         }
     }
 

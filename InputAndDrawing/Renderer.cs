@@ -113,7 +113,6 @@ public partial class Renderer : IRenderer
     private static GodRes GodRes => Sys.Instance.GodRes;
     private static TechRes TechRes => Sys.Instance.TechRes;
     private static CursorRes CursorRes => Sys.Instance.CursorRes;
-    private static SERes SERes => Sys.Instance.SERes;
 
     private static Config Config => Sys.Instance.Config;
     private static SaveGameProvider SaveGameProvider => Sys.Instance.SaveGameProvider;
@@ -498,10 +497,13 @@ public partial class Renderer : IRenderer
         if (_selectedFirmId != 0 && FirmArray.IsDeleted(_selectedFirmId))
             _selectedFirmId = 0;
         
-        if (_selectedUnitId != 0 && UnitArray.IsDeleted(_selectedUnitId))
+        if (_selectedUnitId != 0)
         {
-            _selectedUnitId = 0;
-            UnitDetailsMode = UnitDetailsMode.Normal;
+            if (UnitArray.IsDeleted(_selectedUnitId) || !UnitArray[_selectedUnitId].IsVisible())
+            {
+                _selectedUnitId = 0;
+                UnitDetailsMode = UnitDetailsMode.Normal;
+            }
         }
 
         if (_selectedSiteId != 0 && SiteArray.IsDeleted(_selectedSiteId))
@@ -509,7 +511,7 @@ public partial class Renderer : IRenderer
         
         for (int i = _selectedUnits.Count - 1; i >= 0; i--)
         {
-            if (UnitArray.IsDeleted(_selectedUnits[i]))
+            if (UnitArray.IsDeleted(_selectedUnits[i]) || !UnitArray[_selectedUnits[i]].IsVisible())
                 _selectedUnits.RemoveAt(i);
         }
     }

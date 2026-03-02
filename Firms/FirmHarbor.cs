@@ -257,17 +257,7 @@ public class FirmHarbor : Firm
 		}
 
 		unit.InitSprite(locX, locY);
-
 		DelHostedShip(unitId);
-
-		// TODO select ship
-		/*if (FirmArray.SelectedFirmId == FirmId && NationId == NationArray.player_recno)
-		{
-			Power.reset_selection();
-			unit.SelectedFlag = true;
-			UnitArray.SelectedUnitId = unit.SpriteId;
-			UnitArray.SelectedCount = 1;
-		}*/
 
 		return true;
 	}

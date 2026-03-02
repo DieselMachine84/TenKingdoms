@@ -153,7 +153,7 @@ public partial class Renderer
 
         if (_leftMouseReleased && mouseOnButton2 && research.HaveOwnWorkers())
         {
-            research.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+            SelectUnits(research.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER));
         }
 
         if (_leftMouseReleased && mouseOnButton3)

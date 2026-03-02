@@ -1578,7 +1578,7 @@ public abstract class Firm : IIdObject
 		RemoveWorker(worker);
 	}
 
-	public void MobilizeAllWorkers(int remoteAction)
+	public List<int> MobilizeAllWorkers(int remoteAction)
 	{
 		//if (!remoteAction && remote.is_enable())
 		//{
@@ -1591,6 +1591,8 @@ public abstract class Firm : IIdObject
 		//------- detect buttons on hiring firm workers -------//
 
 		int mobileWorkerId = 1;
+
+		List<int> mobilizedUnits = new List<int>();
 
 		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
 		{
@@ -1610,18 +1612,11 @@ public abstract class Firm : IIdObject
 
 			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId;
-
-			//TODO selection
-			/*if (NationId == NationArray.player_recno)
-			{
-				unit.SelectedFlag = true;
-				UnitArray.SelectedCount++;
-				if (UnitArray.SelectedUnitId == 0)
-					UnitArray.SelectedUnitId = unitRecno; // set first worker as selected
-			}*/
+			mobilizedUnits.Add(unitId);
 		}
 
 		UnitArray.CurTeamId++;
+		return mobilizedUnits;
 	}
 
 	public virtual int MobilizeWorker(int workerId, int remoteAction)
@@ -2396,13 +2391,6 @@ public abstract class Firm : IIdObject
 			{
 				BuilderRegionId = World.GetRegionId(unit.CurLocX, unit.CurLocY);
 				unit.DeinitSprite();
-
-				//TODO selection
-				/*if (unit.SelectedFlag)
-				{
-					unit.SelectedFlag = false;
-					UnitArray.SelectedCount--;
-				}*/
 			}
 
 			unit.SetMode(UnitConstants.UNIT_MODE_CONSTRUCT, FirmId);

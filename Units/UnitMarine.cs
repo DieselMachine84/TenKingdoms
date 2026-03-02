@@ -1593,13 +1593,6 @@ public class UnitMarine : Unit, ITrader
 		Unit unit = UnitArray[unitId];
 		unit.SetMode(UnitConstants.UNIT_MODE_ON_SHIP, SpriteId); // set unit mode
 		unit.DeinitSprite();
-
-		//TODO selection
-		/*if (unit.SelectedFlag)
-		{
-			unit.SelectedFlag = false;
-			UnitArray.SelectedCount--;
-		}*/
 	}
 	
 

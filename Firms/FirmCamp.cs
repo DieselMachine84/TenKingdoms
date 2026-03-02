@@ -330,7 +330,7 @@ public class FirmCamp : Firm
 		return unitId;
 	}
 	
-	public void Patrol()
+	public List<int> Patrol()
 	{
 		//------------------------------------------------------------//
 		// If the commander in this camp has units under his lead outside
@@ -361,47 +361,40 @@ public class FirmCamp : Firm
 
 		int overseerId = OverseerId;
 
-		if (PatrolAllSoldier() && OverseerId != 0)
+		List<int> patrolSoldiers = PatrolAllSoldier();
+		
+		if (Workers.Count == 0 && OverseerId != 0)
 		{
 			Unit unit = UnitArray[OverseerId];
 			// set it to the same team as the soldiers which are defined in MobilizeAllWorkers()
 			unit.TeamId = UnitArray.CurTeamId - 1;
-
-			//TODO selection
-			/*if (NationId == NationArray.player_recno)
-			{
-				unit.SelectedFlag = true;
-				UnitArray.SelectedUnitId = OverseerId;
-				UnitArray.SelectedCount++;
-			}*/
 		}
 
 		AssignOverseer(0);
 
 		if (overseerId != 0 && OverseerId == 0) // has overseer and the overseer is mobilized
 		{
-			Unit overseerUnit = UnitArray[overseerId];
-
-			if (overseerUnit.IsOwn())
-			{
-				Sys.Instance.Audio.SelectionSound(overseerUnit.CurLocX, overseerUnit.CurLocY, 1, 'S', overseerUnit.SpriteResId, "SEL");
-			}
-
 			PatrolUnits.Add(overseerId);
+			patrolSoldiers.Insert(0, overseerId);
 
+			Unit overseerUnit = UnitArray[overseerId];
 			overseerUnit.TeamInfo.Members.Clear();
 			foreach (var patrolUnitId in PatrolUnits)
 			{
 				overseerUnit.TeamInfo.Members.Add(patrolUnitId);
 			}
 		}
+
+		return patrolSoldiers;
 	}
 
-	public bool PatrolAllSoldier()
+	public List<int> PatrolAllSoldier()
 	{
 		PatrolUnits.Clear(); // reset it, it will be increased later
 		
 		int mobileWorkerId = 1;
+
+		List<int> patrolSoldiers = new List<int>();
 
 		while (Workers.Count > 0 && mobileWorkerId <= Workers.Count)
 		{
@@ -411,7 +404,11 @@ public class FirmCamp : Firm
 			{
 				//TODO unitId may be zero
 				unitId = MobilizeWorker(mobileWorkerId, InternalConstants.COMMAND_AUTO);
-				PatrolUnits.Add(unitId);
+				if (unitId != 0)
+				{
+					PatrolUnits.Add(unitId);
+					patrolSoldiers.Add(unitId);
+				}
 			}
 			else
 			{
@@ -420,7 +417,7 @@ public class FirmCamp : Firm
 			}
 
 			if (unitId == 0)
-				return false; // keep the rest workers as there is no space for creating the unit
+				return patrolSoldiers; // keep the rest workers as there is no space for creating the unit
 
 			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId; // define it as a team
@@ -430,20 +427,10 @@ public class FirmCamp : Firm
 				unit.LeaderId = OverseerId;
 				unit.UpdateLoyalty(); // the unit is just assigned to a new leader, set its target loyalty
 			}
-
-			//TODO selection
-			/*if (NationId == NationArray.player_recno)
-			{
-				unit.SelectedFlag = true;
-				UnitArray.SelectedCount++;
-				// set the first soldier as selected; this is also the soldier with the highest leadership (because of sorting)
-				if (UnitArray.SelectedUnitId == 0)
-					UnitArray.SelectedUnitId = unitRecno;
-			}*/
 		}
 
 		UnitArray.CurTeamId++;
-		return true;
+		return patrolSoldiers;
 	}
 	
 	

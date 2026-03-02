@@ -163,7 +163,7 @@ public partial class Renderer
                 }*/
                 //else
                 //{
-                    camp.Patrol();
+                    SelectUnits(camp.Patrol());
                 //}
             }
             

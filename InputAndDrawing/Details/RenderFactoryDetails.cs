@@ -100,7 +100,7 @@ public partial class Renderer
 
         if (_leftMouseReleased && mouseOnButton2 && factory.HaveOwnWorkers())
         {
-            factory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+            SelectUnits(factory.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER));
         }
         
         if (_leftMouseReleased && mouseOnButton3)

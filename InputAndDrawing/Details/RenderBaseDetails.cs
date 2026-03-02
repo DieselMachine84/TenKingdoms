@@ -185,7 +185,7 @@ public partial class Renderer
 
             if (button4Pressed && firmBase.HaveOwnWorkers())
             {
-                firmBase.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+                SelectUnits(firmBase.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER));
             }
         }
         

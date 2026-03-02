@@ -89,7 +89,7 @@ public partial class Renderer
         
         if (_leftMouseReleased && mouseOnButton1 && mine.HaveOwnWorkers())
         {
-            mine.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER);
+            SelectUnits(mine.MobilizeAllWorkers(InternalConstants.COMMAND_PLAYER));
         }
 
         if (_leftMouseReleased && mouseOnButton3)
