@@ -23,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Hexa.NET.SDL2.Image" Version="1.0.0" />
       <PackageReference Include="ppy.SDL2-CS" Version="1.0.741-alpha" />
     </ItemGroup>
 
