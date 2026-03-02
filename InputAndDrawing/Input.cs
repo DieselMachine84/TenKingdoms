@@ -550,6 +550,9 @@ public partial class Renderer
 
     private bool HandlePointingFirmClick(Firm pointingFirm, int mouseX, int mouseY)
     {
+        if (pointingFirm.FirmType == Firm.FIRM_INN || pointingFirm.FirmType == Firm.FIRM_BASE)
+            return false;
+        
         bool handled = false;
         if (_selectedTownId != 0)
         {

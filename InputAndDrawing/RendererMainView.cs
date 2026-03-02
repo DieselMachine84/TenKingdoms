@@ -1055,6 +1055,9 @@ public partial class Renderer
 
     private void DrawFirmLinkLines(Firm firm)
     {
+        if (firm.FirmType == Firm.FIRM_INN || firm.FirmType == Firm.FIRM_BASE)
+            return;
+        
         (int firmScreenX1, int firmScreenY1) = GetScreenXAndY(firm.LocX1, firm.LocY1);
         int firmCenterX = firmScreenX1 + (firm.LocX2 - firm.LocX1 + 1) * CellTextureWidth / 2;
         int firmCenterY = firmScreenY1 + (firm.LocY2 - firm.LocY1 + 1) * CellTextureHeight / 2;
@@ -1285,6 +1288,9 @@ public partial class Renderer
 
         foreach (Firm firm in FirmArray)
         {
+            if (firm.FirmType == Firm.FIRM_INN || firm.FirmType == Firm.FIRM_BASE)
+                continue;
+            
             bool drawLinkToFirm = false;
             if (UnitDetailsMode == UnitDetailsMode.Build)
                 drawLinkToFirm = firm.IsLinkableToFirm(_buildFirmType);
