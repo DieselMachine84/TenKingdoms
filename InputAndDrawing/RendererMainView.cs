@@ -737,8 +737,23 @@ public partial class Renderer
         }
         
         //TODO draw splash for sea units
+
+        //TODO draw hit points when enemy attacks and when unit attacks firm 
+        bool drawHitPoints = _selectedUnits.Contains(unit.SpriteId);
+        if (!drawHitPoints)
+        {
+            foreach (int selectedUnitId in _selectedUnits)
+            {
+                Unit selectedUnit = UnitArray[selectedUnitId];
+                if (selectedUnit.IsOwn() && selectedUnit.ActionMode == UnitConstants.ACTION_ATTACK_UNIT && selectedUnit.ActionParam == unit.SpriteId)
+                {
+                    drawHitPoints = true;
+                    break;
+                }
+            }
+        }
         
-        if (_selectedUnits.Contains(unit.SpriteId))
+        if (drawHitPoints)
         {
             int maxHitBarWidth = 0;
             int hitBarX = 0;

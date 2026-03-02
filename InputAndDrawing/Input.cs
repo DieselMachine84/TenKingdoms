@@ -168,7 +168,6 @@ public partial class Renderer
             CancelGodCastPower();
             CancelSetStop();
             SelectMouseCursor();
-            // TODO cancel ship stop and cast power
 
             _rightMouseReleased = false;
         }
@@ -294,8 +293,6 @@ public partial class Renderer
         mouse2X = Math.Min(mouse2X, MainViewX + MainViewWidth - 1);
         mouse2Y = Math.Max(mouse2Y, MainViewY);
         mouse2Y = Math.Min(mouse2Y, MainViewY + MainViewHeight - 1);
-        (int selectLocX1, int selectLocY1) = GetMainViewLocation(Math.Min(mouse1X, mouse2X), Math.Min(mouse1Y, mouse2Y));
-        (int selectLocX2, int selectLocY2) = GetMainViewLocation(Math.Max(mouse1X, mouse2X), Math.Max(mouse1Y, mouse2Y));
 
         bool selectOneOnly = Math.Abs(mouse1X - mouse2X) <= 3 && Math.Abs(mouse1Y - mouse2Y) <= 3;
         if (selectOneOnly)
@@ -354,6 +351,8 @@ public partial class Renderer
         {
             int[] mobileTypes = { UnitConstants.UNIT_LAND, UnitConstants.UNIT_SEA, UnitConstants.UNIT_AIR };
             List<Unit> unitsToSelect = new List<Unit>();
+            (int selectLocX1, int selectLocY1) = GetMainViewLocation(Math.Min(mouse1X, mouse2X), Math.Min(mouse1Y, mouse2Y));
+            (int selectLocX2, int selectLocY2) = GetMainViewLocation(Math.Max(mouse1X, mouse2X), Math.Max(mouse1Y, mouse2Y));
             for (int locY = selectLocY1; locY <= selectLocY2; locY++)
             {
                 for (int locX = selectLocX1; locX <= selectLocX2; locX++)
@@ -370,8 +369,19 @@ public partial class Renderer
                                 Unit unit = UnitArray[unitId];
                                 if (unit.IsVisible() && !unit.IsStealth() && unit.IsOwn())
                                 {
-                                    //TODO update absolute position
-                                    unitsToSelect.Add(unit);
+                                    SpriteFrame spriteFrame = unit.CurSpriteFrame(out _);
+                                    (int unitX1, int unitY1) = GetSpriteScreenXAndY(unit);
+                                    int unitX2 = unitX1 + Scale(spriteFrame.Width) - 1;
+                                    int unitY2 = unitY1 + Scale(spriteFrame.Height) - 1;
+                                    int mouseXMin = Math.Min(mouse1X, mouse2X);
+                                    int mouseXMax = Math.Max(mouse1X, mouse2X);
+                                    int mouseYMin = Math.Min(mouse1Y, mouse2Y);
+                                    int mouseYMax = Math.Max(mouse1Y, mouse2Y);
+                                    if (((unitX1 >= mouseXMin && unitX1 <= mouseXMax) || (unitX2 >= mouseXMin && unitX2 <= mouseXMax)) &&
+                                        ((unitY1 >= mouseYMin && unitY1 <= mouseYMax) || (unitY2 >= mouseYMin && unitY2 <= mouseYMax)))
+                                    {
+                                        unitsToSelect.Add(unit);
+                                    }
                                 }
                             }
                         }
@@ -639,8 +649,6 @@ public partial class Renderer
 
     private void ProcessLeftMouseAction()
     {
-        // TODO process caravan stop, ship stop and cast power
-        
         int locX = _topLeftLocX + (_mouseButtonX - MainViewX) / CellTextureWidth;
         int locY = _topLeftLocY + (_mouseButtonY - MainViewY) / CellTextureHeight;
         Location location = World.GetLoc(locX, locY);
@@ -753,16 +761,14 @@ public partial class Renderer
             return;
         }
 
-        // TODO update absolute position
-        Location location = World.GetLoc(locX, locY);
-        
+        Location unitLocation;
         Unit targetUnit = null;
-        if (location.HasUnit(UnitConstants.UNIT_AIR))
-            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_AIR)];
-        if (targetUnit == null && location.HasUnit(UnitConstants.UNIT_LAND))
-            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
-        if (targetUnit == null && location.HasUnit(UnitConstants.UNIT_SEA))
-            targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];
+        if (HasUnitAt(_mouseButtonX, _mouseButtonY, UnitConstants.UNIT_AIR, out unitLocation))
+            targetUnit = UnitArray[unitLocation.UnitId(UnitConstants.UNIT_AIR)];
+        if (targetUnit == null && HasUnitAt(_mouseButtonX, _mouseButtonY, UnitConstants.UNIT_LAND, out unitLocation))
+            targetUnit = UnitArray[unitLocation.UnitId(UnitConstants.UNIT_LAND)];
+        if (targetUnit == null && HasUnitAt(_mouseButtonX, _mouseButtonY, UnitConstants.UNIT_SEA, out unitLocation))
+            targetUnit = UnitArray[unitLocation.UnitId(UnitConstants.UNIT_SEA)];
 
         if (targetUnit != null && targetUnit.HitPoints > 0.0)
         {
@@ -808,6 +814,8 @@ public partial class Renderer
         }
         else
         {
+            Location location = World.GetLoc(locX, locY);
+            
             if (location.IsTown())
             {
                 Town targetTown = TownArray[location.TownId()];
