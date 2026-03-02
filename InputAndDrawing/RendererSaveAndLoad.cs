@@ -70,9 +70,10 @@ public partial class Renderer
             
             DrawNationColor(savedGame.ColorSchemeId, x + 137, y + 64 + i * 93);
             PutText(FontBible, "King " + savedGame.PlayerName, x + 170, y + 60 + i * 93, -1, true);
-            PutText(FontBible, "Game Date: " + savedGame.GameDate.ToString("MMMM dd, yyyy"), x + 170, y + 94 + i * 93, -1, true);
+            PutText(FontBible, "Game Date: " + Misc.ToLongDate(savedGame.GameDate), x + 170, y + 94 + i * 93, -1, true);
             PutText(FontSmall, "File Name: " + savedGame.FileName, x + 640, y + 63 + i * 93, -1, true);
-            PutText(FontSmall, "File Date: " + savedGame.FileDate.ToString("MMMM dd, yyyy hh:mm"), x + 640, y + 99 + i * 93, -1, true);
+            PutText(FontSmall, "File Date: " + Misc.ToLongDate(savedGame.FileDate) + " " + savedGame.FileDate.ToString("hh:mm"),
+                x + 640, y + 99 + i * 93, -1, true);
         }
         
         if (_selectedSaveItem == 1)

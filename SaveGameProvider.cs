@@ -7,7 +7,8 @@ namespace TenKingdoms;
 
 public class SaveGameProvider
 {
-    private const string SavedGamesDir = "SavedGames";
+    private string SavedGamesDir => Path.Combine(Environment.CurrentDirectory, "SavedGames");
+
     private DateTime _lastReadTime = DateTime.Today;
     private List<SavedGame> _cachedSavedGames;
 

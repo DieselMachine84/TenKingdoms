@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace TenKingdoms;
 
 public class Config
 {
-	private const string CONFIG_FILE_NAME = "Config.txt";
+	private string ConfigFile => Path.Combine(Environment.CurrentDirectory, "Config.txt");
 	
 	public const int OPTION_NONE = 0;
 	public const int OPTION_LOW = 1;
@@ -76,16 +78,32 @@ public class Config
 
 	public string Load()
 	{
-		if (!File.Exists(CONFIG_FILE_NAME))
-			return CONFIG_FILE_NAME + " is not found";
+		if (!File.Exists(ConfigFile))
+			return ConfigFile + " is not found";
 
 		try
 		{
-			using FileStream stream = new FileStream(CONFIG_FILE_NAME, FileMode.Open, FileAccess.Read);
+			using FileStream stream = new FileStream(ConfigFile, FileMode.Open, FileAccess.Read);
 			using StreamReader reader = new StreamReader(stream);
 			string config = reader.ReadToEnd();
-			string[] lines = config.Split(Environment.NewLine);
-			for (int i = 0; i < lines.Length; i++)
+			List<string> lines = new List<string>();
+			StringBuilder builder = new StringBuilder();
+			foreach (char c in config)
+			{
+				if (Char.IsControl(c))
+				{
+					if (builder.Length > 0)
+						lines.Add(builder.ToString());
+
+					builder = new StringBuilder();
+				}
+				else
+				{
+					builder.Append(c);
+				}
+			}
+			
+			for (int i = 0; i < lines.Count; i++)
 			{
 				string line = lines[i].Trim();
 				if (String.IsNullOrEmpty(line) || line.StartsWith("//"))

@@ -401,7 +401,7 @@ public partial class Renderer : IRenderer
             Nation player = NationArray.Player;
             PutText(FontMid, player.FoodString(), 468, 6);
             PutText(FontMid, player.CashString(), 468, 38);
-            PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
+            PutText(FontMid, Misc.ToShortDate(Info.GameDate), 878, 6);
             if (player.ReputationChange365Days() >= 0.0)
                 Graphics.DrawBitmapScaled(_reputationUpTexture, 830, 39, _reputationUpWidth, _reputationUpHeight);
             else
@@ -410,7 +410,7 @@ public partial class Renderer : IRenderer
         }
         else
         {
-            PutText(FontMid, Info.GameDate.ToString("MMM d, yyyy"), 878, 6);
+            PutText(FontMid, Misc.ToShortDate(Info.GameDate), 878, 6);
             Graphics.DrawBitmapScaled(_reputationDownTexture, 830, 39, _reputationDownWidth, _reputationDownHeight);
         }
         
@@ -476,7 +476,7 @@ public partial class Renderer : IRenderer
             }
 
             TalkMsgArray.AddNationColor = true;
-            string newsText = news.NewsDate.ToString("MMM d, yyyy") + " " + news.Message();
+            string newsText = Misc.ToShortDate(news.NewsDate) + " " + news.Message();
             PutText(FontSan, newsText, MainViewX + 46, MainViewY + MainViewHeight - 2 - dy);
             TalkMsgArray.AddNationColor = false;
             
