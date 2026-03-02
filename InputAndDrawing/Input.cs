@@ -835,6 +835,26 @@ public partial class Renderer
         GoToLocation(selectedSite.LocX, selectedSite.LocY);
     }
     
+    private void SelectUnits(List<int> unitIds)
+    {
+        ResetSelection();
+        
+        foreach (int unitId in unitIds)
+        {
+            if (_selectedUnitId == 0)
+                _selectedUnitId = unitId;
+            
+            if (!_selectedUnits.Contains(unitId))
+                _selectedUnits.Add(unitId);
+        }
+        
+        if (_selectedUnitId != 0)
+        {
+            Unit selectedUnit = UnitArray[_selectedUnitId];
+            Audio.SelectionSound(selectedUnit.CurLocX, selectedUnit.CurLocY, 1, 'S', selectedUnit.SpriteResId, "SEL");
+        }
+    }
+    
     private void SelectMouseCursor()
     {
         int newCursor = CursorType.NORMAL;
