@@ -54,6 +54,12 @@ public class Audio
 	{
 		if (_initialized)
 		{
+			int numberOfChannels = SDL_mixer.Mix_AllocateChannels(-1);
+			for (int i = 0; i < numberOfChannels; i++)
+			{
+				SDL_mixer.Mix_HaltChannel(i);
+			}
+
 			for (int i = 0; i < _chunks.Length; i++)
 			{
 				SDL_mixer.Mix_FreeChunk(_chunks[i]);
