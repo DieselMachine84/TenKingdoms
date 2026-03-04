@@ -421,7 +421,7 @@ public partial class Renderer
 
     private bool IsGrantEnabled(Town town)
     {
-        return town.HasLinkedOwnCamp && NationArray.Player.Cash > 0.0;
+        return town.HasLinkedOwnCamp && NationArray.Player != null && NationArray.Player.Cash > 0.0;
     }
 
     private bool ShowGrantToNonOwnTownButton(Town town)
@@ -431,7 +431,7 @@ public partial class Renderer
 
     private bool IsGrantToNonOwnTownEnabled(Town town)
     {
-        return NationArray.PlayerId != 0 && town.CanGrantToNonOwnTown(NationArray.PlayerId) && NationArray.Player.Cash > 0.0;
+        return NationArray.PlayerId != 0 && town.CanGrantToNonOwnTown(NationArray.PlayerId) && NationArray.Player != null && NationArray.Player.Cash > 0.0;
     }
 
     private void DrawTrainMenu(Town town)

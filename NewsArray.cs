@@ -59,13 +59,13 @@ public class NewsArray
 
 			if (nationId1 != 0 && nationId1 != NationArray.PlayerId)
 			{
-				if (!playerNation.GetRelation(nationId1).HasContact)
+				if (playerNation == null || !playerNation.GetRelation(nationId1).HasContact)
 					return null;
 			}
 
 			if (nationId2 != 0 && nationId2 != NationArray.PlayerId)
 			{
-				if (!playerNation.GetRelation(nationId2).HasContact)
+				if (playerNation == null || !playerNation.GetRelation(nationId2).HasContact)
 					return null;
 			}
 		}

@@ -308,7 +308,7 @@ public abstract class Firm : IIdObject
 			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (location.IsExplored() && NationArray.PlayerId != 0)
+				if (location.IsExplored() && NationArray.Player != null)
 				{
 					NationRelation relation = NationArray.Player.GetRelation(NationId);
 
@@ -708,7 +708,7 @@ public abstract class Firm : IIdObject
 
 		//---- if there is a phoenix of the player over this firm ----//
 
-		if (NationArray.PlayerId != 0 && NationArray.Player.RevealedByPhoenix(LocCenterX, LocCenterY))
+		if (NationArray.Player != null && NationArray.Player.RevealedByPhoenix(LocCenterX, LocCenterY))
 			return true;
 
 		return false;

@@ -398,7 +398,7 @@ public class News
 
 	private string Migrate()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId) // from player nation to another nation
+		if (NationArray.Player != null && NationNameId1 == NationArray.Player.NationNameId) // from player nation to another nation
 		{
 			if (NationNameId2 != 0) // only if it is not an independent town
 			{
@@ -486,7 +486,7 @@ public class News
 
 	private string NationSurrender()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
+		if (NationArray.Player != null && NationNameId2 == NationArray.Player.NationNameId)
 			return $"{KingName1()}'s Kingdom{NationColorStr1()} has surrendered to you.";
 		else
 			return $"{KingName1()}'s Kingdom{NationColorStr1()} has surrendered to {KingName2()}'s Kingdom.{NationColorStr2()}";
@@ -494,7 +494,7 @@ public class News
 
 	private string KingDie()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		if (NationArray.Player != null && NationNameId1 == NationArray.Player.NationNameId)
 			return $"Your King, {KingName1()}, has been slain.";
 		else
 			return $"King {KingName1()} of {KingName1()}'s Kingdom{NationColorStr1()} has been slain.";
@@ -502,7 +502,7 @@ public class News
 
 	private string NewKing()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		if (NationArray.Player != null && NationNameId1 == NationArray.Player.NationNameId)
 			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as your new King.";
 		else
 			return $"{RaceRes[Param1].GetName(Param2)} has ascended the throne as the new King of {KingName1()}'s Kingdom.{NationColorStr1()}";
@@ -545,7 +545,7 @@ public class News
 
 	private string TownSurrendered()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId2 == NationArray.Player.NationNameId)
+		if (NationArray.Player != null && NationNameId2 == NationArray.Player.NationNameId)
 			return $"Your village of {Param6} has surrendered to {KingName1()}'s Kingdom.{NationColorStr1()}";
 		
 		if (NationNameId2 != 0)
@@ -566,7 +566,7 @@ public class News
 
 	private string ScrollAcquired()
 	{
-		if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+		if (NationArray.Player != null && NationNameId1 == NationArray.Player.NationNameId)
 			return $"You have acquired the {RaceName(Param1)} Scroll of Power.";
 		else
 			return $"{KingName1()}'s Kingdom{NationColorStr1()} has acquired the {RaceName(Param1)} Scroll of Power.";
@@ -634,7 +634,7 @@ public class News
 		}
 		else
 		{
-			if (NationArray.PlayerId != 0 && NationNameId1 == NationArray.Player.NationNameId)
+			if (NationArray.Player != null && NationNameId1 == NationArray.Player.NationNameId)
 			{
 				if (Param3 == Unit.RANK_GENERAL)
 					return $"General {RaceRes[Param1].GetName(Param2)} has betrayed you and turned towards {KingName2()}'s Kingdom.{NationColorStr2()}";

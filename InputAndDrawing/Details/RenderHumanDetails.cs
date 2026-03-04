@@ -506,7 +506,7 @@ public partial class Renderer
 
     private bool IsSucceedKingEnabled(Unit unit)
     {
-        return NationArray.PlayerId != 0 && unit.NationId == NationArray.PlayerId && NationArray.Player.KingUnitId == 0;
+        return unit.NationId == NationArray.PlayerId && NationArray.Player != null && NationArray.Player.KingUnitId == 0;
     }
 
     private bool IsRewardEnabled(Unit unit)

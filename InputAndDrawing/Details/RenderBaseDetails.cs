@@ -203,7 +203,7 @@ public partial class Renderer
     
     private bool IsFirmBaseRewardEnabled(FirmBase firmBase, Unit overseer)
     {
-        return NationArray.Player.Cash >= GameConstants.REWARD_COST &&
+        return NationArray.Player != null && NationArray.Player.Cash >= GameConstants.REWARD_COST &&
                ((overseer != null && overseer.Rank != Unit.RANK_KING) || firmBase.SelectedWorkerId != 0);
     }
 }

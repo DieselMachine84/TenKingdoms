@@ -396,7 +396,7 @@ public partial class Renderer : IRenderer
         if (_viewMode == ViewMode.Ranking)
             Graphics.DrawBitmapScaled(_scrollMenuTextures[7], 282, 29, _scrollMenuWidths[7], _scrollMenuHeights[7]);
 
-        if (NationArray.PlayerId != 0)
+        if (NationArray.Player != null)
         {
             Nation player = NationArray.Player;
             PutText(FontMid, player.FoodString(), 468, 6);

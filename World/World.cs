@@ -175,7 +175,7 @@ public class World
 				if (location.IsFirm())
 				{
 					Firm firm = FirmArray[location.FirmId()];
-					if (firm.NationId != 0 && NationArray.PlayerId != 0)
+					if (firm.NationId != 0 && NationArray.Player != null)
 					{
 						relation = NationArray.Player.GetRelation(firm.NationId);
 						nationId = firm.NationId;
@@ -185,7 +185,7 @@ public class World
 				if (location.IsTown())
 				{
 					Town town = TownArray[location.TownId()];
-					if (town.NationId != 0 && NationArray.PlayerId != 0)
+					if (town.NationId != 0 && NationArray.Player != null)
 					{
 						relation = NationArray.Player.GetRelation(town.NationId);
 						nationId = town.NationId;
@@ -1415,7 +1415,7 @@ public class World
 		int townDamage = 0;
 		foreach (Town town in TownArray)
 		{
-			bool ownTown = (town.NationId == NationArray.PlayerId);
+			bool ownTown = town.IsOwn();
 			int beforePopulation = town.Population;
 			for (int damage = Weather.QuakeRate(town.LocCenterX, town.LocCenterY) / 10; damage > 0 && !TownArray.IsDeleted(town.TownId); damage--)
 			{
@@ -1536,7 +1536,7 @@ public class World
 			{
 				// TODO check is objectDie: 0 correct?
 				// ---- add news -------//
-				if (town.NationId == NationArray.PlayerId)
+				if (town.IsOwn())
 					NewsArray.LightningDamage(town.LocCenterX, town.LocCenterY, News.NEWS_LOC_TOWN, town.TownId, 0);
 
 				// ---- add a fire on it ------//

@@ -209,7 +209,7 @@ public partial class Renderer
 
     private bool IsCampRewardEnabled(Firm camp, Unit overseer)
     {
-        return NationArray.Player.Cash >= GameConstants.REWARD_COST &&
+        return NationArray.Player != null && NationArray.Player.Cash >= GameConstants.REWARD_COST &&
                ((overseer != null && overseer.Rank != Unit.RANK_KING) || camp.SelectedWorkerId != 0);
     }
 }

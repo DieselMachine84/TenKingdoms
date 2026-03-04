@@ -2869,7 +2869,7 @@ public abstract partial class Unit : Sprite
 		if (Config.ShowAIInfo || IsOwn())
 			return true;
         
-		if (NationArray.PlayerId != 0 && NationArray.Player.RevealedByPhoenix(NextLocX, NextLocY))
+		if (NationArray.Player != null && NationArray.Player.RevealedByPhoenix(NextLocX, NextLocY))
 			return true;
 
 		return false;

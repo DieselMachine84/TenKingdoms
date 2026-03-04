@@ -777,7 +777,7 @@ public partial class Renderer
         {
             if (!targetUnit.IsOwn())
             {
-                if (NationArray.Player.GetRelationShouldAttack(targetUnit.NationId))
+                if (NationArray.Player != null && NationArray.Player.GetRelationShouldAttack(targetUnit.NationId))
                 {
                     UnitArray.Attack(targetUnit.NextLocX, targetUnit.NextLocY, false, playerNationUnits,
                         InternalConstants.COMMAND_PLAYER, targetUnit.SpriteId);
@@ -842,7 +842,7 @@ public partial class Renderer
                 }
                 else
                 {
-                    if (NationArray.Player.GetRelationShouldAttack(targetTown.NationId))
+                    if (NationArray.Player != null && NationArray.Player.GetRelationShouldAttack(targetTown.NationId))
                         UnitArray.Attack(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
                     else
                         UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);
@@ -889,7 +889,7 @@ public partial class Renderer
                 }
                 else
                 {
-                    if (NationArray.Player.GetRelationShouldAttack(targetFirm.NationId))
+                    if (NationArray.Player != null && NationArray.Player.GetRelationShouldAttack(targetFirm.NationId))
                         UnitArray.Attack(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER, 0);
                     else
                         UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, playerNationUnits, InternalConstants.COMMAND_PLAYER);

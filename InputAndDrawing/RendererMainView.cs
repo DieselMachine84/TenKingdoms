@@ -1365,6 +1365,7 @@ public partial class Renderer
         }
     }
 
+    //TODO draw fog of war better
     private void BlackenFogOfWar()
     {
         if (!Config.FogOfWar)
@@ -1385,6 +1386,7 @@ public partial class Renderer
         }
     }
 
+    //TODO unexplored land better
     //TODO not explored objects should not be clickable
     private void BlackenUnexplored()
     {

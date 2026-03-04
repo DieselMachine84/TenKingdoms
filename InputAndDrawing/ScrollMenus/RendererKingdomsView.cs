@@ -444,7 +444,7 @@ public partial class Renderer
 
             for (int i = 0; i < qtyStrArray.Length; i++)
             {
-                if (NationArray.Player.Cash >= qtyArray[i] * GameConstants.MIN_FOOD_PURCHASE_PRICE / 10.0)
+                if (NationArray.Player != null && NationArray.Player.Cash >= qtyArray[i] * GameConstants.MIN_FOOD_PURCHASE_PRICE / 10.0)
                     AddTalkChoice(qtyStrArray[i], qtyArray[i]);
             }
 
@@ -460,7 +460,7 @@ public partial class Renderer
 
             for (int i = 0; i < priceStrArray.Length; i++)
             {
-                if (i == 0 || NationArray.Player.Cash >= _curTalkMsg.TalkParam1 * priceArray[i] / 10.0)
+                if (i == 0 || (NationArray.Player != null && NationArray.Player.Cash >= _curTalkMsg.TalkParam1 * priceArray[i] / 10.0))
                     AddTalkChoice(priceStrArray[i], priceArray[i]);
             }
 
@@ -483,7 +483,7 @@ public partial class Renderer
             // when demand tribute, the amount can be sent to any
             if (_curTalkMsg.TalkId == TalkMsg.TALK_DEMAND_TRIBUTE ||
                 _curTalkMsg.TalkId == TalkMsg.TALK_DEMAND_AID ||
-                NationArray.Player.Cash >= tributeAmtArray[i])
+                (NationArray.Player != null && NationArray.Player.Cash >= tributeAmtArray[i]))
             {
                 AddTalkChoice(tributeStrArray[i], tributeAmtArray[i]);
             }
@@ -548,7 +548,7 @@ public partial class Renderer
 
         for (int i = 0; i < strArray.Length; i++)
         {
-            if (NationArray.Player.Cash >= amtArray[i])
+            if (NationArray.Player != null && NationArray.Player.Cash >= amtArray[i])
             {
                 AddTalkChoice(strArray[i], amtArray[i] / 10); // divided by 10 to cope with the limit of <short>
             }

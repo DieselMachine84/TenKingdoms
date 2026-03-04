@@ -438,7 +438,7 @@ public class Town : IIdObject
 			for (int locX = LocX1; locX <= LocX2; locX++)
 			{
 				Location location = World.GetLoc(locX, locY);
-				if (location.IsExplored() && NationArray.PlayerId != 0)
+				if (location.IsExplored() && NationArray.Player != null)
 				{
 					NationRelation relation = NationArray.Player.GetRelation(NationId);
 
@@ -728,7 +728,7 @@ public class Town : IIdObject
 
 		if (Population == 0)
 		{
-			if (NationId == NationArray.PlayerId)
+			if (IsOwn())
 				NewsArray.TownAbandoned(this);
 
 			TownArray.DeleteTown(this);
