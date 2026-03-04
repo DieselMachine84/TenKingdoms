@@ -1098,6 +1098,10 @@ public partial class Renderer
 		_clearNewsWidth = BitConverter.ToInt16(clearNewsData, 0);
 		_clearNewsHeight = BitConverter.ToInt16(clearNewsData, 2);
 		_clearNewsTexture = Graphics.CreateTextureFromBmp(clearNewsData.Skip(4).ToArray(), _clearNewsWidth, _clearNewsHeight);
+		byte[] newsLocData = iconResource.Read("NEWS_GO");
+		_newsLocWidth = BitConverter.ToInt16(newsLocData, 0);
+		_newsLocHeight = BitConverter.ToInt16(newsLocData, 2);
+		_newsLocTexture = Graphics.CreateTextureFromBmp(newsLocData.Skip(4).ToArray(), _newsLocWidth, _newsLocHeight);
 		byte[] linkEE1Data = iconResource.Read("LINK_EE1");
 		_linkEE1Width = BitConverter.ToInt16(linkEE1Data, 0);
 		_linkEE1Height = BitConverter.ToInt16(linkEE1Data, 2);
