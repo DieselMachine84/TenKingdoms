@@ -17,7 +17,8 @@ public static class Misc
     private const int MULTIPLIER = 0x015a4e35;
     private const int INCREMENT = 1;
     public static uint RandomSeed { get; set; }
-    private static long StartTicks;
+    //TODO check save and load
+    private static long StartTicks { get; set; }
 
     private static Config Config => Sys.Instance.Config;
     private static World World => Sys.Instance.World;

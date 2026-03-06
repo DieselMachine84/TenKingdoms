@@ -13,6 +13,7 @@ public class Sys
     public long FrameNumber { get; private set; }
     private int FrameOfDay { get; set; }
     private int Speed { get; set; } = 1;
+    private uint StartSeed { get; set; }
     public bool GameEnded { get; private set; }
     public bool ExitFlag { get; set; }
     private SavedGame _errorSavedGame;
@@ -210,7 +211,7 @@ public class Sys
         Graphics.SetCursor(CursorRes[CursorType.NORMAL].GetCursor(Graphics));
     }
 
-    public void StartNewGame()
+    public void StartNewGame(uint startSeed = 0)
     {
         FrameNumber = 0;
         FrameOfDay = 0;
@@ -219,7 +220,8 @@ public class Sys
         SpriteRes.Reset();
         TownRes.Reset();
         CreateObjects();
-        Misc.RandomSeed = (uint)(new Random()).Next();
+        StartSeed = startSeed != 0 ? startSeed : (uint)(new Random()).Next();
+        Misc.RandomSeed = StartSeed;
         MapGenerator mapGenerator = new MapGenerator();
         mapGenerator.Generate();
         Renderer.Reset();
@@ -679,6 +681,7 @@ public class Sys
     {
         writer.Write(FrameNumber);
         writer.Write(FrameOfDay);
+        writer.Write(StartSeed);
         writer.Write(GameEnded);
     }
 
@@ -686,6 +689,7 @@ public class Sys
     {
         FrameNumber = reader.ReadInt64();
         FrameOfDay = reader.ReadInt32();
+        StartSeed = reader.ReadUInt32();
         GameEnded = reader.ReadBoolean();
     }
 	
