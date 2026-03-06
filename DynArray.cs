@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TenKingdoms;
 
@@ -14,7 +13,7 @@ public abstract class DynArray<T> : IEnumerable<T> where T : class, IIdObject
 {
     protected int NextId = 1;
     private readonly List<T> _list = new List<T>();
-    private readonly Dictionary<int, int> _idIndexes = new Dictionary<int, int>();
+    private readonly SortedDictionary<int, int> _idIndexes = new SortedDictionary<int, int>();
     private readonly List<int> _keysForEnumeration = new List<int>();
 
     protected abstract T CreateNewObject(int objectType);
