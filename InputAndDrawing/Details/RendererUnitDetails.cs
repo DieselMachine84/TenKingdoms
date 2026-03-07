@@ -414,6 +414,6 @@ public partial class Renderer
 
     private bool CanResign(Unit unit)
     {
-        return NationArray.PlayerId != 0 && unit.NationId == NationArray.PlayerId && unit.Rank != Unit.RANK_KING;
+        return NationArray.PlayerId != 0 && unit.NationId == NationArray.PlayerId && unit.CanResign();
     }
 }
