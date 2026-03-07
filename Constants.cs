@@ -195,6 +195,8 @@ public static class InternalConstants
     public const int DIR_W = 6;
     public const int DIR_NW = 7;
     public const int MAX_SPRITE_DIR_TYPE = 8;
+    public const int HALF_SPRITE_DIR_TYPE = MAX_SPRITE_DIR_TYPE / 2;
+    public const int TURN_REQUIRE_AMOUNT = 60;
 
     public const int MODE_NORMAL = 0;
     public const int MODE_NATION = 1;

@@ -37,7 +37,7 @@ public class Sprite : IIdObject
 	//
 	// Prime rule:
 	//
-	// World.GetLoc(NextLocX and NextLocY).cargo_recno is always = SpriteId no matter what CurAction is.
+	// World.GetLoc(NextLocX and NextLocY).CargoId is always = SpriteId no matter what CurAction is.
 	//
 	//------------------------------------------------//
 	//
@@ -91,7 +91,6 @@ public class Sprite : IIdObject
 	protected World World => Sys.Instance.World;
 	protected SpriteRes SpriteRes => Sys.Instance.SpriteRes;
 	private SpriteFrameRes SpriteFrameRes => Sys.Instance.SpriteFrameRes;
-	protected SERes SERes => Sys.Instance.SERes;
 	protected NationArray NationArray => Sys.Instance.NationArray;
 	protected TownArray TownArray => Sys.Instance.TownArray;
 	protected FirmArray FirmArray => Sys.Instance.FirmArray;
@@ -135,27 +134,13 @@ public class Sprite : IIdObject
 	{
 	}
 
-	//----- clone vars from sprite_res for fast access -----//
+	protected SpriteMove CurSpriteMove() => SpriteInfo.Moves[CurDir];
 
-	protected SpriteMove CurSpriteMove()
-	{
-		return SpriteInfo.Moves[CurDir];
-	}
+	protected SpriteAttack CurSpriteAttack() => SpriteInfo.Attacks[CurAttack, CurDir];
 
-	protected SpriteAttack CurSpriteAttack()
-	{
-		return SpriteInfo.Attacks[CurAttack, CurDir];
-	}
+	protected SpriteStop CurSpriteStop() => SpriteInfo.Stops[CurDir];
 
-	protected SpriteStop CurSpriteStop()
-	{
-		return SpriteInfo.Stops[CurDir];
-	}
-
-	protected SpriteDie CurSpriteDie()
-	{
-		return SpriteInfo.Die;
-	}
+	protected SpriteDie CurSpriteDie() => SpriteInfo.Die;
 
 	private bool NeedMirror(int displayDir)
 	{
@@ -221,7 +206,7 @@ public class Sprite : IIdObject
 					SpriteStop stopAction = SpriteInfo.Stops[curDir];
 					if (CurFrame > stopAction.FrameCount)
 						return SpriteFrameRes[stopAction.FrameId]; // first frame
-					else // only few sprite has stopAction->frame_count > 1
+					else // only few sprite has stopAction.FrameCount > 1
 						return SpriteFrameRes[stopAction.FrameId + CurFrame - 1];
 				}
 			}
@@ -280,8 +265,7 @@ public class Sprite : IIdObject
 
 	public virtual void ProcessIdle()
 	{
-		//-------- If it's an air unit --------//
-		// note : most land units do have have stop frame, so cur_sprite_stop.frame_count is 0
+		// Note: most land units do not have stop frame, so CurSpriteStop().FrameCount is 0
 		if (++CurFrame > CurSpriteStop().FrameCount)
 			CurFrame = 1;
 	}
@@ -311,7 +295,7 @@ public class Sprite : IIdObject
 		int stepX = SpriteInfo.Speed; //abs(vectorX);	//********* improve later
 		int stepY = SpriteInfo.Speed; //abs(vectorY);
 
-		// if next_x==go_x & next_y==go_y, reach destination already, don't move further.
+		// if NextX == GoX && NextY == GoY, reach destination already, don't move further.
 		if (NextX != GoX || NextY != GoY)
 		{
 			if (Math.Abs(CurX - NextX) <= stepX && Math.Abs(CurY - NextY) <= stepY)
@@ -321,7 +305,7 @@ public class Sprite : IIdObject
 			}
 		}
 
-		//---- if blocked, cur_action is changed to SPRITE_WAIT, return now ----//
+		//---- if blocked, CurAction is changed to SPRITE_WAIT, return now ----//
 
 		if (CurAction != SPRITE_MOVE)
 			return;
@@ -332,7 +316,7 @@ public class Sprite : IIdObject
 		//
 		//------------------------------------------------//
 
-		// cur_dir may be changed in the above set_next() call
+		// CurDir may be changed in the above SetNext() call
 		int vectorX = MoveXVectors[FinalDir] * SpriteInfo.Speed;
 		int vectorY = MoveYVectors[FinalDir] * SpriteInfo.Speed;
 
@@ -364,8 +348,7 @@ public class Sprite : IIdObject
 		Sys.Instance.Audio.BattleSound(CurLocX, CurLocY, CurFrame, 'S', SpriteResId, "A" + (CurAttack + 1));
 
 		//------- next attack frame --------//
-		SpriteAttack spriteAttack = CurSpriteAttack();
-		if (++CurFrame > spriteAttack.FrameCount)
+		if (++CurFrame > CurSpriteAttack().FrameCount)
 		{
 			((Unit)this).CycleEqvAttack(); // assume only unit can attack
 			CurFrame = 1;
@@ -403,7 +386,7 @@ public class Sprite : IIdObject
 		SetDir(GetDir(curX, curY, destX, destY));
 	}
 
-	public void SetDir(int newDir) //	 overloading function
+	public void SetDir(int newDir)
 	{
 		if (newDir != FinalDir)
 		{
@@ -421,34 +404,33 @@ public class Sprite : IIdObject
 	{
 		int xDiff = Math.Abs(destX - curX);
 		int yDiff = Math.Abs(destY - curY);
-		int squSize = Math.Max(xDiff, yDiff); // the size of the square we consider
+		int maxDiff = Math.Max(xDiff, yDiff);
 
 		if (destX == curX)
 		{
 			return destY > curY ? InternalConstants.DIR_S : InternalConstants.DIR_N;
 		}
-		else if (destX < curX)
+		
+		if (destX < curX)
 		{
 			// west side
 			if (destY > curY)
 			{
 				// south west quadrant
-				if (2 * xDiff <= squSize)
+				if (2 * xDiff <= maxDiff)
 					return InternalConstants.DIR_S;
-				else if (2 * yDiff <= squSize)
+				if (2 * yDiff <= maxDiff)
 					return InternalConstants.DIR_W;
-				else
-					return InternalConstants.DIR_SW;
+				return InternalConstants.DIR_SW;
 			}
 			else
 			{
 				// north west quadrant
-				if (2 * xDiff <= squSize)
+				if (2 * xDiff <= maxDiff)
 					return InternalConstants.DIR_N;
-				else if (2 * yDiff <= squSize)
+				if (2 * yDiff <= maxDiff)
 					return InternalConstants.DIR_W;
-				else
-					return InternalConstants.DIR_NW;
+				return InternalConstants.DIR_NW;
 			}
 		}
 		else // destX > curX
@@ -457,26 +439,22 @@ public class Sprite : IIdObject
 			if (destY > curY)
 			{
 				// south east quadrant
-				if (2 * xDiff <= squSize)
+				if (2 * xDiff <= maxDiff)
 					return InternalConstants.DIR_S;
-				else if (2 * yDiff <= squSize)
+				if (2 * yDiff <= maxDiff)
 					return InternalConstants.DIR_E;
-				else
-					return InternalConstants.DIR_SE;
+				return InternalConstants.DIR_SE;
 			}
 			else
 			{
 				// north east quadrant
-				if (2 * xDiff <= squSize)
+				if (2 * xDiff <= maxDiff)
 					return InternalConstants.DIR_N;
-				else if (2 * yDiff <= squSize)
+				if (2 * yDiff <= maxDiff)
 					return InternalConstants.DIR_E;
-				else
-					return InternalConstants.DIR_NE;
+				return InternalConstants.DIR_NE;
 			}
 		}
-
-		return InternalConstants.DIR_N;
 	}
 
 	protected bool IsDirCorrect()
@@ -498,11 +476,9 @@ public class Sprite : IIdObject
 			return true;
 		}
 
-		const int HALF_SPRITE_DIR_TYPE = InternalConstants.MAX_SPRITE_DIR_TYPE / 2;
-		const int TURN_REQUIRE_AMOUNT = 60;
 		int turnAmount = TurnAmount[SpriteInfo.NeedTurning];
 
-		if ((CurDir + HALF_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE == FinalDir) // opposite direction
+		if ((CurDir + InternalConstants.HALF_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE == FinalDir) // opposite direction
 		{
 			CurDir += (FinalDir % 2 == 0) ? 1 : -1;
 			CurDir %= InternalConstants.MAX_SPRITE_DIR_TYPE;
@@ -510,10 +486,10 @@ public class Sprite : IIdObject
 		else
 		{
 			int dirDiff = (FinalDir - CurDir + InternalConstants.MAX_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE;
-			if (dirDiff < HALF_SPRITE_DIR_TYPE)
+			if (dirDiff < InternalConstants.HALF_SPRITE_DIR_TYPE)
 			{
 				TurnDelay += turnAmount;
-				if (TurnDelay >= TURN_REQUIRE_AMOUNT)
+				if (TurnDelay >= InternalConstants.TURN_REQUIRE_AMOUNT)
 				{
 					CurDir = (CurDir + 1) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 					TurnDelay = 0;
@@ -522,7 +498,7 @@ public class Sprite : IIdObject
 			else
 			{
 				TurnDelay -= turnAmount;
-				if (TurnDelay <= -TURN_REQUIRE_AMOUNT)
+				if (TurnDelay <= -InternalConstants.TURN_REQUIRE_AMOUNT)
 				{
 					CurDir = (CurDir - 1 + InternalConstants.MAX_SPRITE_DIR_TYPE) % InternalConstants.MAX_SPRITE_DIR_TYPE;
 					TurnDelay = 0;
@@ -543,11 +519,11 @@ public class Sprite : IIdObject
 				curDir &= ~7; // direction less, remain upward or downward, but set to north
 				break;
 			case 8:
-				// cur_dir can be 0 to 3*MAX_SPRITE_DIR_TYPE-1, such as projectile;
+				// CurDir can be 0 to 3*MAX_SPRITE_DIR_TYPE-1, such as projectile;
 				// curDir = CurDir;
 				break;
 			case 16:
-				// curDir should be (from due north, clockwisely) { 0,8,1,9,2,10,3,11,4,12,5,13,6,14,7,15 }
+				// curDir should be (from due north, clockwise) { 0,8,1,9,2,10,3,11,4,12,5,13,6,14,7,15 }
 				if (TurnDelay <= -30)
 				{
 					curDir = ((curDir + 7) & 7) + 8;
@@ -559,8 +535,7 @@ public class Sprite : IIdObject
 
 				break;
 			case 24:
-				// curDir should be (from due north, clockwisely) 
-				// { 0,8,16,1,9,17,2,10,18,3,11,19,4,12,20,5,13,21,6,14,22,7,15,23 }
+				// curDir should be (from due north, clockwise) { 0,8,16,1,9,17,2,10,18,3,11,19,4,12,20,5,13,21,6,14,22,7,15,23 }
 				if (TurnDelay <= -20)
 				{
 					if (TurnDelay <= -40)

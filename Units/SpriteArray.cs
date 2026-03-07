@@ -1,5 +1,3 @@
-using System;
-
 namespace TenKingdoms;
 
 public abstract class SpriteArray : DynArray<Sprite>
@@ -22,7 +20,6 @@ public abstract class SpriteArray : DynArray<Sprite>
 
     public virtual void Process()
     {
-	    //TODO why with deleted?
 	    foreach (Sprite sprite in EnumerateWithDeleted())
 	    {
 		    if (sprite.RemainAttackDelay > 0)
