@@ -64,13 +64,13 @@ public static class UnitConstants
     public const char UNIT_LAND = 'L';
     public const char UNIT_SEA = 'S';
 
-    public const int UNIT_MODE_OVERSEE = 1; // unit_mode_para is the recno of the firm the unit is overseeing
-    public const int UNIT_MODE_DEFEND_TOWN = 2; // unit_mode_para is the recno of the town the unit is defending
-    public const int UNIT_MODE_CONSTRUCT = 3; // unit_mode_para is the recno of the firm the unit is constructing
-    public const int UNIT_MODE_REBEL = 4; // unit_mode_para is the recno of the rebel group the unit belongs to
-    public const int UNIT_MODE_MONSTER = 5; // unit_mode_para is the recno of the firm recno of the monster firm it belongs to
-    public const int UNIT_MODE_ON_SHIP = 6; // unit_mode_para is the recno of the ship unit this unit is on
-    public const int UNIT_MODE_IN_HARBOR = 7; // for ships only, unit_mode_para is the recno of the harbor this marine unit is in
+    public const int UNIT_MODE_OVERSEE = 1; // UnitModeParam is the id of the firm the unit is overseeing
+    public const int UNIT_MODE_DEFEND_TOWN = 2; // UnitModeParam is the id of the town the unit is defending
+    public const int UNIT_MODE_CONSTRUCT = 3; // UnitModeParam is the id of the firm the unit is constructing
+    public const int UNIT_MODE_REBEL = 4; // UnitModeParam is the id of the rebel group the unit belongs to
+    public const int UNIT_MODE_MONSTER = 5; // UnitModeParam is the id of the monster firm it belongs to
+    public const int UNIT_MODE_ON_SHIP = 6; // UnitModeParam is the id of the ship unit this unit is on
+    public const int UNIT_MODE_IN_HARBOR = 7; // for ships only, UnitModeParam is the id of the harbor this marine unit is in
     public const int UNIT_MODE_UNDER_TRAINING = 8;
     
     public const int ACTION_STOP = 0;
@@ -90,7 +90,7 @@ public static class UnitConstants
     public const int ACTION_MOVE = 14;
     public const int ACTION_GO_CAST_POWER = 15; // for god only
 
-    //------------ used only for action_mode2 -----------------//
+    //------------ used only for ActionMode2 -----------------//
     //------- put the following nine parameters together -------//
 
     public const int ACTION_AUTO_DEFENSE_ATTACK_TARGET = 16; // move to target for attacking
@@ -98,7 +98,6 @@ public static class UnitConstants
     public const int ACTION_AUTO_DEFENSE_DETECT_TARGET = 17;
     // go back to camp for training or ready for next defense action
     public const int ACTION_AUTO_DEFENSE_BACK_CAMP = 18;
-
     public const int ACTION_DEFEND_TOWN_ATTACK_TARGET = 19;
     public const int ACTION_DEFEND_TOWN_DETECT_TARGET = 20;
     public const int ACTION_DEFEND_TOWN_BACK_TOWN = 21;
@@ -107,10 +106,10 @@ public static class UnitConstants
     public const int ACTION_MONSTER_DEFEND_BACK_FIRM = 24;
 
     public const int ACTION_MISC_STOP = 0;
-    public const int ACTION_MISC_CAPTURE_TOWN_RECNO = 1;
-    public const int ACTION_MISC_DEFENSE_CAMP_RECNO = 2;
-    public const int ACTION_MISC_DEFEND_TOWN_RECNO = 3;
-    public const int ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO = 4;
+    public const int ACTION_MISC_CAPTURE_TOWN_ID = 1;
+    public const int ACTION_MISC_DEFENSE_CAMP_ID = 2;
+    public const int ACTION_MISC_DEFEND_TOWN_ID = 3;
+    public const int ACTION_MISC_MONSTER_DEFEND_FIRM_ID = 4;
 
     public const int MONSTER_ACTION_STOP = 0;
     public const int MONSTER_ACTION_ATTACK = 1;
@@ -127,14 +126,13 @@ public static class UnitConstants
     public const int ATTACK_DETECT_DISTANCE = 6;// the distance for the unit to detect target while idle
     public const int ATTACK_WAITING_TERM = 10;  // terms no. to wait before calling searching to attack target
 
-    public const int AUTO_DEFENSE_STAY_OUTSIDE_COUNT = 4; //4 days
+    public const int AUTO_DEFENSE_STAY_OUTSIDE_COUNT = 4; // 4 days
     public const int AUTO_DEFENSE_DETECT_COUNT = 3 + InternalConstants.FRAMES_PER_DAY * AUTO_DEFENSE_STAY_OUTSIDE_COUNT;
     public const int EFFECTIVE_AUTO_DEFENSE_DISTANCE = 9;
 
     public const int UNIT_DEFEND_TOWN_DISTANCE = 8;
     public const int UNIT_DEFEND_TOWN_STAY_OUTSIDE_COUNT = 4; // 4 days
     public const int UNIT_DEFEND_TOWN_DETECT_COUNT = 3 + InternalConstants.FRAMES_PER_DAY * UNIT_DEFEND_TOWN_STAY_OUTSIDE_COUNT;
-    public const int UNIT_DEFEND_TOWN_WAITING_TERM = 4;
     public const int EFFECTIVE_DEFEND_TOWN_DISTANCE = 8;
     public const int AUTO_GUARD_CHASE_ATTACK_DISTANCE = 5;
 

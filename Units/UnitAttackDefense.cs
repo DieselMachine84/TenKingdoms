@@ -3812,7 +3812,7 @@ public partial class Unit
 		// the unit may become idle or unable to reach firm, reactivate it
 		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
 		{
-			if (ActionMisc != UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO ||
+			if (ActionMisc != UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID ||
 			    ActionMiscParam == 0 || FirmArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
@@ -4007,7 +4007,7 @@ public partial class Unit
 		// the unit may become idle or unable to reach town, reactivate it
 		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_TOWN)
 		{
-			if (ActionMisc != UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO ||
+			if (ActionMisc != UnitConstants.ACTION_MISC_DEFEND_TOWN_ID ||
 			    ActionMiscParam == 0 || TownArray.IsDeleted(ActionMiscParam))
 				clearDefenseMode++;
 			else
@@ -4190,7 +4190,7 @@ public partial class Unit
 		// the unit may become idle or unable to reach firm, reactivate it
 		if (ActionMode != UnitConstants.ACTION_ASSIGN_TO_FIRM)
 		{
-			if (ActionMisc != UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO ||
+			if (ActionMisc != UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_ID ||
 			    ActionMiscParam == 0 || FirmArray.IsDeleted(ActionMiscParam))
 				clearDefendMode++;
 			else

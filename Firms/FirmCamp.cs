@@ -456,7 +456,7 @@ public class FirmCamp : Firm
 				{
 					Unit unit = UnitArray[defenseUnit.UnitId];
 					if (unit.NationId == NationId &&
-					    unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO &&
+					    unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID &&
 					    unit.ActionMiscParam == FirmId)
 					{
 						unit.ClearUnitDefenseMode();
@@ -515,7 +515,7 @@ public class FirmCamp : Firm
 		{
 			Unit unit = UnitArray[defenseUnit.UnitId];
 			DefenseOutsideCamp(defenseUnit.UnitId, targetId);
-			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
+			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID;
 			unit.ActionMiscParam = FirmId;
 		}
 
@@ -538,7 +538,7 @@ public class FirmCamp : Firm
 
 			Unit unit = UnitArray[unitId];
 			unit.TeamId = UnitArray.CurTeamId; // define it as a team
-			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO;
+			unit.ActionMisc = UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID;
 			unit.ActionMiscParam = FirmId;
 
 			if (OverseerId != 0)
@@ -624,7 +624,7 @@ public class FirmCamp : Firm
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == firmId)
+			if (unit.InAutoDefenseMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID && unit.ActionMiscParam == firmId)
 				unit.ClearUnitDefenseMode();
 		}
 
@@ -888,7 +888,7 @@ public class FirmCamp : Firm
 				continue;
 
 			Unit unit = UnitArray[defenseUnit.UnitId];
-			if (unit.NationId == NationId && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_RECNO && unit.ActionMiscParam == FirmId)
+			if (unit.NationId == NationId && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFENSE_CAMP_ID && unit.ActionMiscParam == FirmId)
 				found = true;
 		}
 

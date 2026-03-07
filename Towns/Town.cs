@@ -3105,7 +3105,7 @@ public class Town : IIdObject
 		unit.Stop2();
 		unit.ActionMode2 = UnitConstants.ACTION_DEFEND_TOWN_DETECT_TARGET;
 		unit.ActionPara2 = UnitConstants.UNIT_DEFEND_TOWN_DETECT_COUNT;
-		unit.ActionMisc = UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO;
+		unit.ActionMisc = UnitConstants.ACTION_MISC_DEFEND_TOWN_ID;
 		unit.ActionMiscParam = TownId;
 
 		DefendersCount++;
@@ -3123,7 +3123,7 @@ public class Town : IIdObject
 		//------------------------------------------------------------------//
 		foreach (Unit unit in UnitArray)
 		{
-			if (unit.InDefendTownMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFEND_TOWN_RECNO && unit.ActionMiscParam == TownId)
+			if (unit.InDefendTownMode() && unit.ActionMisc == UnitConstants.ACTION_MISC_DEFEND_TOWN_ID && unit.ActionMiscParam == TownId)
 				unit.ClearTownDefendMode(); // note: maybe, unit.NationId != NationId
 		}
 	}

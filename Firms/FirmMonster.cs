@@ -421,7 +421,7 @@ public class FirmMonster : Firm
 			monster.Stop2();
 			monster.ActionMode2 = UnitConstants.ACTION_MONSTER_DEFEND_DETECT_TARGET;
 			monster.ActionPara2 = UnitConstants.MONSTER_DEFEND_DETECT_COUNT;
-			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO;
+			monster.ActionMisc = UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_ID;
 			monster.ActionMiscParam = FirmId;
 		}
 
@@ -508,7 +508,7 @@ public class FirmMonster : Firm
 			//------ reset the monster's defense mode -----//
 
 			if (unit.InMonsterDefendMode() &&
-			    unit.ActionMisc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_RECNO &&
+			    unit.ActionMisc == UnitConstants.ACTION_MISC_MONSTER_DEFEND_FIRM_ID &&
 			    unit.ActionMiscParam == FirmId)
 			{
 				unit.ClearMonsterDefendMode();
