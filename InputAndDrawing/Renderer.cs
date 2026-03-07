@@ -499,7 +499,7 @@ public partial class Renderer : IRenderer
         
         if (_selectedUnitId != 0)
         {
-            if (UnitArray.IsDeleted(_selectedUnitId) || !UnitArray[_selectedUnitId].IsVisible())
+            if (UnitArray.IsDeleted(_selectedUnitId) || !KeepSelected(UnitArray[_selectedUnitId]))
             {
                 _selectedUnitId = 0;
                 UnitDetailsMode = UnitDetailsMode.Normal;
@@ -511,9 +511,14 @@ public partial class Renderer : IRenderer
         
         for (int i = _selectedUnits.Count - 1; i >= 0; i--)
         {
-            if (UnitArray.IsDeleted(_selectedUnits[i]) || !UnitArray[_selectedUnits[i]].IsVisible())
+            if (UnitArray.IsDeleted(_selectedUnits[i]) || !KeepSelected(UnitArray[_selectedUnits[i]]))
                 _selectedUnits.RemoveAt(i);
         }
+    }
+
+    private bool KeepSelected(Unit unit)
+    {
+        return unit.IsVisible() || unit.UnitType == UnitConstants.UNIT_CARAVAN || unit.UnitType == UnitConstants.UNIT_VESSEL;
     }
 
     private void ResetSelection()
