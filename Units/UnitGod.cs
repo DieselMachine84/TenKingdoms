@@ -31,6 +31,9 @@ public class UnitGod : Unit
 	{
 		base.PreProcess();
 
+		if (IsUnitDead())
+			return;
+		
 		if (GodId != GodRes.GOD_CHINESE && GodId != GodRes.GOD_NORMAN) // only Chinese and Norman dragon can attack
 			ForceMove = true;
 
@@ -52,7 +55,7 @@ public class UnitGod : Unit
 
 		HitPoints = firmBase.PrayPoints;
 
-		if (HitPoints == 0.0)
+		if (HitPoints <= 0.0)
 			SetDie();
 	}
 

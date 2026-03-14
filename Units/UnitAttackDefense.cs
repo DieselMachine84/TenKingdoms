@@ -3689,7 +3689,7 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					AttackFirm(ActionLocX2, ActionLocY2);
 
-					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 						    ActionLocX2, ActionLocY2, firmInfo.LocWidth, firmInfo.LocHeight))
 						WaitingTerm = 0;
 					break;
@@ -3700,14 +3700,14 @@ public partial class Unit
 					//-----------------------------------------------------------------//
 					AttackTown(ActionLocX2, ActionLocY2);
 
-					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 						    ActionLocX2, ActionLocY2, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 						WaitingTerm = 0;
 					break;
 
 				case UnitConstants.ACTION_ATTACK_WALL:
 					AttackWall(ActionLocX2, ActionLocY2);
-					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 						    ActionLocX2, ActionLocY2, 1, 1))
 						WaitingTerm = 0;
 					break;

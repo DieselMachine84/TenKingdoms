@@ -15,28 +15,28 @@ public class UnitExpCart : UnitWeapon
 	{
 		if (_triggered && CurFrame == 3)
 		{
-			int x1 = NextLocX;
-			int x2 = x1;
-			int y1 = NextLocY;
-			int y2 = y1;
-			x1 -= GameConstants.CHAIN_TRIGGER_RANGE;
-			x2 += GameConstants.CHAIN_TRIGGER_RANGE;
-			y1 -= GameConstants.CHAIN_TRIGGER_RANGE;
-			y2 += GameConstants.CHAIN_TRIGGER_RANGE;
-			if (x1 < 0)
-				x1 = 0;
-			if (x2 >= Config.MapSize)
-				x2 = Config.MapSize - 1;
-			if (y1 < 0)
-				y1 = 0;
-			if (y2 >= Config.MapSize)
-				y2 = Config.MapSize - 1;
+			int locX1 = NextLocX;
+			int locX2 = NextLocX;
+			int locY1 = NextLocY;
+			int locY2 = NextLocY;
+			locX1 -= GameConstants.CHAIN_TRIGGER_RANGE;
+			locX2 += GameConstants.CHAIN_TRIGGER_RANGE;
+			locY1 -= GameConstants.CHAIN_TRIGGER_RANGE;
+			locY2 += GameConstants.CHAIN_TRIGGER_RANGE;
+			if (locX1 < 0)
+				locX1 = 0;
+			if (locX2 >= Config.MapSize)
+				locX2 = Config.MapSize - 1;
+			if (locY1 < 0)
+				locY1 = 0;
+			if (locY2 >= Config.MapSize)
+				locY2 = Config.MapSize - 1;
 
-			for (int y = y1; y <= y2; ++y)
+			for (int locY = locY1; locY <= locY2; locY++)
 			{
-				for (int x = x1; x <= x2; ++x)
+				for (int locX = locX1; locX <= locX2; locX++)
 				{
-					Location location = World.GetLoc(x, y);
+					Location location = World.GetLoc(locX, locY);
 					if (location.HasUnit(UnitConstants.UNIT_LAND))
 					{
 						Unit unit = UnitArray[location.UnitId(UnitConstants.UNIT_LAND)];
@@ -49,31 +49,31 @@ public class UnitExpCart : UnitWeapon
 
 		if (_triggered && (CurFrame == 3 || CurFrame == 7))
 		{
-			int x1 = NextLocX;
-			int x2 = x1;
-			int y1 = NextLocY;
-			int y2 = y1;
-			x1 -= GameConstants.EXPLODE_RANGE;
-			x2 += GameConstants.EXPLODE_RANGE;
-			y1 -= GameConstants.EXPLODE_RANGE;
-			y2 += GameConstants.EXPLODE_RANGE;
+			int locX1 = NextLocX;
+			int locX2 = NextLocX;
+			int locY1 = NextLocY;
+			int locY2 = NextLocY;
+			locX1 -= GameConstants.EXPLODE_RANGE;
+			locX2 += GameConstants.EXPLODE_RANGE;
+			locY1 -= GameConstants.EXPLODE_RANGE;
+			locY2 += GameConstants.EXPLODE_RANGE;
 
-			if (x1 < 0)
-				x1 = 0;
-			if (x2 >= Config.MapSize)
-				x2 = Config.MapSize - 1;
-			if (y1 < 0)
-				y1 = 0;
-			if (y2 >= Config.MapSize)
-				y2 = Config.MapSize - 1;
+			if (locX1 < 0)
+				locX1 = 0;
+			if (locX2 >= Config.MapSize)
+				locX2 = Config.MapSize - 1;
+			if (locY1 < 0)
+				locY1 = 0;
+			if (locY2 >= Config.MapSize)
+				locY2 = Config.MapSize - 1;
 
 			if (CurFrame == 3)
 			{
-				for (int y = y1; y <= y2; ++y)
+				for (int locY = locY1; locY <= locY2; locY++)
 				{
-					for (int x = x1; x <= x2; ++x)
+					for (int locX = locX1; locX <= locX2; locX++)
 					{
-						Location location = World.GetLoc(x, y);
+						Location location = World.GetLoc(locX, locY);
 						if (location.HasUnit(UnitConstants.UNIT_LAND))
 						{
 							HitTarget(this, UnitArray[location.UnitId(UnitConstants.UNIT_LAND)],
@@ -86,7 +86,7 @@ public class UnitExpCart : UnitWeapon
 						}
 						else if (location.IsWall())
 						{
-							HitWall(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
+							HitWall(this, locX, locY, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 						else if (location.IsPlant())
 						{
@@ -95,21 +95,22 @@ public class UnitExpCart : UnitWeapon
 						}
 						else
 						{
-							HitBuilding(this, x, y, GameConstants.EXPLODE_DAMAGE, NationId);
+							HitBuilding(this, locX, locY, GameConstants.EXPLODE_DAMAGE, NationId);
 						}
 					}
 				}
 			}
-			else if (CurFrame == 7)
+			
+			if (CurFrame == 7)
 			{
-				for (int y = y1; y <= y2; ++y)
+				for (int locY = locY1; locY <= locY2; locY++)
 				{
-					for (int x = x1; x <= x2; ++x)
+					for (int locX = locX1; locX <= locX2; locX++)
 					{
-						Location location = World.GetLoc(x, y);
-						int fl = (Math.Abs(x - NextLocX) + Math.Abs(y - NextLocY)) * -30 + 80;
-						if (location.CanSetFire() && location.FireStrength() < fl)
-							location.SetFireStrength(fl);
+						Location location = World.GetLoc(locX, locY);
+						int fireStrength = (Math.Abs(locX - NextLocX) + Math.Abs(locY - NextLocY)) * -30 + 80;
+						if (location.CanSetFire() && location.FireStrength() < fireStrength)
+							location.SetFireStrength(fireStrength);
 						if (location.Flammability() > 0)
 							location.SetFlammability(1); // such that the fire will be put out quickly
 					}

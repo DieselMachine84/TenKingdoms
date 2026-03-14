@@ -372,6 +372,10 @@ public class Sprite : IIdObject
 		return false;
 	}
 
+	public virtual void Die()
+	{
+	}
+
 	public void ProcessTurn()
 	{
 		MatchDir();

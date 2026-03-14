@@ -2231,6 +2231,7 @@ public abstract class Firm : IIdObject
 		}
 		else
 		{
+			//TODO change spy loyalty if worker is our spy?
 			Workers[workerId - 1].ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
 			NationArray[NationId].AddExpense(NationBase.EXPENSE_REWARD_UNIT, GameConstants.REWARD_COST);
 		}

@@ -1497,7 +1497,7 @@ public partial class Renderer
 
     private bool CanAssignUnitToFirm(Unit unit, Firm firm)
     {
-        int canAssign = unit.CanAssignToFirm(firm.FirmId);
+        int canAssign = unit.CanAssignToFirm(firm);
         if (canAssign == 0)
             return false;
         

@@ -22,7 +22,7 @@ public abstract partial class Unit : Sprite
 	public int TargetLoyalty { get; private set; }
 	public Skill Skill { get; } = new Skill();
 	public int UnitMode { get; private set; }
-	public int UnitModeParam { get; set; } // if UnitMode == UNIT_MODE_REBEL, UnitModeParam is rebelId this unit belongs to
+	public int UnitModeParam { get; set; }
 	public int SpyId { get; set; }
 	public int NationContribution { get; private set; } // For humans: contribution to the nation. For weapons: the tech level!
 	public int TotalReward { get; private set; } // total amount of reward you have given to the unit
@@ -67,8 +67,8 @@ public abstract partial class Unit : Sprite
 	public int IgnorePowerNation { get; set; }
 	public int MoveToLocX { get; protected set; }
 	public int MoveToLocY { get; protected set; }
-	public int RangeAttackLocX { get; private set; } // -1 for unable to do range_attack, use to store previous range attack location
-	public int RangeAttackLocY { get; private set; } // -1 for unable to do range_attack, use to store previous range attack location
+	public int RangeAttackLocX { get; private set; } // -1 for unable to do RangeAttack, use to store previous range attack location
+	public int RangeAttackLocY { get; private set; } // -1 for unable to do RangeAttack, use to store previous range attack location
 	public List<int> PathNodes { get; } = new List<int>();
 	public int PathNodeIndex { get; private set; } = -1;
 	private int _pathNodeDistance;
@@ -133,8 +133,8 @@ public abstract partial class Unit : Sprite
 	protected NewsArray NewsArray => Sys.Instance.NewsArray;
 	protected EffectArray EffectArray => Sys.Instance.EffectArray;
 
-	
-	public Unit()
+
+	protected Unit()
 	{
 	}
 
@@ -142,13 +142,14 @@ public abstract partial class Unit : Sprite
 	{
 		NationId = nationId;
 		Rank = rank; // Rank must be initialized before InitUnitType() as InitUnitType() may overwrite it
-		NationContribution = 0; // nation_contribution must be initialized before InitUnitType() as InitUnitType() may overwrite it
+		NationContribution = 0; // NationContribution must be initialized before InitUnitType() as InitUnitType() may overwrite it
 
 		InitUnitType(unitType);
 
 		GroupId = UnitArray.CurGroupId++;
 		RaceId = UnitRes[UnitType].RaceId;
 
+		NameId = 0;
 		if (RaceId != 0)
 		{
 			NameId = RaceRes[RaceId].GetNewNameId();
@@ -157,8 +158,6 @@ public abstract partial class Unit : Sprite
 		{
 			if (NationId != 0)
 				NameId = ++NationArray[NationId].LastUnitNameIds[UnitType - 1];
-			else
-				NameId = 0;
 		}
 
 		AIUnit = (NationId != 0 && NationArray[NationId].NationType == NationBase.NATION_AI);
@@ -204,8 +203,6 @@ public abstract partial class Unit : Sprite
 		}
 
 		AttackDirection = FinalDir;
-
-		//--------------- init AI info -------------//
 
 		if (AIUnit)
 		{
@@ -302,16 +299,12 @@ public abstract partial class Unit : Sprite
 			SpyId = 0;
 		}
 
-		//-------- reset seek path ----------//
-
 		ResetPath();
 
 		//----- if CurX == -1, the unit has not yet been drawn -----//
 
 		if (CurX >= 0)
 			DeinitSprite();
-
-		//--------------- deinit AI info -------------//
 
 		if (AIUnit)
 		{
@@ -372,7 +365,7 @@ public abstract partial class Unit : Sprite
 		Unveil();
 	}
 
-	public void DeinitSprite(bool keepSelected = false)
+	public void DeinitSprite()
 	{
 		if (CurX == -1)
 			return;
@@ -382,6 +375,7 @@ public abstract partial class Unit : Sprite
 
 		if (LeaderId != 0 && UnitMode != UnitConstants.UNIT_MODE_ON_SHIP)
 		{
+			//TODO reset TeamId?
 			if (!UnitArray.IsDeleted(LeaderId)) // the leader unit may have been killed at the same time
 				UnitArray[LeaderId].DeleteTeamMember(SpriteId);
 
@@ -400,15 +394,6 @@ public abstract partial class Unit : Sprite
 
 		CurX = -1;
 		CurY = -1;
-
-		//---- reset other parameters related to this unit ----//
-
-		if (!keepSelected)
-		{
-			//TODO rewrite
-			//if (Power.command_unit_recno == sprite_recno)
-				//Power.command_id = 0;
-		}
 
 		DeinitUnitMode();
 	}
@@ -467,6 +452,7 @@ public abstract partial class Unit : Sprite
 					firmMonster.ReduceDefenderCount(Rank);
 				}
 			}
+			//TODO SetMode(0);?
 		}
 	}
 
@@ -501,13 +487,12 @@ public abstract partial class Unit : Sprite
 		if (worker.NameId != 0 && worker.RaceId != 0) // if this worker is formerly a unit who has a name
 			SetName(worker.NameId);
 
-		//------ if the unit is a spy -------//
-
 		if (worker.SpyId != 0)
 		{
 			SpyId = worker.SpyId;
 			Spy spy = SpyArray[SpyId];
 			AIUnit = spy.CloakedNationId != 0 && NationArray[spy.CloakedNationId].IsAI();
+			//TODO double SetName() call? Check
 			SetName(spy.NameId);
 			spy.SetPlace(Spy.SPY_MOBILE, SpriteId);
 		}
@@ -618,7 +603,6 @@ public abstract partial class Unit : Sprite
 					if (FirmArray.IsDeleted(ActionParam))
 					{
 						Stop2();
-						return;
 					}
 					else
 					{
@@ -627,37 +611,33 @@ public abstract partial class Unit : Sprite
 						if (firm.NationId != NationId && !firm.CanAssignCapture())
 						{
 							Stop2();
-							return;
 						}
 					}
 
-					break;
+					return;
 
 				case UnitConstants.ACTION_ASSIGN_TO_TOWN:
 				case UnitConstants.ACTION_DEFEND_TOWN_BACK_TOWN:
 					if (TownArray.IsDeleted(ActionParam) || TownArray[ActionParam].NationId != NationId)
 					{
 						Stop2();
-						return;
 					}
 
-					break;
+					return;
 
 				case UnitConstants.ACTION_ASSIGN_TO_VEHICLE:
 					if (UnitArray.IsDeleted(ActionParam) || UnitArray[ActionParam].NationId != NationId)
 					{
 						Stop2();
-						return;
 					}
 
-					break;
+					return;
 			}
 		}
 		else //--------------- unit is idle -----------------//
 		{
 			if (CurLocX == MoveToLocX && CurLocY == MoveToLocY)
 			{
-				//----- first check if there is firm in the given location ------//
 				Location loc = World.GetLoc(ActionLocX, ActionLocY);
 
 				if (loc.IsFirm() && loc.FirmId() == ActionParam)
@@ -667,7 +647,7 @@ public abstract partial class Unit : Sprite
 					FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 					//---------- resume action if the unit has not reached the firm surrounding ----------//
-					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 						    ActionLocX, ActionLocY, firmInfo.LocWidth, firmInfo.LocHeight))
 					{
 						//------------ not in the surrounding -----------//
@@ -684,6 +664,7 @@ public abstract partial class Unit : Sprite
 						//-------------------------------------------------------//
 						if (ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_BACK_CAMP)
 						{
+							//TODO check. Why there is no same condition for ACTION_MONSTER_DEFEND_BACK_FIRM?
 							FirmCamp camp = (FirmCamp)firm;
 							camp.UpdateDefenseUnit(SpriteId);
 						}
@@ -720,6 +701,7 @@ public abstract partial class Unit : Sprite
 							return; // not allow AI to change firm builder
 
 						ResetActionParameters2();
+						
 						if (Skill.GetSkillLevel(Skill.SKILL_CONSTRUCTION) != 0 || Skill.GetSkillLevel(firm.FirmSkillId) != 0)
 							firm.SetBuilder(SpriteId);
 					}
@@ -729,14 +711,15 @@ public abstract partial class Unit : Sprite
 				}
 				else if (loc.IsTown() && loc.TownId() == ActionParam)
 				{
+					Town town = TownArray[ActionParam];
+					
 					//---------------- a town on the location -----------------//
-					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+					if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 						    ActionLocX, ActionLocY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					{
+						//TODO SetMoveToSurround as for firm?
 						return;
 					}
-
-					int actionParam = ActionParam;
 
 					if (AIActionId != 0 && NationId != 0)
 						NationArray[NationId].action_finished(AIActionId, SpriteId);
@@ -746,19 +729,21 @@ public abstract partial class Unit : Sprite
 					ResetActionParameters();
 
 					//-------------- assign the unit to the town -----------------//
-					TownArray[actionParam].AssignUnit(this);
+					town.AssignUnit(this);
 				}
 
 				//------ embarking a ship ------//
 
 				else if (loc.HasUnit(UnitConstants.UNIT_SEA) && loc.UnitId(UnitConstants.UNIT_SEA) == ActionParam)
 				{
+					UnitMarine ship = (UnitMarine)UnitArray[ActionParam];
+					
 					//------------ update UnitArray's selected parameters ------------//
 					ResetActionParameters2();
 					ResetActionParameters();
 
 					//----------------- load the unit to the marine -----------------//
-					((UnitMarine)UnitArray[ActionParam]).LoadUnit(SpriteId);
+					ship.LoadUnit(SpriteId);
 				}
 				else
 				{
@@ -819,7 +804,9 @@ public abstract partial class Unit : Sprite
 			}
 		}
 		else if (CurAction == SPRITE_IDLE)
+		{
 			SetDir(curLocX, curLocY, ship.MoveToLocX, ship.MoveToLocY);
+		}
 
 		//---------------------------------------------------------------------------//
 		// update location to embark
@@ -828,6 +815,7 @@ public abstract partial class Unit : Sprite
 		int shipActionLocY = ship.ActionLocY2;
 		if (Math.Abs(shipActionLocX - ActionLocX2) > 1 || Math.Abs(shipActionLocY - ActionLocY2) > 1)
 		{
+			//TODO looks like this condition is always true
 			if (shipActionLocX != ActionLocX2 || shipActionLocY != ActionLocY2)
 			{
 				Location unitLoc = World.GetLoc(curLocX, curLocY);
@@ -887,10 +875,14 @@ public abstract partial class Unit : Sprite
 				}
 			}
 			else
+			{
 				ResetActionParameters();
+			}
 		}
 		else if (CurAction == SPRITE_TURN && IsDirCorrect())
+		{
 			SetMove();
+		}
 	}
 
 	private void ProcessBuildFirm()
@@ -898,7 +890,7 @@ public abstract partial class Unit : Sprite
 		if (CurAction == SPRITE_IDLE) // the unit is at the build location now
 		{
 			// **BUGHERE, the unit shouldn't be hidden when building structures otherwise,
-			// it's cargo_recno will be conflict with the structure's cargo_recno
+			// it's CargoId will be conflict with the structure's CargoId
 
 			bool succeedFlag = false;
 			bool shouldProceed = true;
@@ -912,7 +904,7 @@ public abstract partial class Unit : Sprite
 				//---------------------------------------------------------//
 				// check whether the unit in the building surrounding
 				//---------------------------------------------------------//
-				if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+				if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 					    ActionLocX, ActionLocY, width, height))
 				{
 					//---------- not in the building surrounding ---------//
@@ -974,8 +966,8 @@ public abstract partial class Unit : Sprite
 
 			if (CurLocX == MoveToLocX && CurLocY == MoveToLocY)
 			{
-				if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, ActionLocX, ActionLocY,
-					    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+				if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
+					    ActionLocX, ActionLocY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 				{
 					return;
 				}
@@ -1066,9 +1058,8 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	public int CanAssignToFirm(int firmId)
+	public int CanAssignToFirm(Firm firm)
 	{
-		Firm firm = FirmArray[firmId];
 		FirmInfo firmInfo = FirmRes[firm.FirmType];
 
 		switch (UnitRes[UnitType].UnitClass)
@@ -1105,14 +1096,10 @@ public abstract partial class Unit : Sprite
 				break;
 
 			case UnitConstants.UNIT_CLASS_WEAPON:
-				if (firm.FirmType == Firm.FIRM_CAMP && NationId == firm.NationId)
-					return 1;
-				break;
+				return (firm.FirmType == Firm.FIRM_CAMP && NationId == firm.NationId) ? 1 : 0;
 
 			case UnitConstants.UNIT_CLASS_SHIP:
-				if (firm.FirmType == Firm.FIRM_HARBOR && NationId == firm.NationId)
-					return 1;
-				break;
+				return (firm.FirmType == Firm.FIRM_HARBOR && NationId == firm.NationId) ? 1 : 0;
 
 			case UnitConstants.UNIT_CLASS_MONSTER:
 				if (firm.FirmType == Firm.FIRM_MONSTER && MobileType == UnitConstants.UNIT_LAND)
@@ -1141,6 +1128,7 @@ public abstract partial class Unit : Sprite
 			return;
 
 		//----------- cannot assign for caravan -----------//
+		//TODO what about gods?
 		if (UnitType == UnitConstants.UNIT_CARAVAN)
 			return;
 
@@ -1202,8 +1190,7 @@ public abstract partial class Unit : Sprite
 			//----------------------------------------------------------------//
 			// ActionMode2: checking for equal action or idle action
 			//----------------------------------------------------------------//
-			if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_FIRM && ActionPara2 == firmId &&
-			    ActionLocX2 == assignLocX && ActionLocY2 == assignLocY)
+			if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_FIRM && ActionPara2 == firmId && ActionLocX2 == assignLocX && ActionLocY2 == assignLocY)
 			{
 				if (CurAction != SPRITE_IDLE)
 					return;
@@ -1222,7 +1209,7 @@ public abstract partial class Unit : Sprite
 			Firm firm = FirmArray[firmId];
 			FirmInfo firmInfo = FirmRes[firm.FirmType];
 
-			if (CanAssignToFirm(firmId) == 0)
+			if (CanAssignToFirm(firm) == 0)
 			{
 				MoveToFirmSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight, firm.FirmType);
 				return;
@@ -1243,8 +1230,7 @@ public abstract partial class Unit : Sprite
 			//----------------------------------------------------------------//
 			// ActionMode2: checking for equal action or idle action
 			//----------------------------------------------------------------//
-			if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_TOWN && ActionPara2 == townId &&
-			    ActionLocX2 == assignLocX && ActionLocY2 == assignLocY)
+			if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_TOWN && ActionPara2 == townId && ActionLocX2 == assignLocX && ActionLocY2 == assignLocY)
 			{
 				if (CurAction != SPRITE_IDLE)
 					return;
@@ -1287,20 +1273,15 @@ public abstract partial class Unit : Sprite
 		//-----------------------------------------------------------------//
 		// able to reach building surrounding, set action parameters
 		//-----------------------------------------------------------------//
+		if (buildingType == UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO)
+			ActionMode = UnitConstants.ACTION_ASSIGN_TO_FIRM;
+		
+		if (buildingType == UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO)
+			ActionMode = UnitConstants.ACTION_ASSIGN_TO_TOWN;
+
 		ActionParam = newActionParam;
 		ActionLocX = assignLocX;
 		ActionLocY = assignLocY;
-
-		switch (buildingType)
-		{
-			case UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO:
-				ActionMode = UnitConstants.ACTION_ASSIGN_TO_FIRM;
-				break;
-
-			case UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO:
-				ActionMode = UnitConstants.ACTION_ASSIGN_TO_TOWN;
-				break;
-		}
 	}
 
 	public void AssignToShip(int destLocX, int destLocY, int shipId, int miscNo = 0)
@@ -1314,8 +1295,7 @@ public abstract partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// ActionMode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_SHIP && ActionPara2 == shipId &&
-		    ActionLocX2 == destLocX && ActionLocY2 == destLocY)
+		if (ActionMode2 == UnitConstants.ACTION_ASSIGN_TO_SHIP && ActionPara2 == shipId && ActionLocX2 == destLocX && ActionLocY2 == destLocY)
 		{
 			if (CurAction != SPRITE_IDLE)
 				return;
@@ -1392,13 +1372,17 @@ public abstract partial class Unit : Sprite
 
 	public void ShipToBeach(int destLocX, int destLocY, out int finalDestLocX, out int finalDestLocY) // for ship only
 	{
+		finalDestLocX = finalDestLocY = -1;
+		
+		if (IsUnitDead())
+			return;
+		
 		//----------------------------------------------------------------//
-		// change to MoveTo if the unit is dead or if the ship cannot carry units
+		// change to MoveTo if the ship cannot carry units
 		//----------------------------------------------------------------//
-		if (IsUnitDead() || UnitRes[UnitType].CarryUnitCapacity <= 0)
+		if (UnitRes[UnitType].CarryUnitCapacity <= 0)
 		{
 			MoveTo(destLocX, destLocY, 1);
-			finalDestLocX = finalDestLocY = -1;
 			return;
 		}
 
@@ -1454,7 +1438,6 @@ public abstract partial class Unit : Sprite
 			//------------------------------------------------------------------------------//
 			if (!ShipToBeachPathEdit(ref resultLocX, ref resultLocY, regionId))
 			{
-				finalDestLocX = finalDestLocY = -1;
 				return; // calling MoveTo() instead
 			}
 		}
@@ -1466,21 +1449,21 @@ public abstract partial class Unit : Sprite
 
 		ActionMode = ActionMode2 = UnitConstants.ACTION_SHIP_TO_BEACH;
 		ActionParam = ActionPara2 = 0;
-		finalDestLocX = ActionLocX = ActionLocX2 = resultLocX;
-		finalDestLocY = ActionLocY = ActionLocY2 = resultLocY;
+		ActionLocX = ActionLocX2 = finalDestLocX = resultLocX;
+		ActionLocY = ActionLocY2 = finalDestLocY = resultLocY;
 	}
 
 	public void BuildFirm(int buildLocX, int buildLocY, int firmType, int remoteAction)
 	{
-		//if(!remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <unit recno> <xLoc> <yLoc> <firmId>
-		//short *shortPtr =(short *)remote.new_send_queue_msg(MSG_UNIT_BUILD_FIRM, 4*sizeof(short) );
-		//shortPtr[0] = sprite_recno;
-		//shortPtr[1] = buildXLoc;
-		//shortPtr[2] = buildYLoc;
-		//shortPtr[3] = firmId;
-		//return;
+			//// packet structure : <unit recno> <xLoc> <yLoc> <firmId>
+			//short *shortPtr =(short *)remote.new_send_queue_msg(MSG_UNIT_BUILD_FIRM, 4*sizeof(short) );
+			//shortPtr[0] = sprite_recno;
+			//shortPtr[1] = buildXLoc;
+			//shortPtr[2] = buildYLoc;
+			//shortPtr[3] = firmId;
+			//return;
 		//}
 
 		if (IsUnitDead())
@@ -1542,8 +1525,7 @@ public abstract partial class Unit : Sprite
 		//----------------------------------------------------------------//
 		// ActionMode2: checking for equal action or idle action
 		//----------------------------------------------------------------//
-		if (ActionMode2 == UnitConstants.ACTION_BUILD_FIRM && ActionPara2 == firmType &&
-		    ActionLocX2 == buildLocX && ActionLocY2 == buildLocY)
+		if (ActionMode2 == UnitConstants.ACTION_BUILD_FIRM && ActionPara2 == firmType && ActionLocX2 == buildLocX && ActionLocY2 == buildLocY)
 		{
 			if (CurAction != SPRITE_IDLE)
 				return;
@@ -1567,7 +1549,7 @@ public abstract partial class Unit : Sprite
 		int firmWidth = firmInfo.LocWidth;
 		int firmHeight = firmInfo.LocHeight;
 
-		if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+		if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 			    buildLocX, buildLocY, firmWidth, firmHeight))
 		{
 			//----------- not in the firm surrounding ---------//
@@ -1640,7 +1622,7 @@ public abstract partial class Unit : Sprite
 		//----- order the sprite to stop as soon as possible -----//
 		Stop(); // new order
 
-		if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth,
+		if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
 			    settleLocX, settleLocY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 		{
 			//------------ not in the town surrounding ------------//
@@ -1663,14 +1645,14 @@ public abstract partial class Unit : Sprite
 
 	private void Burn(int burnLocX, int burnLocY, int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <unit recno> <xLoc> <yLoc>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_BURN, 3*sizeof(short) );
-		//shortPtr[0] = sprite_recno;
-		//shortPtr[1] = burnXLoc;
-		//shortPtr[2] = burnYLoc;
-		//return;
+			//// packet structure : <unit recno> <xLoc> <yLoc>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_UNIT_BURN, 3*sizeof(short) );
+			//shortPtr[0] = sprite_recno;
+			//shortPtr[1] = burnXLoc;
+			//shortPtr[2] = burnYLoc;
+			//return;
 		//}
 
 		if (MoveToLocX == burnLocX && MoveToLocY == burnLocY)
@@ -1744,20 +1726,20 @@ public abstract partial class Unit : Sprite
 
 	public void GoCastPower(int castLocX, int castLocY, int castPowerType, int remoteAction)
 	{
+		//if (!remoteAction && remote.is_enable())
+		//{
+			////------------ process multiplayer calling ---------------//
+			//// packet structure : <unit recno> <xLoc> <yLoc> <power type>
+			//short *short =(short *)remote.new_send_queue_msg(MSG_U_GOD_CAST, 4*sizeof(short) );
+			//shortPtr[0] = sprite_recno;
+			//shortPtr[1] = castXLoc;
+			//shortPtr[2] = castYLoc;
+			//shortPtr[3] = castPowerType;
+			//return;
+		//}
+		
 		if (IsUnitDead())
 			return;
-
-		//if(!remoteAction && remote.is_enable() )
-		//{
-		////------------ process multiplayer calling ---------------//
-		//// packet structure : <unit recno> <xLoc> <yLoc> <power type>
-		//short *short =(short *)remote.new_send_queue_msg(MSG_U_GOD_CAST, 4*sizeof(short) );
-		//shortPtr[0] = sprite_recno;
-		//shortPtr[1] = castXLoc;
-		//shortPtr[2] = castYLoc;
-		//shortPtr[3] = castPowerType;
-		//return;
-		//}
 
 		UnitGod unitGod = (UnitGod)this;
 
@@ -1832,6 +1814,8 @@ public abstract partial class Unit : Sprite
 				}
 
 				break;
+			
+			//TODO what about UNIT_MODE_DEFEND_TOWN?
 		}
 
 		//------------- process way point ------------//
@@ -1921,9 +1905,8 @@ public abstract partial class Unit : Sprite
 			// TODO check this
 			if (Misc.Random(500) == 0)
 			{
-				const int WANDER_DIST = 20;
-				int destX = NextLocX + Misc.Random(WANDER_DIST) - WANDER_DIST / 2;
-				int destY = NextLocY + Misc.Random(WANDER_DIST) - WANDER_DIST / 2;
+				int destX = NextLocX + Misc.Random(GameConstants.MONSTER_WANDER_DIST) - GameConstants.MONSTER_WANDER_DIST / 2;
+				int destY = NextLocY + Misc.Random(GameConstants.MONSTER_WANDER_DIST) - GameConstants.MONSTER_WANDER_DIST / 2;
 				Misc.BoundLocation(ref destX, ref destY);
 				MoveTo(destX, destY);
 			}
@@ -1994,8 +1977,7 @@ public abstract partial class Unit : Sprite
 					Stop2(); // stop since target is deleted
 				else
 				{
-					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND,
-						    InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
+					if (SpaceForAttack(ActionLocX2, ActionLocY2, UnitConstants.UNIT_LAND, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT))
 					{
 						AttackTown(ActionLocX2, ActionLocY2, 0, 0, 0);
 						hasSearch = true;
@@ -2354,7 +2336,7 @@ public abstract partial class Unit : Sprite
 		return false;
 	}
 
-	public virtual void Die()
+	public override void Die()
 	{
 		if (UnitMode == UnitConstants.UNIT_MODE_REBEL)
 			RebelArray.DropRebelIdentity(SpriteId);
@@ -2421,6 +2403,7 @@ public abstract partial class Unit : Sprite
 			case UnitConstants.KEEP_PRESERVE_ACTION:
 				break;
 
+			//TODO check
 			/*case UnitConstants.KEEP_DEFEND_TOWN_MODE:
 				go_x = next_x;	// combine move_to_attack() into move_to()
 				go_y = next_y;
@@ -2676,23 +2659,23 @@ public abstract partial class Unit : Sprite
 
 				if (!Config.ExploreWholeMap && IsOwn())
 				{
-					int xLoc1 = Math.Max(0, newNextLocX - GameConstants.EXPLORE_RANGE);
-					int yLoc1 = Math.Max(0, newNextLocY - GameConstants.EXPLORE_RANGE);
-					int xLoc2 = Math.Min(Config.MapSize - 1, newNextLocX + GameConstants.EXPLORE_RANGE);
-					int yLoc2 = Math.Min(Config.MapSize - 1, newNextLocY + GameConstants.EXPLORE_RANGE);
+					int locX1 = Math.Max(0, newNextLocX - GameConstants.EXPLORE_RANGE);
+					int locY1 = Math.Max(0, newNextLocY - GameConstants.EXPLORE_RANGE);
+					int locX2 = Math.Min(Config.MapSize - 1, newNextLocX + GameConstants.EXPLORE_RANGE);
+					int locY2 = Math.Min(Config.MapSize - 1, newNextLocY + GameConstants.EXPLORE_RANGE);
 					int exploreWidth = MoveStepCoeff() - 1;
 
 					if (newNextLocY < curNextLocY) // if move upwards, explore upper area
-						World.Explore(xLoc1, yLoc1, xLoc2, yLoc1 + exploreWidth, false);
+						World.Explore(locX1, locY1, locX2, locY1 + exploreWidth, false);
 
 					else if (newNextLocY > curNextLocY) // if move downwards, explore lower area
-						World.Explore(xLoc1, yLoc2 - exploreWidth, xLoc2, yLoc2, false);
+						World.Explore(locX1, locY2 - exploreWidth, locX2, locY2, false);
 
 					if (newNextLocX < curNextLocX) // if move towards left, explore left area
-						World.Explore(xLoc1, yLoc1, xLoc1 + exploreWidth, yLoc2, false);
+						World.Explore(locX1, locY1, locX1 + exploreWidth, locY2, false);
 
 					else if (newNextLocX > curNextLocX) // if move towards right, explore right area
-						World.Explore(xLoc2 - exploreWidth, yLoc1, xLoc2, yLoc2, false);
+						World.Explore(locX2 - exploreWidth, locY1, locX2, locY2, false);
 				}
 			}
 		}
@@ -2774,8 +2757,7 @@ public abstract partial class Unit : Sprite
 
 	public virtual bool IsAIAllStop()
 	{
-		return ActionMode == UnitConstants.ACTION_STOP && ActionMode2 == UnitConstants.ACTION_STOP &&
-		       CurAction == SPRITE_IDLE && AIActionId == 0;
+		return CurAction == SPRITE_IDLE && ActionMode == UnitConstants.ACTION_STOP && ActionMode2 == UnitConstants.ACTION_STOP && AIActionId == 0;
 	}
 	
 	public bool IsVisible()
@@ -2783,19 +2765,19 @@ public abstract partial class Unit : Sprite
 		return CurX >= 0;
 	}
 
-	private bool IsInSurrounding(int checkLocX, int checkLocY, int width, int targetLocX, int targetLocY, int targetWidth, int targetHeight)
+	private bool IsInSurrounding(int checkLocX, int checkLocY, int width, int height, int targetLocX, int targetLocY, int targetWidth, int targetHeight)
 	{
 		switch (MoveStepCoeff())
 		{
 			case 1:
 				if (checkLocX >= targetLocX - width && checkLocX <= targetLocX + targetWidth &&
-				    checkLocY >= targetLocY - width && checkLocY <= targetLocY + targetHeight)
+				    checkLocY >= targetLocY - height && checkLocY <= targetLocY + targetHeight)
 					return true;
 				break;
 
 			case 2:
 				if (checkLocX >= targetLocX - width - 1 && checkLocX <= targetLocX + targetWidth + 1 &&
-				    checkLocY >= targetLocY - width - 1 && checkLocY <= targetLocY + targetHeight + 1)
+				    checkLocY >= targetLocY - height - 1 && checkLocY <= targetLocY + targetHeight + 1)
 					return true;
 				break;
 		}
@@ -2838,18 +2820,17 @@ public abstract partial class Unit : Sprite
 	{
 		return SpyId != 0 ? SpyArray[SpyId].TrueNationId : NationId;
 	}
-	
+
 	public int RegionId()
 	{
 		if (IsVisible())
 		{
 			return World.GetRegionId(NextLocX, NextLocY);
 		}
-		else
-		{
-			if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE || UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
-				return FirmArray[UnitModeParam].RegionId;
-		}
+
+		//TODO check UNIT_MODE_ON_SHIP and UNIT_MODE_IN_HARBOR
+		if (UnitMode == UnitConstants.UNIT_MODE_OVERSEE || UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
+			return FirmArray[UnitModeParam].RegionId;
 
 		return 0;
 	}
@@ -3204,7 +3185,8 @@ public abstract partial class Unit : Sprite
 		MaxPower = Skill.CombatLevel + 50;
 		CurPower = Math.Min(CurPower, MaxPower);
 	}
-	
+
+	//TODO check spy expenses
 	private void PayExpense()
 	{
 		if (NationId == 0)
@@ -3238,7 +3220,7 @@ public abstract partial class Unit : Sprite
 
 		Nation nation = NationArray[NationId];
 
-		if (UnitRes[UnitType].RaceId != 0)
+		if (RaceId != 0)
 		{
 			if (nation.Cash > 0)
 			{
@@ -3381,9 +3363,7 @@ public abstract partial class Unit : Sprite
 			/ (100 - attackInfo.CombatLevel);
 
 		//--- if this unit is led by a general, its attacking ability is influenced by the general ---//
-		//
-		// The unit's attacking ability is increased by a percentage equivalent to the leader unit's leadership.
-		//
+		//--- The unit's attacking ability is increased by a percentage equivalent to the leader unit's leadership. ---//
 
 		if (IsLeaderInRange())
 		{
@@ -3397,8 +3377,9 @@ public abstract partial class Unit : Sprite
 
 	private bool CanAttackNation(int targetNationId) // can this nation be attacked, no if alliance or etc..
 	{
+		//TODO player can attack friends? Check
 		if (!AIUnit)
-			return targetNationId != NationId; // able to attack all nation except our own nation
+			return targetNationId != NationId; // able to attack all nations except our own nation
 
 		if (NationId == targetNationId)
 			return false; // ai unit don't attack its own nation, except special order
@@ -3441,6 +3422,7 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
+	//TODO check how Betray works
 	public bool Betray(int newNationId)
 	{
 		if (NationId == newNationId)
@@ -3503,7 +3485,7 @@ public abstract partial class Unit : Sprite
 					}
 
 					unit.ChangeNation(newNationId);
-					unit.TeamId = newTeamId; // assign new team_id or checking for nation_recno
+					unit.TeamId = newTeamId; // assign new TeamId or checking for nation_recno
 				}
 			}
 		}
@@ -3516,9 +3498,10 @@ public abstract partial class Unit : Sprite
 		{
 			if (SpyId == 0 || SpyArray[SpyId].NotifyCloakedNation)
 			{
+				//TODO ThinkNormalHumanAction() should not be used
 				// generals shouldn't automatically be assigned to camps, they should just move near your villages
 				if (Rank == RANK_GENERAL)
-					AIMoveToNearbyTown();
+					MoveToNearbyTown();
 				else
 					ThinkNormalHumanAction();
 			}
@@ -3534,10 +3517,10 @@ public abstract partial class Unit : Sprite
 
 	public void UpdateLoyalty()
 	{
-		if (NationId == 0 || Rank == RANK_KING || UnitRes[UnitType].RaceId == 0)
+		if (NationId == 0 || Rank == RANK_KING || RaceId == 0)
 			return;
 
-		// constructor worker will not change their loyalty when they are in a building
+		// construction workers will not change their loyalty when they are in a building
 		if (UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
 			return;
 
@@ -3766,12 +3749,11 @@ public abstract partial class Unit : Sprite
 	{
 		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure : <unit recno> <nation recno>
-		//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_RESIGN, 2 * sizeof(short));
-		//*shortPtr = sprite_recno;
-		//shortPtr[1] = NationArray.player_recno;
-
-		//return;
+			//// packet structure : <unit recno> <nation recno>
+			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_RESIGN, 2 * sizeof(short));
+			//*shortPtr = sprite_recno;
+			//shortPtr[1] = NationArray.player_recno;
+			//return;
 		//}
 
 		//--- if the unit is visible, call stop2() so if it has an AI action queue, that will be reset ---//
@@ -3785,7 +3767,6 @@ public abstract partial class Unit : Sprite
 		if (SpyId != 0 && TrueNationId() != NationId)
 		{
 			//------ decrease reputation ------//
-
 			NationArray[TrueNationId()].ChangeReputation(-GameConstants.SPY_KILLED_REPUTATION_DECREASE);
 
 			//------- add news message -------//
@@ -3798,14 +3779,14 @@ public abstract partial class Unit : Sprite
 		}
 		else
 		{
-			//TODO when resigning god reputation should not be changed
-			if (NationId != 0)
+			if (NationId != 0 && RaceId != 0)
 				NationArray[NationId].ChangeReputation(-1.0);
 		}
 
 		//----------------------------------------------//
 
-		// if this is a general, news_array.general_die() will be called, set news_add_flag to 0 to suppress the display of thew news
+		//TODO check
+		// if this is a general, NewsArray.GeneralDie() will be called, suppress general die news here
 		if (Rank == RANK_GENERAL)
 			NewsArray.Disable();
 
@@ -3955,12 +3936,12 @@ public abstract partial class Unit : Sprite
 
 		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure <unit recno> <new nation Recno> <group defect>
-		//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_SPY_NATION, 3 * sizeof(short));
-		//*shortPtr = sprite_recno;
-		//shortPtr[1] = newNationRecno;
-		//shortPtr[2] = groupDefect;
-		//return;
+			//// packet structure <unit recno> <new nation Recno> <group defect>
+			//short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_SPY_NATION, 3 * sizeof(short));
+			//*shortPtr = sprite_recno;
+			//shortPtr[1] = newNationRecno;
+			//shortPtr[2] = groupDefect;
+			//return;
 		//}
 
 		Spy spy = SpyArray[SpyId];
@@ -4017,21 +3998,21 @@ public abstract partial class Unit : Sprite
 
 		//--------------------------------------------//
 
-		int xLoc1 = CurLocX - GameConstants.SPY_ENEMY_RANGE, yLoc1 = CurLocY - GameConstants.SPY_ENEMY_RANGE;
-		int xLoc2 = CurLocX + GameConstants.SPY_ENEMY_RANGE, yLoc2 = CurLocY + GameConstants.SPY_ENEMY_RANGE;
+		int locX1 = CurLocX - GameConstants.SPY_ENEMY_RANGE, locY1 = CurLocY - GameConstants.SPY_ENEMY_RANGE;
+		int locX2 = CurLocX + GameConstants.SPY_ENEMY_RANGE, locY2 = CurLocY + GameConstants.SPY_ENEMY_RANGE;
 
-		xLoc1 = Math.Max(0, xLoc1);
-		yLoc1 = Math.Max(0, yLoc1);
-		xLoc2 = Math.Min(Config.MapSize - 1, xLoc2);
-		yLoc2 = Math.Min(Config.MapSize - 1, yLoc2);
+		locX1 = Math.Max(0, locX1);
+		locY1 = Math.Max(0, locY1);
+		locX2 = Math.Min(Config.MapSize - 1, locX2);
+		locY2 = Math.Min(Config.MapSize - 1, locY2);
 
 		int trueNationId = TrueNationId();
 
-		for (int yLoc = yLoc1; yLoc <= yLoc2; yLoc++)
+		for (int locY = locY1; locY <= locY2; locY++)
 		{
-			for (int xLoc = xLoc1; xLoc <= xLoc2; xLoc++)
+			for (int locX = locX1; locX <= locX2; locX++)
 			{
-				Location loc = World.GetLoc(xLoc, yLoc);
+				Location loc = World.GetLoc(locX, locY);
 
 				int unitId = 0;
 
@@ -4084,16 +4065,22 @@ public abstract partial class Unit : Sprite
 		int distX, distY;
 
 		if (curLocX < targetLocX)
-			distX = (targetLocX - curLocX - SpriteInfo.LocWidth) + 1;
-		else if ((distX = curLocX - targetLocX - targetWidth + 1) < 0)
+			distX = targetLocX - curLocX - SpriteInfo.LocWidth + 1;
+		else
+			distX = curLocX - targetLocX - targetWidth + 1;
+
+		if (distX < 0)
 			distX = 0;
 
 		if (curLocY < targetLocY)
-			distY = (targetLocY - curLocY - SpriteInfo.LocHeight) + 1;
-		else if ((distY = curLocY - targetLocY - targetHeight + 1) < 0)
-			return distX;
+			distY = targetLocY - curLocY - SpriteInfo.LocHeight + 1;
+		else
+			distY = curLocY - targetLocY - targetHeight + 1;
 
-		return (distX >= distY) ? distX : distY;
+		if (distY < 0)
+			distY = 0;
+
+		return Math.Max(distX, distY);
 	}
 
 	private void KingDie()
@@ -4129,7 +4116,7 @@ public abstract partial class Unit : Sprite
 		if (Loyalty >= GameConstants.UNIT_BETRAY_LOYALTY)
 			return false;
 
-		if (UnitRes[UnitType].RaceId == 0 || NationId == 0 || Rank == RANK_KING)
+		if (RaceId == 0 || NationId == 0 || Rank == RANK_KING)
 			return false;
 
 		//------ turn towards other nation --------//
@@ -4169,17 +4156,18 @@ public abstract partial class Unit : Sprite
 		{
 			return Betray(bestNationId);
 		}
-		else if (Loyalty == 0)
+		
+		if (Loyalty == 0)
 		{
 			//----------------------------------------------//
-			// If there is no good nation to turn towards to and
-			// the loyalty has dropped to 0, resign itself and leave the nation.
+			// If there is no good nation to turn towards to and the loyalty has dropped to 0
+			// resign itself and leave the nation.
 			//
 			// However, if the unit is spy, it will stay with the
 			// nation as it has never been really loyal to the nation.
 			//---------------------------------------------//
 
-			if (Rank != RANK_KING && IsVisible() && SpyId == 0)
+			if (Rank != RANK_KING && IsVisible())
 			{
 				Resign(InternalConstants.COMMAND_AUTO);
 				return true;
@@ -4296,9 +4284,9 @@ public abstract partial class Unit : Sprite
 			return;
 		}
 
-		// use UnitArray.Attack() instead of unit.Attack_???() as we are unsure about what type of object the target is.
-		List<int> selectedArray = new List<int>();
-		selectedArray.Add(SpriteId);
+		// use UnitArray.Attack() instead of unit.Attack???() as we are unsure about what type of object the target is.
+		List<int> selectedUnits = new List<int>();
+		selectedUnits.Add(SpriteId);
 
 		Location location = World.GetLoc(OriginalActionLocX, OriginalActionLocY);
 
@@ -4308,7 +4296,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.TownId() == OriginalActionParam && TownArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4318,7 +4306,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4338,7 +4326,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (World.CanBuildTown(OriginalActionLocX, OriginalActionLocY, SpriteId))
 			{
-				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
+				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4346,7 +4334,7 @@ public abstract partial class Unit : Sprite
 
 		else if (OriginalActionMode == UnitConstants.ACTION_MOVE)
 		{
-			UnitArray.MoveTo(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AUTO);
+			UnitArray.MoveTo(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
 		}
 
 		OriginalActionMode = 0;
@@ -4367,7 +4355,6 @@ public abstract partial class Unit : Sprite
 
 		Location location = World.GetLoc(OriginalActionLocX, OriginalActionLocY);
 		int targetNationId = -1;
-
 		if (OriginalActionMode == UnitConstants.ACTION_ATTACK_UNIT && location.HasUnit(UnitConstants.UNIT_LAND))
 		{
 			int unitId = location.UnitId(UnitConstants.UNIT_LAND);
@@ -4400,11 +4387,10 @@ public abstract partial class Unit : Sprite
 		if (targetNationId == 0 ||
 		    (targetNationId != NationId && NationArray[NationId].GetRelationStatus(targetNationId) == NationBase.NATION_HOSTILE))
 		{
-			// use UnitArray.Attack() instead of unit.Attack_???() as we are unsure about what type of object the target is.
-			List<int> selectedArray = new List<int>();
-			selectedArray.Add(SpriteId);
-
-			UnitArray.Attack(OriginalActionLocX, OriginalActionLocY, false, selectedArray, InternalConstants.COMMAND_AI, 0);
+			// use UnitArray.Attack() instead of unit.Attack???() as we are unsure about what type of object the target is.
+			List<int> selectedUnits = new List<int>();
+			selectedUnits.Add(SpriteId);
+			UnitArray.Attack(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AI, 0);
 		}
 
 		OriginalActionMode = 0;
@@ -4424,12 +4410,8 @@ public abstract partial class Unit : Sprite
 
 			int locX = curLocX + xOffset;
 			int locY = curLocY + yOffset;
-
-			locX = Math.Max(0, locX);
-			locX = Math.Min(Config.MapSize - 1, locX);
-
-			locY = Math.Max(0, locY);
-			locY = Math.Min(Config.MapSize - 1, locY);
+			
+			Misc.BoundLocation(ref locX, ref locY);
 
 			Location location = World.GetLoc(locX, locY);
 
@@ -4488,15 +4470,16 @@ public abstract partial class Unit : Sprite
 
 		//--- don't process if it's a spy and the notify cloak flag is on ---//
 
+		//TODO SpyId is always zero
 		if (SpyId != 0)
 		{
 			//---------------------------------------------//
 			//
-			// If notify_cloaked_nation_flag is 0, the AI won't control the unit.
+			// If NotifyCloakedNation is false, the AI won't control the unit.
 			//
-			// If notify_cloaked_nation_flag is 1, the AI will control the unit. But not immediately,
+			// If NotifyCloakedNation is true, the AI will control the unit. But not immediately,
 			// it will do it once 5 days so the player can have a chance to select the unit and set its
-			// notify_cloaked_nation_flag back to 0 if the player wants.
+			// NotifyCloakedNation back to false if the player wants.
 			//
 			//---------------------------------------------//
 
@@ -4526,13 +4509,15 @@ public abstract partial class Unit : Sprite
 				return; // don't do anything if the town has been destroyed, Rebel.NextDay() will take care of it. 
 			}
 		}
+		
+		//TODO independent units should not only settle but also move by map
 
 		//---- look for towns to assign to -----//
 
-		Town bestTown = null;
 		int regionId = World.GetRegionId(NextLocX, NextLocY);
-		int bestRating = 0;
 		int curLocX = NextLocX, curLocY = NextLocY;
+		int bestRating = 0;
+		Town bestTown = null;
 
 		foreach (Town town in TownArray)
 		{
@@ -4566,16 +4551,15 @@ public abstract partial class Unit : Sprite
 		}
 	}
 	
-	public void AIMoveToNearbyTown()
+	public void MoveToNearbyTown()
 	{
 		//---- look for towns to assign to -----//
 
 		int regionId = World.GetRegionId(NextLocX, NextLocY);
+		int curLocX = NextLocX, curLocY = NextLocY;
 		int bestRating = 0;
 		Town bestTown = null;
-		int curLocX = NextLocX, curLocY = NextLocY;
 
-		// can't use ai_town_array[] because this function will be called by Unit.Betray() when a unit defected to the player's kingdom
 		foreach (Town town in TownArray)
 		{
 			if (town.NationId != NationId)
@@ -4604,36 +4588,6 @@ public abstract partial class Unit : Sprite
 			MoveToTownSurround(bestTown.LocX1, bestTown.LocY1, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
 	}
 	
-	private void AILeaderBeingAttacked(int attackerUnitId)
-	{
-		// this can happen when the unit has just changed nation
-		if (UnitArray[attackerUnitId].NationId == NationId)
-			return;
-
-		int callIntervalDays = 0;
-		bool defend = false;
-
-		if (Rank == RANK_KING)
-		{
-			defend = true;
-			callIntervalDays = 7;
-		}
-		else if (Rank == RANK_GENERAL)
-		{
-			defend = (Skill.SkillLevel >= 30 + (100 - NationArray[NationId].pref_keep_general) / 2); // 30 to 80
-			callIntervalDays = 15; // don't call too frequently
-		}
-
-		if (defend)
-		{
-			if (Info.GameDate > TeamInfo.AILastRequestDefenseDate.AddDays(callIntervalDays))
-			{
-				TeamInfo.AILastRequestDefenseDate = Info.GameDate;
-				NationArray[NationId].ai_defend(attackerUnitId);
-			}
-		}
-	}
-
 	#endregion
 	
 	#region Old AI Functions
@@ -4772,7 +4726,7 @@ public abstract partial class Unit : Sprite
 				{
 					// set this flag so think_normal_human_action() won't be called continuously
 					AINoSuitableAction = true;
-					AIMoveToNearbyTown();
+					MoveToNearbyTown();
 				}
 			}
 		}
@@ -5724,6 +5678,36 @@ public abstract partial class Unit : Sprite
 		return false;
 	}
 
+	private void AILeaderBeingAttacked(int attackerUnitId)
+	{
+		// this can happen when the unit has just changed nation
+		if (UnitArray[attackerUnitId].NationId == NationId)
+			return;
+
+		int callIntervalDays = 0;
+		bool defend = false;
+
+		if (Rank == RANK_KING)
+		{
+			defend = true;
+			callIntervalDays = 7;
+		}
+		else if (Rank == RANK_GENERAL)
+		{
+			defend = (Skill.SkillLevel >= 30 + (100 - NationArray[NationId].pref_keep_general) / 2); // 30 to 80
+			callIntervalDays = 15; // don't call too frequently
+		}
+
+		if (defend)
+		{
+			if (Info.GameDate > TeamInfo.AILastRequestDefenseDate.AddDays(callIntervalDays))
+			{
+				TeamInfo.AILastRequestDefenseDate = Info.GameDate;
+				NationArray[NationId].ai_defend(attackerUnitId);
+			}
+		}
+	}
+	
 	#endregion
 	
 	#region SaveAndLoad

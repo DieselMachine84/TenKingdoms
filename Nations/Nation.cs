@@ -783,7 +783,7 @@ public class Nation : NationBase
 		if (!spy.NotifyCloakedNation)
 			spyUnit.Assign(actionNode.action_x_loc, actionNode.action_y_loc);
 		else
-			spyUnit.AIMoveToNearbyTown();
+			spyUnit.MoveToNearbyTown();
 
 		//----------------------------------------------------------------//
 		// Since the spy has already changed its cloaked nation recno

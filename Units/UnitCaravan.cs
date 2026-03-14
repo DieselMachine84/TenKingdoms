@@ -9,7 +9,7 @@ public class UnitCaravan : Unit, ITrader
 
 	private int JourneyStatus { get; set; }
 	private int DestStopId { get; set; } // destination stop id. the stop which the train currently is moving towards
-	public int StopDefinedNum { get; set; } // num of stop defined
+	public int StopDefinedNum { get; private set; } // num of stop defined
 	private int WaitCount { get; set; } // set to -1 to indicate only one stop is specified
 
 	private int StopLocX { get; set; } // the x location the unit entering the stop
@@ -50,14 +50,8 @@ public class UnitCaravan : Unit, ITrader
 		if (CurX == -1) // can't use !IsVisible(), keep process if CurX < -1
 			return;
 
-		//-----------------------------------------------------------------------------//
-		// if all the hit points are lost, die now
-		//-----------------------------------------------------------------------------//
-		if (HitPoints <= 0.0 && ActionMode != UnitConstants.ACTION_DIE)
-		{
-			SetDie();
+		if (IsUnitDead())
 			return;
-		}
 
 		//-----------------------------------------------------------------------------//
 		// process when in firm
@@ -481,7 +475,7 @@ public class UnitCaravan : Unit, ITrader
 			WaitCount = GameConstants.MAX_CARAVAN_WAIT_TERM; // set waiting term
 
 			ResetPath();
-			DeinitSprite(true); // the caravan enters the market now
+			DeinitSprite(); // the caravan enters the market now
 
 			CurX = -2; // set CurX to -2, such that invisible but still process in PreProcess()
 
@@ -516,10 +510,9 @@ public class UnitCaravan : Unit, ITrader
 			case Firm.FIRM_MINE:
 			case Firm.FIRM_FACTORY:
 				return NationId == firm.NationId;
-
-			default:
-				return false;
 		}
+
+		return false;
 	}
 
 	public void SetStop(int stopId, int stopLocX, int stopLocY, int remoteAction)
@@ -1352,7 +1345,6 @@ public class UnitCaravan : Unit, ITrader
 	{
 		renderer.HandleCaravanDetailsInput(this);
 	}
-	
 	
 	#region Old AI Functions
 	

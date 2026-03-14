@@ -91,7 +91,7 @@ public class UnitMonster : Unit
 
             //--- when a king monster is killed, it leaves a scroll of power ---//
 
-            else if (Rank == RANK_KING)
+            if (Rank == RANK_KING)
             {
                 int scrollRace = ChooseScrollRace();
                 if (scrollRace != 0)
@@ -108,6 +108,7 @@ public class UnitMonster : Unit
             NewsArray.MonsterKingKilled(MonsterId, NextLocX, NextLocY);
     }
 
+    //TODO monsters are not AIUnits
     public override void ProcessAI()
     {
         //----- when it is idle -------//
@@ -121,16 +122,14 @@ public class UnitMonster : Unit
         }
     }
     
-    private int RandomAttack()
+    private void RandomAttack()
     {
-        const int ATTACK_SCAN_RANGE = 100;
-
         int curLocX = NextLocX, curLocY = NextLocY;
         int regionId = World.GetRegionId(curLocX, curLocY);
 
-        for (int i = 2; i < ATTACK_SCAN_RANGE * ATTACK_SCAN_RANGE; i++)
+        for (int i = 2; i < GameConstants.MONSTER_ATTACK_SCAN_RANGE * GameConstants.MONSTER_ATTACK_SCAN_RANGE; i++)
         {
-            Misc.MoveAroundAPoint(i, ATTACK_SCAN_RANGE, ATTACK_SCAN_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, GameConstants.MONSTER_ATTACK_SCAN_RANGE, GameConstants.MONSTER_ATTACK_SCAN_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;
@@ -185,11 +184,9 @@ public class UnitMonster : Unit
             if (rc)
             {
                 GroupOrderMonster(locX, locY, 1); // 1 - the action is attack
-                return 1;
+                return;
             }
         }
-
-        return 0;
     }
 
     private int AssignToFirm()
@@ -218,18 +215,14 @@ public class UnitMonster : Unit
 
     private void GroupOrderMonster(int destXLoc, int destYLoc, int actionType)
     {
-        const int GROUP_ACTION_RANGE = 30; // only notify units within this range
-
         int curLocX = NextLocX, curLocY = NextLocY;
         int regionId = World.GetRegionId(curLocX, curLocY);
 
         List<int> orderedUnits = new List<int>();
 
-        //----------------------------------------------//
-
-        for (int i = 1; i < GROUP_ACTION_RANGE * GROUP_ACTION_RANGE; i++)
+        for (int i = 1; i < GameConstants.MONSTER_GROUP_ACTION_RANGE * GameConstants.MONSTER_GROUP_ACTION_RANGE; i++)
         {
-            Misc.MoveAroundAPoint(i, GROUP_ACTION_RANGE, GROUP_ACTION_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, GameConstants.MONSTER_GROUP_ACTION_RANGE, GameConstants.MONSTER_GROUP_ACTION_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;
@@ -274,15 +267,12 @@ public class UnitMonster : Unit
 
     private int ChooseScrollRace()
     {
-        const int SCROLL_SCAN_RANGE = 10;
-
         int curLocX = NextLocX, curLocY = NextLocY;
-        int regionId = World.GetRegionId(curLocX, curLocY);
         int[] racesCount = new int[GameConstants.MAX_RACE];
 
-        for (int i = 2; i < SCROLL_SCAN_RANGE * SCROLL_SCAN_RANGE; i++)
+        for (int i = 2; i < GameConstants.MONSTER_SCROLL_SCAN_RANGE * GameConstants.MONSTER_SCROLL_SCAN_RANGE; i++)
         {
-            Misc.MoveAroundAPoint(i, SCROLL_SCAN_RANGE, SCROLL_SCAN_RANGE, out int xOffset, out int yOffset);
+            Misc.MoveAroundAPoint(i, GameConstants.MONSTER_SCROLL_SCAN_RANGE, GameConstants.MONSTER_SCROLL_SCAN_RANGE, out int xOffset, out int yOffset);
 
             int locX = curLocX + xOffset;
             int locY = curLocY + yOffset;

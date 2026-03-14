@@ -13,9 +13,9 @@ public abstract class SpriteArray : DynArray<Sprite>
 	    Delete(sprite.SpriteId);
     }
 
-    protected virtual void Die(int spriteId)
+    protected virtual void Die(Sprite sprite)
     {
-	    DeleteSprite(this[spriteId]);
+	    DeleteSprite(sprite);
     }
 
     public virtual void Process()
@@ -75,7 +75,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 			    case Sprite.SPRITE_DIE:
 				    if (sprite.ProcessDie())
 				    {
-					    Die(sprite.SpriteId);
+					    Die(sprite);
 				    }
 				    break;
 		    }

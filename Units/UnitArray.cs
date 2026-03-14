@@ -10,8 +10,8 @@ public class UnitArray : SpriteArray
 	private const int MAX_UNIT_SURROUND_SIZE = MAX_TARGET_SIZE + 2;
 	private const int SHIFT_ADJUST = 1;
 	
-    public int CurGroupId { get; set; }            // for Unit::unit_group_id
-    public int CurTeamId { get; set; }             // for Unit::team_id
+    public int CurGroupId { get; set; }            // for Unit.GroupId
+    public int CurTeamId { get; set; }             // for Unit.TeamId
 
     public int IdleBlockedUnitResetCount { get; set; } // used to improve performance for searching related to attack
 
@@ -19,7 +19,7 @@ public class UnitArray : SpriteArray
     private readonly List<int> _selectedSeaUnits = new List<int>();
     private readonly List<int> _selectedAirUnits = new List<int>();
 
-    public override Unit this[int recNo] => (Unit)base[recNo];
+    public override Unit this[int id] => (Unit)base[id];
 
     private Config Config => Sys.Instance.Config;
     private World World => Sys.Instance.World;
@@ -77,13 +77,12 @@ public class UnitArray : SpriteArray
 	    DeleteSprite(unit);
     }
 
-    public override bool IsDeleted(int recNo)
+    public override bool IsDeleted(int id)
     {
-	    if (base.IsDeleted(recNo))
+	    if (base.IsDeleted(id))
 		    return true;
 
-	    Unit unit = this[recNo];
-	    return unit.HitPoints <= 0.0 || unit.CurAction == Sprite.SPRITE_DIE || unit.ActionMode == UnitConstants.ACTION_DIE;
+	    return this[id].IsUnitDead();
     }
 
     public override void Process()
@@ -92,7 +91,7 @@ public class UnitArray : SpriteArray
 	    {
 		    int unitId = unit.SpriteId;
 
-		    // only process each firm once per day
+		    // only process each unit once per day
 		    if (unitId % InternalConstants.FRAMES_PER_DAY == Sys.Instance.FrameNumber % InternalConstants.FRAMES_PER_DAY)
 		    {
 			    if ((unitId % (365 * InternalConstants.FRAMES_PER_DAY) == Sys.Instance.FrameNumber % (365 * InternalConstants.FRAMES_PER_DAY))
@@ -122,12 +121,10 @@ public class UnitArray : SpriteArray
 	    base.Process();
     }
     
-    protected override void Die(int unitId)
+    protected override void Die(Sprite sprite)
     {
-	    Unit unit = this[unitId];
-	    unit.Die();
-
-	    DeleteUnit(unit);
+	    sprite.Die();
+	    base.Die(sprite);
     }
 
     public void DisappearInTown(Unit unit, Town town)
@@ -143,104 +140,66 @@ public class UnitArray : SpriteArray
 	    DeleteUnit(this[unitId]);
     }
 
-    public void Stop(List<int> selectedUnits, int remoteAction)
-    {
-	    //-------- if it's a multiplayer game --------//
-	    //
-	    // Queue the action.
-	    //
-	    // Local: this action will be processed when all action messages of all
-	    //			 remote players are ready from the next frame.
-	    //
-	    // Remote: this action will be processed when the remote has received
-	    //			  frame sync notification from all other players.
-	    //
-	    //--------------------------------------------//
-
-	    /*if (!remoteAction && remote.is_enable())
-	    {
-		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNIT_STOP, sizeof(short) * (1 + selectedCount));
-		    shortPtr[0] = selectedCount;
-		    memcpy(shortPtr + 1, selectedUnitArray, sizeof(short) * selectedCount);
-	    }*/
-	    //else
-	    //{
-		    int curGroupId = CurGroupId++;
-
-		    //-------------- stop now ---------------//
-
-		    foreach (var selectedUnit in selectedUnits)
-		    {
-			    Unit unit = this[selectedUnit];
-			    unit.GroupId = curGroupId;
-			    unit.Stop2();
-		    }
-		    //}
-    }
-
     private void StopAttackNation(Unit unit, int targetNationId)
     {
 	    if (!unit.IsAttackAction())
 		    return;
-	    
-	    if (unit.IsAttackAction())
+
+	    int targetType;
+	    int targetId;
+	    int targetLocX, targetLocY;
+
+	    if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
 	    {
-		    int targetType;
-		    int targetId;
-		    int targetLocX, targetLocY;
+		    targetType = unit.ActionMode;
+		    targetId = unit.ActionParam;
+		    targetLocX = unit.ActionLocX;
+		    targetLocY = unit.ActionLocY;
+	    }
+	    else
+	    {
+		    targetType = unit.ActionMode2;
+		    targetId = unit.ActionPara2;
+		    targetLocX = unit.ActionLocX2;
+		    targetLocY = unit.ActionLocY2;
+	    }
 
-		    if (unit.ActionMode2 == UnitConstants.ACTION_AUTO_DEFENSE_ATTACK_TARGET)
-		    {
-			    targetType = unit.ActionMode;
-			    targetId = unit.ActionParam;
-			    targetLocX = unit.ActionLocX;
-			    targetLocY = unit.ActionLocY;
-		    }
-		    else
-		    {
-			    targetType = unit.ActionMode2;
-			    targetId = unit.ActionPara2;
-			    targetLocX = unit.ActionLocX2;
-			    targetLocY = unit.ActionLocY2;
-		    }
+	    switch (targetType)
+	    {
+		    case UnitConstants.ACTION_ATTACK_UNIT:
+		    case UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET:
+		    case UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET:
+			    if (IsDeleted(targetId))
+				    return;
 
-		    switch (targetType)
-		    {
-			    case UnitConstants.ACTION_ATTACK_UNIT:
-			    case UnitConstants.ACTION_DEFEND_TOWN_ATTACK_TARGET:
-			    case UnitConstants.ACTION_MONSTER_DEFEND_ATTACK_TARGET:
-				    if (IsDeleted(targetId))
-					    return;
+			    Unit targetUnit = this[targetId];
+			    if (targetUnit.NationId == targetNationId)
+				    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
+			    break;
 
-				    Unit targetUnit = this[targetId];
-				    if (targetUnit.NationId == targetNationId)
-					    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				    break;
+		    case UnitConstants.ACTION_ATTACK_FIRM:
+			    if (FirmArray.IsDeleted(targetId))
+				    return;
 
-			    case UnitConstants.ACTION_ATTACK_FIRM:
-				    if (FirmArray.IsDeleted(targetId))
-					    return;
+			    Firm targetFirm = FirmArray[targetId];
+			    if (targetFirm.NationId == targetNationId)
+				    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
+			    break;
 
-				    Firm targetFirm = FirmArray[targetId];
-				    if (targetFirm.NationId == targetNationId)
-					    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				    break;
+		    case UnitConstants.ACTION_ATTACK_TOWN:
+			    if (TownArray.IsDeleted(targetId))
+				    return;
 
-			    case UnitConstants.ACTION_ATTACK_TOWN:
-				    if (TownArray.IsDeleted(targetId))
-					    return;
+			    Town targetTown = TownArray[targetId];
+			    if (targetTown.NationId == targetNationId)
+				    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
+			    break;
 
-				    Town targetTown = TownArray[targetId];
-				    if (targetTown.NationId == targetNationId)
-					    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				    break;
-
-			    case UnitConstants.ACTION_ATTACK_WALL:
-				    Location targetLoc = World.GetLoc(targetLocX, targetLocY);
-				    if (targetLoc.WallNationId() == targetNationId)
-					    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
-				    break;
-		    }
+		    case UnitConstants.ACTION_ATTACK_WALL:
+			    Location targetLoc = World.GetLoc(targetLocX, targetLocY);
+			    if (targetLoc.WallNationId() == targetNationId)
+				    unit.Stop2(UnitConstants.KEEP_DEFENSE_MODE);
+			    break;
 	    }
     }
 
@@ -322,14 +281,14 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    private void DivideUnits(int locX, int locY, List<int> selectedUnits, int excludeSelectedLocUnit = 0)
+    private void DivideUnits(int locX, int locY, List<int> selectedUnits, bool excludeSelectedLocUnit = false)
     {
 	    _selectedLandUnits.Clear();
 	    _selectedSeaUnits.Clear();
 	    _selectedAirUnits.Clear();
 
 	    int excludeUnitId = 0;
-	    if (excludeSelectedLocUnit != 0)
+	    if (excludeSelectedLocUnit)
 	    {
 		    Location location = World.GetLoc(locX, locY);
 		    int targetMobileType = location.HasAnyUnit();
@@ -358,33 +317,6 @@ public class UnitArray : SpriteArray
 				    break;
 		    }
 	    }
-    }
-	
-    public int DivideAttackByNation(int nationId, List<int> selectedUnits)
-    {
-	    // elements before i are pass, elements on or after passCount are not pass
-	    int passCount = selectedUnits.Count;
-	    for (int i = 0; i < passCount;)
-	    {
-		    int unitId = selectedUnits[i];
-
-		    // a clocked spy cannot be commanded by original nation to attack
-		    if (!IsDeleted(unitId) && this[unitId].NationId == nationId)
-		    {
-			    // pass
-			    i++;
-		    }
-		    else
-		    {
-			    // fail, swap [i] with [passCount - 1]
-			    passCount--;
-
-			    selectedUnits[i] = selectedUnits[passCount];
-			    selectedUnits[passCount] = unitId;
-		    }
-	    }
-
-	    return passCount;
     }
 	
     private void SetGroupId(List<int> selectedUnits)
@@ -1340,6 +1272,7 @@ public class UnitArray : SpriteArray
 		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
 		    return;
 	    }*/
+	    
 	    if (!divided)
 	    {
 		    for (int i = 0; i < selectedUnits.Count; i++)
@@ -1761,7 +1694,7 @@ public class UnitArray : SpriteArray
 	    if (!divided)
 	    {
 		    // 1 for excluding the recno in target location
-		    DivideUnits(targetLocX, targetLocY, selectedUnits, 1);
+		    DivideUnits(targetLocX, targetLocY, selectedUnits, true);
 
 		    Location location = World.GetLoc(targetLocX, targetLocY);
 		    int targetMobileType = location.HasAnyUnit();

@@ -21,11 +21,10 @@ public class UnitMarine : Unit, ITrader
 	public List<int> UnitsOnBoard { get; } = new List<int>();
 	public int SelectedUnitId { get; set; }
 	public AttackInfo ShipAttackInfo { get; set; }
-	public DateTime LastLoadGoodsDate { get; set; }
 
 	private int JourneyStatus { get; set; }
 	private int DestStopId { get; set; } // destination stop id. the stop which the train currently is moving towards
-	public int StopDefinedNum { get; set; } // num of stop defined
+	public int StopDefinedNum { get; private set; } // num of stop defined
 	private int WaitCount { get; set; } // set to -1 to indicate only one stop is specified
 
 	private int StopLocX { get; set; } // the x location the unit entering the stop
@@ -38,6 +37,8 @@ public class UnitMarine : Unit, ITrader
 
 	public ShipStop[] Stops { get; } = new ShipStop[MAX_STOP_FOR_SHIP];
 
+	private DateTime LastLoadGoodsDate { get; set; }
+	
 	public int[] RawQty { get; } = new int[GameConstants.MAX_RAW];
 	public int[] ProductQty { get; } = new int[GameConstants.MAX_PRODUCT];
 	
@@ -69,6 +70,7 @@ public class UnitMarine : Unit, ITrader
 		CarryGoodsCapacity = UnitRes[unitType].CarryGoodsCapacity;
 		LastLoadGoodsDate = Info.GameDate;
 
+		//TODO splash
 		//int spriteId = SpriteInfo.GetSubSpriteInfo(1).SpriteId;
 		//splash.init(spriteId, cur_x_loc(), cur_y_loc());
 		//splash.cur_frame = 1;
@@ -89,8 +91,11 @@ public class UnitMarine : Unit, ITrader
 	{
 		base.PreProcess();
 
-		//TODO condition is not the same as in UnitCaravan
-		if (HitPoints <= 0.0 || ActionMode == UnitConstants.ACTION_DIE || CurAction == SPRITE_DIE)
+		//TODO check CurX == -1?
+		//if (CurX == -1) // can't use !IsVisible(), keep process if CurX < -1
+			//return;
+
+		if (IsUnitDead())
 			return;
 
 		if (ActionMode2 >= UnitConstants.ACTION_ATTACK_UNIT && ActionMode2 <= UnitConstants.ACTION_ATTACK_WALL)
@@ -400,7 +405,7 @@ public class UnitMarine : Unit, ITrader
 			WaitCount = GameConstants.MAX_SHIP_WAIT_TERM; // set waiting term
 
 			ResetPath();
-			DeinitSprite(true); // the ship enters the harbor now
+			DeinitSprite(); // the ship enters the harbor now
 
 			CurX = -2; // set CurX to -2, such that invisible but still process in PreProcess()
 

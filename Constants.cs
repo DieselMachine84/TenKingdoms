@@ -110,6 +110,10 @@ public static class GameConstants
     public const int EFFECTIVE_LEADING_DISTANCE = 10;
     public const int MAX_NATION_CONTRIBUTION = 1000000;
     public const int MAX_CARAVAN_CARRY_QTY = 100;	// Maximum qty of goods a caravan can carry
+    public const int MONSTER_WANDER_DIST = 20;
+    public const int MONSTER_SCROLL_SCAN_RANGE = 10;
+    public const int MONSTER_ATTACK_SCAN_RANGE = 100;
+    public const int MONSTER_GROUP_ACTION_RANGE = 30;
 
     //Raw resource
     public const int MAX_RAW_RESERVE_QTY = 20000;

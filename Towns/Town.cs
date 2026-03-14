@@ -3870,7 +3870,7 @@ public class Town : IIdObject
 
 		//---- the unit moves close to the newly joined nation ----//
 
-		unit.AIMoveToNearbyTown();
+		unit.MoveToNearbyTown();
 
 		NationArray[toNationId].LastIndependentUnitJoinDate = Info.GameDate;
 
