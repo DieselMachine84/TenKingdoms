@@ -121,13 +121,7 @@ public class FirmCamp : Firm
 			int incValue = (int)(5.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
 				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-			overseerUnit.Skill.SkillLevelMinor += incValue;
-
-			if (overseerUnit.Skill.SkillLevelMinor >= 100)
-			{
-				overseerUnit.Skill.SkillLevelMinor -= 100;
-				overseerUnit.Skill.SkillLevel++;
-			}
+			overseerUnit.IncMinorSkillLevel(incValue);
 		}
 
 		//------- increase the commander's combat level ---------//
@@ -137,13 +131,7 @@ public class FirmCamp : Firm
 			int incValue = (int)(20.0 * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
 				* (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-			overseerUnit.Skill.CombatLevelMinor += incValue;
-
-			if (overseerUnit.Skill.CombatLevelMinor >= 100)
-			{
-				overseerUnit.Skill.CombatLevelMinor -= 100;
-				overseerUnit.SetCombatLevel(overseerUnit.Skill.CombatLevel + 1);
-			}
+			overseerUnit.IncMinorCombatLevel(incValue);
 		}
 
 		//------- increase the soldier's combat level -------//
@@ -182,13 +170,15 @@ public class FirmCamp : Firm
 					* worker.HitPoints / worker.MaxHitPoints()
 					* worker.SkillPotential * 2 / 100;
 
-				worker.SkillLevelMinor += incValue;
+				int levelMinor = worker.SkillLevelMinor + incValue;
 
-				if (worker.SkillLevelMinor > 100)
+				while (levelMinor >= 100)
 				{
+					levelMinor -= 100;
 					worker.SkillLevel++;
-					worker.SkillLevelMinor -= 100;
 				}
+
+				worker.SkillLevelMinor = levelMinor;
 			}
 		}
 

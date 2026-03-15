@@ -2377,10 +2377,6 @@ public abstract partial class Unit : Sprite
 
 		if (NationId != 0 && IsVisible())
 			ThinkAggressiveAction();
-
-		// TODO why this code is here?
-		if (Skill.CombatLevel > 100)
-			Skill.CombatLevel = 100;
 	}
 
 
@@ -3130,7 +3126,7 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	private void IncMinorCombatLevel(int incLevel)
+	public void IncMinorCombatLevel(int incLevel)
 	{
 		Skill.CombatLevelMinor += incLevel;
 
@@ -3143,7 +3139,7 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	private void IncMinorSkillLevel(int incLevel)
+	public void IncMinorSkillLevel(int incLevel)
 	{
 		Skill.SkillLevelMinor += incLevel;
 

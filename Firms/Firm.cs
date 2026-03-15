@@ -503,14 +503,7 @@ public abstract class Firm : IIdObject
 
 		if (unit.Skill.SkillId == Skill.SKILL_CONSTRUCTION) // if builder unit has construction skill
 		{
-			unit.Skill.SkillLevelMinor++;
-			if (unit.Skill.SkillLevelMinor > 100)
-			{
-				unit.Skill.SkillLevelMinor = 0;
-
-				if (unit.Skill.SkillLevel < 100)
-					unit.Skill.SkillLevel++;
-			}
+			unit.IncMinorSkillLevel(1);
 		}
 
 		//------- when the construction is complete ----------//
@@ -1890,6 +1883,7 @@ public abstract class Firm : IIdObject
 
 			if (IsOperating() && worker.SkillLevel < 100) // only train when the workers are working
 			{
+				//TODO different incValue for firms, camps and bases
 				int incValue = Math.Max(10, 100 - worker.SkillLevel)
 					* worker.HitPoints / worker.MaxHitPoints()
 					* (100 + worker.SkillPotential) / 100 / 2;

@@ -78,13 +78,7 @@ public class FirmBase : Firm
             int incValue = (int)(3.0 * Workers.Count * overseerUnit.HitPoints / overseerUnit.MaxHitPoints
                 * (100.0 + overseerUnit.Skill.SkillPotential * 2.0) / 100.0);
 
-            overseerUnit.Skill.SkillLevelMinor += incValue;
-
-            if (overseerUnit.Skill.SkillLevelMinor >= 100)
-            {
-                overseerUnit.Skill.SkillLevelMinor -= 100;
-                overseerUnit.Skill.SkillLevel++;
-            }
+            overseerUnit.IncMinorSkillLevel(incValue);
         }
 
         //------- increase the prayer's skill level ------//

@@ -19,11 +19,10 @@ public class Skill
     public int SkillLevel { get; set; }
     public int SkillLevelMinor { get; set; }
     public int CombatLevel { get; set; }
-    public int CombatLevelMinor { get; set; } // when combat_level_mirror >= 100, combat_level + 1
+    public int CombatLevelMinor { get; set; }
     public int SkillPotential { get; set; }
 
-    public static string[] SkillDescriptions = { "Construction", "Leadership", "Mining", "Manufacture", "Research", "Spying", "Praying" };
-    public static string[] SkillCodes = { "CONS", "LEAD", "MINE", "MANU", "RESE", "SPY", "PRAY" };
+    public static readonly string[] SkillDescriptions = { "Construction", "Leadership", "Mining", "Manufacture", "Research", "Spying", "Praying" };
 
     public Skill()
     {
