@@ -453,9 +453,8 @@ public class NewsArray
 
 		news.Param1 = targetRankId;
 
-		SpyArray[spyId].GetSpyLocation(out int locX, out int locY);
-
-		news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
+		if (SpyArray[spyId].GetSpyLocation(out int locX, out int locY))
+			news.SetLoc(locX, locY, News.NEWS_LOC_ANY);
 	}
 
 	public void GeneralDie(Unit unit)

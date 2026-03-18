@@ -36,7 +36,6 @@ public class Bullet : Sprite
 
 	public Bullet()
 	{
-		SpriteResId = 0;
 	}
 
 	public virtual void Init(int parentType, int bulletType, int parentId, int targetLocX, int targetLocY, int targetMobileType)
@@ -69,7 +68,7 @@ public class Bullet : Sprite
 		TargetLocX = targetLocX;
 		TargetLocY = targetLocY;
 
-		// -spriteFrame.offset_x to make abs_x1 & abs_y1 = original x1 & y1. So the bullet will be centered on the target
+		// - spriteFrame.OffsetX - spriteFrame.Width / 2 to make the bullet centered on the target
 		SpriteFrame spriteFrame = CurSpriteFrame(out _);
 		GoX = TargetLocX * InternalConstants.CellWidth + InternalConstants.CellWidth / 2 - spriteFrame.OffsetX - spriteFrame.Width / 2;
 		GoY = TargetLocY * InternalConstants.CellHeight + InternalConstants.CellHeight / 2 - spriteFrame.OffsetY - spriteFrame.Height / 2;
@@ -280,6 +279,7 @@ public class Bullet : Sprite
 			//NationId = parentUnit.NationId;
 		}
 
+		//TODO targetUnit or parentUnit
 		Unit virtualUnit = parentUnit ?? new UnitHuman();
 		virtualUnit.HitBuilding(parentUnit, TargetLocX, TargetLocY, attackDamage, NationId);
 	}
@@ -308,6 +308,7 @@ public class Bullet : Sprite
 			//NationId = parentUnit.NationId;
 		}
 
+		//TODO targetUnit or parentUnit
 		Unit virtualUnit = new UnitHuman();
 		virtualUnit.HitWall(parentUnit, TargetLocX, TargetLocY, attackDamage, NationId);
 	}
@@ -330,7 +331,7 @@ public class Bullet : Sprite
 		int townHitCount = 0;
 		int firmHitCount = 0;
 
-		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; ++c)
+		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; c++)
 		{
 			int locX = TargetLocX + SpiralX[c];
 			int locY = TargetLocY + SpiralY[c];
@@ -411,7 +412,7 @@ public class Bullet : Sprite
 	{
 		int warnCount = 0;
 
-		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; ++c)
+		for (int c = 0; c < SCAN_RANGE * SCAN_RANGE; c++)
 		{
 			int locX = TargetLocX + SpiralX[c];
 			int locY = TargetLocY + SpiralY[c];

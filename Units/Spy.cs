@@ -23,7 +23,7 @@ public class Spy : IIdObject
 	public const int ASSASSINATE_SUCCEED_KILLED = 2;
 
 	public int SpyId { get; private set; }
-	public int SpyPlace { get; private set; } // either SPY_TOWN or SPY_FIRM
+	public int SpyPlace { get; private set; } // SPY_TOWN, SPY_FIRM or SPY_MOBILE
 	public int SpyPlaceId { get; set; } // it can be TownId, FirmId or UnitId depending on what SpyPlace is
 
 	public int SpySkill { get; private set; }
@@ -65,13 +65,12 @@ public class Spy : IIdObject
 
 	public void Init(int unitId, int spySkill)
 	{
-		SpyPlace = SPY_MOBILE;
 		SpySkill = spySkill;
 
 		if (unitId != 0)
 		{
 			Unit unit = UnitArray[unitId];
-			SpyPlaceId = unitId;
+			SetPlace(SPY_MOBILE, unitId);
 			SpyLoyalty = unit.Loyalty;
 			RaceId = unit.RaceId;
 			NameId = unit.NameId;
@@ -79,8 +78,8 @@ public class Spy : IIdObject
 			CloakedNationId = unit.NationId;
 			//--- spies hold a use right of the name id even though the unit itself will register the usage right of the name already ---//
 
-			// the spy will free it up in deinit(). Keep an additional right because when a spy is assigned to a town,
-			// the normal program will free up the name id., so we have to keep an additional copy
+			// the spy will free it up in Deinit(). Keep an additional right because when a spy is assigned to a town,
+			// the normal program will free up the name id, so we have to keep an additional copy
 			RaceRes[RaceId].UseNameId(NameId);
 		}
 	}
@@ -118,7 +117,7 @@ public class Spy : IIdObject
 			if (SpyPlace == SPY_TOWN)
 				ProcessTownAction();
 
-			else if (SpyPlace == SPY_FIRM)
+			if (SpyPlace == SPY_FIRM)
 				ProcessFirmAction();
 		}
 
@@ -166,7 +165,8 @@ public class Spy : IIdObject
 					Firm firm = FirmArray[unit.UnitModeParam];
 					World.Unveil(firm.LocX1, firm.LocY1, firm.LocX2, firm.LocY2, GameConstants.UNVEIL_RANGE - 1);
 				}
-				else if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
+				
+				if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 				{
 					Unit ship = UnitArray[unit.UnitModeParam];
 					if (ship.UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
@@ -220,34 +220,22 @@ public class Spy : IIdObject
 
 	private void ProcessTownAction()
 	{
-		Town town = TownArray[SpyPlaceId];
-
 		if (ActionMode == SPY_SOW_DISSENT)
 		{
+			Town town = TownArray[SpyPlaceId];
 			// only when there are non-spy people
 			if (town.RacesPopulation[RaceId - 1] > town.RacesSpyCount[RaceId - 1])
 			{
 				// the more people there, the longer it takes to decrease the loyalty
 				double decValue = SpySkill / 10.0 / town.RacesPopulation[RaceId - 1];
 
-				//----- if this is an independent town -----//
-
 				if (town.NationId == 0)
 				{
-					town.RacesResistance[RaceId - 1, TrueNationId - 1] -= decValue;
-
-					if (town.RacesResistance[RaceId - 1, TrueNationId - 1] < 0.0)
-						town.RacesResistance[RaceId - 1, TrueNationId - 1] = 0.0;
+					town.ChangeResistance(RaceId, TrueNationId, -decValue);
 				}
-
-				//--- if this is an enemy town, decrease the town people's loyalty ---//
-
 				else
 				{
-					town.RacesLoyalty[RaceId - 1] -= decValue * 4.0;
-
-					if (town.RacesLoyalty[RaceId - 1] < 0.0)
-						town.RacesLoyalty[RaceId - 1] = 0.0;
+					town.ChangeLoyalty(RaceId, -decValue * 4.0);
 				}
 			}
 		}
@@ -255,10 +243,10 @@ public class Spy : IIdObject
 
 	private void ProcessFirmAction()
 	{
-		Firm firm = FirmArray[SpyPlaceId];
-
 		if (ActionMode == SPY_SOW_DISSENT)
 		{
+			Firm firm = FirmArray[SpyPlaceId];
+			
 			//---- decrease the loyalty of the overseer if there is any -----//
 
 			if (firm.OverseerId != 0)
@@ -278,7 +266,6 @@ public class Spy : IIdObject
 			}
 
 			//----- decrease the loyalty of the workers in the firm -----//
-
 
 			for (int i = 0; i < firm.Workers.Count; i++)
 			{
@@ -410,13 +397,12 @@ public class Spy : IIdObject
 				}
 			}
 		}
-		else if (SpyPlace == SPY_MOBILE)
+		
+		if (SpyPlace == SPY_MOBILE)
 		{
 			Unit unit = UnitArray[SpyPlaceId];
 			unit.SpyId = 0;
 		}
-
-		//------ delete this Spy record from spy_array ----//
 
 		SpyArray.DeleteSpy(this);
 	}
@@ -453,26 +439,6 @@ public class Spy : IIdObject
 			{
 				UnitArray[firm.OverseerId].SpyChangeNation(newNationId, InternalConstants.COMMAND_AUTO);
 			}
-		}
-	}
-
-	public bool CanChangeCloakedNation(int newNationId)
-	{
-		//---- can always change back to its original nation ----//
-
-		if (newNationId == TrueNationId)
-			return true;
-
-		//--- only mobile units and overseers can change nation, spies in firms or towns cannot change nation,
-		//--- their nation must be the same as the town or the firm's nation
-
-		if (SpyPlace == SPY_MOBILE)
-		{
-			return UnitArray[SpyPlaceId].CanSpyChangeNation();
-		}
-		else // can't change in firms or towns.
-		{
-			return false;
 		}
 	}
 
@@ -526,12 +492,10 @@ public class Spy : IIdObject
 					bool obeyFlag = (Misc.Random(100) < obeyChance); // if obeyChance >= 100, all units will object the overseer
 
 					//--- if the worker obey, update its loyalty ---//
+					//--- if the worker does not obey, it is mobilized and attack the base ---//
 
 					if (obeyFlag)
 						worker.WorkerLoyalty = Math.Max(GameConstants.UNIT_BETRAY_LOYALTY, obeyChance / 2);
-
-					//--- if the worker does not obey, it is mobilized and attack the base ---//
-
 					else
 						firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 				}
@@ -596,7 +560,6 @@ public class Spy : IIdObject
 
 		else
 		{
-
 			//---- check whether it's true that the only units in the firms are our spies ---//
 
 			foreach (var worker in firm.Workers)
@@ -614,12 +577,12 @@ public class Spy : IIdObject
 
 	public void Reward(int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure <spy recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_REWARD, sizeof(short));
-		//shortPtr[0] = spy_recno;
-		//return;
+			//// packet structure <spy recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_REWARD, sizeof(short));
+			//shortPtr[0] = spy_recno;
+			//return;
 		//}
 
 		ChangeLoyalty(GameConstants.REWARD_LOYALTY_INCREASE);
@@ -629,12 +592,12 @@ public class Spy : IIdObject
 
 	public void SetExposed(int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure <spy recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_EXPOSED, sizeof(short));
-		//shortPtr[0] = spy_recno;
-		//return;
+			//// packet structure <spy recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_EXPOSED, sizeof(short));
+			//shortPtr[0] = spy_recno;
+			//return;
 		//}
 
 		Exposed = true;
@@ -695,8 +658,8 @@ public class Spy : IIdObject
 
 		if (firm.OverseerId != 0)
 		{
-			Unit unit = UnitArray[firm.OverseerId];
-			if (unit.SpyId == SpyId)
+			Unit overseer = UnitArray[firm.OverseerId];
+			if (overseer.SpyId == SpyId)
 				spyUnitId = firm.MobilizeOverseer();
 		}
 
@@ -704,17 +667,15 @@ public class Spy : IIdObject
 
 		if (spyUnitId == 0)
 		{
-			int i;
-			for (i = 0; i < firm.Workers.Count; i++)
+			for (int i = 0; i < firm.Workers.Count; i++)
 			{
 				if (firm.Workers[i].SpyId == SpyId)
+				{
+					// note: MobilizeWorker() will decrease Firm.PlayerSpyCount
+					spyUnitId = firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 					break;
+				}
 			}
-
-			//---------- create a mobile unit ---------//
-
-			// note: MobilizeWorker() will decrease Firm.PlayerSpyCount
-			spyUnitId = firm.MobilizeWorker(i + 1, InternalConstants.COMMAND_AUTO);
 		}
 
 		return spyUnitId != 0 ? UnitArray[spyUnitId] : null;
@@ -729,16 +690,14 @@ public class Spy : IIdObject
 			else
 				ActionMode = SPY_IDLE;
 		}
-		else if (SpyPlace == SPY_FIRM)
+		
+		if (SpyPlace == SPY_FIRM)
 		{
 			switch (ActionMode)
 			{
 				case SPY_IDLE:
 					if (CanSabotage())
-					{
 						ActionMode = SPY_SABOTAGE;
-					}
-
 					break;
 
 				case SPY_SABOTAGE:
@@ -756,9 +715,10 @@ public class Spy : IIdObject
 	{
 		int newLoyalty = SpyLoyalty + changeAmt;
 
+		newLoyalty = Math.Min(100, newLoyalty);
 		newLoyalty = Math.Max(0, newLoyalty);
 
-		SpyLoyalty = Math.Min(100, newLoyalty);
+		SpyLoyalty = newLoyalty;
 	}
 
 	private void UpdateLoyalty()
@@ -848,7 +808,7 @@ public class Spy : IIdObject
 			}
 		}
 
-		else if (SpyPlace == SPY_TOWN)
+		if (SpyPlace == SPY_TOWN)
 		{
 			if (!TownArray.IsDeleted(SpyPlaceId))
 			{
@@ -856,11 +816,8 @@ public class Spy : IIdObject
 			}
 		}
 
-		//------- set the spy place now ---------//
-
 		SpyPlace = spyPlace;
 		SpyPlaceId = spyPlaceId;
-
 		ActionMode = SPY_IDLE; // reset the spy mode
 
 		//------- set the spy counter of the new place ------//
@@ -872,12 +829,13 @@ public class Spy : IIdObject
 
 			CloakedNationId = FirmArray[SpyPlaceId].NationId;
 
-			// when a spy has been assigned to a firm, its notification flag should be set to 1,
+			// when a spy has been assigned to a firm, its notification flag should be set to true,
 			// so the nation can control it as it is one of its own units
 			if (FirmArray[SpyPlaceId].NationId != TrueNationId)
 				NotifyCloakedNation = true;
 		}
-		else if (SpyPlace == SPY_TOWN)
+		
+		if (SpyPlace == SPY_TOWN)
 		{
 			TownArray[SpyPlaceId].RacesSpyCount[RaceId - 1]++;
 
@@ -896,6 +854,8 @@ public class Spy : IIdObject
 
 	public int SpyPlaceNationId()
 	{
+		//TODO SPY_MOBILE?
+		
 		if (SpyPlace == SPY_TOWN)
 			return TownArray[SpyPlaceId].NationId;
 
@@ -905,7 +865,7 @@ public class Spy : IIdObject
 		return 0;
 	}
 
-	public void GetSpyLocation(out int locX, out int locY)
+	public bool GetSpyLocation(out int locX, out int locY)
 	{
 		locX = -1;
 		locY = -1;
@@ -917,6 +877,7 @@ public class Spy : IIdObject
 				{
 					locX = FirmArray[SpyPlaceId].LocCenterX;
 					locY = FirmArray[SpyPlaceId].LocCenterY;
+					return true;
 				}
 
 				break;
@@ -926,6 +887,7 @@ public class Spy : IIdObject
 				{
 					locX = TownArray[SpyPlaceId].LocCenterX;
 					locY = TownArray[SpyPlaceId].LocCenterY;
+					return true;
 				}
 
 				break;
@@ -934,33 +896,55 @@ public class Spy : IIdObject
 				if (!UnitArray.IsDeleted(SpyPlaceId))
 				{
 					Unit unit = UnitArray[SpyPlaceId];
+					
+					if (unit.UnitMode == UnitConstants.UNIT_MODE_CONSTRUCT)
+					{
+						Firm firm = FirmArray[unit.UnitModeParam];
+						locX = firm.LocCenterX;
+						locY = firm.LocCenterY;
+						return true;
+					}
 
 					if (unit.UnitMode == UnitConstants.UNIT_MODE_ON_SHIP)
 					{
 						Unit ship = UnitArray[unit.UnitModeParam];
-						locX = ship.NextLocX;
-						locY = ship.NextLocY;
+						if (ship.UnitMode == UnitConstants.UNIT_MODE_IN_HARBOR)
+						{
+							Firm firm = FirmArray[ship.UnitModeParam];
+							locX = firm.LocCenterX;
+							locY = firm.LocCenterY;
+							return true;
+						}
+						else
+						{
+							locX = ship.NextLocX;
+							locY = ship.NextLocY;
+							return true;
+						}
 					}
 					else
 					{
 						locX = unit.NextLocX;
 						locY = unit.NextLocY;
+						return true;
 					}
 				}
 
 				break;
 		}
+
+		return false;
 	}
 
 	public int Assassinate(int targetUnitId, int remoteAction)
 	{
-		//if( !remoteAction && remote.is_enable() )
+		//if (!remoteAction && remote.is_enable())
 		//{
-		//// packet structure <spy recno>
-		//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_ASSASSINATE, sizeof(short)*2);
-		//shortPtr[0] = spy_recno;
-		//shortPtr[1] = targetUnitRecno;
-		//return 0;
+			//// packet structure <spy recno>
+			//short *shortPtr = (short *)remote.new_send_queue_msg(MSG_SPY_ASSASSINATE, sizeof(short)*2);
+			//shortPtr[0] = spy_recno;
+			//shortPtr[1] = targetUnitRecno;
+			//return 0;
 		//}
 
 		//---------- validate first -----------//
@@ -1022,7 +1006,7 @@ public class Spy : IIdObject
 		{
 			//-- if the spy is attempting to assassinate the player's general or king --//
 
-			// don't display the below news message as the killing of the spy will already be displayed in news_array.spy_killed()
+			// don't display the below news message as the killing of the spy will already be displayed in NewsArray.SpyKilled()
 
 			// if (targetUnit.NationId == NationArray.PlayerId)
 			//	NewsArray.AssassinatorCaught(SpyId, targetUnit.RankId);
@@ -1182,6 +1166,7 @@ public class Spy : IIdObject
 				}
 			}
 		}
+		
 		else if (SpyPlace == SPY_MOBILE)
 		{
 			UnitArray.DeleteUnit(UnitArray[SpyPlaceId]);
@@ -1195,10 +1180,10 @@ public class Spy : IIdObject
 			NationArray[hostNationId].ChangeAIRelationLevel(TrueNationId, -5);
 		}
 
-		//---- delete the spy from spy_array ----//
+		//---- delete the spy from SpyArray ----//
 		if (!mobileUnit)
 			SpyArray.DeleteSpy(this);
-		//else spy_array.del_spy() is called in UnitArray.del()
+		//else SpyArray.DeleteSpy() is called in UnitArray.DeleteUnit()
 	}
 
 	#region Old AI Functions

@@ -17,7 +17,7 @@ public class TeamInfo
     
 	#region SaveAndLoad
 
-	public virtual void SaveTo(BinaryWriter writer)
+	public void SaveTo(BinaryWriter writer)
 	{
 		writer.Write(Members.Count);
 		for (int i = 0; i < Members.Count; i++)
@@ -25,7 +25,7 @@ public class TeamInfo
 		writer.Write(AILastRequestDefenseDate.ToBinary());
 	}
 
-	public virtual void LoadFrom(BinaryReader reader)
+	public void LoadFrom(BinaryReader reader)
 	{
 		int membersCount = reader.ReadInt32();
 		for (int i = 0; i < membersCount; i++)

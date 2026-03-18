@@ -38,12 +38,12 @@ public class Projectile : Bullet
     {
         Shadow.SetDir(finalDir);
         Shadow.CurFrame = CurFrame;
-        Shadow.CurAction = Sprite.SPRITE_MOVE;
+        Shadow.CurAction = SPRITE_MOVE;
         Shadow.SetCur((int)(CurX - z / 8.0), (int)(CurY - z / 6.0));
 
         Bullet.SetDir(finalDir);
         Bullet.CurFrame = CurFrame;
-        Bullet.CurAction = Sprite.SPRITE_MOVE;
+        Bullet.CurAction = SPRITE_MOVE;
         Bullet.SetCur(CurX, CurY - (int)z);
     }
     

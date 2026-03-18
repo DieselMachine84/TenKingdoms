@@ -84,6 +84,7 @@ public class Tornado : Sprite
             if (targetUnit.HitPoints <= 0.0)
                 targetUnit.HitPoints = 0.0;
         }
+        
         if (location.HasUnit(UnitConstants.UNIT_SEA))
         {
             targetUnit = UnitArray[location.UnitId(UnitConstants.UNIT_SEA)];

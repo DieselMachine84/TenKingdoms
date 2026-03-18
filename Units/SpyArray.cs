@@ -93,15 +93,15 @@ public class SpyArray : DynArray<Spy>
         }
     }
 
-    public void UpdateFirmSpyCount(int firmRecno)
+    public void UpdateFirmSpyCount(int firmId)
     {
-        Firm firm = FirmArray[firmRecno];
+        Firm firm = FirmArray[firmId];
 
         firm.PlayerSpyCount = 0;
 
         foreach (Spy spy in this)
         {
-            if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmRecno && spy.TrueNationId == NationArray.PlayerId)
+            if (spy.SpyPlace == Spy.SPY_FIRM && spy.SpyPlaceId == firmId && spy.TrueNationId == NationArray.PlayerId)
             {
                 firm.PlayerSpyCount++;
             }
@@ -120,7 +120,7 @@ public class SpyArray : DynArray<Spy>
 
             //--- check if the spy is in the specific firm or town ---//
 
-            // only check spyPlacePara when spyPlace is SPY_TOWN or SPY_FIRM
+            // only check SpyPlaceId when spyPlace is SPY_TOWN or SPY_FIRM
             if (spyPlace == Spy.SPY_FIRM || spyPlace == Spy.SPY_TOWN)
             {
                 if (spy.SpyPlaceId != spyPlaceId)
@@ -176,7 +176,8 @@ public class SpyArray : DynArray<Spy>
             nationId = town.NationId;
             totalPop = town.Population;
         }
-        else if (spyPlace == Spy.SPY_FIRM)
+        
+        if (spyPlace == Spy.SPY_FIRM)
         {
             Firm firm = FirmArray[spyPlaceId];
 

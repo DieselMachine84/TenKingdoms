@@ -17,9 +17,9 @@ public class Rebel : IIdObject
     public int ActionMode { get; set; }
     public int ActionParam { get; private set; }
     public int ActionParam2 { get; private set; }
-    public int MobileRebelCount  { get; set; } // no. of units in this rebel group
-    public int TownId  { get; set; } // the town controlled by the rebel group, one rebel group can only control one town
-    private int HostileNationBits  { get; set; }
+    public int MobileRebelCount { get; set; } // no. of units in this rebel group
+    public int TownId { get; set; } // the town controlled by the rebel group, one rebel group can only control one town
+    private int HostileNationBits { get; set; }
 
     private Config Config => Sys.Instance.Config;
     private Info Info => Sys.Instance.Info;
