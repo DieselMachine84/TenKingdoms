@@ -1827,20 +1827,14 @@ public abstract partial class Unit : Sprite
 				ProcessWayPoint();
 			return;
 		}
-
-		//-------- randomize direction --------//
-
-		if (MatchDir())
-		{
-			if (!IsGuarding() && RaceId != 0) // only these units can move
-			{
-				if (Misc.Random(150) == 0) // change direction randomly
-					SetDir(Misc.Random(8));
-			}
-		}
-		else
-		{
+		
+		if (!MatchDir())
 			return;
+
+		if (!IsGuarding() && RaceId != 0) // only these units can move
+		{
+			if (Misc.Random(150) == 0) // change direction randomly
+				SetDir(Misc.Random(8));
 		}
 
 		base.ProcessIdle();
@@ -1850,6 +1844,7 @@ public abstract partial class Unit : Sprite
 		// totally blocked for attacking target, try again now
 		// Note: reset blocked_edge is essential for idle unit to reactivate attack action
 		//---------------------------------------------------------------------------//
+		//TODO rewrite
 		if (ActionMode >= UnitConstants.ACTION_ATTACK_UNIT && ActionMode <= UnitConstants.ACTION_ATTACK_WALL)
 		{
 			bool isAllZero = true;
@@ -2677,13 +2672,6 @@ public abstract partial class Unit : Sprite
 		}
 	}
 
-	private void SetWait()
-	{
-		CurAction = SPRITE_WAIT;
-		CurFrame = 1;
-		WaitingTerm++;
-	}
-
 	private void SetIdle()
 	{
 		CurAction = SPRITE_IDLE;
@@ -2703,6 +2691,13 @@ public abstract partial class Unit : Sprite
 		CurAction = SPRITE_MOVE;
 	}
 
+	private void SetWait()
+	{
+		CurAction = SPRITE_WAIT;
+		CurFrame = 1;
+		WaitingTerm++;
+	}
+	
 	private void SetAttack()
 	{
 		CurAction = SPRITE_ATTACK;

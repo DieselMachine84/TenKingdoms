@@ -358,6 +358,15 @@ public class Sprite : IIdObject
 		return 0;
 	}
 
+	public void ProcessTurn()
+	{
+		MatchDir();
+	}
+
+	public virtual void ProcessExtraMove()
+	{
+	}
+	
 	public virtual bool ProcessDie()
 	{
 		//--------- next frame ---------//
@@ -373,15 +382,6 @@ public class Sprite : IIdObject
 	}
 
 	public virtual void Die()
-	{
-	}
-
-	public void ProcessTurn()
-	{
-		MatchDir();
-	}
-
-	public virtual void ProcessExtraMove()
 	{
 	}
 

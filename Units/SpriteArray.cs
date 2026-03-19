@@ -37,7 +37,7 @@ public abstract class SpriteArray : DynArray<Sprite>
 		    //       However, sprite CurAction should be skipped.
 		    //-----------------------------------------------------//
 
-		    if (sprite.CurX < 0) // if(sprite.CurX == -1 || sprite.CurX==-2)
+		    if (sprite.CurX < 0) // sprite.CurX == -1 || sprite.CurX == -2
 			    continue;
 
 		    switch (sprite.CurAction)
