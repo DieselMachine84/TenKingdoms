@@ -56,16 +56,16 @@ public partial class Unit
 	
 	public void MoveTo(int destLocX, int destLocY, int preserveAction = 0, int searchMode = SeekPath.SEARCH_MODE_IN_A_GROUP, int miscNo = 0, int numOfPath = 1)
 	{
-		//---------- reset way point array since new action is assigned --------//
+		if (IsUnitDead())
+			return;
+		
+		//---------- reset way points since new action is assigned --------//
 		if (WayPoints.Count > 0)
 		{
 			World.GetLocXAndLocY(WayPoints[0], out var locX, out var locY);
 			if (locX != destLocX || locY != destLocY)
 				ResetWayPoints();
 		}
-
-		if (IsUnitDead())
-			return;
 
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
@@ -508,7 +508,7 @@ public partial class Unit
 		return found;
 	}
 
-	public void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
+	private void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
 	{
 		int curLocX = NextLocX;
 		int curLocY = NextLocY;

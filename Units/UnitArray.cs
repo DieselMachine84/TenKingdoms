@@ -403,7 +403,12 @@ public class UnitArray : SpriteArray
 	    }
 	    else
 	    {
-		    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
+		    Unit unit = this[selectedUnits[0]];
+		    if (unit.MobileType == UnitConstants.UNIT_AIR)
+			    MoveToNow(destLocX, destLocY, selectedUnits);
+		    else
+			    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
+		    
 		    //TODO why reset sub mode?
 		    Unit firstUnit = this[selectedUnits[0]];
 		    if (firstUnit.MobileType == UnitConstants.UNIT_LAND)
@@ -411,64 +416,25 @@ public class UnitArray : SpriteArray
 	    }
     }
 
-    //TODO: check and rewrite
-	private void MoveToNowWithFilter(int destLocX, int destLocY, List<int> selectedUnits)
-	{
-		//-------------- no filtering for unit air --------------------------//
-		Unit unit = this[selectedUnits[0]];
-		if (unit.MobileType == UnitConstants.UNIT_AIR)
-		{
-			MoveToNow(destLocX, destLocY, selectedUnits);
-			return;
-		}
+    private void MoveToNowWithFilter(int destLocX, int destLocY, List<int> selectedUnits)
+    {
+	    Dictionary<int, List<int>> unitsByRegion = new Dictionary<int, List<int>>();
+	    foreach (int unitId in selectedUnits)
+	    {
+		    Unit unit = this[unitId];
+		    int unitRegion = World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId;
+		    if (!unitsByRegion.ContainsKey(unitRegion))
+		    {
+			    unitsByRegion.Add(unitRegion, new List<int>(selectedUnits.Count));
+		    }
+		    unitsByRegion[unitRegion].Add(unitId);
+	    }
 
-		//----------------- init data structure --------------//
-		List<int> filtered_unit_array = new List<int>();
-		List<int> filtering_unit_array = new List<int>();
-		filtering_unit_array.AddRange(selectedUnits);
-		int filtering_unit_count = selectedUnits.Count;
-
-		int unprocessCount = selectedUnits.Count;
-		int filterRegionId = World.GetLoc(destLocX, destLocY).RegionId;
-		int filterDestX = destLocX;
-		int filterDestY = destLocY;
-
-		//-------------------------------------------------------------------------------//
-		// group the unit by their region id and process group searching for each group
-		//-------------------------------------------------------------------------------//
-		// checking for unprocessCount+1, plus one for the case that unit not on the same territory of destination
-		for (int loopCount = 0; loopCount <= unprocessCount; loopCount++)
-		{
-			filtered_unit_array.Clear();
-			int filteringCount = filtering_unit_array.Count;
-			filtering_unit_count = 0;
-
-			//-------------- filter for filterRegionId --------------//
-			for (int i = 0; i < filteringCount; i++)
-			{
-				unit = this[filtering_unit_array[i]];
-				if (World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId == filterRegionId)
-					filtered_unit_array.Add(filtering_unit_array[i]);
-				else
-					filtering_unit_array[filtering_unit_count++] = filtering_unit_array[i];
-			}
-
-			//---- process for filtered_unit_array and prepare for looping ----//
-			if (filtered_unit_array.Count > 0)
-				MoveToNow(filterDestX, filterDestY, filtered_unit_array);
-
-			if (filtering_unit_count == 0)
-				break;
-
-			//---------------- update parameters for next checking ------------------//
-			unit = this[filtering_unit_array[0]];
-			filterRegionId = World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId;
-			filterDestX = destLocX;
-			filterDestY = destLocY;
-			//TODO: maybe do not call this but just move to the destination?
-			unit.DifferentTerritoryDestination(ref filterDestX, ref filterDestY);
-		}
-	}
+	    foreach (List<int> filteredUnits in unitsByRegion.Values)
+	    {
+		    MoveToNow(destLocX, destLocY, filteredUnits);
+	    }
+    }
 
 	private void MoveToNow(int destLocX, int destLocY, List<int> selectedUnits)
 	{
