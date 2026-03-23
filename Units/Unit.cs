@@ -688,11 +688,6 @@ public abstract partial class Unit : Sprite
 
 						if (aiActionId != 0)
 							NationArray[nationId].action_finished(aiActionId, unitId);
-
-						if (UnitArray.IsDeleted(unitId))
-							return;
-
-						//--- else the firm is full, the unit's skill level is lower than those in firm, or no space to create town ---//
 					}
 					else
 					{
@@ -962,8 +957,6 @@ public abstract partial class Unit : Sprite
 	{
 		if (CurAction == SPRITE_IDLE) // the unit is at the settle location now
 		{
-			ResetPath();
-
 			if (CurLocX == MoveToLocX && CurLocY == MoveToLocY)
 			{
 				if (!IsInSurrounding(MoveToLocX, MoveToLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight,
@@ -989,7 +982,6 @@ public abstract partial class Unit : Sprite
 				{
 					//---------- a town zone already exists ---------//
 					Assign(ActionLocX, ActionLocY);
-					return;
 				}
 			}
 			else
@@ -1247,7 +1239,7 @@ public abstract partial class Unit : Sprite
 			}
 
 			Town targetTown = TownArray[townId];
-			if (TownArray[townId].NationId != NationId)
+			if (targetTown.NationId != NationId)
 			{
 				MoveToTownSurround(assignLocX, assignLocY, SpriteInfo.LocWidth, SpriteInfo.LocHeight);
 				return;
@@ -4287,7 +4279,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.TownId() == OriginalActionParam && TownArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4297,7 +4289,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (location.FirmId() == OriginalActionParam && FirmArray[OriginalActionParam].NationId == NationId)
 			{
-				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
+				UnitArray.Assign(OriginalActionLocX, OriginalActionLocY, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4317,7 +4309,7 @@ public abstract partial class Unit : Sprite
 		{
 			if (World.CanBuildTown(OriginalActionLocX, OriginalActionLocY, SpriteId))
 			{
-				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
+				UnitArray.Settle(OriginalActionLocX, OriginalActionLocY, selectedUnits, InternalConstants.COMMAND_AUTO);
 			}
 		}
 
@@ -4861,7 +4853,7 @@ public abstract partial class Unit : Sprite
 		{
 			ValidateTeam();
 
-			UnitArray.Assign(bestCamp.LocX1, bestCamp.LocY1, false, TeamInfo.Members, InternalConstants.COMMAND_AI);
+			UnitArray.Assign(bestCamp.LocX1, bestCamp.LocY1, TeamInfo.Members, InternalConstants.COMMAND_AI);
 			return true;
 		}
 		else //--- otherwise assign the general only ---//

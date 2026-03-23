@@ -426,11 +426,11 @@ public class Rebel : IIdObject
                 break;
 
             case REBEL_SETTLE_NEW:
-                UnitArray.Settle(ActionParam, ActionParam2, false, rebelUnits, InternalConstants.COMMAND_AI);
+                UnitArray.Settle(ActionParam, ActionParam2, rebelUnits, InternalConstants.COMMAND_AI);
                 break;
 
             case REBEL_SETTLE_TO:
-                UnitArray.Assign(ActionParam, ActionParam2, false, rebelUnits, InternalConstants.COMMAND_AI);
+                UnitArray.Assign(ActionParam, ActionParam2, rebelUnits, InternalConstants.COMMAND_AI);
                 break;
         }
     }

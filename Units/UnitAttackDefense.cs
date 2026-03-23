@@ -1179,8 +1179,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory of this unit.
 					//--------------------------------------------------------------------------------//
-					pathEdited = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.LocWidth, firmInfo.LocHeight,
-						UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, 0, 0);
+					pathEdited = SetMoveToSurround(firmXLoc, firmYLoc, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO);
 				}
 			}
 
@@ -1391,8 +1390,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					pathEdited = SetMoveToSurround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT,
-						UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO, 0, 0);
+					pathEdited = SetMoveToSurround(townXLoc, townYLoc, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 				}
 			}
 
@@ -1579,8 +1577,7 @@ public partial class Unit
 					// 2) this unit is air unit, or
 					// 3) different type from target, but target located in the same territory
 					//--------------------------------------------------------------------------------//
-					pathEdited = SetMoveToSurround(wallXLoc, wallYLoc, 1, 1,
-						UnitConstants.BUILDING_TYPE_WALL, 0, 0);
+					pathEdited = SetMoveToSurround(wallXLoc, wallYLoc, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 				}
 			}
 

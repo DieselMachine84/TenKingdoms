@@ -3659,7 +3659,7 @@ public class Nation : NationBase
 						{
 							FirmCamp firmCamp = (FirmCamp)FirmArray[firmRecno];
 							firmCamp.ValidatePatrolUnit();
-							UnitArray.Assign(firmCamp.LocX1, firmCamp.LocY1, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
+							UnitArray.Assign(firmCamp.LocX1, firmCamp.LocY1, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 						}
 					}
 				}
@@ -6397,11 +6397,11 @@ public class Nation : NationBase
 				if (location.IsTown() && TownArray[location.TownId()].NationId == NationId)
 				{
 					Town town = TownArray[location.TownId()];
-					UnitArray.Assign(town.LocX1, town.LocY1, false, unitRecnoArray, InternalConstants.COMMAND_AI);
+					UnitArray.Assign(town.LocX1, town.LocY1, unitRecnoArray, InternalConstants.COMMAND_AI);
 				}
 				else //-- if there is no town there, the unit will try to settle, if there is no space for settle, settle() will just have the units move to the destination
 				{
-					UnitArray.Settle(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
+					UnitArray.Settle(destXLoc, destYLoc, unitRecnoArray, InternalConstants.COMMAND_AI);
 				}
 
 				break;
@@ -6415,7 +6415,7 @@ public class Nation : NationBase
 
 			case SEA_ACTION_ASSIGN_TO_FIRM:
 				if (check_firm_ready(destXLoc, destYLoc))
-					UnitArray.Assign(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
+					UnitArray.Assign(destXLoc, destYLoc, unitRecnoArray, InternalConstants.COMMAND_AI);
 				break;
 
 			case SEA_ACTION_MOVE:

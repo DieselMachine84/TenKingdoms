@@ -169,6 +169,8 @@ public class SpriteInfo
 	public int NeedTurning { get; set; }
 	public int TurnResolution { get; set; }
 
+	//TODO LocWidth and LocHeight have values 0 and 1
+	//Problems: Firm.LocateSpace and World.LocateSpace, AddBullet, InitSprite
 	public int LocWidth { get; set; } // no. of locations it takes horizontally and vertically
 	public int LocHeight { get; set; }
 

@@ -261,7 +261,7 @@ public class UnitMonster : Unit
         }
         else
         {
-            UnitArray.Assign(destXLoc, destYLoc, false, orderedUnits, InternalConstants.COMMAND_AI);
+            UnitArray.Assign(destXLoc, destYLoc, orderedUnits, InternalConstants.COMMAND_AI);
         }
     }
 

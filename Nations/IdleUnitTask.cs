@@ -77,7 +77,7 @@ public class IdleUnitTask : AITask, IUnitTask
                 {
                     //TODO use Unit.Assign or UnitArray.Assign?
                     List<int> unitsToAssign = new List<int> { UnitId };
-                    UnitArray.Assign(harbor.LocX1, harbor.LocY1, false, unitsToAssign, InternalConstants.COMMAND_AI);
+                    UnitArray.Assign(harbor.LocX1, harbor.LocY1, unitsToAssign, InternalConstants.COMMAND_AI);
                 }
             }
         }

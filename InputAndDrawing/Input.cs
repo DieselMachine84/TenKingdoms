@@ -685,13 +685,13 @@ public partial class Renderer
                     {
                         Town town = TownArray[location.TownId()];
                         if (town.NationId == unit.NationId)
-                            UnitArray.Assign(town.LocX1, town.LocY1, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
+                            UnitArray.Assign(town.LocX1, town.LocY1, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                         else
                             UnitArray.MoveTo(town.LocX1, town.LocY1, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     else
                     {
-                        UnitArray.Settle(locX, locY, false, _selectedUnits, InternalConstants.COMMAND_PLAYER);
+                        UnitArray.Settle(locX, locY, _selectedUnits, InternalConstants.COMMAND_PLAYER);
                     }
                     
                     Audio.SelectionSound(unit.CurLocX, unit.CurLocY, 1, 'S', unit.SpriteResId, "ACK");
@@ -836,7 +836,7 @@ public partial class Renderer
                             unitsToMove.Add(playerUnitId);
                     }
                     
-                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, unitsToAssign, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
                 }
@@ -860,7 +860,7 @@ public partial class Renderer
                             unitsToMove.Add(otherUnitId);
                     }
                     
-                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.Assign(targetTown.LocX1, targetTown.LocY1, unitsToAssign, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetTown.LocX1, targetTown.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
                 }
             }
@@ -883,7 +883,7 @@ public partial class Renderer
                             unitsToMove.Add(playerUnitId);
                     }
                     
-                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, unitsToAssign, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, otherNationUnits, InternalConstants.COMMAND_PLAYER);
                 }
@@ -907,7 +907,7 @@ public partial class Renderer
                             unitsToMove.Add(otherUnitId);
                     }
                     
-                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, false, unitsToAssign, InternalConstants.COMMAND_PLAYER);
+                    UnitArray.Assign(targetFirm.LocX1, targetFirm.LocY1, unitsToAssign, InternalConstants.COMMAND_PLAYER);
                     UnitArray.MoveTo(targetFirm.LocX1, targetFirm.LocY1, false, unitsToMove, InternalConstants.COMMAND_PLAYER);
                 }
             }

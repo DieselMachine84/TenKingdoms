@@ -1009,7 +1009,7 @@ public class FirmCamp : Firm
 
 				//---- order the unit to move to this camp now ---//
 
-				UnitArray.Assign(LocX1, LocY1, false, bestCamp.PatrolUnits, InternalConstants.COMMAND_AI);
+				UnitArray.Assign(LocX1, LocY1, bestCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 
 				//------ delete the camp as it no longer has any use ----//
 

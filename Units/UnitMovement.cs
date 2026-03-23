@@ -92,20 +92,20 @@ public partial class Unit
 		ActionLocX = ActionLocX2 = MoveToLocX;
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
-	
-	public void MoveToUnitSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
+
+	private void MoveToTargetSurround(int destLocX, int destLocY, Func<int> getTargetRegionId, Action moveToSurround)
 	{
+		if (IsUnitDead())
+			return;
+		
 		//----------------------------------------------------------------//
 		// calculate new destination if trying to move to different territory
 		//----------------------------------------------------------------//
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
+		if (World.GetLoc(NextLocX, NextLocY).RegionId != getTargetRegionId())
 		{
 			MoveTo(destLocX, destLocY);
 			return;
 		}
-
-		if (IsUnitDead())
-			return;
 
 		//----------------------------------------------------------------//
 		// check for equal actions
@@ -132,14 +132,9 @@ public partial class Unit
 			}
 		} //else, new order or searching is required
 
-		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
-		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
-
-		Unit unit = UnitArray[miscNo];
-		SpriteInfo spriteInfo = unit.SpriteInfo;
 		Stop();
-		SetMoveToSurround(destX, destY, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.BUILDING_TYPE_VEHICLE);
-
+		moveToSurround();
+		
 		//----------------------------------------------------------------//
 		// store new order in action parameters
 		//----------------------------------------------------------------//
@@ -149,181 +144,75 @@ public partial class Unit
 		ActionLocY = ActionLocY2 = MoveToLocY;
 	}
 	
-	public void MoveToFirmSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
+	public void MoveToUnitSurround(int destLocX, int destLocY, int width, int height, int unitId)
 	{
-		//----------------------------------------------------------------//
-		// calculate new destination if trying to move to different territory
-		//----------------------------------------------------------------//
-		Location loc = World.GetLoc(destLocX, destLocY);
-		if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP && miscNo == Firm.FIRM_HARBOR)
+		int GetTargetRegionId() => World.GetLoc(destLocX, destLocY).RegionId;
+
+		void MoveToSurround()
 		{
-			Firm firm = FirmArray[loc.FirmId()];
-			FirmHarbor harbor = (FirmHarbor)firm;
-			if (World.GetLoc(NextLocX, NextLocY).RegionId != harbor.SeaRegionId)
-			{
-				MoveTo(destLocX, destLocY);
-				return;
-			}
-		}
-		else
-		{
-			if (World.GetLoc(NextLocX, NextLocY).RegionId != loc.RegionId)
-			{
-				MoveTo(destLocX, destLocY);
-				return;
-			}
+			int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+			int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
+			Unit unit = UnitArray[unitId];
+			SpriteInfo spriteInfo = unit.SpriteInfo;
+			SetMoveToSurround(destX, destY, spriteInfo.LocWidth, spriteInfo.LocHeight, UnitConstants.BUILDING_TYPE_VEHICLE);
 		}
 
-		if (IsUnitDead())
-			return;
-
-		//----------------------------------------------------------------//
-		// check for equal actions
-		//----------------------------------------------------------------//
-		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
+		MoveToTargetSurround(destLocX, destLocY, GetTargetRegionId, MoveToSurround);
+	}
+	
+	public void MoveToFirmSurround(int destLocX, int destLocY, int width, int height, int firmType)
+	{
+		int GetTargetRegionId()
 		{
-			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
+			Location loc = World.GetLoc(destLocX, destLocY);
+			if (UnitRes[UnitType].UnitClass == UnitConstants.UNIT_CLASS_SHIP && firmType == Firm.FIRM_HARBOR)
 			{
-				//-------- equal order --------//
-				ActionLocX = ActionLocX2;
-				ActionLocY = ActionLocY2;
-
-				if (CurAction != SPRITE_IDLE)
-				{
-					//-------- the old order is processing --------//
-					if (PathNodes.Count == 0) // cannot move
-					{
-						SetIdle();
-					}
-
-					return;
-				} //else action is hold due to some problems, reactivate again
+				FirmHarbor harbor = (FirmHarbor)FirmArray[loc.FirmId()];
+				return harbor.SeaRegionId;
 			}
-		} //else, new order or searching is required
+			else
+			{
+				return loc.RegionId;
+			}
+		}
 
-		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
-		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
+		void MoveToSurround()
+		{
+			int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+			int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
+			FirmInfo firmInfo = FirmRes[firmType];
+			SetMoveToSurround(destX, destY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, firmType);
+		}
 
-		FirmInfo firmInfo = FirmRes[miscNo];
-		Stop();
-		SetMoveToSurround(destX, destY, firmInfo.LocWidth, firmInfo.LocHeight, UnitConstants.BUILDING_TYPE_FIRM_MOVE_TO, miscNo);
-
-		//----------------------------------------------------------------//
-		// store new order in action parameters
-		//----------------------------------------------------------------//
-		ActionMode = ActionMode2 = UnitConstants.ACTION_MOVE;
-		ActionParam = ActionPara2 = 0;
-		ActionLocX = ActionLocX2 = MoveToLocX;
-		ActionLocY = ActionLocY2 = MoveToLocY;
+		MoveToTargetSurround(destLocX, destLocY, GetTargetRegionId, MoveToSurround);
 	}
 
-	public void MoveToTownSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
+	public void MoveToTownSurround(int destLocX, int destLocY, int width, int height)
 	{
-		//----------------------------------------------------------------//
-		// calculate new destination if trying to move to different territory
-		//----------------------------------------------------------------//
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
+		int GetTargetRegionId() => World.GetLoc(destLocX, destLocY).RegionId;
+
+		void MoveToSurround()
 		{
-			MoveTo(destLocX, destLocY);
-			return;
+			int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+			int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
+			SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
 		}
 
-		if (IsUnitDead())
-			return;
-
-		//----------------------------------------------------------------//
-		// check for equal actions
-		//----------------------------------------------------------------//
-		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
-		{
-			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
-			{
-				//-------- equal order --------//
-				ActionLocX = ActionLocX2;
-				ActionLocY = ActionLocY2;
-
-				if (CurAction != SPRITE_IDLE)
-				{
-					//-------- the old order is processing --------//
-					if (PathNodes.Count == 0) // cannot move
-					{
-						SetIdle();
-					}
-
-					return;
-				} //else action is hold due to some problems, reactivate again
-			}
-		} //else, new order or searching is required
-
-		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
-		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
-
-		Stop();
-		SetMoveToSurround(destX, destY, InternalConstants.TOWN_WIDTH, InternalConstants.TOWN_HEIGHT, UnitConstants.BUILDING_TYPE_TOWN_MOVE_TO);
-
-		//----------------------------------------------------------------//
-		// store new order in action parameters
-		//----------------------------------------------------------------//
-		ActionMode = ActionMode2 = UnitConstants.ACTION_MOVE;
-		ActionParam = ActionPara2 = 0;
-		ActionLocX = ActionLocX2 = MoveToLocX;
-		ActionLocY = ActionLocY2 = MoveToLocY;
+		MoveToTargetSurround(destLocX, destLocY, GetTargetRegionId, MoveToSurround);
 	}
 
-	public void MoveToWallSurround(int destLocX, int destLocY, int width, int height, int miscNo = 0)
+	public void MoveToWallSurround(int destLocX, int destLocY, int width, int height)
 	{
-		//----------------------------------------------------------------//
-		// calculate new destination if trying to move to different territory
-		//----------------------------------------------------------------//
-		if (World.GetLoc(NextLocX, NextLocY).RegionId != World.GetLoc(destLocX, destLocY).RegionId)
+		int GetTargetRegionId() => World.GetLoc(destLocX, destLocY).RegionId;
+
+		void MoveToSurround()
 		{
-			MoveTo(destLocX, destLocY);
-			return;
+			int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
+			int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
+			SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
 		}
 
-		if (IsUnitDead())
-			return;
-
-		//----------------------------------------------------------------//
-		// check for equal actions
-		//----------------------------------------------------------------//
-		if (ActionMode2 == UnitConstants.ACTION_MOVE && ActionMode == UnitConstants.ACTION_MOVE)
-		{
-			//------ previous action is ACTION_MOVE -------//
-			if (ActionLocX2 == destLocX && ActionLocY2 == destLocY)
-			{
-				//-------- equal order --------//
-				ActionLocX = ActionLocX2;
-				ActionLocY = ActionLocY2;
-
-				if (CurAction != SPRITE_IDLE)
-				{
-					//-------- the old order is processing --------//
-					if (PathNodes.Count == 0) // cannot move
-					{
-						SetIdle();
-					}
-
-					return;
-				} //else action is hold due to some problems, reactivate again
-			}
-		} //else, new order or searching is required
-
-		int destX = Math.Max(0, (width > 1) ? destLocX : destLocX - width + 1);
-		int destY = Math.Max(0, (height > 1) ? destLocY : destLocY - height + 1);
-
-		Stop();
-		SetMoveToSurround(destX, destY, 1, 1, UnitConstants.BUILDING_TYPE_WALL);
-
-		//----------------------------------------------------------------//
-		// store new order in action parameters
-		//----------------------------------------------------------------//
-		ActionMode = ActionMode2 = UnitConstants.ACTION_MOVE;
-		ActionParam = ActionPara2 = 0;
-		ActionLocX = ActionLocX2 = MoveToLocX;
-		ActionLocY = ActionLocY2 = MoveToLocY;
+		MoveToTargetSurround(destLocX, destLocY, GetTargetRegionId, MoveToSurround);
 	}
 	
 	private bool SetMoveToSurround(int buildLocX, int buildLocY, int width, int height, int buildingType,
@@ -412,8 +301,7 @@ public partial class Unit
 				break;
 
 			case UnitConstants.BUILDING_TYPE_WALL: // wall is on the location
-				searchResult = Search(buildLocX, buildLocY, 1,
-					miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
+				searchResult = Search(buildLocX, buildLocY, 1, miscNo != 0 ? SeekPath.SEARCH_MODE_TO_WALL_FOR_UNIT : SeekPath.SEARCH_MODE_TO_WALL_FOR_GROUP);
 				break;
 		}
 
@@ -423,8 +311,8 @@ public partial class Unit
 		//====================================================================//
 		// part 2
 		//====================================================================//
-		return PathNodes.Count > 0 && EditPathToSurround(buildLocX, buildLocY,
-			buildLocX + width - 1, buildLocY + height - 1, readyDist);
+		return PathNodes.Count > 0 &&
+		       EditPathToSurround(buildLocX, buildLocY, buildLocX + width - 1, buildLocY + height - 1, readyDist);
 	}
 	
 	private bool EditPathToSurround(int object1LocX, int object1LocY, int object2LocX, int object2LocY, int readyDist)
