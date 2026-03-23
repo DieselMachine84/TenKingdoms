@@ -333,12 +333,12 @@ public class UnitArray : SpriteArray
 			    unit.SetReady();
 	    }
     }
-    
-    public void MoveTo(int destLocX, int destLocY, bool divided, List<int> selectedUnits, int remoteAction)
+
+    public void MoveTo(int destLocX, int destLocY, List<int> selectedUnits, int remoteAction)
     {
 	    if (selectedUnits.Count == 0)
 		    return;
-	    
+
 	    //-------- if it's a multiplayer game --------//
 	    /*if (!remoteAction && remote.is_enable())
 	    {
@@ -352,61 +352,62 @@ public class UnitArray : SpriteArray
 		    memcpy(shortPtr + 4, selectedUnits, sizeof(int) * selectedUnits.Count);
 		    return;
 	    }*/
-	    
-	    if (!divided)
+
+	    DivideUnits(destLocX, destLocY, selectedUnits);
+
+	    if (_selectedLandUnits.Count > 0)
+		    MoveToDivided(destLocX, destLocY, _selectedLandUnits);
+
+	    if (_selectedSeaUnits.Count > 0)
 	    {
-		    DivideUnits(destLocX, destLocY, selectedUnits);
+		    Location location = World.GetLoc(destLocX, destLocY);
+		    if (TerrainRes[location.TerrainId].AverageType == TerrainTypeCode.TERRAIN_OCEAN)
+			    MoveToDivided(destLocX, destLocY, _selectedSeaUnits);
+		    else
+			    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
+	    }
 
-		    if (_selectedLandUnits.Count > 0)
-			    MoveTo(destLocX, destLocY, true, _selectedLandUnits, InternalConstants.COMMAND_AUTO);
+	    if (_selectedAirUnits.Count > 0)
+		    MoveToDivided(destLocX, destLocY, _selectedAirUnits);
+    }
 
-		    if (_selectedSeaUnits.Count > 0)
+    private void MoveToDivided(int destLocX, int destLocY, List<int> selectedUnits)
+    {
+	    if (selectedUnits.Count == 0)
+		    return;
+
+	    int curGroupId = CurGroupId++;
+
+	    foreach (int unitId in selectedUnits)
+	    {
+		    Unit unit = this[unitId];
+		    unit.GroupId = curGroupId;
+		    unit.ActionMode = UnitConstants.ACTION_MOVE;
+		    unit.ActionParam = 0;
+
+		    if (unit.ActionMode2 != UnitConstants.ACTION_MOVE)
 		    {
-			    Location location = World.GetLoc(destLocX, destLocY);
-			    if (TerrainRes[location.TerrainId].AverageType == TerrainTypeCode.TERRAIN_OCEAN)
-				    MoveTo(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
-			    else
-				    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, InternalConstants.COMMAND_AUTO);
-		    }
+			    unit.ActionMode2 = UnitConstants.ACTION_MOVE;
+			    unit.ActionPara2 = 0;
+			    unit.ActionLocX2 = unit.ActionLocY2 = -1;
+		    } // else keep the data to check whether same action mode is ordered
+	    }
 
-		    if (_selectedAirUnits.Count > 0)
-			    MoveTo(destLocX, destLocY, true, _selectedAirUnits, InternalConstants.COMMAND_AUTO);
+	    //--------------------------------------------------------------//
+	    // if only the leader unit is moving, no need to use formation movement although the button is pushed
+	    //--------------------------------------------------------------//
+	    if (selectedUnits.Count == 1)
+	    {
+		    Unit unit = this[selectedUnits[0]];
+		    unit.MoveTo(destLocX, destLocY, 1);
 	    }
 	    else
 	    {
-		    int curGroupId = CurGroupId++;
-
-		    for (int i = 0; i < selectedUnits.Count; i++)
-		    {
-			    Unit unit = this[selectedUnits[i]];
-			    unit.GroupId = curGroupId;
-			    unit.ActionMode = UnitConstants.ACTION_MOVE;
-			    unit.ActionParam = 0;
-
-			    if (unit.ActionMode2 != UnitConstants.ACTION_MOVE)
-			    {
-				    unit.ActionMode2 = UnitConstants.ACTION_MOVE;
-				    unit.ActionPara2 = 0;
-				    unit.ActionLocX2 = unit.ActionLocY2 = -1;
-			    } // else keep the data to check whether same action mode is ordered
-		    }
-
-		    //--------------------------------------------------------------//
-		    // if only the leader unit is moving, no need to use formation movement although the button is pushed
-		    //--------------------------------------------------------------//
-		    if (selectedUnits.Count == 1)
-		    {
-			    Unit unit = this[selectedUnits[0]];
-			    unit.MoveTo(destLocX, destLocY, 1);
-		    }
-		    else
-		    {
-			    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
-			    //TODO why reset sub mode?
-			    Unit firstUnit = this[selectedUnits[0]];
-			    if (firstUnit.MobileType == UnitConstants.UNIT_LAND)
-				    SeekPath.SetSubMode();
-		    }
+		    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
+		    //TODO why reset sub mode?
+		    Unit firstUnit = this[selectedUnits[0]];
+		    if (firstUnit.MobileType == UnitConstants.UNIT_LAND)
+			    SeekPath.SetSubMode();
 	    }
     }
 
@@ -1191,7 +1192,7 @@ public class UnitArray : SpriteArray
 		}
 
 		if (_selectedAirUnits.Count > 0)
-			MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
+			MoveToDivided(destLocX, destLocY, _selectedAirUnits);
 	}
 
 	private void AssignDivided(int destLocX, int destLocY, List<int> selectedUnits)
@@ -1314,13 +1315,13 @@ public class UnitArray : SpriteArray
 		    DivideUnits(shipLocX, shipLocY, selectedUnits);
 
 		    if (_selectedSeaUnits.Count > 0) // Note: the order to call ship unit first
-			    MoveTo(shipLocX, shipLocY, true, _selectedSeaUnits, remoteAction);
+			    MoveToDivided(shipLocX, shipLocY, _selectedSeaUnits);
 
 		    if (_selectedLandUnits.Count > 0)
 			    AssignToShip(shipLocX, shipLocY, true, _selectedLandUnits, remoteAction, shipId);
 
 		    if (_selectedAirUnits.Count > 0)
-			    MoveTo(shipLocX, shipLocY, true, _selectedAirUnits, remoteAction);
+			    MoveToDivided(shipLocX, shipLocY, _selectedAirUnits);
 	    }
 	    else
 	    {
@@ -1573,7 +1574,7 @@ public class UnitArray : SpriteArray
 		    ShipToBeach(destLocX, destLocY, true, _selectedSeaUnits, remoteAction);
 
 	    if (_selectedAirUnits.Count > 0)
-		    MoveTo(destLocX, destLocY, true, _selectedAirUnits, remoteAction);
+		    MoveToDivided(destLocX, destLocY, _selectedAirUnits);
     }
 
     private void SettleDivided(int destLocX, int destLocY, List<int> selectedUnits)

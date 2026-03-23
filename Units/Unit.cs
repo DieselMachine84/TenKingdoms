@@ -4267,7 +4267,7 @@ public abstract partial class Unit : Sprite
 
 		else if (OriginalActionMode == UnitConstants.ACTION_MOVE)
 		{
-			UnitArray.MoveTo(OriginalActionLocX, OriginalActionLocY, false, selectedUnits, InternalConstants.COMMAND_AUTO);
+			UnitArray.MoveTo(OriginalActionLocX, OriginalActionLocY, selectedUnits, InternalConstants.COMMAND_AUTO);
 		}
 
 		OriginalActionMode = 0;

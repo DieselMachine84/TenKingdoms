@@ -628,7 +628,7 @@ public class Nation : NationBase
 
 		//-- must use UnitArray.move_to() instead of unit.move_to() because the destination may be reachable, it can be in a different region --//
 
-		UnitArray.MoveTo(actionNode.action_x_loc, actionNode.action_y_loc, false, selectedArray, InternalConstants.COMMAND_AI);
+		UnitArray.MoveTo(actionNode.action_x_loc, actionNode.action_y_loc, selectedArray, InternalConstants.COMMAND_AI);
 
 		unit.AIActionId = actionNode.action_id;
 
@@ -3708,8 +3708,7 @@ public class Nation : NationBase
 
 					if (!directAttack)
 					{
-						UnitArray.MoveTo(ai_attack_target_x_loc, ai_attack_target_y_loc, false,
-							firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
+						UnitArray.MoveTo(ai_attack_target_x_loc, ai_attack_target_y_loc, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 					}
 					else
 					{
@@ -4137,7 +4136,7 @@ public class Nation : NationBase
 						if (attack_camps[j].patrol_date == default(DateTime)) //troop is patrolling, call them back
 						{
 							firmCamp.ValidatePatrolUnit();
-							UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
+							UnitArray.MoveTo(attackerXLoc, attackerYLoc, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 
 							calledFromAttack = true;
 						}
@@ -4170,7 +4169,7 @@ public class Nation : NationBase
 			FirmCamp firmCamp = (FirmCamp)FirmArray[defendingCamps[i]];
 			firmCamp.Patrol();
 			firmCamp.ValidatePatrolUnit();
-			UnitArray.MoveTo(attackerXLoc, attackerYLoc, false, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
+			UnitArray.MoveTo(attackerXLoc, attackerYLoc, firmCamp.PatrolUnits, InternalConstants.COMMAND_AI);
 		}
 
 		//------ request military aid from allies ----//
@@ -6419,7 +6418,7 @@ public class Nation : NationBase
 				break;
 
 			case SEA_ACTION_MOVE:
-				UnitArray.MoveTo(destXLoc, destYLoc, false, unitRecnoArray, InternalConstants.COMMAND_AI);
+				UnitArray.MoveTo(destXLoc, destYLoc, unitRecnoArray, InternalConstants.COMMAND_AI);
 				break;
 
 			case SEA_ACTION_NONE:
