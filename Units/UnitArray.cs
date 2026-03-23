@@ -1118,120 +1118,6 @@ public class UnitArray : SpriteArray
 		}
 	}
 
-	private void ShipToBeach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
-    {
-	    /*if (!remoteAction && remote.is_enable())
-	    {
-		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
-		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SHIP_TO_BEACH, sizeof(short) * (4 + selectedCount));
-		    shortPtr[0] = destX;
-		    shortPtr[1] = destY;
-		    shortPtr[2] = selectedCount;
-		    shortPtr[3] = divided;
-		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
-
-		    return;
-	    }*/
-
-	    SetGroupId(selectedUnits);
-
-	    //--------------------------------------------------------------------//
-	    const int CHECK_SEA_DIMENSION = 50;
-	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
-	    Location loc = World.GetLoc(destX, destY);
-	    int regionId = loc.RegionId;
-	    int landLocX = -1, landLocY = -1;
-
-	    int i = 0;
-
-	    //--------------------------------------------------------------------//
-	    // find a unit that can carrying units.  Let it to do the first searching.
-	    // Use the returned reference parameters (landX, landY) for the other
-	    // ships to calculate their final location to move to
-	    //--------------------------------------------------------------------//
-	    for (; i < selectedUnits.Count; i++) // for first unit
-	    {
-		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0)
-		    {
-			    unit.ShipToBeach(destX, destY, out landLocX, out landLocY);
-			    i++;
-			    break;
-		    }
-		    else
-		    {
-			    unit.MoveTo(destX, destY, 1);
-		    }
-	    }
-
-	    int totalCheck = 0;
-	    for (; i < selectedUnits.Count; i++) // for the rest units
-	    {
-		    Unit unit = this[selectedUnits[i]];
-		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0 && landLocX != -1 && landLocY != -1)
-		    {
-			    bool found = false;
-			    for (int j = 1; j <= CHECK_SEA_SIZE; j++, totalCheck++)
-			    {
-				    Misc.MoveAroundAPoint(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION, out int xShift, out int yShift);
-
-				    if (j >= CHECK_SEA_SIZE)
-					    j = 1;
-
-				    if (totalCheck == CHECK_SEA_SIZE)
-				    {
-					    //--------------------------------------------------------------------//
-					    // can't handle this case
-					    //--------------------------------------------------------------------//
-					    unit.ShipToBeach(landLocX, landLocY, out _, out _);
-					    totalCheck = 0;
-					    break;
-				    }
-
-				    int seaLocX = landLocX + xShift;
-				    int seaLocY = landLocY + yShift;
-				    if (!Misc.IsLocationValid(seaLocX, seaLocY))
-					    continue;
-
-				    loc = World.GetLoc(seaLocX, seaLocY);
-				    if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN)
-					    continue;
-
-				    //--------------------------------------------------------------------//
-				    // if it is able to find a location around the surrounding location with
-				    // same region id we prefer, order the unit to move there.
-				    //--------------------------------------------------------------------//
-				    for (int k = 2; k <= 9; k++)
-				    {
-					    Misc.MoveAroundAPoint(k, 3, 3, out xShift, out yShift);
-					    int checkLocX = seaLocX + xShift;
-					    int checkLocY = seaLocY + yShift;
-					    if (!Misc.IsLocationValid(checkLocX, checkLocY))
-						    continue;
-
-					    loc = World.GetLoc(checkLocX, checkLocY);
-					    if (loc.RegionId != regionId)
-						    continue;
-
-					    unit.ShipToBeach(checkLocX, checkLocY, out _, out _);
-					    found = true;
-					    break;
-				    }
-
-				    if (found)
-				    {
-					    totalCheck = 0;
-					    break;
-				    }
-			    }
-		    }
-		    else // cannot carry units
-		    {
-			    unit.MoveTo(destX, destY, 1);
-		    }
-	    }
-    }
-
 	public void Assign(int destLocX, int destLocY, List<int> selectedUnits, int remoteAction)
 	{
 		if (selectedUnits.Count == 0)
@@ -1534,6 +1420,120 @@ public class UnitArray : SpriteArray
 					    break;
 				    }
 			    }
+		    }
+	    }
+    }
+	
+    private void ShipToBeach(int destX, int destY, bool divided, List<int> selectedUnits, int remoteAction)
+    {
+	    /*if (!remoteAction && remote.is_enable())
+	    {
+		    // packet structure : <xLoc> <yLoc> <no. of units> <divided> <unit recno ...>
+		    short* shortPtr = (short*)remote.new_send_queue_msg(MSG_UNITS_SHIP_TO_BEACH, sizeof(short) * (4 + selectedCount));
+		    shortPtr[0] = destX;
+		    shortPtr[1] = destY;
+		    shortPtr[2] = selectedCount;
+		    shortPtr[3] = divided;
+		    memcpy(shortPtr + 4, selectedArray, sizeof(short) * selectedCount);
+
+		    return;
+	    }*/
+
+	    SetGroupId(selectedUnits);
+
+	    //--------------------------------------------------------------------//
+	    const int CHECK_SEA_DIMENSION = 50;
+	    const int CHECK_SEA_SIZE = CHECK_SEA_DIMENSION * CHECK_SEA_DIMENSION;
+	    Location loc = World.GetLoc(destX, destY);
+	    int regionId = loc.RegionId;
+	    int landLocX = -1, landLocY = -1;
+
+	    int i = 0;
+
+	    //--------------------------------------------------------------------//
+	    // find a unit that can carrying units.  Let it to do the first searching.
+	    // Use the returned reference parameters (landX, landY) for the other
+	    // ships to calculate their final location to move to
+	    //--------------------------------------------------------------------//
+	    for (; i < selectedUnits.Count; i++) // for first unit
+	    {
+		    Unit unit = this[selectedUnits[i]];
+		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0)
+		    {
+			    unit.ShipToBeach(destX, destY, out landLocX, out landLocY);
+			    i++;
+			    break;
+		    }
+		    else
+		    {
+			    unit.MoveTo(destX, destY, 1);
+		    }
+	    }
+
+	    int totalCheck = 0;
+	    for (; i < selectedUnits.Count; i++) // for the rest units
+	    {
+		    Unit unit = this[selectedUnits[i]];
+		    if (UnitRes[unit.UnitType].CarryUnitCapacity > 0 && landLocX != -1 && landLocY != -1)
+		    {
+			    bool found = false;
+			    for (int j = 1; j <= CHECK_SEA_SIZE; j++, totalCheck++)
+			    {
+				    Misc.MoveAroundAPoint(j, CHECK_SEA_DIMENSION, CHECK_SEA_DIMENSION, out int xShift, out int yShift);
+
+				    if (j >= CHECK_SEA_SIZE)
+					    j = 1;
+
+				    if (totalCheck == CHECK_SEA_SIZE)
+				    {
+					    //--------------------------------------------------------------------//
+					    // can't handle this case
+					    //--------------------------------------------------------------------//
+					    unit.ShipToBeach(landLocX, landLocY, out _, out _);
+					    totalCheck = 0;
+					    break;
+				    }
+
+				    int seaLocX = landLocX + xShift;
+				    int seaLocY = landLocY + yShift;
+				    if (!Misc.IsLocationValid(seaLocX, seaLocY))
+					    continue;
+
+				    loc = World.GetLoc(seaLocX, seaLocY);
+				    if (TerrainRes[loc.TerrainId].AverageType != TerrainTypeCode.TERRAIN_OCEAN)
+					    continue;
+
+				    //--------------------------------------------------------------------//
+				    // if it is able to find a location around the surrounding location with
+				    // same region id we prefer, order the unit to move there.
+				    //--------------------------------------------------------------------//
+				    for (int k = 2; k <= 9; k++)
+				    {
+					    Misc.MoveAroundAPoint(k, 3, 3, out xShift, out yShift);
+					    int checkLocX = seaLocX + xShift;
+					    int checkLocY = seaLocY + yShift;
+					    if (!Misc.IsLocationValid(checkLocX, checkLocY))
+						    continue;
+
+					    loc = World.GetLoc(checkLocX, checkLocY);
+					    if (loc.RegionId != regionId)
+						    continue;
+
+					    unit.ShipToBeach(checkLocX, checkLocY, out _, out _);
+					    found = true;
+					    break;
+				    }
+
+				    if (found)
+				    {
+					    totalCheck = 0;
+					    break;
+				    }
+			    }
+		    }
+		    else // cannot carry units
+		    {
+			    unit.MoveTo(destX, destY, 1);
 		    }
 	    }
     }

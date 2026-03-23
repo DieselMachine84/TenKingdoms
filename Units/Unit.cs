@@ -2202,56 +2202,6 @@ public abstract partial class Unit : Sprite
 		}
 	}
 	
-	public override void ProcessMove()
-	{
-		//--------------------------------------------------------//
-		// if the unit reach its destination, then Cur(X,Y) == Next(X,Y) == Go(X,Y)
-		//--------------------------------------------------------//
-
-		if (CurX == GoX && CurY == GoY)
-		{
-			NextMove();
-			if (CurAction != SPRITE_MOVE) // if NextMove() is not successful, the movement has been stopped
-				return;
-
-			//---------------------------------------------------------------------------//
-			// If (1) the unit is blocked at Cur(X,Y) == Go(X,Y) and Go(X,Y) != destination and 
-			//    (2) a new path is generated if calling the previous NextMove(),
-			// then Cur(X,Y) still equal to Go(X,Y).
-			//
-			// The following base.ProcessMove() call will set the unit to SPRITE_IDLE 
-			// since Cur(X,Y) == Go(X,Y) Thus, the unit terminates its move although
-			// it has not reached its destination.
-			//
-			// (note: if it has reached its destination, Cur(X,Y) == Go(X,Y) and CurAction = SPRITE_IDLE)
-			//
-			// if the unit is still moving and Cur(X,Y) == Go(X,Y), call NextMove() again to reset the Go(X,Y).
-			//---------------------------------------------------------------------------//
-			if (CurX == GoX && CurY == GoY)
-				NextMove();
-		}
-
-		//--------- process the move, update sprite position ---------//
-		//--------------------------------------------------------//
-		// if the unit is moving, Cur(X,Y) != Go(X,Y) and
-		// if Next(X,Y) != Cur(X,Y), the direction from Cur(X,Y) to Next(X,Y)
-		// should equal to that from Cur(X,Y) to Go(X,Y)
-		//--------------------------------------------------------//
-
-		base.ProcessMove();
-
-		if (CurX == GoX && CurY == GoY && CurAction == SPRITE_IDLE) // the sprite has reached its destination
-		{
-			MoveToLocX = NextLocX;
-			MoveToLocY = NextLocY;
-		}
-
-		//--------------------------------------------------------//
-		// after base.ProcessMove(), if the unit is blocked, its CurAction is set to SPRITE_WAIT.
-		// Otherwise, its CurAction is still SPRITE_MOVE.  Then Cur(X,Y) != Next(X,Y) if the unit has not reached its destination.
-		//--------------------------------------------------------//
-	}
-
 	public override void ProcessWait()
 	{
 		if (!MatchDir())
