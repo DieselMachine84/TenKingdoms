@@ -508,13 +508,12 @@ public partial class Unit
 		return found;
 	}
 
-	private void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
+	public void DifferentTerritoryDestination(ref int destLocX, ref int destLocY)
 	{
 		int curLocX = NextLocX;
 		int curLocY = NextLocY;
 
-		Location loc = World.GetLoc(curLocX, curLocY);
-		int regionId = loc.RegionId;
+		int regionId = World.GetLoc(curLocX, curLocY).RegionId;
 		int xStep = destLocX - curLocX;
 		int yStep = destLocY - curLocY;
 		int absXStep = Math.Abs(xStep);
@@ -532,8 +531,7 @@ public partial class Unit
 			int locX = curLocX + (i * xStep) / count;
 			int locY = curLocY + (i * yStep) / count;
 
-			loc = World.GetLoc(locX, locY);
-			if (loc.RegionId == regionId)
+			if (World.GetLoc(locX, locY).RegionId == regionId)
 				sameTerr = i;
 		}
 

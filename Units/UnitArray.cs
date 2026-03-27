@@ -433,8 +433,25 @@ public class UnitArray : SpriteArray
 
 	    foreach (List<Unit> filteredUnits in unitsByRegion.Values)
 	    {
-		    //TODO better choose destLocX and destLocY
-		    MoveToNow(destLocX, destLocY, filteredUnits);
+		    int targetLocX = destLocX;
+		    int targetLocY = destLocY;
+		    int minDistance = Int16.MaxValue;
+		    
+		    foreach (Unit unit in filteredUnits)
+		    {
+			    int unitLocX = destLocX;
+			    int unitLocY = destLocY;
+			    unit.DifferentTerritoryDestination(ref unitLocX, ref unitLocY);
+			    int distance = Misc.PointsDistance(unitLocX, unitLocY, destLocX, destLocY);
+			    if (distance < minDistance)
+			    {
+				    targetLocX = unitLocX;
+				    targetLocY = unitLocY;
+				    minDistance = distance;
+			    }
+		    }
+		    
+		    MoveToNow(targetLocX, targetLocY, filteredUnits);
 	    }
     }
 
