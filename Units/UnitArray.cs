@@ -371,16 +371,18 @@ public class UnitArray : SpriteArray
 		    MoveToDivided(destLocX, destLocY, _selectedAirUnits);
     }
 
-    private void MoveToDivided(int destLocX, int destLocY, List<int> selectedUnits)
+    private void MoveToDivided(int destLocX, int destLocY, List<int> selectedUnitIds)
     {
-	    if (selectedUnits.Count == 0)
+	    if (selectedUnitIds.Count == 0)
 		    return;
 
 	    int curGroupId = CurGroupId++;
 
-	    foreach (int unitId in selectedUnits)
+	    List<Unit> selectedUnits = new List<Unit>();
+	    foreach (int unitId in selectedUnitIds)
 	    {
 		    Unit unit = this[unitId];
+		    selectedUnits.Add(unit);
 		    unit.GroupId = curGroupId;
 		    unit.ActionMode = UnitConstants.ACTION_MOVE;
 		    unit.ActionParam = 0;
@@ -398,45 +400,153 @@ public class UnitArray : SpriteArray
 	    //--------------------------------------------------------------//
 	    if (selectedUnits.Count == 1)
 	    {
-		    Unit unit = this[selectedUnits[0]];
+		    Unit unit = selectedUnits[0];
 		    unit.MoveTo(destLocX, destLocY, 1);
 	    }
 	    else
 	    {
-		    Unit unit = this[selectedUnits[0]];
+		    Unit unit = selectedUnits[0];
 		    if (unit.MobileType == UnitConstants.UNIT_AIR)
 			    MoveToNow(destLocX, destLocY, selectedUnits);
 		    else
 			    MoveToNowWithFilter(destLocX, destLocY, selectedUnits);
 		    
 		    //TODO why reset sub mode?
-		    Unit firstUnit = this[selectedUnits[0]];
+		    Unit firstUnit = selectedUnits[0];
 		    if (firstUnit.MobileType == UnitConstants.UNIT_LAND)
 			    SeekPath.SetSubMode();
 	    }
     }
 
-    private void MoveToNowWithFilter(int destLocX, int destLocY, List<int> selectedUnits)
+    private void MoveToNowWithFilter(int destLocX, int destLocY, List<Unit> selectedUnits)
     {
-	    Dictionary<int, List<int>> unitsByRegion = new Dictionary<int, List<int>>();
-	    foreach (int unitId in selectedUnits)
+	    Dictionary<int, List<Unit>> unitsByRegion = new Dictionary<int, List<Unit>>();
+	    foreach (Unit unit in selectedUnits)
 	    {
-		    Unit unit = this[unitId];
 		    int unitRegion = World.GetLoc(unit.NextLocX, unit.NextLocY).RegionId;
 		    if (!unitsByRegion.ContainsKey(unitRegion))
 		    {
-			    unitsByRegion.Add(unitRegion, new List<int>(selectedUnits.Count));
+			    unitsByRegion.Add(unitRegion, new List<Unit>(selectedUnits.Count));
 		    }
-		    unitsByRegion[unitRegion].Add(unitId);
+		    unitsByRegion[unitRegion].Add(unit);
 	    }
 
-	    foreach (List<int> filteredUnits in unitsByRegion.Values)
+	    foreach (List<Unit> filteredUnits in unitsByRegion.Values)
 	    {
+		    //TODO better choose destLocX and destLocY
 		    MoveToNow(destLocX, destLocY, filteredUnits);
 	    }
     }
 
-	private void MoveToNow(int destLocX, int destLocY, List<int> selectedUnits)
+    private void MoveToNow(int destLocX, int destLocY, List<Unit> selectedUnits)
+    {
+	    selectedUnits.Sort((unit1, unit2) =>
+		    Misc.PointsDistance(unit1.NextLocX, unit1.NextLocY, destLocX, destLocY) -
+		    Misc.PointsDistance(unit2.NextLocX, unit2.NextLocY, destLocX, destLocY));
+	    
+	    Unit firstUnit = selectedUnits[0];
+	    int mobileType = firstUnit.MobileType;
+	    int curGroupId = firstUnit.GroupId;
+	    List<(int, int, int)> destLocations = FindMoveToDestLocations(destLocX, destLocY, mobileType, curGroupId, selectedUnits.Count);
+	    bool[] usedLocations = new bool[destLocations.Count];
+
+	    foreach (Unit selectedUnit in selectedUnits)
+	    {
+		    int minDistance = Int16.MaxValue;
+		    int targetLocationIndex = 0;
+
+		    for (int size = 0; size < Config.MapSize; size++)
+		    {
+			    for (int i = 0; i < destLocations.Count; i++)
+			    {
+				    var destLocation = destLocations[i];
+				    if (destLocation.Item3 > size)
+					    break;
+
+				    if (usedLocations[i])
+					    continue;
+
+				    int distance = Misc.PointsDistance(selectedUnit.NextLocX, selectedUnit.NextLocY, destLocation.Item1, destLocation.Item2);
+				    if (distance < minDistance)
+				    {
+					    targetLocationIndex = i;
+					    minDistance = distance;
+				    }
+			    }
+
+			    if (minDistance != Int16.MaxValue)
+			    {
+				    usedLocations[targetLocationIndex] = true;
+				    
+				    if (selectedUnit.CurAction == Sprite.SPRITE_ATTACK)
+					    selectedUnit.Stop();
+
+				    if (selectedUnit.CurAction == Sprite.SPRITE_IDLE)
+					    selectedUnit.SetReady();
+
+				    int targetLocX = destLocations[targetLocationIndex].Item1;
+				    int targetLocY = destLocations[targetLocationIndex].Item2;
+				    if (selectedUnit.MobileType == UnitConstants.UNIT_LAND && selectedUnit.NationId != 0)
+					    selectedUnit.SelectSearchSubMode(selectedUnit.NextLocX, selectedUnit.NextLocY, targetLocX, targetLocY, selectedUnit.NationId);
+				    selectedUnit.MoveTo(targetLocX, targetLocY, 1);
+				    break;
+			    }
+		    }
+	    }
+    }
+
+    private List<(int, int, int)> FindMoveToDestLocations(int destLocX, int destLocY, int mobileType, int curGroupId, int count)
+    {
+	    bool CheckLocation(int locX, int locY)
+	    {
+		    if (mobileType == UnitConstants.UNIT_SEA || mobileType == UnitConstants.UNIT_AIR)
+		    {
+			    if (locX % 2 != 0 || locY % 2 != 0)
+				    return false;
+		    }
+		    
+		    return Misc.IsLocationValid(locX, locY) && World.GetLoc(locX, locY).IsUnitGroupAccessible(mobileType, curGroupId);
+	    }
+
+	    List<(int, int, int)> result = new List<(int, int, int)>();
+	    
+	    if (CheckLocation(destLocX, destLocY))
+		    result.Add((destLocX, destLocY, 0));
+	    
+	    for (int size = 1; size < Config.MapSize; size++)
+	    {
+		    int topLocY = destLocY - size;
+		    int bottomLocY = destLocY + size;
+		    
+		    for (int i = -size; i <= size; i++)
+		    {
+			    int locX = destLocX + i;
+			    if (CheckLocation(locX, topLocY))
+				    result.Add((locX, topLocY, size));
+			    if (CheckLocation(locX, bottomLocY))
+				    result.Add((locX, bottomLocY, size));
+		    }
+
+		    int leftLocX = destLocX - size;
+		    int rightLocX = destLocX + size;
+
+		    for (int j = -size + 1; j <= size - 1; j++)
+		    {
+			    int locY = destLocY + j;
+			    if (CheckLocation(leftLocX, locY))
+				    result.Add((leftLocX, locY, size));
+			    if (CheckLocation(rightLocX, locY))
+				    result.Add((rightLocX, locY, size));
+		    }
+
+		    if (result.Count >= count)
+			    return result;
+	    }
+	    
+	    return result;
+    }
+
+	private void MoveToNowOld(int destLocX, int destLocY, List<int> selectedUnits)
 	{
 		//------------ define vars -----------------------//
 		int unprocessCount; // = selectedCount;		// num. of unprocessed sprite
