@@ -458,13 +458,14 @@ public class UnitArray : SpriteArray
     private void MoveToNow(int destLocX, int destLocY, List<Unit> selectedUnits)
     {
 	    selectedUnits.Sort((unit1, unit2) =>
-		    Misc.PointsDistance(unit1.NextLocX, unit1.NextLocY, destLocX, destLocY) -
-		    Misc.PointsDistance(unit2.NextLocX, unit2.NextLocY, destLocX, destLocY));
+		    Misc.PointsDistance(unit2.NextLocX, unit2.NextLocY, destLocX, destLocY) -
+		    Misc.PointsDistance(unit1.NextLocX, unit1.NextLocY, destLocX, destLocY));
 	    
 	    Unit firstUnit = selectedUnits[0];
+	    Unit lastUnit = selectedUnits[^1];
 	    int mobileType = firstUnit.MobileType;
 	    int curGroupId = firstUnit.GroupId;
-	    List<(int, int, int)> destLocations = FindMoveToDestLocations(destLocX, destLocY, mobileType, curGroupId, selectedUnits.Count);
+	    List<(int, int)> destLocations = FindMoveToDestLocations(destLocX, destLocY, mobileType, curGroupId, selectedUnits.Count);
 	    bool[] usedLocations = new bool[destLocations.Count];
 
 	    foreach (Unit selectedUnit in selectedUnits)
@@ -472,13 +473,12 @@ public class UnitArray : SpriteArray
 		    int minDistance = Int16.MaxValue;
 		    int targetLocationIndex = 0;
 
-		    for (int size = 0; size < Config.MapSize; size++)
+		    // if destination location which is destLocations[0] is not used yet, send the last selected unit here
+		    if (selectedUnit != lastUnit || usedLocations[0])
 		    {
 			    for (int i = 0; i < destLocations.Count; i++)
 			    {
 				    var destLocation = destLocations[i];
-				    if (destLocation.Item3 > size)
-					    break;
 
 				    if (usedLocations[i])
 					    continue;
@@ -490,29 +490,25 @@ public class UnitArray : SpriteArray
 					    minDistance = distance;
 				    }
 			    }
-
-			    if (minDistance != Int16.MaxValue)
-			    {
-				    usedLocations[targetLocationIndex] = true;
-				    
-				    if (selectedUnit.CurAction == Sprite.SPRITE_ATTACK)
-					    selectedUnit.Stop();
-
-				    if (selectedUnit.CurAction == Sprite.SPRITE_IDLE)
-					    selectedUnit.SetReady();
-
-				    int targetLocX = destLocations[targetLocationIndex].Item1;
-				    int targetLocY = destLocations[targetLocationIndex].Item2;
-				    if (selectedUnit.MobileType == UnitConstants.UNIT_LAND && selectedUnit.NationId != 0)
-					    selectedUnit.SelectSearchSubMode(selectedUnit.NextLocX, selectedUnit.NextLocY, targetLocX, targetLocY, selectedUnit.NationId);
-				    selectedUnit.MoveTo(targetLocX, targetLocY, 1);
-				    break;
-			    }
 		    }
+
+		    usedLocations[targetLocationIndex] = true;
+
+		    if (selectedUnit.CurAction == Sprite.SPRITE_ATTACK)
+			    selectedUnit.Stop();
+
+		    if (selectedUnit.CurAction == Sprite.SPRITE_IDLE)
+			    selectedUnit.SetReady();
+
+		    int targetLocX = destLocations[targetLocationIndex].Item1;
+		    int targetLocY = destLocations[targetLocationIndex].Item2;
+		    if (selectedUnit.MobileType == UnitConstants.UNIT_LAND && selectedUnit.NationId != 0)
+			    selectedUnit.SelectSearchSubMode(selectedUnit.NextLocX, selectedUnit.NextLocY, targetLocX, targetLocY, selectedUnit.NationId);
+		    selectedUnit.MoveTo(targetLocX, targetLocY, 1);
 	    }
     }
 
-    private List<(int, int, int)> FindMoveToDestLocations(int destLocX, int destLocY, int mobileType, int curGroupId, int count)
+    private List<(int, int)> FindMoveToDestLocations(int destLocX, int destLocY, int mobileType, int curGroupId, int count)
     {
 	    bool CheckLocation(int locX, int locY)
 	    {
@@ -525,10 +521,10 @@ public class UnitArray : SpriteArray
 		    return Misc.IsLocationValid(locX, locY) && World.GetLoc(locX, locY).IsUnitGroupAccessible(mobileType, curGroupId);
 	    }
 
-	    List<(int, int, int)> result = new List<(int, int, int)>();
+	    List<(int, int)> result = new List<(int, int)>();
 	    
 	    if (CheckLocation(destLocX, destLocY))
-		    result.Add((destLocX, destLocY, 0));
+		    result.Add((destLocX, destLocY));
 	    
 	    for (int size = 1; size < Config.MapSize; size++)
 	    {
@@ -539,9 +535,9 @@ public class UnitArray : SpriteArray
 		    {
 			    int locX = destLocX + i;
 			    if (CheckLocation(locX, topLocY))
-				    result.Add((locX, topLocY, size));
+				    result.Add((locX, topLocY));
 			    if (CheckLocation(locX, bottomLocY))
-				    result.Add((locX, bottomLocY, size));
+				    result.Add((locX, bottomLocY));
 		    }
 
 		    int leftLocX = destLocX - size;
@@ -551,9 +547,9 @@ public class UnitArray : SpriteArray
 		    {
 			    int locY = destLocY + j;
 			    if (CheckLocation(leftLocX, locY))
-				    result.Add((leftLocX, locY, size));
+				    result.Add((leftLocX, locY));
 			    if (CheckLocation(rightLocX, locY))
-				    result.Add((rightLocX, locY, size));
+				    result.Add((rightLocX, locY));
 		    }
 
 		    if (result.Count >= count)
@@ -562,655 +558,6 @@ public class UnitArray : SpriteArray
 	    
 	    return result;
     }
-
-	private void MoveToNowOld(int destLocX, int destLocY, List<int> selectedUnits)
-	{
-		//------------ define vars -----------------------//
-		int unprocessCount; // = selectedCount;		// num. of unprocessed sprite
-		int k; // for counting
-		int vecX, vecY; // used to reset x, y
-		int oddCount, evenCount;
-		Unit firstUnit = this[selectedUnits[0]];
-		int curGroupId = firstUnit.GroupId;
-		int mobileType = firstUnit.MobileType;
-		int sizeOneSelectedCount = selectedUnits.Count;
-
-		for (int i = 0; i < selectedUnits.Count; i++)
-		{
-			Unit unit = this[selectedUnits[i]];
-
-			if (unit.CurAction == Sprite.SPRITE_ATTACK)
-				unit.Stop();
-
-			if (unit.CurAction == Sprite.SPRITE_IDLE)
-				unit.SetReady();
-		}
-
-		unprocessCount = sizeOneSelectedCount;
-
-		//---- construct array to store size one selected unit ----//
-		List<int> selectedSizeOneUnitArray = new List<int>();
-		if (sizeOneSelectedCount > 0)
-		{
-			for (int i = 0; i < selectedUnits.Count && unprocessCount > 0; i++)
-			{
-				Unit unit = this[selectedUnits[i]];
-				if (unit.SpriteInfo.LocWidth == 1)
-				{
-					selectedSizeOneUnitArray.Add(selectedUnits[i]);
-					unprocessCount--;
-				}
-			}
-		}
-
-		unprocessCount = sizeOneSelectedCount;
-
-		//----------- variables initialization ---------------//
-		int destX, destY, x, y, moveScale;
-		if (mobileType == UnitConstants.UNIT_LAND)
-		{
-			x = destX = destLocX;
-			y = destY = destLocY;
-			moveScale = 1;
-		}
-		else // UnitConstants.UNIT_AIR, UnitConstants.UNIT_SEA
-		{
-			x = destX = (destLocX / 2) * 2;
-			y = destY = (destLocY / 2) * 2;
-			moveScale = 2;
-		}
-
-		int square_size, not_tested_loc, lower_right_case, upper_left_case;
-		int[] distance = new int[sizeOneSelectedCount];
-		int[] sorted_distance = new int[sizeOneSelectedCount];
-		int[] sorted_member = new int[sizeOneSelectedCount];
-		int[] done_flag = new int[sizeOneSelectedCount];
-		//----- initialize parameters and construct data structure -----//
-		oddCount = 1;
-		evenCount = 3;
-		square_size = not_tested_loc = lower_right_case = upper_left_case = 0;
-
-		//--- calculate the rectangle size used to allocate space for the sprites----//
-		unprocessCount = sizeOneSelectedCount;
-		while (unprocessCount > 0)
-		{
-			//=============================
-			// process odd size square
-			//=============================
-			vecX = (oddCount / 4) * moveScale;
-			vecY = vecX;
-			k = 0;
-
-			int j;
-			for (j = 0; j < oddCount && unprocessCount > 0; j++)
-			{
-				x = destX + vecX;
-				y = destY + vecY;
-
-				if (x >= 0 && y >= 0 && x < Config.MapSize && y < Config.MapSize)
-				{
-					Location location = World.GetLoc(x, y);
-					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
-						unprocessCount--;
-				}
-
-				if (k++ < oddCount / 2) // reset vecX, vecY
-					vecX -= moveScale;
-				else
-					vecY -= moveScale;
-			}
-
-			square_size += moveScale;
-			if (j < oddCount)
-				not_tested_loc = oddCount - j;
-			oddCount += 4;
-
-			if (unprocessCount > 0)
-			{
-				//=============================
-				// process even size square
-				//=============================
-				vecY = (-(evenCount / 4) - 1) * moveScale;
-				vecX = vecY + moveScale;
-				k = 0;
-
-				for (j = 0; j < evenCount && unprocessCount > 0; j++)
-				{
-					x = destX + vecX;
-					y = destY + vecY;
-
-					if (x >= 0 && y >= 0 && x < Config.MapSize && y < Config.MapSize)
-					{
-						Location location = World.GetLoc(x, y);
-						if (location.IsUnitGroupAccessible(mobileType, curGroupId))
-							unprocessCount--;
-					}
-
-					if (k++ < evenCount / 2) // reset vecX, vecY
-						vecX += moveScale;
-					else
-						vecY += moveScale;
-				}
-
-				square_size += moveScale;
-				if (j < evenCount)
-					not_tested_loc = evenCount - j;
-				evenCount += 4;
-			}
-		}
-
-		int rec_height = square_size; // get the height and width of the rectangle
-		int rec_width = square_size;
-		if (not_tested_loc >= (square_size / moveScale))
-			rec_width -= moveScale;
-
-		//--- decide to use upper_left_case or lower_right_case, however, it maybe changed for boundary improvement----//
-		x = CalcRectangleLowerRightLocX(destX, moveScale, rec_width);
-		y = CalcRectangleLowerRightLocY(destY, moveScale, rec_height);
-
-		for (int i = 0; i < sizeOneSelectedCount; i++)
-		{
-			Unit unit = this[selectedSizeOneUnitArray[i]];
-
-			if (unit.NextLocY < y) // lower_right_case or upper_left_case
-				lower_right_case++;
-			else if (unit.NextLocY > y)
-				upper_left_case++;
-		}
-
-		if (lower_right_case == upper_left_case) // in case both values are equal, check by upper_left_case
-		{
-			x = CalcRectangleUpperLeftLocX(destX, moveScale, rec_width);
-			y = CalcRectangleUpperLeftLocY(destY, moveScale, rec_height);
-
-			lower_right_case = upper_left_case = 0;
-			for (int i = 0; i < sizeOneSelectedCount; i++)
-			{
-				Unit unit = this[selectedSizeOneUnitArray[i]];
-
-				if (unit.NextLocY < y) // lower_right_case or upper_left_case
-					lower_right_case++;
-				else if (unit.NextLocY > y)
-					upper_left_case++;
-			}
-		}
-
-		//------------ determine x, y and lower_right_case/upper_left_case-----------//
-		DeterminePositionToConstructTable(selectedUnits.Count, destX, destY, mobileType,
-			ref x, ref y, moveScale, ref rec_width, ref rec_height,
-			ref lower_right_case, ref upper_left_case, not_tested_loc, square_size);
-
-		//------------ construct a table to store distance -------//
-		// distance and sorted_member should be initialized first
-		ConstructSortedArray(selectedSizeOneUnitArray, sizeOneSelectedCount, x, y,
-			lower_right_case, upper_left_case, distance, sorted_distance, sorted_member, done_flag);
-
-		//------------ process the movement -----------//
-		unprocessCount = sizeOneSelectedCount; //selectedCount;
-		k = 0;
-
-		//-******************* auto correct ***********************-//
-		int autoCorrectStartX = x;
-		int autoCorrectStartY = y;
-		//-******************* auto correct ***********************-//
-
-		if (lower_right_case >= upper_left_case)
-		{
-			while (unprocessCount > 0)
-			{
-				for (int i = x; i > x - rec_width && unprocessCount > 0; i -= moveScale)
-				{
-					Location location = World.GetLoc(i, y);
-					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
-					{
-						Unit unit;
-						do
-						{
-							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.SpriteInfo.LocWidth > 1);
-
-						if (sizeOneSelectedCount > 1)
-						{
-							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
-							{
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-							else
-							{
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-						}
-						else
-						{
-							unit.MoveTo(i, y, 1);
-						}
-
-						unprocessCount--;
-					}
-				}
-
-				y -= moveScale;
-			}
-		}
-		else // upper_left_case
-		{
-			while (unprocessCount > 0)
-			{
-				for (int i = x; i < x + rec_width && unprocessCount > 0; i += moveScale)
-				{
-					Location location = World.GetLoc(i, y);
-					if (location.IsUnitGroupAccessible(mobileType, curGroupId))
-					{
-						Unit unit;
-						do
-						{
-							unit = this[selectedSizeOneUnitArray[sorted_member[k++]]];
-						} while (unit.SpriteInfo.LocWidth > 1);
-
-						if (sizeOneSelectedCount > 1)
-						{
-							if (unprocessCount == sizeOneSelectedCount) // the first unit to move
-							{
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-							else
-							{
-								if (unit.MobileType == UnitConstants.UNIT_LAND && unit.NationId != 0)
-									unit.SelectSearchSubMode(unit.NextLocX, unit.NextLocY, i, y, unit.NationId);
-								unit.MoveTo(i, y, 1, SeekPath.SEARCH_MODE_IN_A_GROUP, 0, sizeOneSelectedCount);
-							}
-						}
-						else
-						{
-							unit.MoveTo(i, y, 1);
-						}
-
-						unprocessCount--;
-					}
-				}
-
-				y += moveScale;
-				//-******************* auto correct ***********************-//
-				if (unprocessCount > 0 && y >= Config.MapSize)
-				{
-					y = autoCorrectStartY;
-				}
-				//-******************* auto correct ***********************-//
-			}
-		}
-	}
-
-	private int CalcRectangleLowerRightLocX(int refLocX, int moveScale, int recWidth)
-	{
-		// the rule:	refLocX + (recWidth / (moveScale * 2)) * moveScale
-		if (moveScale == 1)
-			return refLocX + recWidth / 2;
-		else // moveScale == 2
-			return refLocX + (recWidth / 4) * 2;
-	}
-
-	private int CalcRectangleLowerRightLocY(int refLocY, int moveScale, int recHeight)
-	{
-		// the rule:	refLocY + ((recHeight - moveScale) / (moveScale * 2)) * moveScale
-		if (moveScale == 1)
-			return refLocY + (recHeight - 1) / 2;
-		else // moveScale == 2
-			return refLocY + ((recHeight - 2) / 4) * 2;
-	}
-
-	private int CalcRectangleUpperLeftLocX(int refLocX, int moveScale, int recWidth)
-	{
-		// the rule:	refLocX - ((recWidth - moveScale) / (moveScale * 2)) * moveScale
-		if (moveScale == 1)
-			return refLocX - (recWidth - 1) / 2;
-		else // moveScale == 2
-			return refLocX - ((recWidth - 2) / 4) * 2;
-	}
-
-	private int CalcRectangleUpperLeftLocY(int refLocY, int moveScale, int recHeight)
-	{
-		// the rule:	refLocY - (recHeight / (moveScale * 2)) * moveScale
-		if (moveScale == 1)
-			return refLocY - recHeight / 2;
-		else // moveScale == 2
-			return refLocY - (recHeight / 4) * 2;
-	}
-
-	private void ConstructSortedArray(List<int> selectedUnitArray, int selectedCount, int x, int y,
-		int lowerRightCase, int upperLeftCase, int[] distance, int[] sortedDistance,
-		int[] sortedMember, int[] doneFlag)
-	{
-		int min, dist; // for comparison
-		int i, j, k = 0;
-		const int c = 1000; // c value for the d(x,y) function
-
-		if (lowerRightCase >= upperLeftCase)
-		{
-			for (i = 0; i < selectedCount; i++)
-			{
-				Unit unit = this[selectedUnitArray[i]];
-				// d(x,y)=x+c*|y|
-				distance[i] = Config.MapSize; // to avoid -ve no. in the following line
-				// plus/minus x coord difference
-				distance[i] += (x - unit.CurLocX + c * Math.Abs(unit.CurLocY - y));
-			}
-		}
-		else // upper_left_case
-		{
-			for (i = 0; i < selectedCount; i++)
-			{
-				Unit unit = this[selectedUnitArray[i]];
-				// d(x,y)=x+c*|y|
-				distance[i] = Config.MapSize; // to avoid -ve no. in the following line
-				// plus/minus x coord difference
-				distance[i] += (unit.CurLocX - x + c * Math.Abs(unit.CurLocY - y));
-			}
-		}
-
-		//---------------------------------------------------------------//
-		// this part of code using a technique to adjust the distance value
-		// such that the selected group can change from lower right form
-		// to upper left form or upper left form to lower right form in a better way.
-		//---------------------------------------------------------------//
-
-		//------ sorting the distance and store in sortedDistance Array -------//
-		for (j = 0; j < selectedCount; j++)
-		{
-			min = Int32.MaxValue;
-			for (i = 0; i < selectedCount; i++)
-			{
-				if (doneFlag[i] == 0 && (dist = distance[i]) < min)
-				{
-					min = dist;
-					k = i;
-				}
-			}
-
-			sortedDistance[j] = k;
-			doneFlag[k] = 1;
-		}
-
-		//----------------- find the minimum value --------------//
-		min = distance[sortedDistance[0]];
-
-		int defArraySize = 5; //****** BUGHERE, 5 is chosen arbitrary
-		int[] leftQuotZ = new int[defArraySize];
-		int[] rightQuotZ = new int[defArraySize];
-		int remainder = min % c;
-		int index;
-
-		//-- adjust the value to allow changing form between upper left and lower right shape --//
-
-		for (j = 0; j < defArraySize; j++)
-			leftQuotZ[j] = rightQuotZ[j] = min - remainder;
-
-		for (j = 0; j < selectedCount; j++)
-		{
-			if ((dist = distance[sortedDistance[j]] % c) < remainder)
-			{
-				if ((index = remainder - dist) <= defArraySize) // the case can be handled by this array size
-				{
-					distance[sortedDistance[j]] = leftQuotZ[index - 1] + dist;
-					leftQuotZ[index - 1] += c;
-				}
-			}
-			else
-			{
-				if (dist >= remainder)
-				{
-					if ((index = dist - remainder) < defArraySize) // the case can be handled by this array size
-					{
-						distance[sortedDistance[j]] = rightQuotZ[index] + dist;
-						rightQuotZ[index] += c;
-					}
-				}
-			}
-		}
-
-		//---------- sorting -------------//
-		for (j = 0; j < selectedCount; j++)
-		{
-			min = Int32.MaxValue;
-			for (i = 0; i < selectedCount; i++)
-			{
-				if ((dist = distance[i]) < min)
-				{
-					min = dist;
-					k = i;
-				}
-			}
-
-			sortedMember[j] = k;
-			distance[k] = Int32.MaxValue;
-		}
-	}
-
-	private void DeterminePositionToConstructTable(int selectedCount, int destXLoc, int destYLoc, int mobileType,
-		ref int x, ref int y, int moveScale, ref int recWidth, ref int recHeight,
-		ref int lowerRightCase, ref int upperLeftCase, int notTestedLoc, int square_size)
-	{
-		//======================================================================//
-		// boundary, corner improvement
-		//======================================================================//
-		int sqrtValue;
-
-		//======================================================================//
-		// lower right case
-		//======================================================================//
-		if (lowerRightCase >= upperLeftCase)
-		{
-			//--------- calculate x, y location for lower right case ---------//
-			x = CalcRectangleLowerRightLocX(destXLoc, moveScale, recWidth);
-			y = CalcRectangleLowerRightLocY(destYLoc, moveScale, recHeight);
-
-			if (x < recWidth)
-			{
-				//================== left edge =================//
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-				if (mobileType != UnitConstants.UNIT_LAND)
-					sqrtValue = sqrtValue << 1; // change to scale 2
-				recWidth = recHeight = sqrtValue;
-
-				//------------- top left corner --------------//
-				if (y < recHeight)
-				{
-					upperLeftCase = lowerRightCase + 1;
-					x = y = 0;
-				}
-				//------------ bottom left corner ---------------//
-				else if (y >= Config.MapSize - moveScale)
-				{
-					if (notTestedLoc >= square_size / moveScale)
-						recWidth -= moveScale;
-
-					x = recWidth - moveScale;
-					y = Config.MapSize - moveScale;
-				}
-				//------------- just left edge -------------//
-				else
-					x = recWidth - moveScale;
-			}
-			else if (x >= Config.MapSize - moveScale)
-			{
-				//============== right edge ==============//
-
-				//----------- top right corner -----------//
-				if (y < recHeight)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					recWidth = recHeight = sqrtValue;
-
-					upperLeftCase = lowerRightCase + 1;
-					x = Config.MapSize - recWidth;
-					y = 0;
-				}
-				//---------- bottom right corner ------------//
-				else if (y >= Config.MapSize - moveScale)
-				{
-					y = Config.MapSize - moveScale;
-					x = Config.MapSize - moveScale;
-				}
-				//---------- just right edge ---------------//
-				else
-				{
-					int squareSize = square_size / moveScale;
-					if (squareSize * (squareSize - 1) >= selectedCount)
-						recWidth -= moveScale;
-					x = Config.MapSize - moveScale;
-				}
-			}
-			else if (y < recHeight)
-			{
-				//================= top edge ===============//
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-				if (mobileType != UnitConstants.UNIT_LAND)
-					sqrtValue = sqrtValue << 1; // change to scale 2
-				recWidth = recHeight = sqrtValue;
-
-				upperLeftCase = lowerRightCase + 1;
-				//if(mobileType==UnitConstants.UNIT_LAND)
-				//	x = destXLoc-((rec_width-1)/2);
-				//else
-				//	x = destXLoc-(rec_width/4)*2;
-				x = CalcRectangleUpperLeftLocX(destXLoc, moveScale, recWidth);
-				y = 0;
-			}
-			else if (y >= Config.MapSize - moveScale)
-			{
-				//================== bottom edge ====================//
-				if (notTestedLoc >= square_size / moveScale)
-					recWidth += moveScale;
-
-				//if(mobileType==UnitConstants.UNIT_LAND)
-				//	x = destXLoc+(rec_width/2);
-				//else
-				//	x = destXLoc+(rec_width/4)*2;
-				x = CalcRectangleLowerRightLocX(destXLoc, moveScale, recWidth);
-				y = Config.MapSize - moveScale;
-			}
-		}
-		//======================================================================//
-		// upper left case
-		//======================================================================//
-		else
-		{
-			//--------- calculate x, y location for upper left case ---------//
-			x = CalcRectangleUpperLeftLocX(destXLoc, moveScale, recWidth);
-			y = CalcRectangleUpperLeftLocY(destYLoc, moveScale, recHeight);
-
-			if (x < 0)
-			{
-				//================= left edge ==================//
-
-				//------------- top left corner --------------//
-				if (y < 0)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					recWidth = recHeight = sqrtValue;
-					x = y = 0;
-				}
-				//------------- bottom left corner --------------//
-				else if (y + recHeight >= Config.MapSize - moveScale)
-				{
-					lowerRightCase = upperLeftCase + 1;
-					x = recWidth - moveScale;
-					y = Config.MapSize - moveScale;
-				}
-				//------------- just left edge ------------------//
-				else
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					recWidth = recHeight = sqrtValue;
-					x = 0;
-				}
-			}
-			//================ right edge ================//
-			else if (x + recWidth >= Config.MapSize - moveScale)
-			{
-				//------------- top right corner ------------------//
-				if (y < 0)
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					recWidth = recHeight = sqrtValue;
-					x = Config.MapSize - recWidth;
-					y = 0;
-				}
-				//------------- bottom right corner ------------------//
-				else if (y + recHeight >= Config.MapSize - moveScale)
-				{
-					lowerRightCase = upperLeftCase + 1;
-					x = Config.MapSize - moveScale;
-					y = Config.MapSize - moveScale;
-				}
-				//------------- just right edge ------------------//
-				else
-				{
-					sqrtValue = (int)Math.Sqrt(selectedCount);
-					if (sqrtValue * sqrtValue != selectedCount)
-						sqrtValue++;
-					if (mobileType != UnitConstants.UNIT_LAND)
-						sqrtValue = sqrtValue << 1; // change to scale 2
-					recWidth = recHeight = sqrtValue;
-
-					int squareSize = square_size / moveScale;
-					if (squareSize * (squareSize - 1) >= selectedCount)
-						recWidth -= moveScale;
-					lowerRightCase = upperLeftCase + 1;
-					x = Config.MapSize - moveScale;
-					//if(mobileType==UNIT_LAND)
-					//	y = destYLoc+((rec_height-1)/2);
-					//else
-					//	y = destYLoc+((rec_height-2)/4)*2;
-					y = CalcRectangleLowerRightLocY(destYLoc, moveScale, recHeight);
-				}
-			}
-			//================= top edge ================//
-			else if (y < 0)
-			{
-				sqrtValue = (int)Math.Sqrt(selectedCount);
-				if (sqrtValue * sqrtValue != selectedCount)
-					sqrtValue++;
-
-				recWidth = recHeight = sqrtValue;
-				y = 0;
-			}
-			//================= bottom edge ================//
-			else if (y + recHeight >= Config.MapSize - moveScale)
-			{
-				if (notTestedLoc >= square_size)
-					recWidth += moveScale;
-				y = Config.MapSize - moveScale;
-			}
-		}
-	}
 
 	public void Assign(int destLocX, int destLocY, List<int> selectedUnits, int remoteAction)
 	{
